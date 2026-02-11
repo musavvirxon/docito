@@ -1,102 +1,57 @@
-## Root Cause Analysis
+## Simplify to Single-Role Authentication
 
-### Bug 1: `runBootstrap` deduplication swallows auth state changes
+The current multi-role system has complex merging logic, role switching, and stored role preferences that contribute to the loading and redirection issues. This plan simplifies everything to: **one user = one role**.
 
-The `bootstrapPromiseRef` pattern in `AuthContext.tsx` (line 310) causes critical failures:
+### What Changes
 
-```
-When bootstrapPromiseRef.current is set, ALL subsequent calls return the same promise
-```
+**1. Simplify AuthContext.tsx -- Remove multi-role machinery**
 
-This means:
+- Remove `allRoles` merging (currently combines `allRolesState` + profile roles via `getUserRolesFromProfile`)
+- Remove `switchRole`, `setActiveRoleSilently`, `readStoredRole`, `writeStoredRole`, `clearStoredRole`, `applyActiveRoleFrom`
+- Remove `ACTIVE_ROLE_KEY` localStorage usage
+- The single role comes from: first role in `user_roles` table (using `getPrimaryRole` if multiple exist), falling back to `profile.role`
+- `activeRole` becomes a simple derived value, not switchable state
+- `allRoles` stays in the interface but always returns a single-element array (avoids breaking consumers)
+- Loading and bootstrap logic stays as-is (the version counter pattern is correct)
 
-- If the user signs out WHILE the initial bootstrap is still running, the SIGNED_OUT event's bootstrap is skipped entirely -- the old session's profile gets loaded, and the user appears still logged in.
-- If `onAuthStateChange` fires TOKEN_REFRESHED while bootstrap is running, it's also swallowed.
-- On reload, if `getSession()` resolves AFTER `onAuthStateChange` fires, one of them is skipped -- but they might have different session states.
+**2. Simplify Dashboard.tsx -- Use activeRole directly**
 
-### Bug 2: `ProfileMenu.signOut` bypasses `AuthContext.signOut`
+- Remove the `allRoles` dependency; just use `activeRole` to compute the dashboard route
+- Keep the `hasRedirected` guard
 
-`ProfileMenu.tsx` (line 56) calls `supabase.auth.signOut()` directly instead of `useAuth().signOut()`. This means:
+**3. Simplify ProfileMenu.tsx -- Remove role switcher UI**
 
-- `clearAuthState()` is NOT called immediately -- it only runs when `onAuthStateChange(SIGNED_OUT)` fires and triggers `runBootstrap(null)`.
-- But if a bootstrap is already running (from INITIAL_SESSION), the SIGNED_OUT `runBootstrap` is RETURNED as the existing promise (Bug 1), so `clearAuthState()` never runs for the sign-out event.
-- The session IS cleared from localStorage by `supabase.auth.signOut()`, but the React state retains the old user/profile. On page reload, `getSession()` returns null, but the user briefly sees the old state.
+- Remove the "Switch Role" submenu entirely (lines 126-148)
+- Keep showing the current role label in the header
 
-### Bug 3: Missing INSERT policy on `user_roles`
+**4. No database changes needed**
 
-The `user_roles` table has no INSERT policy for regular authenticated users. Only `super_admin` can insert via the ALL policy. When `ensureSelfBootstrap` tries to upsert a role for a new user, it fails silently. This means `allRoles` is always empty for new users, so the role switcher never appears.
+- Users with multiple rows in `user_roles` will use their highest-priority role (via `getPrimaryRole`)
+- The existing INSERT policy from the previous migration is fine
 
----
+### Technical Details
 
-## Fix Plan
+**AuthContext.tsx changes:**
 
-### 1. Replace bootstrap deduplication with a version counter (AuthContext.tsx)
+- Remove state: `allRolesState`, replace with computed single role
+- Remove functions: `switchRole`, `setActiveRoleSilently`, `readStoredRole`, `writeStoredRole`, `clearStoredRole`, `applyActiveRoleFrom`
+- Remove localStorage key `ACTIVE_ROLE_KEY`
+- In `runBootstrap`: after loading profile and roles, compute `activeRole = getPrimaryRole(roles)` and set it directly
+- In `clearAuthState`: just reset `activeRole` to `"patient"`
+- Context interface: keep `allRoles` (returns `[activeRole]`), keep `activeRole`, remove `switchRole` and `setActiveRoleSilently` from the interface (or make them no-ops to avoid breaking other consumers)
 
-Replace `bootstrapPromiseRef` with a simple version counter (`bootstrapVersionRef`). Each call to `runBootstrap` increments the counter. After async work completes, the result is only applied if the version hasn't changed (meaning no newer call has started).
+**Dashboard.tsx changes:**
 
-```text
-Before: if (bootstrapPromiseRef.current) return bootstrapPromiseRef.current;
-After:  const version = ++bootstrapVersionRef.current;
-        // ... do async work ...
-        if (bootstrapVersionRef.current !== version) return; // stale, discard
-        // ... apply state ...
-```
+- Line 25-28: Replace `allRoles` logic with just `[activeRole || "patient"]`
+- Remove `allRoles` from the `useAuth()` destructure and useEffect deps
 
-This ensures:
+**ProfileMenu.tsx changes:**
 
-- The latest auth event always wins
-- Stale bootstrap results are discarded
-- No more swallowed sign-out events
-- `setLoading(false)` always runs via `finally`
+- Remove `allRoles`, `switchRole` from `useAuth()` destructure
+- Remove lines 126-148 (role switcher submenu)
+- Remove `handleRoleSwitch` function
+- Remove unused imports (`Check`, `ChevronRight`)
 
-### 2. Fix ProfileMenu to use AuthContext's signOut (ProfileMenu.tsx)
+**Auth.tsx -- no changes needed**, redirection already uses `goAfterAuth()` which goes to `/dashboard`
 
-Replace the direct `supabase.auth.signOut()` call with the `signOut` function from `useAuth()`. This ensures `clearAuthState()` runs immediately (before the async API call), providing instant UI feedback.
-
-### 3. Add a safety timeout (AuthContext.tsx)
-
-Add a 10-second fallback timer in the `init` useEffect. If `loading` is still `true` after 10 seconds, force it to `false`. This prevents the UI from being permanently stuck if something unexpected happens during bootstrap.
-
-### 4. Add INSERT policy on `user_roles` for self-registration (Database migration)
-
-Add an RLS policy allowing authenticated users to insert their own role row:
-
-```sql
-CREATE POLICY "Users can insert their own roles"
-ON public.user_roles
-FOR INSERT
-TO authenticated
-WITH CHECK (user_id = auth.uid());
-```
-
-This allows `ensureSelfBootstrap` to create the initial role row for new users.
-
-### 5. Skip full bootstrap on TOKEN_REFRESHED (AuthContext.tsx)
-
-In the `onAuthStateChange` callback, check the event type. For `TOKEN_REFRESHED`, only update the session/user state without re-running the full profile load. This prevents unnecessary loading flicker.
-
----
-
-## Technical Details
-
-### Files to modify:
-
-`**src/contexts/AuthContext.tsx**` -- Core fixes:
-
-- Replace `bootstrapPromiseRef` with `bootstrapVersionRef` counter pattern
-- Add safety timeout (10 seconds) in init useEffect
-- In `onAuthStateChange`, differentiate TOKEN_REFRESHED from other events
-- Ensure `setLoading(false)` is always called, even for discarded stale bootstraps
-
-`**src/components/profile/ProfileMenu.tsx**` -- Sign-out fix:
-
-- Import and use `signOut` from `useAuth()` instead of calling `supabase.auth.signOut()` directly
-- Remove the direct supabase import (it's only used for signOut)
-
-**Database migration** -- RLS policy:
-
-- Add INSERT policy on `user_roles` for authenticated users on their own rows
-
-&nbsp;
-
-At the end test it with console logs. Try signing in with [docito@gmail.com](mailto:docito@gmail.com) password: 123456  
+Remove anything related to time zone.
