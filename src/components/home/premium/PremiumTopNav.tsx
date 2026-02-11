@@ -168,7 +168,17 @@ const PremiumTopNav = () => {
 
             {/* Mobile Menu Button */}
             <div className="flex lg:hidden items-center gap-2">
-              {user ? <ProfileMenu compact /> : null}
+              {user ? (
+                <ProfileMenu compact />
+              ) : (
+                <Button
+                  onClick={() => navigate(getLocalizedPath("/auth"))}
+                  size="sm"
+                  className="h-8 px-3 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {t("topNav.actions.signIn", { defaultValue: "Sign In" })}
+                </Button>
+              )}
               <button
                 onClick={() => setIsMobileMenuOpen((v) => !v)}
                 className="p-2 rounded-lg hover:bg-accent/50 transition-colors"
