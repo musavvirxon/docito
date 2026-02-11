@@ -17,7 +17,7 @@ export default function DoctorPatientProfile() {
     return t === 'direct' ? 'direct' : 'registered';
   }, [searchParams]);
 
-  if (!loading && (!profile || profile.role !== 'doctor')) {
+  if (!loading && !profile) {
     return <Navigate to="/auth" replace />;
   }
 

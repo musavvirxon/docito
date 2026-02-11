@@ -582,7 +582,7 @@ export default function PatientDashboard() {
     );
   }
 
-  if (!user || profile?.role !== "patient") {
+  if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
