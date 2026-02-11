@@ -1,11 +1,11 @@
 // File: src/components/time/TimezoneBootstrapper.tsx
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, forwardRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getBrowserTimeZone } from "@/lib/timezone";
 
-export default function TimezoneBootstrapper() {
+const TimezoneBootstrapper = forwardRef<HTMLDivElement>(function TimezoneBootstrapper(_props, _ref) {
   const { user, profile, session, loading, refreshProfile } = useAuth();
   const ran = useRef(false);
 
@@ -65,4 +65,6 @@ export default function TimezoneBootstrapper() {
   }, [loading, user?.id]);
 
   return null;
-}
+});
+
+export default TimezoneBootstrapper;
