@@ -27,7 +27,7 @@ import AccountBillingSection from "@/components/profile/AccountBillingSection";
 import AccountAnalyticsSection from "@/components/profile/AccountAnalyticsSection";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
 import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
-import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
+import { getPrimaryRole, type AppRole } from "@/lib/rbac";
 
 const getNameLabel = (role: AppRole): string => {
   switch (role) {
@@ -64,7 +64,7 @@ const getNamePlaceholder = (role: AppRole): string => {
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile, loading, updateProfile, signOut, activeRole } = useAuth();
+  const { user, profile, loading, updateProfile, signOut, activeRole, allRoles } = useAuth();
 
   const initialTab = (searchParams.get("tab") as "settings" | "workspace" | "billing" | "analytics") || "settings";
   const [tab, setTab] = useState<"settings" | "workspace" | "billing" | "analytics">(initialTab);
@@ -81,11 +81,9 @@ export default function ProfilePage() {
   const email = useMemo(() => profile?.email || user?.email || "", [profile?.email, user?.email]);
 
   const primaryRole = useMemo(() => {
-    if (!profile) return activeRole;
-    const roles = getUserRolesFromProfile(profile);
-    if (roles.length === 0) return activeRole;
-    return getPrimaryRole(roles);
-  }, [profile, activeRole]);
+    if (allRoles.length > 0) return getPrimaryRole(allRoles);
+    return activeRole || "patient";
+  }, [allRoles, activeRole]);
 
   const nameLabel = useMemo(() => getNameLabel(primaryRole), [primaryRole]);
   const namePlaceholder = useMemo(() => getNamePlaceholder(primaryRole), [primaryRole]);
