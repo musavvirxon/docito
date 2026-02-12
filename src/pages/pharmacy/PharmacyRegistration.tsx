@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/select';
 import { Building2, MapPin, Phone, Mail, Globe, FileText, Truck } from 'lucide-react';
 import { toast } from 'sonner';
+
+const PremiumTopNav = lazy(() => import("@/components/home/premium/PremiumTopNav"));
 
 const pharmacySchema = z.object({
   name: z.string().min(2, 'Pharmacy name must be at least 2 characters'),
@@ -84,7 +86,9 @@ export default function PharmacyRegistration() {
   };
 
   return (
-    <div className="container mx-auto py-8 max-w-3xl">
+    <div className="min-h-screen bg-background">
+      <Suspense fallback={null}><PremiumTopNav /></Suspense>
+      <div className="container mx-auto py-8 max-w-3xl pt-20">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -360,6 +364,7 @@ export default function PharmacyRegistration() {
           </Form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

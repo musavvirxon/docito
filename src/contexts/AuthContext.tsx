@@ -271,7 +271,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const runBootstrap = async (nextSession: Session | null) => {
     const version = ++bootstrapVersionRef.current;
-    setLoading(true);
 
     try {
       if (!nextSession?.user?.id) {
@@ -282,6 +281,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         _setActiveRole("patient");
         setAllRoles([]);
         clearCache();
+        setLoading(false);
+        setBootstrapped(true);
         return;
       }
 
@@ -290,18 +291,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const uid = nextSession.user.id;
 
-      // INSTANT: Set role from user_metadata or cache immediately so UI can redirect fast
+      // INSTANT: Set role from cache or user_metadata so UI can redirect immediately
       const metaRole = getRoleFromMetadata(nextSession.user);
       const cachedData = readCache();
-      if (cachedData?.uid === uid && cachedData.allRoles.length > 0) {
-        // Use cached role — most reliable for returning users
-        _setActiveRole(cachedData.activeRole);
-        setAllRoles(cachedData.allRoles);
+      const hasCacheHit = cachedData?.uid === uid && cachedData.allRoles.length > 0;
+
+      if (hasCacheHit) {
+        _setActiveRole(cachedData!.activeRole);
+        setAllRoles(cachedData!.allRoles);
+        // Mark bootstrapped immediately — roles from cache are reliable for redirects
+        setLoading(false);
+        setBootstrapped(true);
       } else if (metaRole !== "patient") {
-        // Use metadata role as instant hint
         _setActiveRole(metaRole);
+        // Still need DB read for full role list, keep loading
+        setLoading(true);
+      } else {
+        setLoading(true);
       }
 
+      // Background: load authoritative data from DB
       const result = await loadProfileAndRoles(uid, nextSession.access_token, nextSession.user);
 
       if (bootstrapVersionRef.current !== version) return; // stale
