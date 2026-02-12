@@ -132,7 +132,8 @@ export const useDoctorIntegration = () => {
       return;
     }
     if (!user?.id) return;
-    if (activeRole !== "doctor" && profile?.role !== "doctor") return;
+    // Allow resolution when activeRole is doctor, even if profile hasn't loaded yet
+    if (activeRole !== "doctor") return;
 
     let cancelled = false;
     supabase
@@ -611,6 +612,11 @@ export const useDoctorIntegration = () => {
       // Prevent a re-run loop caused by callback identity changes when doctorProfile updates.
       if (didInitialLoad.current) return;
       if (user && (activeRole === "doctor" || profile?.role === "doctor")) {
+        // Only mark as loaded if we actually have a doctor_id to work with
+        if (!doctorIdFromProfile) {
+          // Don't mark didInitialLoad — we'll retry when resolvedDoctorId arrives
+          return;
+        }
         didInitialLoad.current = true;
         await refreshAllData();
       } else {
@@ -621,7 +627,7 @@ export const useDoctorIntegration = () => {
     return () => {
       mounted = false;
     };
-  }, [user, profile?.role, activeRole, refreshAllData]);
+  }, [user, profile?.role, activeRole, refreshAllData, doctorIdFromProfile]);
 
   return {
     // Data
