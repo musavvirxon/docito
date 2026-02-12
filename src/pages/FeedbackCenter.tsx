@@ -276,7 +276,7 @@ export default function FeedbackCenter() {
               Requests are sorted by <span className="font-medium text-foreground">upvotes</span>.
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
+          <Button variant="outline" className="text-foreground" onClick={() => navigate("/dashboard")}>
             Back to Dashboard
           </Button>
         </div>
