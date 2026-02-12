@@ -7,9 +7,17 @@ import {
   User,
   LayoutDashboard,
   MessageSquareWarning,
+  Check,
+  Stethoscope,
+  Building2,
+  Pill,
+  FlaskConical,
+  Scan,
+  Shield,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleLabels } from "@/lib/rbac";
+import { roleLabels, DASHBOARD_ROUTES, type AppRole } from "@/lib/rbac";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 
 import SettingsDialog from "./SettingsDialog";
@@ -29,9 +38,31 @@ type ProfileMenuProps = {
   email?: string | null;
 };
 
+const getRoleIcon = (role: AppRole) => {
+  switch (role) {
+    case "doctor":
+      return <Stethoscope className="h-4 w-4" />;
+    case "admin":
+    case "clinic_admin":
+      return <Building2 className="h-4 w-4" />;
+    case "pharmacy_admin":
+      return <Pill className="h-4 w-4" />;
+    case "lab_admin":
+      return <FlaskConical className="h-4 w-4" />;
+    case "imaging_admin":
+      return <Scan className="h-4 w-4" />;
+    case "super_admin":
+      return <Shield className="h-4 w-4" />;
+    case "staff":
+      return <Users className="h-4 w-4" />;
+    default:
+      return <User className="h-4 w-4" />;
+  }
+};
+
 export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMenuProps) {
   const navigate = useNavigate();
-  const { activeRole, signOut } = useAuth();
+  const { activeRole, allRoles, switchRole, signOut } = useAuth();
   const [openSettings, setOpenSettings] = React.useState(false);
 
   const name = displayName || email || "User";
@@ -47,6 +78,12 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
   const handleSignOut = async () => {
     await signOut();
     navigate("/auth");
+  };
+
+  const handleSwitchRole = (role: AppRole) => {
+    switchRole(role);
+    const target = DASHBOARD_ROUTES[role] || "/dashboard";
+    navigate(target, { replace: true });
   };
 
   return (
@@ -72,6 +109,25 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
           </div>
 
           <DropdownMenuSeparator />
+
+          {/* Role switching */}
+          {allRoles.length > 1 && (
+            <>
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Switch Role</DropdownMenuLabel>
+              {allRoles.map((role) => (
+                <DropdownMenuItem
+                  key={role}
+                  onClick={() => handleSwitchRole(role)}
+                  className="flex items-center gap-2"
+                >
+                  {getRoleIcon(role)}
+                  <span className="flex-1">{roleLabels[role] || role}</span>
+                  {role === activeRole && <Check className="h-4 w-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+            </>
+          )}
 
           {/* Dashboard */}
           <DropdownMenuItem asChild>

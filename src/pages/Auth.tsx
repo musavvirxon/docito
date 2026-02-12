@@ -84,7 +84,7 @@ const Auth = () => {
   const [signUpFullName, setSignUpFullName] = useState("");
   const [signUpRole, setSignUpRole] = useState<string>("patient");
 
-  const { signIn, signUp, user, loading: authLoading, activeRole } = useAuth();
+  const { signIn, signUp, user, loading: authLoading, activeRole, bootstrapped } = useAuth();
 
   const mode = searchParams.get("mode");
   const inviteParam = searchParams.get("invite");
@@ -148,14 +148,13 @@ const Auth = () => {
 
   const hasAutoRedirected = useRef(false);
   useEffect(() => {
-    if (authLoading) return;
+    if (!bootstrapped) return;
     if (!user) return;
     if (hasAutoRedirected.current) return;
-    // Wait until activeRole is resolved (not the default "patient" unless that's the real role)
     hasAutoRedirected.current = true;
     goAfterAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user, activeRole]);
+  }, [bootstrapped, user, activeRole]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

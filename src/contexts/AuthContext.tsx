@@ -39,10 +39,10 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  bootstrapped: boolean;
 
   allRoles: AppRole[];
   activeRole: AppRole;
-  // Kept as no-ops for API compatibility
   switchRole: (role: AppRole) => void;
   setActiveRoleSilently: (role: AppRole) => void;
 
@@ -93,14 +93,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   const [activeRole, _setActiveRole] = useState<AppRole>("patient");
   const [allRoles, setAllRoles] = useState<AppRole[]>([]);
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
 
-  // No-ops for API compatibility
-  const switchRole = (_role: AppRole) => {};
-  const setActiveRoleSilently = (_role: AppRole) => {};
+  const switchRole = (role: AppRole) => {
+    _setActiveRole(role);
+  };
+  const setActiveRoleSilently = (role: AppRole) => {
+    _setActiveRole(role);
+  };
 
   const clearAuthState = () => {
     setSession(null);
@@ -109,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRoleStatus({});
     _setActiveRole("patient");
     setAllRoles([]);
+    setBootstrapped(false);
   };
 
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
@@ -165,6 +170,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       if (roleErr) {
         console.warn("ensureSelfBootstrap: failed to upsert role", metaRole, roleErr);
+      }
+
+      // Also ensure patient role exists
+      if (metaRole !== "patient") {
+        const { error: patientErr } = await supabase.from("user_roles").upsert(
+          { user_id: uid, role: "patient" } as any,
+          { onConflict: "user_id,role" },
+        );
+        if (patientErr) {
+          console.warn("ensureSelfBootstrap: failed to upsert patient role", patientErr);
+        }
       }
     } catch (e) {
       console.warn("ensureSelfBootstrap failed (ignored):", e);
@@ -255,6 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       if (bootstrapVersionRef.current === version) {
         setLoading(false);
+        setBootstrapped(true);
       }
     }
   };
@@ -404,6 +421,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profile,
     session,
     loading,
+    bootstrapped,
     allRoles,
     activeRole,
     switchRole,
