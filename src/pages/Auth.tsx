@@ -148,11 +148,13 @@ const Auth = () => {
 
   const hasAutoRedirected = useRef(false);
   useEffect(() => {
+    console.log("[Auth page] redirect check: bootstrapped=", bootstrapped, "authLoading=", authLoading, "user=", !!user, "activeRole=", activeRole, "hasAutoRedirected=", hasAutoRedirected.current);
     if (!bootstrapped) return;
-    if (authLoading) return; // Wait for bootstrap to fully finish before redirecting
+    if (authLoading) return;
     if (!user) return;
     if (hasAutoRedirected.current) return;
     hasAutoRedirected.current = true;
+    console.log("[Auth page] REDIRECTING now, activeRole=", activeRole);
     goAfterAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bootstrapped, authLoading, user, activeRole]);
