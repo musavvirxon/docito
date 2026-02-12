@@ -1,7 +1,7 @@
-// File: src/components/home/premium/HeroOrb3D.tsx
-import { useRef, useState, useMemo, useEffect, useCallback } from "react";
+// src/components/home/premium/HeroOrb3D.tsx
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Html, Sphere } from "@react-three/drei";
+import { Html, OrbitControls, Sphere } from "@react-three/drei";
 import * as THREE from "three";
 import {
   Building2,
@@ -139,7 +139,7 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
 ];
 
-// Custom hook for scroll-based opacity (prevents LCP issues by not animating initially)
+// Custom hook for scroll-based opacity
 function useScrollOpacity() {
   const [opacity, setOpacity] = useState(1);
 
@@ -201,38 +201,68 @@ function useIsMobile() {
 }
 
 // Frame invalidator component for performance
-function FrameInvalidator({ isTabVisible }: { isTabVisible: boolean }) {
+function FrameInvalidator({ shouldAnimate }: { shouldAnimate: boolean }) {
   const { invalidate } = useThree();
-
   useFrame(() => {
-    if (isTabVisible) invalidate();
+    if (shouldAnimate) invalidate();
   });
-
   return null;
 }
 
-// Connection line component
+// Connection line component (updates geometry each frame; no React state)
 function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
-  const points = useMemo(() => [new THREE.Vector3(0, 0, 0), nodePosition.clone()], [nodePosition]);
+  const geomRef = useRef<THREE.BufferGeometry | null>(null);
+  const matRef = useRef<THREE.LineBasicMaterial | null>(null);
 
-  const geometry = useMemo(() => new THREE.BufferGeometry().setFromPoints(points), [points]);
+  const positions = useMemo(() => new Float32Array(6), []);
 
-  const material = useMemo(
-    () => new THREE.LineBasicMaterial({ color, transparent: true, opacity }),
-    [color, opacity],
-  );
+  const geometry = useMemo(() => {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geomRef.current = g;
+    return g;
+  }, [positions]);
+
+  const material = useMemo(() => {
+    const m = new THREE.LineBasicMaterial({
+      color,
+      transparent: true,
+      opacity,
+    });
+    matRef.current = m;
+    return m;
+  }, []);
+
+  useEffect(() => {
+    if (!matRef.current) return;
+    matRef.current.color.set(color);
+    matRef.current.opacity = opacity;
+  }, [color, opacity]);
+
+  useFrame(() => {
+    const g = geomRef.current;
+    if (!g) return;
+    positions[0] = 0;
+    positions[1] = 0;
+    positions[2] = 0;
+    positions[3] = nodePosition.x;
+    positions[4] = nodePosition.y;
+    positions[5] = nodePosition.z;
+    const attr = g.getAttribute("position") as THREE.BufferAttribute;
+    attr.needsUpdate = true;
+  });
 
   useEffect(() => {
     return () => {
       geometry.dispose();
-      material.dispose();
+      matRef.current?.dispose();
     };
-  }, [geometry, material]);
+  }, [geometry]);
 
-  return <primitive object={new THREE.Line(geometry, material)} />;
+  return <line geometry={geometry} material={material} frustumCulled={false} />;
 }
 
-// --- Simple deterministic value-noise helpers (for "earth-like" procedural textures) ---
+// --- Lightweight procedural texture helpers (fast + cached) ---
 function mulberry32(seed: number) {
   return function () {
     let t = (seed += 0x6d2b79f5);
@@ -264,7 +294,7 @@ function sampleGridNoise(
   y: number,
   noise: { grid: Float32Array; gw: number; gh: number; cell: number },
 ) {
-  const { grid, gw, gh, cell } = noise;
+  const { grid, gw, cell } = noise;
   const fx = x / cell;
   const fy = y / cell;
   const x0 = Math.floor(fx);
@@ -284,244 +314,270 @@ function sampleGridNoise(
   return lerp(vx0, vx1, ty);
 }
 
-function fbm(x: number, y: number, layers: Array<{ n: any; amp: number; freq: number }>) {
-  let v = 0;
-  let total = 0;
-  for (const l of layers) {
-    v += sampleGridNoise(x * l.freq, y * l.freq, l.n) * l.amp;
-    total += l.amp;
-  }
-  return total > 0 ? v / total : v;
+type GlobeTextures = { earth: THREE.Texture; clouds: THREE.Texture };
+const globeTextureCache: { mobile?: GlobeTextures; desktop?: GlobeTextures } = {};
+
+function configureTex(tex: THREE.Texture) {
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.anisotropy = 2;
+  tex.generateMipmaps = false;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
 }
 
-// Earth globe component
+function generateEarthTextures(width: number, height: number, seed: number): GlobeTextures {
+  // --- Earth texture ---
+  const earthCanvas = document.createElement("canvas");
+  earthCanvas.width = width;
+  earthCanvas.height = height;
+  const ectx = earthCanvas.getContext("2d");
+  if (!ectx) {
+    const fallback = new THREE.Texture();
+    configureTex(fallback);
+    return { earth: fallback, clouds: fallback };
+  }
+
+  // Ocean base
+  const oceanGrad = ectx.createLinearGradient(0, 0, width, height);
+  oceanGrad.addColorStop(0, "#0b2a6d");
+  oceanGrad.addColorStop(0.55, "#1e40af");
+  oceanGrad.addColorStop(1, "#06224f");
+  ectx.fillStyle = oceanGrad;
+  ectx.fillRect(0, 0, width, height);
+
+  // Fast 2-layer noise
+  const n1 = makeGridNoise(width, height, Math.max(28, Math.floor(width / 10)), seed);
+  const n2 = makeGridNoise(width, height, Math.max(14, Math.floor(width / 20)), seed + 1337);
+
+  const img = ectx.getImageData(0, 0, width, height);
+  const d = img.data;
+
+  for (let y = 0; y < height; y++) {
+    const lat = Math.abs((y / (height - 1)) * 2 - 1); // 0 equator, 1 poles
+    const latBias = (1 - lat) * 0.16;
+    const nearPole = lat > 0.78;
+    for (let x = 0; x < width; x++) {
+      // Seamless wrap
+      const base =
+        sampleGridNoise(x, y, n1) * 0.72 +
+        sampleGridNoise(x * 1.6 + 120, y * 1.6 + 40, n2) * 0.28;
+
+      // Land threshold (more ocean overall)
+      const land = base + latBias;
+      const isLand = land > 0.585;
+
+      const i = (y * width + x) * 4;
+      if (!isLand) {
+        // Subtle ocean variation
+        const w = sampleGridNoise(x + 500, y + 900, n2);
+        d[i + 0] = Math.round(lerp(6, 18, w));
+        d[i + 1] = Math.round(lerp(28, 84, w));
+        d[i + 2] = Math.round(lerp(92, 176, w));
+        d[i + 3] = 255;
+        continue;
+      }
+
+      // Elevation + dryness (cheap)
+      const elev = sampleGridNoise(x * 2.2 + 210, y * 2.2 + 90, n2);
+      const dry = sampleGridNoise(x + 900, y + 300, n1);
+      const mountain = elev > 0.72;
+      const desert = dry > 0.64 && lat < 0.55;
+
+      let r = 0;
+      let g = 0;
+      let b = 0;
+
+      if (nearPole) {
+        // snow / tundra
+        r = 224;
+        g = 236;
+        b = 244;
+      } else if (mountain) {
+        r = 124;
+        g = 120;
+        b = 110;
+      } else if (desert) {
+        r = 208;
+        g = 190;
+        b = 132;
+      } else {
+        // vegetation
+        const lush = (1 - lat) * 0.62 + (1 - dry) * 0.38;
+        r = Math.round(lerp(34, 58, lush));
+        g = Math.round(lerp(112, 164, lush));
+        b = Math.round(lerp(52, 74, lush));
+      }
+
+      // Coast blending
+      const edge = THREE.MathUtils.clamp((land - 0.585) / 0.09, 0, 1);
+      const coast = smoothstep(edge);
+      const oceanR = d[i + 0];
+      const oceanG = d[i + 1];
+      const oceanB = d[i + 2];
+      d[i + 0] = Math.round(lerp(oceanR, r, coast));
+      d[i + 1] = Math.round(lerp(oceanG, g, coast));
+      d[i + 2] = Math.round(lerp(oceanB, b, coast));
+      d[i + 3] = 255;
+    }
+  }
+
+  ectx.putImageData(img, 0, 0);
+
+  // Subtle latitude/longitude lines
+  ectx.save();
+  ectx.globalAlpha = 0.1;
+  ectx.strokeStyle = "#93c5fd";
+  ectx.lineWidth = 1;
+  for (let i = 1; i < 7; i++) {
+    const yy = (height / 7) * i;
+    ectx.beginPath();
+    ectx.moveTo(0, yy);
+    ectx.lineTo(width, yy);
+    ectx.stroke();
+  }
+  for (let i = 1; i < 13; i++) {
+    const xx = (width / 13) * i;
+    ectx.beginPath();
+    ectx.moveTo(xx, 0);
+    ectx.lineTo(xx, height);
+    ectx.stroke();
+  }
+  ectx.restore();
+
+  // Ice caps overlay
+  ectx.save();
+  const capTop = ectx.createLinearGradient(0, 0, 0, height * 0.2);
+  capTop.addColorStop(0, "rgba(255,255,255,0.85)");
+  capTop.addColorStop(1, "rgba(255,255,255,0)");
+  ectx.fillStyle = capTop;
+  ectx.fillRect(0, 0, width, height * 0.22);
+  const capBottom = ectx.createLinearGradient(0, height, 0, height * 0.8);
+  capBottom.addColorStop(0, "rgba(255,255,255,0.85)");
+  capBottom.addColorStop(1, "rgba(255,255,255,0)");
+  ectx.fillStyle = capBottom;
+  ectx.fillRect(0, height * 0.78, width, height * 0.22);
+  ectx.restore();
+
+  const earthTex = new THREE.CanvasTexture(earthCanvas);
+  configureTex(earthTex);
+
+  // --- Clouds texture ---
+  const cloudsCanvas = document.createElement("canvas");
+  cloudsCanvas.width = width;
+  cloudsCanvas.height = height;
+  const cctx = cloudsCanvas.getContext("2d");
+  if (!cctx) {
+    const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
+    configureTex(cloudsTex);
+    return { earth: earthTex, clouds: cloudsTex };
+  }
+
+  const cn1 = makeGridNoise(width, height, Math.max(22, Math.floor(width / 12)), seed + 7777);
+  const cn2 = makeGridNoise(width, height, Math.max(11, Math.floor(width / 24)), seed + 9999);
+
+  const cimg = cctx.createImageData(width, height);
+  const cd = cimg.data;
+  for (let y = 0; y < height; y++) {
+    const lat = Math.abs((y / (height - 1)) * 2 - 1);
+    const latMask = THREE.MathUtils.clamp(1 - lat * 1.05, 0, 1);
+    for (let x = 0; x < width; x++) {
+      const n =
+        sampleGridNoise(x, y, cn1) * 0.7 +
+        sampleGridNoise(x * 1.9 + 80, y * 1.9 + 40, cn2) * 0.3;
+      const puff = THREE.MathUtils.clamp((n - 0.56) / 0.22, 0, 1);
+      const alpha = Math.round(255 * puff * latMask);
+
+      const i = (y * width + x) * 4;
+      cd[i + 0] = 255;
+      cd[i + 1] = 255;
+      cd[i + 2] = 255;
+      cd[i + 3] = alpha;
+    }
+  }
+  cctx.putImageData(cimg, 0, 0);
+  const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
+  configureTex(cloudsTex);
+
+  return { earth: earthTex, clouds: cloudsTex };
+}
+
+function requestIdle(cb: () => void) {
+  const w = window as any;
+  if (typeof w.requestIdleCallback === "function") {
+    return w.requestIdleCallback(cb, { timeout: 1200 });
+  }
+  return window.setTimeout(cb, 60);
+}
+
+function cancelIdle(id: number) {
+  const w = window as any;
+  if (typeof w.cancelIdleCallback === "function") {
+    w.cancelIdleCallback(id);
+  } else {
+    window.clearTimeout(id);
+  }
+}
+
+// Earth globe component (progressive + cached textures)
 function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const globeRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
 
-  const textures = useMemo(() => {
-    // Higher-res on desktop; keep light on mobile
-    const W = isMobile ? 768 : 1024;
-    const H = isMobile ? 384 : 512;
-
-    // --- Earth texture ---
-    const earthCanvas = document.createElement("canvas");
-    earthCanvas.width = W;
-    earthCanvas.height = H;
-    const ectx = earthCanvas.getContext("2d");
-    if (!ectx) return { earth: null as THREE.Texture | null, clouds: null as THREE.Texture | null };
-
-    // Ocean base
-    const oceanGrad = ectx.createLinearGradient(0, 0, W, H);
-    oceanGrad.addColorStop(0, "#0b2a6d");
-    oceanGrad.addColorStop(0.5, "#1e40af");
-    oceanGrad.addColorStop(1, "#06224f");
-    ectx.fillStyle = oceanGrad;
-    ectx.fillRect(0, 0, W, H);
-
-    // Noise layers for continents + elevation
-    const n1 = makeGridNoise(W, H, 96, 1337);
-    const n2 = makeGridNoise(W, H, 48, 4242);
-    const n3 = makeGridNoise(W, H, 24, 9001);
-
-    // Create image data for land mask
-    const img = ectx.getImageData(0, 0, W, H);
-    const d = img.data;
-
-    // Latitude factor (ice caps + climate)
-    for (let y = 0; y < H; y++) {
-      const lat = Math.abs((y / (H - 1)) * 2 - 1); // 0 at equator, 1 at poles
-      for (let x = 0; x < W; x++) {
-        // Wrap horizontally for seamless globe texture
-        const wx = x;
-        const wy = y;
-
-        // "Earth-like" land distribution from fbm noise with lat bias
-        const base = fbm(wx, wy, [
-          { n: n1, amp: 0.55, freq: 1.0 },
-          { n: n2, amp: 0.3, freq: 1.8 },
-          { n: n3, amp: 0.15, freq: 3.2 },
-        ]);
-
-        // Add a subtle lat banding to avoid "all-random" look
-        const latBias = (1 - lat) * 0.18;
-
-        // Land threshold (more ocean overall)
-        const land = base + latBias;
-        const isLand = land > 0.56;
-
-        const i = (y * W + x) * 4;
-
-        if (isLand) {
-          // Elevation detail
-          const elev = fbm(wx + 200, wy + 100, [
-            { n: n2, amp: 0.6, freq: 2.2 },
-            { n: n3, amp: 0.4, freq: 4.4 },
-          ]);
-
-          // Biome by latitude + elevation
-          const dryness = fbm(wx + 500, wy + 300, [
-            { n: n1, amp: 0.7, freq: 1.1 },
-            { n: n2, amp: 0.3, freq: 2.0 },
-          ]);
-
-          // Base colors (greens/browns/deserts/snow)
-          let r = 0;
-          let g = 0;
-          let b = 0;
-
-          const nearPole = lat > 0.78;
-          const mountain = elev > 0.72;
-          const desert = dryness > 0.62 && lat < 0.55;
-
-          if (nearPole) {
-            // tundra / snow
-            r = 220;
-            g = 232;
-            b = 240;
-          } else if (mountain) {
-            // mountains
-            r = 120;
-            g = 116;
-            b = 106;
-          } else if (desert) {
-            // desert
-            r = 206;
-            g = 188;
-            b = 132;
-          } else {
-            // vegetation gradient
-            const lush = (1 - lat) * 0.6 + (1 - dryness) * 0.4;
-            r = Math.round(lerp(34, 56, lush));
-            g = Math.round(lerp(112, 160, lush));
-            b = Math.round(lerp(52, 70, lush));
-          }
-
-          // Add coastline blend (anti-aliased edge)
-          const edge = THREE.MathUtils.clamp((land - 0.56) / 0.08, 0, 1);
-          const coast = smoothstep(edge);
-          const oceanR = d[i + 0];
-          const oceanG = d[i + 1];
-          const oceanB = d[i + 2];
-
-          d[i + 0] = Math.round(lerp(oceanR, r, coast));
-          d[i + 1] = Math.round(lerp(oceanG, g, coast));
-          d[i + 2] = Math.round(lerp(oceanB, b, coast));
-          d[i + 3] = 255;
-        } else {
-          // Add subtle ocean variation
-          const oceanNoise = fbm(wx + 1000, wy + 1000, [
-            { n: n1, amp: 0.7, freq: 1.0 },
-            { n: n2, amp: 0.3, freq: 2.2 },
-          ]);
-          const deep = THREE.MathUtils.clamp(oceanNoise, 0, 1);
-          const r = Math.round(lerp(6, 18, deep));
-          const g = Math.round(lerp(28, 80, deep));
-          const b = Math.round(lerp(90, 170, deep));
-          d[i + 0] = r;
-          d[i + 1] = g;
-          d[i + 2] = b;
-          d[i + 3] = 255;
-        }
-      }
-    }
-
-    ectx.putImageData(img, 0, 0);
-
-    // Add faint latitude/longitude lines (subtle)
-    ectx.save();
-    ectx.globalAlpha = 0.12;
-    ectx.strokeStyle = "#93c5fd";
-    ectx.lineWidth = 1;
-
-    for (let i = 1; i < 7; i++) {
-      const y = (H / 7) * i;
-      ectx.beginPath();
-      ectx.moveTo(0, y);
-      ectx.lineTo(W, y);
-      ectx.stroke();
-    }
-    for (let i = 1; i < 13; i++) {
-      const x = (W / 13) * i;
-      ectx.beginPath();
-      ectx.moveTo(x, 0);
-      ectx.lineTo(x, H);
-      ectx.stroke();
-    }
-    ectx.restore();
-
-    // Ice caps overlay
-    ectx.save();
-    const capGradTop = ectx.createLinearGradient(0, 0, 0, H * 0.2);
-    capGradTop.addColorStop(0, "rgba(255,255,255,0.85)");
-    capGradTop.addColorStop(1, "rgba(255,255,255,0)");
-    ectx.fillStyle = capGradTop;
-    ectx.fillRect(0, 0, W, H * 0.22);
-
-    const capGradBottom = ectx.createLinearGradient(0, H, 0, H * 0.8);
-    capGradBottom.addColorStop(0, "rgba(255,255,255,0.85)");
-    capGradBottom.addColorStop(1, "rgba(255,255,255,0)");
-    ectx.fillStyle = capGradBottom;
-    ectx.fillRect(0, H * 0.78, W, H * 0.22);
-    ectx.restore();
-
-    const earthTex = new THREE.CanvasTexture(earthCanvas);
-    earthTex.wrapS = THREE.RepeatWrapping;
-    earthTex.wrapT = THREE.ClampToEdgeWrapping;
-    earthTex.anisotropy = 4;
-
-    // --- Clouds texture ---
-    const cloudsCanvas = document.createElement("canvas");
-    cloudsCanvas.width = W;
-    cloudsCanvas.height = H;
-    const cctx = cloudsCanvas.getContext("2d");
-    if (!cctx) return { earth: earthTex, clouds: null as THREE.Texture | null };
-
-    const cn1 = makeGridNoise(W, H, 64, 7777);
-    const cn2 = makeGridNoise(W, H, 32, 8888);
-    const cn3 = makeGridNoise(W, H, 16, 9999);
-
-    const cimg = cctx.createImageData(W, H);
-    const cd = cimg.data;
-
-    for (let y = 0; y < H; y++) {
-      const lat = Math.abs((y / (H - 1)) * 2 - 1);
-      const latMask = THREE.MathUtils.clamp(1 - lat * 1.1, 0, 1); // fewer clouds near poles
-      for (let x = 0; x < W; x++) {
-        const n = fbm(x, y, [
-          { n: cn1, amp: 0.55, freq: 1.0 },
-          { n: cn2, amp: 0.3, freq: 2.0 },
-          { n: cn3, amp: 0.15, freq: 4.0 },
-        ]);
-
-        // Threshold to "puffy" clouds
-        const puff = THREE.MathUtils.clamp((n - 0.52) / 0.22, 0, 1);
-        const alpha = Math.round(255 * puff * latMask);
-
-        const i = (y * W + x) * 4;
-        cd[i + 0] = 255;
-        cd[i + 1] = 255;
-        cd[i + 2] = 255;
-        cd[i + 3] = alpha;
-      }
-    }
-
-    cctx.putImageData(cimg, 0, 0);
-
-    const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
-    cloudsTex.wrapS = THREE.RepeatWrapping;
-    cloudsTex.wrapT = THREE.ClampToEdgeWrapping;
-    cloudsTex.anisotropy = 4;
-
-    return { earth: earthTex, clouds: cloudsTex };
-  }, [isMobile]);
+  const cacheKey = isMobile ? "mobile" : "desktop";
+  const [textures, setTextures] = useState<GlobeTextures | null>(() => {
+    return cacheKey === "mobile"
+      ? globeTextureCache.mobile ?? null
+      : globeTextureCache.desktop ?? null;
+  });
 
   useEffect(() => {
+    let cancelled = false;
+    let idleId: number | null = null;
+
+    const current =
+      cacheKey === "mobile" ? globeTextureCache.mobile : globeTextureCache.desktop;
+    if (current) {
+      setTextures(current);
+      return () => {
+        // keep cached textures for fast future navigations
+      };
+    }
+
+    // Fast preview textures (immediate)
+    const previewW = 256;
+    const previewH = 128;
+    const preview = generateEarthTextures(previewW, previewH, 1337);
+
+    if (cacheKey === "mobile") globeTextureCache.mobile = preview;
+    else globeTextureCache.desktop = preview;
+    setTextures(preview);
+
+    // Desktop: upgrade to higher-res textures when the browser is idle
+    if (!isMobile) {
+      idleId = requestIdle(() => {
+        if (cancelled) return;
+        const final = generateEarthTextures(512, 256, 1337);
+        if (cancelled) {
+          final.earth.dispose();
+          final.clouds.dispose();
+          return;
+        }
+        const prev = globeTextureCache.desktop;
+        globeTextureCache.desktop = final;
+        setTextures(final);
+        // dispose the old preview textures (keep only final in cache)
+        prev?.earth.dispose();
+        prev?.clouds.dispose();
+      });
+    }
+
     return () => {
-      textures.earth?.dispose();
-      textures.clouds?.dispose();
+      cancelled = true;
+      if (idleId !== null) cancelIdle(idleId);
     };
-  }, [textures.earth, textures.clouds]);
+  }, [cacheKey, isMobile]);
 
   useFrame((state) => {
     if (globeRef.current) {
@@ -537,25 +593,29 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
     }
 
     // Animate texture offset slightly for parallax feel
-    if (textures.earth) {
+    if (textures?.earth) {
       const textureSpeed = isMobile ? 0.00035 : 0.0007;
       textures.earth.offset.x = state.clock.elapsedTime * textureSpeed;
     }
-    if (textures.clouds) {
+    if (textures?.clouds) {
       const textureSpeed = isMobile ? 0.0005 : 0.001;
       textures.clouds.offset.x = state.clock.elapsedTime * textureSpeed;
     }
   });
 
+  const earthSegW = isMobile ? 40 : 64;
+  const earthSegH = isMobile ? 20 : 32;
+
   return (
     <group>
       {/* Earth sphere */}
-      <Sphere ref={globeRef} args={[GLOBE_RADIUS, isMobile ? 40 : 80, isMobile ? 20 : 40]}>
+      <Sphere ref={globeRef} args={[GLOBE_RADIUS, earthSegW, earthSegH]}>
         <meshStandardMaterial
-          map={textures.earth || undefined}
+          map={textures?.earth || undefined}
+          color={textures?.earth ? undefined : "#1e40af"}
           transparent
           opacity={0.95 * opacity}
-          roughness={0.55}
+          roughness={0.58}
           metalness={0.05}
           emissive="#0b2a6d"
           emissiveIntensity={0.12}
@@ -563,9 +623,12 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
       </Sphere>
 
       {/* Clouds layer */}
-      <Sphere ref={cloudsRef} args={[GLOBE_RADIUS * 1.012, isMobile ? 36 : 72, isMobile ? 18 : 36]}>
+      <Sphere
+        ref={cloudsRef}
+        args={[GLOBE_RADIUS * 1.012, isMobile ? 36 : 56, isMobile ? 18 : 28]}
+      >
         <meshStandardMaterial
-          map={textures.clouds || undefined}
+          map={textures?.clouds || undefined}
           transparent
           opacity={0.55 * opacity}
           roughness={0.9}
@@ -574,47 +637,56 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
         />
       </Sphere>
 
-      {/* Atmosphere glow - enhanced */}
-      <Sphere args={[GLOBE_RADIUS * 1.06, isMobile ? 18 : 36, isMobile ? 9 : 18]}>
-        <meshBasicMaterial color="#60a5fa" transparent opacity={0.18 * opacity} side={THREE.BackSide} />
+      {/* Atmosphere glow */}
+      <Sphere args={[GLOBE_RADIUS * 1.06, isMobile ? 18 : 30, isMobile ? 9 : 15]}>
+        <meshBasicMaterial
+          color="#60a5fa"
+          transparent
+          opacity={0.18 * opacity}
+          side={THREE.BackSide}
+        />
       </Sphere>
 
       {/* Mid glow */}
-      <Sphere args={[GLOBE_RADIUS * 1.13, isMobile ? 18 : 36, isMobile ? 9 : 18]}>
-        <meshBasicMaterial color="#818cf8" transparent opacity={0.11 * opacity} side={THREE.BackSide} />
+      <Sphere args={[GLOBE_RADIUS * 1.13, isMobile ? 18 : 30, isMobile ? 9 : 15]}>
+        <meshBasicMaterial
+          color="#818cf8"
+          transparent
+          opacity={0.11 * opacity}
+          side={THREE.BackSide}
+        />
       </Sphere>
 
       {/* Outer glow */}
-      <Sphere args={[GLOBE_RADIUS * 1.23, isMobile ? 18 : 36, isMobile ? 9 : 18]}>
-        <meshBasicMaterial color="#3b82f6" transparent opacity={0.055 * opacity} side={THREE.BackSide} />
+      <Sphere args={[GLOBE_RADIUS * 1.23, isMobile ? 18 : 30, isMobile ? 9 : 15]}>
+        <meshBasicMaterial
+          color="#3b82f6"
+          transparent
+          opacity={0.055 * opacity}
+          side={THREE.BackSide}
+        />
       </Sphere>
     </group>
   );
 }
 
-// Floating node component
+// Floating node component (no per-frame React state; icons never disappear)
 function FloatingNode({
   node,
   opacity,
   onHover,
   onUnhover,
   onClick,
-  isHovered,
 }: {
   node: NodeData;
   opacity: number;
   onHover: () => void;
   onUnhover: () => void;
   onClick: () => void;
-  isHovered: boolean;
 }) {
   const groupRef = useRef<THREE.Group>(null);
   const [localHover, setLocalHover] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
   const { camera } = useThree();
-
-  // Calculate actual opacity based on visibility and global opacity
-  const actualOpacity = isVisible ? opacity : opacity * 0.1;
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -622,35 +694,20 @@ function FloatingNode({
     const time = state.clock.elapsedTime;
     const angle = time * node.orbitSpeed + node.orbitOffset;
 
-    // Orbit path
     const x = Math.cos(angle) * node.orbitRadius;
     const z = Math.sin(angle) * node.orbitRadius;
-
-    // Slight vertical bobbing (reduced to avoid overlaps)
     const y = node.verticalOffset + Math.sin(time * 0.42 + node.orbitOffset) * 0.14;
 
     groupRef.current.position.set(x, y, z);
-
-    // Billboard effect - always face camera
     groupRef.current.lookAt(camera.position);
-
-    // Update node position for connection lines
     node.position.set(x, y, z);
-
-    // Visibility: hide when passing "behind" globe in camera-facing projection
-    // Camera is generally +Z; globe centered at origin.
-    const behind = z < 0;
-    const inFrontOfGlobeDisk =
-      Math.abs(x) < GLOBE_RADIUS * 1.1 && Math.abs(y) < GLOBE_RADIUS * 1.1;
-    setIsVisible(!(behind && inFrontOfGlobeDisk));
   });
 
   const handlePointerEnter = useCallback(() => {
-    if (!isVisible) return;
     setLocalHover(true);
     onHover();
     document.body.style.cursor = "pointer";
-  }, [onHover, isVisible]);
+  }, [onHover]);
 
   const handlePointerLeave = useCallback(() => {
     setLocalHover(false);
@@ -662,23 +719,20 @@ function FloatingNode({
 
   return (
     <>
-      {/* Connection line - only show when visible */}
-      {isVisible && (
-        <ConnectionLine nodePosition={node.position} color={node.color} opacity={opacity * 0.18} />
-      )}
+      <ConnectionLine nodePosition={node.position} color={node.color} opacity={opacity * 0.18} />
 
       <group
         ref={groupRef}
         position={[node.orbitRadius, node.verticalOffset, 0]}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        onClick={() => isVisible && onClick()}
+        onClick={onClick}
       >
         <Html
           center
           style={{
-            pointerEvents: isVisible ? "auto" : "none",
-            opacity: isVisible ? actualOpacity : actualOpacity * 0.2,
+            pointerEvents: "auto",
+            opacity,
             transition: "opacity 0.25s ease",
           }}
         >
@@ -738,10 +792,10 @@ function FloatingNode({
 // Particle system for holographic effect
 function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const particlesRef = useRef<THREE.Points>(null);
-  const count = 200;
+  const count = isMobile ? 0 : 160;
 
   const positions = useMemo(() => {
-    const pos = new Float32Array(count * 3);
+    const pos = new Float32Array(Math.max(count, 1) * 3);
     for (let i = 0; i < count; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
@@ -751,7 +805,7 @@ function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile
       pos[i * 3 + 2] = r * Math.cos(phi);
     }
     return pos;
-  }, []);
+  }, [count]);
 
   useFrame((state) => {
     if (isMobile) return;
@@ -760,8 +814,10 @@ function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile
     particlesRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.08) * 0.08;
   });
 
+  if (isMobile) return null;
+
   return (
-    <points ref={particlesRef}>
+    <points ref={particlesRef} frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
       </bufferGeometry>
@@ -799,10 +855,9 @@ function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean 
     }
   });
 
-  // Slightly larger rings to match increased node orbit radii
   return (
     <group>
-      <mesh ref={ring1Ref}>
+      <mesh ref={ring1Ref} frustumCulled={false}>
         <ringGeometry args={[GLOBE_RADIUS * 1.35, GLOBE_RADIUS * 1.365, 72]} />
         <meshBasicMaterial
           color="#3b82f6"
@@ -811,7 +866,7 @@ function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean 
           side={THREE.DoubleSide}
         />
       </mesh>
-      <mesh ref={ring2Ref}>
+      <mesh ref={ring2Ref} frustumCulled={false}>
         <ringGeometry args={[GLOBE_RADIUS * 1.55, GLOBE_RADIUS * 1.565, 72]} />
         <meshBasicMaterial
           color="#8b5cf6"
@@ -820,7 +875,7 @@ function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean 
           side={THREE.DoubleSide}
         />
       </mesh>
-      <mesh ref={ring3Ref}>
+      <mesh ref={ring3Ref} frustumCulled={false}>
         <ringGeometry args={[GLOBE_RADIUS * 1.85, GLOBE_RADIUS * 1.865, 72]} />
         <meshBasicMaterial
           color="#06b6d4"
@@ -836,21 +891,21 @@ function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean 
 // Main Scene
 function Scene({
   opacity,
-  hoveredNode,
-  setHoveredNode,
   setSelectedNode,
   isMobile,
 }: {
   opacity: number;
-  hoveredNode: string | null;
-  setHoveredNode: (id: string | null) => void;
   setSelectedNode: (node: NodeData | null) => void;
   isMobile: boolean;
 }) {
   const nodes = useMemo<NodeData[]>(() => {
     return medicalNodes.map((node) => ({
       ...node,
-      orbitRadius: THREE.MathUtils.clamp(node.orbitRadius, ORBIT_BASE - ORBIT_VARIANCE, ORBIT_BASE + ORBIT_VARIANCE + 0.4),
+      orbitRadius: THREE.MathUtils.clamp(
+        node.orbitRadius,
+        ORBIT_BASE - ORBIT_VARIANCE,
+        ORBIT_BASE + ORBIT_VARIANCE + 0.4,
+      ),
       position: new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0),
     }));
   }, []);
@@ -879,10 +934,9 @@ function Scene({
           key={node.id}
           node={node}
           opacity={opacity}
-          onHover={() => setHoveredNode(node.id)}
-          onUnhover={() => setHoveredNode(null)}
+          onHover={() => {}}
+          onUnhover={() => {}}
           onClick={() => setSelectedNode(node)}
-          isHovered={hoveredNode === node.id}
         />
       ))}
 
@@ -898,7 +952,7 @@ function Scene({
         enableDamping={!isMobile}
         dampingFactor={0.06}
         minPolarAngle={Math.PI / 4.2}
-        maxPolarAngle={Math.PI * 3 / 4.2}
+        maxPolarAngle={(Math.PI * 3) / 4.2}
       />
     </>
   );
@@ -972,8 +1026,9 @@ export default function HeroOrb3D() {
   const opacity = useScrollOpacity();
   const isTabVisible = useTabVisibility();
   const isMobile = useIsMobile();
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
+
+  const shouldAnimate = isTabVisible && opacity > 0.02;
 
   return (
     <div
@@ -992,16 +1047,10 @@ export default function HeroOrb3D() {
           stencil: false,
           depth: true,
         }}
-        dpr={isMobile ? [1, 1] : [1, 1.2]}
+        dpr={isMobile ? 1 : [1, 1.1]}
       >
-        <FrameInvalidator isTabVisible={isTabVisible} />
-        <Scene
-          opacity={opacity}
-          hoveredNode={hoveredNode}
-          setHoveredNode={setHoveredNode}
-          setSelectedNode={setSelectedNode}
-          isMobile={isMobile}
-        />
+        <FrameInvalidator shouldAnimate={shouldAnimate} />
+        <Scene opacity={opacity} setSelectedNode={setSelectedNode} isMobile={isMobile} />
       </Canvas>
 
       <NodeModal node={selectedNode} onClose={() => setSelectedNode(null)} />
