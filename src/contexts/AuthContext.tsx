@@ -157,16 +157,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           { onConflict: "user_id" },
         );
 
-      const tryInsert = async (role: AppRole) => {
-        const { error } = await supabase.from("user_roles").upsert({ user_id: uid, role } as any, {
-          onConflict: "user_id,role",
-        });
-        return error;
-      };
-
-      const err1 = await tryInsert(metaRole);
-      if (err1) {
-        await tryInsert("patient");
+      // Try to insert the intended role — don't fall back to patient
+      // The DB trigger (handle_new_user) already handles role assignment on signup
+      // This is only a safety net for edge cases where the trigger didn't fire
+      const { error: roleErr } = await supabase.from("user_roles").upsert(
+        { user_id: uid, role: metaRole } as any,
+        { onConflict: "user_id,role" },
+      );
+      if (roleErr) {
+        console.warn("ensureSelfBootstrap: failed to upsert role", metaRole, roleErr);
       }
     } catch (e) {
       console.warn("ensureSelfBootstrap failed (ignored):", e);
