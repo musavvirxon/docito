@@ -123,7 +123,30 @@ export const useDoctorIntegration = () => {
   const refreshSeq = useRef(0);
   const didInitialLoad = useRef(false);
 
-  const doctorIdFromProfile = useMemo(() => (profile as any)?.doctor_id as string | undefined, [profile]);
+  const [resolvedDoctorId, setResolvedDoctorId] = useState<string | undefined>((profile as any)?.doctor_id);
+
+  // Resolve doctor_id: prefer profile.doctor_id, fallback to querying doctors table by user_id
+  useEffect(() => {
+    if ((profile as any)?.doctor_id) {
+      setResolvedDoctorId((profile as any).doctor_id);
+      return;
+    }
+    if (!user?.id) return;
+    if (activeRole !== "doctor" && profile?.role !== "doctor") return;
+
+    let cancelled = false;
+    supabase
+      .from("doctors")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.id) setResolvedDoctorId(data.id);
+      });
+    return () => { cancelled = true; };
+  }, [user?.id, profile, activeRole]);
+
+  const doctorIdFromProfile = resolvedDoctorId;
 
   const calculateProfileCompletion = (p: DoctorProfile): number => {
     let completion = 0;
@@ -144,8 +167,8 @@ export const useDoctorIntegration = () => {
     const doctorId = doctorIdFromProfile;
 
     if (!doctorId) {
-      toast.error("Doctor profile still loading. Please refresh the page.");
-      console.error("Missing doctor_id on profile");
+      // Don't toast immediately — profile may still be loading in background
+      console.warn("doctor_id not yet resolved, skipping fetch");
       return null;
     }
 
