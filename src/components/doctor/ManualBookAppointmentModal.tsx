@@ -323,10 +323,11 @@ const ManualBookAppointmentModal = ({
           <div className="space-y-2">
             <Label>Procedure (optional)</Label>
             <Select
-              value={procedureId}
+              value={procedureId || "none"}
               onValueChange={(v) => {
-                setProcedureId(v);
-                const proc = procedures.find((p) => p.id === v);
+                const realValue = v === "none" ? "" : v;
+                setProcedureId(realValue);
+                const proc = procedures.find((p) => p.id === realValue);
                 if (proc?.duration_minutes) setDurationMinutes(Number(proc.duration_minutes));
               }}
             >
@@ -334,7 +335,7 @@ const ManualBookAppointmentModal = ({
                 <SelectValue placeholder="Select a procedure" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No procedure</SelectItem>
+                <SelectItem value="none">No procedure</SelectItem>
                 {procedures.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name} {p.duration_minutes ? `(${p.duration_minutes} min)` : ""}
