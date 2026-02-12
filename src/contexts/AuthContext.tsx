@@ -331,12 +331,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string): Promise<AuthActionResult> => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      setSession(data.session);
-      setUser(data.user);
-
+      // Don't set user/session here — onAuthStateChange will fire runBootstrap
+      // which resolves the correct activeRole before the UI redirects.
       toast.success("Successfully signed in!");
       return {};
     } catch (error: any) {
@@ -372,9 +371,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { needsEmailConfirmation: true };
       }
 
-      setSession(data.session);
-      setUser(data.user);
-
+      // Don't set user/session here — onAuthStateChange will fire runBootstrap
+      // which resolves the correct activeRole before the UI redirects.
       toast.success("Account created successfully!");
       return {};
     } catch (error: any) {
