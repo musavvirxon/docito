@@ -65,21 +65,7 @@
       fetchpriority="high"
     />
 
-    <!-- Preload critical i18n locale files to flatten request chain -->
-    <link
-      rel="preload"
-      href="/locales/en/common.json"
-      as="fetch"
-      type="application/json"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="preload"
-      href="/locales/en/home.json"
-      as="fetch"
-      type="application/json"
-      crossorigin="anonymous"
-    />
+    <!-- i18n locale files loaded on demand by i18next-http-backend -->
 
     <!-- Load fonts async -->
     <link

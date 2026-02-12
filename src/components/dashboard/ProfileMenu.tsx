@@ -1,6 +1,6 @@
 // src/components/dashboard/ProfileMenu.tsx
 // File: src/components/dashboard/ProfileMenu.tsx
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ interface ProfileMenuProps {
   compact?: boolean;
 }
 
-const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
+const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compact = false }, ref) => {
   const navigate = useNavigate();
   const { profile, user, allRoles, activeRole, switchRole, signOut } = useAuth();
 
@@ -74,6 +74,7 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
 
   return (
     <DropdownMenu>
+      {/* ref anchor for parent forwardRef */}
       <DropdownMenuTrigger asChild>
         <Button
           variant={compact ? "ghost" : "outline"}
@@ -147,6 +148,7 @@ const ProfileMenu = ({ compact = false }: ProfileMenuProps) => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});
+ProfileMenu.displayName = "ProfileMenu";
 
 export default ProfileMenu;
