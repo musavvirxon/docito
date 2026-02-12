@@ -240,9 +240,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const runBootstrap = async (nextSession: Session | null) => {
     const version = ++bootstrapVersionRef.current;
     setLoading(true);
-    // Don't reset bootstrapped here — it causes loading loops when version
-    // conflicts prevent the finally block from setting it back to true.
-    // Instead, Auth.tsx checks `loading` to prevent premature redirects.
+    console.log("[Auth] runBootstrap start, version=", version, "hasSession=", !!nextSession?.user?.id);
 
     try {
       if (!nextSession?.user?.id) {
@@ -252,7 +250,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setRoleStatus({});
         _setActiveRole("patient");
         setAllRoles([]);
-        // Don't reset bootstrapped here — just mark as done with no user
+        console.log("[Auth] runBootstrap: no session, version=", version);
         return;
       }
 
@@ -260,6 +258,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(nextSession.user);
 
       const uid = nextSession.user.id;
+      console.log("[Auth] runBootstrap: loading profile for uid=", uid, "version=", version);
       const result = await loadProfileAndRoles(uid, nextSession.access_token);
 
       if (bootstrapVersionRef.current !== version) {
@@ -273,17 +272,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(null);
       }
 
-      // Store all roles and determine primary using first-assigned logic
       setAllRoles(result.roles);
 
-      // If a signup/role-add just set a pending override, use that instead of computed primary
       const override = pendingRoleOverrideRef.current;
       if (override && result.roles.includes(override)) {
         _setActiveRole(override);
         pendingRoleOverrideRef.current = null;
+        console.log("[Auth] runBootstrap: using override role=", override);
       } else {
         const primary = getPrimaryRole(result.roles, result.rolesWithTimestamp);
         _setActiveRole(primary);
+        console.log("[Auth] runBootstrap: computed primary role=", primary, "from roles=", result.roles);
       }
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
@@ -291,6 +290,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (bootstrapVersionRef.current === version) {
         setLoading(false);
         setBootstrapped(true);
+        console.log("[Auth] runBootstrap DONE, version=", version, "bootstrapped=true, loading=false");
+      } else {
+        console.warn("[Auth] runBootstrap finally SKIPPED version=", version, "current=", bootstrapVersionRef.current);
       }
     }
   };
