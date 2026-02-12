@@ -1,7 +1,7 @@
-import { DoctorProfileVerificationSection } from "./DoctorProfileVerificationSection";
+import DoctorVerification from "@/pages/doctor/DoctorVerification";
 
 export function DoctorWorkspaceSettings() {
-  return <DoctorProfileVerificationSection />;
+  return <DoctorVerification embedded />;
 }
 
 export default DoctorWorkspaceSettings;

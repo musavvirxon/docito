@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -65,9 +65,11 @@ const getNamePlaceholder = (role: AppRole): string => {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, profile, loading, updateProfile, signOut, activeRole } = useAuth();
 
-  const [tab, setTab] = useState<"settings" | "workspace" | "billing" | "analytics">("settings");
+  const initialTab = (searchParams.get("tab") as "settings" | "workspace" | "billing" | "analytics") || "settings";
+  const [tab, setTab] = useState<"settings" | "workspace" | "billing" | "analytics">(initialTab);
 
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
