@@ -88,6 +88,8 @@ function mapProfileRoleFromAppRole(role: AppRole): Profile["role"] {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bootstrapVersionRef = useRef(0);
+  // When signup/role-add sets a specific role, store it here so runBootstrap doesn't overwrite it
+  const pendingRoleOverrideRef = useRef<AppRole | null>(null);
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -270,8 +272,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Store all roles and determine primary using first-assigned logic
       setAllRoles(result.roles);
-      const primary = getPrimaryRole(result.roles, result.rolesWithTimestamp);
-      _setActiveRole(primary);
+
+      // If a signup/role-add just set a pending override, use that instead of computed primary
+      const override = pendingRoleOverrideRef.current;
+      if (override && result.roles.includes(override)) {
+        _setActiveRole(override);
+        pendingRoleOverrideRef.current = null;
+      } else {
+        const primary = getPrimaryRole(result.roles, result.rolesWithTimestamp);
+        _setActiveRole(primary);
+      }
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
     } finally {
@@ -430,9 +440,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         toast.success(`Role "${role.split("_").join(" ")}" added to your account!`);
-        // Refresh bootstrap to pick up the new role, then force active role to the newly added one
+        // Set pending override BEFORE bootstrap so it picks up the newly added role
+        pendingRoleOverrideRef.current = role;
         await runBootstrap(signInData.session);
-        _setActiveRole(role);
         return {};
       }
 
@@ -444,9 +454,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       toast.success("Account created successfully!");
-      // After bootstrap completes via onAuthStateChange, force active role to the signup role
-      // so the user lands on the correct dashboard
-      setTimeout(() => _setActiveRole(role), 100);
+      // Set pending override so when onAuthStateChange triggers runBootstrap, it uses the signup role
+      pendingRoleOverrideRef.current = role;
       return {};
     } catch (error: any) {
       const msg = error?.message || "Unable to create account";
