@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, useParams, Outlet } from "react-router-dom";
+import { Routes, Route, useParams, Outlet, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -200,7 +200,7 @@ export default function App() {
                 <Route path="register-practice" element={<RegisterPractice />} />
                 <Route path="practice-settings" element={<PracticeSettings />} />
                 <Route path="practice-verification" element={<PracticeVerification />} />
-                <Route path="doctor/verification" element={<DoctorVerification />} />
+                <Route path="doctor/verification" element={<Navigate to="/profile?tab=workspace" replace />} />
                 <Route path="lab/register" element={<LabRegistration />} />
                 <Route path="lab/verification" element={<LabVerification />} />
                 <Route path="pharmacy/register" element={<PharmacyRegistration />} />
@@ -291,7 +291,7 @@ export default function App() {
               <Route path="register-practice" element={<RegisterPractice />} />
               <Route path="practice-settings" element={<PracticeSettings />} />
               <Route path="practice-verification" element={<PracticeVerification />} />
-              <Route path="doctor/verification" element={<DoctorVerification />} />
+              <Route path="doctor/verification" element={<Navigate to="/profile?tab=workspace" replace />} />
               <Route path="lab/register" element={<LabRegistration />} />
               <Route path="lab/verification" element={<LabVerification />} />
               <Route path="pharmacy/register" element={<PharmacyRegistration />} />

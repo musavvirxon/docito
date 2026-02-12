@@ -212,7 +212,11 @@ function FilePick({
   );
 }
 
-export default function DoctorVerification() {
+type DoctorVerificationProps = {
+  embedded?: boolean;
+};
+
+export default function DoctorVerification({ embedded = false }: DoctorVerificationProps) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -277,13 +281,13 @@ export default function DoctorVerification() {
     return getRegionsForCountry(watchedCountry);
   }, [watchedCountry]);
 
-  // Auth gate
+  // Auth gate (only for standalone page)
   useEffect(() => {
-    if (!loading && !user) {
+    if (!embedded && !loading && !user) {
       toast.error("Please log in to complete your doctor profile");
       navigate("/auth");
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, embedded]);
 
   // When country code changes -> update requirements
   useEffect(() => {
@@ -694,7 +698,7 @@ export default function DoctorVerification() {
         toast.info(
           "A super admin will review your application. You'll be notified once reviewed."
         );
-        navigate("/doctor-dashboard");
+        if (!embedded) navigate("/doctor-dashboard");
       } else {
         toast.error("Submission failed");
       }
@@ -706,7 +710,7 @@ export default function DoctorVerification() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className={embedded ? "flex items-center justify-center py-12" : "min-h-screen bg-background flex items-center justify-center"}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading...</p>
@@ -716,36 +720,34 @@ export default function DoctorVerification() {
   }
   if (!user) return null;
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
+  const formContent = (
+    <>
+      <div className={embedded ? "space-y-2" : "text-center space-y-2"}>
+        <h1 className={embedded ? "text-2xl font-bold" : "text-3xl lg:text-4xl font-bold"}>Doctor Verification</h1>
+        <p className="text-muted-foreground">
+          Fill out your profile and upload documents. Your account stays private until verified.
+        </p>
+      </div>
 
-      <div className="pt-24 pb-20">
-        <div className="container mx-auto px-4 max-w-4xl space-y-8">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl lg:text-4xl font-bold">Doctor Verification</h1>
-            <p className="text-muted-foreground">
-              Fill out your profile and upload documents. Your account stays private until verified.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSaveDraft}
-              disabled={uploadingAvatar || isSubmitting}
-            >
-              Save Draft
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => navigate("/doctor-dashboard")}
-            >
-              Back to Dashboard
-            </Button>
-          </div>
+      <div className={embedded ? "flex flex-wrap gap-3" : "flex flex-wrap gap-3 justify-center"}>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSaveDraft}
+          disabled={uploadingAvatar || isSubmitting}
+        >
+          Save Draft
+        </Button>
+        {!embedded && (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => navigate("/doctor-dashboard")}
+          >
+            Back to Dashboard
+          </Button>
+        )}
+      </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -1539,9 +1541,21 @@ export default function DoctorVerification() {
               </Card>
             </form>
           </Form>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-8">{formContent}</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="pt-24 pb-20">
+        <div className="container mx-auto px-4 max-w-4xl space-y-8">
+          {formContent}
         </div>
       </div>
-
       <Footer />
     </div>
   );
