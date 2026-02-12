@@ -95,10 +95,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   const [activeRole, _setActiveRole] = useState<AppRole>("patient");
+  const [allRoles, setAllRoles] = useState<AppRole[]>([]);
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
-
-  // Single-element array for API compatibility
-  const allRoles: AppRole[] = [activeRole];
 
   // No-ops for API compatibility
   const switchRole = (_role: AppRole) => {};
@@ -110,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
     setRoleStatus({});
     _setActiveRole("patient");
+    setAllRoles([]);
   };
 
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
@@ -176,17 +175,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const directRead = async () => {
       const [profileRes, rolesRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", uid).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.from("user_roles").select("role, assigned_at").eq("user_id", uid),
       ]);
 
       const directProfile = (profileRes.data as any) as Profile | null;
-      const directRoles = (Array.isArray(rolesRes.data) ? rolesRes.data : [])
+      const rawRoles = Array.isArray(rolesRes.data) ? rolesRes.data : [];
+      const directRoles = rawRoles
         .map((r: any) => r?.role)
         .filter(Boolean) as AppRole[];
+      const rolesWithTimestamp = rawRoles
+        .filter((r: any) => r?.role && r?.assigned_at)
+        .map((r: any) => ({ role: r.role as AppRole, assigned_at: r.assigned_at as string }));
 
       return {
         directProfile,
         directRoles,
+        rolesWithTimestamp,
         profileError: profileRes.error,
         rolesError: rolesRes.error,
       };
@@ -199,20 +203,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const second = await directRead();
 
       if (second.directProfile) {
-        return { profile: second.directProfile, roles: second.directRoles };
+        return { profile: second.directProfile, roles: second.directRoles, rolesWithTimestamp: second.rolesWithTimestamp };
       }
 
       try {
         const boot = await bootstrapViaEdge(accessToken);
-        if (boot) return boot;
+        if (boot) return { ...boot, rolesWithTimestamp: second.rolesWithTimestamp };
       } catch (e) {
         console.warn("Edge bootstrap failed (ignored):", e);
       }
 
-      return { profile: null as Profile | null, roles: second.directRoles || [] };
+      return { profile: null as Profile | null, roles: second.directRoles || [], rolesWithTimestamp: second.rolesWithTimestamp };
     }
 
-    return { profile: first.directProfile, roles: first.directRoles };
+    return { profile: first.directProfile, roles: first.directRoles, rolesWithTimestamp: first.rolesWithTimestamp };
   };
 
   const runBootstrap = async (nextSession: Session | null) => {
@@ -242,8 +246,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProfile(null);
       }
 
-      // Single role: use getPrimaryRole from user_roles table
-      const primary = getPrimaryRole(result.roles);
+      // Store all roles and determine primary using first-assigned logic
+      setAllRoles(result.roles);
+      const primary = getPrimaryRole(result.roles, result.rolesWithTimestamp);
       _setActiveRole(primary);
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
