@@ -388,6 +388,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const role = (userData.role || "patient") as AppRole;
 
+      // CRITICAL: Set the override BEFORE signUp so that when onAuthStateChange
+      // fires runBootstrap during the signUp call, it picks up the correct role.
+      pendingRoleOverrideRef.current = role;
+
       const marketing =
         Boolean(userData.marketing_communications ?? userData.marketingCommunications ?? userData.marketingOptIn ?? false) ||
         false;
@@ -459,8 +463,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       toast.success("Account created successfully!");
-      // Set pending override so when onAuthStateChange triggers runBootstrap, it uses the signup role
-      pendingRoleOverrideRef.current = role;
+      // Override already set before signUp call — no need to set again
       return {};
     } catch (error: any) {
       const msg = error?.message || "Unable to create account";
