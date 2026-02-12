@@ -94,9 +94,25 @@ export function getUserRolesFromProfile(profile: any): AppRole[] {
   return Array.from(new Set(out));
 }
 
-export function getPrimaryRole(roles: AppRole[]): AppRole {
-  // Priority order if multiple roles:
-  // Facility admins MUST win over clinic_admin/admin.
+/**
+ * Get the primary role. If rolesWithTimestamp is provided (from user_roles.assigned_at),
+ * use the FIRST assigned non-patient role as primary. Otherwise fall back to priority order.
+ */
+export function getPrimaryRole(
+  roles: AppRole[],
+  rolesWithTimestamp?: { role: AppRole; assigned_at: string }[],
+): AppRole {
+  if (rolesWithTimestamp && rolesWithTimestamp.length > 0) {
+    // Sort by assigned_at ascending — earliest first
+    const sorted = [...rolesWithTimestamp].sort(
+      (a, b) => new Date(a.assigned_at).getTime() - new Date(b.assigned_at).getTime(),
+    );
+    // Pick earliest non-patient role; if all are patient, pick first
+    const firstNonPatient = sorted.find((r) => r.role !== "patient");
+    return firstNonPatient?.role ?? sorted[0].role;
+  }
+
+  // Fallback: priority order
   const order: AppRole[] = [
     "super_admin",
     "lab_admin",

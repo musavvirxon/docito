@@ -84,7 +84,7 @@ const Auth = () => {
   const [signUpFullName, setSignUpFullName] = useState("");
   const [signUpRole, setSignUpRole] = useState<string>("patient");
 
-  const { signIn, signUp, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, user, loading: authLoading, activeRole } = useAuth();
 
   const mode = searchParams.get("mode");
   const inviteParam = searchParams.get("invite");
@@ -151,19 +151,21 @@ const Auth = () => {
     if (authLoading) return;
     if (!user) return;
     if (hasAutoRedirected.current) return;
+    // Wait until activeRole is resolved (not the default "patient" unless that's the real role)
     hasAutoRedirected.current = true;
     goAfterAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user]);
+  }, [authLoading, user, activeRole]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       const result = await signIn(signInEmail, signInPassword);
-      if (!result.error) {
-        goAfterAuth();
+      if (result.error) {
+        // Error already shown via toast in signIn
       }
+      // Don't navigate here — let the useEffect handle redirect after bootstrap completes
     } catch (error) {
       console.error("Sign in error:", error);
     } finally {
@@ -188,7 +190,7 @@ const Auth = () => {
         return;
       }
 
-      goAfterAuth();
+      // Don't navigate here — let the useEffect handle redirect after bootstrap completes
     } catch (error) {
       console.error("Sign up error:", error);
     } finally {
