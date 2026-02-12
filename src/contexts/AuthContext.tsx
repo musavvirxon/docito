@@ -6,6 +6,31 @@ import { useInactivityTimer } from "@/hooks/useInactivityTimer";
 import { InactivityWarningModal } from "@/components/InactivityWarningModal";
 import { getPrimaryRole, normalizeRole, type AppRole } from "@/lib/rbac";
 
+// --- localStorage cache helpers for instant role resolution ---
+const CACHE_KEY = "docito_auth_cache";
+interface AuthCache {
+  uid: string;
+  activeRole: AppRole;
+  allRoles: AppRole[];
+}
+function readCache(): AuthCache | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.uid && parsed?.activeRole) return parsed as AuthCache;
+  } catch { /* ignore */ }
+  return null;
+}
+function writeCache(uid: string, activeRole: AppRole, allRoles: AppRole[]) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ uid, activeRole, allRoles }));
+  } catch { /* ignore */ }
+}
+function clearCache() {
+  try { localStorage.removeItem(CACHE_KEY); } catch { /* ignore */ }
+}
+
 interface Profile {
   id: string;
   user_id: string;
@@ -86,10 +111,18 @@ function mapProfileRoleFromAppRole(role: AppRole): Profile["role"] {
   return "patient";
 }
 
+/** Extract role from user_metadata for instant (pre-DB) role resolution */
+function getRoleFromMetadata(user: User | null): AppRole {
+  const meta = (user as any)?.user_metadata;
+  return (normalizeRole(meta?.role) || "patient") as AppRole;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bootstrapVersionRef = useRef(0);
-  // When signup/role-add sets a specific role, store it here so runBootstrap doesn't overwrite it
   const pendingRoleOverrideRef = useRef<AppRole | null>(null);
+
+  // Initialize from cache for instant rendering
+  const cached = useRef(readCache()).current;
 
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -97,15 +130,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
   const [bootstrapped, setBootstrapped] = useState(false);
 
-  const [activeRole, _setActiveRole] = useState<AppRole>("patient");
-  const [allRoles, setAllRoles] = useState<AppRole[]>([]);
+  const [activeRole, _setActiveRole] = useState<AppRole>(cached?.activeRole || "patient");
+  const [allRoles, setAllRoles] = useState<AppRole[]>(cached?.allRoles || []);
   const [roleStatus, setRoleStatus] = useState<Partial<Record<AppRole, RoleVerificationStatus>>>({});
 
   const switchRole = (role: AppRole) => {
     _setActiveRole(role);
+    // Persist to cache so page refreshes are instant
+    if (user?.id) writeCache(user.id, role, allRoles);
   };
   const setActiveRoleSilently = (role: AppRole) => {
     _setActiveRole(role);
+    if (user?.id) writeCache(user.id, role, allRoles);
   };
 
   const clearAuthState = () => {
@@ -116,6 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     _setActiveRole("patient");
     setAllRoles([]);
     setBootstrapped(false);
+    clearCache();
   };
 
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
@@ -138,10 +175,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { profile: nextProfile, roles: nextRoles };
   };
 
-  const ensureSelfBootstrap = async (uid: string) => {
+  const ensureSelfBootstrap = async (uid: string, sessionUser?: User | null) => {
     try {
-      const { data: userRes } = await supabase.auth.getUser();
-      const u = userRes?.user;
+      // Use the session user we already have instead of making another getUser() call
+      const u = sessionUser;
       const email = (u?.email || user?.email || "").trim();
 
       const fullName =
@@ -151,45 +188,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const metaRole = (normalizeRole((u as any)?.user_metadata?.role) || "patient") as AppRole;
       const profileRole = mapProfileRoleFromAppRole(metaRole);
 
-      await supabase
-        .from("profiles")
-        .upsert(
-          {
-            user_id: uid,
-            email: email || null,
-            full_name: fullName,
-            role: profileRole,
-          } as any,
-          { onConflict: "user_id" },
-        );
-
-      // Try to insert the intended role — don't fall back to patient
-      // The DB trigger (handle_new_user) already handles role assignment on signup
-      // This is only a safety net for edge cases where the trigger didn't fire
-      const { error: roleErr } = await supabase.from("user_roles").upsert(
-        { user_id: uid, role: metaRole } as any,
-        { onConflict: "user_id,role" },
-      );
-      if (roleErr) {
-        console.warn("ensureSelfBootstrap: failed to upsert role", metaRole, roleErr);
-      }
-
-      // Also ensure patient role exists
-      if (metaRole !== "patient") {
-        const { error: patientErr } = await supabase.from("user_roles").upsert(
-          { user_id: uid, role: "patient" } as any,
+      // Run upserts in parallel instead of sequentially
+      const profileUpsert = async () => {
+        await supabase
+          .from("profiles")
+          .upsert(
+            { user_id: uid, email: email || null, full_name: fullName, role: profileRole } as any,
+            { onConflict: "user_id" },
+          );
+      };
+      const roleUpsert = async () => {
+        await supabase.from("user_roles").upsert(
+          { user_id: uid, role: metaRole } as any,
           { onConflict: "user_id,role" },
         );
-        if (patientErr) {
-          console.warn("ensureSelfBootstrap: failed to upsert patient role", patientErr);
+      };
+      const patientUpsert = async () => {
+        if (metaRole !== "patient") {
+          await supabase.from("user_roles").upsert(
+            { user_id: uid, role: "patient" } as any,
+            { onConflict: "user_id,role" },
+          );
         }
-      }
+      };
+
+      await Promise.allSettled([profileUpsert(), roleUpsert(), patientUpsert()]);
     } catch (e) {
       console.warn("ensureSelfBootstrap failed (ignored):", e);
     }
   };
 
-  const loadProfileAndRoles = async (uid: string, accessToken?: string) => {
+  const loadProfileAndRoles = async (uid: string, accessToken?: string, sessionUser?: User | null) => {
     const directRead = async () => {
       const [profileRes, rolesRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", uid).maybeSingle(),
@@ -214,33 +243,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     };
 
-    let first = await directRead();
+    const first = await directRead();
 
-    if (!first.directProfile || first.directRoles.length === 0 || first.profileError || first.rolesError) {
-      await ensureSelfBootstrap(uid);
-      const second = await directRead();
-
-      if (second.directProfile) {
-        return { profile: second.directProfile, roles: second.directRoles, rolesWithTimestamp: second.rolesWithTimestamp };
-      }
-
-      try {
-        const boot = await bootstrapViaEdge(accessToken);
-        if (boot) return { ...boot, rolesWithTimestamp: second.rolesWithTimestamp };
-      } catch (e) {
-        console.warn("Edge bootstrap failed (ignored):", e);
-      }
-
-      return { profile: null as Profile | null, roles: second.directRoles || [], rolesWithTimestamp: second.rolesWithTimestamp };
+    // Fast path: profile and roles exist — return immediately
+    if (first.directProfile && first.directRoles.length > 0 && !first.profileError && !first.rolesError) {
+      return { profile: first.directProfile, roles: first.directRoles, rolesWithTimestamp: first.rolesWithTimestamp };
     }
 
-    return { profile: first.directProfile, roles: first.directRoles, rolesWithTimestamp: first.rolesWithTimestamp };
+    // Slow path: new user or data missing — bootstrap then retry
+    await ensureSelfBootstrap(uid, sessionUser);
+    const second = await directRead();
+
+    if (second.directProfile) {
+      return { profile: second.directProfile, roles: second.directRoles, rolesWithTimestamp: second.rolesWithTimestamp };
+    }
+
+    // Last resort: edge function
+    try {
+      const boot = await bootstrapViaEdge(accessToken);
+      if (boot) return { ...boot, rolesWithTimestamp: second.rolesWithTimestamp };
+    } catch (e) {
+      console.warn("Edge bootstrap failed (ignored):", e);
+    }
+
+    return { profile: null as Profile | null, roles: second.directRoles || [], rolesWithTimestamp: second.rolesWithTimestamp };
   };
 
   const runBootstrap = async (nextSession: Session | null) => {
     const version = ++bootstrapVersionRef.current;
     setLoading(true);
-    console.log("[Auth] runBootstrap start, version=", version, "hasSession=", !!nextSession?.user?.id);
 
     try {
       if (!nextSession?.user?.id) {
@@ -250,7 +281,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setRoleStatus({});
         _setActiveRole("patient");
         setAllRoles([]);
-        console.log("[Auth] runBootstrap: no session, version=", version);
+        clearCache();
         return;
       }
 
@@ -258,13 +289,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(nextSession.user);
 
       const uid = nextSession.user.id;
-      console.log("[Auth] runBootstrap: loading profile for uid=", uid, "version=", version);
-      const result = await loadProfileAndRoles(uid, nextSession.access_token);
 
-      if (bootstrapVersionRef.current !== version) {
-        console.log("[Auth] Stale bootstrap discarded (version", version, "vs current", bootstrapVersionRef.current, ")");
-        return;
+      // INSTANT: Set role from user_metadata or cache immediately so UI can redirect fast
+      const metaRole = getRoleFromMetadata(nextSession.user);
+      const cachedData = readCache();
+      if (cachedData?.uid === uid && cachedData.allRoles.length > 0) {
+        // Use cached role — most reliable for returning users
+        _setActiveRole(cachedData.activeRole);
+        setAllRoles(cachedData.allRoles);
+      } else if (metaRole !== "patient") {
+        // Use metadata role as instant hint
+        _setActiveRole(metaRole);
       }
+
+      const result = await loadProfileAndRoles(uid, nextSession.access_token, nextSession.user);
+
+      if (bootstrapVersionRef.current !== version) return; // stale
 
       if (result.profile) {
         setProfile(result.profile);
@@ -275,24 +315,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAllRoles(result.roles);
 
       const override = pendingRoleOverrideRef.current;
+      let resolvedRole: AppRole;
       if (override && result.roles.includes(override)) {
-        _setActiveRole(override);
+        resolvedRole = override;
         pendingRoleOverrideRef.current = null;
-        console.log("[Auth] runBootstrap: using override role=", override);
       } else {
-        const primary = getPrimaryRole(result.roles, result.rolesWithTimestamp);
-        _setActiveRole(primary);
-        console.log("[Auth] runBootstrap: computed primary role=", primary, "from roles=", result.roles);
+        resolvedRole = getPrimaryRole(result.roles, result.rolesWithTimestamp);
       }
+
+      _setActiveRole(resolvedRole);
+      writeCache(uid, resolvedRole, result.roles);
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
     } finally {
       if (bootstrapVersionRef.current === version) {
         setLoading(false);
         setBootstrapped(true);
-        console.log("[Auth] runBootstrap DONE, version=", version, "bootstrapped=true, loading=false");
-      } else {
-        console.warn("[Auth] runBootstrap finally SKIPPED version=", version, "current=", bootstrapVersionRef.current);
       }
     }
   };
@@ -338,16 +376,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
+    // Reduced safety timeout from 10s to 5s
     safetyTimer = setTimeout(() => {
       setLoading((current) => {
         if (current) {
-          console.warn("[Auth] Safety timeout: forcing loading to false after 10s");
+          console.warn("[Auth] Safety timeout: forcing loading to false after 5s");
           setBootstrapped(true);
           return false;
         }
         return current;
       });
-    }, 10_000);
+    }, 5_000);
 
     return () => {
       didUnmount = true;
@@ -374,8 +413,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      // Don't set user/session here — onAuthStateChange will fire runBootstrap
-      // which resolves the correct activeRole before the UI redirects.
       toast.success("Successfully signed in!");
       return {};
     } catch (error: any) {
@@ -410,7 +447,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // If user already exists, try signing in and adding the new role
       if (error && (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("already been registered"))) {
-        // Attempt sign-in with provided password
         const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
         if (signInError) {
@@ -424,7 +460,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { error: new Error("No user ID") };
         }
 
-        // Check if the role already exists
         const { data: existingRoles } = await supabase
           .from("user_roles")
           .select("role")
@@ -437,7 +472,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return {};
         }
 
-        // Add the new role
         const { error: roleErr } = await supabase
           .from("user_roles")
           .insert({ user_id: uid, role } as any);
@@ -449,7 +483,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         toast.success(`Role "${role.split("_").join(" ")}" added to your account!`);
-        // Set pending override BEFORE bootstrap so it picks up the newly added role
         pendingRoleOverrideRef.current = role;
         await runBootstrap(signInData.session);
         return {};
@@ -463,7 +496,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       toast.success("Account created successfully!");
-      // Override already set before signUp call — no need to set again
       return {};
     } catch (error: any) {
       const msg = error?.message || "Unable to create account";
