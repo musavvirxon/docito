@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getDashboardRoute } from "@/lib/rbac";
 
 const Dashboard = () => {
-  const { user, loading, activeRole } = useAuth();
+  const { user, loading, activeRole, bootstrapped } = useAuth();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang?: string }>();
   const hasRedirected = useRef(false);
@@ -13,7 +13,7 @@ const Dashboard = () => {
   const prefix = (path: string) => (lang ? `/${lang}${path}` : path);
 
   useEffect(() => {
-    if (loading) return;
+    if (!bootstrapped) return;
     if (hasRedirected.current) return;
 
     if (!user) {
@@ -25,7 +25,7 @@ const Dashboard = () => {
     const target = getDashboardRoute([activeRole || "patient"]);
     hasRedirected.current = true;
     navigate(prefix(target), { replace: true });
-  }, [loading, user, activeRole]);
+  }, [bootstrapped, user, activeRole]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

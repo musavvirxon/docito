@@ -96,20 +96,21 @@ export function getUserRolesFromProfile(profile: any): AppRole[] {
 
 /**
  * Get the primary role. If rolesWithTimestamp is provided (from user_roles.assigned_at),
- * use the FIRST assigned non-patient role as primary. Otherwise fall back to priority order.
+ * use the LATEST assigned non-patient role as primary (most recent sign-up role).
+ * Otherwise fall back to priority order.
  */
 export function getPrimaryRole(
   roles: AppRole[],
   rolesWithTimestamp?: { role: AppRole; assigned_at: string }[],
 ): AppRole {
   if (rolesWithTimestamp && rolesWithTimestamp.length > 0) {
-    // Sort by assigned_at ascending — earliest first
+    // Sort by assigned_at descending — latest first
     const sorted = [...rolesWithTimestamp].sort(
-      (a, b) => new Date(a.assigned_at).getTime() - new Date(b.assigned_at).getTime(),
+      (a, b) => new Date(b.assigned_at).getTime() - new Date(a.assigned_at).getTime(),
     );
-    // Pick earliest non-patient role; if all are patient, pick first
-    const firstNonPatient = sorted.find((r) => r.role !== "patient");
-    return firstNonPatient?.role ?? sorted[0].role;
+    // Pick latest non-patient role; if all are patient, pick first
+    const latestNonPatient = sorted.find((r) => r.role !== "patient");
+    return latestNonPatient?.role ?? sorted[0].role;
   }
 
   // Fallback: priority order

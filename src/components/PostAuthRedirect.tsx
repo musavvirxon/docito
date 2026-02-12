@@ -8,12 +8,12 @@ import { getDashboardRoute } from "@/lib/rbac";
  * from "/" to their role-based dashboard.
  */
 export default function PostAuthRedirect() {
-  const { user, profile, loading, allRoles, activeRole } = useAuth();
+  const { user, profile, loading, allRoles, activeRole, bootstrapped } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
 
   useEffect(() => {
-    if (loading) return;
+    if (!bootstrapped) return;
     if (!user || !profile) return;
 
     // Only redirect from root "/"
@@ -23,7 +23,7 @@ export default function PostAuthRedirect() {
       allRoles.length > 0 ? allRoles : [activeRole || "patient"],
     );
     nav(target, { replace: true });
-  }, [user, profile, loading, allRoles, activeRole, loc.pathname, nav]);
+  }, [user, profile, bootstrapped, allRoles, activeRole, loc.pathname, nav]);
 
   return null;
 }
