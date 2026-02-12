@@ -20,14 +20,12 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   ArrowLeft,
-  Stethoscope,
   Heart,
 } from "lucide-react";
 
 import AccountBillingSection from "@/components/profile/AccountBillingSection";
 import AccountAnalyticsSection from "@/components/profile/AccountAnalyticsSection";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
-import DoctorWorkspaceSettings from "@/components/settings/DoctorWorkspaceSettings";
 import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
 import { getPrimaryRole, getUserRolesFromProfile, type AppRole } from "@/lib/rbac";
 
@@ -175,19 +173,10 @@ export default function ProfilePage() {
             <SettingsIcon className="h-4 w-4 mr-2" />
             Settings
           </TabsTrigger>
-          {(primaryRole === "doctor" || primaryRole === "patient") && (
+          {primaryRole === "patient" && (
             <TabsTrigger value="workspace" className="rounded-xl">
-              {primaryRole === "doctor" ? (
-                <>
-                  <Stethoscope className="h-4 w-4 mr-2" />
-                  Doctor Profile
-                </>
-              ) : (
-                <>
-                  <Heart className="h-4 w-4 mr-2" />
-                  Health Profile
-                </>
-              )}
+              <Heart className="h-4 w-4 mr-2" />
+              Health Profile
             </TabsTrigger>
           )}
           <TabsTrigger value="billing" className="rounded-xl">
@@ -288,7 +277,6 @@ export default function ProfilePage() {
 
         {/* Role-specific workspace */}
         <TabsContent value="workspace" className="space-y-6">
-          {primaryRole === "doctor" && <DoctorWorkspaceSettings />}
           {primaryRole === "patient" && <PatientWorkspaceSettings />}
         </TabsContent>
 
