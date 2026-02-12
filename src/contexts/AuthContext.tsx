@@ -299,16 +299,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (hasCacheHit) {
         _setActiveRole(cachedData!.activeRole);
         setAllRoles(cachedData!.allRoles);
-        // Mark bootstrapped immediately — roles from cache are reliable for redirects
-        setLoading(false);
-        setBootstrapped(true);
-      } else if (metaRole !== "patient") {
-        _setActiveRole(metaRole);
-        // Still need DB read for full role list, keep loading
-        setLoading(true);
       } else {
-        setLoading(true);
+        _setActiveRole(metaRole);
+        setAllRoles([metaRole]);
       }
+
+      // Always mark bootstrapped immediately so redirects happen instantly
+      // DB verification continues in the background below
+      setLoading(false);
+      setBootstrapped(true);
 
       // Background: load authoritative data from DB
       const result = await loadProfileAndRoles(uid, nextSession.access_token, nextSession.user);
