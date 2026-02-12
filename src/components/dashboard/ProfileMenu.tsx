@@ -21,7 +21,7 @@ import {
   LayoutDashboard,
   Shield,
 } from "lucide-react";
-import { DASHBOARD_ROUTES, getDashboardRoute, getUserRolesFromProfile, roleLabels, type AppRole } from "@/lib/rbac";
+import { DASHBOARD_ROUTES, getDashboardRoute, roleLabels, type AppRole } from "@/lib/rbac";
 
 interface ProfileMenuProps {
   compact?: boolean;
@@ -33,10 +33,9 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
 
   const roles: AppRole[] = useMemo(() => {
     const fromContext = Array.isArray(allRoles) ? allRoles : [];
-    const fallback = getUserRolesFromProfile(profile);
-    const merged = fromContext.length > 0 ? fromContext : fallback;
-    return Array.from(new Set((merged || []).filter(Boolean) as AppRole[]));
-  }, [allRoles, profile]);
+    // Use only AuthContext roles (from user_roles table) — never fall back to profile.roles
+    return fromContext.length > 0 ? fromContext : [activeRole || "patient"];
+  }, [allRoles, activeRole]);
 
   const canShowRoleSwitch = roles.length > 1;
 
