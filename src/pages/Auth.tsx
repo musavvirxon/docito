@@ -149,12 +149,13 @@ const Auth = () => {
   const hasAutoRedirected = useRef(false);
   useEffect(() => {
     if (!bootstrapped) return;
+    if (authLoading) return; // Wait for bootstrap to fully finish before redirecting
     if (!user) return;
     if (hasAutoRedirected.current) return;
     hasAutoRedirected.current = true;
     goAfterAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bootstrapped, user, activeRole]);
+  }, [bootstrapped, authLoading, user, activeRole]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
