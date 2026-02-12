@@ -14,6 +14,7 @@ export default function PostAuthRedirect() {
 
   useEffect(() => {
     if (!bootstrapped) return;
+    if (loading) return; // Wait for role resolution
     if (!user || !profile) return;
 
     // Only redirect from root "/"
@@ -23,7 +24,7 @@ export default function PostAuthRedirect() {
       allRoles.length > 0 ? allRoles : [activeRole || "patient"],
     );
     nav(target, { replace: true });
-  }, [user, profile, bootstrapped, allRoles, activeRole, loc.pathname, nav]);
+  }, [user, profile, loading, bootstrapped, allRoles, activeRole, loc.pathname, nav]);
 
   return null;
 }

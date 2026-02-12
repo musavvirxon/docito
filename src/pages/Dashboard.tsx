@@ -19,6 +19,7 @@ const Dashboard = React.forwardRef<HTMLDivElement>(function Dashboard(_props, re
 
   useEffect(() => {
     if (!bootstrapped) return;
+    if (loading) return; // CRITICAL: wait for role resolution to complete
     if (hasRedirected.current) return;
 
     if (!user) {
@@ -31,7 +32,7 @@ const Dashboard = React.forwardRef<HTMLDivElement>(function Dashboard(_props, re
     console.log("[Dashboard] Redirecting to", target, "activeRole=", activeRole);
     hasRedirected.current = true;
     navigate(prefix(target), { replace: true });
-  }, [bootstrapped, user, activeRole, navigate, lang]);
+  }, [bootstrapped, loading, user, activeRole, navigate, lang]);
 
   return (
     <div ref={ref} className="min-h-screen flex items-center justify-center bg-background">
