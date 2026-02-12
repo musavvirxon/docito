@@ -1,6 +1,7 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
 import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft } from "lucide-react";
+import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
@@ -572,13 +573,14 @@ const DoctorDashboardContent = () => {
 
           {/* Main Content */}
           <div className="flex-1 flex flex-col min-h-screen">
-            <header className="h-16 border-b border-border/50 flex items-center px-6 gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
-              <SidebarTrigger />
-              <div className="flex items-center gap-3">
+            <header className="h-16 border-b border-border/50 flex items-center justify-between px-6 gap-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
                 <h1 className="text-xl font-semibold">
                   {sidebarItems.find(item => item.id === activeSection)?.label || t("doctor.navigation.dashboard")}
                 </h1>
               </div>
+              <ProfileMenu />
             </header>
 
             <main className="flex-1 overflow-auto">

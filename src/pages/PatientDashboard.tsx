@@ -42,6 +42,7 @@ import { TimezoneNotice } from "@/components/time/TimezoneNotice";
 import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
 import { getEffectiveTimeZone } from "@/lib/timezone";
+import ProfileMenu from "@/components/dashboard/ProfileMenu";
 
 type PatientDashboardSection =
   | "dashboard"
@@ -623,16 +624,19 @@ export default function PatientDashboard() {
       <header className="lg:hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex items-center justify-between p-4">
           <DashboardBranding size="sm" />
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80">
-              <SidebarContent />
-            </SheetContent>
-          </Sheet>
+          <div className="flex items-center gap-2">
+            <ProfileMenu compact />
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80">
+                <SidebarContent />
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </header>
 
@@ -659,6 +663,7 @@ export default function PatientDashboard() {
                   <TestTube2 className="h-4 w-4 mr-2" />
                   {t("patient.nav.notifications", { defaultValue: "Notifications" })}
                 </Button>
+                <ProfileMenu />
               </div>
             </div>
 
