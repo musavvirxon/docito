@@ -371,7 +371,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, userData: any = {}): Promise<AuthActionResult> => {
     try {
-      const role = userData.role || "patient";
+      const role = (userData.role || "patient") as AppRole;
 
       const marketing =
         Boolean(userData.marketing_communications ?? userData.marketingCommunications ?? userData.marketingOptIn ?? false) ||
@@ -389,6 +389,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
       });
 
+      // If user already exists, try signing in and adding the new role
+      if (error && (error.message?.toLowerCase().includes("already registered") || error.message?.toLowerCase().includes("already been registered"))) {
+        // Attempt sign-in with provided password
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (signInError) {
+          toast.error("This email is already registered. Please check your password and try again.");
+          return { error: signInError };
+        }
+
+        const uid = signInData.user?.id;
+        if (!uid) {
+          toast.error("Sign-in succeeded but no user returned.");
+          return { error: new Error("No user ID") };
+        }
+
+        // Check if the role already exists
+        const { data: existingRoles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", uid);
+
+        const hasRole = (existingRoles || []).some((r: any) => r.role === role);
+
+        if (hasRole) {
+          toast.info(`You already have the "${role.split("_").join(" ")}" role. Signed in instead.`);
+          return {};
+        }
+
+        // Add the new role
+        const { error: roleErr } = await supabase
+          .from("user_roles")
+          .insert({ user_id: uid, role } as any);
+
+        if (roleErr) {
+          console.error("Failed to add role:", roleErr);
+          toast.error("Signed in, but failed to add the new role.");
+          return {};
+        }
+
+        toast.success(`Role "${role.split("_").join(" ")}" added to your account!`);
+        // Refresh bootstrap to pick up the new role
+        await runBootstrap(signInData.session);
+        return {};
+      }
+
       if (error) throw error;
 
       if (!data.session) {
@@ -396,8 +442,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { needsEmailConfirmation: true };
       }
 
-      // Don't set user/session here — onAuthStateChange will fire runBootstrap
-      // which resolves the correct activeRole before the UI redirects.
       toast.success("Account created successfully!");
       return {};
     } catch (error: any) {
