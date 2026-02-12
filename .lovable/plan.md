@@ -1,66 +1,115 @@
 
-# Fix Authentication Flow: Role Resolution, Redirection, and Profile Menu
 
-## Problem Analysis
+# Fix Authentication: Multi-Role Support, Redirections, and Profile Menu
 
-The root cause is a **state ambiguity** in `AuthContext`. The `activeRole` state initializes to `"patient"` as a default, and there is no way for redirect logic to distinguish between:
-- "activeRole is `patient` because bootstrap hasn't completed yet" (the default)
-- "activeRole is `patient` because the user IS a patient"
+## What Will Change
 
-This causes all three reported issues:
-1. **Redirect fires too early** -- Auth.tsx and Dashboard.tsx see `loading=false` + `user` exists, and redirect using the default `"patient"` role before `runBootstrap` has resolved the actual role from the database.
-2. **Dashboard dispatcher redirects wrong** -- Same ambiguity causes `/dashboard` to route to `/patient-dashboard`.
-3. **Profile menu shows "Patient"** -- `activeRole` remains `"patient"` in the context if the bootstrap result was swallowed by a stale version check.
+1. **Every account automatically gets the "patient" role** in addition to whatever role they sign up with
+2. **One email can have multiple roles** - signing up again with same email but different role adds that role (handled via sign-in + role addition flow)
+3. **Sign-in uses the most recently active role** for dashboard routing
+4. **Profile menu shows all available roles** with ability to switch between them
+5. **Redirections work reliably** by waiting for role resolution to complete before navigating
 
-## Solution
+## User-Facing Changes
 
-Add a `bootstrapped` boolean flag to `AuthContext` that is `false` on init and only set to `true` after `runBootstrap` has fully resolved roles for a real session (or confirmed no session exists). All redirect logic will gate on `bootstrapped` instead of just `!loading`.
+- After sign-in, you land on the dashboard for your most recent role
+- The profile menu dropdown shows all your roles (e.g., "Doctor", "Patient") so you can switch
+- Empty dashboards show zero/empty states gracefully (no errors)
+- Sign-up with a role you already have is prevented with a clear message
 
-### Changes
+---
 
-#### 1. `src/contexts/AuthContext.tsx`
-- Add `bootstrapped` state (default `false`) to the context type and provider.
-- In `runBootstrap`: set `bootstrapped = true` in the `finally` block alongside `setLoading(false)`.
-- In `clearAuthState`: reset `bootstrapped = false`.
-- Expose `bootstrapped` in the context value.
+## Technical Details
 
-#### 2. `src/pages/Auth.tsx`
-- Destructure `bootstrapped` from `useAuth()`.
-- Change the redirect `useEffect` guard from `if (authLoading) return;` to `if (!bootstrapped) return;`.
-- This ensures redirection only happens after the role is fully resolved from the database.
+### 1. Database Migration: Auto-assign patient role on signup
 
-#### 3. `src/pages/Dashboard.tsx`
-- Destructure `bootstrapped` from `useAuth()`.
-- Change the redirect guard from `if (loading) return;` to `if (!bootstrapped) return;`.
+Update `handle_new_user()` trigger to always insert a `patient` role row alongside the chosen signup role:
 
-#### 4. `src/components/PostAuthRedirect.tsx`
-- Destructure `bootstrapped` from `useAuth()`.
-- Change the guard from `if (loading) return;` to `if (!bootstrapped) return;`.
-
-#### 5. `src/components/profile/ProfileMenu.tsx`
-- No changes needed -- it already reads `activeRole` from context, which will now be correct once the bootstrap race is fixed.
-
-## Technical Detail
-
-```text
-BEFORE (broken):
-  signIn() -> onAuthStateChange -> runBootstrap starts (loading=true)
-  -> React renders: user exists, loading=true -> no redirect yet (good)
-  -> runBootstrap sets activeRole="doctor", loading=false (batched)
-  -> useEffect fires -> redirect works
-  
-  BUT sometimes:
-  -> initial INITIAL_SESSION(null) -> loading=false, activeRole="patient"
-  -> signIn() -> SIGNED_IN fires -> runBootstrap starts
-  -> brief window where loading was false from initial event
-  -> hasAutoRedirected fires with wrong role
-
-AFTER (fixed):
-  bootstrapped starts FALSE
-  -> INITIAL_SESSION(null) -> clearAuthState -> loading=false, bootstrapped=true
-  -> signIn() -> SIGNED_IN -> runBootstrap -> bootstrapped=false, loading=true
-  -> bootstrap completes -> activeRole="doctor", bootstrapped=true, loading=false
-  -> useEffect checks bootstrapped=true -> redirects correctly
+```sql
+-- After inserting the signup role, also ensure patient role exists
+INSERT INTO public.user_roles (user_id, role)
+VALUES (new.id, 'patient'::app_role)
+ON CONFLICT (user_id, role) DO NOTHING;
 ```
 
-No database changes required. No new dependencies.
+Also backfill existing users who are missing the patient role:
+
+```sql
+INSERT INTO user_roles (user_id, role)
+SELECT DISTINCT user_id, 'patient'::app_role
+FROM user_roles
+WHERE user_id NOT IN (
+  SELECT user_id FROM user_roles WHERE role = 'patient'
+)
+ON CONFLICT (user_id, role) DO NOTHING;
+```
+
+### 2. AuthContext.tsx - Add `bootstrapped` flag and role switching
+
+- Add `bootstrapped` state (default `false`), set to `true` only after `runBootstrap` completes
+- On sign-in, set `activeRole` to the most recently assigned non-patient role (latest `assigned_at`)
+- Re-enable `switchRole` to actually update `activeRole` state (for profile menu switching)
+- Expose `bootstrapped` in context
+
+Key logic change in `getPrimaryRole`: for sign-in, use the **latest** assigned non-patient role instead of earliest.
+
+### 3. src/lib/rbac.ts - Add `getLatestRole` function
+
+New function that sorts by `assigned_at` descending and picks the most recent non-patient role. This is used on sign-in to determine the active dashboard.
+
+### 4. Auth.tsx - Gate redirect on `bootstrapped`
+
+Change the redirect useEffect:
+```typescript
+const { bootstrapped } = useAuth();
+// ...
+if (!bootstrapped) return;  // instead of: if (authLoading) return;
+```
+
+### 5. Dashboard.tsx - Gate redirect on `bootstrapped`
+
+Same pattern - wait for `bootstrapped` before dispatching to role dashboard.
+
+### 6. PostAuthRedirect.tsx - Gate redirect on `bootstrapped`
+
+Same pattern.
+
+### 7. ProfileMenu.tsx - Show all roles with switch option
+
+- Read `allRoles` from `useAuth()`
+- Display all role labels in the dropdown
+- Highlight the current `activeRole`
+- Clicking a different role calls `switchRole()` and navigates to that role's dashboard
+- Each role shows its icon and label
+
+### 8. ensureSelfBootstrap - Also ensure patient role
+
+When the client-side safety net runs, it should also upsert the `patient` role alongside the intended signup role:
+
+```typescript
+// Upsert the signup role
+await supabase.from("user_roles").upsert(
+  { user_id: uid, role: metaRole },
+  { onConflict: "user_id,role" }
+);
+// Also ensure patient role exists
+if (metaRole !== "patient") {
+  await supabase.from("user_roles").upsert(
+    { user_id: uid, role: "patient" },
+    { onConflict: "user_id,role" }
+  );
+}
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| Database migration (new) | Update `handle_new_user()` + backfill patient roles |
+| `src/contexts/AuthContext.tsx` | Add `bootstrapped`, fix role switching, ensure patient role |
+| `src/lib/rbac.ts` | Add `getLatestRole()` function |
+| `src/pages/Auth.tsx` | Gate redirect on `bootstrapped` |
+| `src/pages/Dashboard.tsx` | Gate redirect on `bootstrapped` |
+| `src/components/PostAuthRedirect.tsx` | Gate redirect on `bootstrapped` |
+| `src/components/profile/ProfileMenu.tsx` | Show all roles, enable switching |
+
