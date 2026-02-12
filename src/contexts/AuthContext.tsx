@@ -430,8 +430,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         toast.success(`Role "${role.split("_").join(" ")}" added to your account!`);
-        // Refresh bootstrap to pick up the new role
+        // Refresh bootstrap to pick up the new role, then force active role to the newly added one
         await runBootstrap(signInData.session);
+        _setActiveRole(role);
         return {};
       }
 
@@ -443,6 +444,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       toast.success("Account created successfully!");
+      // After bootstrap completes via onAuthStateChange, force active role to the signup role
+      // so the user lands on the correct dashboard
+      setTimeout(() => _setActiveRole(role), 100);
       return {};
     } catch (error: any) {
       const msg = error?.message || "Unable to create account";
