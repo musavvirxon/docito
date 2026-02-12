@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScanLine, ArrowLeft, Building2 } from "lucide-react";
 import { useImagingCenter, ImagingCenterInput } from "@/hooks/useImagingCenter";
+
+const PremiumTopNav = lazy(() => import("@/components/home/premium/PremiumTopNav"));
 
 export default function ImagingRegistration() {
   const navigate = useNavigate();
@@ -51,7 +53,9 @@ export default function ImagingRegistration() {
   ];
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-3xl">
+    <div className="min-h-screen bg-background">
+      <Suspense fallback={null}><PremiumTopNav /></Suspense>
+      <div className="container mx-auto py-8 px-4 max-w-3xl pt-20">
       <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)}>
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back
@@ -212,6 +216,7 @@ export default function ImagingRegistration() {
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
