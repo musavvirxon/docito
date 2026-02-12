@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserRolesFromProfile, roleLabels, AppRole } from "@/lib/rbac";
+import { roleLabels, AppRole } from "@/lib/rbac";
 import { supabase } from "@/integrations/supabase/client";
 
 type FeedbackKind = "bug" | "feature";
@@ -63,11 +63,11 @@ const statusBadgeVariant = (status: Status) => {
 
 export default function FeedbackCenter() {
   const { toast } = useToast();
-  const { user, profile } = useAuth();
+  const { user, profile, allRoles, activeRole } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userRoles = useMemo(() => getUserRolesFromProfile(profile), [profile]);
+  const userRoles = useMemo(() => allRoles.length > 0 ? allRoles : [activeRole || "patient"], [allRoles, activeRole]);
 
   const defaultRole = useMemo<string>(() => {
     const firstOwned = ALL_ROLES.find((r) => userRoles.includes(r as AppRole));
