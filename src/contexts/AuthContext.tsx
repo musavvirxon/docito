@@ -241,7 +241,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       if (!nextSession?.user?.id) {
-        clearAuthState();
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setRoleStatus({});
+        _setActiveRole("patient");
+        setAllRoles([]);
+        // Don't reset bootstrapped here — just mark as done with no user
         return;
       }
 
@@ -313,6 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (e) {
         console.error("Auth state change bootstrap failed:", e);
         setLoading(false);
+        setBootstrapped(true);
       }
     });
 
@@ -320,6 +327,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading((current) => {
         if (current) {
           console.warn("[Auth] Safety timeout: forcing loading to false after 10s");
+          setBootstrapped(true);
           return false;
         }
         return current;
