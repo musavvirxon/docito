@@ -1,7 +1,6 @@
-import DoctorVerification from "@/pages/doctor/DoctorVerification";
-
+// Placeholder — doctor workspace settings are handled via /doctor/verification
 export function DoctorWorkspaceSettings() {
-  return <DoctorVerification embedded />;
+  return null;
 }
 
 export default DoctorWorkspaceSettings;
