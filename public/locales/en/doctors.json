@@ -173,4 +173,322 @@
     "ophthalmology": "Ophthalmology",
     "ent": "ENT"
   }
+// File: public/locales/en/doctor.json
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "Manage Procedures",
+      "updateSchedule": "Update Schedule",
+      "updateSettings": "Update Settings"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "Add diagnosis",
+      "addDiagnosisBtn": "Add",
+      "customDiagnosis": "Custom diagnosis",
+      "date": "Date",
+      "diagnosesTitle": "Diagnoses",
+      "diagnosisCode": "ICD-10 (optional)",
+      "diagnosisCodePlaceholder": "e.g. I10",
+      "diagnosisName": "Diagnosis",
+      "diagnosisNamePlaceholder": "e.g. Hypertension",
+      "diagnosisNotes": "Notes",
+      "diagnosisNotesPlaceholder": "Optional notes, rationale, plan...",
+      "inPerson": "In-Person",
+      "loadingDiagnosis": "Loading...",
+      "message": "Message Patient",
+      "noDiagnoses": "No diagnoses added yet.",
+      "notes": "Notes",
+      "schedule": "Schedule Follow-up",
+      "selectDiagnosis": "Select from library or add custom",
+      "selectedDiagnosis": "Selected",
+      "status": "Status",
+      "telemedicine": "Telemedicine",
+      "time": "Time",
+      "title": "Appointment Details",
+      "type": "Type",
+      "viewPatient": "View Patient Details"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "Add Diagnosis",
+        "cancel": "Cancel",
+        "complete": "Mark as Completed",
+        "confirm": "Confirm Appointment",
+        "message": "Message Patient",
+        "reschedule": "Reschedule",
+        "save": "Save"
+      },
+      "addDiagnosis": "Add diagnosis",
+      "appointmentId": "Appointment ID",
+      "appointmentType": "Appointment type",
+      "cancelConfirm": {
+        "cancel": "Cancel",
+        "confirm": "Yes, cancel",
+        "description": "This will cancel the appointment and notify the patient.",
+        "title": "Cancel this appointment?"
+      },
+      "close": "Close",
+      "date": "Date",
+      "diagnoses": "Diagnoses",
+      "diagnosisCode": "ICD-10 code (optional)",
+      "diagnosisCodePlaceholder": "e.g. K02.9",
+      "diagnosisName": "Diagnosis",
+      "diagnosisNamePlaceholder": "e.g. Dental caries",
+      "diagnosisNotes": "Notes",
+      "diagnosisNotesPlaceholder": "Optional notes...",
+      "doctorNotes": "Doctor notes",
+      "doctorNotesPlaceholder": "Add notes about the visit...",
+      "loading": "Loading appointment...",
+      "noDiagnoses": "No diagnoses yet",
+      "patient": "Patient",
+      "payment": {
+        "amount": "Amount",
+        "method": "Method",
+        "paid": "Paid",
+        "status": "Payment status",
+        "unpaid": "Unpaid"
+      },
+      "reason": "Reason",
+      "status": "Status",
+      "time": "Time",
+      "title": "Appointment",
+      "type": {
+        "inPerson": "In-person",
+        "telemedicine": "Telemedicine"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "Canceled",
+      "completed": "Completed",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "rescheduled": "Rescheduled"
+    },
+    "calendar": {
+      "addBlock": "Add block",
+      "addEvent": "Add event",
+      "allDay": "All day",
+      "available": "Available",
+      "blocked": "Blocked",
+      "cancel": "Cancel",
+      "create": "Create",
+      "day": "Day",
+      "delete": "Delete",
+      "details": "Details",
+      "edit": "Edit",
+      "end": "End",
+      "eventTitle": "Event title",
+      "month": "Month",
+      "notes": "Notes",
+      "save": "Save",
+      "start": "Start",
+      "today": "Today",
+      "week": "Week"
+    },
+    "clinic": {
+      "requestToLeave": "Request to Leave",
+      "verified": "Verified"
+    },
+    "clinicFinder": {
+      "failedToLoad": "Failed to load clinics.",
+      "tryAgain": "Try Again"
+    },
+    "currentAppointment": {
+      "noAppointments": "No upcoming appointments",
+      "scheduleEmpty": "Your schedule is clear",
+      "title": "Current/Upcoming Appointment",
+      "today": "Today's Appointment",
+      "upcoming": "Next Appointment",
+      "upcomingCount": "Upcoming count"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "You don't have any items yet.",
+        "title": "Nothing here"
+      },
+      "title": "Doctor Dashboard"
+    },
+    "diagnoses": {
+      "addDiagnosis": "Add diagnosis",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "e.g. General dentistry",
+      "codeLabel": "ICD-10 code (optional)",
+      "codePlaceholder": "e.g. K02.9",
+      "create": "Create",
+      "delete": "Delete",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Short description...",
+      "edit": "Edit",
+      "emptyState": "No diagnoses yet",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Dental caries",
+      "notesLabel": "Notes",
+      "notesPlaceholder": "Optional notes...",
+      "save": "Save",
+      "searchPlaceholder": "Search diagnoses...",
+      "title": "Diagnoses",
+      "titleLabel": "Diagnosis",
+      "titlePlaceholder": "e.g. Hypertension"
+    },
+    "errors": {
+      "generic": "Something went wrong.",
+      "tryAgain": "Try again"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "Earnings",
+        "noDataDesc": "No data available"
+      },
+      "insights": {
+        "tbd": "TBD"
+      },
+      "overview": {
+        "tbd": "TBD"
+      },
+      "payouts": {
+        "noData": "No payout data"
+      },
+      "pending": {
+        "noData": "No pending payments",
+        "paymentMarked": "Payment marked"
+      },
+      "services": {
+        "minutes": "Minutes"
+      },
+      "tabs": {
+        "byService": "By service",
+        "earningsChart": "Earnings chart",
+        "insights": "Insights",
+        "payouts": "Payouts",
+        "pending": "Pending"
+      }
+    },
+    "loading": "Loading dashboard...",
+    "messaging": {
+      "description": "Communicate with patients and healthcare providers",
+      "title": "Messages"
+    },
+    "navigation": {
+      "calendar": "Calendar",
+      "clinicFinder": "Clinic Finder",
+      "dashboard": "Dashboard",
+      "diagnoses": "Diagnoses",
+      "financialStats": "Financial Stats",
+      "main": "Main",
+      "messages": "Messages",
+      "myPatients": "My Patients",
+      "myProfile": "My Profile",
+      "performance": "Performance",
+      "procedureLibrary": "Procedure Library",
+      "referrals": "Referrals",
+      "scheduleSettings": "Schedule Settings",
+      "settings": "Settings",
+      "treatmentPlanning": "Treatment Planning"
+    },
+    "noUpcomingAppointments": "No upcoming appointments",
+    "profileCompletion": {
+      "completeProfile": "Complete profile ({{percent}}%)",
+      "incomplete": "Incomplete",
+      "updateProfile": "Update profile"
+    },
+    "profileSetup": {
+      "completeSetup": "Complete Profile Setup",
+      "goHome": "Go to Home",
+      "message": "Your doctor profile needs to be set up. Let's complete your profile.",
+      "required": "Profile Setup Required",
+      "retryLoading": "Retry Loading",
+      "settingUp": "Setting Up Profile",
+      "tryAgain": "Try Again",
+      "unableToLoad": "Unable to load your doctor profile. Let us set up your account."
+    },
+    "quickActions": "Quick Actions",
+    "referrals": {
+      "title": "Referrals"
+    },
+    "schedule": {
+      "addTimeBlock": "Add time block",
+      "apply": "Apply",
+      "availability": "Availability",
+      "cancel": "Cancel",
+      "dayOff": "Day off",
+      "delete": "Delete",
+      "duration": "Duration",
+      "end": "End",
+      "notes": "Notes",
+      "save": "Save",
+      "start": "Start",
+      "title": "Schedule Settings"
+    },
+    "services": {
+      "add": "Add",
+      "addProcedure": "Add procedure",
+      "category": "Category",
+      "create": "Create",
+      "delete": "Delete",
+      "description": "Description",
+      "duration": "Duration",
+      "edit": "Edit",
+      "emptyState": "No procedures yet",
+      "fee": "Fee",
+      "minutes": "minutes",
+      "name": "Name",
+      "save": "Save",
+      "searchPlaceholder": "Search procedures...",
+      "title": "Procedure Library"
+    },
+    "settingUp": "Setting up your doctor profile...",
+    "settings": {
+      "account": {
+        "description": "Manage your account details and preferences",
+        "email": "Email",
+        "language": "Language",
+        "phone": "Phone",
+        "saveChanges": "Save changes",
+        "timezone": "Timezone",
+        "title": "Account"
+      },
+      "calendar": {
+        "description": "Connect and manage calendar sync",
+        "title": "Calendar"
+      },
+      "email": "Email",
+      "emailPlaceholder": "Enter email",
+      "language": "Language",
+      "notifications": "Notifications",
+      "personalInfo": "Personal Information",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter phone",
+      "practice": "Practice",
+      "privacy": "Privacy",
+      "security": "Security",
+      "timeFormat": "Time format",
+      "timezone": "Timezone",
+      "timezoneHint": "Your calendar will display times in this timezone.",
+      "title": "Settings",
+      "updateDetails": "Update your personal details"
+    },
+    "stats": {
+      "allTimeBookings": "All time bookings",
+      "averageRating": "Average Rating",
+      "basedOnReviews": "Based on {{count}} reviews",
+      "earnings": "Earnings",
+      "rating": "Rating",
+      "revenue": "Revenue",
+      "totalAppointments": "Total Appointments",
+      "totalEarnings": "Total earnings",
+      "totalPatients": "Total Patients",
+      "uniquePatients": "Unique patients served"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "No upcoming appointments",
+      "scheduleIsClear": "Your schedule is clear",
+      "title": "Upcoming Appointments"
+    },
+    "verification": {
+      "completeProfile": "Complete Profile",
+      "message": "To go public and appear in search results, your verification must be completed.",
+      "pending": "Verification Pending",
+      "viewProfile": "View Profile"
+    }
+  }
 }
