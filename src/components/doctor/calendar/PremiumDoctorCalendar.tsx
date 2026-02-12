@@ -53,12 +53,12 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   const [followupOfAppointmentId, setFollowupOfAppointmentId] = useState<string | null>(null);
   const [preselectedPatient, setPreselectedPatient] = useState<Patient | null>(null);
 
-  // Safety check
+  // Safety check - only warn if profile is fully loaded but doctor_id still missing
   useEffect(() => {
-    if (profile?.role === 'doctor' && !doctorId) {
-      toast.error(t('doctor.calendar.profileLoading', 'Doctor profile still loading. Please refresh.'));
+    if (profile && profile.role === 'doctor' && !doctorId) {
+      console.warn('Doctor ID not yet resolved for calendar');
     }
-  }, [profile, doctorId, t]);
+  }, [profile, doctorId]);
 
   // Fetch doctor specialty (for dentist UI)
   useEffect(() => {
