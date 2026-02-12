@@ -240,6 +240,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const runBootstrap = async (nextSession: Session | null) => {
     const version = ++bootstrapVersionRef.current;
     setLoading(true);
+    // CRITICAL: Reset bootstrapped to prevent premature redirects.
+    // Without this, setUser() below triggers a re-render where bootstrapped
+    // is still true (from a previous run) but activeRole hasn't been updated yet,
+    // causing Auth.tsx to redirect with a stale role.
+    setBootstrapped(false);
 
     try {
       if (!nextSession?.user?.id) {
