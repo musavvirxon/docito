@@ -88,3 +88,321 @@
     "ent": "耳鼻喉科"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "管理项目",
+      "updateSchedule": "更新排班",
+      "updateSettings": "更新设置"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "添加诊断",
+      "addDiagnosisBtn": "添加",
+      "customDiagnosis": "自定义诊断",
+      "date": "日期",
+      "diagnosesTitle": "诊断",
+      "diagnosisCode": "ICD-10（可选）",
+      "diagnosisCodePlaceholder": "例如：I10",
+      "diagnosisName": "诊断",
+      "diagnosisNamePlaceholder": "例如：高血压",
+      "diagnosisNotes": "备注",
+      "diagnosisNotesPlaceholder": "可选备注、依据、计划…",
+      "inPerson": "线下就诊",
+      "loadingDiagnosis": "加载中…",
+      "message": "联系患者",
+      "noDiagnoses": "尚未添加诊断。",
+      "notes": "备注",
+      "schedule": "安排复诊",
+      "selectDiagnosis": "从库中选择或添加自定义",
+      "selectedDiagnosis": "已选择",
+      "status": "状态",
+      "telemedicine": "远程医疗",
+      "time": "时间",
+      "title": "预约详情",
+      "type": "类型",
+      "viewPatient": "查看患者信息"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "添加诊断",
+        "cancel": "取消",
+        "complete": "标记为已完成",
+        "confirm": "确认预约",
+        "message": "联系患者",
+        "reschedule": "改期",
+        "save": "保存"
+      },
+      "addDiagnosis": "添加诊断",
+      "appointmentId": "预约ID",
+      "appointmentType": "预约类型",
+      "cancelConfirm": {
+        "cancel": "取消",
+        "confirm": "是的，取消",
+        "description": "这将取消预约并通知患者。",
+        "title": "要取消该预约吗？"
+      },
+      "close": "关闭",
+      "date": "日期",
+      "diagnoses": "诊断",
+      "diagnosisCode": "ICD-10 代码（可选）",
+      "diagnosisCodePlaceholder": "例如：K02.9",
+      "diagnosisName": "诊断",
+      "diagnosisNamePlaceholder": "例如：龋齿",
+      "diagnosisNotes": "备注",
+      "diagnosisNotesPlaceholder": "可选备注…",
+      "doctorNotes": "医生备注",
+      "doctorNotesPlaceholder": "添加本次就诊备注…",
+      "loading": "正在加载预约…",
+      "noDiagnoses": "暂无诊断",
+      "patient": "患者",
+      "payment": {
+        "amount": "金额",
+        "method": "方式",
+        "paid": "已支付",
+        "status": "支付状态",
+        "unpaid": "未支付"
+      },
+      "reason": "原因",
+      "status": "状态",
+      "time": "时间",
+      "title": "预约",
+      "type": {
+        "inPerson": "线下就诊",
+        "telemedicine": "远程医疗"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "已取消",
+      "completed": "已完成",
+      "confirmed": "已确认",
+      "pending": "待确认",
+      "rescheduled": "已改期"
+    },
+    "calendar": {
+      "addBlock": "添加时段阻塞",
+      "addEvent": "添加事件",
+      "allDay": "全天",
+      "available": "可用",
+      "blocked": "已阻塞",
+      "cancel": "取消",
+      "create": "创建",
+      "day": "日",
+      "delete": "删除",
+      "details": "详情",
+      "edit": "编辑",
+      "end": "结束",
+      "eventTitle": "事件标题",
+      "month": "月",
+      "notes": "备注",
+      "save": "保存",
+      "start": "开始",
+      "today": "今天",
+      "week": "周"
+    },
+    "clinic": {
+      "requestToLeave": "申请退出",
+      "verified": "已认证"
+    },
+    "clinicFinder": {
+      "failedToLoad": "无法加载诊所。",
+      "tryAgain": "重试"
+    },
+    "currentAppointment": {
+      "noAppointments": "没有即将到来的预约",
+      "scheduleEmpty": "你的日程为空",
+      "title": "当前/即将到来的预约",
+      "today": "今日预约",
+      "upcoming": "下一次预约",
+      "upcomingCount": "即将到来数量"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "你还没有任何内容。",
+        "title": "这里还没有内容"
+      },
+      "title": "医生仪表盘"
+    },
+    "diagnoses": {
+      "addDiagnosis": "添加诊断",
+      "categoryLabel": "类别",
+      "categoryPlaceholder": "例如：综合牙科",
+      "codeLabel": "ICD-10 代码（可选）",
+      "codePlaceholder": "例如：K02.9",
+      "create": "创建",
+      "delete": "删除",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "简短描述…",
+      "edit": "编辑",
+      "emptyState": "暂无诊断",
+      "nameLabel": "名称",
+      "namePlaceholder": "例如：龋齿",
+      "notesLabel": "备注",
+      "notesPlaceholder": "可选备注…",
+      "save": "保存",
+      "searchPlaceholder": "搜索诊断…",
+      "title": "诊断",
+      "titleLabel": "诊断",
+      "titlePlaceholder": "例如：高血压"
+    },
+    "errors": {
+      "generic": "发生了一些问题。",
+      "tryAgain": "重试"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "收入",
+        "noDataDesc": "暂无数据"
+      },
+      "insights": {
+        "tbd": "敬请期待"
+      },
+      "overview": {
+        "tbd": "敬请期待"
+      },
+      "payouts": {
+        "noData": "暂无打款数据"
+      },
+      "pending": {
+        "noData": "暂无待支付款项",
+        "paymentMarked": "已标记支付"
+      },
+      "services": {
+        "minutes": "分钟"
+      },
+      "tabs": {
+        "byService": "按服务",
+        "earningsChart": "收入图表",
+        "insights": "洞察",
+        "payouts": "打款",
+        "pending": "待处理"
+      }
+    },
+    "loading": "正在加载仪表盘…",
+    "messaging": {
+      "description": "与患者和医疗服务提供者沟通",
+      "title": "消息"
+    },
+    "navigation": {
+      "calendar": "日历",
+      "clinicFinder": "查找诊所",
+      "dashboard": "仪表盘",
+      "diagnoses": "诊断",
+      "financialStats": "财务统计",
+      "main": "主要",
+      "messages": "消息",
+      "myPatients": "我的患者",
+      "myProfile": "我的资料",
+      "performance": "表现",
+      "procedureLibrary": "项目库",
+      "referrals": "转诊",
+      "scheduleSettings": "排班设置",
+      "settings": "设置",
+      "treatmentPlanning": "治疗计划"
+    },
+    "noUpcomingAppointments": "没有即将到来的预约",
+    "profileCompletion": {
+      "completeProfile": "完善资料（{{percent}}%）",
+      "incomplete": "未完善",
+      "updateProfile": "更新资料"
+    },
+    "profileSetup": {
+      "completeSetup": "完成资料设置",
+      "goHome": "返回主页",
+      "message": "你的医生资料需要设置。让我们完成资料填写。",
+      "required": "需要完成资料设置",
+      "retryLoading": "重试加载",
+      "settingUp": "正在设置资料",
+      "tryAgain": "重试",
+      "unableToLoad": "无法加载你的医生资料。让我们为你设置账户。"
+    },
+    "quickActions": "快捷操作",
+    "referrals": {
+      "title": "转诊"
+    },
+    "schedule": {
+      "addTimeBlock": "添加时间段",
+      "apply": "应用",
+      "availability": "可用性",
+      "cancel": "取消",
+      "dayOff": "休息日",
+      "delete": "删除",
+      "duration": "时长",
+      "end": "结束",
+      "notes": "备注",
+      "save": "保存",
+      "start": "开始",
+      "title": "排班设置"
+    },
+    "services": {
+      "add": "添加",
+      "addProcedure": "添加项目",
+      "category": "类别",
+      "create": "创建",
+      "delete": "删除",
+      "description": "描述",
+      "duration": "时长",
+      "edit": "编辑",
+      "emptyState": "暂无项目",
+      "fee": "费用",
+      "minutes": "分钟",
+      "name": "名称",
+      "save": "保存",
+      "searchPlaceholder": "搜索项目…",
+      "title": "项目库"
+    },
+    "settingUp": "正在设置你的医生资料…",
+    "settings": {
+      "account": {
+        "description": "管理你的账户信息和偏好设置",
+        "email": "邮箱",
+        "language": "语言",
+        "phone": "电话",
+        "saveChanges": "保存更改",
+        "timezone": "时区",
+        "title": "账户"
+      },
+      "calendar": {
+        "description": "连接并管理日历同步",
+        "title": "日历"
+      },
+      "email": "邮箱",
+      "emailPlaceholder": "输入邮箱",
+      "language": "语言",
+      "notifications": "通知",
+      "personalInfo": "个人信息",
+      "phone": "电话",
+      "phonePlaceholder": "输入电话",
+      "practice": "诊所",
+      "privacy": "隐私",
+      "security": "安全",
+      "timeFormat": "时间格式",
+      "timezone": "时区",
+      "timezoneHint": "日历将以此时区显示时间。",
+      "title": "设置",
+      "updateDetails": "更新你的个人信息"
+    },
+    "stats": {
+      "allTimeBookings": "累计预约",
+      "averageRating": "平均评分",
+      "basedOnReviews": "基于 {{count}} 条评价",
+      "earnings": "收入",
+      "rating": "评分",
+      "revenue": "营收",
+      "totalAppointments": "总预约数",
+      "totalEarnings": "总收入",
+      "totalPatients": "患者总数",
+      "uniquePatients": "服务过的唯一患者"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "没有即将到来的预约",
+      "scheduleIsClear": "你的日程为空",
+      "title": "即将到来的预约"
+    },
+    "verification": {
+      "completeProfile": "完善资料",
+      "message": "要公开并出现在搜索结果中，需要完成认证。",
+      "pending": "认证待处理",
+      "viewProfile": "查看资料"
+    }
+  }
+}
