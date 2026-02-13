@@ -88,3 +88,321 @@
     "ent": "ЛОР"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "Управлять процедурами",
+      "updateSchedule": "Обновить расписание",
+      "updateSettings": "Обновить настройки"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "Добавить диагноз",
+      "addDiagnosisBtn": "Добавить",
+      "customDiagnosis": "Свой диагноз",
+      "date": "Дата",
+      "diagnosesTitle": "Диагнозы",
+      "diagnosisCode": "МКБ-10 (необязательно)",
+      "diagnosisCodePlaceholder": "например, I10",
+      "diagnosisName": "Диагноз",
+      "diagnosisNamePlaceholder": "например, Гипертония",
+      "diagnosisNotes": "Заметки",
+      "diagnosisNotesPlaceholder": "Необязательные заметки, обоснование, план...",
+      "inPerson": "Очный",
+      "loadingDiagnosis": "Загрузка...",
+      "message": "Написать пациенту",
+      "noDiagnoses": "Диагнозы ещё не добавлены.",
+      "notes": "Заметки",
+      "schedule": "Запланировать повторный визит",
+      "selectDiagnosis": "Выберите из библиотеки или добавьте свой",
+      "selectedDiagnosis": "Выбрано",
+      "status": "Статус",
+      "telemedicine": "Телемедицина",
+      "time": "Время",
+      "title": "Детали приёма",
+      "type": "Тип",
+      "viewPatient": "Открыть данные пациента"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "Добавить диагноз",
+        "cancel": "Отмена",
+        "complete": "Отметить выполненным",
+        "confirm": "Подтвердить приём",
+        "message": "Написать пациенту",
+        "reschedule": "Перенести",
+        "save": "Сохранить"
+      },
+      "addDiagnosis": "Добавить диагноз",
+      "appointmentId": "ID приёма",
+      "appointmentType": "Тип приёма",
+      "cancelConfirm": {
+        "cancel": "Отмена",
+        "confirm": "Да, отменить",
+        "description": "Приём будет отменён, а пациент получит уведомление.",
+        "title": "Отменить этот приём?"
+      },
+      "close": "Закрыть",
+      "date": "Дата",
+      "diagnoses": "Диагнозы",
+      "diagnosisCode": "Код МКБ-10 (необязательно)",
+      "diagnosisCodePlaceholder": "например, K02.9",
+      "diagnosisName": "Диагноз",
+      "diagnosisNamePlaceholder": "например, Кариес зубов",
+      "diagnosisNotes": "Заметки",
+      "diagnosisNotesPlaceholder": "Необязательные заметки...",
+      "doctorNotes": "Заметки врача",
+      "doctorNotesPlaceholder": "Добавьте заметки о визите...",
+      "loading": "Загрузка приёма...",
+      "noDiagnoses": "Диагнозов пока нет",
+      "patient": "Пациент",
+      "payment": {
+        "amount": "Сумма",
+        "method": "Способ",
+        "paid": "Оплачено",
+        "status": "Статус оплаты",
+        "unpaid": "Не оплачено"
+      },
+      "reason": "Причина",
+      "status": "Статус",
+      "time": "Время",
+      "title": "Приём",
+      "type": {
+        "inPerson": "Очный",
+        "telemedicine": "Телемедицина"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "Отменён",
+      "completed": "Завершён",
+      "confirmed": "Подтверждён",
+      "pending": "Ожидает",
+      "rescheduled": "Перенесён"
+    },
+    "calendar": {
+      "addBlock": "Добавить блок",
+      "addEvent": "Добавить событие",
+      "allDay": "Весь день",
+      "available": "Доступно",
+      "blocked": "Заблокировано",
+      "cancel": "Отмена",
+      "create": "Создать",
+      "day": "День",
+      "delete": "Удалить",
+      "details": "Детали",
+      "edit": "Редактировать",
+      "end": "Конец",
+      "eventTitle": "Название события",
+      "month": "Месяц",
+      "notes": "Заметки",
+      "save": "Сохранить",
+      "start": "Начало",
+      "today": "Сегодня",
+      "week": "Неделя"
+    },
+    "clinic": {
+      "requestToLeave": "Запросить выход",
+      "verified": "Проверено"
+    },
+    "clinicFinder": {
+      "failedToLoad": "Не удалось загрузить клиники.",
+      "tryAgain": "Попробовать снова"
+    },
+    "currentAppointment": {
+      "noAppointments": "Нет предстоящих приёмов",
+      "scheduleEmpty": "Расписание свободно",
+      "title": "Текущий/предстоящий приём",
+      "today": "Приём сегодня",
+      "upcoming": "Следующий приём",
+      "upcomingCount": "Количество предстоящих"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "Пока здесь ничего нет.",
+        "title": "Пусто"
+      },
+      "title": "Панель врача"
+    },
+    "diagnoses": {
+      "addDiagnosis": "Добавить диагноз",
+      "categoryLabel": "Категория",
+      "categoryPlaceholder": "например, Общая стоматология",
+      "codeLabel": "Код МКБ-10 (необязательно)",
+      "codePlaceholder": "например, K02.9",
+      "create": "Создать",
+      "delete": "Удалить",
+      "descriptionLabel": "Описание",
+      "descriptionPlaceholder": "Краткое описание...",
+      "edit": "Редактировать",
+      "emptyState": "Диагнозов пока нет",
+      "nameLabel": "Название",
+      "namePlaceholder": "например, Кариес зубов",
+      "notesLabel": "Заметки",
+      "notesPlaceholder": "Необязательные заметки...",
+      "save": "Сохранить",
+      "searchPlaceholder": "Поиск диагнозов...",
+      "title": "Диагнозы",
+      "titleLabel": "Диагноз",
+      "titlePlaceholder": "например, Гипертония"
+    },
+    "errors": {
+      "generic": "Что-то пошло не так.",
+      "tryAgain": "Попробовать снова"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "Доход",
+        "noDataDesc": "Нет данных"
+      },
+      "insights": {
+        "tbd": "Скоро"
+      },
+      "overview": {
+        "tbd": "Скоро"
+      },
+      "payouts": {
+        "noData": "Нет данных по выплатам"
+      },
+      "pending": {
+        "noData": "Нет ожидающих платежей",
+        "paymentMarked": "Платёж отмечен"
+      },
+      "services": {
+        "minutes": "Минут"
+      },
+      "tabs": {
+        "byService": "По услугам",
+        "earningsChart": "График дохода",
+        "insights": "Инсайты",
+        "payouts": "Выплаты",
+        "pending": "Ожидает"
+      }
+    },
+    "loading": "Загрузка панели...",
+    "messaging": {
+      "description": "Общайтесь с пациентами и медработниками",
+      "title": "Сообщения"
+    },
+    "navigation": {
+      "calendar": "Календарь",
+      "clinicFinder": "Поиск клиник",
+      "dashboard": "Панель",
+      "diagnoses": "Диагнозы",
+      "financialStats": "Финансы",
+      "main": "Основное",
+      "messages": "Сообщения",
+      "myPatients": "Мои пациенты",
+      "myProfile": "Мой профиль",
+      "performance": "Показатели",
+      "procedureLibrary": "Библиотека процедур",
+      "referrals": "Направления",
+      "scheduleSettings": "Настройки расписания",
+      "settings": "Настройки",
+      "treatmentPlanning": "Планирование лечения"
+    },
+    "noUpcomingAppointments": "Нет предстоящих приёмов",
+    "profileCompletion": {
+      "completeProfile": "Заполните профиль ({{percent}}%)",
+      "incomplete": "Не заполнен",
+      "updateProfile": "Обновить профиль"
+    },
+    "profileSetup": {
+      "completeSetup": "Завершить настройку профиля",
+      "goHome": "На главную",
+      "message": "Ваш профиль врача нужно настроить. Давайте завершим заполнение профиля.",
+      "required": "Требуется настройка профиля",
+      "retryLoading": "Повторить загрузку",
+      "settingUp": "Настройка профиля",
+      "tryAgain": "Попробовать снова",
+      "unableToLoad": "Не удалось загрузить профиль врача. Давайте настроим ваш аккаунт."
+    },
+    "quickActions": "Быстрые действия",
+    "referrals": {
+      "title": "Направления"
+    },
+    "schedule": {
+      "addTimeBlock": "Добавить блок времени",
+      "apply": "Применить",
+      "availability": "Доступность",
+      "cancel": "Отмена",
+      "dayOff": "Выходной",
+      "delete": "Удалить",
+      "duration": "Длительность",
+      "end": "Конец",
+      "notes": "Заметки",
+      "save": "Сохранить",
+      "start": "Начало",
+      "title": "Настройки расписания"
+    },
+    "services": {
+      "add": "Добавить",
+      "addProcedure": "Добавить процедуру",
+      "category": "Категория",
+      "create": "Создать",
+      "delete": "Удалить",
+      "description": "Описание",
+      "duration": "Длительность",
+      "edit": "Редактировать",
+      "emptyState": "Процедур пока нет",
+      "fee": "Стоимость",
+      "minutes": "мин",
+      "name": "Название",
+      "save": "Сохранить",
+      "searchPlaceholder": "Поиск процедур...",
+      "title": "Библиотека процедур"
+    },
+    "settingUp": "Настраиваем профиль врача...",
+    "settings": {
+      "account": {
+        "description": "Управляйте данными аккаунта и предпочтениями",
+        "email": "Email",
+        "language": "Язык",
+        "phone": "Телефон",
+        "saveChanges": "Сохранить изменения",
+        "timezone": "Часовой пояс",
+        "title": "Аккаунт"
+      },
+      "calendar": {
+        "description": "Подключение и управление синхронизацией календаря",
+        "title": "Календарь"
+      },
+      "email": "Email",
+      "emailPlaceholder": "Введите email",
+      "language": "Язык",
+      "notifications": "Уведомления",
+      "personalInfo": "Личная информация",
+      "phone": "Телефон",
+      "phonePlaceholder": "Введите телефон",
+      "practice": "Клиника",
+      "privacy": "Приватность",
+      "security": "Безопасность",
+      "timeFormat": "Формат времени",
+      "timezone": "Часовой пояс",
+      "timezoneHint": "Календарь будет показывать время в этом часовом поясе.",
+      "title": "Настройки",
+      "updateDetails": "Обновите ваши личные данные"
+    },
+    "stats": {
+      "allTimeBookings": "Записи за всё время",
+      "averageRating": "Средний рейтинг",
+      "basedOnReviews": "На основе {{count}} отзывов",
+      "earnings": "Доход",
+      "rating": "Рейтинг",
+      "revenue": "Выручка",
+      "totalAppointments": "Всего приёмов",
+      "totalEarnings": "Общий доход",
+      "totalPatients": "Всего пациентов",
+      "uniquePatients": "Уникальных пациентов обслужено"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "Нет предстоящих приёмов",
+      "scheduleIsClear": "Расписание свободно",
+      "title": "Предстоящие приёмы"
+    },
+    "verification": {
+      "completeProfile": "Заполнить профиль",
+      "message": "Чтобы стать публичным и появляться в поиске, необходимо завершить верификацию.",
+      "pending": "Ожидает проверки",
+      "viewProfile": "Открыть профиль"
+    }
+  }
+}
