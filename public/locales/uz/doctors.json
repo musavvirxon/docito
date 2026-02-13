@@ -88,3 +88,321 @@
     "ent": "LOR"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "Protseduralarni boshqarish",
+      "updateSchedule": "Jadvalni yangilash",
+      "updateSettings": "Sozlamalarni yangilash"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "Tashxis qo‘shish",
+      "addDiagnosisBtn": "Qo‘shish",
+      "customDiagnosis": "O‘zingiz kiritish",
+      "date": "Sana",
+      "diagnosesTitle": "Tashxislar",
+      "diagnosisCode": "ICD-10 (ixtiyoriy)",
+      "diagnosisCodePlaceholder": "masalan, I10",
+      "diagnosisName": "Tashxis",
+      "diagnosisNamePlaceholder": "masalan, Gipertoniya",
+      "diagnosisNotes": "Izohlar",
+      "diagnosisNotesPlaceholder": "Ixtiyoriy izohlar, asos, reja...",
+      "inPerson": "Klinikada",
+      "loadingDiagnosis": "Yuklanmoqda...",
+      "message": "Bemorga xabar yozish",
+      "noDiagnoses": "Hozircha tashxis qo‘shilmagan.",
+      "notes": "Izohlar",
+      "schedule": "Qayta qabulni rejalash",
+      "selectDiagnosis": "Kutubxonadan tanlang yoki o‘zingiz kiriting",
+      "selectedDiagnosis": "Tanlandi",
+      "status": "Holat",
+      "telemedicine": "Telemeditsina",
+      "time": "Vaqt",
+      "title": "Qabul tafsilotlari",
+      "type": "Turi",
+      "viewPatient": "Bemor ma’lumotlarini ko‘rish"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "Tashxis qo‘shish",
+        "cancel": "Bekor qilish",
+        "complete": "Yakunlangan deb belgilash",
+        "confirm": "Qabulni tasdiqlash",
+        "message": "Bemorga xabar",
+        "reschedule": "Ko‘chirish",
+        "save": "Saqlash"
+      },
+      "addDiagnosis": "Tashxis qo‘shish",
+      "appointmentId": "Qabul ID",
+      "appointmentType": "Qabul turi",
+      "cancelConfirm": {
+        "cancel": "Bekor qilish",
+        "confirm": "Ha, bekor qiling",
+        "description": "Qabul bekor qilinadi va bemorga xabar yuboriladi.",
+        "title": "Ushbu qabulni bekor qilasizmi?"
+      },
+      "close": "Yopish",
+      "date": "Sana",
+      "diagnoses": "Tashxislar",
+      "diagnosisCode": "ICD-10 kodi (ixtiyoriy)",
+      "diagnosisCodePlaceholder": "masalan, K02.9",
+      "diagnosisName": "Tashxis",
+      "diagnosisNamePlaceholder": "masalan, Tish kariyesi",
+      "diagnosisNotes": "Izohlar",
+      "diagnosisNotesPlaceholder": "Ixtiyoriy izohlar...",
+      "doctorNotes": "Shifokor izohlari",
+      "doctorNotesPlaceholder": "Qabul haqida izoh qoldiring...",
+      "loading": "Qabul yuklanmoqda...",
+      "noDiagnoses": "Hozircha tashxis yo‘q",
+      "patient": "Bemor",
+      "payment": {
+        "amount": "Summa",
+        "method": "Usul",
+        "paid": "To‘langan",
+        "status": "To‘lov holati",
+        "unpaid": "To‘lanmagan"
+      },
+      "reason": "Sabab",
+      "status": "Holat",
+      "time": "Vaqt",
+      "title": "Qabul",
+      "type": {
+        "inPerson": "Klinikada",
+        "telemedicine": "Telemeditsina"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "Bekor qilingan",
+      "completed": "Yakunlangan",
+      "confirmed": "Tasdiqlangan",
+      "pending": "Kutilmoqda",
+      "rescheduled": "Ko‘chirilgan"
+    },
+    "calendar": {
+      "addBlock": "Blok qo‘shish",
+      "addEvent": "Tadbir qo‘shish",
+      "allDay": "Butun kun",
+      "available": "Bo‘sh",
+      "blocked": "Band",
+      "cancel": "Bekor qilish",
+      "create": "Yaratish",
+      "day": "Kun",
+      "delete": "O‘chirish",
+      "details": "Tafsilotlar",
+      "edit": "Tahrirlash",
+      "end": "Tugash",
+      "eventTitle": "Tadbir nomi",
+      "month": "Oy",
+      "notes": "Izohlar",
+      "save": "Saqlash",
+      "start": "Boshlanish",
+      "today": "Bugun",
+      "week": "Hafta"
+    },
+    "clinic": {
+      "requestToLeave": "Chiqish so‘rovi",
+      "verified": "Tasdiqlangan"
+    },
+    "clinicFinder": {
+      "failedToLoad": "Klinikalarni yuklab bo‘lmadi.",
+      "tryAgain": "Qayta urinib ko‘ring"
+    },
+    "currentAppointment": {
+      "noAppointments": "Kelgusi qabul yo‘q",
+      "scheduleEmpty": "Jadvalingiz bo‘sh",
+      "title": "Joriy/Kelgusi qabul",
+      "today": "Bugungi qabul",
+      "upcoming": "Keyingi qabul",
+      "upcomingCount": "Kelgusi soni"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "Hozircha hech narsa yo‘q.",
+        "title": "Bo‘sh"
+      },
+      "title": "Shifokor paneli"
+    },
+    "diagnoses": {
+      "addDiagnosis": "Tashxis qo‘shish",
+      "categoryLabel": "Kategoriya",
+      "categoryPlaceholder": "masalan, Umumiy stomatologiya",
+      "codeLabel": "ICD-10 kodi (ixtiyoriy)",
+      "codePlaceholder": "masalan, K02.9",
+      "create": "Yaratish",
+      "delete": "O‘chirish",
+      "descriptionLabel": "Tavsif",
+      "descriptionPlaceholder": "Qisqa tavsif...",
+      "edit": "Tahrirlash",
+      "emptyState": "Hozircha tashxis yo‘q",
+      "nameLabel": "Nomi",
+      "namePlaceholder": "masalan, Tish kariyesi",
+      "notesLabel": "Izohlar",
+      "notesPlaceholder": "Ixtiyoriy izohlar...",
+      "save": "Saqlash",
+      "searchPlaceholder": "Tashxislarni qidirish...",
+      "title": "Tashxislar",
+      "titleLabel": "Tashxis",
+      "titlePlaceholder": "masalan, Gipertoniya"
+    },
+    "errors": {
+      "generic": "Nimadir xato ketdi.",
+      "tryAgain": "Qayta urinib ko‘ring"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "Daromad",
+        "noDataDesc": "Ma’lumot yo‘q"
+      },
+      "insights": {
+        "tbd": "Tez orada"
+      },
+      "overview": {
+        "tbd": "Tez orada"
+      },
+      "payouts": {
+        "noData": "To‘lovlar bo‘yicha ma’lumot yo‘q"
+      },
+      "pending": {
+        "noData": "Kutilayotgan to‘lovlar yo‘q",
+        "paymentMarked": "To‘lov belgilandi"
+      },
+      "services": {
+        "minutes": "Daqiqa"
+      },
+      "tabs": {
+        "byService": "Xizmat bo‘yicha",
+        "earningsChart": "Daromad grafigi",
+        "insights": "Tahlillar",
+        "payouts": "To‘lovlar",
+        "pending": "Kutilmoqda"
+      }
+    },
+    "loading": "Panel yuklanmoqda...",
+    "messaging": {
+      "description": "Bemorlar va tibbiyot xodimlari bilan muloqot qiling",
+      "title": "Xabarlar"
+    },
+    "navigation": {
+      "calendar": "Kalendar",
+      "clinicFinder": "Klinika qidirish",
+      "dashboard": "Panel",
+      "diagnoses": "Tashxislar",
+      "financialStats": "Moliyaviy statistika",
+      "main": "Asosiy",
+      "messages": "Xabarlar",
+      "myPatients": "Mening bemorlarim",
+      "myProfile": "Mening profilim",
+      "performance": "Ko‘rsatkichlar",
+      "procedureLibrary": "Protseduralar kutubxonasi",
+      "referrals": "Yo‘llanmalar",
+      "scheduleSettings": "Jadval sozlamalari",
+      "settings": "Sozlamalar",
+      "treatmentPlanning": "Davolash rejalari"
+    },
+    "noUpcomingAppointments": "Kelgusi qabul yo‘q",
+    "profileCompletion": {
+      "completeProfile": "Profilni to‘ldiring ({{percent}}%)",
+      "incomplete": "To‘liq emas",
+      "updateProfile": "Profilni yangilash"
+    },
+    "profileSetup": {
+      "completeSetup": "Profil sozlashni yakunlash",
+      "goHome": "Bosh sahifaga",
+      "message": "Shifokor profilingiz sozlanishi kerak. Keling, profilni to‘ldiramiz.",
+      "required": "Profil sozlash talab qilinadi",
+      "retryLoading": "Qayta yuklash",
+      "settingUp": "Profil sozlanmoqda",
+      "tryAgain": "Qayta urinib ko‘ring",
+      "unableToLoad": "Shifokor profilingizni yuklab bo‘lmadi. Hisobingizni sozlaymiz."
+    },
+    "quickActions": "Tezkor amallar",
+    "referrals": {
+      "title": "Yo‘llanmalar"
+    },
+    "schedule": {
+      "addTimeBlock": "Vaqt blokini qo‘shish",
+      "apply": "Qo‘llash",
+      "availability": "Mavjudlik",
+      "cancel": "Bekor qilish",
+      "dayOff": "Dam olish kuni",
+      "delete": "O‘chirish",
+      "duration": "Davomiyligi",
+      "end": "Tugash",
+      "notes": "Izohlar",
+      "save": "Saqlash",
+      "start": "Boshlanish",
+      "title": "Jadval sozlamalari"
+    },
+    "services": {
+      "add": "Qo‘shish",
+      "addProcedure": "Protsedura qo‘shish",
+      "category": "Kategoriya",
+      "create": "Yaratish",
+      "delete": "O‘chirish",
+      "description": "Tavsif",
+      "duration": "Davomiyligi",
+      "edit": "Tahrirlash",
+      "emptyState": "Hozircha protsedura yo‘q",
+      "fee": "Narx",
+      "minutes": "daqiqa",
+      "name": "Nomi",
+      "save": "Saqlash",
+      "searchPlaceholder": "Protseduralarni qidirish...",
+      "title": "Protseduralar kutubxonasi"
+    },
+    "settingUp": "Shifokor profilingiz sozlanmoqda...",
+    "settings": {
+      "account": {
+        "description": "Hisob ma’lumotlari va afzalliklarni boshqaring",
+        "email": "Email",
+        "language": "Til",
+        "phone": "Telefon",
+        "saveChanges": "O‘zgarishlarni saqlash",
+        "timezone": "Vaqt zonasi",
+        "title": "Hisob"
+      },
+      "calendar": {
+        "description": "Kalendar sinxronizatsiyasini ulash va boshqarish",
+        "title": "Kalendar"
+      },
+      "email": "Email",
+      "emailPlaceholder": "Email kiriting",
+      "language": "Til",
+      "notifications": "Bildirishnomalar",
+      "personalInfo": "Shaxsiy ma’lumotlar",
+      "phone": "Telefon",
+      "phonePlaceholder": "Telefon kiriting",
+      "practice": "Klinika",
+      "privacy": "Maxfiylik",
+      "security": "Xavfsizlik",
+      "timeFormat": "Vaqt formati",
+      "timezone": "Vaqt zonasi",
+      "timezoneHint": "Kalendar vaqtni ushbu vaqt zonasida ko‘rsatadi.",
+      "title": "Sozlamalar",
+      "updateDetails": "Shaxsiy ma’lumotlaringizni yangilang"
+    },
+    "stats": {
+      "allTimeBookings": "Umumiy yozuvlar",
+      "averageRating": "O‘rtacha reyting",
+      "basedOnReviews": "{{count}} ta sharh asosida",
+      "earnings": "Daromad",
+      "rating": "Reyting",
+      "revenue": "Tushum",
+      "totalAppointments": "Jami qabullar",
+      "totalEarnings": "Umumiy daromad",
+      "totalPatients": "Jami bemorlar",
+      "uniquePatients": "Xizmat ko‘rsatilgan noyob bemorlar"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "Kelgusi qabul yo‘q",
+      "scheduleIsClear": "Jadvalingiz bo‘sh",
+      "title": "Kelgusi qabullar"
+    },
+    "verification": {
+      "completeProfile": "Profilni to‘ldirish",
+      "message": "Ommaviy bo‘lish va qidiruvda chiqish uchun tasdiqlash jarayonini yakunlash kerak.",
+      "pending": "Tasdiqlash kutilmoqda",
+      "viewProfile": "Profilni ko‘rish"
+    }
+  }
+}
