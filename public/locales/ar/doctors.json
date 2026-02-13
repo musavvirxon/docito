@@ -88,3 +88,321 @@
     "ent": "الأنف والأذن والحنجرة"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "إدارة الإجراءات",
+      "updateSchedule": "تحديث الجدول",
+      "updateSettings": "تحديث الإعدادات"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "إضافة تشخيص",
+      "addDiagnosisBtn": "إضافة",
+      "customDiagnosis": "تشخيص مخصص",
+      "date": "التاريخ",
+      "diagnosesTitle": "التشخيصات",
+      "diagnosisCode": "ICD-10 (اختياري)",
+      "diagnosisCodePlaceholder": "مثال: I10",
+      "diagnosisName": "التشخيص",
+      "diagnosisNamePlaceholder": "مثال: ارتفاع ضغط الدم",
+      "diagnosisNotes": "ملاحظات",
+      "diagnosisNotesPlaceholder": "ملاحظات اختيارية، تبرير، خطة...",
+      "inPerson": "حضوري",
+      "loadingDiagnosis": "جارٍ التحميل...",
+      "message": "مراسلة المريض",
+      "noDiagnoses": "لم تتم إضافة تشخيصات بعد.",
+      "notes": "ملاحظات",
+      "schedule": "جدولة متابعة",
+      "selectDiagnosis": "اختر من المكتبة أو أضف تشخيصاً مخصصاً",
+      "selectedDiagnosis": "تم الاختيار",
+      "status": "الحالة",
+      "telemedicine": "طب عن بُعد",
+      "time": "الوقت",
+      "title": "تفاصيل الموعد",
+      "type": "النوع",
+      "viewPatient": "عرض تفاصيل المريض"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "إضافة تشخيص",
+        "cancel": "إلغاء",
+        "complete": "وضع علامة مكتمل",
+        "confirm": "تأكيد الموعد",
+        "message": "مراسلة المريض",
+        "reschedule": "إعادة الجدولة",
+        "save": "حفظ"
+      },
+      "addDiagnosis": "إضافة تشخيص",
+      "appointmentId": "معرّف الموعد",
+      "appointmentType": "نوع الموعد",
+      "cancelConfirm": {
+        "cancel": "إلغاء",
+        "confirm": "نعم، إلغاء",
+        "description": "سيتم إلغاء الموعد وإشعار المريض.",
+        "title": "هل تريد إلغاء هذا الموعد؟"
+      },
+      "close": "إغلاق",
+      "date": "التاريخ",
+      "diagnoses": "التشخيصات",
+      "diagnosisCode": "رمز ICD-10 (اختياري)",
+      "diagnosisCodePlaceholder": "مثال: K02.9",
+      "diagnosisName": "التشخيص",
+      "diagnosisNamePlaceholder": "مثال: تسوس الأسنان",
+      "diagnosisNotes": "ملاحظات",
+      "diagnosisNotesPlaceholder": "ملاحظات اختيارية...",
+      "doctorNotes": "ملاحظات الطبيب",
+      "doctorNotesPlaceholder": "أضف ملاحظات حول الزيارة...",
+      "loading": "جارٍ تحميل الموعد...",
+      "noDiagnoses": "لا توجد تشخيصات بعد",
+      "patient": "المريض",
+      "payment": {
+        "amount": "المبلغ",
+        "method": "الطريقة",
+        "paid": "مدفوع",
+        "status": "حالة الدفع",
+        "unpaid": "غير مدفوع"
+      },
+      "reason": "السبب",
+      "status": "الحالة",
+      "time": "الوقت",
+      "title": "الموعد",
+      "type": {
+        "inPerson": "حضوري",
+        "telemedicine": "طب عن بُعد"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "ملغي",
+      "completed": "مكتمل",
+      "confirmed": "مؤكد",
+      "pending": "قيد الانتظار",
+      "rescheduled": "أعيدت جدولته"
+    },
+    "calendar": {
+      "addBlock": "إضافة حظر",
+      "addEvent": "إضافة حدث",
+      "allDay": "طوال اليوم",
+      "available": "متاح",
+      "blocked": "محظور",
+      "cancel": "إلغاء",
+      "create": "إنشاء",
+      "day": "يوم",
+      "delete": "حذف",
+      "details": "التفاصيل",
+      "edit": "تعديل",
+      "end": "النهاية",
+      "eventTitle": "عنوان الحدث",
+      "month": "شهر",
+      "notes": "ملاحظات",
+      "save": "حفظ",
+      "start": "البداية",
+      "today": "اليوم",
+      "week": "أسبوع"
+    },
+    "clinic": {
+      "requestToLeave": "طلب مغادرة",
+      "verified": "موثّق"
+    },
+    "clinicFinder": {
+      "failedToLoad": "تعذر تحميل العيادات.",
+      "tryAgain": "حاول مرة أخرى"
+    },
+    "currentAppointment": {
+      "noAppointments": "لا توجد مواعيد قادمة",
+      "scheduleEmpty": "جدولك فارغ",
+      "title": "الموعد الحالي/القادم",
+      "today": "موعد اليوم",
+      "upcoming": "الموعد التالي",
+      "upcomingCount": "عدد المواعيد القادمة"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "لا توجد عناصر بعد.",
+        "title": "لا يوجد شيء هنا"
+      },
+      "title": "لوحة الطبيب"
+    },
+    "diagnoses": {
+      "addDiagnosis": "إضافة تشخيص",
+      "categoryLabel": "الفئة",
+      "categoryPlaceholder": "مثال: طب الأسنان العام",
+      "codeLabel": "رمز ICD-10 (اختياري)",
+      "codePlaceholder": "مثال: K02.9",
+      "create": "إنشاء",
+      "delete": "حذف",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "وصف قصير...",
+      "edit": "تعديل",
+      "emptyState": "لا توجد تشخيصات بعد",
+      "nameLabel": "الاسم",
+      "namePlaceholder": "مثال: تسوس الأسنان",
+      "notesLabel": "ملاحظات",
+      "notesPlaceholder": "ملاحظات اختيارية...",
+      "save": "حفظ",
+      "searchPlaceholder": "بحث في التشخيصات...",
+      "title": "التشخيصات",
+      "titleLabel": "التشخيص",
+      "titlePlaceholder": "مثال: ارتفاع ضغط الدم"
+    },
+    "errors": {
+      "generic": "حدث خطأ ما.",
+      "tryAgain": "حاول مرة أخرى"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "الأرباح",
+        "noDataDesc": "لا توجد بيانات"
+      },
+      "insights": {
+        "tbd": "قريباً"
+      },
+      "overview": {
+        "tbd": "قريباً"
+      },
+      "payouts": {
+        "noData": "لا توجد بيانات للمدفوعات"
+      },
+      "pending": {
+        "noData": "لا توجد مدفوعات معلّقة",
+        "paymentMarked": "تم تعليم الدفع"
+      },
+      "services": {
+        "minutes": "دقائق"
+      },
+      "tabs": {
+        "byService": "حسب الخدمة",
+        "earningsChart": "مخطط الأرباح",
+        "insights": "تحليلات",
+        "payouts": "المدفوعات",
+        "pending": "معلّق"
+      }
+    },
+    "loading": "جارٍ تحميل لوحة التحكم...",
+    "messaging": {
+      "description": "تواصل مع المرضى ومقدمي الرعاية الصحية",
+      "title": "الرسائل"
+    },
+    "navigation": {
+      "calendar": "التقويم",
+      "clinicFinder": "البحث عن عيادة",
+      "dashboard": "لوحة التحكم",
+      "diagnoses": "التشخيصات",
+      "financialStats": "الإحصاءات المالية",
+      "main": "الرئيسية",
+      "messages": "الرسائل",
+      "myPatients": "مرضاي",
+      "myProfile": "ملفي",
+      "performance": "الأداء",
+      "procedureLibrary": "مكتبة الإجراءات",
+      "referrals": "الإحالات",
+      "scheduleSettings": "إعدادات الجدول",
+      "settings": "الإعدادات",
+      "treatmentPlanning": "تخطيط العلاج"
+    },
+    "noUpcomingAppointments": "لا توجد مواعيد قادمة",
+    "profileCompletion": {
+      "completeProfile": "أكمل الملف ({{percent}}%)",
+      "incomplete": "غير مكتمل",
+      "updateProfile": "تحديث الملف"
+    },
+    "profileSetup": {
+      "completeSetup": "إكمال إعداد الملف",
+      "goHome": "العودة للرئيسية",
+      "message": "يجب إعداد ملف الطبيب الخاص بك. دعنا نكمل ملفك.",
+      "required": "مطلوب إعداد الملف",
+      "retryLoading": "إعادة محاولة التحميل",
+      "settingUp": "جارٍ إعداد الملف",
+      "tryAgain": "حاول مرة أخرى",
+      "unableToLoad": "تعذر تحميل ملف الطبيب. دعنا نقوم بإعداد حسابك."
+    },
+    "quickActions": "إجراءات سريعة",
+    "referrals": {
+      "title": "الإحالات"
+    },
+    "schedule": {
+      "addTimeBlock": "إضافة حظر وقت",
+      "apply": "تطبيق",
+      "availability": "التوفر",
+      "cancel": "إلغاء",
+      "dayOff": "يوم إجازة",
+      "delete": "حذف",
+      "duration": "المدة",
+      "end": "النهاية",
+      "notes": "ملاحظات",
+      "save": "حفظ",
+      "start": "البداية",
+      "title": "إعدادات الجدول"
+    },
+    "services": {
+      "add": "إضافة",
+      "addProcedure": "إضافة إجراء",
+      "category": "الفئة",
+      "create": "إنشاء",
+      "delete": "حذف",
+      "description": "الوصف",
+      "duration": "المدة",
+      "edit": "تعديل",
+      "emptyState": "لا توجد إجراءات بعد",
+      "fee": "الرسوم",
+      "minutes": "دقيقة",
+      "name": "الاسم",
+      "save": "حفظ",
+      "searchPlaceholder": "بحث في الإجراءات...",
+      "title": "مكتبة الإجراءات"
+    },
+    "settingUp": "جارٍ إعداد ملف الطبيب...",
+    "settings": {
+      "account": {
+        "description": "إدارة تفاصيل الحساب والتفضيلات",
+        "email": "البريد الإلكتروني",
+        "language": "اللغة",
+        "phone": "الهاتف",
+        "saveChanges": "حفظ التغييرات",
+        "timezone": "المنطقة الزمنية",
+        "title": "الحساب"
+      },
+      "calendar": {
+        "description": "ربط وإدارة مزامنة التقويم",
+        "title": "التقويم"
+      },
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "أدخل البريد الإلكتروني",
+      "language": "اللغة",
+      "notifications": "الإشعارات",
+      "personalInfo": "المعلومات الشخصية",
+      "phone": "الهاتف",
+      "phonePlaceholder": "أدخل الهاتف",
+      "practice": "العيادة",
+      "privacy": "الخصوصية",
+      "security": "الأمان",
+      "timeFormat": "تنسيق الوقت",
+      "timezone": "المنطقة الزمنية",
+      "timezoneHint": "سيعرض التقويم الأوقات بهذه المنطقة الزمنية.",
+      "title": "الإعدادات",
+      "updateDetails": "حدّث بياناتك الشخصية"
+    },
+    "stats": {
+      "allTimeBookings": "جميع الحجوزات",
+      "averageRating": "متوسط التقييم",
+      "basedOnReviews": "بناءً على {{count}} مراجعة",
+      "earnings": "الأرباح",
+      "rating": "التقييم",
+      "revenue": "الإيراد",
+      "totalAppointments": "إجمالي المواعيد",
+      "totalEarnings": "إجمالي الأرباح",
+      "totalPatients": "إجمالي المرضى",
+      "uniquePatients": "عدد المرضى الفريدين الذين تم خدمتهم"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "لا توجد مواعيد قادمة",
+      "scheduleIsClear": "جدولك فارغ",
+      "title": "المواعيد القادمة"
+    },
+    "verification": {
+      "completeProfile": "أكمل الملف",
+      "message": "للنشر والظهور في نتائج البحث، يجب إكمال التحقق.",
+      "pending": "التحقق قيد الانتظار",
+      "viewProfile": "عرض الملف"
+    }
+  }
+}
