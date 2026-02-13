@@ -88,3 +88,321 @@
     "ent": "KBB"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "Prosedürleri Yönet",
+      "updateSchedule": "Programı Güncelle",
+      "updateSettings": "Ayarları Güncelle"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "Tanı ekle",
+      "addDiagnosisBtn": "Ekle",
+      "customDiagnosis": "Özel tanı",
+      "date": "Tarih",
+      "diagnosesTitle": "Tanılar",
+      "diagnosisCode": "ICD-10 (isteğe bağlı)",
+      "diagnosisCodePlaceholder": "örn. I10",
+      "diagnosisName": "Tanı",
+      "diagnosisNamePlaceholder": "örn. Hipertansiyon",
+      "diagnosisNotes": "Notlar",
+      "diagnosisNotesPlaceholder": "İsteğe bağlı notlar, gerekçe, plan...",
+      "inPerson": "Yüz yüze",
+      "loadingDiagnosis": "Yükleniyor...",
+      "message": "Hastaya mesaj",
+      "noDiagnoses": "Henüz tanı eklenmedi.",
+      "notes": "Notlar",
+      "schedule": "Kontrol randevusu planla",
+      "selectDiagnosis": "Kütüphaneden seçin veya özel ekleyin",
+      "selectedDiagnosis": "Seçildi",
+      "status": "Durum",
+      "telemedicine": "Tele-tıp",
+      "time": "Saat",
+      "title": "Randevu Detayları",
+      "type": "Tür",
+      "viewPatient": "Hasta Detaylarını Gör"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "Tanı Ekle",
+        "cancel": "İptal",
+        "complete": "Tamamlandı olarak işaretle",
+        "confirm": "Randevuyu Onayla",
+        "message": "Hastaya Mesaj",
+        "reschedule": "Yeniden Planla",
+        "save": "Kaydet"
+      },
+      "addDiagnosis": "Tanı ekle",
+      "appointmentId": "Randevu ID",
+      "appointmentType": "Randevu türü",
+      "cancelConfirm": {
+        "cancel": "İptal",
+        "confirm": "Evet, iptal et",
+        "description": "Bu işlem randevuyu iptal eder ve hastayı bilgilendirir.",
+        "title": "Bu randevu iptal edilsin mi?"
+      },
+      "close": "Kapat",
+      "date": "Tarih",
+      "diagnoses": "Tanılar",
+      "diagnosisCode": "ICD-10 kodu (isteğe bağlı)",
+      "diagnosisCodePlaceholder": "örn. K02.9",
+      "diagnosisName": "Tanı",
+      "diagnosisNamePlaceholder": "örn. Diş çürüğü",
+      "diagnosisNotes": "Notlar",
+      "diagnosisNotesPlaceholder": "İsteğe bağlı notlar...",
+      "doctorNotes": "Doktor notları",
+      "doctorNotesPlaceholder": "Ziyaret hakkında not ekleyin...",
+      "loading": "Randevu yükleniyor...",
+      "noDiagnoses": "Henüz tanı yok",
+      "patient": "Hasta",
+      "payment": {
+        "amount": "Tutar",
+        "method": "Yöntem",
+        "paid": "Ödendi",
+        "status": "Ödeme durumu",
+        "unpaid": "Ödenmedi"
+      },
+      "reason": "Neden",
+      "status": "Durum",
+      "time": "Saat",
+      "title": "Randevu",
+      "type": {
+        "inPerson": "Yüz yüze",
+        "telemedicine": "Tele-tıp"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "İptal edildi",
+      "completed": "Tamamlandı",
+      "confirmed": "Onaylandı",
+      "pending": "Beklemede",
+      "rescheduled": "Yeniden planlandı"
+    },
+    "calendar": {
+      "addBlock": "Blok ekle",
+      "addEvent": "Etkinlik ekle",
+      "allDay": "Tüm gün",
+      "available": "Uygun",
+      "blocked": "Engellendi",
+      "cancel": "İptal",
+      "create": "Oluştur",
+      "day": "Gün",
+      "delete": "Sil",
+      "details": "Detaylar",
+      "edit": "Düzenle",
+      "end": "Bitiş",
+      "eventTitle": "Etkinlik başlığı",
+      "month": "Ay",
+      "notes": "Notlar",
+      "save": "Kaydet",
+      "start": "Başlangıç",
+      "today": "Bugün",
+      "week": "Hafta"
+    },
+    "clinic": {
+      "requestToLeave": "Ayrılma Talebi",
+      "verified": "Doğrulandı"
+    },
+    "clinicFinder": {
+      "failedToLoad": "Klinikler yüklenemedi.",
+      "tryAgain": "Tekrar Dene"
+    },
+    "currentAppointment": {
+      "noAppointments": "Yaklaşan randevu yok",
+      "scheduleEmpty": "Programınız boş",
+      "title": "Mevcut/Yaklaşan Randevu",
+      "today": "Bugünkü Randevu",
+      "upcoming": "Sonraki Randevu",
+      "upcomingCount": "Yaklaşan sayısı"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "Henüz hiçbir öğeniz yok.",
+        "title": "Burada bir şey yok"
+      },
+      "title": "Doktor Paneli"
+    },
+    "diagnoses": {
+      "addDiagnosis": "Tanı ekle",
+      "categoryLabel": "Kategori",
+      "categoryPlaceholder": "örn. Genel diş hekimliği",
+      "codeLabel": "ICD-10 kodu (isteğe bağlı)",
+      "codePlaceholder": "örn. K02.9",
+      "create": "Oluştur",
+      "delete": "Sil",
+      "descriptionLabel": "Açıklama",
+      "descriptionPlaceholder": "Kısa açıklama...",
+      "edit": "Düzenle",
+      "emptyState": "Henüz tanı yok",
+      "nameLabel": "Ad",
+      "namePlaceholder": "örn. Diş çürüğü",
+      "notesLabel": "Notlar",
+      "notesPlaceholder": "İsteğe bağlı notlar...",
+      "save": "Kaydet",
+      "searchPlaceholder": "Tanılarda ara...",
+      "title": "Tanılar",
+      "titleLabel": "Tanı",
+      "titlePlaceholder": "örn. Hipertansiyon"
+    },
+    "errors": {
+      "generic": "Bir şeyler ters gitti.",
+      "tryAgain": "Tekrar dene"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "Kazanç",
+        "noDataDesc": "Veri yok"
+      },
+      "insights": {
+        "tbd": "Yakında"
+      },
+      "overview": {
+        "tbd": "Yakında"
+      },
+      "payouts": {
+        "noData": "Ödeme verisi yok"
+      },
+      "pending": {
+        "noData": "Bekleyen ödeme yok",
+        "paymentMarked": "Ödeme işaretlendi"
+      },
+      "services": {
+        "minutes": "Dakika"
+      },
+      "tabs": {
+        "byService": "Hizmete göre",
+        "earningsChart": "Kazanç grafiği",
+        "insights": "İçgörüler",
+        "payouts": "Ödemeler",
+        "pending": "Bekleyen"
+      }
+    },
+    "loading": "Panel yükleniyor...",
+    "messaging": {
+      "description": "Hastalar ve sağlık çalışanlarıyla iletişim kurun",
+      "title": "Mesajlar"
+    },
+    "navigation": {
+      "calendar": "Takvim",
+      "clinicFinder": "Klinik Bul",
+      "dashboard": "Panel",
+      "diagnoses": "Tanılar",
+      "financialStats": "Finansal İstatistikler",
+      "main": "Ana",
+      "messages": "Mesajlar",
+      "myPatients": "Hastalarım",
+      "myProfile": "Profilim",
+      "performance": "Performans",
+      "procedureLibrary": "Prosedür Kütüphanesi",
+      "referrals": "Yönlendirmeler",
+      "scheduleSettings": "Program Ayarları",
+      "settings": "Ayarlar",
+      "treatmentPlanning": "Tedavi Planlama"
+    },
+    "noUpcomingAppointments": "Yaklaşan randevu yok",
+    "profileCompletion": {
+      "completeProfile": "Profili tamamla ({{percent}}%)",
+      "incomplete": "Eksik",
+      "updateProfile": "Profili güncelle"
+    },
+    "profileSetup": {
+      "completeSetup": "Profil Kurulumunu Tamamla",
+      "goHome": "Ana sayfaya git",
+      "message": "Doktor profilinizin kurulması gerekiyor. Profilinizi tamamlayalım.",
+      "required": "Profil Kurulumu Gerekli",
+      "retryLoading": "Yüklemeyi Tekrar Dene",
+      "settingUp": "Profil Ayarlanıyor",
+      "tryAgain": "Tekrar Dene",
+      "unableToLoad": "Doktor profiliniz yüklenemedi. Hesabınızı kurmamıza izin verin."
+    },
+    "quickActions": "Hızlı İşlemler",
+    "referrals": {
+      "title": "Yönlendirmeler"
+    },
+    "schedule": {
+      "addTimeBlock": "Zaman bloğu ekle",
+      "apply": "Uygula",
+      "availability": "Uygunluk",
+      "cancel": "İptal",
+      "dayOff": "İzin günü",
+      "delete": "Sil",
+      "duration": "Süre",
+      "end": "Bitiş",
+      "notes": "Notlar",
+      "save": "Kaydet",
+      "start": "Başlangıç",
+      "title": "Program Ayarları"
+    },
+    "services": {
+      "add": "Ekle",
+      "addProcedure": "Prosedür ekle",
+      "category": "Kategori",
+      "create": "Oluştur",
+      "delete": "Sil",
+      "description": "Açıklama",
+      "duration": "Süre",
+      "edit": "Düzenle",
+      "emptyState": "Henüz prosedür yok",
+      "fee": "Ücret",
+      "minutes": "dakika",
+      "name": "Ad",
+      "save": "Kaydet",
+      "searchPlaceholder": "Prosedürlerde ara...",
+      "title": "Prosedür Kütüphanesi"
+    },
+    "settingUp": "Doktor profiliniz ayarlanıyor...",
+    "settings": {
+      "account": {
+        "description": "Hesap bilgilerinizi ve tercihlerinizi yönetin",
+        "email": "E-posta",
+        "language": "Dil",
+        "phone": "Telefon",
+        "saveChanges": "Değişiklikleri kaydet",
+        "timezone": "Saat dilimi",
+        "title": "Hesap"
+      },
+      "calendar": {
+        "description": "Takvim senkronizasyonunu bağlayın ve yönetin",
+        "title": "Takvim"
+      },
+      "email": "E-posta",
+      "emailPlaceholder": "E-posta girin",
+      "language": "Dil",
+      "notifications": "Bildirimler",
+      "personalInfo": "Kişisel Bilgiler",
+      "phone": "Telefon",
+      "phonePlaceholder": "Telefon girin",
+      "practice": "Klinik",
+      "privacy": "Gizlilik",
+      "security": "Güvenlik",
+      "timeFormat": "Saat formatı",
+      "timezone": "Saat dilimi",
+      "timezoneHint": "Takviminiz bu saat diliminde gösterilecektir.",
+      "title": "Ayarlar",
+      "updateDetails": "Kişisel bilgilerinizi güncelleyin"
+    },
+    "stats": {
+      "allTimeBookings": "Tüm zaman rezervasyonları",
+      "averageRating": "Ortalama Puan",
+      "basedOnReviews": "{{count}} değerlendirmeye göre",
+      "earnings": "Kazanç",
+      "rating": "Puan",
+      "revenue": "Gelir",
+      "totalAppointments": "Toplam Randevu",
+      "totalEarnings": "Toplam kazanç",
+      "totalPatients": "Toplam Hasta",
+      "uniquePatients": "Hizmet verilen benzersiz hasta"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "Yaklaşan randevu yok",
+      "scheduleIsClear": "Programınız boş",
+      "title": "Yaklaşan Randevular"
+    },
+    "verification": {
+      "completeProfile": "Profili Tamamla",
+      "message": "Herkese açık olmak ve arama sonuçlarında görünmek için doğrulamanın tamamlanması gerekir.",
+      "pending": "Doğrulama Bekliyor",
+      "viewProfile": "Profili Gör"
+    }
+  }
+}
