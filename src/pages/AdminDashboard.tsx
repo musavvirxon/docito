@@ -1243,21 +1243,21 @@ const AdminDashboard = () => {
           </main>
         </div>
 
-        {(InviteProviderModal as any)({ open: inviteProviderOpen, onOpenChange: setInviteProviderOpen })}
+        <InviteProviderModal open={inviteProviderOpen} onOpenChange={setInviteProviderOpen} />
 
-        {(AddServiceModal as any)({ open: addServiceOpen, onOpenChange: setAddServiceOpen })}
+        <AddServiceModal open={addServiceOpen} onOpenChange={setAddServiceOpen} />
 
         <InviteStaffModal open={inviteStaffOpen} onOpenChange={setInviteStaffOpen} practiceId={practice?.id} />
 
-        {(AddLocationModal as any)({ open: addLocationOpen, onOpenChange: setAddLocationOpen })}
+        <AddLocationModal open={addLocationOpen} onOpenChange={setAddLocationOpen} />
 
-        {(ComprehensiveRegistrationModal as any)({ open: settingsOpen, onOpenChange: setSettingsOpen, practiceId: practice?.id, onSuccess: () => {} })}
+        <ComprehensiveRegistrationModal open={settingsOpen} onOpenChange={setSettingsOpen} practiceId={practice?.id} onSuccess={() => {}} />
 
-        {(CreateClinicModal as any)({ open: createClinicOpen, onOpenChange: setCreateClinicOpen, onSuccess: () => {} })}
+        <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} onSuccess={() => {}} />
 
         <ViewRequirementsModal open={requirementsOpen} onOpenChange={setRequirementsOpen} />
 
-        {(VerificationSuccessModal as any)({ open: verificationModalOpen, onOpenChange: setVerificationModalOpen, onSuccess: handleVerificationSuccess })}
+        <VerificationSuccessModal open={verificationModalOpen} onOpenChange={setVerificationModalOpen} practiceName={practice?.name || ""} />
       </div>
     </SidebarProvider>
   );
