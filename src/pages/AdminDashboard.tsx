@@ -590,7 +590,7 @@ const AdminDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {(AdvancedFinancialMetrics as any)({ metrics: advancedMetrics, revenue: 0, onUpdateInputs: () => {} })}
+                  <AdvancedFinancialMetrics metrics={advancedMetrics} revenue={0} onUpdateInputs={() => {}} />
                 </CardContent>
               </Card>
             </div>
