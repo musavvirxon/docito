@@ -88,3 +88,321 @@
     "ent": "Otorrinolaringologia"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "Gerenciar procedimentos",
+      "updateSchedule": "Atualizar agenda",
+      "updateSettings": "Atualizar configurações"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "Adicionar diagnóstico",
+      "addDiagnosisBtn": "Adicionar",
+      "customDiagnosis": "Diagnóstico personalizado",
+      "date": "Data",
+      "diagnosesTitle": "Diagnósticos",
+      "diagnosisCode": "CID-10 (opcional)",
+      "diagnosisCodePlaceholder": "ex.: I10",
+      "diagnosisName": "Diagnóstico",
+      "diagnosisNamePlaceholder": "ex.: Hipertensão",
+      "diagnosisNotes": "Notas",
+      "diagnosisNotesPlaceholder": "Notas opcionais, justificativa, plano...",
+      "inPerson": "Presencial",
+      "loadingDiagnosis": "Carregando...",
+      "message": "Mensagem para o paciente",
+      "noDiagnoses": "Nenhum diagnóstico adicionado ainda.",
+      "notes": "Notas",
+      "schedule": "Agendar retorno",
+      "selectDiagnosis": "Selecione da biblioteca ou adicione um personalizado",
+      "selectedDiagnosis": "Selecionado",
+      "status": "Status",
+      "telemedicine": "Telemedicina",
+      "time": "Hora",
+      "title": "Detalhes da consulta",
+      "type": "Tipo",
+      "viewPatient": "Ver detalhes do paciente"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "Adicionar diagnóstico",
+        "cancel": "Cancelar",
+        "complete": "Marcar como concluída",
+        "confirm": "Confirmar consulta",
+        "message": "Mensagem ao paciente",
+        "reschedule": "Remarcar",
+        "save": "Salvar"
+      },
+      "addDiagnosis": "Adicionar diagnóstico",
+      "appointmentId": "ID da consulta",
+      "appointmentType": "Tipo de consulta",
+      "cancelConfirm": {
+        "cancel": "Cancelar",
+        "confirm": "Sim, cancelar",
+        "description": "Isso cancelará a consulta e notificará o paciente.",
+        "title": "Cancelar esta consulta?"
+      },
+      "close": "Fechar",
+      "date": "Data",
+      "diagnoses": "Diagnósticos",
+      "diagnosisCode": "Código CID-10 (opcional)",
+      "diagnosisCodePlaceholder": "ex.: K02.9",
+      "diagnosisName": "Diagnóstico",
+      "diagnosisNamePlaceholder": "ex.: Cárie dentária",
+      "diagnosisNotes": "Notas",
+      "diagnosisNotesPlaceholder": "Notas opcionais...",
+      "doctorNotes": "Notas do médico",
+      "doctorNotesPlaceholder": "Adicione notas sobre a visita...",
+      "loading": "Carregando consulta...",
+      "noDiagnoses": "Ainda sem diagnósticos",
+      "patient": "Paciente",
+      "payment": {
+        "amount": "Valor",
+        "method": "Método",
+        "paid": "Pago",
+        "status": "Status do pagamento",
+        "unpaid": "Não pago"
+      },
+      "reason": "Motivo",
+      "status": "Status",
+      "time": "Hora",
+      "title": "Consulta",
+      "type": {
+        "inPerson": "Presencial",
+        "telemedicine": "Telemedicina"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "Cancelada",
+      "completed": "Concluída",
+      "confirmed": "Confirmada",
+      "pending": "Pendente",
+      "rescheduled": "Remarcada"
+    },
+    "calendar": {
+      "addBlock": "Adicionar bloqueio",
+      "addEvent": "Adicionar evento",
+      "allDay": "Dia inteiro",
+      "available": "Disponível",
+      "blocked": "Bloqueado",
+      "cancel": "Cancelar",
+      "create": "Criar",
+      "day": "Dia",
+      "delete": "Excluir",
+      "details": "Detalhes",
+      "edit": "Editar",
+      "end": "Fim",
+      "eventTitle": "Título do evento",
+      "month": "Mês",
+      "notes": "Notas",
+      "save": "Salvar",
+      "start": "Início",
+      "today": "Hoje",
+      "week": "Semana"
+    },
+    "clinic": {
+      "requestToLeave": "Solicitar saída",
+      "verified": "Verificado"
+    },
+    "clinicFinder": {
+      "failedToLoad": "Falha ao carregar clínicas.",
+      "tryAgain": "Tentar novamente"
+    },
+    "currentAppointment": {
+      "noAppointments": "Sem consultas próximas",
+      "scheduleEmpty": "Sua agenda está livre",
+      "title": "Consulta atual/próxima",
+      "today": "Consulta de hoje",
+      "upcoming": "Próxima consulta",
+      "upcomingCount": "Quantidade próximas"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "Você ainda não tem itens.",
+        "title": "Não há nada aqui"
+      },
+      "title": "Painel do médico"
+    },
+    "diagnoses": {
+      "addDiagnosis": "Adicionar diagnóstico",
+      "categoryLabel": "Categoria",
+      "categoryPlaceholder": "ex.: Odontologia geral",
+      "codeLabel": "Código CID-10 (opcional)",
+      "codePlaceholder": "ex.: K02.9",
+      "create": "Criar",
+      "delete": "Excluir",
+      "descriptionLabel": "Descrição",
+      "descriptionPlaceholder": "Descrição curta...",
+      "edit": "Editar",
+      "emptyState": "Ainda não há diagnósticos",
+      "nameLabel": "Nome",
+      "namePlaceholder": "ex.: Cárie dentária",
+      "notesLabel": "Notas",
+      "notesPlaceholder": "Notas opcionais...",
+      "save": "Salvar",
+      "searchPlaceholder": "Pesquisar diagnósticos...",
+      "title": "Diagnósticos",
+      "titleLabel": "Diagnóstico",
+      "titlePlaceholder": "ex.: Hipertensão"
+    },
+    "errors": {
+      "generic": "Algo deu errado.",
+      "tryAgain": "Tentar novamente"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "Ganhos",
+        "noDataDesc": "Sem dados disponíveis"
+      },
+      "insights": {
+        "tbd": "Em breve"
+      },
+      "overview": {
+        "tbd": "Em breve"
+      },
+      "payouts": {
+        "noData": "Sem dados de pagamentos"
+      },
+      "pending": {
+        "noData": "Sem pagamentos pendentes",
+        "paymentMarked": "Pagamento marcado"
+      },
+      "services": {
+        "minutes": "Minutos"
+      },
+      "tabs": {
+        "byService": "Por serviço",
+        "earningsChart": "Gráfico de ganhos",
+        "insights": "Insights",
+        "payouts": "Pagamentos",
+        "pending": "Pendente"
+      }
+    },
+    "loading": "Carregando painel...",
+    "messaging": {
+      "description": "Comunique-se com pacientes e profissionais de saúde",
+      "title": "Mensagens"
+    },
+    "navigation": {
+      "calendar": "Calendário",
+      "clinicFinder": "Buscar clínicas",
+      "dashboard": "Painel",
+      "diagnoses": "Diagnósticos",
+      "financialStats": "Estatísticas financeiras",
+      "main": "Principal",
+      "messages": "Mensagens",
+      "myPatients": "Meus pacientes",
+      "myProfile": "Meu perfil",
+      "performance": "Desempenho",
+      "procedureLibrary": "Biblioteca de procedimentos",
+      "referrals": "Encaminhamentos",
+      "scheduleSettings": "Configurações de agenda",
+      "settings": "Configurações",
+      "treatmentPlanning": "Planejamento de tratamento"
+    },
+    "noUpcomingAppointments": "Sem consultas próximas",
+    "profileCompletion": {
+      "completeProfile": "Complete o perfil ({{percent}}%)",
+      "incomplete": "Incompleto",
+      "updateProfile": "Atualizar perfil"
+    },
+    "profileSetup": {
+      "completeSetup": "Concluir configuração do perfil",
+      "goHome": "Ir para a página inicial",
+      "message": "Seu perfil de médico precisa ser configurado. Vamos completar seu perfil.",
+      "required": "Configuração do perfil obrigatória",
+      "retryLoading": "Tentar carregar novamente",
+      "settingUp": "Configurando perfil",
+      "tryAgain": "Tentar novamente",
+      "unableToLoad": "Não foi possível carregar seu perfil de médico. Vamos configurar sua conta."
+    },
+    "quickActions": "Ações rápidas",
+    "referrals": {
+      "title": "Encaminhamentos"
+    },
+    "schedule": {
+      "addTimeBlock": "Adicionar bloco de tempo",
+      "apply": "Aplicar",
+      "availability": "Disponibilidade",
+      "cancel": "Cancelar",
+      "dayOff": "Dia de folga",
+      "delete": "Excluir",
+      "duration": "Duração",
+      "end": "Fim",
+      "notes": "Notas",
+      "save": "Salvar",
+      "start": "Início",
+      "title": "Configurações de agenda"
+    },
+    "services": {
+      "add": "Adicionar",
+      "addProcedure": "Adicionar procedimento",
+      "category": "Categoria",
+      "create": "Criar",
+      "delete": "Excluir",
+      "description": "Descrição",
+      "duration": "Duração",
+      "edit": "Editar",
+      "emptyState": "Ainda não há procedimentos",
+      "fee": "Taxa",
+      "minutes": "minutos",
+      "name": "Nome",
+      "save": "Salvar",
+      "searchPlaceholder": "Pesquisar procedimentos...",
+      "title": "Biblioteca de procedimentos"
+    },
+    "settingUp": "Configurando seu perfil de médico...",
+    "settings": {
+      "account": {
+        "description": "Gerencie os detalhes e preferências da sua conta",
+        "email": "E-mail",
+        "language": "Idioma",
+        "phone": "Telefone",
+        "saveChanges": "Salvar alterações",
+        "timezone": "Fuso horário",
+        "title": "Conta"
+      },
+      "calendar": {
+        "description": "Conecte e gerencie a sincronização do calendário",
+        "title": "Calendário"
+      },
+      "email": "E-mail",
+      "emailPlaceholder": "Digite o e-mail",
+      "language": "Idioma",
+      "notifications": "Notificações",
+      "personalInfo": "Informações pessoais",
+      "phone": "Telefone",
+      "phonePlaceholder": "Digite o telefone",
+      "practice": "Clínica",
+      "privacy": "Privacidade",
+      "security": "Segurança",
+      "timeFormat": "Formato de hora",
+      "timezone": "Fuso horário",
+      "timezoneHint": "Seu calendário exibirá os horários neste fuso horário.",
+      "title": "Configurações",
+      "updateDetails": "Atualize seus dados pessoais"
+    },
+    "stats": {
+      "allTimeBookings": "Agendamentos de todos os tempos",
+      "averageRating": "Avaliação média",
+      "basedOnReviews": "Com base em {{count}} avaliações",
+      "earnings": "Ganhos",
+      "rating": "Avaliação",
+      "revenue": "Receita",
+      "totalAppointments": "Total de consultas",
+      "totalEarnings": "Ganhos totais",
+      "totalPatients": "Total de pacientes",
+      "uniquePatients": "Pacientes únicos atendidos"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "Sem consultas próximas",
+      "scheduleIsClear": "Sua agenda está livre",
+      "title": "Próximas consultas"
+    },
+    "verification": {
+      "completeProfile": "Completar perfil",
+      "message": "Para ficar público e aparecer na busca, é necessário concluir a verificação.",
+      "pending": "Verificação pendente",
+      "viewProfile": "Ver perfil"
+    }
+  }
+}
