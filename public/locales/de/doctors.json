@@ -88,3 +88,321 @@
     "ent": "HNO"
   }
 }
+{
+  "doctor": {
+    "actions": {
+      "manageProcedures": "Prozeduren verwalten",
+      "updateSchedule": "Zeitplan aktualisieren",
+      "updateSettings": "Einstellungen aktualisieren"
+    },
+    "appointmentDetails": {
+      "addDiagnosis": "Diagnose hinzufügen",
+      "addDiagnosisBtn": "Hinzufügen",
+      "customDiagnosis": "Eigene Diagnose",
+      "date": "Datum",
+      "diagnosesTitle": "Diagnosen",
+      "diagnosisCode": "ICD-10 (optional)",
+      "diagnosisCodePlaceholder": "z. B. I10",
+      "diagnosisName": "Diagnose",
+      "diagnosisNamePlaceholder": "z. B. Hypertonie",
+      "diagnosisNotes": "Notizen",
+      "diagnosisNotesPlaceholder": "Optionale Notizen, Begründung, Plan...",
+      "inPerson": "Vor Ort",
+      "loadingDiagnosis": "Wird geladen...",
+      "message": "Patient kontaktieren",
+      "noDiagnoses": "Noch keine Diagnosen hinzugefügt.",
+      "notes": "Notizen",
+      "schedule": "Folgetermin planen",
+      "selectDiagnosis": "Aus Bibliothek wählen oder eigene hinzufügen",
+      "selectedDiagnosis": "Ausgewählt",
+      "status": "Status",
+      "telemedicine": "Telemedizin",
+      "time": "Uhrzeit",
+      "title": "Termindetails",
+      "type": "Typ",
+      "viewPatient": "Patientendetails anzeigen"
+    },
+    "appointmentModal": {
+      "actions": {
+        "addDiagnosis": "Diagnose hinzufügen",
+        "cancel": "Abbrechen",
+        "complete": "Als abgeschlossen markieren",
+        "confirm": "Termin bestätigen",
+        "message": "Patient kontaktieren",
+        "reschedule": "Verschieben",
+        "save": "Speichern"
+      },
+      "addDiagnosis": "Diagnose hinzufügen",
+      "appointmentId": "Termin-ID",
+      "appointmentType": "Terminart",
+      "cancelConfirm": {
+        "cancel": "Abbrechen",
+        "confirm": "Ja, stornieren",
+        "description": "Der Termin wird storniert und der Patient benachrichtigt.",
+        "title": "Diesen Termin stornieren?"
+      },
+      "close": "Schließen",
+      "date": "Datum",
+      "diagnoses": "Diagnosen",
+      "diagnosisCode": "ICD-10-Code (optional)",
+      "diagnosisCodePlaceholder": "z. B. K02.9",
+      "diagnosisName": "Diagnose",
+      "diagnosisNamePlaceholder": "z. B. Zahnkaries",
+      "diagnosisNotes": "Notizen",
+      "diagnosisNotesPlaceholder": "Optionale Notizen...",
+      "doctorNotes": "Arztnotizen",
+      "doctorNotesPlaceholder": "Notizen zum Besuch hinzufügen...",
+      "loading": "Termin wird geladen...",
+      "noDiagnoses": "Noch keine Diagnosen",
+      "patient": "Patient",
+      "payment": {
+        "amount": "Betrag",
+        "method": "Methode",
+        "paid": "Bezahlt",
+        "status": "Zahlungsstatus",
+        "unpaid": "Unbezahlt"
+      },
+      "reason": "Grund",
+      "status": "Status",
+      "time": "Uhrzeit",
+      "title": "Termin",
+      "type": {
+        "inPerson": "Vor Ort",
+        "telemedicine": "Telemedizin"
+      }
+    },
+    "appointmentStatus": {
+      "canceled": "Storniert",
+      "completed": "Abgeschlossen",
+      "confirmed": "Bestätigt",
+      "pending": "Ausstehend",
+      "rescheduled": "Verschoben"
+    },
+    "calendar": {
+      "addBlock": "Block hinzufügen",
+      "addEvent": "Ereignis hinzufügen",
+      "allDay": "Ganztägig",
+      "available": "Verfügbar",
+      "blocked": "Blockiert",
+      "cancel": "Abbrechen",
+      "create": "Erstellen",
+      "day": "Tag",
+      "delete": "Löschen",
+      "details": "Details",
+      "edit": "Bearbeiten",
+      "end": "Ende",
+      "eventTitle": "Ereignistitel",
+      "month": "Monat",
+      "notes": "Notizen",
+      "save": "Speichern",
+      "start": "Start",
+      "today": "Heute",
+      "week": "Woche"
+    },
+    "clinic": {
+      "requestToLeave": "Austritt beantragen",
+      "verified": "Verifiziert"
+    },
+    "clinicFinder": {
+      "failedToLoad": "Kliniken konnten nicht geladen werden.",
+      "tryAgain": "Erneut versuchen"
+    },
+    "currentAppointment": {
+      "noAppointments": "Keine anstehenden Termine",
+      "scheduleEmpty": "Ihr Zeitplan ist frei",
+      "title": "Aktueller/Bevorstehender Termin",
+      "today": "Heutiger Termin",
+      "upcoming": "Nächster Termin",
+      "upcomingCount": "Anzahl bevorstehender"
+    },
+    "dashboard": {
+      "emptyState": {
+        "description": "Sie haben noch keine Einträge.",
+        "title": "Nichts vorhanden"
+      },
+      "title": "Arzt-Dashboard"
+    },
+    "diagnoses": {
+      "addDiagnosis": "Diagnose hinzufügen",
+      "categoryLabel": "Kategorie",
+      "categoryPlaceholder": "z. B. Allgemeine Zahnmedizin",
+      "codeLabel": "ICD-10-Code (optional)",
+      "codePlaceholder": "z. B. K02.9",
+      "create": "Erstellen",
+      "delete": "Löschen",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Kurze Beschreibung...",
+      "edit": "Bearbeiten",
+      "emptyState": "Noch keine Diagnosen",
+      "nameLabel": "Name",
+      "namePlaceholder": "z. B. Zahnkaries",
+      "notesLabel": "Notizen",
+      "notesPlaceholder": "Optionale Notizen...",
+      "save": "Speichern",
+      "searchPlaceholder": "Diagnosen suchen...",
+      "title": "Diagnosen",
+      "titleLabel": "Diagnose",
+      "titlePlaceholder": "z. B. Hypertonie"
+    },
+    "errors": {
+      "generic": "Etwas ist schiefgelaufen.",
+      "tryAgain": "Erneut versuchen"
+    },
+    "financialStats": {
+      "chart": {
+        "earningsLabel": "Einnahmen",
+        "noDataDesc": "Keine Daten verfügbar"
+      },
+      "insights": {
+        "tbd": "Kommt bald"
+      },
+      "overview": {
+        "tbd": "Kommt bald"
+      },
+      "payouts": {
+        "noData": "Keine Auszahlungsdaten"
+      },
+      "pending": {
+        "noData": "Keine ausstehenden Zahlungen",
+        "paymentMarked": "Zahlung markiert"
+      },
+      "services": {
+        "minutes": "Minuten"
+      },
+      "tabs": {
+        "byService": "Nach Leistung",
+        "earningsChart": "Einnahmen-Chart",
+        "insights": "Insights",
+        "payouts": "Auszahlungen",
+        "pending": "Ausstehend"
+      }
+    },
+    "loading": "Dashboard wird geladen...",
+    "messaging": {
+      "description": "Kommunizieren Sie mit Patienten und Gesundheitsdienstleistern",
+      "title": "Nachrichten"
+    },
+    "navigation": {
+      "calendar": "Kalender",
+      "clinicFinder": "Kliniksuche",
+      "dashboard": "Dashboard",
+      "diagnoses": "Diagnosen",
+      "financialStats": "Finanzstatistiken",
+      "main": "Hauptmenü",
+      "messages": "Nachrichten",
+      "myPatients": "Meine Patienten",
+      "myProfile": "Mein Profil",
+      "performance": "Leistung",
+      "procedureLibrary": "Prozedurenbibliothek",
+      "referrals": "Überweisungen",
+      "scheduleSettings": "Zeitplaneinstellungen",
+      "settings": "Einstellungen",
+      "treatmentPlanning": "Behandlungsplanung"
+    },
+    "noUpcomingAppointments": "Keine anstehenden Termine",
+    "profileCompletion": {
+      "completeProfile": "Profil vervollständigen ({{percent}}%)",
+      "incomplete": "Unvollständig",
+      "updateProfile": "Profil aktualisieren"
+    },
+    "profileSetup": {
+      "completeSetup": "Profil-Setup abschließen",
+      "goHome": "Zur Startseite",
+      "message": "Ihr Arztprofil muss eingerichtet werden. Lassen Sie uns Ihr Profil vervollständigen.",
+      "required": "Profil-Setup erforderlich",
+      "retryLoading": "Erneut laden",
+      "settingUp": "Profil wird eingerichtet",
+      "tryAgain": "Erneut versuchen",
+      "unableToLoad": "Ihr Arztprofil konnte nicht geladen werden. Lassen Sie uns Ihr Konto einrichten."
+    },
+    "quickActions": "Schnellaktionen",
+    "referrals": {
+      "title": "Überweisungen"
+    },
+    "schedule": {
+      "addTimeBlock": "Zeitblock hinzufügen",
+      "apply": "Anwenden",
+      "availability": "Verfügbarkeit",
+      "cancel": "Abbrechen",
+      "dayOff": "Freier Tag",
+      "delete": "Löschen",
+      "duration": "Dauer",
+      "end": "Ende",
+      "notes": "Notizen",
+      "save": "Speichern",
+      "start": "Start",
+      "title": "Zeitplaneinstellungen"
+    },
+    "services": {
+      "add": "Hinzufügen",
+      "addProcedure": "Prozedur hinzufügen",
+      "category": "Kategorie",
+      "create": "Erstellen",
+      "delete": "Löschen",
+      "description": "Beschreibung",
+      "duration": "Dauer",
+      "edit": "Bearbeiten",
+      "emptyState": "Noch keine Prozeduren",
+      "fee": "Gebühr",
+      "minutes": "Minuten",
+      "name": "Name",
+      "save": "Speichern",
+      "searchPlaceholder": "Prozeduren suchen...",
+      "title": "Prozedurenbibliothek"
+    },
+    "settingUp": "Arztprofil wird eingerichtet...",
+    "settings": {
+      "account": {
+        "description": "Kontodaten und Einstellungen verwalten",
+        "email": "E-Mail",
+        "language": "Sprache",
+        "phone": "Telefon",
+        "saveChanges": "Änderungen speichern",
+        "timezone": "Zeitzone",
+        "title": "Konto"
+      },
+      "calendar": {
+        "description": "Kalendersynchronisierung verbinden und verwalten",
+        "title": "Kalender"
+      },
+      "email": "E-Mail",
+      "emailPlaceholder": "E-Mail eingeben",
+      "language": "Sprache",
+      "notifications": "Benachrichtigungen",
+      "personalInfo": "Persönliche Informationen",
+      "phone": "Telefon",
+      "phonePlaceholder": "Telefon eingeben",
+      "practice": "Praxis",
+      "privacy": "Datenschutz",
+      "security": "Sicherheit",
+      "timeFormat": "Zeitformat",
+      "timezone": "Zeitzone",
+      "timezoneHint": "Ihr Kalender zeigt Zeiten in dieser Zeitzone an.",
+      "title": "Einstellungen",
+      "updateDetails": "Aktualisieren Sie Ihre persönlichen Daten"
+    },
+    "stats": {
+      "allTimeBookings": "Buchungen gesamt",
+      "averageRating": "Durchschnittsbewertung",
+      "basedOnReviews": "Basierend auf {{count}} Bewertungen",
+      "earnings": "Einnahmen",
+      "rating": "Bewertung",
+      "revenue": "Umsatz",
+      "totalAppointments": "Termine gesamt",
+      "totalEarnings": "Einnahmen gesamt",
+      "totalPatients": "Patienten gesamt",
+      "uniquePatients": "Einzigartige Patienten betreut"
+    },
+    "upcomingAppointments": {
+      "noAppointments": "Keine anstehenden Termine",
+      "scheduleIsClear": "Ihr Zeitplan ist frei",
+      "title": "Bevorstehende Termine"
+    },
+    "verification": {
+      "completeProfile": "Profil vervollständigen",
+      "message": "Um öffentlich zu werden und in Suchergebnissen zu erscheinen, muss die Verifizierung abgeschlossen werden.",
+      "pending": "Verifizierung ausstehend",
+      "viewProfile": "Profil ansehen"
+    }
+  }
+}
