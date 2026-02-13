@@ -1,8 +1,8 @@
 // src/components/dashboard/ProfileMenu.tsx
-// File: src/components/dashboard/ProfileMenu.tsx
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ import {
   User,
   LayoutDashboard,
   Shield,
+  Building2,
 } from "lucide-react";
 import { DASHBOARD_ROUTES, getDashboardRoute, roleLabels, type AppRole } from "@/lib/rbac";
 
@@ -30,12 +31,51 @@ interface ProfileMenuProps {
 const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compact = false }, ref) => {
   const navigate = useNavigate();
   const { profile, user, allRoles, activeRole, switchRole, signOut } = useAuth();
+  const [practiceName, setPracticeName] = useState<string | null>(null);
 
   const roles: AppRole[] = useMemo(() => {
     const fromContext = Array.isArray(allRoles) ? allRoles : [];
-    // Use only AuthContext roles (from user_roles table) — never fall back to profile.roles
     return fromContext.length > 0 ? fromContext : [activeRole || "patient"];
   }, [allRoles, activeRole]);
+
+  // Fetch practice name for admin/staff users
+  const isAdminOrStaff = roles.includes("admin") || roles.includes("staff");
+  useEffect(() => {
+    if (!isAdminOrStaff || !user?.id) {
+      setPracticeName(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      // Try admin_id first
+      const { data: owned } = await supabase
+        .from("practices")
+        .select("name")
+        .eq("admin_id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (owned?.name) { setPracticeName(owned.name); return; }
+
+      // Try clinic_staff
+      const { data: staffRow } = await supabase
+        .from("clinic_staff")
+        .select("practice_id")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (staffRow?.practice_id) {
+        const { data: p } = await supabase
+          .from("practices")
+          .select("name")
+          .eq("id", staffRow.practice_id)
+          .maybeSingle();
+        if (!cancelled && p?.name) setPracticeName(p.name);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [isAdminOrStaff, user?.id]);
 
   const canShowRoleSwitch = roles.length > 1;
 
@@ -88,6 +128,12 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
         <DropdownMenuLabel className="flex flex-col gap-0.5">
           <span className="text-sm font-medium text-foreground">{profile?.full_name || user?.email || "Account"}</span>
           <span className="text-xs text-muted-foreground">{user?.email}</span>
+          {practiceName && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <Building2 className="h-3 w-3" />
+              {practiceName}
+            </span>
+          )}
           {roles.length > 0 && (
             <span className="text-xs text-primary font-medium mt-0.5">
               {roleLabels[effectiveActiveRole] || effectiveActiveRole}
