@@ -1236,6 +1236,80 @@ export type Database = {
           },
         ]
       }
+      compensation_payouts: {
+        Row: {
+          adjustments_cents: number
+          approved_at: string | null
+          approved_by: string | null
+          calculated_amount_cents: number
+          compensation_profile_id: string
+          created_at: string
+          currency: string
+          entity_id: string
+          entity_type: string
+          final_amount_cents: number
+          id: string
+          notes: string | null
+          paid_at: string | null
+          payment_reference: string | null
+          period_end: string
+          period_start: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adjustments_cents?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          calculated_amount_cents?: number
+          compensation_profile_id: string
+          created_at?: string
+          currency?: string
+          entity_id: string
+          entity_type: string
+          final_amount_cents?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_reference?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adjustments_cents?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          calculated_amount_cents?: number
+          compensation_profile_id?: string
+          created_at?: string
+          currency?: string
+          entity_id?: string
+          entity_type?: string
+          final_amount_cents?: number
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_reference?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compensation_payouts_compensation_profile_id_fkey"
+            columns: ["compensation_profile_id"]
+            isOneToOne: false
+            referencedRelation: "staff_compensation_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_forms: {
         Row: {
           content: string
@@ -5881,6 +5955,63 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      staff_compensation_profiles: {
+        Row: {
+          compensation_type: string
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          entity_id: string
+          entity_type: string
+          hourly_rate_cents: number | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          payout_frequency: string
+          percentage_of: string | null
+          percentage_rate: number | null
+          salary_amount_cents: number | null
+          salary_period: string | null
+          user_id: string
+        }
+        Insert: {
+          compensation_type: string
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          entity_id: string
+          entity_type: string
+          hourly_rate_cents?: number | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          payout_frequency?: string
+          percentage_of?: string | null
+          percentage_rate?: number | null
+          salary_amount_cents?: number | null
+          salary_period?: string | null
+          user_id: string
+        }
+        Update: {
+          compensation_type?: string
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          entity_id?: string
+          entity_type?: string
+          hourly_rate_cents?: number | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          payout_frequency?: string
+          percentage_of?: string | null
+          percentage_rate?: number | null
+          salary_amount_cents?: number | null
+          salary_period?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       staff_invitations: {
         Row: {

@@ -15,10 +15,12 @@ import { Badge } from "@/components/ui/badge";
 export type CompensationProfileRow = {
   id: string;
   user_id: string;
-  compensation_type: "salary" | "hourly";
+  compensation_type: "salary" | "hourly" | "percentage";
   salary_amount_cents: number | null;
   salary_period: "monthly" | "weekly" | "daily" | null;
   hourly_rate_cents: number | null;
+  percentage_rate: number | null;
+  percentage_of: "doctor_revenue" | "appointment_fee" | "procedure_fee" | null;
   payout_frequency: "monthly" | "weekly" | "daily" | "each_time";
   effective_from: string;
   is_active: boolean;
@@ -28,10 +30,12 @@ export type CompensationProfileRow = {
 
 export type CompensationProfileDraft = {
   userId: string;
-  compensationType: "salary" | "hourly";
+  compensationType: "salary" | "hourly" | "percentage";
   salaryAmountCents: number | null;
   salaryPeriod: "monthly" | "weekly" | "daily" | null;
   hourlyRateCents: number | null;
+  percentageRate: number | null;
+  percentageOf: "doctor_revenue" | "appointment_fee" | "procedure_fee" | null;
   payoutFrequency: "monthly" | "weekly" | "daily" | "each_time";
   effectiveFrom: string; // YYYY-MM-DD
   isActive: boolean;
@@ -79,12 +83,15 @@ export default function CompensationProfileDialog({
   const [saving, setSaving] = useState(false);
 
   const [userId, setUserId] = useState("");
-  const [compType, setCompType] = useState<"salary" | "hourly">("hourly");
+  const [compType, setCompType] = useState<"salary" | "hourly" | "percentage">("hourly");
 
   const [salaryAmount, setSalaryAmount] = useState("0.00");
   const [salaryPeriod, setSalaryPeriod] = useState<"monthly" | "weekly" | "daily">("monthly");
 
   const [hourlyRate, setHourlyRate] = useState("0.00");
+
+  const [percentageRate, setPercentageRate] = useState("0");
+  const [percentageOf, setPercentageOf] = useState<"doctor_revenue" | "appointment_fee" | "procedure_fee">("doctor_revenue");
 
   const [payoutFrequency, setPayoutFrequency] = useState<"monthly" | "weekly" | "daily" | "each_time">("monthly");
   const [effectiveFrom, setEffectiveFrom] = useState<string>(isoToday());
@@ -155,6 +162,8 @@ export default function CompensationProfileDialog({
         salaryAmountCents: compType === "salary" ? salaryCents : null,
         salaryPeriod: compType === "salary" ? salaryPeriod : null,
         hourlyRateCents: compType === "hourly" ? hourlyCents : null,
+        percentageRate: compType === "percentage" ? parseFloat(percentageRate) || null : null,
+        percentageOf: compType === "percentage" ? percentageOf : null,
         payoutFrequency,
         effectiveFrom,
         isActive,

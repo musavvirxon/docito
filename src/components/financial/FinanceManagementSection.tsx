@@ -4,6 +4,7 @@ import FinanceEntriesExportCard from "@/components/financial/FinanceEntriesExpor
 import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
 import FinanceCategoriesManager from "@/components/financial/FinanceCategoriesManager";
 import FinanceLedgerManager from "@/components/financial/FinanceLedgerManager";
+import CompensationManager from "@/components/financial/CompensationManager";
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
@@ -15,9 +16,11 @@ export default function FinanceManagementSection(props: { entityType: FinanceEnt
       <div className="space-y-1">
         <h2 className="text-xl font-semibold">Finances</h2>
         <p className="text-sm text-muted-foreground">
-          Manage income, expenses, payroll automation, categories, and exports. Ledger entries power analytics and reporting.
+          Manage income, expenses, payroll, compensation profiles, and exports.
         </p>
       </div>
+
+      <CompensationManager entityType={entityType} entityId={entityId} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <FinanceEntriesExportCard entityType={entityType} entityId={entityId} defaultDays={90} />
@@ -28,18 +31,6 @@ export default function FinanceManagementSection(props: { entityType: FinanceEnt
         <FinanceCategoriesManager entityType={entityType} entityId={entityId} />
         <FinanceLedgerManager entityType={entityType} entityId={entityId} />
       </div>
-
-      <Card className="rounded-xl">
-        <CardHeader>
-          <CardTitle className="text-base">What’s next</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>
-            Next we’ll add: payroll runs (fixed salary + hourly + commission), working-hours tracking, and analytics dashboards
-            (category breakdowns, profit & loss, cashflow).
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }

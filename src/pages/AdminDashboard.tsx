@@ -294,6 +294,51 @@ const AdminDashboard = () => {
     );
   }
 
+  if (!practice?.id && !error) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <a href="/" className="flex items-center gap-2 font-bold text-lg">
+              <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
+            </a>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <ProfileMenu />
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <Card className="max-w-lg w-full rounded-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Welcome! Set up your practice
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                You don't have a clinic or practice linked to your account yet.
+                Create one to start managing doctors, staff, appointments, and finances.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button onClick={() => setCreateClinicOpen(true)} className="flex-1">
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Create Practice
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/register-practice")} className="flex-1">
+                  Register Practice
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} onSuccess={() => refreshData()} />
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-background flex flex-col">

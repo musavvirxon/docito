@@ -13,7 +13,7 @@ import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import ReportsPanel from "@/components/financial/ReportsPanel";
 import { useEnsureFinanceDefaults } from "@/hooks/useEnsureFinanceDefaults";
 
-export type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
+export type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
 interface FinanceHubProps {
   entityType: FinanceEntityType;

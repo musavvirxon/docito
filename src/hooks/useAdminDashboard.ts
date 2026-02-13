@@ -1,6 +1,7 @@
 // PATH: src/hooks/useAdminDashboard.ts
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardStats {
   totalBookings: number;
@@ -19,6 +20,7 @@ interface PerformanceMetrics {
 }
 
 export const useAdminDashboard = () => {
+  const { user, bootstrapped } = useAuth();
   const [practice, setPractice] = useState<any>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
@@ -44,25 +46,22 @@ export const useAdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const didLoad = useRef(false);
 
-  const resolvePracticeForUser = useCallback(async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    const user = auth?.user;
-    if (!user) return null;
-
+  const resolvePracticeForUser = useCallback(async (uid: string) => {
     // 1) Owner/admin practice
     {
-      const { data, error } = await supabase.from("practices").select("*").eq("admin_id", user.id).maybeSingle();
+      const { data, error } = await supabase.from("practices").select("*").eq("admin_id", uid).maybeSingle();
       if (error) throw error;
       if (data?.id) return data;
     }
 
-    // 2) clinic_staff table (primary staff relationship)
+    // 2) clinic_staff table
     {
       const { data: clinicStaffRow, error: csErr } = await supabase
         .from("clinic_staff")
         .select("practice_id,status")
-        .eq("user_id", user.id)
+        .eq("user_id", uid)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1)
@@ -79,40 +78,35 @@ export const useAdminDashboard = () => {
     }
 
     // 3) practice_staff table (legacy fallback)
-    {
-      const { data: staffRow, error: staffErr } = await supabase
+    try {
+      const { data: staffRow } = await supabase
         .from("practice_staff")
         .select("practice_id,status")
-        .eq("user_id", user.id)
+        .eq("user_id", uid)
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      if (staffErr) {
-        // If table doesn't exist or RLS blocks, just return null (dashboard will show guidance)
-        return null;
-      }
-
       const practiceId = (staffRow as any)?.practice_id;
       if (!practiceId) return null;
 
-      const { data: p2, error: p2Err } = await supabase.from("practices").select("*").eq("id", practiceId).maybeSingle();
-      if (p2Err) throw p2Err;
+      const { data: p2 } = await supabase.from("practices").select("*").eq("id", practiceId).maybeSingle();
       return p2 ?? null;
+    } catch {
+      return null;
     }
   }, []);
 
+  // --- Individual fetch functions (all graceful) ---
+
   const fetchDashboardStats = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data: statsData, error: statsError } = await supabase.rpc("get_practice_stats" as any, {
         p_practice_id: practiceData.id,
       });
-
       if (statsError) throw statsError;
-
       const s = statsData as any;
       setStats({
         totalBookings: s?.total_bookings || 0,
@@ -122,144 +116,103 @@ export const useAdminDashboard = () => {
         pendingInvites: s?.pending_invites || 0,
         locations: s?.locations || 0,
       });
-    } catch {
-      // keep defaults
-    }
+    } catch { /* keep defaults */ }
   }, []);
 
   const fetchDoctors = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
-      // Fetch doctors directly without profile join (FK may not exist in schema)
       const { data, error } = await supabase
         .from("doctors")
         .select("*")
         .eq("practice_id", practiceData.id)
         .order("created_at", { ascending: false });
-
       if (error) throw error;
       setDoctors(data || []);
-    } catch {
-      // Gracefully handle errors - dashboard can still render
-      setDoctors([]);
-    }
+    } catch { setDoctors([]); }
   }, []);
 
   const fetchAppointments = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data, error } = await supabase.rpc("get_practice_appointments" as any, {
         p_practice_id: practiceData.id,
         p_limit_count: 10,
       });
-
       if (error) throw error;
       setAppointments((data as any[]) || []);
-    } catch {
-      setAppointments([]);
-    }
+    } catch { setAppointments([]); }
   }, []);
 
   const fetchServices = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
-      const { data, error } = await supabase.rpc("get_practice_services" as any, {
-        p_practice_id: practiceData.id,
-      });
-
+      const { data, error } = await supabase.rpc("get_practice_services" as any, { p_practice_id: practiceData.id });
       if (error) throw error;
       setServices((data as any[]) || []);
-    } catch {
-      setServices([]);
-    }
+    } catch { setServices([]); }
   }, []);
 
   const fetchStaff = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
-      const { data, error } = await supabase.rpc("get_practice_staff" as any, {
-        p_practice_id: practiceData.id,
-      });
-
+      const { data, error } = await supabase.rpc("get_practice_staff" as any, { p_practice_id: practiceData.id });
       if (error) throw error;
       setStaff((data as any[]) || []);
-    } catch {
-      setStaff([]);
-    }
+    } catch { setStaff([]); }
   }, []);
 
   const fetchLocations = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data, error } = await supabase
         .from("practice_locations")
         .select("*")
         .eq("practice_id", practiceData.id)
         .order("is_primary", { ascending: false });
-
       if (error) throw error;
       setLocations(data || []);
-    } catch {
-      setLocations([]);
-    }
+    } catch { setLocations([]); }
   }, []);
 
   const fetchPatients = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data, error } = await supabase.rpc("get_practice_patients" as any, {
         p_practice_id: practiceData.id,
         p_limit_count: 20,
       });
-
       if (error) throw error;
       setPatients((data as any[]) || []);
-    } catch {
-      setPatients([]);
-    }
+    } catch { setPatients([]); }
   }, []);
 
   const fetchPayments = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data, error } = await supabase.rpc("get_practice_payments" as any, {
         p_practice_id: practiceData.id,
         p_limit_count: 10,
       });
-
       if (error) throw error;
       setPayments((data as any[]) || []);
-    } catch {
-      setPayments([]);
-    }
+    } catch { setPayments([]); }
   }, []);
 
   const fetchMessages = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data, error } = await supabase.rpc("get_practice_messages" as any, {
         p_practice_id: practiceData.id,
         p_limit_count: 5,
       });
-
       if (error) throw error;
       setMessages((data as any[]) || []);
-    } catch {
-      setMessages([]);
-    }
+    } catch { setMessages([]); }
   }, []);
 
   const fetchPerformanceMetrics = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
-
     try {
       const { data: practiceRating } = await supabase
         .from("practices")
@@ -290,7 +243,6 @@ export const useAdminDashboard = () => {
       const retained = Array.from(visitCounts.values()).filter((n) => n >= 2).length;
       const retentionPct = totalCompletedPatients > 0 ? Math.round((retained / totalCompletedPatients) * 100) : 0;
 
-      // No-show / cancel rate in last 30 days (approx via appointments table)
       const start30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       const { data: last30, error: last30Err } = await supabase
         .from("appointments")
@@ -317,31 +269,39 @@ export const useAdminDashboard = () => {
   }, []);
 
   const refreshData = useCallback(async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const practiceData = await resolvePracticeForUser();
+      const practiceData = await resolvePracticeForUser(user.id);
       setPractice(practiceData);
 
-      await Promise.all([
-        fetchDashboardStats(practiceData),
-        fetchDoctors(practiceData),
-        fetchAppointments(practiceData),
-        fetchServices(practiceData),
-        fetchStaff(practiceData),
-        fetchLocations(practiceData),
-        fetchPatients(practiceData),
-        fetchPayments(practiceData),
-        fetchMessages(practiceData),
-        fetchPerformanceMetrics(practiceData),
-      ]);
+      if (practiceData?.id) {
+        await Promise.all([
+          fetchDashboardStats(practiceData),
+          fetchDoctors(practiceData),
+          fetchAppointments(practiceData),
+          fetchServices(practiceData),
+          fetchStaff(practiceData),
+          fetchLocations(practiceData),
+          fetchPatients(practiceData),
+          fetchPayments(practiceData),
+          fetchMessages(practiceData),
+          fetchPerformanceMetrics(practiceData),
+        ]);
+      }
     } catch (e: any) {
       setError(e?.message || "Failed to load dashboard data");
     } finally {
       setLoading(false);
     }
   }, [
+    user?.id,
     fetchAppointments,
     fetchDashboardStats,
     fetchDoctors,
@@ -356,8 +316,17 @@ export const useAdminDashboard = () => {
   ]);
 
   useEffect(() => {
+    // Only run once auth is bootstrapped and user is known
+    if (!bootstrapped) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    // Avoid double-fetching on strict mode re-renders
+    if (didLoad.current) return;
+    didLoad.current = true;
     refreshData();
-  }, [refreshData]);
+  }, [bootstrapped, user?.id, refreshData]);
 
   return {
     practice,
