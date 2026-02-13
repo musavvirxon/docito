@@ -211,27 +211,24 @@ function FrameInvalidator({ shouldAnimate }: { shouldAnimate: boolean }) {
 
 // Connection line component (updates geometry each frame; no React state)
 function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
-  const geomRef = useRef<THREE.BufferGeometry | null>(null);
+  const lineRef = useRef<THREE.Line | null>(null);
   const matRef = useRef<THREE.LineBasicMaterial | null>(null);
 
   const positions = useMemo(() => new Float32Array(6), []);
 
-  const geometry = useMemo(() => {
+  const lineObj = useMemo(() => {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geomRef.current = g;
-    return g;
-  }, [positions]);
-
-  const material = useMemo(() => {
     const m = new THREE.LineBasicMaterial({
       color,
       transparent: true,
       opacity,
     });
     matRef.current = m;
-    return m;
-  }, []);
+    const line = new THREE.Line(g, m);
+    line.frustumCulled = false;
+    return line;
+  }, [positions]);
 
   useEffect(() => {
     if (!matRef.current) return;
@@ -240,7 +237,7 @@ function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
   }, [color, opacity]);
 
   useFrame(() => {
-    const g = geomRef.current;
+    const g = lineObj.geometry;
     if (!g) return;
     positions[0] = 0;
     positions[1] = 0;
@@ -254,12 +251,12 @@ function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
 
   useEffect(() => {
     return () => {
-      geometry.dispose();
+      lineObj.geometry.dispose();
       matRef.current?.dispose();
     };
-  }, [geometry]);
+  }, [lineObj]);
 
-  return <line geometry={geometry} material={material} frustumCulled={false} />;
+  return <primitive object={lineObj} ref={lineRef} />;
 }
 
 // --- Lightweight procedural texture helpers (fast + cached) ---
