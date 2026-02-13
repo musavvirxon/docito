@@ -10,10 +10,12 @@ export type CompensationProfileRow = {
   entity_type: FinanceEntityType;
   entity_id: string;
   user_id: string;
-  compensation_type: "salary" | "hourly";
+  compensation_type: "salary" | "hourly" | "percentage";
   salary_amount_cents: number | null;
   salary_period: "monthly" | "weekly" | "daily" | null;
   hourly_rate_cents: number | null;
+  percentage_rate: number | null;
+  percentage_of: "doctor_revenue" | "appointment_fee" | "procedure_fee" | null;
   payout_frequency: "monthly" | "weekly" | "daily" | "each_time";
   effective_from: string;
   is_active: boolean;
@@ -37,9 +39,7 @@ export function useCompensationProfiles({ entityType, entityId }: Args) {
     try {
       const { data, error } = await supabase
         .from("staff_compensation_profiles")
-        .select(
-          "id,entity_type,entity_id,user_id,compensation_type,salary_amount_cents,salary_period,hourly_rate_cents,payout_frequency,effective_from,is_active,notes,created_at",
-        )
+        .select("*")
         .eq("entity_type", entityType)
         .eq("entity_id", entityId)
         .order("is_active", { ascending: false })
