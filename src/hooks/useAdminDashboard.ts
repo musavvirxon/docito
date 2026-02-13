@@ -195,14 +195,18 @@ export const useAdminDashboard = () => {
   const fetchLocations = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
 
-    const { data, error } = await supabase
-      .from("practice_locations")
-      .select("*")
-      .eq("practice_id", practiceData.id)
-      .order("is_primary", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("practice_locations")
+        .select("*")
+        .eq("practice_id", practiceData.id)
+        .order("is_primary", { ascending: false });
 
-    if (error) throw error;
-    setLocations(data || []);
+      if (error) throw error;
+      setLocations(data || []);
+    } catch {
+      setLocations([]);
+    }
   }, []);
 
   const fetchPatients = useCallback(async (practiceData: any) => {

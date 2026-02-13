@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, RefreshCcw, Shield } from "lucide-react";
+import { Loader2, Save, RefreshCcw, Shield, Clock, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { useEntitySettings, type EntityType } from "@/hooks/useEntitySettings";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES } from "@/data/timezones";
+import { Switch } from "@/components/ui/switch";
 
 type Props = {
   entityType: EntityType;
@@ -88,7 +89,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
   const { loading, saving, error, settings, saveSettings } = useEntitySettings(entityType, entityId);
 
   const [form, setForm] = useState<Record<string, any>>({});
-  const [tab, setTab] = useState<"profile" | "address" | "notifications" | "billing" | "analytics">("profile");
+  const [tab, setTab] = useState<"profile" | "address" | "hours" | "notifications" | "billing" | "analytics">("profile");
 
   const [billingLoading, setBillingLoading] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
@@ -337,9 +338,10 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
-        <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full md:w-auto">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full md:w-auto">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="address">Address</TabsTrigger>
+          <TabsTrigger value="hours">Hours & Costs</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="billing">Billing</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
@@ -457,6 +459,179 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="hours" className="mt-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                Working Hours
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Set default working hours for your organization. These apply to all doctors and staff unless they set their own.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => {
+                const hours = form.hours || {};
+                const dayData = hours[day] || { enabled: day !== "sunday", start: "09:00", end: "17:00" };
+                return (
+                  <div key={day} className="flex items-center gap-4 flex-wrap">
+                    <div className="w-28 flex items-center gap-2">
+                      <Switch
+                        checked={dayData.enabled !== false}
+                        onCheckedChange={(checked) =>
+                          setForm((p) => ({
+                            ...p,
+                            hours: { ...p.hours, [day]: { ...dayData, enabled: checked } },
+                          }))
+                        }
+                      />
+                      <span className="text-sm font-medium capitalize">{day}</span>
+                    </div>
+                    {dayData.enabled !== false && (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="time"
+                          className="w-32"
+                          value={dayData.start || "09:00"}
+                          onChange={(e) =>
+                            setForm((p) => ({
+                              ...p,
+                              hours: { ...p.hours, [day]: { ...dayData, start: e.target.value } },
+                            }))
+                          }
+                        />
+                        <span className="text-muted-foreground">to</span>
+                        <Input
+                          type="time"
+                          className="w-32"
+                          value={dayData.end || "17:00"}
+                          onChange={(e) =>
+                            setForm((p) => ({
+                              ...p,
+                              hours: { ...p.hours, [day]: { ...dayData, end: e.target.value } },
+                            }))
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Default Consultation Cost
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Set a default consultation fee. Doctors who join will inherit this unless they specify their own.
+              </p>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Default consultation fee</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  value={form.billing_prefs?.default_consultation_fee ?? ""}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      billing_prefs: {
+                        ...p.billing_prefs,
+                        default_consultation_fee: e.target.value ? Number(e.target.value) : null,
+                      },
+                    }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <Input
+                  placeholder="USD"
+                  value={form.billing_prefs?.currency ?? ""}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      billing_prefs: { ...p.billing_prefs, currency: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {(entityType === "practice" || entityType === "clinic") && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Override Policy</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Control whether doctors and staff can override clinic-level settings.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Enforce clinic working hours</p>
+                    <p className="text-xs text-muted-foreground">
+                      Doctors cannot set hours outside the clinic's working hours.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.integrations?.enforce_hours !== false}
+                    onCheckedChange={(checked) =>
+                      setForm((p) => ({
+                        ...p,
+                        integrations: { ...p.integrations, enforce_hours: checked },
+                      }))
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Enforce consultation fee</p>
+                    <p className="text-xs text-muted-foreground">
+                      The clinic's default fee applies to all doctors. Doctors cannot set their own.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.integrations?.enforce_fee === true}
+                    onCheckedChange={(checked) =>
+                      setForm((p) => ({
+                        ...p,
+                        integrations: { ...p.integrations, enforce_fee: checked },
+                      }))
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Enforce notification preferences</p>
+                    <p className="text-xs text-muted-foreground">
+                      Clinic notification settings override individual staff/doctor preferences.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={form.integrations?.enforce_notifications === true}
+                    onCheckedChange={(checked) =>
+                      setForm((p) => ({
+                        ...p,
+                        integrations: { ...p.integrations, enforce_notifications: checked },
+                      }))
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="notifications" className="mt-4">

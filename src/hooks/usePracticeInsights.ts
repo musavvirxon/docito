@@ -81,15 +81,15 @@ type HookReturn = {
 };
 
 export function usePracticeInsights(args: BillingArgs | AnalyticsArgs | null): HookReturn {
+  const action = args?.action ?? null;
+  const practiceId = args?.practiceId ?? null;
+  const timeRange = (args as any)?.timeRange ?? "30d";
+  const limit = (args as any)?.limit as number | undefined;
+
   const stableArgs = useMemo(() => {
-    if (!args) return null;
-    return {
-      action: args.action,
-      practiceId: args.practiceId,
-      timeRange: (args as any).timeRange ?? ("30d" as PracticeInsightsTimeRange),
-      limit: (args as any).limit as number | undefined,
-    };
-  }, [args]);
+    if (!action || !practiceId) return null;
+    return { action, practiceId, timeRange, limit };
+  }, [action, practiceId, timeRange, limit]);
 
   const [data, setData] = useState<BillingInsightsResponse | AnalyticsInsightsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
