@@ -1,0 +1,125 @@
+{
+  "pharmacyPage": {
+    "hero": {
+      "kicker": "현대 약국을 위한",
+      "headlineLine1": "현대 약국을 위한",
+      "headlineLine2": "디지털",
+      "headlineLine3": "핵심 기반",
+      "subheadline": "처방전, 재고, 결제, 배송, 의사 연동까지 — 하나의 안전한 플랫폼에서 모두 관리하세요.",
+      "primaryCta": "약국 등록하기",
+      "secondaryCta": "데모 요청"
+    },
+    "features": {
+      "title": "약국에 필요한 모든 것",
+      "subtitle": "하나의 플랫폼에",
+      "description": "약국 운영의 모든 영역을 관리하는 단일 플랫폼",
+      "items": {
+        "erx": {
+          "title": "디지털 처방전(eRx)",
+          "description": "Docito 네트워크의 인증된 의사로부터 처방전을 즉시 받아보세요."
+        },
+        "refills": {
+          "title": "리필(재처방) 관리",
+          "description": "자동 리필 요청과 스마트 환자 알림으로 복약 순응도를 높입니다."
+        },
+        "inventory": {
+          "title": "재고 및 입출고 관리",
+          "description": "실시간 재고, 유효기간 알림, 공급업체 인사이트를 한 화면에서 확인."
+        },
+        "delivery": {
+          "title": "온라인 주문 및 배송",
+          "description": "환자를 위한 실시간 주문 추적으로 집 배송을 지원하세요."
+        },
+        "payments": {
+          "title": "결제 및 보험",
+          "description": "현금, 카드, 디지털 월렛을 받고 보험 청구도 매끄럽게 처리하세요."
+        },
+        "profiles": {
+          "title": "환자 프로필",
+          "description": "복약 이력, 알레르기, 순응도 추적을 한눈에 확인."
+        },
+        "analytics": {
+          "title": "분석 대시보드",
+          "description": "매출 트렌드, 회전율 높은 의약품, 수익 인사이트로 성장을 가속화."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "약국을 위한 Docito 사용 흐름",
+      "subtitle": "등록부터 매출까지 — 완전한 여정",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "약국 등록하기",
+          "description": "면허, 위치, 운영 시간을 몇 분 만에 인증합니다."
+        },
+        "step2": {
+          "number": "02",
+          "title": "재고 및 가격 동기화",
+          "description": "의약품, 제네릭, 실시간 재고 가능 여부를 업로드하세요."
+        },
+        "step3": {
+          "number": "03",
+          "title": "디지털 처방전 수신",
+          "description": "네트워크 전반의 의사, 클리닉, 병원으로부터."
+        },
+        "step4": {
+          "number": "04",
+          "title": "주문 준비 및 처리",
+          "description": "매장 수령 또는 배송을 위한 간소화된 워크플로."
+        },
+        "step5": {
+          "number": "05",
+          "title": "즉시 정산",
+          "description": "온라인 결제, 보험 청구 처리 및 청구서 생성까지."
+        },
+        "step6": {
+          "number": "06",
+          "title": "성장 및 최적화",
+          "description": "인사이트, 재구매 고객, 추천 프로그램을 활용하세요."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "약국의 미래는 연결입니다",
+      "description": "약국은 더 이상 독립된 매장이 아니라 의료 생태계의 핵심 노드입니다. Docito는 약국을 의사, 검사기관, 클리닉, 환자와 직접 연결합니다.",
+      "nodes": {
+        "doctors": "의사",
+        "clinics": "클리닉",
+        "hospitals": "병원",
+        "labs": "검사기관",
+        "imaging": "영상센터",
+        "insurance": "보험"
+      },
+      "footer": "Docito Network — 의료 생태계 전체를 연결하는 단일 플랫폼"
+    },
+    "compliance": {
+      "title": "의료 수준의 컴플라이언스",
+      "items": {
+        "hipaaAligned": "HIPAA 기준 정렬",
+        "secureErx": "보안 eRx",
+        "roleBasedAccess": "역할 기반 접근",
+        "encryptedData": "암호화된 데이터",
+        "auditTrails": "감사 추적"
+      }
+    },
+    "pricing": {
+      "title": "합리적인 가격",
+      "description": "Docito 가격은 약국 규모에 맞춰 확장됩니다 — 단일 매장부터 전국 체인까지.",
+      "bullets": {
+        "noHiddenFees": "숨겨진 비용 없음",
+        "flexiblePlans": "유연한 플랜",
+        "transparentBilling": "투명한 청구",
+        "enterpriseOptions": "엔터프라이즈 옵션"
+      },
+      "primaryCta": "가격 보기",
+      "secondaryCta": "영업팀 문의"
+    },
+    "finalCta": {
+      "headline": "약국을 디지털-퍼스트 헬스케어 허브로 전환하세요",
+      "subheadline": "효율을 높이고, 매출을 늘리고, Docito로 더 나은 환자 경험을 제공하세요.",
+      "primaryCta": "약국 등록하기",
+      "secondaryCta": "데모 요청"
+    }
+  }
+}
