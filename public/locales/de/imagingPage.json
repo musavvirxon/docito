@@ -1,0 +1,125 @@
+{
+  "imagingPage": {
+    "hero": {
+      "kicker": "Für moderne Apotheken",
+      "headlineLine1": "Das digitale",
+      "headlineLine2": "Rückgrat für",
+      "headlineLine3": "moderne Apotheken",
+      "subheadline": "Verwalten Sie Rezepte, Bestand, Zahlungen, Lieferungen und Arzt-Integrationen — alles über eine sichere Plattform.",
+      "primaryCta": "Apotheke registrieren",
+      "secondaryCta": "Demo anfragen"
+    },
+    "features": {
+      "title": "Alles, was Ihre Apotheke braucht",
+      "subtitle": "in einer Plattform",
+      "description": "Eine Plattform, um jeden Bereich Ihres Apothekenbetriebs zu steuern",
+      "items": {
+        "erx": {
+          "title": "Digitale Rezepte (eRx)",
+          "description": "Erhalten Sie Rezepte sofort von verifizierten Ärzt:innen im Docito-Netzwerk."
+        },
+        "refills": {
+          "title": "Nachfüllmanagement",
+          "description": "Automatisierte Nachfüllanfragen und smarte Erinnerungen für bessere Adhärenz."
+        },
+        "inventory": {
+          "title": "Bestands- & Lagerverwaltung",
+          "description": "Echtzeit-Bestände, Ablaufwarnungen und Lieferanten-Insights auf einen Blick."
+        },
+        "delivery": {
+          "title": "Online-Bestellungen & Lieferung",
+          "description": "Aktivieren Sie Heimlieferung mit Echtzeit-Tracking für Patient:innen."
+        },
+        "payments": {
+          "title": "Zahlungen & Versicherung",
+          "description": "Akzeptieren Sie Bargeld, Karten, digitale Wallets und bearbeiten Sie Versicherungsfälle nahtlos."
+        },
+        "profiles": {
+          "title": "Patientenprofile",
+          "description": "Medikationshistorie, Allergien und Adhärenz-Tracking auf einen Blick."
+        },
+        "analytics": {
+          "title": "Analytics-Dashboard",
+          "description": "Verkaufstrends, schnell drehende Medikamente und Umsatz-Insights für Wachstum."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "So funktioniert Docito für Apotheken",
+      "subtitle": "Von Registrierung bis Umsatz — Ihre komplette Journey",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "Apotheke registrieren",
+          "description": "Lizenzen, Standorte und Öffnungszeiten in Minuten verifizieren."
+        },
+        "step2": {
+          "number": "02",
+          "title": "Bestand & Preise synchronisieren",
+          "description": "Medikamente, Generika und Echtzeit-Verfügbarkeit hochladen."
+        },
+        "step3": {
+          "number": "03",
+          "title": "Digitale Rezepte erhalten",
+          "description": "Von Ärzt:innen, Praxen und Kliniken im gesamten Netzwerk."
+        },
+        "step4": {
+          "number": "04",
+          "title": "Bestellungen vorbereiten & erfüllen",
+          "description": "Optimierter Workflow für Abholung oder Heimlieferung."
+        },
+        "step5": {
+          "number": "05",
+          "title": "Sofort bezahlt werden",
+          "description": "Online-Zahlungen, Versicherungsfälle und Rechnungen in einem Ablauf."
+        },
+        "step6": {
+          "number": "06",
+          "title": "Wachsen & optimieren",
+          "description": "Insights, Stammkundschaft und Empfehlungsprogramme nutzen."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Die Zukunft der Apotheken ist vernetzt",
+      "description": "Apotheken sind nicht mehr nur Einzelgeschäfte — sie sind zentrale Knoten in der Gesundheitsökosystem. Docito verbindet Sie direkt mit Ärzt:innen, Laboren, Kliniken und Patient:innen.",
+      "nodes": {
+        "doctors": "Ärzt:innen",
+        "clinics": "Kliniken",
+        "hospitals": "Krankenhäuser",
+        "labs": "Labore",
+        "imaging": "Bildgebung",
+        "insurance": "Versicherung"
+      },
+      "footer": "Docito Network — eine Plattform, die das gesamte Gesundheitsökosystem verbindet"
+    },
+    "compliance": {
+      "title": "Compliance auf Healthcare-Niveau",
+      "items": {
+        "hipaaAligned": "HIPAA-orientiert",
+        "secureErx": "Sichere eRx",
+        "roleBasedAccess": "Rollenbasierter Zugriff",
+        "encryptedData": "Verschlüsselte Daten",
+        "auditTrails": "Audit-Trails"
+      }
+    },
+    "pricing": {
+      "title": "Preise, die Sinn ergeben",
+      "description": "Die Docito-Preise skalieren mit Ihrer Apotheke — von einer Filiale bis zur nationalen Kette.",
+      "bullets": {
+        "noHiddenFees": "Keine versteckten Gebühren",
+        "flexiblePlans": "Flexible Pläne",
+        "transparentBilling": "Transparente Abrechnung",
+        "enterpriseOptions": "Enterprise-Optionen"
+      },
+      "primaryCta": "Preise ansehen",
+      "secondaryCta": "Mit Sales sprechen"
+    },
+    "finalCta": {
+      "headline": "Machen Sie Ihre Apotheke zum Digital-First-Healthcare-Hub",
+      "subheadline": "Steigern Sie Effizienz, Umsatz und Patientenerlebnis mit Docito.",
+      "primaryCta": "Apotheke registrieren",
+      "secondaryCta": "Demo anfragen"
+    }
+  }
+}
