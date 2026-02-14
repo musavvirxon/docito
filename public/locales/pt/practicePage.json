@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "Gestão automatizada de clínica",
+      "headlineLine1": "Menos admin.",
+      "headlineLine2": "Mais cuidado.",
+      "subheadline": "A plataforma completa para clínicas que automatiza agendamentos, documentação, faturamento e comunicação com pacientes — para você focar no que mais importa.",
+      "primaryCta": "Começar grátis",
+      "secondaryCta": "Agendar demo"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "Menos tempo administrativo"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "Agendamento 24/7"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "Triagem mais rápida"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "Sem papel"
+      }
+    },
+    "dashboard": {
+      "title": "Painel da clínica",
+      "headline": "Tudo automatizado",
+      "items": {
+        "appointments": "12 consultas agendadas automaticamente hoje",
+        "reminders": "45 lembretes enviados automaticamente",
+        "notes": "8 notas para diagnóstico",
+        "invoices": "3 faturas processadas automaticamente"
+      },
+      "timeSaved": {
+        "label": "Tempo economizado hoje",
+        "value": "6 horas"
+      }
+    },
+    "automation": {
+      "title": "Automação inteligente",
+      "headline": "Sua clínica no piloto automático",
+      "subheadline": "Pare de perder horas em tarefas repetitivas. Deixe nossa plataforma assumir a carga administrativa enquanto você foca no cuidado ao paciente.",
+      "items": {
+        "smartScheduling": {
+          "title": "Agendamento inteligente",
+          "description": "Reservas, cancelamentos e reagendamentos automatizados"
+        },
+        "patientCommunications": {
+          "title": "Comunicação com pacientes",
+          "description": "Lembretes, acompanhamentos e confirmações automáticos"
+        },
+        "documentation": {
+          "title": "Documentação",
+          "description": "Notas, planos de tratamento e prescrições com apoio de IA"
+        },
+        "billingPayments": {
+          "title": "Faturamento e pagamentos",
+          "description": "Faturamento, cobranças e sinistros de seguro automatizados"
+        },
+        "analyticsReports": {
+          "title": "Análises e relatórios",
+          "description": "Insights em tempo real sem digitação manual"
+        },
+        "staffManagement": {
+          "title": "Gestão de equipe",
+          "description": "Acesso por função, escalas e acompanhamento de desempenho"
+        }
+      }
+    },
+    "solution": {
+      "title": "Solução completa",
+      "headlineLine1": "Uma plataforma.",
+      "headlineLine2": "Tudo o que você precisa.",
+      "subheadline": "Substitua seu kit de ferramentas fragmentado por uma plataforma unificada feita para clínicas modernas. Da admissão ao faturamento final — tudo integrado sem esforço.",
+      "bullets": {
+        "onlineScheduling": "Agendamento online de consultas",
+        "recordsManagement": "Gestão de prontuários",
+        "treatmentPlanning": "Ferramentas de planejamento de tratamento",
+        "digitalPrescriptions": "Prescrições digitais",
+        "insuranceVerification": "Verificação de seguro",
+        "paymentProcessing": "Processamento de pagamentos",
+        "videoConsultations": "Consultas por vídeo",
+        "labImagingOrders": "Pedidos de laboratório e imagem",
+        "staffScheduling": "Escalas da equipe",
+        "realTimeAnalytics": "Análises em tempo real",
+        "secureMessaging": "Mensagens seguras",
+        "referralManagement": "Gestão de encaminhamentos"
+      }
+    },
+    "security": {
+      "title": "Segurança de nível corporativo",
+      "headline": "Feito para a saúde",
+      "subheadline": "Infraestrutura compatível com HIPAA com segurança corporativa. Seus dados são protegidos com criptografia de ponta a ponta e controles de acesso por função.",
+      "badges": {
+        "hipaa": {
+          "title": "Compatível com HIPAA",
+          "description": "Conformidade total"
+        },
+        "encryption": {
+          "title": "Criptografia de 256 bits",
+          "description": "Ponta a ponta"
+        },
+        "uptime": {
+          "title": "99,9% de uptime",
+          "description": "SLA garantido"
+        },
+        "soc2": {
+          "title": "SOC 2 Tipo II",
+          "description": "Certificado"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "Comece sua jornada",
+      "headlineLine1": "Pronto para automatizar",
+      "headlineLine2": "sua clínica?",
+      "subheadline": "Junte-se a milhares de clínicas que eliminaram a carga administrativa e recuperaram tempo para o cuidado ao paciente.",
+      "primaryCta": "Iniciar teste grátis",
+      "secondaryCta": "Falar com vendas",
+      "badge": "Teste grátis de 14 dias • Sem cartão • Acesso total aos recursos"
+    }
+  }
+}
