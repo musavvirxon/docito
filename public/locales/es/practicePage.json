@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "Gestión automatizada de clínica",
+      "headlineLine1": "Menos administración.",
+      "headlineLine2": "Más atención.",
+      "subheadline": "La plataforma todo en uno que automatiza agenda, documentación, facturación y comunicación con pacientes—para que te centres en lo que más importa.",
+      "primaryCta": "Empezar gratis",
+      "secondaryCta": "Programar demo"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "Menos tiempo administrativo"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "Reservas 24/7"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "Admisión más rápida"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "Sin papel"
+      }
+    },
+    "dashboard": {
+      "title": "Panel de la clínica",
+      "headline": "Todo automatizado",
+      "items": {
+        "appointments": "Hoy se programaron automáticamente 12 citas",
+        "reminders": "Se enviaron automáticamente 45 recordatorios",
+        "notes": "8 notas para diagnóstico",
+        "invoices": "Se procesaron automáticamente 3 facturas"
+      },
+      "timeSaved": {
+        "label": "Tiempo ahorrado hoy",
+        "value": "6 horas"
+      }
+    },
+    "automation": {
+      "title": "Automatización inteligente",
+      "headline": "Tu clínica en piloto automático",
+      "subheadline": "Deja de perder horas en tareas repetitivas. Deja que nuestra plataforma gestione la carga administrativa mientras tú te enfocas en el cuidado del paciente.",
+      "items": {
+        "smartScheduling": {
+          "title": "Agenda inteligente",
+          "description": "Reservas, cancelaciones y reprogramaciones automatizadas"
+        },
+        "patientCommunications": {
+          "title": "Comunicación con pacientes",
+          "description": "Recordatorios, seguimientos y confirmaciones automáticas"
+        },
+        "documentation": {
+          "title": "Documentación",
+          "description": "Notas, planes de tratamiento y recetas asistidas por IA"
+        },
+        "billingPayments": {
+          "title": "Facturación y pagos",
+          "description": "Facturación, cobros y reclamaciones de seguro automatizadas"
+        },
+        "analyticsReports": {
+          "title": "Analítica e informes",
+          "description": "Información en tiempo real sin entrada manual de datos"
+        },
+        "staffManagement": {
+          "title": "Gestión de personal",
+          "description": "Acceso por roles, turnos y seguimiento del rendimiento"
+        }
+      }
+    },
+    "solution": {
+      "title": "Solución completa",
+      "headlineLine1": "Una plataforma.",
+      "headlineLine2": "Todo lo que necesitas.",
+      "subheadline": "Sustituye tu conjunto de herramientas fragmentado por una plataforma unificada diseñada para clínicas modernas. Desde la admisión del paciente hasta la facturación final—todo integrado sin fricciones.",
+      "bullets": {
+        "onlineScheduling": "Programación de citas online",
+        "recordsManagement": "Gestión de historiales clínicos",
+        "treatmentPlanning": "Herramientas de planificación de tratamiento",
+        "digitalPrescriptions": "Recetas digitales",
+        "insuranceVerification": "Verificación de seguros",
+        "paymentProcessing": "Procesamiento de pagos",
+        "videoConsultations": "Consultas por video",
+        "labImagingOrders": "Órdenes de laboratorio e imagen",
+        "staffScheduling": "Planificación de personal",
+        "realTimeAnalytics": "Analítica en tiempo real",
+        "secureMessaging": "Mensajería segura",
+        "referralManagement": "Gestión de derivaciones"
+      }
+    },
+    "security": {
+      "title": "Seguridad de nivel empresarial",
+      "headline": "Creado para la salud",
+      "subheadline": "Infraestructura compatible con HIPAA y seguridad empresarial. Tus datos están protegidos con cifrado de extremo a extremo y controles de acceso por roles.",
+      "badges": {
+        "hipaa": {
+          "title": "Compatible con HIPAA",
+          "description": "Cumplimiento total"
+        },
+        "encryption": {
+          "title": "Cifrado de 256 bits",
+          "description": "De extremo a extremo"
+        },
+        "uptime": {
+          "title": "99.9% de disponibilidad",
+          "description": "SLA garantizado"
+        },
+        "soc2": {
+          "title": "SOC 2 Tipo II",
+          "description": "Certificado"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "Comienza tu camino",
+      "headlineLine1": "¿Listo para automatizar",
+      "headlineLine2": "tu clínica?",
+      "subheadline": "Únete a miles de clínicas que eliminaron la carga administrativa y recuperaron tiempo para el cuidado del paciente.",
+      "primaryCta": "Iniciar prueba gratis",
+      "secondaryCta": "Hablar con ventas",
+      "badge": "Prueba gratuita de 14 días • Sin tarjeta • Acceso total a funciones"
+    }
+  }
+}
