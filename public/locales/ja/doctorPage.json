@@ -1,0 +1,191 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "医療提供者向け",
+      "headline": "事務を減らして、ケアを増やす。",
+      "subheadline": "Docito は予約管理、リマインダー、診療記録、処方、紹介、請求、ファイル管理を自動化し—最も大切なこと、つまり患者さんに集中できるようにします。",
+      "primaryCta": "医師として参加",
+      "secondaryCta": "デモを予約",
+      "badge": "HIPAA 準拠 • 無料で開始 • クレジットカード不要"
+    },
+    "workflow": {
+      "title": "完全なワークフロー自動化",
+      "actors": {
+        "patient": "患者",
+        "you": "あなた",
+        "lab": "検査",
+        "pharmacy": "薬局",
+        "imaging": "画像診断"
+      },
+      "steps": {
+        "diagnosis": "診断",
+        "treatment": "治療",
+        "prescriptions": "処方",
+        "files": "ファイル",
+        "notes": "メモ"
+      }
+    },
+    "problems": {
+      "title": "解決する課題",
+      "headline": "事務作業に時間を浪費しない",
+      "subheadline": "Docito は医師を疲弊させ、患者を不満にさせる雑務をなくします。",
+      "items": {
+        "noShows": {
+          "title": "無断キャンセル・来院なし",
+          "description": "自動リマインダーで来院なしを 70% 減らします"
+        },
+        "paperwork": {
+          "title": "毎回の診療後に何時間もの書類作業",
+          "description": "賢い記録で数分で完了。何時間も不要"
+        },
+        "scatteredTools": {
+          "title": "メッセージ・メモ・ファイルがバラバラ",
+          "description": "すべてを統合した単一プラットフォーム"
+        },
+        "manualReferrals": {
+          "title": "手動の紹介と追跡漏れ",
+          "description": "検査・画像診断・薬局への紹介を自動化"
+        },
+        "lostFiles": {
+          "title": "ファイル紛失と患者記録の欠落",
+          "description": "すべての記録を安全なクラウドに保存"
+        },
+        "slowBilling": {
+          "title": "遅い請求と保険請求処理",
+          "description": "請求を簡素化し、クレームを即時処理"
+        }
+      }
+    },
+    "features": {
+      "title": "必要なものはすべて",
+      "headline": "1つのプラットフォームで、完全に管理",
+      "subheadline": "予約から請求まで、診療所運営をひとつの場所で。",
+      "items": {
+        "smartScheduling": {
+          "title": "スマート予約",
+          "description": "患者はすぐに予約。空き時間はあなたが管理。リマインダーが残りを自動化します。"
+        },
+        "videoConsultations": {
+          "title": "ビデオ診療",
+          "description": "内蔵のHDビデオで遠隔診療。追加アプリは不要です。"
+        },
+        "secureMessaging": {
+          "title": "安全なメッセージ",
+          "description": "患者・スタッフ・他の提供者と HIPAA 準拠のチャット。"
+        },
+        "visitDocumentation": {
+          "title": "診療記録",
+          "description": "診断、治療計画、処方、メモ—すべてを1つの流れで。"
+        },
+        "automatedReferrals": {
+          "title": "自動紹介",
+          "description": "検査・画像診断・薬局へワンクリックで紹介を送信。"
+        },
+        "practiceAnalytics": {
+          "title": "診療所アナリティクス",
+          "description": "予約、収益、患者アウトカムをリアルタイムで追跡。"
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "つながるエコシステム",
+      "headline": "スムーズな紹介、即時の結果",
+      "subheadline": "検査機関、薬局、画像診断センターへワンクリックで紹介。結果はダッシュボードに直接届きます。",
+      "items": {
+        "laboratories": {
+          "title": "検査機関",
+          "description": "検査を依頼し、結果をデジタルで受け取る"
+        },
+        "pharmacies": {
+          "title": "薬局",
+          "description": "処方箋を患者の薬局へ直接送信"
+        },
+        "imagingCenters": {
+          "title": "画像診断センター",
+          "description": "検査を依頼し、結果をダッシュボードで確認"
+        },
+        "otherProviders": {
+          "title": "他の提供者",
+          "description": "シームレスな紹介とケア連携"
+        }
+      }
+    },
+    "security": {
+      "title": "セキュリティ & 信頼",
+      "headline": "医療セキュリティのために設計",
+      "subheadline": "患者の信頼はすべてです。Docito は機微な医療情報を守るためにゼロから設計されています。",
+      "items": {
+        "hipaaGdpr": {
+          "title": "HIPAA & GDPR 準拠",
+          "description": "最も厳しい医療規制を満たすエンタープライズ級セキュリティ。"
+        },
+        "verifiedOnly": {
+          "title": "認証済みの提供者のみ",
+          "description": "すべての医師は公開前にライセンスで確認されます。"
+        },
+        "e2ee": {
+          "title": "エンドツーエンド暗号化",
+          "description": "患者データは保存時・転送時ともに暗号化されます。"
+        },
+        "rbac": {
+          "title": "役割ベースのアクセス",
+          "description": "スタッフは必要な情報だけを閲覧。患者は自分のデータを管理します。"
+        },
+        "auditReady": {
+          "title": "監査対応の記録",
+          "description": "コンプライアンスと説明責任のための完全な活動ログ。"
+        },
+        "noSell": {
+          "title": "データ販売なし",
+          "description": "患者データを販売・共有・収益化することは一切ありません。決して。"
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10,000+",
+        "label": "認証済み提供者"
+      },
+      "fewerNoShows": {
+        "value": "70%",
+        "label": "来院なしの減少"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "予約件数"
+      },
+      "providerRating": {
+        "value": "4.9/5",
+        "label": "提供者評価"
+      }
+    },
+    "testimonials": {
+      "title": "世界中の医師に信頼されています",
+      "subtitle": "Docito によって診療がどう変わるかをご覧ください。",
+      "items": {
+        "sarah": {
+          "name": "サラ・ミッチェル医師",
+          "specialty": "家庭医療",
+          "quote": "「以前は診療後の書類作業に2時間かかっていました。今は15分です。Docito は私の診療スタイルを変えました。」"
+        },
+        "james": {
+          "name": "ジェームズ・ロドリゲス医師",
+          "specialty": "循環器内科",
+          "quote": "「紹介システムが素晴らしい。患者を検査に送ると結果がダッシュボードに出ます。電話の行ったり来たりがありません。」"
+        },
+        "emily": {
+          "name": "エミリー・チェン医師",
+          "specialty": "皮膚科",
+          "quote": "「来院なしが25%から5%未満に下がりました。自動リマインダーは十分に価値があります。」"
+        }
+      }
+    },
+    "cta": {
+      "headline": "診療を自動化する準備はできましたか？",
+      "subheadline": "事務作業を減らし、患者と向き合う時間を増やす何千人もの医師に参加しましょう。",
+      "primaryCta": "無料で始める",
+      "secondaryCta": "料金を見る",
+      "badge": "クレジットカード不要 • HIPAA 準拠 • いつでも解約可能"
+    }
+  }
+}
