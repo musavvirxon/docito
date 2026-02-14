@@ -1,6 +1,4 @@
-// File: src/pages/Pricing.tsx
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SEOHead } from "@/components/SEOHead";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
@@ -11,8 +9,37 @@ import { PricingIllustration } from "@/components/Visuals/illustrations";
 import { PricingMatrix } from "@/components/pricing/PricingMatrix";
 
 const Pricing = () => {
-  const { t } = useTranslation("pricing");
+  const { t, i18n } = useTranslation("pricing");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+
+  const checkNamespaces = () =>
+    i18n.hasLoadedNamespace("pricing") && i18n.hasLoadedNamespace("pricing_matrix");
+
+  const [ready, setReady] = useState<boolean>(checkNamespaces);
+  const [, forceRerender] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const ensureNamespaces = async () => {
+      try {
+        await i18n.loadNamespaces(["pricing", "pricing_matrix"]);
+      } catch {
+        // ignore - render with fallbacks if backend fails
+      } finally {
+        if (cancelled) return;
+        setReady(true);
+        forceRerender((v) => v + 1); // ensure rerender after lazy namespace load
+      }
+    };
+
+    void ensureNamespaces();
+    return () => {
+      cancelled = true;
+    };
+  }, [i18n, i18n.language]);
+
+  if (!ready) return null;
 
   return (
     <>
