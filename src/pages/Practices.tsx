@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -21,65 +21,22 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const automationFeatures = [
-  {
-    icon: Calendar,
-    title: "Smart Scheduling",
-    description: "Automated bookings, cancellations, and rescheduling",
-  },
-  {
-    icon: MessageSquare,
-    title: "Patient Communications",
-    description: "Automated reminders, follow-ups, and confirmations",
-  },
-  {
-    icon: FileText,
-    title: "Documentation",
-    description: "Notes, treatment plans, and prescriptions",
-  },
-  {
-    icon: CreditCard,
-    title: "Billing & Payments",
-    description: "Automated invoicing, collections, and insurance claims",
-  },
-  {
-    icon: BarChart3,
-    title: "Analytics & Reports",
-    description: "Real-time insights without manual data entry",
-  },
-  {
-    icon: Users,
-    title: "Staff Management",
-    description: "Role-based access, schedules, and performance tracking",
-  },
-];
-
-const benefitStats = [
-  { value: "70%", label: "Less Admin Time" },
-  { value: "24/7", label: "Patient Booking" },
-  { value: "3x", label: "Faster Intake" },
-  { value: "100%", label: "Paperless" },
-];
-
-const allInOneFeatures = [
-  "Online appointment scheduling",
-  "Patient records management",
-  "Treatment planning tools",
-  "Digital prescriptions",
-  "Insurance verification",
-  "Payment processing",
-  "Video consultations",
-  "Lab & imaging orders",
-  "Staff scheduling",
-  "Real-time analytics",
-  "Secure messaging",
-  "Referral management",
-];
-
 export default function Practices() {
-  const { t } = useTranslation(["practices", "common"]);
+  const { t, i18n } = useTranslation(["practicePage", "common"]);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+
+  const [ready, setReady] = useState(i18n.hasLoadedNamespace("practicePage"));
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try { await i18n.loadNamespaces(["practicePage"]); } catch {}
+      if (!cancelled) setReady(true);
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [i18n, i18n.language]);
 
   useEffect(() => {
     if (titleRef.current) {
@@ -97,6 +54,63 @@ export default function Practices() {
       );
     }
   }, []);
+
+  if (!ready) return null;
+
+  const automationFeatures = [
+    {
+      icon: Calendar,
+      title: t("practicePage.automation.items.smartScheduling.title"),
+      description: t("practicePage.automation.items.smartScheduling.description"),
+    },
+    {
+      icon: MessageSquare,
+      title: t("practicePage.automation.items.patientCommunications.title"),
+      description: t("practicePage.automation.items.patientCommunications.description"),
+    },
+    {
+      icon: FileText,
+      title: t("practicePage.automation.items.documentation.title"),
+      description: t("practicePage.automation.items.documentation.description"),
+    },
+    {
+      icon: CreditCard,
+      title: t("practicePage.automation.items.billingPayments.title"),
+      description: t("practicePage.automation.items.billingPayments.description"),
+    },
+    {
+      icon: BarChart3,
+      title: t("practicePage.automation.items.analyticsReports.title"),
+      description: t("practicePage.automation.items.analyticsReports.description"),
+    },
+    {
+      icon: Users,
+      title: t("practicePage.automation.items.staffManagement.title"),
+      description: t("practicePage.automation.items.staffManagement.description"),
+    },
+  ];
+
+  const benefitStats = [
+    { value: t("practicePage.stats.lessAdminTime.value"), label: t("practicePage.stats.lessAdminTime.label") },
+    { value: t("practicePage.stats.patientBooking.value"), label: t("practicePage.stats.patientBooking.label") },
+    { value: t("practicePage.stats.fasterIntake.value"), label: t("practicePage.stats.fasterIntake.label") },
+    { value: t("practicePage.stats.paperless.value"), label: t("practicePage.stats.paperless.label") },
+  ];
+
+  const allInOneFeatures = [
+    t("practicePage.solution.bullets.onlineScheduling"),
+    t("practicePage.solution.bullets.recordsManagement"),
+    t("practicePage.solution.bullets.treatmentPlanning"),
+    t("practicePage.solution.bullets.digitalPrescriptions"),
+    t("practicePage.solution.bullets.insuranceVerification"),
+    t("practicePage.solution.bullets.paymentProcessing"),
+    t("practicePage.solution.bullets.videoConsultations"),
+    t("practicePage.solution.bullets.labImagingOrders"),
+    t("practicePage.solution.bullets.staffScheduling"),
+    t("practicePage.solution.bullets.realTimeAnalytics"),
+    t("practicePage.solution.bullets.secureMessaging"),
+    t("practicePage.solution.bullets.referralManagement"),
+  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground antialiased">
@@ -126,7 +140,7 @@ export default function Practices() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 backdrop-blur-sm text-primary text-sm font-medium rounded-full border border-primary/20">
                   <Bot className="w-4 h-4" />
-                  AI-Powered Practice Management
+                  {t("practicePage.hero.kicker")}
                 </span>
               </motion.div>
 
@@ -135,9 +149,9 @@ export default function Practices() {
                 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight"
                 style={{ opacity: 0 }}
               >
-                <span className="block text-foreground">Less Admin.</span>
+                <span className="block text-foreground">{t("practicePage.hero.headlineLine1")}</span>
                 <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-normal">
-                  More Care.
+                  {t("practicePage.hero.headlineLine2")}
                 </span>
               </h1>
 
@@ -146,8 +160,7 @@ export default function Practices() {
                 className="text-lg sm:text-xl text-muted-foreground font-light leading-relaxed max-w-xl"
                 style={{ opacity: 0 }}
               >
-                The all-in-one practice platform that automates scheduling, documentation, billing, and patient
-                communications—so you can focus on what matters most.
+                {t("practicePage.hero.subheadline")}
               </p>
 
               <motion.div
@@ -163,14 +176,14 @@ export default function Practices() {
                     className="h-14 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-lg gap-2 shadow-lg shadow-primary/25"
                   >
                     <Link to="/register-practice">
-                      Get Started Free
+                      {t("practicePage.hero.primaryCta")}
                       <ArrowRight className="w-5 h-5" />
                     </Link>
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button asChild size="lg" variant="outline" className="h-14 px-8 rounded-full text-lg gap-2 border-2">
-                    <Link to="/contact">Schedule Demo</Link>
+                    <Link to="/contact">{t("practicePage.hero.secondaryCta")}</Link>
                   </Button>
                 </motion.div>
               </motion.div>
@@ -202,8 +215,8 @@ export default function Practices() {
               <div className="rounded-3xl border border-border/50 bg-card/80 backdrop-blur-xl p-6 shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <div className="text-sm text-muted-foreground">Practice Dashboard</div>
-                    <div className="text-xl font-semibold">Everything Automated</div>
+                    <div className="text-sm text-muted-foreground">{t("practicePage.dashboard.title")}</div>
+                    <div className="text-xl font-semibold">{t("practicePage.dashboard.headline")}</div>
                   </div>
                   <div className="flex gap-2">
                     <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse" />
@@ -215,10 +228,10 @@ export default function Practices() {
                 {/* Automation indicators */}
                 <div className="space-y-3">
                   {[
-                    { icon: Clock, text: "12 appointments auto-scheduled today", status: "active" },
-                    { icon: MessageSquare, text: "45 reminders sent automatically", status: "done" },
-                    { icon: FileText, text: "8 notes generated by AI", status: "active" },
-                    { icon: CreditCard, text: "3 invoices auto-processed", status: "done" },
+                    { icon: Clock, text: t("practicePage.dashboard.items.appointments"), status: "active" },
+                    { icon: MessageSquare, text: t("practicePage.dashboard.items.reminders"), status: "done" },
+                    { icon: FileText, text: t("practicePage.dashboard.items.notes"), status: "active" },
+                    { icon: CreditCard, text: t("practicePage.dashboard.items.invoices"), status: "done" },
                   ].map((item, index) => (
                     <motion.div
                       key={index}
@@ -247,8 +260,8 @@ export default function Practices() {
                   <div className="flex items-center gap-3">
                     <Zap className="w-6 h-6 text-primary" />
                     <div>
-                      <div className="text-sm font-medium text-foreground">Today's Time Saved</div>
-                      <div className="text-2xl font-bold text-primary">4.5 hours</div>
+                      <div className="text-sm font-medium text-foreground">{t("practicePage.dashboard.timeSaved.label")}</div>
+                      <div className="text-2xl font-bold text-primary">{t("practicePage.dashboard.timeSaved.value")}</div>
                     </div>
                   </div>
                 </div>
@@ -290,15 +303,14 @@ export default function Practices() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Workflow className="w-4 h-4" />
-              Intelligent Automation
+              {t("practicePage.automation.title")}
             </span>
             <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">
-              Your Practice on
-              <span className="font-normal text-primary"> Autopilot</span>
+              {t("practicePage.automation.headline").split(" ").slice(0, -1).join(" ")}{" "}
+              <span className="font-normal text-primary">{t("practicePage.automation.headline").split(" ").pop()}</span>
             </h2>
             <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-              Stop wasting hours on repetitive tasks. Let our Automatization handle the administrative burden while you
-              focus on patient care.
+              {t("practicePage.automation.subheadline")}
             </p>
           </motion.div>
 
@@ -352,16 +364,15 @@ export default function Practices() {
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent-foreground text-sm font-medium mb-6">
                 <Sparkles className="w-4 h-4 text-primary" />
-                Complete Solution
+                {t("practicePage.solution.title")}
               </span>
               <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-6">
-                One Platform.
+                {t("practicePage.solution.headlineLine1")}
                 <br />
-                <span className="font-normal text-primary">Everything You Need.</span>
+                <span className="font-normal text-primary">{t("practicePage.solution.headlineLine2")}</span>
               </h2>
               <p className="text-lg text-muted-foreground font-light mb-8 leading-relaxed">
-                Replace your fragmented toolkit with a unified platform designed specifically for modern medical
-                practices. From patient intake to final billing—seamlessly integrated.
+                {t("practicePage.solution.subheadline")}
               </p>
 
               <div className="grid grid-cols-2 gap-3">
@@ -445,24 +456,23 @@ export default function Practices() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Shield className="w-4 h-4" />
-              Enterprise-Grade Security
+              {t("practicePage.security.title")}
             </span>
             <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">
-              Built for
-              <span className="font-normal text-primary"> Healthcare</span>
+              {t("practicePage.security.headline").split(" ").slice(0, -1).join(" ")}{" "}
+              <span className="font-normal text-primary">{t("practicePage.security.headline").split(" ").pop()}</span>
             </h2>
             <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-              HIPAA-compliant infrastructure with enterprise security. Your data is protected with end-to-end encryption
-              and role-based access controls.
+              {t("practicePage.security.subheadline")}
             </p>
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {[
-              { label: "HIPAA Compliant", sublabel: "Full compliance" },
-              { label: "256-bit Encryption", sublabel: "End-to-end" },
-              { label: "99.9% Uptime", sublabel: "SLA guaranteed" },
-              { label: "SOC 2 Type II", sublabel: "Certified" },
+              { label: t("practicePage.security.badges.hipaa.title"), sublabel: t("practicePage.security.badges.hipaa.description") },
+              { label: t("practicePage.security.badges.encryption.title"), sublabel: t("practicePage.security.badges.encryption.description") },
+              { label: t("practicePage.security.badges.uptime.title"), sublabel: t("practicePage.security.badges.uptime.description") },
+              { label: t("practicePage.security.badges.soc2.title"), sublabel: t("practicePage.security.badges.soc2.description") },
             ].map((item, index) => (
               <motion.div
                 key={item.label}
@@ -514,18 +524,17 @@ export default function Practices() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8"
             >
               <Sparkles className="w-4 h-4" />
-              Start Your Journey
+              {t("practicePage.cta.kicker")}
             </motion.div>
 
             <h2 className="text-4xl md:text-6xl font-extralight tracking-tight text-foreground mb-6">
-              Ready to Automate
+              {t("practicePage.cta.headlineLine1")}
               <br />
-              <span className="font-normal text-primary">Your Practice?</span>
+              <span className="font-normal text-primary">{t("practicePage.cta.headlineLine2")}</span>
             </h2>
 
             <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto mb-12">
-              Join thousands of practices that have eliminated administrative burden and reclaimed their time for
-              patient care.
+              {t("practicePage.cta.subheadline")}
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -537,7 +546,7 @@ export default function Practices() {
                 >
                   <Link to="/register-practice">
                     <Calendar className="w-5 h-5" />
-                    Start Free Trial
+                    {t("practicePage.cta.primaryCta")}
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </Button>
@@ -547,7 +556,7 @@ export default function Practices() {
                 <Button asChild size="lg" variant="outline" className="h-14 px-8 rounded-full text-lg gap-2 border-2">
                   <Link to="/contact">
                     <Users className="w-5 h-5" />
-                    Talk to Sales
+                    {t("practicePage.cta.secondaryCta")}
                   </Link>
                 </Button>
               </motion.div>
@@ -560,7 +569,7 @@ export default function Practices() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="mt-8 text-sm text-muted-foreground"
             >
-              Free 14-day trial • No credit card required • Full feature access
+              {t("practicePage.cta.badge")}
             </motion.p>
           </motion.div>
         </div>
