@@ -1,7 +1,8 @@
 // src/pages/pharmacy/PharmacyLandingPage.tsx
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -22,11 +23,7 @@ import {
   FlaskConical,
   Scan,
   BadgeCheck,
-  Zap,
-  Globe,
   Heart,
-  AlertCircle,
-  Layers,
 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import ModernNavbar from '@/components/home/ModernNavbar';
@@ -124,6 +121,7 @@ const TimelineItem = ({
 };
 
 export default function PharmacyLandingPage() {
+  const { t, i18n } = useTranslation(['pharmacyPage', 'common']);
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -136,96 +134,74 @@ export default function PharmacyLandingPage() {
 
   const { footerProvided } = usePublicChrome();
 
+  const [ready, setReady] = useState(i18n.hasLoadedNamespace("pharmacyPage"));
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try { await i18n.loadNamespaces(["pharmacyPage"]); } catch {}
+      if (!cancelled) setReady(true);
+    };
+    void load();
+    return () => { cancelled = true; };
+  }, [i18n, i18n.language]);
+
+  if (!ready) return null;
+
   const features = [
-    {
-      icon: FileText,
-      title: 'Digital Prescriptions (eRx)',
-      description: 'Receive prescriptions instantly from verified doctors across the Docito network.',
-    },
-    {
-      icon: RefreshCw,
-      title: 'Medication Refill Management',
-      description: 'Automated refill requests and smart patient reminders to boost adherence.',
-    },
-    {
-      icon: Package,
-      title: 'Inventory & Stock Control',
-      description: 'Real-time stock levels, expiry alerts, and supplier insights in one view.',
-    },
-    {
-      icon: Truck,
-      title: 'Online Orders & Delivery',
-      description: 'Enable home delivery with real-time order tracking for patients.',
-    },
-    {
-      icon: CreditCard,
-      title: 'Payments & Insurance',
-      description: 'Accept cash, cards, digital wallets, and process insurance claims seamlessly.',
-    },
-    {
-      icon: Users,
-      title: 'Patient Profiles',
-      description: 'Access medication history, allergies, and adherence tracking at a glance.',
-    },
-    {
-      icon: BarChart3,
-      title: 'Analytics Dashboard',
-      description: 'Sales trends, fast-moving drugs, and revenue insights to grow your business.',
-    },
+    { icon: FileText, title: t("pharmacyPage.features.items.erx.title"), description: t("pharmacyPage.features.items.erx.description") },
+    { icon: RefreshCw, title: t("pharmacyPage.features.items.refills.title"), description: t("pharmacyPage.features.items.refills.description") },
+    { icon: Package, title: t("pharmacyPage.features.items.inventory.title"), description: t("pharmacyPage.features.items.inventory.description") },
+    { icon: Truck, title: t("pharmacyPage.features.items.delivery.title"), description: t("pharmacyPage.features.items.delivery.description") },
+    { icon: CreditCard, title: t("pharmacyPage.features.items.payments.title"), description: t("pharmacyPage.features.items.payments.description") },
+    { icon: Users, title: t("pharmacyPage.features.items.profiles.title"), description: t("pharmacyPage.features.items.profiles.description") },
+    { icon: BarChart3, title: t("pharmacyPage.features.items.analytics.title"), description: t("pharmacyPage.features.items.analytics.description") },
   ];
 
   const steps = [
-    { number: '01', title: 'Register Your Pharmacy', description: 'Verify licenses, locations, and operating hours in minutes.' },
-    { number: '02', title: 'Sync Inventory & Pricing', description: 'Upload medicines, generics, and real-time availability.' },
-    { number: '03', title: 'Receive Digital Prescriptions', description: 'From doctors, clinics, and hospitals across the network.' },
-    { number: '04', title: 'Prepare & Fulfill Orders', description: 'Streamlined workflow for in-store pickup or home delivery.' },
-    { number: '05', title: 'Get Paid Instantly', description: 'Process online payments, insurance claims, and generate invoices.' },
-    { number: '06', title: 'Grow & Optimize', description: 'Leverage insights, repeat customers, and referral programs.' },
+    { number: t("pharmacyPage.howItWorks.steps.step1.number"), title: t("pharmacyPage.howItWorks.steps.step1.title"), description: t("pharmacyPage.howItWorks.steps.step1.description") },
+    { number: t("pharmacyPage.howItWorks.steps.step2.number"), title: t("pharmacyPage.howItWorks.steps.step2.title"), description: t("pharmacyPage.howItWorks.steps.step2.description") },
+    { number: t("pharmacyPage.howItWorks.steps.step3.number"), title: t("pharmacyPage.howItWorks.steps.step3.title"), description: t("pharmacyPage.howItWorks.steps.step3.description") },
+    { number: t("pharmacyPage.howItWorks.steps.step4.number"), title: t("pharmacyPage.howItWorks.steps.step4.title"), description: t("pharmacyPage.howItWorks.steps.step4.description") },
+    { number: t("pharmacyPage.howItWorks.steps.step5.number"), title: t("pharmacyPage.howItWorks.steps.step5.title"), description: t("pharmacyPage.howItWorks.steps.step5.description") },
+    { number: t("pharmacyPage.howItWorks.steps.step6.number"), title: t("pharmacyPage.howItWorks.steps.step6.title"), description: t("pharmacyPage.howItWorks.steps.step6.description") },
   ];
 
   const integrations = [
-    { icon: Stethoscope, label: 'Doctors' },
-    { icon: Building2, label: 'Clinics' },
-    { icon: Heart, label: 'Hospitals' },
-    { icon: FlaskConical, label: 'Labs' },
-    { icon: Scan, label: 'Imaging' },
-    { icon: BadgeCheck, label: 'Insurance' },
+    { icon: Stethoscope, label: t("pharmacyPage.ecosystem.nodes.doctors") },
+    { icon: Building2, label: t("pharmacyPage.ecosystem.nodes.clinics") },
+    { icon: Heart, label: t("pharmacyPage.ecosystem.nodes.hospitals") },
+    { icon: FlaskConical, label: t("pharmacyPage.ecosystem.nodes.labs") },
+    { icon: Scan, label: t("pharmacyPage.ecosystem.nodes.imaging") },
+    { icon: BadgeCheck, label: t("pharmacyPage.ecosystem.nodes.insurance") },
   ];
 
   const compliance = [
-    { icon: Shield, text: 'HIPAA-Aligned' },
-    { icon: Lock, text: 'Secure eRx' },
-    { icon: Users, text: 'Role-Based Access' },
-    { icon: FileText, text: 'Encrypted Data' },
-    { icon: CheckCircle, text: 'Audit Trails' },
+    { icon: Shield, text: t("pharmacyPage.compliance.items.hipaaAligned") },
+    { icon: Lock, text: t("pharmacyPage.compliance.items.secureErx") },
+    { icon: Users, text: t("pharmacyPage.compliance.items.roleBasedAccess") },
+    { icon: FileText, text: t("pharmacyPage.compliance.items.encryptedData") },
+    { icon: CheckCircle, text: t("pharmacyPage.compliance.items.auditTrails") },
+  ];
+
+  const pricingBullets = [
+    t("pharmacyPage.pricing.bullets.noHiddenFees"),
+    t("pharmacyPage.pricing.bullets.flexiblePlans"),
+    t("pharmacyPage.pricing.bullets.transparentBilling"),
+    t("pharmacyPage.pricing.bullets.enterpriseOptions"),
   ];
 
   return (
     <>
       <Helmet>
         <title>Pharmacy Management Software | Digital Pharmacy Platform | Docito</title>
-        <meta
-          name="description"
-          content="The digital backbone for modern pharmacies. Manage prescriptions, inventory, payments, deliveries, and doctor integrations from one secure platform."
-        />
-        <meta
-          name="keywords"
-          content="pharmacy management software, digital pharmacy platform, online prescription management, e-prescription system, pharmacy POS software, pharmacy inventory software, medication refill system, pharmacy analytics, pharmacy delivery management"
-        />
+        <meta name="description" content={t("pharmacyPage.hero.subheadline")} />
         <link rel="canonical" href="https://docito.app/pharmacy" />
         <script type="application/ld+json">
           {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'SoftwareApplication',
-            name: 'Docito for Pharmacies',
-            applicationCategory: 'HealthApplication',
-            operatingSystem: 'Web',
-            description:
-              'Complete digital pharmacy management platform with prescription processing, inventory management, and healthcare integration.',
-            offers: {
-              '@type': 'Offer',
-              category: 'Subscription',
-            },
+            '@context': 'https://schema.org', '@type': 'SoftwareApplication',
+            name: 'Docito for Pharmacies', applicationCategory: 'HealthApplication', operatingSystem: 'Web',
+            description: t("pharmacyPage.hero.subheadline"),
+            offers: { '@type': 'Offer', category: 'Subscription' },
           })}
         </script>
       </Helmet>
@@ -233,7 +209,7 @@ export default function PharmacyLandingPage() {
       <div className="min-h-screen bg-background overflow-x-hidden">
         <ModernNavbar />
 
-        {/* Hero Section (Slightly Smaller + More Space Under Top Nav) */}
+        {/* Hero */}
         <section
           ref={heroRef}
           className="relative min-h-[82vh] pt-10 md:pt-14 flex items-center justify-center overflow-hidden"
@@ -262,7 +238,7 @@ export default function PharmacyLandingPage() {
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary/10 border border-primary/20 text-primary mb-8"
             >
               <Pill className="w-4 h-4" />
-              <span className="text-sm font-medium tracking-wide">For Modern Pharmacies</span>
+              <span className="text-sm font-medium tracking-wide">{t("pharmacyPage.hero.kicker")}</span>
             </motion.div>
 
             <motion.h1
@@ -271,12 +247,12 @@ export default function PharmacyLandingPage() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-8 leading-[0.95]"
             >
-              <span className="text-foreground">The Digital</span>
+              <span className="text-foreground">{t("pharmacyPage.hero.headlineLine1")}</span>
               <br />
-              <span className="text-foreground">Backbone for</span>
+              <span className="text-foreground">{t("pharmacyPage.hero.headlineLine2")}</span>
               <br />
               <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
-                Modern Pharmacies
+                {t("pharmacyPage.hero.headlineLine3")}
               </span>
             </motion.h1>
 
@@ -286,7 +262,7 @@ export default function PharmacyLandingPage() {
               transition={{ duration: 0.8, delay: 0.3 }}
               className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed font-light"
             >
-              Manage prescriptions, inventory, payments, deliveries, and doctor integrations — all from one secure platform.
+              {t("pharmacyPage.hero.subheadline")}
             </motion.p>
 
             <motion.div
@@ -301,7 +277,7 @@ export default function PharmacyLandingPage() {
                 className="text-lg px-10 h-16 rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 font-medium"
               >
                 <Link to="/pharmacy/register">
-                  Register Your Pharmacy
+                  {t("pharmacyPage.hero.primaryCta")}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Link>
               </Button>
@@ -311,7 +287,9 @@ export default function PharmacyLandingPage() {
                 size="lg"
                 className="text-lg px-10 h-16 rounded-2xl border-border/50 hover:bg-muted/50 transition-all duration-300"
               >
-                <Link to="/contact">Request a Demo</Link>
+                <Link to="/contact">
+                  {t("pharmacyPage.hero.secondaryCta")}
+                </Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -322,12 +300,12 @@ export default function PharmacyLandingPage() {
           <div className="container mx-auto px-4">
             <AnimatedSection className="text-center max-w-4xl mx-auto mb-20">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight">
-                Everything Your Pharmacy Needs
+                {t("pharmacyPage.features.title")}
                 <br />
-                <span className="text-primary">In One Platform</span>
+                <span className="text-primary">{t("pharmacyPage.features.subtitle")}</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                One platform to manage every aspect of your pharmacy operations
+                {t("pharmacyPage.features.description")}
               </p>
             </AnimatedSection>
 
@@ -344,9 +322,9 @@ export default function PharmacyLandingPage() {
           <div className="container mx-auto px-4">
             <AnimatedSection className="text-center max-w-3xl mx-auto mb-20">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight">
-                How Docito Works for <span className="text-primary">Pharmacies</span>
+                {t("pharmacyPage.howItWorks.title").replace("Pharmacies", "")}<span className="text-primary">Pharmacies</span>
               </h2>
-              <p className="text-xl text-muted-foreground">From registration to revenue — your complete journey</p>
+              <p className="text-xl text-muted-foreground">{t("pharmacyPage.howItWorks.subtitle")}</p>
             </AnimatedSection>
 
             <div className="max-w-2xl mx-auto">
@@ -365,10 +343,10 @@ export default function PharmacyLandingPage() {
           <div className="container mx-auto px-4 relative z-10">
             <AnimatedSection className="text-center max-w-4xl mx-auto mb-20">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight">
-                The Future of Pharmacies Is <span className="text-primary">Connected</span>
+                {t("pharmacyPage.ecosystem.title").replace("Connected", "")}<span className="text-primary">Connected</span>
               </h2>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                Pharmacies are no longer standalone stores — they are critical nodes in the healthcare ecosystem. Docito connects you directly with doctors, labs, clinics, and patients.
+                {t("pharmacyPage.ecosystem.description")}
               </p>
             </AnimatedSection>
 
@@ -395,7 +373,7 @@ export default function PharmacyLandingPage() {
                 </div>
                 <div className="mt-12 pt-8 border-t border-border/30 text-center">
                   <p className="text-muted-foreground">
-                    <span className="text-primary font-medium">Docito Network</span> — One platform connecting the entire healthcare ecosystem
+                    {t("pharmacyPage.ecosystem.footer")}
                   </p>
                 </div>
               </Card>
@@ -403,12 +381,12 @@ export default function PharmacyLandingPage() {
           </div>
         </section>
 
-        {/* Compliance Section */}
+        {/* Compliance */}
         <section className="py-32">
           <div className="container mx-auto px-4">
             <AnimatedSection className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 tracking-tight">
-                Healthcare-Grade <span className="text-primary">Compliance</span>
+                {t("pharmacyPage.compliance.title").replace("Compliance", "")}<span className="text-primary">Compliance</span>
               </h2>
             </AnimatedSection>
 
@@ -430,13 +408,13 @@ export default function PharmacyLandingPage() {
           <div className="container mx-auto px-4">
             <AnimatedSection className="text-center max-w-3xl mx-auto">
               <h2 className="text-4xl md:text-5xl font-bold mb-8 tracking-tight">
-                Pricing That Makes <span className="text-primary">Sense</span>
+                {t("pharmacyPage.pricing.title").replace("Sense", "")}<span className="text-primary">Sense</span>
               </h2>
               <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
-                Docito pricing scales with your pharmacy — from single retail locations to national chains.
+                {t("pharmacyPage.pricing.description")}
               </p>
               <div className="flex flex-wrap justify-center gap-4 mb-10">
-                {['No hidden fees', 'Flexible plans', 'Transparent billing', 'Enterprise options'].map((item, i) => (
+                {pricingBullets.map((item, i) => (
                   <div
                     key={i}
                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium"
@@ -448,10 +426,14 @@ export default function PharmacyLandingPage() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" className="h-14 px-8 rounded-xl">
-                  <Link to="/pricing">View Pricing</Link>
+                  <Link to="/pricing">
+                    {t("pharmacyPage.pricing.primaryCta")}
+                  </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-xl">
-                  <Link to="/contact">Talk to Sales</Link>
+                  <Link to="/contact">
+                    {t("pharmacyPage.pricing.secondaryCta")}
+                  </Link>
                 </Button>
               </div>
             </AnimatedSection>
@@ -468,13 +450,13 @@ export default function PharmacyLandingPage() {
           <div className="relative z-10 container mx-auto px-4 text-center">
             <AnimatedSection>
               <h2 className="text-4xl md:text-5xl lg:text-7xl font-bold mb-8 tracking-tight max-w-5xl mx-auto leading-tight">
-                Transform Your Pharmacy Into a{' '}
+                {t("pharmacyPage.finalCta.headline").split("Digital-First")[0]}
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   Digital-First Healthcare Hub
                 </span>
               </h2>
               <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
-                Increase efficiency, boost revenue, and deliver better patient experiences with Docito.
+                {t("pharmacyPage.finalCta.subheadline")}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
@@ -483,12 +465,14 @@ export default function PharmacyLandingPage() {
                   className="text-lg px-12 h-16 rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
                 >
                   <Link to="/pharmacy/register">
-                    Register Your Pharmacy
+                    {t("pharmacyPage.finalCta.primaryCta")}
                     <ArrowRight className="ml-2 w-5 h-5" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="text-lg px-12 h-16 rounded-2xl">
-                  <Link to="/contact">Request a Demo</Link>
+                  <Link to="/contact">
+                    {t("pharmacyPage.finalCta.secondaryCta")}
+                  </Link>
                 </Button>
               </div>
             </AnimatedSection>
