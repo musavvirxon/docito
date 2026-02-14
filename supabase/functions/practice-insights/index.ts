@@ -125,24 +125,24 @@ async function assertPracticeAccess(serviceClient: any, userId: string, practice
   return Boolean((role as any)?.role);
 }
 
-function computeRevenueCents(rows: Array<{ amount_cents: any; status: any; transaction_type: any }>) {
+function computeRevenueCents(rows: Array<{ amount: any; status: any; transaction_type: any }>) {
   return rows.reduce((sum, t) => {
     const status = String(t.status || "").toLowerCase();
     if (status !== "completed" && status !== "paid") return sum;
     const type = String(t.transaction_type || "charge").toLowerCase();
-    const amt = Number(t.amount_cents || 0);
+    const amt = Math.round(Number(t.amount || 0) * 100);
     if (type === "refund") return sum - Math.abs(amt);
     return sum + amt;
   }, 0);
 }
 
-function computePendingCents(rows: Array<{ amount_cents: any; status: any; transaction_type: any }>) {
+function computePendingCents(rows: Array<{ amount: any; status: any; transaction_type: any }>) {
   return rows.reduce((sum, t) => {
     const status = String(t.status || "").toLowerCase();
     if (status !== "pending") return sum;
     const type = String(t.transaction_type || "charge").toLowerCase();
     if (type === "refund") return sum;
-    return sum + Number(t.amount_cents || 0);
+    return sum + Math.round(Number(t.amount || 0) * 100);
   }, 0);
 }
 
@@ -197,28 +197,27 @@ serve(async (req) => {
       const { data: txs, error: txErr } = await service
         .from("billing_transactions")
         .select(
-          "id, created_at, amount_cents, currency, status, transaction_type, invoice_id, provider, provider_ref, metadata",
+          "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data",
         )
-        .eq("entity_type", "clinic")
-        .eq("entity_id", practiceId)
+        .eq("practice_id", practiceId)
         .gte("created_at", start.toISOString())
         .lt("created_at", end.toISOString())
         .order("created_at", { ascending: false })
         .limit(20000);
       if (txErr) throw txErr;
 
-      const txRows = (txs || []) as BillingTx[];
-      const currency = txRows.find((t) => t.currency)?.currency || "usd";
+      const txRows = (txs || []) as any[];
+      const currency = txRows.find((t: any) => t.currency)?.currency || "usd";
 
       // Most useful summary: within selected period.
       const totalRevenueCents = computeRevenueCents(txRows);
       const pendingCents = computePendingCents(txRows);
-      const refundCents = txRows.reduce((sum, t) => {
+      const refundCents = txRows.reduce((sum: number, t: any) => {
         const status = String(t.status || "").toLowerCase();
         if (status !== "completed" && status !== "paid") return sum;
         const type = String(t.transaction_type || "").toLowerCase();
         if (type !== "refund") return sum;
-        return sum + Math.abs(Number(t.amount_cents || 0));
+        return sum + Math.abs(Math.round(Number(t.amount || 0) * 100));
       }, 0);
 
       const recent = txRows.slice(0, limit);
@@ -282,17 +281,15 @@ serve(async (req) => {
     const [{ data: txs, error: tErr }, { data: prevTxs, error: ptErr }] = await Promise.all([
       service
         .from("billing_transactions")
-        .select("amount_cents, currency, status, created_at, transaction_type")
-        .eq("entity_type", "clinic")
-        .eq("entity_id", practiceId)
+        .select("amount, currency, status, created_at, transaction_type")
+        .eq("practice_id", practiceId)
         .gte("created_at", start.toISOString())
         .lt("created_at", end.toISOString())
         .limit(20000),
       service
         .from("billing_transactions")
-        .select("amount_cents, currency, status, created_at, transaction_type")
-        .eq("entity_type", "clinic")
-        .eq("entity_id", practiceId)
+        .select("amount, currency, status, created_at, transaction_type")
+        .eq("practice_id", practiceId)
         .gte("created_at", prevStart.toISOString())
         .lt("created_at", prevEnd.toISOString())
         .limit(20000),
@@ -361,7 +358,7 @@ serve(async (req) => {
       const key = dateKeyUTC(startOfDayUTC(created));
       if (!dayMap[key]) continue;
       const type = String(t.transaction_type || "charge").toLowerCase();
-      const amt = Number(t.amount_cents || 0);
+      const amt = Math.round(Number(t.amount || 0) * 100);
       if (type === "refund") dayMap[key].revenue_cents -= Math.abs(amt);
       else dayMap[key].revenue_cents += amt;
     }
