@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+ingimport { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import gsap from "gsap";
@@ -25,7 +25,7 @@ const automationFeatures = [
   {
     icon: Calendar,
     title: "Smart Scheduling",
-    description: "AI handles bookings, cancellations, and rescheduling automatically",
+    description: "Automated bookings, cancellations, and rescheduling",
   },
   {
     icon: MessageSquare,
