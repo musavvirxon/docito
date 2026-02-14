@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "إدارة العيادة المؤتمتة",
+      "headlineLine1": "إدارة أقل.",
+      "headlineLine2": "رعاية أكثر.",
+      "subheadline": "منصة شاملة للعيادة تُؤتمت الجدولة والتوثيق والفوترة وتواصل المرضى—لتتمكن من التركيز على ما يهم أكثر.",
+      "primaryCta": "ابدأ مجاناً",
+      "secondaryCta": "احجز عرضاً توضيحياً"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "وقت أقل للأعمال الإدارية"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "حجز المرضى على مدار الساعة"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "تسجيل أسرع 3 مرات"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "بدون ورق بالكامل"
+      }
+    },
+    "dashboard": {
+      "title": "لوحة تحكم العيادة",
+      "headline": "كل شيء مؤتمت",
+      "items": {
+        "appointments": "تمت جدولة 12 موعداً تلقائياً اليوم",
+        "reminders": "تم إرسال 45 تذكيراً تلقائياً",
+        "notes": "8 ملاحظات للتشخيص",
+        "invoices": "تمت معالجة 3 فواتير تلقائياً"
+      },
+      "timeSaved": {
+        "label": "الوقت المُوفَّر اليوم",
+        "value": "6 ساعات"
+      }
+    },
+    "automation": {
+      "title": "أتمتة ذكية",
+      "headline": "عيادتك على الطيار الآلي",
+      "subheadline": "توقف عن إهدار ساعات على المهام المتكررة. دع الذكاء الاصطناعي يتولى العبء الإداري بينما تركز أنت على رعاية المرضى.",
+      "items": {
+        "smartScheduling": {
+          "title": "جدولة ذكية",
+          "description": "حجوزات وإلغاءات وإعادة جدولة مؤتمتة"
+        },
+        "patientCommunications": {
+          "title": "تواصل المرضى",
+          "description": "تذكيرات ومتابعات وتأكيدات تلقائية"
+        },
+        "documentation": {
+          "title": "التوثيق",
+          "description": "ملاحظات وخطط علاج ووصفات بمساعدة الذكاء الاصطناعي"
+        },
+        "billingPayments": {
+          "title": "الفوترة والمدفوعات",
+          "description": "فواتير وتحصيل ومطالبات تأمين مؤتمتة"
+        },
+        "analyticsReports": {
+          "title": "التحليلات والتقارير",
+          "description": "رؤى فورية دون إدخال يدوي للبيانات"
+        },
+        "staffManagement": {
+          "title": "إدارة الموظفين",
+          "description": "وصول حسب الدور، جداول، وتتبع الأداء"
+        }
+      }
+    },
+    "solution": {
+      "title": "حل متكامل",
+      "headlineLine1": "منصة واحدة.",
+      "headlineLine2": "كل ما تحتاجه.",
+      "subheadline": "استبدل أدواتك المتفرقة بمنصة موحّدة مصممة خصيصاً للعيادات الطبية الحديثة. من تسجيل المريض حتى الفوترة النهائية—كل شيء متكامل بسلاسة.",
+      "bullets": {
+        "onlineScheduling": "جدولة المواعيد عبر الإنترنت",
+        "recordsManagement": "إدارة سجلات المرضى",
+        "treatmentPlanning": "أدوات تخطيط العلاج",
+        "digitalPrescriptions": "وصفات رقمية",
+        "insuranceVerification": "التحقق من التأمين",
+        "paymentProcessing": "معالجة المدفوعات",
+        "videoConsultations": "استشارات فيديو",
+        "labImagingOrders": "طلبات المختبر والتصوير",
+        "staffScheduling": "جدولة الموظفين",
+        "realTimeAnalytics": "تحليلات في الوقت الحقيقي",
+        "secureMessaging": "مراسلة آمنة",
+        "referralManagement": "إدارة الإحالات"
+      }
+    },
+    "security": {
+      "title": "أمان بمستوى المؤسسات",
+      "headline": "مصمم للرعاية الصحية",
+      "subheadline": "بنية تحتية متوافقة مع HIPAA مع أمان مؤسسي. بياناتك محمية بتشفير طرف إلى طرف وبضوابط وصول قائمة على الأدوار.",
+      "badges": {
+        "hipaa": {
+          "title": "متوافق مع HIPAA",
+          "description": "امتثال كامل"
+        },
+        "encryption": {
+          "title": "تشفير 256-بت",
+          "description": "طرف إلى طرف"
+        },
+        "uptime": {
+          "title": "جاهزية 99.9%",
+          "description": "مضمونة وفق SLA"
+        },
+        "soc2": {
+          "title": "SOC 2 Type II",
+          "description": "معتمد"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "ابدأ رحلتك",
+      "headlineLine1": "هل أنت جاهز لأتمتة",
+      "headlineLine2": "عيادتك؟",
+      "subheadline": "انضم إلى آلاف العيادات التي أزالت العبء الإداري واستعادت وقتها لرعاية المرضى.",
+      "primaryCta": "ابدأ التجربة المجانية",
+      "secondaryCta": "تحدث إلى المبيعات",
+      "badge": "تجربة مجانية لمدة 14 يوماً • لا تحتاج بطاقة • وصول كامل للميزات"
+    }
+  }
+}
