@@ -43,7 +43,7 @@
     "automation": {
       "title": "Intellektual avtomatlashtirish",
       "headline": "Amaliyotingiz avtopilotda",
-      "subheadline": "Takroriy vazifalarga soatlab vaqt sarflamang. Ma’muriy yukni AI bajarsin, siz esa bemor parvarishiga e’tibor bering.",
+      "subheadline": "Takroriy vazifalarga soatlab vaqt sarflamang. Ma’muriy yukni platformamiz zimmasiga olsin, siz esa bemor parvarishiga e’tibor bering.",
       "items": {
         "smartScheduling": {
           "title": "Aqlli rejalashtirish",
@@ -55,7 +55,7 @@
         },
         "documentation": {
           "title": "Hujjatlar",
-          "description": "Avtomatik yordamida qaydlar, davolash rejalari va retseptlar"
+          "description": "AI yordamida qaydlar, davolash rejalari va retseptlar"
         },
         "billingPayments": {
           "title": "Billing va to‘lovlar",
