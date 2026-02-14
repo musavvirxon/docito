@@ -35,7 +35,7 @@ const automationFeatures = [
   {
     icon: FileText,
     title: "Documentation",
-    description: "AI-assisted notes, treatment plans, and prescriptions",
+    description: "Notes, treatment plans, and prescriptions",
   },
   {
     icon: CreditCard,
@@ -86,14 +86,14 @@ export default function Practices() {
       gsap.fromTo(
         titleRef.current,
         { opacity: 0, y: 50 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.3 }
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.3 },
       );
     }
     if (subtitleRef.current) {
       gsap.fromTo(
         subtitleRef.current,
         { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.5 }
+        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.5 },
       );
     }
   }, []);
@@ -123,11 +123,7 @@ export default function Practices() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left content */}
             <div className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 backdrop-blur-sm text-primary text-sm font-medium rounded-full border border-primary/20">
                   <Bot className="w-4 h-4" />
                   AI-Powered Practice Management
@@ -150,8 +146,8 @@ export default function Practices() {
                 className="text-lg sm:text-xl text-muted-foreground font-light leading-relaxed max-w-xl"
                 style={{ opacity: 0 }}
               >
-                The all-in-one practice platform that automates scheduling, documentation, 
-                billing, and patient communications—so you can focus on what matters most.
+                The all-in-one practice platform that automates scheduling, documentation, billing, and patient
+                communications—so you can focus on what matters most.
               </p>
 
               <motion.div
@@ -173,12 +169,7 @@ export default function Practices() {
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="h-14 px-8 rounded-full text-lg gap-2 border-2"
-                  >
+                  <Button asChild size="lg" variant="outline" className="h-14 px-8 rounded-full text-lg gap-2 border-2">
                     <Link to="/contact">Schedule Demo</Link>
                   </Button>
                 </motion.div>
@@ -236,20 +227,18 @@ export default function Practices() {
                       transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
                       className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-border/50"
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        item.status === "active" ? "bg-primary/20" : "bg-green-500/20"
-                      }`}>
-                        <item.icon className={`w-5 h-5 ${
-                          item.status === "active" ? "text-primary" : "text-green-500"
-                        }`} />
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          item.status === "active" ? "bg-primary/20" : "bg-green-500/20"
+                        }`}
+                      >
+                        <item.icon
+                          className={`w-5 h-5 ${item.status === "active" ? "text-primary" : "text-green-500"}`}
+                        />
                       </div>
                       <span className="text-sm text-foreground flex-1">{item.text}</span>
-                      {item.status === "done" && (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      )}
-                      {item.status === "active" && (
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      )}
+                      {item.status === "done" && <CheckCircle className="w-5 h-5 text-green-500" />}
+                      {item.status === "active" && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
                     </motion.div>
                   ))}
                 </div>
@@ -308,8 +297,8 @@ export default function Practices() {
               <span className="font-normal text-primary"> Autopilot</span>
             </h2>
             <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-              Stop wasting hours on repetitive tasks. Let our AI handle the administrative 
-              burden while you focus on patient care.
+              Stop wasting hours on repetitive tasks. Let our Automatization handle the administrative burden while you
+              focus on patient care.
             </p>
           </motion.div>
 
@@ -337,9 +326,7 @@ export default function Practices() {
                       <h3 className="font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
                         {feature.title}
                       </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {feature.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                     </div>
                   </div>
                 </div>
@@ -373,8 +360,8 @@ export default function Practices() {
                 <span className="font-normal text-primary">Everything You Need.</span>
               </h2>
               <p className="text-lg text-muted-foreground font-light mb-8 leading-relaxed">
-                Replace your fragmented toolkit with a unified platform designed specifically 
-                for modern medical practices. From patient intake to final billing—seamlessly integrated.
+                Replace your fragmented toolkit with a unified platform designed specifically for modern medical
+                practices. From patient intake to final billing—seamlessly integrated.
               </p>
 
               <div className="grid grid-cols-2 gap-3">
@@ -413,7 +400,7 @@ export default function Practices() {
                   transition={{ duration: 90, repeat: Infinity, ease: "linear" }}
                   className="absolute inset-16 border-2 border-dashed border-accent/20 rounded-full"
                 />
-                
+
                 {/* Center hub */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/30">
                   <Sparkles className="w-10 h-10 text-primary-foreground" />
@@ -465,8 +452,8 @@ export default function Practices() {
               <span className="font-normal text-primary"> Healthcare</span>
             </h2>
             <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">
-              HIPAA-compliant infrastructure with enterprise security. Your data is protected 
-              with end-to-end encryption and role-based access controls.
+              HIPAA-compliant infrastructure with enterprise security. Your data is protected with end-to-end encryption
+              and role-based access controls.
             </p>
           </motion.div>
 
@@ -537,8 +524,8 @@ export default function Practices() {
             </h2>
 
             <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto mb-12">
-              Join thousands of practices that have eliminated administrative burden 
-              and reclaimed their time for patient care.
+              Join thousands of practices that have eliminated administrative burden and reclaimed their time for
+              patient care.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -557,12 +544,7 @@ export default function Practices() {
               </motion.div>
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="h-14 px-8 rounded-full text-lg gap-2 border-2"
-                >
+                <Button asChild size="lg" variant="outline" className="h-14 px-8 rounded-full text-lg gap-2 border-2">
                   <Link to="/contact">
                     <Users className="w-5 h-5" />
                     Talk to Sales
