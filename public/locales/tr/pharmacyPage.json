@@ -1,0 +1,125 @@
+{
+  "pharmacyPage": {
+    "hero": {
+      "kicker": "Modern Eczaneler İçin",
+      "headlineLine1": "Modern Eczaneler",
+      "headlineLine2": "için Dijital",
+      "headlineLine3": "Omurga",
+      "subheadline": "Reçeteler, stok, ödemeler, teslimatlar ve doktor entegrasyonlarını — hepsini tek bir güvenli platformdan yönetin.",
+      "primaryCta": "Eczanenizi Kaydedin",
+      "secondaryCta": "Demo Talep Et"
+    },
+    "features": {
+      "title": "Eczanenizin İhtiyaç Duyduğu Her Şey",
+      "subtitle": "Tek Platformda",
+      "description": "Eczane operasyonlarınızın her yönünü yönetmek için tek platform",
+      "items": {
+        "erx": {
+          "title": "Dijital Reçeteler (eRx)",
+          "description": "Docito ağındaki doğrulanmış doktorlardan reçeteleri anında alın."
+        },
+        "refills": {
+          "title": "İlaç Yenileme Yönetimi",
+          "description": "Uyumu artırmak için otomatik yenileme talepleri ve akıllı hasta hatırlatmaları."
+        },
+        "inventory": {
+          "title": "Stok & Envanter Kontrolü",
+          "description": "Gerçek zamanlı stok seviyeleri, son kullanma uyarıları ve tedarikçi içgörüleri tek görünümde."
+        },
+        "delivery": {
+          "title": "Online Sipariş & Teslimat",
+          "description": "Hastalar için gerçek zamanlı sipariş takibiyle eve teslimatı etkinleştirin."
+        },
+        "payments": {
+          "title": "Ödemeler & Sigorta",
+          "description": "Nakit, kart, dijital cüzdan kabul edin ve sigorta taleplerini sorunsuz işleyin."
+        },
+        "profiles": {
+          "title": "Hasta Profilleri",
+          "description": "İlaç geçmişi, alerjiler ve uyum takibini tek bakışta görün."
+        },
+        "analytics": {
+          "title": "Analitik Paneli",
+          "description": "Satış trendleri, hızlı dönen ilaçlar ve gelir içgörüleriyle işinizi büyütün."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Eczaneler için Docito Nasıl Çalışır",
+      "subtitle": "Kayıttan gelire — uçtan uca yolculuğunuz",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "Eczanenizi Kaydedin",
+          "description": "Lisansları, konumları ve çalışma saatlerini dakikalar içinde doğrulayın."
+        },
+        "step2": {
+          "number": "02",
+          "title": "Stok ve Fiyatları Senkronlayın",
+          "description": "İlaçları, jenerikleri ve anlık uygunluğu yükleyin."
+        },
+        "step3": {
+          "number": "03",
+          "title": "Dijital Reçeteleri Alın",
+          "description": "Ağ genelindeki doktorlardan, kliniklerden ve hastanelerden."
+        },
+        "step4": {
+          "number": "04",
+          "title": "Siparişleri Hazırlayın ve Teslim Edin",
+          "description": "Mağazadan teslim veya eve teslim için akıcı iş akışı."
+        },
+        "step5": {
+          "number": "05",
+          "title": "Anında Ödeme Alın",
+          "description": "Online ödemeleri, sigorta taleplerini işleyin ve faturalar oluşturun."
+        },
+        "step6": {
+          "number": "06",
+          "title": "Büyütün ve Optimize Edin",
+          "description": "İçgörüler, tekrar müşteriler ve yönlendirme programlarından yararlanın."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Eczanelerin Geleceği Bağlantılı",
+      "description": "Eczaneler artık bağımsız mağazalar değil — sağlık ekosisteminin kritik düğümleridir. Docito sizi doktorlar, laboratuvarlar, klinikler ve hastalarla doğrudan bağlar.",
+      "nodes": {
+        "doctors": "Doktorlar",
+        "clinics": "Klinikler",
+        "hospitals": "Hastaneler",
+        "labs": "Laboratuvarlar",
+        "imaging": "Görüntüleme",
+        "insurance": "Sigorta"
+      },
+      "footer": "Docito Network — tüm sağlık ekosistemini bağlayan tek platform"
+    },
+    "compliance": {
+      "title": "Sağlık Seviyesinde Uyum",
+      "items": {
+        "hipaaAligned": "HIPAA ile Uyumlu",
+        "secureErx": "Güvenli eRx",
+        "roleBasedAccess": "Rol Bazlı Erişim",
+        "encryptedData": "Şifreli Veri",
+        "auditTrails": "Denetim Kayıtları"
+      }
+    },
+    "pricing": {
+      "title": "Mantıklı Fiyatlandırma",
+      "description": "Docito fiyatlandırması eczanenizle birlikte ölçeklenir — tek şubeden ulusal zincirlere kadar.",
+      "bullets": {
+        "noHiddenFees": "Gizli ücret yok",
+        "flexiblePlans": "Esnek planlar",
+        "transparentBilling": "Şeffaf faturalama",
+        "enterpriseOptions": "Kurumsal seçenekler"
+      },
+      "primaryCta": "Fiyatları Gör",
+      "secondaryCta": "Satışla Görüş"
+    },
+    "finalCta": {
+      "headline": "Eczanenizi Dijital-Öncelikli Bir Sağlık Merkezine Dönüştürün",
+      "subheadline": "Verimliliği artırın, geliri yükseltin ve Docito ile daha iyi hasta deneyimi sunun.",
+      "primaryCta": "Eczanenizi Kaydedin",
+      "secondaryCta": "Demo Talep Et"
+    }
+  }
+}
