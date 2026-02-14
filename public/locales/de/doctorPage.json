@@ -1,0 +1,191 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "Für Gesundheitsdienstleister",
+      "headline": "Weniger Admin. Mehr Versorgung.",
+      "subheadline": "Docito automatisiert Terminplanung, Erinnerungen, Besuchsdokumentation, Rezepte, Überweisungen, Abrechnung und Dateiverwaltung – damit Sie sich auf das Wesentliche konzentrieren können: Ihre Patienten.",
+      "primaryCta": "Als Arzt beitreten",
+      "secondaryCta": "Demo vereinbaren",
+      "badge": "HIPAA-konform • Kostenloser Start • Keine Kreditkarte erforderlich"
+    },
+    "workflow": {
+      "title": "Vollständige Workflow-Automatisierung",
+      "actors": {
+        "patient": "Patient",
+        "you": "Sie",
+        "lab": "Labor",
+        "pharmacy": "Apotheke",
+        "imaging": "Bildgebung"
+      },
+      "steps": {
+        "diagnosis": "Diagnose",
+        "treatment": "Behandlung",
+        "prescriptions": "Rezepte",
+        "files": "Dateien",
+        "notes": "Notizen"
+      }
+    },
+    "problems": {
+      "title": "Probleme, die wir lösen",
+      "headline": "Verschwenden Sie keine Zeit mehr mit Admin-Aufgaben",
+      "subheadline": "Docito eliminiert die Routinearbeit, die Ärzte ausbrennt und Patienten frustriert.",
+      "items": {
+        "noShows": {
+          "title": "Verpasste Termine und No-Shows",
+          "description": "Automatisierte Erinnerungen reduzieren No-Shows um 70%"
+        },
+        "paperwork": {
+          "title": "Stundenlange Papierarbeit nach jedem Besuch",
+          "description": "Smarter Dokumentationsfluss in Minuten statt Stunden"
+        },
+        "scatteredTools": {
+          "title": "Verstreute Tools für Nachrichten, Notizen und Dateien",
+          "description": "Eine einheitliche Plattform für alles"
+        },
+        "manualReferrals": {
+          "title": "Manuelle Überweisungen und verlorene Nachsorge",
+          "description": "Automatische Überweisungen an Labore, Bildgebung und Apotheken"
+        },
+        "lostFiles": {
+          "title": "Verlorene Dateien und fehlende Patientendaten",
+          "description": "Sicherer Cloud-Speicher für alle Unterlagen"
+        },
+        "slowBilling": {
+          "title": "Langsame Abrechnung und Versicherungsansprüche",
+          "description": "Optimierte Abrechnung und sofortige Claims"
+        }
+      }
+    },
+    "features": {
+      "title": "Alles, was Sie brauchen",
+      "headline": "Eine Plattform, volle Kontrolle",
+      "subheadline": "Von Terminplanung bis Abrechnung: Verwalten Sie Ihre gesamte Praxis an einem Ort.",
+      "items": {
+        "smartScheduling": {
+          "title": "Intelligente Terminplanung",
+          "description": "Patienten buchen sofort. Sie steuern die Verfügbarkeit. Automatisierte Erinnerungen erledigen den Rest."
+        },
+        "videoConsultations": {
+          "title": "Videosprechstunden",
+          "description": "Behandeln Sie Patienten remote mit integriertem HD-Video. Keine zusätzlichen Apps nötig."
+        },
+        "secureMessaging": {
+          "title": "Sichere Nachrichten",
+          "description": "HIPAA-konformer Chat mit Patienten, Team und anderen Anbietern."
+        },
+        "visitDocumentation": {
+          "title": "Besuchsdokumentation",
+          "description": "Diagnose, Behandlungspläne, Rezepte und Notizen – alles in einem Ablauf."
+        },
+        "automatedReferrals": {
+          "title": "Automatisierte Überweisungen",
+          "description": "Senden Sie Überweisungen an Labore, Bildgebung und Apotheken mit einem Klick."
+        },
+        "practiceAnalytics": {
+          "title": "Praxis-Analytics",
+          "description": "Verfolgen Sie Termine, Umsatz und Patientenergebnisse in Echtzeit."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Vernetztes Ökosystem",
+      "headline": "Nahtlose Überweisungen, sofortige Ergebnisse",
+      "subheadline": "Senden Sie Überweisungen an Labore, Apotheken und Bildgebungszentren mit einem Klick. Erhalten Sie Ergebnisse direkt in Ihrem Dashboard.",
+      "items": {
+        "laboratories": {
+          "title": "Labore",
+          "description": "Tests anfordern und Ergebnisse digital erhalten"
+        },
+        "pharmacies": {
+          "title": "Apotheken",
+          "description": "Rezepte direkt an die Apotheke des Patienten senden"
+        },
+        "imagingCenters": {
+          "title": "Bildgebungszentren",
+          "description": "Scans anfordern und Ergebnisse im Dashboard ansehen"
+        },
+        "otherProviders": {
+          "title": "Weitere Anbieter",
+          "description": "Nahtlose Überweisungen und Versorgungskoordination"
+        }
+      }
+    },
+    "security": {
+      "title": "Sicherheit & Vertrauen",
+      "headline": "Für Healthcare-Sicherheit gebaut",
+      "subheadline": "Das Vertrauen Ihrer Patienten ist alles. Docito ist von Grund auf so entwickelt, dass sensible Gesundheitsdaten geschützt werden.",
+      "items": {
+        "hipaaGdpr": {
+          "title": "HIPAA- & DSGVO-konform",
+          "description": "Enterprise-Sicherheit, die die strengsten Gesundheitsvorschriften erfüllt."
+        },
+        "verifiedOnly": {
+          "title": "Nur verifizierte Anbieter",
+          "description": "Jeder Arzt wird vor dem Livegang anhand von Lizenzdaten verifiziert."
+        },
+        "e2ee": {
+          "title": "Ende-zu-Ende-Verschlüsselung",
+          "description": "Alle Patientendaten sind im Ruhezustand und bei Übertragung verschlüsselt."
+        },
+        "rbac": {
+          "title": "Rollenbasierter Zugriff",
+          "description": "Mitarbeiter sehen nur, was sie brauchen. Patienten kontrollieren ihre Daten."
+        },
+        "auditReady": {
+          "title": "Audit-fähige Aufzeichnungen",
+          "description": "Vollständige Aktivitätsprotokolle für Compliance und Nachvollziehbarkeit."
+        },
+        "noSell": {
+          "title": "Kein Datenverkauf",
+          "description": "Wir verkaufen, teilen oder monetarisieren Patientendaten niemals. Niemals."
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10.000+",
+        "label": "Verifizierte Anbieter"
+      },
+      "fewerNoShows": {
+        "value": "70%",
+        "label": "Weniger No-Shows"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "Gebuchte Termine"
+      },
+      "providerRating": {
+        "value": "4,9/5",
+        "label": "Anbieter-Bewertung"
+      }
+    },
+    "testimonials": {
+      "title": "Weltweit von Ärzten geschätzt",
+      "subtitle": "Sehen Sie, wie Gesundheitsdienstleister ihre Praxen mit Docito transformieren.",
+      "items": {
+        "sarah": {
+          "name": "Dr. Sarah Mitchell",
+          "specialty": "Allgemeinmedizin",
+          "quote": "\"Früher habe ich nach der Sprechstunde 2 Stunden für Papierkram gebraucht. Jetzt sind es 15 Minuten. Docito hat verändert, wie ich arbeite.\""
+        },
+        "james": {
+          "name": "Dr. James Rodriguez",
+          "specialty": "Kardiologie",
+          "quote": "\"Das Überweisungssystem ist unglaublich. Ich schicke einen Patienten ins Labor und die Ergebnisse erscheinen in meinem Dashboard. Kein Telefon-Pingpong.\""
+        },
+        "emily": {
+          "name": "Dr. Emily Chen",
+          "specialty": "Dermatologie",
+          "quote": "\"Meine No-Show-Rate ist von 25% auf unter 5% gesunken. Die automatischen Erinnerungen sind jeden Cent wert.\""
+        }
+      }
+    },
+    "cta": {
+      "headline": "Bereit, Ihre Praxis zu automatisieren?",
+      "subheadline": "Schließen Sie sich Tausenden Ärzten an, die weniger Zeit mit Admin und mehr Zeit mit Patienten verbringen.",
+      "primaryCta": "Kostenlos starten",
+      "secondaryCta": "Preise ansehen",
+      "badge": "Keine Kreditkarte erforderlich • HIPAA-konform • Jederzeit kündbar"
+    }
+  }
+}
