@@ -1,6 +1,6 @@
-// File: src/components/pricing/PricingMatrix.tsx
-
 import { useMemo, useState } from "react";
+import type { ComponentType } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -20,52 +20,19 @@ type Props = {
   onChangePeriod: (p: Period) => void;
 };
 
-const plans: Array<{
-  key: PlanKey;
-  name: string;
-  tagline: string;
-  accent: "default" | "popular" | "pro";
-  cta: string;
-  bestFor: string;
-}> = [
-  {
-    key: "starter",
-    name: "Starter",
-    tagline: "Smooth basics with a premium feel.",
-    accent: "default",
-    cta: "Choose Starter",
-    bestFor: "Getting started",
-  },
-  {
-    key: "plus",
-    name: "Plus",
-    tagline: "Most popular: automation + faster workflows.",
-    accent: "popular",
-    cta: "Choose Plus",
-    bestFor: "Daily operations",
-  },
-  {
-    key: "pro",
-    name: "Pro",
-    tagline: "Premium ops: deep insights & priority handling.",
-    accent: "pro",
-    cta: "Choose Pro",
-    bestFor: "Scale & insights",
-  },
+const planMeta: Array<{ key: PlanKey; accent: "default" | "popular" | "pro" }> = [
+  { key: "starter", accent: "default" },
+  { key: "plus", accent: "popular" },
+  { key: "pro", accent: "pro" },
 ];
 
-const roles: Array<{
-  key: RoleKey;
-  label: string;
-  sublabel: string;
-  icon: React.ComponentType<{ className?: string }>;
-}> = [
-  { key: "patient", label: "Patients", sublabel: "Appointments, records, payments & receipts.", icon: User },
-  { key: "doctor", label: "Doctors", sublabel: "Scheduling, notes, billing & follow-ups.", icon: Zap },
-  { key: "clinic", label: "Clinics", sublabel: "Teams, operations, analytics & access control.", icon: Shield },
-  { key: "lab", label: "Labs", sublabel: "Orders, samples, results delivery & QC.", icon: TestTube2 },
-  { key: "pharmacy", label: "Pharmacies", sublabel: "E-prescriptions, fulfillment & inventory.", icon: Pill },
-  { key: "imaging", label: "Imaging centers", sublabel: "Referrals, studies, reports & delivery.", icon: Scan },
+const roleMeta: Array<{ key: RoleKey; icon: ComponentType<{ className?: string }> }> = [
+  { key: "patient", icon: User },
+  { key: "doctor", icon: Zap },
+  { key: "clinic", icon: Shield },
+  { key: "lab", icon: TestTube2 },
+  { key: "pharmacy", icon: Pill },
+  { key: "imaging", icon: Scan },
 ];
 
 const pricing: Record<RoleKey, Record<PlanKey, { monthly: number; yearly: number }>> = {
@@ -101,64 +68,18 @@ const pricing: Record<RoleKey, Record<PlanKey, { monthly: number; yearly: number
   },
 };
 
-const featuresByPlan: Record<PlanKey, string[]> = {
-  starter: ["Secure workspace (Auth + RLS)", "Core scheduling & records", "Basic billing + receipts", "Standard support"],
-  plus: ["Smart automation", "Role-based workflows", "Payments + invoices", "Priority support"],
-  pro: ["Advanced analytics", "Audit trails + exports", "Custom workflows", "Dedicated onboarding"],
-};
-
-const roleAddons: Record<RoleKey, Record<PlanKey, string[]>> = {
-  patient: {
-    starter: ["Appointment booking", "Visit history", "Email reminders"],
-    plus: ["Digital receipts", "Priority booking", "Smart reminders"],
-    pro: ["Family profiles", "Premium support", "Advanced timeline"],
-  },
-  doctor: {
-    starter: ["Calendar + availability", "Patient notes", "Basic invoicing"],
-    plus: ["Templates", "Team inbox", "Automated follow-ups"],
-    pro: ["Scribe-ready flows", "Advanced billing rules", "Insights & exports"],
-  },
-  clinic: {
-    starter: ["Staff roles", "Front-desk tools", "Core reporting"],
-    plus: ["Multi-location", "Operational dashboards", "Automations"],
-    pro: ["Custom analytics", "Audit trails", "Dedicated onboarding"],
-  },
-  lab: {
-    starter: ["Lab orders", "Sample tracking", "PDF results"],
-    plus: ["QC workflows", "Result notifications", "Batch processing"],
-    pro: ["LIS integrations", "Advanced QC analytics", "Custom routing"],
-  },
-  pharmacy: {
-    starter: ["E-Rx intake", "Fulfillment status", "Basic inventory"],
-    plus: ["Refill automation", "Stock alerts", "Patient notifications"],
-    pro: ["Wholesale sync", "Advanced reporting", "Priority integrations"],
-  },
-  imaging: {
-    starter: ["Referrals", "Study scheduling", "Report delivery"],
-    plus: ["Radiology templates", "Turnaround tracking", "Team routing"],
-    pro: ["PACS integrations", "Advanced analytics", "Enterprise workflows"],
-  },
-};
-
-function money(n: number) {
-  if (n === 0) return "Free";
-  return `$${n}`;
-}
-
-function periodSuffix(period: Period) {
-  return period === "monthly" ? "/mo" : "/yr";
-}
-
 function yearlyAsMonthly(yearly: number) {
   return Math.round((yearly / 12) * 10) / 10;
 }
 
-function bestValueHint(period: Period) {
-  return period === "yearly" ? "Billed yearly · best value" : "Billed monthly · flexible";
-}
-
 export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
+  const { t } = useTranslation("pricing_matrix");
   const [activeRole, setActiveRole] = useState<RoleKey>("patient");
+
+  const getArray = (key: string): string[] => {
+    const v = t(key, { returnObjects: true }) as unknown;
+    return Array.isArray(v) ? v.map((x) => String(x)) : [];
+  };
 
   const savingsPct = useMemo(() => {
     const m = pricing["clinic"]["plus"].monthly * 12;
@@ -167,8 +88,18 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
     return Math.max(0, Math.round(((m - y) / m) * 100));
   }, []);
 
-  const activeRoleMeta = roles.find((r) => r.key === activeRole)!;
+  const activeRoleMeta = roleMeta.find((r) => r.key === activeRole)!;
   const RoleIcon = activeRoleMeta.icon;
+
+  const money = (n: number) => {
+    if (n === 0) return t("labels.free");
+    return `$${n}`;
+  };
+
+  const periodSuffix = (p: Period) => (p === "monthly" ? t("labels.perMonth") : t("labels.perYear"));
+
+  const bestValueHint = (p: Period) =>
+    p === "yearly" ? t("matrix.roleCard.bestValueYearly") : t("matrix.roleCard.bestValueMonthly");
 
   return (
     <section className="relative">
@@ -195,16 +126,16 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
             <div className="flex items-center gap-2 flex-wrap">
               <Badge variant="secondary" className="px-3 py-1">
                 <Sparkles className="mr-2 h-4 w-4" />
-                Premium pricing
+                {t("matrix.badge.premiumPricing")}
               </Badge>
               {period === "yearly" && savingsPct > 0 ? (
-                <Badge className="bg-primary/10 text-primary border border-primary/20">Save ~{savingsPct}%</Badge>
+                <Badge className="bg-primary/10 text-primary border border-primary/20">
+                  {t("matrix.badge.savePercent", { pct: savingsPct })}
+                </Badge>
               ) : null}
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Pick your role, then choose a plan.</h2>
-            <p className="text-muted-foreground max-w-2xl">
-              Toggle by role to keep the table clean. Each role shows three Apple-style tiers with detailed inclusions.
-            </p>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{t("matrix.title")}</h2>
+            <p className="text-muted-foreground max-w-2xl">{t("matrix.subtitle")}</p>
           </motion.div>
 
           {/* Illustration + context */}
@@ -233,24 +164,22 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                       <RoleIcon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <div className="text-sm font-medium">{activeRoleMeta.label}</div>
-                      <div className="text-xs text-muted-foreground">{activeRoleMeta.sublabel}</div>
+                      <div className="text-sm font-medium">{t(`roles.${activeRole}.label`)}</div>
+                      <div className="text-xs text-muted-foreground">{t(`roles.${activeRole}.sublabel`)}</div>
                     </div>
                   </div>
                   <Badge variant="secondary">{bestValueHint(period)}</Badge>
                 </div>
-                <div className="text-sm text-muted-foreground mt-3">
-                  Security is built in: Supabase Auth + RLS for data, Stripe tokenization for payments.
-                </div>
+                <div className="text-sm text-muted-foreground mt-3">{t("matrix.roleCard.securityLine")}</div>
               </div>
 
               <div className="rounded-2xl border border-border/60 bg-background/40 p-4 md:p-5">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">Included in all plans</div>
-                  <Badge variant="secondary">Core</Badge>
+                  <div className="text-sm font-medium">{t("matrix.included.title")}</div>
+                  <Badge variant="secondary">{t("matrix.included.badge")}</Badge>
                 </div>
                 <div className="mt-2 space-y-2">
-                  {featuresByPlan.starter.slice(0, 3).map((f) => (
+                  {getArray("matrix.included.items").map((f) => (
                     <div key={f} className="flex items-start gap-2 text-sm">
                       <span className="mt-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-primary/10">
                         <Check className="h-3 w-3 text-primary" />
@@ -280,11 +209,12 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                 transition={{ duration: 0.35, ease: "easeOut" }}
                 className="grid gap-4 lg:grid-cols-3"
               >
-                {plans.map((p) => {
+                {planMeta.map((p) => {
                   const price = pricing[activeRole][p.key][period];
                   const isPopular = p.accent === "popular";
-                  const base = featuresByPlan[p.key];
-                  const roleSpecific = roleAddons[activeRole][p.key];
+
+                  const base = getArray(`featuresByPlan.${p.key}`);
+                  const roleSpecific = getArray(`roleAddons.${activeRole}.${p.key}`);
 
                   return (
                     <motion.div
@@ -300,16 +230,20 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <div className="text-lg font-semibold">{p.name}</div>
-                            {isPopular ? <Badge className="bg-primary text-primary-foreground">Most Popular</Badge> : null}
+                            <div className="text-lg font-semibold">{t(`plans.${p.key}.name`)}</div>
+                            {isPopular ? (
+                              <Badge className="bg-primary text-primary-foreground">{t("labels.mostPopular")}</Badge>
+                            ) : null}
                             {p.accent === "pro" ? (
                               <Badge className="bg-background/40 border border-primary/20 text-primary">
-                                Premium
+                                {t("labels.premium")}
                               </Badge>
                             ) : null}
                           </div>
-                          <div className="text-sm text-muted-foreground">{p.tagline}</div>
-                          <div className="text-xs text-muted-foreground">Best for: {p.bestFor}</div>
+                          <div className="text-sm text-muted-foreground">{t(`plans.${p.key}.tagline`)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {t("labels.bestFor", { value: t(`plans.${p.key}.bestFor`) })}
+                          </div>
                         </div>
 
                         <div
@@ -325,12 +259,14 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                       <div className="mt-5">
                         <div className="flex items-end gap-2">
                           <div className="text-4xl font-bold tracking-tight">{money(price)}</div>
-                          <div className="pb-1 text-sm text-muted-foreground">{price === 0 ? "" : periodSuffix(period)}</div>
+                          <div className="pb-1 text-sm text-muted-foreground">
+                            {price === 0 ? "" : periodSuffix(period)}
+                          </div>
                         </div>
 
                         {period === "yearly" && price > 0 ? (
                           <div className="mt-1 text-xs text-muted-foreground">
-                            ~${yearlyAsMonthly(price)}/mo billed yearly
+                            {t("labels.billedYearlyAsMonthly", { amount: yearlyAsMonthly(price) })}
                           </div>
                         ) : (
                           <div className="mt-1 text-xs text-muted-foreground">&nbsp;</div>
@@ -339,7 +275,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
 
                       {/* Core inclusions */}
                       <div className="mt-5">
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">Core</div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">{t("labels.core")}</div>
                         <div className="mt-2 space-y-2">
                           {base.map((b) => (
                             <div key={b} className="flex items-start gap-2 text-sm">
@@ -354,7 +290,9 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
 
                       {/* Role-specific inclusions */}
                       <div className="mt-5">
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">{activeRoleMeta.label}</div>
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                          {t(`roles.${activeRole}.label`)}
+                        </div>
                         <div className="mt-2 space-y-2">
                           {roleSpecific.map((b) => (
                             <div key={b} className="flex items-start gap-2 text-sm">
@@ -375,12 +313,12 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                             isPopular ? "" : "bg-foreground text-background hover:bg-foreground/90",
                           )}
                         >
-                          <Link to="/auth">{p.cta}</Link>
+                          <Link to="/auth">{t(`plans.${p.key}.cta`)}</Link>
                         </Button>
 
                         <div className="mt-3 text-xs text-muted-foreground flex items-center justify-between">
-                          <span className="capitalize">{activeRole}</span>
-                          <span>Cancel anytime</span>
+                          <span className="capitalize">{t(`roles.${activeRole}.key`)}</span>
+                          <span>{t("labels.cancelAnytime")}</span>
                         </div>
                       </div>
                     </motion.div>
@@ -389,9 +327,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
               </motion.div>
             </AnimatePresence>
 
-            <div className="mt-4 text-xs text-muted-foreground">
-              Prices are placeholder tiers. You can later connect real Stripe products/prices per role + plan.
-            </div>
+            <div className="mt-4 text-xs text-muted-foreground">{t("labels.placeholderNote")}</div>
           </div>
         </div>
       </div>
@@ -406,13 +342,15 @@ function RoleSegment({
   activeRole: RoleKey;
   onChange: (r: RoleKey) => void;
 }) {
+  const { t } = useTranslation("pricing_matrix");
+
   const roleButtons: Array<{ key: RoleKey; label: string }> = [
-    { key: "patient", label: "Patient" },
-    { key: "doctor", label: "Doctor" },
-    { key: "clinic", label: "Clinic" },
-    { key: "lab", label: "Lab" },
-    { key: "pharmacy", label: "Pharmacy" },
-    { key: "imaging", label: "Imaging" },
+    { key: "patient", label: t("roles.patient.button") },
+    { key: "doctor", label: t("roles.doctor.button") },
+    { key: "clinic", label: t("roles.clinic.button") },
+    { key: "lab", label: t("roles.lab.button") },
+    { key: "pharmacy", label: t("roles.pharmacy.button") },
+    { key: "imaging", label: t("roles.imaging.button") },
   ];
 
   return (
@@ -450,6 +388,8 @@ function BillingPeriodSegment({
   period: Period;
   onChange: (p: Period) => void;
 }) {
+  const { t } = useTranslation("pricing_matrix");
+
   return (
     <div className="flex items-center justify-center md:justify-end">
       <div className="relative rounded-2xl border border-border/60 bg-background/40 backdrop-blur px-2 py-2">
@@ -470,7 +410,7 @@ function BillingPeriodSegment({
               period === "monthly" ? "text-background" : "text-foreground/80 hover:text-foreground",
             )}
           >
-            Monthly
+            {t("billing.monthly")}
           </button>
           <button
             type="button"
@@ -480,7 +420,7 @@ function BillingPeriodSegment({
               period === "yearly" ? "text-background" : "text-foreground/80 hover:text-foreground",
             )}
           >
-            Yearly
+            {t("billing.yearly")}
             <span
               className={cn(
                 "text-[11px] px-2 py-0.5 rounded-full border",
@@ -489,7 +429,7 @@ function BillingPeriodSegment({
                   : "border-primary/30 bg-primary/10 text-primary",
               )}
             >
-              Save
+              {t("billing.save")}
             </span>
           </button>
         </div>
