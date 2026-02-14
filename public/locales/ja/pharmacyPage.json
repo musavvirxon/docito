@@ -1,0 +1,125 @@
+{
+  "pharmacyPage": {
+    "hero": {
+      "kicker": "現代の薬局のために",
+      "headlineLine1": "現代の薬局を支える",
+      "headlineLine2": "デジタル",
+      "headlineLine3": "バックボーン",
+      "subheadline": "処方箋、在庫、決済、配送、医師連携まで—すべてを一つの安全なプラットフォームで管理できます。",
+      "primaryCta": "薬局を登録する",
+      "secondaryCta": "デモを依頼"
+    },
+    "features": {
+      "title": "薬局に必要なすべて",
+      "subtitle": "ひとつのプラットフォームで",
+      "description": "薬局運営のあらゆる側面を管理できる単一プラットフォーム",
+      "items": {
+        "erx": {
+          "title": "電子処方（eRx）",
+          "description": "Docitoネットワークの認証済み医師から処方箋を即時に受け取れます。"
+        },
+        "refills": {
+          "title": "リフィル（再処方）管理",
+          "description": "自動リフィル申請とスマートな患者リマインドで服薬遵守を向上。"
+        },
+        "inventory": {
+          "title": "在庫・ストック管理",
+          "description": "リアルタイム在庫、期限アラート、仕入れ先のインサイトを一画面で確認。"
+        },
+        "delivery": {
+          "title": "オンライン注文と配送",
+          "description": "患者向けのリアルタイム追跡付きで宅配を提供できます。"
+        },
+        "payments": {
+          "title": "決済と保険",
+          "description": "現金・カード・デジタルウォレットに対応し、保険請求もスムーズに処理。"
+        },
+        "profiles": {
+          "title": "患者プロファイル",
+          "description": "服薬履歴、アレルギー、遵守状況のトラッキングを一目で把握。"
+        },
+        "analytics": {
+          "title": "分析ダッシュボード",
+          "description": "売上トレンド、回転の早い医薬品、収益インサイトでビジネスを成長。"
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "薬局向けDocitoの流れ",
+      "subtitle": "登録から収益化まで—あなたの完全なジャーニー",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "薬局を登録する",
+          "description": "ライセンス、所在地、営業時間を数分で確認できます。"
+        },
+        "step2": {
+          "number": "02",
+          "title": "在庫と価格を同期",
+          "description": "医薬品、ジェネリック、リアルタイムの在庫状況をアップロード。"
+        },
+        "step3": {
+          "number": "03",
+          "title": "電子処方を受け取る",
+          "description": "ネットワーク上の医師、クリニック、病院から受領。"
+        },
+        "step4": {
+          "number": "04",
+          "title": "調剤・注文を履行",
+          "description": "店頭受け取りまたは宅配のための効率的なワークフロー。"
+        },
+        "step5": {
+          "number": "05",
+          "title": "即時に入金",
+          "description": "オンライン決済、保険請求の処理、請求書発行まで一括で。"
+        },
+        "step6": {
+          "number": "06",
+          "title": "成長と最適化",
+          "description": "インサイト、リピーター、紹介プログラムを活用。"
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "薬局の未来は“つながる”こと",
+      "description": "薬局はもはや単独の店舗ではありません—医療エコシステムの重要なノードです。Docitoは薬局を医師、検査機関、クリニック、患者と直接つなぎます。",
+      "nodes": {
+        "doctors": "医師",
+        "clinics": "クリニック",
+        "hospitals": "病院",
+        "labs": "検査機関",
+        "imaging": "画像診断",
+        "insurance": "保険"
+      },
+      "footer": "Docito Network — 医療エコシステム全体をつなぐ単一プラットフォーム"
+    },
+    "compliance": {
+      "title": "医療グレードのコンプライアンス",
+      "items": {
+        "hipaaAligned": "HIPAA準拠指向",
+        "secureErx": "安全なeRx",
+        "roleBasedAccess": "ロールベースアクセス",
+        "encryptedData": "暗号化データ",
+        "auditTrails": "監査証跡"
+      }
+    },
+    "pricing": {
+      "title": "納得できる料金体系",
+      "description": "Docitoの料金は薬局の規模に合わせてスケール—単一店舗から全国チェーンまで対応。",
+      "bullets": {
+        "noHiddenFees": "隠れた手数料なし",
+        "flexiblePlans": "柔軟なプラン",
+        "transparentBilling": "透明な請求",
+        "enterpriseOptions": "エンタープライズ対応"
+      },
+      "primaryCta": "料金を見る",
+      "secondaryCta": "営業に相談"
+    },
+    "finalCta": {
+      "headline": "薬局をデジタル・ファーストの医療ハブへ",
+      "subheadline": "効率を高め、収益を伸ばし、Docitoでより良い患者体験を提供しましょう。",
+      "primaryCta": "薬局を登録する",
+      "secondaryCta": "デモを依頼"
+    }
+  }
+}
