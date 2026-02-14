@@ -1,0 +1,125 @@
+{
+  "pharmacyPage": {
+    "hero": {
+      "kicker": "Zamonaviy dorixonalar uchun",
+      "headlineLine1": "Zamonaviy dorixonalar",
+      "headlineLine2": "uchun raqamli",
+      "headlineLine3": "tayanch",
+      "subheadline": "Retseptlar, ombor, to‘lovlar, yetkazib berish va shifokor integratsiyalarini — barchasini bitta xavfsiz platformada boshqaring.",
+      "primaryCta": "Dorixonani ro‘yxatdan o‘tkazish",
+      "secondaryCta": "Demo so‘rash"
+    },
+    "features": {
+      "title": "Dorixonangizga kerak bo‘lgan hammasi",
+      "subtitle": "bitta platformada",
+      "description": "Dorixona operatsiyalarining har bir jihatini boshqarish uchun yagona platforma",
+      "items": {
+        "erx": {
+          "title": "Raqamli retseptlar (eRx)",
+          "description": "Docito tarmog‘idagi tasdiqlangan shifokorlardan retseptlarni darhol oling."
+        },
+        "refills": {
+          "title": "Qayta to‘ldirishni boshqarish",
+          "description": "Avtomatik refill so‘rovlari va bemorlarga aqlli eslatmalar — qabul qilish intizomini oshiradi."
+        },
+        "inventory": {
+          "title": "Ombor va zaxira nazorati",
+          "description": "Real vaqt zaxiralar, yaroqlilik muddati ogohlantirishlari va yetkazib beruvchi tahlillari — barchasi bir oynada."
+        },
+        "delivery": {
+          "title": "Onlayn buyurtma va yetkazib berish",
+          "description": "Uyga yetkazib berishni yoqing va bemorlar uchun real vaqt kuzatuvini ta’minlang."
+        },
+        "payments": {
+          "title": "To‘lovlar va sug‘urta",
+          "description": "Naqd, karta, raqamli hamyonlarni qabul qiling va sug‘urta da’volarini oson qayta ishlang."
+        },
+        "profiles": {
+          "title": "Bemor profillari",
+          "description": "Dori tarixchasi, allergiyalar va qabul qilish kuzatuvi — bir qarashda."
+        },
+        "analytics": {
+          "title": "Analitika paneli",
+          "description": "Savdo trendi, tez sotiladigan dorilar va daromad insightlari — biznesni o‘stirish uchun."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Dorixonalar uchun Docito qanday ishlaydi",
+      "subtitle": "Ro‘yxatdan o‘tishdan daromadgacha — to‘liq yo‘l",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "Dorixonani ro‘yxatdan o‘tkazing",
+          "description": "Litsenziya, manzil va ish vaqtini bir necha daqiqada tasdiqlang."
+        },
+        "step2": {
+          "number": "02",
+          "title": "Ombor va narxlarni sinxron qiling",
+          "description": "Dori, generik va real vaqt mavjudligini yuklang."
+        },
+        "step3": {
+          "number": "03",
+          "title": "Raqamli retseptlarni qabul qiling",
+          "description": "Tarmoq bo‘ylab shifokorlar, klinikalar va shifoxonalardan."
+        },
+        "step4": {
+          "number": "04",
+          "title": "Buyurtmani tayyorlang va bajaring",
+          "description": "Do‘kondan olib ketish yoki uyga yetkazish uchun soddalashtirilgan jarayon."
+        },
+        "step5": {
+          "number": "05",
+          "title": "Darhol to‘lov oling",
+          "description": "Onlayn to‘lovlar, sug‘urta da’volari va hisob-fakturalar — barchasi bir joyda."
+        },
+        "step6": {
+          "number": "06",
+          "title": "O‘sing va optimallashtiring",
+          "description": "Insightlar, qayta mijozlar va referral dasturlaridan foydalaning."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Dorixonalarning kelajagi — bog‘langan tizimda",
+      "description": "Dorixonalar endi alohida do‘kon emas — ular sog‘liqni saqlash ekotizimining muhim tugunlaridir. Docito sizni shifokorlar, laboratoriyalar, klinikalar va bemorlar bilan bevosita bog‘laydi.",
+      "nodes": {
+        "doctors": "Shifokorlar",
+        "clinics": "Klinikalar",
+        "hospitals": "Shifoxonalar",
+        "labs": "Laboratoriyalar",
+        "imaging": "Diagnostika",
+        "insurance": "Sug‘urta"
+      },
+      "footer": "Docito Network — butun tibbiy ekotizimni bog‘laydigan yagona platforma"
+    },
+    "compliance": {
+      "title": "Tibbiyot darajasidagi moslik",
+      "items": {
+        "hipaaAligned": "HIPAAga mos",
+        "secureErx": "Xavfsiz eRx",
+        "roleBasedAccess": "Rollar bo‘yicha kirish",
+        "encryptedData": "Shifrlangan ma’lumotlar",
+        "auditTrails": "Audit izlari"
+      }
+    },
+    "pricing": {
+      "title": "Maqbul narxlash",
+      "description": "Docito narxlari dorixonangiz bilan birga o‘sadi — bitta savdo nuqtasidan milliy tarmoqlargacha.",
+      "bullets": {
+        "noHiddenFees": "Yashirin to‘lovlarsiz",
+        "flexiblePlans": "Moslashuvchan rejalar",
+        "transparentBilling": "Shaffof billing",
+        "enterpriseOptions": "Enterprise variantlar"
+      },
+      "primaryCta": "Narxlarni ko‘rish",
+      "secondaryCta": "Sotuv bo‘limi bilan gaplashish"
+    },
+    "finalCta": {
+      "headline": "Dorixonangizni raqamli tibbiy hublikka aylantiring",
+      "subheadline": "Samaradorlikni oshiring, daromadni ko‘paytiring va Docito bilan bemor tajribasini yaxshilang.",
+      "primaryCta": "Dorixonani ro‘yxatdan o‘tkazish",
+      "secondaryCta": "Demo so‘rash"
+    }
+  }
+}
