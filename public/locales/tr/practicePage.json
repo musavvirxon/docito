@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "Otomatik Klinik Yönetimi",
+      "headlineLine1": "Daha az idari iş.",
+      "headlineLine2": "Daha çok bakım.",
+      "subheadline": "Randevu planlama, dokümantasyon, faturalama ve hasta iletişimini otomatikleştiren hepsi bir arada klinik platformu — böylece en önemli şeye odaklanırsınız.",
+      "primaryCta": "Ücretsiz Başlayın",
+      "secondaryCta": "Demo Planla"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "Daha Az İdari Zaman"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "7/24 Hasta Randevusu"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "3 Kat Daha Hızlı Kayıt"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "%100 Kağıtsız"
+      }
+    },
+    "dashboard": {
+      "title": "Klinik Paneli",
+      "headline": "Her Şey Otomatik",
+      "items": {
+        "appointments": "Bugün 12 randevu otomatik planlandı",
+        "reminders": "45 hatırlatma otomatik gönderildi",
+        "notes": "Tanı için 8 not",
+        "invoices": "3 fatura otomatik işlendi"
+      },
+      "timeSaved": {
+        "label": "Bugün Tasarruf Edilen Zaman",
+        "value": "6 saat"
+      }
+    },
+    "automation": {
+      "title": "Akıllı Otomasyon",
+      "headline": "Klinik Otomatik Pilot’ta",
+      "subheadline": "Tekrarlayan işlere saatler harcamayın. İdari yükü yapay zekaya bırakın, siz hasta bakımına odaklanın.",
+      "items": {
+        "smartScheduling": {
+          "title": "Akıllı Planlama",
+          "description": "Otomatik randevu, iptal ve yeniden planlama"
+        },
+        "patientCommunications": {
+          "title": "Hasta İletişimi",
+          "description": "Otomatik hatırlatmalar, takipler ve onaylar"
+        },
+        "documentation": {
+          "title": "Dokümantasyon",
+          "description": "Yapay zeka destekli notlar, tedavi planları ve reçeteler"
+        },
+        "billingPayments": {
+          "title": "Faturalama ve Ödemeler",
+          "description": "Otomatik faturalama, tahsilat ve sigorta talepleri"
+        },
+        "analyticsReports": {
+          "title": "Analitik ve Raporlar",
+          "description": "Manuel veri girişi olmadan gerçek zamanlı içgörüler"
+        },
+        "staffManagement": {
+          "title": "Personel Yönetimi",
+          "description": "Rol bazlı erişim, vardiyalar ve performans takibi"
+        }
+      }
+    },
+    "solution": {
+      "title": "Eksiksiz Çözüm",
+      "headlineLine1": "Tek Platform.",
+      "headlineLine2": "İhtiyacınız Olan Her Şey.",
+      "subheadline": "Parçalı araç setinizi modern tıbbi klinikler için özel tasarlanmış birleşik bir platformla değiştirin. Hasta kaydından son faturalamaya kadar — kusursuz entegrasyon.",
+      "bullets": {
+        "onlineScheduling": "Online randevu planlama",
+        "recordsManagement": "Hasta kayıt yönetimi",
+        "treatmentPlanning": "Tedavi planlama araçları",
+        "digitalPrescriptions": "Dijital reçeteler",
+        "insuranceVerification": "Sigorta doğrulama",
+        "paymentProcessing": "Ödeme işleme",
+        "videoConsultations": "Video konsültasyonlar",
+        "labImagingOrders": "Laboratuvar ve görüntüleme talepleri",
+        "staffScheduling": "Personel planlaması",
+        "realTimeAnalytics": "Gerçek zamanlı analitik",
+        "secureMessaging": "Güvenli mesajlaşma",
+        "referralManagement": "Sevk yönetimi"
+      }
+    },
+    "security": {
+      "title": "Kurumsal Düzeyde Güvenlik",
+      "headline": "Sağlık İçin Üretildi",
+      "subheadline": "Kurumsal güvenlik ile HIPAA uyumlu altyapı. Verileriniz uçtan uca şifreleme ve rol bazlı erişim kontrolleriyle korunur.",
+      "badges": {
+        "hipaa": {
+          "title": "HIPAA Uyumlu",
+          "description": "Tam uyumluluk"
+        },
+        "encryption": {
+          "title": "256-bit Şifreleme",
+          "description": "Uçtan uca"
+        },
+        "uptime": {
+          "title": "%99,9 Uptime",
+          "description": "SLA garantili"
+        },
+        "soc2": {
+          "title": "SOC 2 Type II",
+          "description": "Sertifikalı"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "Yolculuğunuza Başlayın",
+      "headlineLine1": "Kliğinizi Otomatikleştirmeye",
+      "headlineLine2": "Hazır mısınız?",
+      "subheadline": "İdari yükü ortadan kaldırıp hasta bakımına zaman ayıran binlerce kliniğe katılın.",
+      "primaryCta": "Ücretsiz Denemeyi Başlat",
+      "secondaryCta": "Satış Ekibiyle Görüş",
+      "badge": "14 gün ücretsiz deneme • Kredi kartı gerekmez • Tüm özelliklere erişim"
+    }
+  }
+}
