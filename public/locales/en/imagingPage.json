@@ -1,0 +1,125 @@
+{
+  "imagingPage": {
+    "hero": {
+      "kicker": "For Modern Pharmacies",
+      "headlineLine1": "The Digital",
+      "headlineLine2": "Backbone for",
+      "headlineLine3": "Modern Pharmacies",
+      "subheadline": "Manage prescriptions, inventory, payments, deliveries, and doctor integrations — all from one secure platform.",
+      "primaryCta": "Register Your Pharmacy",
+      "secondaryCta": "Request a Demo"
+    },
+    "features": {
+      "title": "Everything Your Pharmacy Needs",
+      "subtitle": "In One Platform",
+      "description": "One platform to manage every aspect of your pharmacy operations",
+      "items": {
+        "erx": {
+          "title": "Digital Prescriptions (eRx)",
+          "description": "Receive prescriptions instantly from verified doctors across the Docito network."
+        },
+        "refills": {
+          "title": "Medication Refill Management",
+          "description": "Automated refill requests and smart patient reminders to boost adherence."
+        },
+        "inventory": {
+          "title": "Inventory & Stock Control",
+          "description": "Real-time stock levels, expiry alerts, and supplier insights in one view."
+        },
+        "delivery": {
+          "title": "Online Orders & Delivery",
+          "description": "Enable home delivery with real-time order tracking for patients."
+        },
+        "payments": {
+          "title": "Payments & Insurance",
+          "description": "Accept cash, cards, digital wallets, and process insurance claims seamlessly."
+        },
+        "profiles": {
+          "title": "Patient Profiles",
+          "description": "Access medication history, allergies, and adherence tracking at a glance."
+        },
+        "analytics": {
+          "title": "Analytics Dashboard",
+          "description": "Sales trends, fast-moving drugs, and revenue insights to grow your business."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "How Docito Works for Pharmacies",
+      "subtitle": "From registration to revenue — your complete journey",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "Register Your Pharmacy",
+          "description": "Verify licenses, locations, and operating hours in minutes."
+        },
+        "step2": {
+          "number": "02",
+          "title": "Sync Inventory & Pricing",
+          "description": "Upload medicines, generics, and real-time availability."
+        },
+        "step3": {
+          "number": "03",
+          "title": "Receive Digital Prescriptions",
+          "description": "From doctors, clinics, and hospitals across the network."
+        },
+        "step4": {
+          "number": "04",
+          "title": "Prepare & Fulfill Orders",
+          "description": "Streamlined workflow for in-store pickup or home delivery."
+        },
+        "step5": {
+          "number": "05",
+          "title": "Get Paid Instantly",
+          "description": "Process online payments, insurance claims, and generate invoices."
+        },
+        "step6": {
+          "number": "06",
+          "title": "Grow & Optimize",
+          "description": "Leverage insights, repeat customers, and referral programs."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "The Future of Pharmacies Is Connected",
+      "description": "Pharmacies are no longer standalone stores — they are critical nodes in the healthcare ecosystem. Docito connects you directly with doctors, labs, clinics, and patients.",
+      "nodes": {
+        "doctors": "Doctors",
+        "clinics": "Clinics",
+        "hospitals": "Hospitals",
+        "labs": "Labs",
+        "imaging": "Imaging",
+        "insurance": "Insurance"
+      },
+      "footer": "Docito Network — One platform connecting the entire healthcare ecosystem"
+    },
+    "compliance": {
+      "title": "Healthcare-Grade Compliance",
+      "items": {
+        "hipaaAligned": "HIPAA-Aligned",
+        "secureErx": "Secure eRx",
+        "roleBasedAccess": "Role-Based Access",
+        "encryptedData": "Encrypted Data",
+        "auditTrails": "Audit Trails"
+      }
+    },
+    "pricing": {
+      "title": "Pricing That Makes Sense",
+      "description": "Docito pricing scales with your pharmacy — from single retail locations to national chains.",
+      "bullets": {
+        "noHiddenFees": "No hidden fees",
+        "flexiblePlans": "Flexible plans",
+        "transparentBilling": "Transparent billing",
+        "enterpriseOptions": "Enterprise options"
+      },
+      "primaryCta": "View Pricing",
+      "secondaryCta": "Talk to Sales"
+    },
+    "finalCta": {
+      "headline": "Transform Your Pharmacy Into a Digital-First Healthcare Hub",
+      "subheadline": "Increase efficiency, boost revenue, and deliver better patient experiences with Docito.",
+      "primaryCta": "Register Your Pharmacy",
+      "secondaryCta": "Request a Demo"
+    }
+  }
+}
