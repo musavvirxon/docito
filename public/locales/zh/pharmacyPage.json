@@ -1,0 +1,125 @@
+{
+  "pharmacyPage": {
+    "hero": {
+      "kicker": "面向现代药房",
+      "headlineLine1": "现代药房的",
+      "headlineLine2": "数字化",
+      "headlineLine3": "核心支撑",
+      "subheadline": "在一个安全平台内管理处方、库存、支付、配送以及医生集成——一站式完成。",
+      "primaryCta": "注册药房",
+      "secondaryCta": "申请演示"
+    },
+    "features": {
+      "title": "药房所需的一切",
+      "subtitle": "尽在一个平台",
+      "description": "用一个平台管理药房运营的每个环节",
+      "items": {
+        "erx": {
+          "title": "电子处方（eRx）",
+          "description": "从 Docito 网络的认证医生处即时接收处方。"
+        },
+        "refills": {
+          "title": "续配管理",
+          "description": "自动续配申请与智能提醒，提升患者依从性。"
+        },
+        "inventory": {
+          "title": "库存与存货控制",
+          "description": "实时库存、到期提醒与供应商洞察，一屏掌握。"
+        },
+        "delivery": {
+          "title": "线上订单与配送",
+          "description": "支持送货上门，并为患者提供实时订单追踪。"
+        },
+        "payments": {
+          "title": "支付与保险",
+          "description": "支持现金、银行卡、数字钱包，并可无缝处理保险理赔。"
+        },
+        "profiles": {
+          "title": "患者档案",
+          "description": "用药史、过敏信息与依从性追踪一目了然。"
+        },
+        "analytics": {
+          "title": "数据分析面板",
+          "description": "销售趋势、畅销药品与营收洞察，助力业务增长。"
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Docito 如何赋能药房",
+      "subtitle": "从注册到营收——完整旅程",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "注册药房",
+          "description": "几分钟内完成资质、地址与营业时间验证。"
+        },
+        "step2": {
+          "number": "02",
+          "title": "同步库存与定价",
+          "description": "上传药品、仿制药与实时可用性。"
+        },
+        "step3": {
+          "number": "03",
+          "title": "接收电子处方",
+          "description": "来自网络中的医生、诊所与医院。"
+        },
+        "step4": {
+          "number": "04",
+          "title": "备货并履约",
+          "description": "门店自取或送货上门的高效工作流。"
+        },
+        "step5": {
+          "number": "05",
+          "title": "即时收款",
+          "description": "处理线上支付、保险理赔并生成发票。"
+        },
+        "step6": {
+          "number": "06",
+          "title": "增长与优化",
+          "description": "利用洞察、复购客户与转介绍计划。"
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "药房的未来是互联的",
+      "description": "药房不再是孤立的门店——它们是医疗生态系统中的关键节点。Docito 将你与医生、实验室、诊所和患者直接连接。",
+      "nodes": {
+        "doctors": "医生",
+        "clinics": "诊所",
+        "hospitals": "医院",
+        "labs": "实验室",
+        "imaging": "影像中心",
+        "insurance": "保险"
+      },
+      "footer": "Docito Network — 连接整个医疗生态系统的一体化平台"
+    },
+    "compliance": {
+      "title": "医疗级合规",
+      "items": {
+        "hipaaAligned": "对齐 HIPAA",
+        "secureErx": "安全 eRx",
+        "roleBasedAccess": "基于角色的访问",
+        "encryptedData": "数据加密",
+        "auditTrails": "审计追踪"
+      }
+    },
+    "pricing": {
+      "title": "合理的定价",
+      "description": "Docito 定价随药房规模扩展——从单店到全国连锁。",
+      "bullets": {
+        "noHiddenFees": "无隐藏费用",
+        "flexiblePlans": "灵活方案",
+        "transparentBilling": "透明计费",
+        "enterpriseOptions": "企业级选项"
+      },
+      "primaryCta": "查看价格",
+      "secondaryCta": "联系销售"
+    },
+    "finalCta": {
+      "headline": "把你的药房升级为数字优先的医疗枢纽",
+      "subheadline": "提升效率、增加营收，并用 Docito 提供更好的患者体验。",
+      "primaryCta": "注册药房",
+      "secondaryCta": "申请演示"
+    }
+  }
+}
