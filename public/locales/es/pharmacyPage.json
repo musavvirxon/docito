@@ -1,0 +1,125 @@
+{
+  "pharmacyPage": {
+    "hero": {
+      "kicker": "Para farmacias modernas",
+      "headlineLine1": "La columna",
+      "headlineLine2": "digital vertebral",
+      "headlineLine3": "de las farmacias modernas",
+      "subheadline": "Gestiona recetas, inventario, pagos, entregas e integraciones con médicos — todo desde una plataforma segura.",
+      "primaryCta": "Registrar mi farmacia",
+      "secondaryCta": "Solicitar demo"
+    },
+    "features": {
+      "title": "Todo lo que tu farmacia necesita",
+      "subtitle": "en una sola plataforma",
+      "description": "Una plataforma para gestionar cada aspecto de la operación de tu farmacia",
+      "items": {
+        "erx": {
+          "title": "Recetas digitales (eRx)",
+          "description": "Recibe recetas al instante de médicos verificados en la red de Docito."
+        },
+        "refills": {
+          "title": "Gestión de reposiciones",
+          "description": "Solicitudes de reposición automáticas y recordatorios inteligentes para mejorar la adherencia."
+        },
+        "inventory": {
+          "title": "Inventario y control de stock",
+          "description": "Stock en tiempo real, alertas de caducidad e información de proveedores en una sola vista."
+        },
+        "delivery": {
+          "title": "Pedidos online y entrega",
+          "description": "Habilita entrega a domicilio con seguimiento en tiempo real para los pacientes."
+        },
+        "payments": {
+          "title": "Pagos y seguros",
+          "description": "Acepta efectivo, tarjetas, billeteras digitales y procesa reclamaciones de seguro sin fricción."
+        },
+        "profiles": {
+          "title": "Perfiles de pacientes",
+          "description": "Historial de medicación, alergias y seguimiento de adherencia de un vistazo."
+        },
+        "analytics": {
+          "title": "Panel de analítica",
+          "description": "Tendencias de ventas, medicamentos de alta rotación e insights de ingresos para crecer."
+        }
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo funciona Docito para farmacias",
+      "subtitle": "De registro a ingresos — tu viaje completo",
+      "steps": {
+        "step1": {
+          "number": "01",
+          "title": "Registra tu farmacia",
+          "description": "Verifica licencias, ubicaciones y horarios en minutos."
+        },
+        "step2": {
+          "number": "02",
+          "title": "Sincroniza inventario y precios",
+          "description": "Sube medicamentos, genéricos y disponibilidad en tiempo real."
+        },
+        "step3": {
+          "number": "03",
+          "title": "Recibe recetas digitales",
+          "description": "De médicos, clínicas y hospitales de toda la red."
+        },
+        "step4": {
+          "number": "04",
+          "title": "Prepara y cumple pedidos",
+          "description": "Flujo optimizado para recogida en tienda o entrega a domicilio."
+        },
+        "step5": {
+          "number": "05",
+          "title": "Cobra al instante",
+          "description": "Procesa pagos online, seguros y genera facturas."
+        },
+        "step6": {
+          "number": "06",
+          "title": "Crece y optimiza",
+          "description": "Aprovecha insights, clientes recurrentes y programas de referidos."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "El futuro de las farmacias está conectado",
+      "description": "Las farmacias ya no son tiendas aisladas — son nodos críticos del ecosistema sanitario. Docito te conecta directamente con médicos, laboratorios, clínicas y pacientes.",
+      "nodes": {
+        "doctors": "Médicos",
+        "clinics": "Clínicas",
+        "hospitals": "Hospitales",
+        "labs": "Laboratorios",
+        "imaging": "Imagen",
+        "insurance": "Seguros"
+      },
+      "footer": "Red Docito — una plataforma que conecta todo el ecosistema sanitario"
+    },
+    "compliance": {
+      "title": "Cumplimiento de nivel sanitario",
+      "items": {
+        "hipaaAligned": "Alineado con HIPAA",
+        "secureErx": "eRx seguro",
+        "roleBasedAccess": "Acceso por roles",
+        "encryptedData": "Datos cifrados",
+        "auditTrails": "Registros de auditoría"
+      }
+    },
+    "pricing": {
+      "title": "Precios que tienen sentido",
+      "description": "Los precios de Docito escalan con tu farmacia — desde una tienda hasta cadenas nacionales.",
+      "bullets": {
+        "noHiddenFees": "Sin comisiones ocultas",
+        "flexiblePlans": "Planes flexibles",
+        "transparentBilling": "Facturación transparente",
+        "enterpriseOptions": "Opciones enterprise"
+      },
+      "primaryCta": "Ver precios",
+      "secondaryCta": "Hablar con ventas"
+    },
+    "finalCta": {
+      "headline": "Convierte tu farmacia en un hub sanitario digital",
+      "subheadline": "Aumenta la eficiencia, impulsa ingresos y mejora la experiencia del paciente con Docito.",
+      "primaryCta": "Registrar mi farmacia",
+      "secondaryCta": "Solicitar demo"
+    }
+  }
+}
