@@ -1,0 +1,191 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "Para profissionais de saúde",
+      "headline": "Menos admin. Mais cuidado.",
+      "subheadline": "O Docito automatiza agendamento, lembretes, documentação da consulta, prescrições, encaminhamentos, faturamento e gestão de arquivos — para que você foque no que importa: seus pacientes.",
+      "primaryCta": "Entrar como médico",
+      "secondaryCta": "Agendar demo",
+      "badge": "Compatível com HIPAA • Comece grátis • Não precisa de cartão"
+    },
+    "workflow": {
+      "title": "Automação completa do fluxo de trabalho",
+      "actors": {
+        "patient": "Paciente",
+        "you": "Você",
+        "lab": "Laboratório",
+        "pharmacy": "Farmácia",
+        "imaging": "Imagem"
+      },
+      "steps": {
+        "diagnosis": "Diagnóstico",
+        "treatment": "Tratamento",
+        "prescriptions": "Prescrições",
+        "files": "Arquivos",
+        "notes": "Anotações"
+      }
+    },
+    "problems": {
+      "title": "Problemas que resolvemos",
+      "headline": "Pare de perder tempo com tarefas administrativas",
+      "subheadline": "O Docito elimina o trabalho repetitivo que esgota médicos e frustra pacientes.",
+      "items": {
+        "noShows": {
+          "title": "Consultas perdidas e faltas",
+          "description": "Lembretes automáticos reduzem faltas em 70%"
+        },
+        "paperwork": {
+          "title": "Horas de papelada após cada consulta",
+          "description": "Documentação inteligente em minutos, não em horas"
+        },
+        "scatteredTools": {
+          "title": "Ferramentas espalhadas para mensagens, notas e arquivos",
+          "description": "Uma plataforma unificada para tudo"
+        },
+        "manualReferrals": {
+          "title": "Encaminhamentos manuais e acompanhamentos perdidos",
+          "description": "Encaminhamentos automáticos para laboratórios, centros de imagem e farmácias"
+        },
+        "lostFiles": {
+          "title": "Arquivos perdidos e prontuários incompletos",
+          "description": "Armazenamento seguro na nuvem para todos os registros"
+        },
+        "slowBilling": {
+          "title": "Faturamento lento e sinistros de seguro",
+          "description": "Faturamento simplificado e sinistros instantâneos"
+        }
+      }
+    },
+    "features": {
+      "title": "Tudo o que você precisa",
+      "headline": "Uma plataforma, controle total",
+      "subheadline": "Do agendamento ao faturamento, gerencie toda a sua clínica em um só lugar.",
+      "items": {
+        "smartScheduling": {
+          "title": "Agendamento inteligente",
+          "description": "Pacientes agendam na hora. Você controla a disponibilidade. Os lembretes automáticos fazem o resto."
+        },
+        "videoConsultations": {
+          "title": "Consultas por vídeo",
+          "description": "Atenda remotamente com vídeo HD integrado. Sem apps extras."
+        },
+        "secureMessaging": {
+          "title": "Mensagens seguras",
+          "description": "Chat compatível com HIPAA com pacientes, equipe e outros profissionais."
+        },
+        "visitDocumentation": {
+          "title": "Documentação da consulta",
+          "description": "Diagnóstico, plano de tratamento, prescrições e anotações — tudo em um único fluxo."
+        },
+        "automatedReferrals": {
+          "title": "Encaminhamentos automatizados",
+          "description": "Envie encaminhamentos para laboratórios, imagem e farmácias com um clique."
+        },
+        "practiceAnalytics": {
+          "title": "Analytics da clínica",
+          "description": "Acompanhe consultas, receita e desfechos dos pacientes em tempo real."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Ecossistema conectado",
+      "headline": "Encaminhamentos simples, resultados instantâneos",
+      "subheadline": "Envie encaminhamentos para laboratórios, farmácias e centros de imagem com um clique. Receba resultados direto no seu painel.",
+      "items": {
+        "laboratories": {
+          "title": "Laboratórios",
+          "description": "Solicite exames e receba resultados digitalmente"
+        },
+        "pharmacies": {
+          "title": "Farmácias",
+          "description": "Envie prescrições diretamente para a farmácia do paciente"
+        },
+        "imagingCenters": {
+          "title": "Centros de imagem",
+          "description": "Solicite exames e veja resultados no seu painel"
+        },
+        "otherProviders": {
+          "title": "Outros profissionais",
+          "description": "Encaminhamentos e coordenação de cuidado sem atrito"
+        }
+      }
+    },
+    "security": {
+      "title": "Segurança e confiança",
+      "headline": "Feito para segurança em saúde",
+      "subheadline": "A confiança dos seus pacientes é tudo. O Docito foi projetado do zero para proteger informações sensíveis de saúde.",
+      "items": {
+        "hipaaGdpr": {
+          "title": "Compatível com HIPAA e GDPR",
+          "description": "Segurança de nível enterprise que atende às regulamentações de saúde mais rigorosas."
+        },
+        "verifiedOnly": {
+          "title": "Apenas profissionais verificados",
+          "description": "Cada médico é verificado por credenciais de licença antes de ficar ativo."
+        },
+        "e2ee": {
+          "title": "Criptografia de ponta a ponta",
+          "description": "Todos os dados do paciente são criptografados em repouso e em trânsito."
+        },
+        "rbac": {
+          "title": "Acesso baseado em funções",
+          "description": "A equipe vê apenas o necessário. Pacientes controlam seus dados."
+        },
+        "auditReady": {
+          "title": "Registros prontos para auditoria",
+          "description": "Logs completos de atividade para conformidade e responsabilização."
+        },
+        "noSell": {
+          "title": "Sem venda de dados",
+          "description": "Nunca vendemos, compartilhamos ou monetizamos dados de pacientes. Nunca."
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10.000+",
+        "label": "Profissionais verificados"
+      },
+      "fewerNoShows": {
+        "value": "70%",
+        "label": "Menos faltas"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "Consultas agendadas"
+      },
+      "providerRating": {
+        "value": "4,9/5",
+        "label": "Avaliação dos profissionais"
+      }
+    },
+    "testimonials": {
+      "title": "Confiado por médicos no mundo todo",
+      "subtitle": "Veja como profissionais de saúde estão transformando suas clínicas com o Docito.",
+      "items": {
+        "sarah": {
+          "name": "Dra. Sarah Mitchell",
+          "specialty": "Medicina de Família",
+          "quote": "\"Eu costumava gastar 2 horas com papelada após a clínica. Agora leva 15 minutos. O Docito mudou a forma como eu trabalho.\""
+        },
+        "james": {
+          "name": "Dr. James Rodriguez",
+          "specialty": "Cardiologia",
+          "quote": "\"O sistema de encaminhamentos é incrível. Envio um paciente ao laboratório e os resultados aparecem no meu painel. Sem ligações intermináveis.\""
+        },
+        "emily": {
+          "name": "Dra. Emily Chen",
+          "specialty": "Dermatologia",
+          "quote": "\"Minha taxa de faltas caiu de 25% para menos de 5%. Os lembretes automáticos valem cada centavo.\""
+        }
+      }
+    },
+    "cta": {
+      "headline": "Pronto para automatizar sua clínica?",
+      "subheadline": "Junte-se a milhares de médicos que gastam menos tempo com admin e mais tempo com pacientes.",
+      "primaryCta": "Começar grátis",
+      "secondaryCta": "Ver preços",
+      "badge": "Não precisa de cartão • Compatível com HIPAA • Cancele quando quiser"
+    }
+  }
+}
