@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "Automatisiertes Praxismanagement",
+      "headlineLine1": "Weniger Admin.",
+      "headlineLine2": "Mehr Versorgung.",
+      "subheadline": "Die All-in-one-Praxisplattform, die Terminplanung, Dokumentation, Abrechnung und Patientenkommunikation automatisiert – damit Sie sich auf das Wichtigste konzentrieren können.",
+      "primaryCta": "Kostenlos starten",
+      "secondaryCta": "Demo vereinbaren"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "Weniger Admin-Zeit"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "Patientenbuchung 24/7"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "Schnelleres Intake"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "Papierlos"
+      }
+    },
+    "dashboard": {
+      "title": "Praxis-Dashboard",
+      "headline": "Alles automatisiert",
+      "items": {
+        "appointments": "Heute wurden 12 Termine automatisch geplant",
+        "reminders": "45 Erinnerungen wurden automatisch gesendet",
+        "notes": "8 Notizen für die Diagnose",
+        "invoices": "3 Rechnungen wurden automatisch verarbeitet"
+      },
+      "timeSaved": {
+        "label": "Heute gesparte Zeit",
+        "value": "6 Stunden"
+      }
+    },
+    "automation": {
+      "title": "Intelligente Automatisierung",
+      "headline": "Ihre Praxis im Autopilot",
+      "subheadline": "Verschwenden Sie keine Stunden mit wiederkehrenden Aufgaben. Lassen Sie unsere Plattform die Administration übernehmen, während Sie sich auf die Patientenversorgung konzentrieren.",
+      "items": {
+        "smartScheduling": {
+          "title": "Smart Scheduling",
+          "description": "Automatische Buchungen, Stornierungen und Umplanungen"
+        },
+        "patientCommunications": {
+          "title": "Patientenkommunikation",
+          "description": "Automatische Erinnerungen, Nachfassaktionen und Bestätigungen"
+        },
+        "documentation": {
+          "title": "Dokumentation",
+          "description": "KI-gestützte Notizen, Behandlungspläne und Rezepte"
+        },
+        "billingPayments": {
+          "title": "Abrechnung & Zahlungen",
+          "description": "Automatisierte Rechnungsstellung, Inkasso und Versicherungsansprüche"
+        },
+        "analyticsReports": {
+          "title": "Analytics & Reports",
+          "description": "Echtzeit-Insights ohne manuelle Dateneingabe"
+        },
+        "staffManagement": {
+          "title": "Mitarbeiterverwaltung",
+          "description": "Rollenbasierter Zugriff, Dienstpläne und Performance-Tracking"
+        }
+      }
+    },
+    "solution": {
+      "title": "Komplettlösung",
+      "headlineLine1": "Eine Plattform.",
+      "headlineLine2": "Alles, was Sie brauchen.",
+      "subheadline": "Ersetzen Sie Ihr fragmentiertes Toolkit durch eine einheitliche Plattform – speziell für moderne medizinische Praxen entwickelt. Von der Aufnahme bis zur finalen Abrechnung: nahtlos integriert.",
+      "bullets": {
+        "onlineScheduling": "Online-Terminplanung",
+        "recordsManagement": "Patientenakten-Management",
+        "treatmentPlanning": "Tools zur Behandlungsplanung",
+        "digitalPrescriptions": "Digitale Rezepte",
+        "insuranceVerification": "Versicherungsprüfung",
+        "paymentProcessing": "Zahlungsabwicklung",
+        "videoConsultations": "Videosprechstunden",
+        "labImagingOrders": "Labor- & Bildgebungsaufträge",
+        "staffScheduling": "Dienstplanung",
+        "realTimeAnalytics": "Echtzeit-Analytics",
+        "secureMessaging": "Sichere Nachrichten",
+        "referralManagement": "Überweisungsmanagement"
+      }
+    },
+    "security": {
+      "title": "Enterprise-Grade Security",
+      "headline": "Für Healthcare gebaut",
+      "subheadline": "HIPAA-konforme Infrastruktur mit Enterprise-Sicherheit. Ihre Daten sind durch Ende-zu-Ende-Verschlüsselung und rollenbasierte Zugriffskontrollen geschützt.",
+      "badges": {
+        "hipaa": {
+          "title": "HIPAA-konform",
+          "description": "Vollständige Compliance"
+        },
+        "encryption": {
+          "title": "256-Bit-Verschlüsselung",
+          "description": "Ende-zu-Ende"
+        },
+        "uptime": {
+          "title": "99,9% Uptime",
+          "description": "SLA garantiert"
+        },
+        "soc2": {
+          "title": "SOC 2 Type II",
+          "description": "Zertifiziert"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "Starten Sie Ihre Reise",
+      "headlineLine1": "Bereit,",
+      "headlineLine2": "Ihre Praxis zu automatisieren?",
+      "subheadline": "Schließen Sie sich Tausenden Praxen an, die die Administrationslast eliminiert und Zeit für Patientenversorgung zurückgewonnen haben.",
+      "primaryCta": "Kostenlose Testphase starten",
+      "secondaryCta": "Mit Sales sprechen",
+      "badge": "14 Tage kostenlos • Keine Kreditkarte erforderlich • Voller Funktionsumfang"
+    }
+  }
+}
