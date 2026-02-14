@@ -1,0 +1,192 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "Sağlık Profesyonelleri İçin",
+      "headline": "Daha az idari iş. Daha çok bakım.",
+      "subheadline": "Docito; randevu planlama, hatırlatmalar, ziyaret dokümantasyonu, reçeteler, sevkler, faturalama ve dosya yönetimini otomatikleştirir—böylece sizin için en önemlisine odaklanabilirsiniz: hastalarınız.",
+      "primaryCta": "Doktor Olarak Katıl",
+      "secondaryCta": "Demo Planla",
+      "badge": "HIPAA uyumlu • Başlamak ücretsiz • Kredi kartı gerekmez"
+    },
+    "workflow": {
+      "title": "Uçtan Uca İş Akışı Otomasyonu",
+      "actors": {
+        "patient": "Hasta",
+        "you": "Siz",
+        "lab": "Laboratuvar",
+        "pharmacy": "Eczane",
+        "imaging": "Görüntüleme"
+      },
+      "steps": {
+        "diagnosis": "Tanı",
+        "treatment": "Tedavi",
+        "prescriptions": "Reçeteler",
+        "files": "Dosyalar",
+        "notes": "Notlar"
+      }
+    },
+    "problems": {
+      "title": "Çözdüğümüz Problemler",
+      "headline": "İdari işlere zaman harcamayı bırakın",
+      "subheadline": "Docito, doktorları tüketen ve hastaları zorlayan angaryayı ortadan kaldırır.",
+      "items": {
+        "noShows": {
+          "title": "Kaçırılan randevular ve gelmeme",
+          "description": "Otomatik hatırlatmalar gelmeme oranını %70 azaltır"
+        },
+        "paperwork": {
+          "title": "Her ziyaret sonrası saatler süren evrak işi",
+          "description": "Saatler değil, dakikalar içinde akıllı dokümantasyon"
+        },
+        "scatteredTools": {
+          "title": "Mesaj, not ve dosyalar için dağınık araçlar",
+          "description": "Her şey için tek bir birleşik platform"
+        },
+        "manualReferrals": {
+          "title": "Manuel sevkler ve kaybolan takipler",
+          "description": "Laboratuvar, görüntüleme ve eczanelere otomatik sevkler"
+        },
+        "lostFiles": {
+          "title": "Kayıp dosyalar ve eksik hasta kayıtları",
+          "description": "Tüm kayıtlar için güvenli bulut depolama"
+        },
+        "slowBilling": {
+          "title": "Yavaş faturalama ve sigorta talepleri",
+          "description": "Kolaylaştırılmış faturalama ve anında talepler"
+        }
+      }
+    },
+    "features": {
+      "title": "İhtiyacınız Olan Her Şey",
+      "headline": "Tek platform, tam kontrol",
+      "subheadline": "Randevudan faturalamaya, tüm kliniğinizi tek yerden yönetin.",
+      "items": {
+        "smartScheduling": {
+          "title": "Akıllı Randevu Planlama",
+          "description": "Hastalar anında randevu alır. Uygunluğu siz yönetirsiniz. Geri kalanını hatırlatmalar halleder."
+        },
+        "videoConsultations": {
+          "title": "Video Konsültasyonlar",
+          "description": "Yerleşik HD video ile uzaktan muayene edin. Ek uygulama gerekmez."
+        },
+        "secureMessaging": {
+          "title": "Güvenli Mesajlaşma",
+          "description": "Hastalar, ekip ve diğer sağlayıcılarla HIPAA uyumlu sohbet."
+        },
+        "visitDocumentation": {
+          "title": "Ziyaret Dokümantasyonu",
+          "description": "Tanı, tedavi planları, reçeteler ve notlar—hepsi tek bir akışta."
+        },
+        "automatedReferrals": {
+          "title": "Otomatik Sevkler",
+          "description": "Laboratuvar, görüntüleme ve eczanelere tek tıkla sevk gönderin."
+        },
+        "practiceAnalytics": {
+          "title": "Klinik Analitiği",
+          "description": "Randevuları, geliri ve hasta sonuçlarını gerçek zamanlı takip edin."
+        }
+      }
+    },
+    "ecosystem": {
+      "titletitle": "Bağlantılı Ekosistem",
+      "title": "Bağlantılı Ekosistem",
+      "headline": "Sorunsuz sevkler, anında sonuçlar",
+      "subheadline": "Laboratuvarlara, eczanelere ve görüntüleme merkezlerine tek tıkla sevk gönderin. Sonuçları doğrudan panelinizde alın.",
+      "items": {
+        "laboratories": {
+          "title": "Laboratuvarlar",
+          "description": "Test isteyin ve sonuçları dijital olarak alın"
+        },
+        "pharmacies": {
+          "title": "Eczaneler",
+          "description": "Reçeteleri hastanın eczanesine doğrudan gönderin"
+        },
+        "imagingCenters": {
+          "title": "Görüntüleme Merkezleri",
+          "description": "Tetkik isteyin ve sonuçları panelinizde görüntüleyin"
+        },
+        "otherProviders": {
+          "title": "Diğer Sağlayıcılar",
+          "description": "Sorunsuz sevkler ve bakım koordinasyonu"
+        }
+      }
+    },
+    "security": {
+      "title": "Güvenlik ve Güven",
+      "headline": "Sağlık güvenliği için tasarlandı",
+      "subheadline": "Hastalarınızın güveni her şeydir. Docito, hassas sağlık bilgilerini korumak için sıfırdan tasarlandı.",
+      "items": {
+        "hipaaGdpr": {
+          "title": "HIPAA ve GDPR Uyumlu",
+          "description": "En sıkı sağlık düzenlemelerini karşılayan kurumsal düzeyde güvenlik."
+        },
+        "verifiedOnly": {
+          "title": "Yalnızca Doğrulanmış Sağlayıcılar",
+          "description": "Her doktor yayına alınmadan önce lisans bilgileriyle doğrulanır."
+        },
+        "e2ee": {
+          "title": "Uçtan Uca Şifreleme",
+          "description": "Tüm hasta verileri depoda ve aktarımda şifrelenir."
+        },
+        "rbac": {
+          "title": "Rol Tabanlı Erişim",
+          "description": "Personel yalnızca ihtiyaç duyduğunu görür. Hastalar verilerini kontrol eder."
+        },
+        "auditReady": {
+          "title": "Denetime Hazır Kayıtlar",
+          "description": "Uyumluluk ve hesap verebilirlik için tam etkinlik günlükleri."
+        },
+        "noSell": {
+          "title": "Veri Satışı Yok",
+          "description": "Hasta verilerini asla satmayız, paylaşmayız veya gelirleştirmeyiz. Asla."
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10.000+",
+        "label": "Doğrulanmış Sağlayıcı"
+      },
+      "fewerNoShows": {
+        "value": "%70",
+        "label": "Daha Az Gelmeme"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "Randevu Alındı"
+      },
+      "providerRating": {
+        "value": "4.9/5",
+        "label": "Sağlayıcı Puanı"
+      }
+    },
+    "testimonials": {
+      "title": "Dünya çapında doktorlar tarafından güveniliyor",
+      "subtitle": "Sağlık profesyonellerinin Docito ile pratiklerini nasıl dönüştürdüğünü görün.",
+      "items": {
+        "sarah": {
+          "name": "Dr. Sarah Mitchell",
+          "specialty": "Aile Hekimliği",
+          "quote": "\"Eskiden klinikten sonra evrak işine 2 saat harcıyordum. Şimdi 15 dakika sürüyor. Docito çalışma şeklimi değiştirdi.\""
+        },
+        "james": {
+          "name": "Dr. James Rodriguez",
+          "specialty": "Kardiyoloji",
+          "quote": "\"Sevk sistemi inanılmaz. Hastayı laboratuvara gönderiyorum ve sonuçlar panelimde görünüyor. Telefon trafiği yok.\""
+        },
+        "emily": {
+          "name": "Dr. Emily Chen",
+          "specialty": "Dermatoloji",
+          "quote": "\"Gelmeme oranım %25’ten %5’in altına düştü. Otomatik hatırlatmalar her kuruşuna değer.\""
+        }
+      }
+    },
+    "cta": {
+      "headline": "Pratiğinizi otomatikleştirmeye hazır mısınız?",
+      "subheadline": "İdari işlere daha az, hastalara daha çok zaman ayıran binlerce doktora katılın.",
+      "primaryCta": "Ücretsiz Başlayın",
+      "secondaryCta": "Fiyatları Gör",
+      "badge": "Kredi kartı gerekmez • HIPAA uyumlu • İstediğiniz zaman iptal"
+    }
+  }
+}
