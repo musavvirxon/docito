@@ -10,7 +10,7 @@
     },
     "stats": {
       "lessAdminTime": {
-        "value": "70%",
+        "value": "80%",
         "label": "Less Admin Time"
       },
       "patientBooking": {
@@ -37,13 +37,13 @@
       },
       "timeSaved": {
         "label": "Today's Time Saved",
-        "value": " 6 hours"
+        "value": "6 hours"
       }
     },
     "automation": {
       "title": "Intelligent Automation",
       "headline": "Your Practice on Autopilot",
-      "subheadline": "Stop wasting hours on repetitive tasks. Let our AI handle the administrative burden while you focus on patient care.",
+      "subheadline": "Stop wasting hours on repetitive tasks. Let our platform handle the administrative burden while you focus on patient care.",
       "items": {
         "smartScheduling": {
           "title": "Smart Scheduling",
