@@ -1,0 +1,191 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "For Healthcare Providers",
+      "headline": "Less admin. More care.",
+      "subheadline": "Docito automates scheduling, reminders, visit documentation, prescriptions, referrals, billing, and file management—so you can focus on what matters: your patients.",
+      "primaryCta": "Join as Doctor",
+      "secondaryCta": "Schedule Demo",
+      "badge": "HIPAA-compliant • Free to get started • No credit card required"
+    },
+    "workflow": {
+      "title": "Complete Workflow Automation",
+      "actors": {
+        "patient": "Patient",
+        "you": "You",
+        "lab": "Lab",
+        "pharmacy": "Pharmacy",
+        "imaging": "Imaging"
+      },
+      "steps": {
+        "diagnosis": "Diagnosis",
+        "treatment": "Treatment",
+        "prescriptions": "Prescriptions",
+        "files": "Files",
+        "notes": "Notes"
+      }
+    },
+    "problems": {
+      "title": "Problems We Solve",
+      "headline": "Stop wasting time on admin work",
+      "subheadline": "Docito eliminates the busywork that burns out doctors and frustrates patients.",
+      "items": {
+        "noShows": {
+          "title": "Missed appointments and no-shows",
+          "description": "Automated reminders reduce no-shows by 70%"
+        },
+        "paperwork": {
+          "title": "Hours of paperwork after each visit",
+          "description": "Smart documentation in minutes, not hours"
+        },
+        "scatteredTools": {
+          "title": "Scattered tools for messaging, notes, files",
+          "description": "One unified platform for everything"
+        },
+        "manualReferrals": {
+          "title": "Manual referrals and lost follow-ups",
+          "description": "Automatic referrals to labs, imaging, pharmacies"
+        },
+        "lostFiles": {
+          "title": "Lost files and missing patient records",
+          "description": "Secure cloud storage for all records"
+        },
+        "slowBilling": {
+          "title": "Slow billing and insurance claims",
+          "description": "Streamlined billing and instant claims"
+        }
+      }
+    },
+    "features": {
+      "title": "Everything You Need",
+      "headline": "One platform, complete control",
+      "subheadline": "From scheduling to billing, manage your entire practice in one place.",
+      "items": {
+        "smartScheduling": {
+          "title": "Smart Scheduling",
+          "description": "Patients book instantly. You control availability. Automated reminders do the rest."
+        },
+        "videoConsultations": {
+          "title": "Video Consultations",
+          "description": "See patients remotely with built-in HD video. No extra apps needed."
+        },
+        "secureMessaging": {
+          "title": "Secure Messaging",
+          "description": "HIPAA-compliant chat with patients, staff, and other providers."
+        },
+        "visitDocumentation": {
+          "title": "Visit Documentation",
+          "description": "Diagnosis, treatment plans, prescriptions, and notes—all in one flow."
+        },
+        "automatedReferrals": {
+          "title": "Automated Referrals",
+          "description": "Send referrals to labs, imaging, and pharmacies with one click."
+        },
+        "practiceAnalytics": {
+          "title": "Practice Analytics",
+          "description": "Track appointments, revenue, and patient outcomes in real-time."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Connected Ecosystem",
+      "headline": "Seamless referrals, instant results",
+      "subheadline": "Send referrals to labs, pharmacies, and imaging centers with one click. Receive results directly in your dashboard.",
+      "items": {
+        "laboratories": {
+          "title": "Laboratories",
+          "description": "Order tests and receive results digitally"
+        },
+        "pharmacies": {
+          "title": "Pharmacies",
+          "description": "Send prescriptions directly to patient's pharmacy"
+        },
+        "imagingCenters": {
+          "title": "Imaging Centers",
+          "description": "Request scans and view results in your dashboard"
+        },
+        "otherProviders": {
+          "title": "Other Providers",
+          "description": "Seamless referrals and care coordination"
+        }
+      }
+    },
+    "security": {
+      "title": "Security & Trust",
+      "headline": "Built for healthcare security",
+      "subheadline": "Your patients' trust is everything. Docito is designed from the ground up to protect sensitive health information.",
+      "items": {
+        "hipaaGdpr": {
+          "title": "HIPAA & GDPR Compliant",
+          "description": "Enterprise-grade security that meets the strictest healthcare regulations."
+        },
+        "verifiedOnly": {
+          "title": "Verified Providers Only",
+          "description": "Every doctor is verified with license credentials before going live."
+        },
+        "e2ee": {
+          "title": "End-to-End Encryption",
+          "description": "All patient data is encrypted at rest and in transit."
+        },
+        "rbac": {
+          "title": "Role-Based Access",
+          "description": "Staff see only what they need. Patients control their data."
+        },
+        "auditReady": {
+          "title": "Audit-Ready Records",
+          "description": "Complete activity logs for compliance and accountability."
+        },
+        "noSell": {
+          "title": "No Data Selling",
+          "description": "We never sell, share, or monetize patient data. Ever."
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10,000+",
+        "label": "Verified Providers"
+      },
+      "fewerNoShows": {
+        "value": "70%",
+        "label": "Fewer No-Shows"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "Appointments Booked"
+      },
+      "providerRating": {
+        "value": "4.9/5",
+        "label": "Provider Rating"
+      }
+    },
+    "testimonials": {
+      "title": "Trusted by doctors worldwide",
+      "subtitle": "See how healthcare providers are transforming their practices with Docito.",
+      "items": {
+        "sarah": {
+          "name": "Dr. Sarah Mitchell",
+          "specialty": "Family Medicine",
+          "quote": "\"I used to spend 2 hours on paperwork after clinic. Now it takes 15 minutes. Docito changed how I practice.\""
+        },
+        "james": {
+          "name": "Dr. James Rodriguez",
+          "specialty": "Cardiology",
+          "quote": "\"The referral system is incredible. I send a patient to the lab and results appear in my dashboard. No phone tag.\""
+        },
+        "emily": {
+          "name": "Dr. Emily Chen",
+          "specialty": "Dermatology",
+          "quote": "\"My no-show rate dropped from 25% to under 5%. The automated reminders are worth every penny.\""
+        }
+      }
+    },
+    "cta": {
+      "headline": "Ready to automate your practice?",
+      "subheadline": "Join thousands of doctors who spend less time on admin and more time with patients.",
+      "primaryCta": "Get Started Free",
+      "secondaryCta": "View Pricing",
+      "badge": "No credit card required • HIPAA compliant • Cancel anytime"
+    }
+  }
+}
