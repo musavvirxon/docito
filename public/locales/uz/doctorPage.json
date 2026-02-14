@@ -1,0 +1,191 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "Tibbiyot xodimlari uchun",
+      "headline": "Kamroq admin. Ko‘proq g‘amxo‘rlik.",
+      "subheadline": "Docito qabulni rejalashtirish, eslatmalar, tashrif hujjatlashtirish, retseptlar, yo‘llanmalar, billing va fayllarni boshqarishni avtomatlashtiradi — shunda siz eng muhimiga: bemorlaringizga e’tibor qaratishingiz mumkin.",
+      "primaryCta": "Shifokor sifatida qo‘shilish",
+      "secondaryCta": "Demo belgilash",
+      "badge": "HIPAA talablariga mos • Boshlash bepul • Karta talab qilinmaydi"
+    },
+    "workflow": {
+      "title": "To‘liq ish jarayoni avtomatizatsiyasi",
+      "actors": {
+        "patient": "Bemor",
+        "you": "Siz",
+        "lab": "Laboratoriya",
+        "pharmacy": "Dorixona",
+        "imaging": "Diagnostika"
+      },
+      "steps": {
+        "diagnosis": "Diagnoz",
+        "treatment": "Davolash",
+        "prescriptions": "Retseptlar",
+        "files": "Fayllar",
+        "notes": "Qaydlar"
+      }
+    },
+    "problems": {
+      "title": "Biz yechadigan muammolar",
+      "headline": "Admin ishlariga vaqt sarflashni to‘xtating",
+      "subheadline": "Docito shifokorlarni charchatadigan va bemorlarni ranjitadigan ortiqcha ishlarni yo‘q qiladi.",
+      "items": {
+        "noShows": {
+          "title": "O‘tkazib yuborilgan qabul va kelmay qolish",
+          "description": "Avtomatik eslatmalar kelmay qolishni 70% ga kamaytiradi"
+        },
+        "paperwork": {
+          "title": "Har bir tashrifdan keyin soatlab qog‘ozbozlik",
+          "description": "Aqlli hujjatlashtirish — soatlar emas, daqiqalar"
+        },
+        "scatteredTools": {
+          "title": "Xabarlar, qaydlar va fayllar uchun tarqoq vositalar",
+          "description": "Hammasi uchun bitta yagona platforma"
+        },
+        "manualReferrals": {
+          "title": "Qo‘lda yo‘llanmalar va yo‘qolgan follow-up",
+          "description": "Laboratoriya, diagnostika va dorixonalarga avtomatik yo‘llanmalar"
+        },
+        "lostFiles": {
+          "title": "Yo‘qolgan fayllar va yetishmaydigan bemor yozuvlari",
+          "description": "Barcha yozuvlar uchun xavfsiz bulutli saqlash"
+        },
+        "slowBilling": {
+          "title": "Sekin billing va sug‘urta da’volari",
+          "description": "Soddalashtirilgan billing va tezkor da’volar"
+        }
+      }
+    },
+    "features": {
+      "title": "Sizga kerak bo‘lgan hammasi",
+      "headline": "Bitta platforma, to‘liq nazorat",
+      "subheadline": "Qabuldan billinggacha — butun amaliyotingizni bitta joyda boshqaring.",
+      "items": {
+        "smartScheduling": {
+          "title": "Aqlli rejalashtirish",
+          "description": "Bemorlar tezda yoziladi. Mavjudlikni siz boshqarasiz. Eslatmalar qolganini qiladi."
+        },
+        "videoConsultations": {
+          "title": "Video konsultatsiyalar",
+          "description": "O‘rnatilgan HD video bilan masofadan qabul qiling. Qo‘shimcha ilova kerak emas."
+        },
+        "secureMessaging": {
+          "title": "Xavfsiz xabar almashish",
+          "description": "Bemorlar, xodimlar va boshqa mutaxassislar bilan HIPAAga mos chat."
+        },
+        "visitDocumentation": {
+          "title": "Tashrif hujjatlashtirish",
+          "description": "Diagnoz, davolash rejasi, retseptlar va qaydlar — hammasi bitta oqimda."
+        },
+        "automatedReferrals": {
+          "title": "Avtomatik yo‘llanmalar",
+          "description": "Laboratoriya, diagnostika va dorixonalarga bir bosishda yo‘llanma yuboring."
+        },
+        "practiceAnalytics": {
+          "title": "Amaliyot analitikasi",
+          "description": "Qabullar, daromad va bemor natijalarini real vaqt rejimida kuzating."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "Ulangan ekotizim",
+      "headline": "Uzluksiz yo‘llanmalar, tezkor natijalar",
+      "subheadline": "Laboratoriya, dorixona va diagnostika markazlariga bir bosishda yo‘llanma yuboring. Natijalarni to‘g‘ridan-to‘g‘ri dashboardingizda oling.",
+      "items": {
+        "laboratories": {
+          "title": "Laboratoriyalar",
+          "description": "Tahlillarni buyurtma qiling va natijalarni raqamli oling"
+        },
+        "pharmacies": {
+          "title": "Dorixonalar",
+          "description": "Retseptlarni bemorning dorixonasiga bevosita yuboring"
+        },
+        "imagingCenters": {
+          "title": "Diagnostika markazlari",
+          "description": "Skanni so‘rang va natijalarni dashboardda ko‘ring"
+        },
+        "otherProviders": {
+          "title": "Boshqa mutaxassislar",
+          "description": "Uzluksiz yo‘llanmalar va davolashni muvofiqlashtirish"
+        }
+      }
+    },
+    "security": {
+      "title": "Xavfsizlik va ishonch",
+      "headline": "Tibbiy xavfsizlik uchun yaratilgan",
+      "subheadline": "Bemor ishonchi — eng muhim narsa. Docito maxfiy tibbiy ma’lumotlarni himoya qilish uchun boshidan loyihalangan.",
+      "items": {
+        "hipaaGdpr": {
+          "title": "HIPAA va GDPR talablariga mos",
+          "description": "Eng qat’iy tibbiy reglamentlarga mos korporativ darajadagi xavfsizlik."
+        },
+        "verifiedOnly": {
+          "title": "Faqat tasdiqlangan mutaxassislar",
+          "description": "Har bir shifokor profil ishga tushishidan oldin litsenziya bo‘yicha tekshiriladi."
+        },
+        "e2ee": {
+          "title": "Uchdan-uchga shifrlash",
+          "description": "Barcha bemor ma’lumotlari saqlashda ham, uzatishda ham shifrlanadi."
+        },
+        "rbac": {
+          "title": "Rollar bo‘yicha kirish",
+          "description": "Xodimlar faqat keraklisini ko‘radi. Bemorlar o‘z ma’lumotini nazorat qiladi."
+        },
+        "auditReady": {
+          "title": "Auditga tayyor yozuvlar",
+          "description": "Moslik va javobgarlik uchun to‘liq faoliyat loglari."
+        },
+        "noSell": {
+          "title": "Ma’lumot sotilmaydi",
+          "description": "Biz bemor ma’lumotlarini hech qachon sotmaymiz, ulashmaymiz va monetizatsiya qilmaymiz. Hech qachon."
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10,000+",
+        "label": "Tasdiqlangan mutaxassislar"
+      },
+      "fewerNoShows": {
+        "value": "70%",
+        "label": "Kamroq kelmay qolish"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "Yozilgan qabullar"
+      },
+      "providerRating": {
+        "value": "4.9/5",
+        "label": "Mutaxassis reytingi"
+      }
+    },
+    "testimonials": {
+      "title": "Butun dunyo shifokorlari ishonadi",
+      "subtitle": "Docito bilan tibbiyot xodimlari amaliyotini qanday o‘zgartirayotganini ko‘ring.",
+      "items": {
+        "sarah": {
+          "name": "Dr. Sarah Mitchell",
+          "specialty": "Oilaviy tibbiyot",
+          "quote": "\"Avval klinikadan keyin 2 soat qog‘ozbozlik qilardim. Endi 15 daqiqa. Docito men ishlash uslubimni o‘zgartirdi.\""
+        },
+        "james": {
+          "name": "Dr. James Rodriguez",
+          "specialty": "Kardiologiya",
+          "quote": "\"Yo‘llanma tizimi ajoyib. Bemorni laboratoriyaga yuboraman — natijalar darhol dashboardimda paydo bo‘ladi. Telefonbozlik yo‘q.\""
+        },
+        "emily": {
+          "name": "Dr. Emily Chen",
+          "specialty": "Dermatologiya",
+          "quote": "\"Kelmay qolish darajam 25% dan 5% dan pastga tushdi. Avtomatik eslatmalar har bir tiyiniga arziydi.\""
+        }
+      }
+    },
+    "cta": {
+      "headline": "Amaliyotingizni avtomatlashtirishga tayyormisiz?",
+      "subheadline": "Admin ishlariga kamroq vaqt, bemorlarga ko‘proq vaqt ajratadigan minglab shifokorlarga qo‘shiling.",
+      "primaryCta": "Bepul boshlash",
+      "secondaryCta": "Narxlarni ko‘rish",
+      "badge": "Karta talab qilinmaydi • HIPAAga mos • Istalgan payt bekor qilish mumkin"
+    }
+  }
+}
