@@ -1,0 +1,191 @@
+{
+  "doctorPage": {
+    "hero": {
+      "kicker": "의료 제공자를 위한",
+      "headline": "행정은 줄이고, 진료는 더.",
+      "subheadline": "Docito는 일정 관리, 알림, 진료 문서화, 처방, 의뢰, 청구, 파일 관리를 자동화하여—가장 중요한 것, 환자에게 집중할 수 있게 합니다.",
+      "primaryCta": "의사로 가입하기",
+      "secondaryCta": "데모 예약",
+      "badge": "HIPAA 준수 • 무료로 시작 • 신용카드 불필요"
+    },
+    "workflow": {
+      "title": "완전한 워크플로 자동화",
+      "actors": {
+        "patient": "환자",
+        "you": "당신",
+        "lab": "검사실",
+        "pharmacy": "약국",
+        "imaging": "영상"
+      },
+      "steps": {
+        "diagnosis": "진단",
+        "treatment": "치료",
+        "prescriptions": "처방",
+        "files": "파일",
+        "notes": "노트"
+      }
+    },
+    "problems": {
+      "title": "우리가 해결하는 문제",
+      "headline": "행정 업무에 시간을 낭비하지 마세요",
+      "subheadline": "Docito는 의사를 지치게 하고 환자를 불편하게 만드는 반복 업무를 없앱니다.",
+      "items": {
+        "noShows": {
+          "title": "미내원 및 노쇼",
+          "description": "자동 알림으로 노쇼를 70% 줄일 수 있습니다"
+        },
+        "paperwork": {
+          "title": "진료 후 끝없는 서류 작업",
+          "description": "몇 시간 대신 몇 분 만에 스마트 문서화"
+        },
+        "scatteredTools": {
+          "title": "메시지·노트·파일이 흩어진 도구들",
+          "description": "모든 것을 하나의 통합 플랫폼에서"
+        },
+        "manualReferrals": {
+          "title": "수동 의뢰와 누락되는 추적 관리",
+          "description": "검사·영상·약국으로 자동 의뢰"
+        },
+        "lostFiles": {
+          "title": "분실된 파일과 누락된 환자 기록",
+          "description": "모든 기록을 위한 안전한 클라우드 저장소"
+        },
+        "slowBilling": {
+          "title": "느린 청구와 보험 청구 처리",
+          "description": "간소화된 청구와 즉시 클레임 처리"
+        }
+      }
+    },
+    "features": {
+      "title": "필요한 모든 것",
+      "headline": "하나의 플랫폼, 완전한 컨트롤",
+      "subheadline": "예약부터 청구까지, 진료의 모든 것을 한 곳에서 관리하세요.",
+      "items": {
+        "smartScheduling": {
+          "title": "스마트 예약",
+          "description": "환자는 즉시 예약합니다. 가용 시간은 당신이 제어합니다. 나머지는 자동 알림이 처리합니다."
+        },
+        "videoConsultations": {
+          "title": "영상 진료",
+          "description": "내장된 HD 영상으로 원격 진료. 추가 앱이 필요 없습니다."
+        },
+        "secureMessaging": {
+          "title": "보안 메시징",
+          "description": "환자·직원·다른 제공자와 HIPAA 준수 채팅."
+        },
+        "visitDocumentation": {
+          "title": "진료 문서화",
+          "description": "진단, 치료 계획, 처방, 노트—모두 하나의 흐름으로."
+        },
+        "automatedReferrals": {
+          "title": "자동 의뢰",
+          "description": "검사·영상·약국으로 한 번의 클릭으로 의뢰를 보냅니다."
+        },
+        "practiceAnalytics": {
+          "title": "진료 분석",
+          "description": "예약, 매출, 환자 결과를 실시간으로 추적합니다."
+        }
+      }
+    },
+    "ecosystem": {
+      "title": "연결된 생태계",
+      "headline": "끊김 없는 의뢰, 즉시 결과",
+      "subheadline": "검사실, 약국, 영상센터로 한 번에 의뢰를 전송하고 결과를 대시보드에서 바로 받으세요.",
+      "items": {
+        "laboratories": {
+          "title": "검사실",
+          "description": "검사를 주문하고 결과를 디지털로 수신"
+        },
+        "pharmacies": {
+          "title": "약국",
+          "description": "처방전을 환자 약국으로 바로 전송"
+        },
+        "imagingCenters": {
+          "title": "영상센터",
+          "description": "촬영을 요청하고 결과를 대시보드에서 확인"
+        },
+        "otherProviders": {
+          "title": "다른 제공자",
+          "description": "원활한 의뢰 및 진료 협업"
+        }
+      }
+    },
+    "security": {
+      "title": "보안 & 신뢰",
+      "headline": "의료 보안을 위해 설계",
+      "subheadline": "환자의 신뢰는 모든 것입니다. Docito는 민감한 건강 정보를 보호하도록 처음부터 설계되었습니다.",
+      "items": {
+        "hipaaGdpr": {
+          "title": "HIPAA & GDPR 준수",
+          "description": "가장 엄격한 의료 규정을 충족하는 엔터프라이즈급 보안."
+        },
+        "verifiedOnly": {
+          "title": "검증된 제공자만",
+          "description": "모든 의사는 공개 전 면허 자격으로 검증됩니다."
+        },
+        "e2ee": {
+          "title": "엔드투엔드 암호화",
+          "description": "모든 환자 데이터는 저장 및 전송 중 암호화됩니다."
+        },
+        "rbac": {
+          "title": "역할 기반 접근",
+          "description": "직원은 필요한 것만 봅니다. 환자는 자신의 데이터를 통제합니다."
+        },
+        "auditReady": {
+          "title": "감사 대비 기록",
+          "description": "컴플라이언스와 책임성을 위한 전체 활동 로그."
+        },
+        "noSell": {
+          "title": "데이터 판매 없음",
+          "description": "환자 데이터를 판매, 공유, 수익화하지 않습니다. 절대."
+        }
+      }
+    },
+    "stats": {
+      "verifiedProviders": {
+        "value": "10,000+",
+        "label": "검증된 제공자"
+      },
+      "fewerNoShows": {
+        "value": "70%",
+        "label": "노쇼 감소"
+      },
+      "appointmentsBooked": {
+        "value": "2M+",
+        "label": "예약 완료"
+      },
+      "providerRating": {
+        "value": "4.9/5",
+        "label": "제공자 평점"
+      }
+    },
+    "testimonials": {
+      "title": "전 세계 의사들이 신뢰합니다",
+      "subtitle": "Docito로 의료 제공자들이 어떻게 진료를 혁신하는지 확인하세요.",
+      "items": {
+        "sarah": {
+          "name": "Sarah Mitchell 의사",
+          "specialty": "가정의학",
+          "quote": "\"예전엔 진료 후 서류 작업에 2시간을 썼어요. 지금은 15분이면 됩니다. Docito가 제 진료 방식을 바꿨어요.\""
+        },
+        "james": {
+          "name": "James Rodriguez 의사",
+          "specialty": "심장내과",
+          "quote": "\"의뢰 시스템이 정말 놀라워요. 환자를 검사실로 보내면 결과가 대시보드에 바로 뜹니다. 전화 돌리기 없이요.\""
+        },
+        "emily": {
+          "name": "Emily Chen 의사",
+          "specialty": "피부과",
+          "quote": "\"노쇼 비율이 25%에서 5% 이하로 떨어졌습니다. 자동 알림은 그 값어치를 충분히 합니다.\""
+        }
+      }
+    },
+    "cta": {
+      "headline": "당신의 진료를 자동화할 준비가 되셨나요?",
+      "subheadline": "행정에 쓰는 시간을 줄이고 환자와 함께하는 시간을 늘린 수천 명의 의사들과 함께하세요.",
+      "primaryCta": "무료로 시작하기",
+      "secondaryCta": "요금 보기",
+      "badge": "신용카드 불필요 • HIPAA 준수 • 언제든 취소 가능"
+    }
+  }
+}
