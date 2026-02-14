@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "자동화된 클리닉 관리",
+      "headlineLine1": "행정은 줄이고,",
+      "headlineLine2": "진료는 더.",
+      "subheadline": "예약, 문서화, 청구, 환자 커뮤니케이션을 자동화하는 올인원 플랫폼—그래서 당신은 가장 중요한 것에 집중할 수 있습니다.",
+      "primaryCta": "무료로 시작하기",
+      "secondaryCta": "데모 예약"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "행정 시간 감소"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "24/7 환자 예약"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "더 빠른 접수"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "페이퍼리스"
+      }
+    },
+    "dashboard": {
+      "title": "클리닉 대시보드",
+      "headline": "모든 것이 자동화",
+      "items": {
+        "appointments": "오늘 12건의 예약이 자동으로 일정에 반영됨",
+        "reminders": "45건의 알림이 자동으로 전송됨",
+        "notes": "진단을 위한 노트 8건",
+        "invoices": "3건의 청구서가 자동 처리됨"
+      },
+      "timeSaved": {
+        "label": "오늘 절약한 시간",
+        "value": "6시간"
+      }
+    },
+    "automation": {
+      "title": "지능형 자동화",
+      "headline": "클리닉을 자동 조종으로",
+      "subheadline": "반복 업무에 시간을 낭비하지 마세요. 행정 부담은 우리 플랫폼에 맡기고, 당신은 환자 케어에 집중하세요.",
+      "items": {
+        "smartScheduling": {
+          "title": "스마트 예약",
+          "description": "예약, 취소, 변경을 자동으로 처리"
+        },
+        "patientCommunications": {
+          "title": "환자 커뮤니케이션",
+          "description": "자동 알림, 후속 안내, 확인 메시지"
+        },
+        "documentation": {
+          "title": "문서화",
+          "description": "AI 지원 노트, 치료 계획, 처방"
+        },
+        "billingPayments": {
+          "title": "청구 및 결제",
+          "description": "자동 청구서 발행, 수금, 보험 청구"
+        },
+        "analyticsReports": {
+          "title": "분석 및 리포트",
+          "description": "수기 입력 없이 실시간 인사이트"
+        },
+        "staffManagement": {
+          "title": "직원 관리",
+          "description": "역할 기반 접근, 스케줄, 성과 추적"
+        }
+      }
+    },
+    "solution": {
+      "title": "완벽한 솔루션",
+      "headlineLine1": "하나의 플랫폼.",
+      "headlineLine2": "필요한 모든 것.",
+      "subheadline": "조각난 도구들을 현대 의료기관을 위해 설계된 통합 플랫폼으로 교체하세요. 접수부터 최종 청구까지—매끄럽게 연결됩니다.",
+      "bullets": {
+        "onlineScheduling": "온라인 예약 스케줄링",
+        "recordsManagement": "환자 기록 관리",
+        "treatmentPlanning": "치료 계획 도구",
+        "digitalPrescriptions": "디지털 처방",
+        "insuranceVerification": "보험 확인",
+        "paymentProcessing": "결제 처리",
+        "videoConsultations": "영상 진료",
+        "labImagingOrders": "검사 및 영상 오더",
+        "staffScheduling": "직원 스케줄링",
+        "realTimeAnalytics": "실시간 분석",
+        "secureMessaging": "보안 메시징",
+        "referralManagement": "의뢰(리퍼럴) 관리"
+      }
+    },
+    "security": {
+      "title": "엔터프라이즈급 보안",
+      "headline": "의료를 위해 설계",
+      "subheadline": "HIPAA 준수 인프라와 엔터프라이즈 보안. 종단간 암호화와 역할 기반 접근 제어로 데이터를 보호합니다.",
+      "badges": {
+        "hipaa": {
+          "title": "HIPAA 준수",
+          "description": "완전한 준수"
+        },
+        "encryption": {
+          "title": "256비트 암호화",
+          "description": "종단간"
+        },
+        "uptime": {
+          "title": "99.9% 가동률",
+          "description": "SLA 보장"
+        },
+        "soc2": {
+          "title": "SOC 2 Type II",
+          "description": "인증"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "여정을 시작하세요",
+      "headlineLine1": "클리닉 자동화를",
+      "headlineLine2": "시작할 준비가 되셨나요?",
+      "subheadline": "행정 부담을 없애고 환자 케어 시간을 되찾은 수천 곳의 클리닉에 합류하세요.",
+      "primaryCta": "무료 체험 시작",
+      "secondaryCta": "영업팀 문의",
+      "badge": "14일 무료 체험 • 카드 불필요 • 전체 기능 이용"
+    }
+  }
+}
