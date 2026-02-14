@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "自动化诊所管理",
+      "headlineLine1": "更少行政。",
+      "headlineLine2": "更多关怀。",
+      "subheadline": "一体化诊所平台，自动化预约排班、就诊文档、计费与患者沟通——让你专注于最重要的事。",
+      "primaryCta": "免费开始",
+      "secondaryCta": "预约演示"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "更少行政时间"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "患者 24/7 预约"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "接诊登记更快"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "无纸化"
+      }
+    },
+    "dashboard": {
+      "title": "诊所控制台",
+      "headline": "一切自动化",
+      "items": {
+        "appointments": "今天已自动安排 12 次预约",
+        "reminders": "已自动发送 45 条提醒",
+        "notes": "8 条用于诊断的记录",
+        "invoices": "已自动处理 3 张发票"
+      },
+      "timeSaved": {
+        "label": "今日节省时间",
+        "value": "6 小时"
+      }
+    },
+    "automation": {
+      "title": "智能自动化",
+      "headline": "让诊所进入自动驾驶",
+      "subheadline": "别再把数小时浪费在重复工作上。让我们的平台承担行政负担，你只需专注患者照护。",
+      "items": {
+        "smartScheduling": {
+          "title": "智能排班",
+          "description": "自动处理预约、取消与改期"
+        },
+        "patientCommunications": {
+          "title": "患者沟通",
+          "description": "自动提醒、随访与确认"
+        },
+        "documentation": {
+          "title": "文档记录",
+          "description": "AI 辅助生成病历记录、治疗方案与处方"
+        },
+        "billingPayments": {
+          "title": "计费与支付",
+          "description": "自动开票、催收与保险理赔"
+        },
+        "analyticsReports": {
+          "title": "分析与报表",
+          "description": "无需手动录入的实时洞察"
+        },
+        "staffManagement": {
+          "title": "员工管理",
+          "description": "基于角色的权限、排班与绩效追踪"
+        }
+      }
+    },
+    "solution": {
+      "title": "完整方案",
+      "headlineLine1": "一个平台。",
+      "headlineLine2": "所需尽有。",
+      "subheadline": "用统一平台替代零散工具，专为现代医疗机构打造。从接诊登记到最终计费——无缝整合。",
+      "bullets": {
+        "onlineScheduling": "在线预约排班",
+        "recordsManagement": "患者病历管理",
+        "treatmentPlanning": "治疗计划工具",
+        "digitalPrescriptions": "电子处方",
+        "insuranceVerification": "保险验证",
+        "paymentProcessing": "支付处理",
+        "videoConsultations": "视频问诊",
+        "labImagingOrders": "检验与影像申请",
+        "staffScheduling": "员工排班",
+        "realTimeAnalytics": "实时分析",
+        "secureMessaging": "安全消息",
+        "referralManagement": "转诊管理"
+      }
+    },
+    "security": {
+      "title": "企业级安全",
+      "headline": "为医疗而生",
+      "subheadline": "符合 HIPAA 的基础设施与企业级安全。通过端到端加密与基于角色的访问控制，全面保护你的数据。",
+      "badges": {
+        "hipaa": {
+          "title": "符合 HIPAA",
+          "description": "全面合规"
+        },
+        "encryption": {
+          "title": "256 位加密",
+          "description": "端到端"
+        },
+        "uptime": {
+          "title": "99.9% 可用性",
+          "description": "SLA 保障"
+        },
+        "soc2": {
+          "title": "SOC 2 Type II",
+          "description": "已认证"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "开启旅程",
+      "headlineLine1": "准备好自动化",
+      "headlineLine2": "你的诊所了吗？",
+      "subheadline": "加入成千上万家诊所，消除行政负担，把时间还给患者照护。",
+      "primaryCta": "开始免费试用",
+      "secondaryCta": "联系销售",
+      "badge": "14 天免费试用 • 无需信用卡 • 全功能访问"
+    }
+  }
+}
