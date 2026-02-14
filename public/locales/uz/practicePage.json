@@ -1,0 +1,127 @@
+{
+  "practicePage": {
+    "hero": {
+      "kicker": "Avtomatlashtirilgan amaliyot boshqaruvi",
+      "headlineLine1": "Kamroq admin.",
+      "headlineLine2": "Ko‘proq g‘amxo‘rlik.",
+      "subheadline": "Qabulni rejalashtirish, hujjatlashtirish, billing va bemor bilan muloqotni avtomatlashtiradigan yagona platforma — shunda siz eng muhimiga e’tibor qaratasiz.",
+      "primaryCta": "Bepul boshlash",
+      "secondaryCta": "Demo belgilash"
+    },
+    "stats": {
+      "lessAdminTime": {
+        "value": "80%",
+        "label": "Admin vaqt kamroq"
+      },
+      "patientBooking": {
+        "value": "24/7",
+        "label": "Bemor yozilishi 24/7"
+      },
+      "fasterIntake": {
+        "value": "3x",
+        "label": "3 baravar tezroq intake"
+      },
+      "paperless": {
+        "value": "100%",
+        "label": "100% qog‘ozsiz"
+      }
+    },
+    "dashboard": {
+      "title": "Amaliyot paneli",
+      "headline": "Hammasi avtomatlashtirilgan",
+      "items": {
+        "appointments": "Bugun 12 ta qabul avtomatik rejalashtirildi",
+        "reminders": "45 ta eslatma avtomatik yuborildi",
+        "notes": "Diagnostika uchun 8 ta qayd",
+        "invoices": "3 ta hisob-faktura avtomatik qayta ishlandi"
+      },
+      "timeSaved": {
+        "label": "Bugun tejalgan vaqt",
+        "value": "6 soat"
+      }
+    },
+    "automation": {
+      "title": "Intellektual avtomatlashtirish",
+      "headline": "Amaliyotingiz avtopilotda",
+      "subheadline": "Takroriy vazifalarga soatlab vaqt sarflamang. Ma’muriy yukni AI bajarsin, siz esa bemor parvarishiga e’tibor bering.",
+      "items": {
+        "smartScheduling": {
+          "title": "Aqlli rejalashtirish",
+          "description": "Yozilish, bekor qilish va ko‘chirish avtomatlashtiriladi"
+        },
+        "patientCommunications": {
+          "title": "Bemor bilan muloqot",
+          "description": "Avtomatik eslatmalar, follow-up va tasdiqlashlar"
+        },
+        "documentation": {
+          "title": "Hujjatlar",
+          "description": "AI yordamida qaydlar, davolash rejalari va retseptlar"
+        },
+        "billingPayments": {
+          "title": "Billing va to‘lovlar",
+          "description": "Avtomatik hisob-faktura, undirish va sug‘urta da’volari"
+        },
+        "analyticsReports": {
+          "title": "Analitika va hisobotlar",
+          "description": "Qo‘lda kiritmasdan real vaqt insightlar"
+        },
+        "staffManagement": {
+          "title": "Xodimlarni boshqarish",
+          "description": "Rollar bo‘yicha kirish, jadval va samaradorlik kuzatuvi"
+        }
+      }
+    },
+    "solution": {
+      "title": "To‘liq yechim",
+      "headlineLine1": "Bitta platforma.",
+      "headlineLine2": "Kerak bo‘lgan hammasi.",
+      "subheadline": "Tarqoq vositalarni zamonaviy tibbiy amaliyotlar uchun maxsus yaratilgan yagona platforma bilan almashtiring. Intake’dan yakuniy billinggacha — hammasi uzluksiz integratsiyada.",
+      "bullets": {
+        "onlineScheduling": "Onlayn qabulga yozilish",
+        "recordsManagement": "Bemor yozuvlarini boshqarish",
+        "treatmentPlanning": "Davolash rejalash vositalari",
+        "digitalPrescriptions": "Raqamli retseptlar",
+        "insuranceVerification": "Sug‘urtani tekshirish",
+        "paymentProcessing": "To‘lovlarni qayta ishlash",
+        "videoConsultations": "Video konsultatsiyalar",
+        "labImagingOrders": "Laboratoriya va diagnostika buyurtmalari",
+        "staffScheduling": "Xodimlar jadvali",
+        "realTimeAnalytics": "Real vaqt analitikasi",
+        "secureMessaging": "Xavfsiz xabar almashish",
+        "referralManagement": "Yo‘llanmalarni boshqarish"
+      }
+    },
+    "security": {
+      "title": "Korporativ darajadagi xavfsizlik",
+      "headline": "Tibbiyot uchun yaratilgan",
+      "subheadline": "HIPAAga mos infratuzilma va korporativ xavfsizlik. Ma’lumotlaringiz uchdan-uchga shifrlash va rollar bo‘yicha kirish bilan himoyalangan.",
+      "badges": {
+        "hipaa": {
+          "title": "HIPAAga mos",
+          "description": "To‘liq moslik"
+        },
+        "encryption": {
+          "title": "256-bit shifrlash",
+          "description": "Uchdan-uchga"
+        },
+        "uptime": {
+          "title": "99.9% uptime",
+          "description": "SLA kafolatlangan"
+        },
+        "soc2": {
+          "title": "SOC 2 Type II",
+          "description": "Sertifikatlangan"
+        }
+      }
+    },
+    "cta": {
+      "kicker": "Sayohatingizni boshlang",
+      "headlineLine1": "Amaliyotingizni avtomatlashtirishga",
+      "headlineLine2": "tayyormisiz?",
+      "subheadline": "Ma’muriy yukni yo‘q qilib, vaqtini bemor parvarishiga qaytargan minglab amaliyotlarga qo‘shiling.",
+      "primaryCta": "Bepul sinovni boshlash",
+      "secondaryCta": "Sotuv bo‘limi bilan gaplashish",
+      "badge": "14 kun bepul sinov • Karta talab qilinmaydi • To‘liq funksiyalar"
+    }
+  }
+}
