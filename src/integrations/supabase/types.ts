@@ -1974,6 +1974,51 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_verification_requests: {
+        Row: {
+          comment: string | null
+          created_at: string
+          facility_id: string
+          facility_type: string
+          id: string
+          payload: Json | null
+          rejection_reason: string | null
+          requested_by: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          facility_id: string
+          facility_type: string
+          id?: string
+          payload?: Json | null
+          rejection_reason?: string | null
+          requested_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          facility_id?: string
+          facility_type?: string
+          id?: string
+          payload?: Json | null
+          rejection_reason?: string | null
+          requested_by?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       file_assets: {
         Row: {
           attachment_type: string | null

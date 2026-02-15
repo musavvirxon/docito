@@ -16,7 +16,6 @@ import {
 const providers = [
   {
     id: "doctors",
-    title: "Doctors",
     icon: Stethoscope,
     color: "from-blue-500 to-blue-600",
     bgColor: "bg-blue-500/10",
@@ -26,7 +25,6 @@ const providers = [
   },
   {
     id: "clinics",
-    title: "Clinics",
     icon: Building2,
     color: "from-emerald-500 to-emerald-600",
     bgColor: "bg-emerald-500/10",
@@ -36,7 +34,6 @@ const providers = [
   },
   {
     id: "pharmacies",
-    title: "Pharmacies",
     icon: Pill,
     color: "from-amber-500 to-amber-600",
     bgColor: "bg-amber-500/10",
@@ -46,7 +43,6 @@ const providers = [
   },
   {
     id: "labs",
-    title: "Labs",
     icon: FlaskConical,
     color: "from-purple-500 to-purple-600",
     bgColor: "bg-purple-500/10",
@@ -56,7 +52,6 @@ const providers = [
   },
   {
     id: "imaging",
-    title: "Imaging",
     icon: ScanLine,
     color: "from-cyan-500 to-cyan-600",
     bgColor: "bg-cyan-500/10",
@@ -66,7 +61,6 @@ const providers = [
   },
   {
     id: "hospitals",
-    title: "Hospitals",
     icon: Building,
     color: "from-rose-500 to-rose-600",
     bgColor: "bg-rose-500/10",
@@ -92,7 +86,7 @@ function ProviderCard({
   provider: (typeof providers)[0];
   index: number;
 }) {
-  const { t } = useTranslation(["home"]);
+  const { t } = useTranslation(["home", "premium"]);
   const navigate = useNavigate();
   const cardRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(cardRef, { once: true, margin: "-100px" });
@@ -126,15 +120,13 @@ function ProviderCard({
         className={`relative group p-8 bg-background/50 backdrop-blur-xl border ${provider.borderColor} rounded-3xl shadow-xl ${provider.glowColor} hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden h-full flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
         aria-label={t(
           `home:providers.${provider.id}.cta`,
-          `Open ${provider.title} landing page`
+          `Open ${provider.id} landing page`
         )}
       >
-        {/* Background glow */}
         <div
           className={`absolute inset-0 ${provider.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
         />
 
-        {/* Animated border */}
         <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
           <div
             className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${provider.color} opacity-20`}
@@ -142,7 +134,6 @@ function ProviderCard({
         </div>
 
         <div className="relative z-10 flex flex-col h-full">
-          {/* Icon */}
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
             className={`w-16 h-16 ${provider.bgColor} rounded-2xl flex items-center justify-center mb-6`}
@@ -150,20 +141,17 @@ function ProviderCard({
             <Icon className="w-8 h-8" style={{ color: provider.iconColor }} />
           </motion.div>
 
-          {/* Title */}
           <h3 className="text-xl font-semibold text-foreground mb-3 capitalize">
-            {provider.title}
+            {t(`home:providers.${provider.id}.title`, provider.id)}
           </h3>
 
-          {/* Description */}
           <p className="text-muted-foreground text-sm mb-6 leading-relaxed flex-grow">
             {t(
               `home:providers.${provider.id}.description`,
-              `Find and book ${provider.title.toLowerCase()}—with profiles, availability, and clear next steps.`
+              `Find and book ${provider.id}—with profiles, availability, and clear next steps.`
             )}
           </p>
 
-          {/* CTA */}
           <motion.div
             whileHover={{ x: 5 }}
             className="flex items-center gap-2 text-sm font-medium text-primary mt-auto"
@@ -175,7 +163,6 @@ function ProviderCard({
           </motion.div>
         </div>
 
-        {/* Decorative elements */}
         <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-transparent via-transparent to-primary/5 rounded-full blur-2xl" />
       </motion.div>
     </motion.div>
@@ -183,15 +170,13 @@ function ProviderCard({
 }
 
 export default function ProviderCards() {
-  const { t } = useTranslation(["home"]);
+  const { t } = useTranslation(["home", "premium"]);
 
   return (
     <section className="py-24 relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-background" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="text-center mb-16">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
@@ -199,20 +184,19 @@ export default function ProviderCards() {
             viewport={{ once: true }}
             className="inline-block px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-4"
           >
-            Healthcare Network
+            {t("premium:providers.networkBadge", "Healthcare Network")}
           </motion.span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-foreground mb-4">
-            One network, one patient journey
+            {t("premium:providers.networkTitle", "One network, one patient journey")}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.
+            {t("premium:providers.networkDescription", "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn't get lost between places.")}
           </p>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto mt-4">
-            Newly launched: provider profiles appear as teams onboard.
+            {t("premium:providers.networkNote", "Newly launched: provider profiles appear as teams onboard.")}
           </p>
         </div>
 
-        {/* Cards Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {providers.map((provider, index) => (
             <ProviderCard key={provider.id} provider={provider} index={index} />
