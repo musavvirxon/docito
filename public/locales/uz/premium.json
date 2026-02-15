@@ -1,34 +1,480 @@
-
 {
   "hero": {
     "badge": "Barcha tibbiy xizmatlar — bir ritmda",
     "title": {
-      "line1": "Kamroq byurokratiya. Ko‘proq g‘amxo‘rlik.",
-      "line2": "Sog‘liqni saqlashning har bir bosqichi uchun yagona platforma."
+      "line1": "Kamroq byurokratiya. Ko‘proq parvarish.",
+      "line2": "Butun tizimingiz uchun bitta platforma."
     },
-    "description": "Docito bemorlar, shifokorlar, laboratoriyalar, diagnostika, dorixonalar va sug‘urtani bog‘laydi — shunda yozilishlar, kartalar, retseptlar, natijalar va to‘lovlar bir joyda bo‘ladi.",
-    "cards": {
-      "patients": { "title": "Bemorlar uchun", "description": "Toping, yoziling va davolanishni bir joyda kuzating" },
-      "clinics": { "title": "Klinikalar uchun", "description": "Jadval, hujjatlar va billing — barchasi birlashgan" },
-      "imaging": { "title": "Diagnostika uchun", "description": "Yo‘llanmalar, hisobotlar va muvofiqlashtirish" },
-      "pharmacy": { "title": "Dorixonalar uchun", "description": "Elektron retseptlar, bajarish va yetkazib berish" },
-      "labs": { "title": "Laboratoriyalar uchun", "description": "Tahlil buyurtmalari, natijalar va raqamli yetkazish" }
+    "subtitle": "Docito yozilish, tibbiy yozuvlar, laboratoriya, tasvirlash, retseptlar va to‘lovlarni bitta bemor yo‘liga birlashtiradi — klinikalar va bemorlar uchun.",
+    "cta": {
+      "primary": "14 kun bepul sinovni boshlash",
+      "secondary": "Qanday ishlaydi"
+    },
+    "finePrint": "14 kun bepul • Karta kerak emas • Istalgan payt bekor qilish"
+  },
+  "search": {
+    "badge": "Aqlli qidiruv",
+    "title": "Parvarishni soniyalarda toping",
+    "subtitle": "Shifokorlar, klinikalar, laboratoriyalar, tasvirlash va dorixonalarni bitta joydan qidiring.",
+    "specialty": "Ixtisoslik yoki provayder",
+    "location": "Shahar yoki klinika",
+    "button": "Qidirish",
+    "voiceSearch": "Ovozli qidiruv",
+    "recent": "So‘nggi qidiruvlar",
+    "noRecent": "So‘nggi qidiruvlar yo‘q",
+    "trending": "Ommabop qidiruvlar",
+    "trendingItems": [
+      "yaqindagi kardiolog",
+      "tishlarni tozalash",
+      "pediatr",
+      "dermatolog",
+      "shoshilinch yordam",
+      "qon tahlili"
+    ],
+    "aiHint": "Maslahat: tezroq natija uchun “yaqindagi kardiolog” yoki “Toshkentda MRT”ni sinab ko‘ring."
+  },
+  "providers": {
+    "networkBadge": "Tibbiy tarmoq",
+    "networkTitle": "Bitta tarmoq, bitta bemor yo‘li",
+    "networkDescription": "Shifokorlar, klinikalar, laboratoriyalar, tasvirlash markazlari va dorixonalar — bog‘langan, shunda parvarish joylar o‘rtasida yo‘qolib qolmaydi.",
+    "networkNote": "Yangi: jamoalar qo‘shilgani sayin provayder profillari paydo bo‘ladi.",
+    "findProviders": "Provayderlarni topish",
+    "roleLabels": {
+      "doctor": "Shifokor",
+      "clinic": "Klinika",
+      "lab": "Laboratoriya",
+      "pharmacy": "Dorixona",
+      "imaging": "Tasvirlash",
+      "hospital": "Shifoxona"
+    },
+    "doctors": {
+      "title": "Shifokorlar",
+      "description": "Profil, bandlik va aniq keyingi qadamlar bilan shifokorlarni toping va qabulga yoziling.",
+      "cta": "Provayderlarni topish"
+    },
+    "clinics": {
+      "title": "Klinikalar",
+      "description": "Profil, bandlik va aniq keyingi qadamlar bilan klinikalarni toping va qabulga yoziling.",
+      "cta": "Provayderlarni topish"
+    },
+    "pharmacies": {
+      "title": "Dorixonalar",
+      "description": "Profil, bandlik va aniq keyingi qadamlar bilan dorixonalarni toping va buyurtma qiling.",
+      "cta": "Provayderlarni topish"
+    },
+    "labs": {
+      "title": "Laboratoriyalar",
+      "description": "Profil, bandlik va aniq keyingi qadamlar bilan laboratoriyalarni toping va buyurtma qiling.",
+      "cta": "Provayderlarni topish"
+    },
+    "imaging": {
+      "title": "Tasvirlash",
+      "description": "Profil, bandlik va aniq keyingi qadamlar bilan tasvirlash xizmatlarini toping va yoziling.",
+      "cta": "Provayderlarni topish"
+    },
+    "hospitals": {
+      "title": "Shifoxonalar",
+      "description": "Profil, bandlik va aniq keyingi qadamlar bilan shifoxonalarni toping va yoziling.",
+      "cta": "Provayderlarni topish"
+    }
+  },
+  "specialties": {
+    "title": "Tibbiy ixtisosliklar",
+    "subtitle": "Barcha tibbiyot yo‘nalishlari bo‘yicha mutaxassislarni toping",
+    "viewAll": "Barcha ixtisosliklar",
+    "browseAria": "{{specialty}} bo‘yicha mutaxassislarni ko‘rish",
+    "list": {
+      "cardiology": "Kardiologiya",
+      "neurology": "Nevrologiya",
+      "ophthalmology": "Oftalmologiya",
+      "orthopedics": "Ortopediya",
+      "pediatrics": "Pediatriya",
+      "dentistry": "Stomatologiya",
+      "generalMedicine": "Umumiy tibbiyot",
+      "gastroenterology": "Gastroenterologiya",
+      "dermatology": "Dermatologiya",
+      "endocrinology": "Endokrinologiya",
+      "pathology": "Patologiya",
+      "pulmonology": "Pulmonologiya",
+      "ent": "LOR",
+      "rheumatology": "Revmatologiya",
+      "surgery": "Jarrohlik",
+      "urology": "Urologiya",
+      "psychiatry": "Psixiatriya",
+      "oncology": "Onkologiya",
+      "nephrology": "Nefrologiya",
+      "gynecology": "Ginekologiya",
+      "radiology": "Radiologiya",
+      "allergyImmunology": "Allergologiya va immunologiya"
+    }
+  },
+  "diagnostics": {
+    "badge": "Diagnostika va dorixona",
+    "title": {
+      "prefix": "To‘liq parvarish yo‘lini",
+      "highlight": "bog‘lab turing"
+    },
+    "description": "Laboratoriya, tasvirlash va dorixona yangilanishlarini rejalashtirish va tashriflar bilan bir xil ish oqimiga kiriting — bemorlar va jamoalar har doim eng so‘nggi kontekstga ega bo‘lsin.",
+    "services": {
+      "lab": {
+        "title": "Laboratoriya tahlillari",
+        "description": "Tahlillarni buyurtma qiling, natijalarni oling va hammasini bemor yozuviga avtomatik bog‘lang.",
+        "features": [
+          "Buyurtmalar va natijalar kartaga bog‘langan",
+          "Natijalarni raqamli yetkazish",
+          "Billing jarayonlari uchun tayyor"
+        ],
+        "browse": "Laboratoriyalarni ko‘rish",
+        "join": "Laboratoriya sifatida qo‘shilish"
+      },
+      "imaging": {
+        "title": "Tibbiy tasvirlash",
+        "description": "Tasvirlash buyurtmalari va hisobotlarini muvofiqlashtiring — yo‘naltiruvchi shifokorlar va bemorlar qo‘shimcha vositalarsiz hamisha bir xil holatda bo‘lsin.",
+        "features": [
+          "Hisobotlar tashrifga biriktiriladi",
+          "Yo‘naltiruvchilar bilan oson ulashish",
+          "Parvarish yo‘li bo‘ylab holat yangilanishlari"
+        ],
+        "browse": "Tasvirlashni ko‘rish",
+        "join": "Tasvirlash markazi sifatida qo‘shilish"
+      },
+      "pharmacy": {
+        "title": "Dorixona xizmatlari",
+        "description": "Retsept yozing, berishni boshqaring va kuzatib boring — dori yangilanishlari butun jamoaga ko‘rinadi.",
+        "features": [
+          "eRetseptlar va qayta to‘ldirish",
+          "Mavjudlik + o‘rinbosarlar",
+          "Olib ketish yoki yetkazib berishni muvofiqlashtirish"
+        ],
+        "browse": "Dorixonalarni ko‘rish",
+        "join": "Dorixona sifatida qo‘shilish"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "Bitta platforma. Har bir ish oqimi.",
+    "title": "Bitta platforma. Har bir ish oqimi.",
+    "subtitle": "Birinchi qidiruvdan keyingi kuzatuvgacha — Docito parvarish va operatsiyalarni bog‘lab turadi.",
+    "cta": {
+      "primary": "Platformani ko‘rish",
+      "secondary": "Qanday ishlaydi"
+    },
+    "learnMore": "Batafsil",
+    "items": {
+      "smartScheduling": {
+        "title": "Aqlli rejalashtirish",
+        "description": "Onlayn yozilish, eslatmalar va real vaqt bandligi."
+      },
+      "digitalPrescriptions": {
+        "title": "Raqamli retseptlar",
+        "description": "Retseptlarni dorixonalarga yuboring va hammasini bemor taymlaynida saqlang."
+      },
+      "secureRecords": {
+        "title": "Xavfsiz yozuvlar",
+        "description": "Hujjatlarni saqlang va fayllarni kerakli odamlarga tez va xavfsiz ulashing."
+      },
+      "clinicalNotes": {
+        "title": "Klinik qaydlar",
+        "description": "Parvarishni izchil hujjatlashtirish uchun shablonlar va strukturali qaydlar."
+      },
+      "teamCoordination": {
+        "title": "Jamoani muvofiqlashtirish",
+        "description": "Xodimlar, provayderlar va muassasalar o‘rtasida xavfsiz xabar almashish va topshirish."
+      },
+      "insuranceCoverage": {
+        "title": "Sug‘urta va qamrov",
+        "description": "Qamrovni tekshirish va billing yordami ortiqcha yozishmalarni kamaytiradi."
+      },
+      "payments": {
+        "title": "To‘lovlar",
+        "description": "To‘lovlarni qabul qiling, hisob-faktura yuboring va daromadni bitta joyda kuzating."
+      },
+      "automations": {
+        "title": "Avtomatlashtirish",
+        "description": "Eslatmalar, yangilanishlar va follow-up no-show va qo‘lda ishni kamaytiradi."
+      },
+      "telemedicine": {
+        "title": "Telemeditsina",
+        "description": "Shaxsan kelish imkoni bo‘lmaganda masofaviy qabul taklif qiling."
+      }
+    }
+  },
+  "workflows": {
+    "badge": "Parvarishni bitta tizimda yuriting",
+    "title": "Sog‘liqni saqlashni harakatlantiradigan asosiy jarayonlar",
+    "description": "Rejalashtirish, yozuvlar, to‘lovlar va tahlillar — parvarish yo‘lingiz bo‘ylab bog‘langan.",
+    "items": {
+      "payments": {
+        "title": "To‘lovlar",
+        "description": "To‘lovlarni qabul qiling, hisob yuboring va moslashtiring — onlayn yoki registraturada.",
+        "features": [
+          "Karta va havola orqali to‘lov",
+          "Hisob va kvitansiyalar",
+          "Moslashtirish"
+        ]
+      },
+      "scheduling": {
+        "title": "Rejalashtirish",
+        "description": "Jamoa, xonalar va bandlik bilan mos keladigan onlayn yozilish.",
+        "features": [
+          "Real vaqt slotlari",
+          "Eslatmalar",
+          "Kalendar sinxi"
+        ]
+      },
+      "records": {
+        "title": "Yozuvlar",
+        "description": "Bemorning yagona taymlayni — fayllar, qaydlar, retseptlar va natijalar — rollar bilan himoyalangan.",
+        "features": [
+          "Xavfsiz saqlash",
+          "Tez kirish",
+          "Ruxsatli ulashish"
+        ]
+      },
+      "analytics": {
+        "title": "Analitika",
+        "description": "Nimalar bo‘layotganini biling: yuklama, kutish vaqti, daromad va operatsion trendlar.",
+        "features": [
+          "Jonli ko‘rsatkichlar",
+          "Hisobotlar",
+          "Insights"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "Muassasa avtomatlashtirish",
+    "title": "Xodim qo‘shmasdan muassasangizingizni silliqroq ishlating",
+    "description": "Docito rejalashtirish, yozuvlar, laboratoriya, tasvirlash, dorixonalar va to‘lovlarni bog‘laydi, ishlar bosqichlar o‘rtasida avtomatik siljiydi. Kamroq admin-tartibsizlik. Ko‘proq bashoratli parvarish.",
+    "flow": {
+      "intake": {
+        "title": "Qabul, avtomatik",
+        "description": "Tashrifdan oldin formalar, rozilik va simptomlarni to‘plang — qog‘oz quvish yo‘q."
+      },
+      "scheduling": {
+        "title": "Bandlik to‘liq bo‘lsin",
+        "description": "Real vaqt bandlik, eslatmalar va aqlli qayta rejalashtirish no-showlarni kamaytiradi."
+      },
+      "records": {
+        "title": "Yozuvlar o‘zi yangilanadi",
+        "description": "Qaydlar, hujjatlar va tashrif tarixi bitta taymlaynda — strukturali va qidiriladigan."
+      },
+      "labs": {
+        "title": "Laboratoriyalar to‘g‘ri yo‘naltiriladi",
+        "description": "Test buyurtma qiling, kerakli laboratoriyaga yuboring va natijani bemor yozuviga qaytaring."
+      },
+      "imaging": {
+        "title": "Tasvirlash ishqalanishsiz",
+        "description": "MRT/KT/rentgen/UZI buyurtmalari, yozilish va hisobotlarni end-to-end muvofiqlashtiring."
+      },
+      "billing": {
+        "title": "Billing va to‘lovlar bog‘langan",
+        "description": "Hisoblar, kvitansiyalar va to‘lov havolalari — uchrashuvlar va xizmatlar bilan sinxron."
+      },
+      "reminders": {
+        "title": "Aqlli eslatmalar va follow-up",
+        "description": "SMS/email eslatmalar, tashrifdan keyingi ko‘rsatmalar va keyingi qadamlar."
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "Maxfiylik birinchi o‘rinda",
+        "description": "Rolga asoslangan kirish va xavfsiz ulashish — faqat kerakli odamlar ko‘radi."
+      },
+      "tasks": {
+        "title": "Vazifalar o‘zi siljiydi",
+        "description": "Registratura, klinisistlar, laboratoriya va dorixona o‘rtasida topshirish — qo‘lda kuzatishsiz."
+      }
     },
     "cta": {
-      "primary": "14 kunlik bepul sinovni boshlash",
-      "secondary": "Hozir yordam toping",
-      "note": "Demo yo‘q. Boshlash uchun karta kerak emas. Istalgan payt bekor qiling."
+      "primary": "14 kun bepul sinovni boshlash",
+      "secondary": "Ish oqimlarini ko‘rish"
     },
-    "ecosystem": {
-      "doctors": "Shifokorlar",
-      "clinics": "Klinikalar",
-      "labs": "Laboratoriyalar",
-      "imaging": "Diagnostika",
-      "pharmacies": "Dorixonalar",
-      "patients": "Bemorlar"
+    "note": "Demo yo‘q. Docito'dan darhol foydalanishni boshlang — mos kelsa, sinovdan so‘ng obuna bo‘ling."
+  },
+  "ctoOps": {
+    "badge": "CTO va operatsion rahbarlar uchun",
+    "title": {
+      "prefix": "Bitta yozuv. Bitta ish oqimi.",
+      "highlight": "Nol topshirish."
     },
-    "a11y": {
-      "scrollToSearch": "Qidiruvga o‘tish"
+    "description": "Shifokorlar, adminlar, laboratoriyalar, dorixonalar va tasvirlash o‘rtasida parvarishni muvofiqlashtiring — fayl quvmasdan va ishni takrorlamasdan.",
+    "features": {
+      "roleAccess": {
+        "title": "Rolga asoslangan kirish",
+        "description": "Har bir qayd, fayl va harakat faqat kerakli odamlarga ko‘rinsin."
+      },
+      "auditSharing": {
+        "title": "Auditga mos ulashish",
+        "description": "Yangilanishlarni ishonch bilan ulashing — aniq egalik va izchillik bilan."
+      },
+      "secureMessaging": {
+        "title": "Xavfsiz jamoaviy xabarlar",
+        "description": "PHI'ni oddiy chatlarga chiqarib yubormasdan muvofiqlashtiring."
+      },
+      "realtimeHandoffs": {
+        "title": "Real vaqt topshirish",
+        "description": "Holat o‘zgarishlari bemor bilan birga yuradi — qo‘ng‘iroq, skrinshot va quvishsiz."
+      },
+      "timeline": {
+        "title": "Bitta bemor taymlayni",
+        "description": "Uchrashuvlar, qaydlar, tahlillar, tasvirlash va retseptlar — bitta joyda."
+      },
+      "integrations": {
+        "title": "Kerak bo‘lganda integratsiya",
+        "description": "Stackni bir kechada qayta qurmasdan tizim va ish oqimlarini ulang."
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "Parvarish jamoasi",
+        "description": "Avtomatik tayinlanadi va xabardor qilinadi"
+      },
+      "accessControls": {
+        "title": "Kirish nazorati",
+        "description": "Rollar, ruxsatlar va audit izlari"
+      }
     }
+  },
+  "insurance": {
+    "badge": "Sug‘urta integratsiyasi",
+    "title": "Butun dunyo sug‘urtachilari bilan ishlaydi",
+    "description": "Docito sug‘urta ish oqimlari bilan global integratsiya qiladi — tekshiruv, billing va da’volar platforma ichida bajariladi.",
+    "stepLabel": "{{step}}-qadam",
+    "steps": {
+      "selectProvider": {
+        "title": "Provayderni tanlash",
+        "description": "Bemor yozilishda sug‘urtasini tanlaydi — qamrov darhol tekshiriladi."
+      },
+      "verification": {
+        "title": "Zudlik bilan tekshiruv",
+        "description": "Eligibility, copay va deductible ma’lumotlari tashrifdan oldin ko‘rinadi."
+      },
+      "directBilling": {
+        "title": "To‘g‘ridan-to‘g‘ri billing",
+        "description": "Da’volar avtomatik yuboriladi — bemor faqat o‘z ulushini to‘laydi."
+      }
+    },
+    "benefits": [
+      "Eligibility’ni tezkor tekshirish",
+      "Da’volarni to‘g‘ridan-to‘g‘ri yuborish",
+      "Bemorlar uchun qog‘oz ishlar yo‘q",
+      "Pre-authorization qo‘llab-quvvatlash",
+      "Ko‘p to‘lovchi bilan moslik",
+      "Da’vo holati real vaqtda"
+    ]
+  },
+  "global": {
+    "badge": "Global platforma",
+    "title": "Bitta platforma. Har bir mamlakat. Har qanday til.",
+    "description": "Docito har qayerda ishlash uchun yaratilgan — jamoangiz yoki bemorlaringiz qayerda bo‘lishidan qat’i nazar.",
+    "features": {
+      "multiLanguage": {
+        "title": "Ko‘p til",
+        "description": "Docito'dan ingliz, arab, rus, o‘zbek va boshqa tillarda foydalaning — to‘liq RTL qo‘llab-quvvatlash bilan."
+      },
+      "multiCurrency": {
+        "title": "Ko‘p valyuta",
+        "description": "To‘lovlarni qabul qiling va narxlarni istalgan lokal valyutada ko‘rsating."
+      },
+      "anyTimezone": {
+        "title": "Har qanday vaqt mintaqasi",
+        "description": "Rejalashtirish, eslatmalar va bandlik har bir foydalanuvchining vaqt mintaqasiga avtomatik moslashadi."
+      },
+      "regionalCompliance": {
+        "title": "Mintaqaviy muvofiqlik",
+        "description": "Arxitektura har qanday yurisdiksiyada sog‘liqni saqlash talablarini qo‘llab-quvvatlash uchun yaratilgan."
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "Maxfiylik dizaynda",
+        "description": "Rolga asoslangan kirish va xavfsiz ulashish"
+      },
+      "securityProgram": {
+        "title": "Xavfsizlik dasturi",
+        "description": "Zamonaviy autentifikatsiya, audit izlari va monitoring"
+      },
+      "complianceReady": {
+        "title": "Muvofiqlikka tayyor arxitektura",
+        "description": "Regulyatsiyalangan tibbiy ish oqimlari uchun yaratilgan"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "Mobil ilova",
+    "title": {
+      "line1": "Sog‘liqni saqlash",
+      "highlight": "cho‘ntagingizda"
+    },
+    "description": "Sog‘lig‘ingizni yo‘lda boshqaring. Qabulga yoziling, yozuvlarni ko‘ring va parvarish jamoasi bilan aloqada bo‘ling — barchasi smartfoningizda.",
+    "features": {
+      "bookAppointments": "Qabulga yozilish",
+      "viewRecords": "Yozuvlarni ko‘rish",
+      "getReminders": "Eslatmalar",
+      "secureAccess": "Xavfsiz kirish"
+    },
+    "comingSoon": {
+      "title": "Tez orada",
+      "platforms": "iOS va Android",
+      "description": "Docito'ni mobil qurilmangizga olib kelish ustida ishlayapmiz. Ishga tushganda xabar olish uchun waitlistga qo‘shiling."
+    },
+    "store": {
+      "comingTo": "Tez orada",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "Xayrli tong!",
+      "upcoming": "Kutilayotgan",
+      "yourAppointment": "Qabulingiz",
+      "scheduleNow": "Hozir rejalashtirish",
+      "book": "Yozilish",
+      "records": "Yozuvlar",
+      "healthScore": "Sog‘liq balli"
+    }
+  },
+  "faq": {
+    "title": "Ko‘p so‘raladigan savollar",
+    "subtitle": "Docito haqida bilishingiz kerak bo‘lgan hamma narsa",
+    "items": {
+      "bookAppointment": {
+        "question": "Qabulga qanday yozilaman?",
+        "answer": "Ixtisoslik yoki manzil bo‘yicha shifokorni qidiring, bo‘sh vaqtlarni ko‘ring va darhol yoziling. Tasdiq email va SMS orqali darhol keladi."
+      },
+      "secureData": {
+        "question": "Mening sog‘liq ma’lumotlarim xavfsizmi?",
+        "answer": "Ha. Docito zamonaviy autentifikatsiya, uzatishda va saqlashda shifrlash hamda rolga asoslangan kirish nazoratidan foydalanadi."
+      },
+      "useInsurance": {
+        "question": "Sug‘urtamdan foydalansam bo‘ladimi?",
+        "answer": "Agar provayderingiz qo‘llasa, yozilishda sug‘urtani tanlaysiz. Qamrov tafsilotlari tashrifdan oldin ko‘rinadi va da’volar platforma ichida yuborilishi mumkin."
+      },
+      "doctorsJoin": {
+        "question": "Shifokorlar platformaga qanday qo‘shiladi?",
+        "answer": "Provayderlar profil va tashkilotni ro‘yxatdan o‘tkazadi, hujjatlarni tasdiqlaydi va jamoa onboard bo‘lgach yozilishlarni qabul qila boshlaydi."
+      },
+      "mobileApp": {
+        "question": "Mobil ilova bormi?",
+        "answer": "Docito mobil ilovasi iOS va Android uchun tez orada chiqadi. Ishga tushganda xabardor bo‘lish uchun waitlistga qo‘shiling."
+      },
+      "cancelReschedule": {
+        "question": "Bekor qilsam yoki ko‘chirsamchi?",
+        "answer": "Qabul sahifasidan bekor qilish yoki qayta rejalashtirish mumkin. Jamoa darhol xabar oladi va bandlik real vaqtda yangilanadi."
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "Hozir ishga tushmoqda",
+    "title": {
+      "line1": "Bir necha daqiqada boshlang.",
+      "highlight": "Parvarishni bog‘lang."
+    },
+    "description": "Hisob yarating va uchrashuvlar, yozuvlar, retseptlar va to‘lovlarni bitta bog‘langan tizimda yuriting — bemorlar va provayderlar uchun.",
+    "cta": {
+      "primary": "14 kun bepul sinovni boshlash",
+      "secondary": "Funksiyalarni ko‘rish"
+    },
+    "note": "14 kun bepul sinov • Karta talab qilinmaydi • Istalgan payt bekor qilish mumkin"
   }
 }
