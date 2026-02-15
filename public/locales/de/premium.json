@@ -1,33 +1,480 @@
 {
   "hero": {
-    "badge": "Ihre gesamte Versorgung – synchron",
+    "badge": "Gesundheitsnetzwerk",
     "title": {
-      "line1": "Weniger Verwaltung. Mehr Versorgung.",
-      "line2": "Eine Plattform für jeden Schritt im Gesundheitswesen."
+      "line1": "Ein Netzwerk, eine Patient:innen-Reise",
+      "line2": "Versorgung bleibt durchgängig verbunden"
     },
-    "description": "Docito verbindet Patient:innen, Anbieter, Labore, Bildgebung, Apotheken und Versicherungen—damit Termine, Akten, Rezepte, Ergebnisse und Zahlungen an einem Ort bleiben.",
-    "cards": {
-      "patients": { "title": "Für Patient:innen", "description": "Finden, buchen und Versorgung an einem Ort verfolgen" },
-      "clinics": { "title": "Für Kliniken", "description": "Terminplanung, Akten und Abrechnung vereint" },
-      "imaging": { "title": "Für Bildgebung", "description": "Aufträge, Befunde und Überweisungskoordination" },
-      "pharmacy": { "title": "Für Apotheken", "description": "E-Rezepte, Belieferung und Zustellung" },
-      "labs": { "title": "Für Labore", "description": "Testaufträge, Ergebnisse und digitale Zustellung" }
+    "subtitle": "Ärzt:innen, Kliniken, Labore, Bildgebungszentren und Apotheken—verbunden, damit Versorgung nicht zwischen Orten verloren geht.",
+    "cta": {
+      "primary": "14 Tage kostenlos starten",
+      "secondary": "Plattform entdecken"
+    },
+    "finePrint": "14 Tage gratis • Keine Kreditkarte erforderlich • Jederzeit kündbar"
+  },
+  "search": {
+    "badge": "Versorgung finden",
+    "title": "Anbieter an einem Ort suchen",
+    "subtitle": "Finde und buche Ärzt:innen, Kliniken, Labore, Bildgebung, Apotheken und Krankenhäuser—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+    "specialty": "Fachgebiet oder Anbieter",
+    "location": "Stadt oder Klinik",
+    "button": "Anbieter finden",
+    "voiceSearch": "Sprachsuche",
+    "recent": "Letzte Suchen",
+    "noRecent": "Noch keine letzten Suchen",
+    "trending": "Im Trend",
+    "trendingItems": [
+      "kardiologe in der nähe",
+      "zahnreinigung",
+      "kinderarzt",
+      "dermatologe",
+      "notfallpraxis",
+      "bluttest"
+    ],
+    "aiHint": "Tipp: Probiere „kardiologe in der nähe“ oder „MRT in Taschkent“ für schnellere Ergebnisse."
+  },
+  "providers": {
+    "networkBadge": "Gesundheitsnetzwerk",
+    "networkTitle": "Ein Netzwerk, eine Patient:innen-Reise",
+    "networkDescription": "Ärzt:innen, Kliniken, Labore, Bildgebungszentren und Apotheken—verbunden, damit Versorgung nicht zwischen Orten verloren geht.",
+    "networkNote": "Neu gestartet: Anbieterprofile erscheinen, sobald Teams onboarden.",
+    "findProviders": "Anbieter finden",
+    "roleLabels": {
+      "doctor": "Ärzt:innen",
+      "clinic": "Kliniken",
+      "lab": "Labore",
+      "pharmacy": "Apotheken",
+      "imaging": "Bildgebung",
+      "hospital": "Krankenhäuser"
+    },
+    "doctors": {
+      "title": "Ärzt:innen",
+      "description": "Finde und buche Ärzt:innen—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+      "cta": "Anbieter finden"
+    },
+    "clinics": {
+      "title": "Kliniken",
+      "description": "Finde und buche Kliniken—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+      "cta": "Anbieter finden"
+    },
+    "pharmacies": {
+      "title": "Apotheken",
+      "description": "Finde und buche Apotheken—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+      "cta": "Anbieter finden"
+    },
+    "labs": {
+      "title": "Labore",
+      "description": "Finde und buche Labore—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+      "cta": "Anbieter finden"
+    },
+    "imaging": {
+      "title": "Bildgebung",
+      "description": "Finde und buche Bildgebung—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+      "cta": "Anbieter finden"
+    },
+    "hospitals": {
+      "title": "Krankenhäuser",
+      "description": "Finde und buche Krankenhäuser—mit Profilen, Verfügbarkeit und klaren nächsten Schritten.",
+      "cta": "Anbieter finden"
+    }
+  },
+  "specialties": {
+    "title": "Medizinische Fachgebiete",
+    "subtitle": "Finde Spezialist:innen in allen medizinischen Disziplinen",
+    "viewAll": "Alle Fachgebiete ansehen",
+    "browseAria": "{{specialty}}-Anbieter ansehen",
+    "list": {
+      "cardiology": "Kardiologie",
+      "neurology": "Neurologie",
+      "ophthalmology": "Augenheilkunde",
+      "orthopedics": "Orthopädie",
+      "pediatrics": "Pädiatrie",
+      "dentistry": "Zahnmedizin",
+      "generalMedicine": "Allgemeinmedizin",
+      "gastroenterology": "Gastroenterologie",
+      "dermatology": "Dermatologie",
+      "endocrinology": "Endokrinologie",
+      "pathology": "Pathologie",
+      "pulmonology": "Pneumologie",
+      "ent": "HNO",
+      "rheumatology": "Rheumatologie",
+      "surgery": "Chirurgie",
+      "urology": "Urologie",
+      "psychiatry": "Psychiatrie",
+      "oncology": "Onkologie",
+      "nephrology": "Nephrologie",
+      "gynecology": "Gynäkologie",
+      "radiology": "Radiologie",
+      "allergyImmunology": "Allergologie & Immunologie"
+    }
+  },
+  "diagnostics": {
+    "badge": "Diagnostik & Apotheke",
+    "title": {
+      "prefix": "Halte die gesamte Versorgungsreise",
+      "highlight": "verbunden"
+    },
+    "description": "Bringe Labor-, Bildgebungs- und Apotheken-Updates in denselben Workflow wie Terminierung und Besuche — damit Patient:innen und Teams immer den neuesten Kontext haben.",
+    "services": {
+      "lab": {
+        "title": "Laboruntersuchungen",
+        "description": "Labore anfordern, Ergebnisse erhalten und alles automatisch an die Patient:innenakte binden.",
+        "features": [
+          "Aufträge & Ergebnisse sind mit der Akte verknüpft",
+          "Digitale Ergebniszustellung",
+          "Bereit für Abrechnungs-Workflows"
+        ],
+        "browse": "Labore durchsuchen",
+        "join": "Als Labor beitreten"
+      },
+      "imaging": {
+        "title": "Medizinische Bildgebung",
+        "description": "Bildgebungsaufträge und Berichte koordinieren, damit Überweiser:innen und Patient:innen abgestimmt bleiben — ohne zusätzliche Tools.",
+        "features": [
+          "Berichte an den Besuch angehängt",
+          "Einfaches Teilen mit Überweiser:innen",
+          "Status-Updates entlang des Versorgungswegs"
+        ],
+        "browse": "Bildgebung durchsuchen",
+        "join": "Als Bildgebungszentrum beitreten"
+      },
+      "pharmacy": {
+        "title": "Apothekendienste",
+        "description": "Verschreiben, beliefern und nachfassen — Medikamentenupdates sind im gesamten Behandlungsteam sichtbar.",
+        "features": [
+          "eRezepte und Wiederholungen",
+          "Verfügbarkeit + Alternativen",
+          "Abholung oder Lieferkoordination"
+        ],
+        "browse": "Apotheken durchsuchen",
+        "join": "Als Apotheke beitreten"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "Eine Plattform. Jeder Workflow.",
+    "title": "Eine Plattform. Jeder Workflow.",
+    "subtitle": "Von der ersten Suche bis zur Nachsorge—Docito hält Versorgung und Betrieb verbunden.",
+    "cta": {
+      "primary": "Plattform entdecken",
+      "secondary": "So funktioniert’s"
+    },
+    "learnMore": "Mehr erfahren",
+    "items": {
+      "smartScheduling": {
+        "title": "Intelligente Terminierung",
+        "description": "Online-Buchung, Erinnerungen und Verfügbarkeit in Echtzeit."
+      },
+      "digitalPrescriptions": {
+        "title": "Digitale Rezepte",
+        "description": "Rezepte an Apotheken senden und alles in der Patient:innen-Timeline behalten."
+      },
+      "secureRecords": {
+        "title": "Sichere Akten",
+        "description": "Dokumente speichern und Dateien schnell und sicher mit den richtigen Personen teilen."
+      },
+      "clinicalNotes": {
+        "title": "Klinische Notizen",
+        "description": "Vorlagen und strukturierte Notizen für konsistente Dokumentation."
+      },
+      "teamCoordination": {
+        "title": "Teamkoordination",
+        "description": "Sichere Nachrichten und Übergaben zwischen Personal, Anbieter:innen und Einrichtungen."
+      },
+      "insuranceCoverage": {
+        "title": "Versicherung & Abdeckung",
+        "description": "Integrierte Abdeckungsprüfung und Abrechnungsunterstützung reduzieren Hin und Her."
+      },
+      "payments": {
+        "title": "Zahlungen",
+        "description": "Zahlungen einziehen, Rechnungen senden und Umsätze an einem Ort verfolgen."
+      },
+      "automations": {
+        "title": "Automatisierungen",
+        "description": "Erinnerungen, Updates und Follow-ups reduzieren No-Shows und manuelle Arbeit."
+      },
+      "telemedicine": {
+        "title": "Telemedizin",
+        "description": "Remote-Besuche anbieten, wenn vor Ort nicht möglich."
+      }
+    }
+  },
+  "workflows": {
+    "badge": "Versorgung in einem System",
+    "title": "Die Kern-Workflows, die das Gesundheitswesen bewegen",
+    "description": "Terminierung, Akten, Zahlungen und Insights—verbunden entlang der gesamten Versorgungsreise.",
+    "items": {
+      "payments": {
+        "title": "Zahlungen",
+        "description": "Zahlungen einziehen, Rechnungen senden und abstimmen—online oder an der Rezeption.",
+        "features": [
+          "Karten- & Link-Zahlungen",
+          "Rechnungen & Belege",
+          "Abstimmung"
+        ]
+      },
+      "scheduling": {
+        "title": "Terminierung",
+        "description": "Online-Buchung, abgestimmt auf Team, Räume und Verfügbarkeit.",
+        "features": [
+          "Slots in Echtzeit",
+          "Erinnerungen",
+          "Kalender-Sync"
+        ]
+      },
+      "records": {
+        "title": "Akten",
+        "description": "Eine einheitliche Patient:innen-Timeline—Dateien, Notizen, Rezepte und Ergebnisse—rollenbasiert gesichert.",
+        "features": [
+          "Sichere Speicherung",
+          "Schneller Zugriff",
+          "Berechtigtes Teilen"
+        ]
+      },
+      "analytics": {
+        "title": "Analytik",
+        "description": "Wissen, was passiert: Auslastung, Wartezeiten, Umsatz und operative Trends.",
+        "features": [
+          "Live-Metriken",
+          "Reports",
+          "Insights"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "Einrichtungsautomatisierung",
+    "title": "Lass deine Einrichtung reibungsloser laufen—ohne mehr Personal",
+    "description": "Docito verbindet Terminierung, Akten, Labore, Bildgebung, Apotheken und Zahlungen, sodass Arbeit automatisch zwischen Schritten weiterläuft. Weniger Admin-Chaos. Planbarere Versorgung.",
+    "flow": {
+      "intake": {
+        "title": "Aufnahme, automatisch",
+        "description": "Formulare, Einwilligungen und Symptome vor dem Besuch sammeln—ohne Papier hinterherzulaufen."
+      },
+      "scheduling": {
+        "title": "Terminierung, die voll bleibt",
+        "description": "Echtzeit-Verfügbarkeit, Erinnerungen und intelligentes Umplanen reduzieren No-Shows."
+      },
+      "records": {
+        "title": "Akten, die sich selbst aktualisieren",
+        "description": "Notizen, Dokumente und Besuchshistorie in einer Timeline—strukturiert und durchsuchbar."
+      },
+      "labs": {
+        "title": "Labore richtig routen",
+        "description": "Tests anordnen, ans richtige Labor senden und Ergebnisse in die Patient:innenakte zurückspielen."
+      },
+      "imaging": {
+        "title": "Bildgebung ohne Reibung",
+        "description": "MRT/CT/Röntgen/Ultraschall-Aufträge, Termine und Berichte end-to-end koordinieren."
+      },
+      "billing": {
+        "title": "Abrechnung & Zahlungen verbunden",
+        "description": "Rechnungen, Belege und Zahlungslinks—synchron mit Terminen und Leistungen."
+      },
+      "reminders": {
+        "title": "Intelligente Erinnerungen & Follow-ups",
+        "description": "Automatisierte SMS/Email-Erinnerungen, Nachsorgehinweise und nächste Schritte."
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "Privacy-first Workflows",
+        "description": "Rollenbasierter Zugriff und sicheres Teilen—nur die richtigen Personen sehen die richtigen Daten."
+      },
+      "tasks": {
+        "title": "Aufgaben, die sich selbst bewegen",
+        "description": "Übergaben zwischen Rezeption, Klinik, Labor und Apotheke—ohne manuelles Tracking."
+      }
     },
     "cta": {
-      "primary": "Kostenlose 14-Tage-Testphase starten",
-      "secondary": "Jetzt Versorgung finden",
-      "note": "Keine Demo. Keine Kreditkarte zum Start. Jederzeit kündbar."
+      "primary": "14 Tage kostenlos starten",
+      "secondary": "Workflows ansehen"
     },
-    "ecosystem": {
-      "doctors": "Ärzt:innen",
-      "clinics": "Kliniken",
-      "labs": "Labore",
-      "imaging": "Bildgebung",
-      "pharmacies": "Apotheken",
-      "patients": "Patient:innen"
+    "note": "Kein Demo. Starte sofort mit Docito—abonniere nach der Testphase, wenn es passt."
+  },
+  "ctoOps": {
+    "badge": "Für CTOs & Operations",
+    "title": {
+      "prefix": "Eine Akte. Ein Workflow.",
+      "highlight": "Keine Übergaben."
     },
-    "a11y": {
-      "scrollToSearch": "Zum Suchen scrollen"
+    "description": "Koordiniere Versorgung über Ärzt:innen, Admins, Labore, Apotheken und Bildgebung — ohne Dateien zu jagen oder Arbeit zu duplizieren.",
+    "features": {
+      "roleAccess": {
+        "title": "Rollenbasierter Zugriff",
+        "description": "Jede Notiz, Datei und Aktion ist nur für die richtigen Personen sichtbar."
+      },
+      "auditSharing": {
+        "title": "Audit-freundliches Teilen",
+        "description": "Updates sicher teilen — mit klarer Verantwortung und Nachverfolgbarkeit."
+      },
+      "secureMessaging": {
+        "title": "Sichere Teamnachrichten",
+        "description": "Versorgung koordinieren, ohne PHI in Consumer-Chats zu leaken."
+      },
+      "realtimeHandoffs": {
+        "title": "Übergaben in Echtzeit",
+        "description": "Statusänderungen bewegen sich mit dem Patienten — keine Anrufe, keine Screenshots."
+      },
+      "timeline": {
+        "title": "Eine Patient:innen-Timeline",
+        "description": "Termine, Notizen, Labore, Bildgebung und Rezepte an einem Ort."
+      },
+      "integrations": {
+        "title": "Integrationen nach Bedarf",
+        "description": "Systeme und Workflows verbinden, ohne den Stack über Nacht neu zu bauen."
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "Behandlungsteam",
+        "description": "Automatisch zugewiesen + benachrichtigt"
+      },
+      "accessControls": {
+        "title": "Zugriffskontrollen",
+        "description": "Rollen, Berechtigungen und Audit-Trails"
+      }
     }
+  },
+  "insurance": {
+    "badge": "Versicherungsintegration",
+    "title": "Funktioniert mit Versicherern weltweit",
+    "description": "Docito integriert Versicherungs-Workflows global — damit Prüfung, Abrechnung und Claims in der Plattform stattfinden.",
+    "stepLabel": "Schritt {{step}}",
+    "steps": {
+      "selectProvider": {
+        "title": "Anbieter auswählen",
+        "description": "Patient:innen wählen ihre Versicherung bei der Buchung — Abdeckung wird sofort geprüft."
+      },
+      "verification": {
+        "title": "Sofortige Prüfung",
+        "description": "Eligibility-, Zuzahlungs- und Selbstbehalt-Details erscheinen vor dem Besuch."
+      },
+      "directBilling": {
+        "title": "Direkte Abrechnung",
+        "description": "Claims werden automatisch eingereicht — Patient:innen zahlen nur ihren Anteil."
+      }
+    },
+    "benefits": [
+      "Sofortige Eligibility-Prüfung",
+      "Direkte Claim-Einreichung",
+      "Kein Papierkram für Patient:innen",
+      "Unterstützung bei Vorabgenehmigungen",
+      "Kompatibel mit mehreren Zahlern",
+      "Claim-Status in Echtzeit"
+    ]
+  },
+  "global": {
+    "badge": "Globale Plattform",
+    "title": "Eine Plattform. Jedes Land. Jede Sprache.",
+    "description": "Docito ist dafür gebaut, überall zu funktionieren — egal, wo Teams oder Patient:innen sind.",
+    "features": {
+      "multiLanguage": {
+        "title": "Mehrsprachig",
+        "description": "Nutze Docito auf Englisch, Arabisch, Russisch, Usbekisch und mehr — mit vollständiger RTL-Unterstützung."
+      },
+      "multiCurrency": {
+        "title": "Mehrwährungsfähig",
+        "description": "Zahlungen akzeptieren und Preise in jeder lokalen Währung anzeigen."
+      },
+      "anyTimezone": {
+        "title": "Jede Zeitzone",
+        "description": "Terminierung, Erinnerungen und Verfügbarkeit passen sich automatisch an die Zeitzone des Nutzers an."
+      },
+      "regionalCompliance": {
+        "title": "Regionale Compliance",
+        "description": "Architektur, die Gesundheitsregeln in jeder Jurisdiktion unterstützen kann."
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "Privacy-first by design",
+        "description": "Rollenbasierter Zugriff und sicheres Teilen"
+      },
+      "securityProgram": {
+        "title": "Security-Programm",
+        "description": "Moderne Auth, Audit-Trails und Monitoring"
+      },
+      "complianceReady": {
+        "title": "Compliance-ready Architektur",
+        "description": "Für regulierte Healthcare-Workflows entwickelt"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "Mobile App",
+    "title": {
+      "line1": "Gesundheit",
+      "highlight": "in deiner Tasche"
+    },
+    "description": "Gesundheit unterwegs managen. Termine buchen, Akten ansehen und mit dem Behandlungsteam verbunden bleiben — alles vom Smartphone.",
+    "features": {
+      "bookAppointments": "Termine buchen",
+      "viewRecords": "Akten ansehen",
+      "getReminders": "Erinnerungen erhalten",
+      "secureAccess": "Sicherer Zugriff"
+    },
+    "comingSoon": {
+      "title": "Bald verfügbar",
+      "platforms": "iOS & Android",
+      "description": "Wir arbeiten daran, Docito auf dein Smartphone zu bringen. Tritt der Warteliste bei, um zum Launch benachrichtigt zu werden."
+    },
+    "store": {
+      "comingTo": "Kommt in",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "Guten Morgen!",
+      "upcoming": "Anstehend",
+      "yourAppointment": "Dein Termin",
+      "scheduleNow": "Jetzt planen",
+      "book": "Buchen",
+      "records": "Akten",
+      "healthScore": "Health Score"
+    }
+  },
+  "faq": {
+    "title": "Häufige Fragen",
+    "subtitle": "Alles, was du über Docito wissen musst",
+    "items": {
+      "bookAppointment": {
+        "question": "Wie buche ich einen Termin?",
+        "answer": "Suche einfach nach Ärzt:innen nach Fachgebiet oder Ort, sieh freie Zeiten und buche sofort. Du erhältst umgehend eine Bestätigung per E-Mail und SMS."
+      },
+      "secureData": {
+        "question": "Sind meine Gesundheitsdaten sicher?",
+        "answer": "Ja. Docito nutzt moderne Authentifizierung, Verschlüsselung beim Transport und in Ruhe sowie rollenbasierte Zugriffskontrollen."
+      },
+      "useInsurance": {
+        "question": "Kann ich meine Versicherung nutzen?",
+        "answer": "Wenn dein Anbieter es unterstützt, wähle deine Versicherung bei der Buchung. Details zur Abdeckung erscheinen vor dem Besuch und Claims können in der Plattform verarbeitet werden."
+      },
+      "doctorsJoin": {
+        "question": "Wie treten Ärzt:innen der Plattform bei?",
+        "answer": "Anbieter erstellen ein Profil, verifizieren ihre Organisation und beginnen Buchungen zu akzeptieren, sobald ihr Team onboardet."
+      },
+      "mobileApp": {
+        "question": "Gibt es eine Mobile App?",
+        "answer": "Eine Docito Mobile App für iOS und Android kommt bald. Tritt der Warteliste bei, um beim Launch benachrichtigt zu werden."
+      },
+      "cancelReschedule": {
+        "question": "Was, wenn ich absagen oder umplanen muss?",
+        "answer": "Du kannst aus den Termindetails absagen oder umplanen. Das Team wird informiert und die Verfügbarkeit aktualisiert sich in Echtzeit."
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "Jetzt live",
+    "title": {
+      "line1": "Starte in Minuten.",
+      "highlight": "Verbinde deine Versorgung."
+    },
+    "description": "Erstelle ein Konto und steuere Termine, Akten, Rezepte und Zahlungen in einem verbundenen System—für Patient:innen und Anbieter.",
+    "cta": {
+      "primary": "14 Tage kostenlos starten",
+      "secondary": "Funktionen entdecken"
+    },
+    "note": "14 Tage gratis • Keine Kreditkarte erforderlich • Jederzeit kündbar"
   }
 }
