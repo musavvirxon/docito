@@ -1,34 +1,480 @@
-
 {
   "hero": {
-    "badge": "Todo o seu cuidado, em sincronia",
+    "badge": "Rede de Saúde",
     "title": {
-      "line1": "Menos burocracia. Mais cuidado.",
-      "line2": "Uma plataforma para cada etapa da saúde."
+      "line1": "Uma rede, uma jornada do paciente",
+      "line2": "O cuidado fica conectado de ponta a ponta"
     },
-    "description": "Docito conecta pacientes, profissionais, laboratórios, imagem, farmácias e seguros—para que agendamentos, prontuários, prescrições, resultados e pagamentos fiquem em um só lugar.",
-    "cards": {
-      "patients": { "title": "Para pacientes", "description": "Encontre, agende e acompanhe o cuidado em um só lugar" },
-      "clinics": { "title": "Para clínicas", "description": "Agenda, prontuários e faturamento unificados" },
-      "imaging": { "title": "Para imagem", "description": "Pedidos, laudos e coordenação de encaminhamentos" },
-      "pharmacy": { "title": "Para farmácia", "description": "Receitas eletrônicas, dispensação e entrega" },
-      "labs": { "title": "Para laboratórios", "description": "Solicitação de exames, resultados e entrega digital" }
+    "subtitle": "Médicos, clínicas, laboratórios, centros de imagem e farmácias—conectados para que o cuidado não se perca entre lugares.",
+    "cta": {
+      "primary": "Começar teste grátis de 14 dias",
+      "secondary": "Explorar plataforma"
+    },
+    "finePrint": "Teste grátis de 14 dias • Sem cartão • Cancele a qualquer momento"
+  },
+  "search": {
+    "badge": "Encontrar cuidado",
+    "title": "Pesquise provedores em um só lugar",
+    "subtitle": "Encontre e agende médicos, clínicas, laboratórios, imagem, farmácias e hospitais—com perfis, disponibilidade e próximos passos claros.",
+    "specialty": "Especialidade ou provedor",
+    "location": "Cidade ou clínica",
+    "button": "Encontrar provedores",
+    "voiceSearch": "Busca por voz",
+    "recent": "Buscas recentes",
+    "noRecent": "Ainda não há buscas recentes",
+    "trending": "Em alta",
+    "trendingItems": [
+      "cardiologista perto de mim",
+      "limpeza dental",
+      "pediatra",
+      "dermatologista",
+      "atendimento de urgência",
+      "exame de sangue"
+    ],
+    "aiHint": "Dica: tente “cardiologista perto de mim” ou “ressonância em Tashkent” para resultados mais rápidos."
+  },
+  "providers": {
+    "networkBadge": "Rede de Saúde",
+    "networkTitle": "Uma rede, uma jornada do paciente",
+    "networkDescription": "Médicos, clínicas, laboratórios, centros de imagem e farmácias—conectados para que o cuidado não se perca entre lugares.",
+    "networkNote": "Lançamento recente: perfis de provedores aparecem à medida que as equipes entram.",
+    "findProviders": "Encontrar provedores",
+    "roleLabels": {
+      "doctor": "Médicos",
+      "clinic": "Clínicas",
+      "lab": "Laboratórios",
+      "pharmacy": "Farmácias",
+      "imaging": "Imagem",
+      "hospital": "Hospitais"
+    },
+    "doctors": {
+      "title": "Médicos",
+      "description": "Encontre e agende médicos—com perfis, disponibilidade e próximos passos claros.",
+      "cta": "Encontrar provedores"
+    },
+    "clinics": {
+      "title": "Clínicas",
+      "description": "Encontre e agende clínicas—com perfis, disponibilidade e próximos passos claros.",
+      "cta": "Encontrar provedores"
+    },
+    "pharmacies": {
+      "title": "Farmácias",
+      "description": "Encontre e agende farmácias—com perfis, disponibilidade e próximos passos claros.",
+      "cta": "Encontrar provedores"
+    },
+    "labs": {
+      "title": "Laboratórios",
+      "description": "Encontre e agende laboratórios—com perfis, disponibilidade e próximos passos claros.",
+      "cta": "Encontrar provedores"
+    },
+    "imaging": {
+      "title": "Imagem",
+      "description": "Encontre e agende imagem—com perfis, disponibilidade e próximos passos claros.",
+      "cta": "Encontrar provedores"
+    },
+    "hospitals": {
+      "title": "Hospitais",
+      "description": "Encontre e agende hospitais—com perfis, disponibilidade e próximos passos claros.",
+      "cta": "Encontrar provedores"
+    }
+  },
+  "specialties": {
+    "title": "Especialidades médicas",
+    "subtitle": "Encontre especialistas em todas as disciplinas médicas",
+    "viewAll": "Ver todas as especialidades",
+    "browseAria": "Ver {{specialty}}",
+    "list": {
+      "cardiology": "Cardiologia",
+      "neurology": "Neurologia",
+      "ophthalmology": "Oftalmologia",
+      "orthopedics": "Ortopedia",
+      "pediatrics": "Pediatria",
+      "dentistry": "Odontologia",
+      "generalMedicine": "Clínica geral",
+      "gastroenterology": "Gastroenterologia",
+      "dermatology": "Dermatologia",
+      "endocrinology": "Endocrinologia",
+      "pathology": "Patologia",
+      "pulmonology": "Pneumologia",
+      "ent": "Otorrinolaringologia",
+      "rheumatology": "Reumatologia",
+      "surgery": "Cirurgia",
+      "urology": "Urologia",
+      "psychiatry": "Psiquiatria",
+      "oncology": "Oncologia",
+      "nephrology": "Nefrologia",
+      "gynecology": "Ginecologia",
+      "radiology": "Radiologia",
+      "allergyImmunology": "Alergia e Imunologia"
+    }
+  },
+  "diagnostics": {
+    "badge": "Diagnósticos e farmácia",
+    "title": {
+      "prefix": "Mantenha toda a jornada de cuidado",
+      "highlight": "conectada"
+    },
+    "description": "Traga atualizações de laboratórios, imagem e farmácia para o mesmo fluxo de agendamento e visitas — para que pacientes e equipes tenham sempre o contexto mais recente.",
+    "services": {
+      "lab": {
+        "title": "Exames laboratoriais",
+        "description": "Solicite exames, receba resultados e mantenha tudo vinculado ao prontuário — automaticamente.",
+        "features": [
+          "Pedidos e resultados vinculados ao prontuário",
+          "Entrega digital de resultados",
+          "Pronto para fluxos de cobrança"
+        ],
+        "browse": "Ver laboratórios",
+        "join": "Entrar como laboratório"
+      },
+      "imaging": {
+        "title": "Imagem médica",
+        "description": "Coordene pedidos e laudos de imagem para manter solicitantes e pacientes alinhados — sem ferramentas extras.",
+        "features": [
+          "Laudos anexados à consulta",
+          "Compartilhamento fácil com solicitantes",
+          "Atualizações de status ao longo do cuidado"
+        ],
+        "browse": "Ver imagem",
+        "join": "Entrar como centro de imagem"
+      },
+      "pharmacy": {
+        "title": "Serviços de farmácia",
+        "description": "Prescreva, dispense e acompanhe — com atualizações de medicação visíveis para a equipe de cuidado.",
+        "features": [
+          "Receitas eletrônicas e renovações",
+          "Disponibilidade + substituições",
+          "Coordenação de retirada ou entrega"
+        ],
+        "browse": "Ver farmácias",
+        "join": "Entrar como farmácia"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "Uma plataforma. Todo fluxo.",
+    "title": "Uma plataforma. Todo fluxo.",
+    "subtitle": "Da primeira busca ao acompanhamento—Docito mantém cuidado e operação conectados.",
+    "cta": {
+      "primary": "Explorar plataforma",
+      "secondary": "Ver como funciona"
+    },
+    "learnMore": "Saiba mais",
+    "items": {
+      "smartScheduling": {
+        "title": "Agendamento inteligente",
+        "description": "Reservas online, lembretes e disponibilidade em tempo real."
+      },
+      "digitalPrescriptions": {
+        "title": "Receitas digitais",
+        "description": "Envie receitas para farmácias e mantenha tudo na linha do tempo do paciente."
+      },
+      "secureRecords": {
+        "title": "Registros seguros",
+        "description": "Armazene documentos e compartilhe arquivos com as pessoas certas—rápido e seguro."
+      },
+      "clinicalNotes": {
+        "title": "Notas clínicas",
+        "description": "Modelos e notas estruturadas para documentar o cuidado com consistência."
+      },
+      "teamCoordination": {
+        "title": "Coordenação da equipe",
+        "description": "Mensagens seguras e repasses entre equipe, provedores e unidades."
+      },
+      "insuranceCoverage": {
+        "title": "Seguro e cobertura",
+        "description": "Checagens de cobertura e suporte de cobrança integrados reduzem o vai-e-volta."
+      },
+      "payments": {
+        "title": "Pagamentos",
+        "description": "Cobre pagamentos, envie faturas e acompanhe receita em um só lugar."
+      },
+      "automations": {
+        "title": "Automações",
+        "description": "Lembretes, atualizações e follow-ups reduzem faltas e trabalho manual."
+      },
+      "telemedicine": {
+        "title": "Telemedicina",
+        "description": "Ofereça consultas remotas quando presencial não for possível."
+      }
+    }
+  },
+  "workflows": {
+    "badge": "Gerencie o cuidado em um sistema",
+    "title": "Os fluxos essenciais que mantêm a saúde em movimento",
+    "description": "Agendamento, registros, pagamentos e insights—conectados em toda a jornada de cuidado.",
+    "items": {
+      "payments": {
+        "title": "Pagamentos",
+        "description": "Cobre pagamentos, envie faturas e concilie—online ou na recepção.",
+        "features": [
+          "Pagamentos por cartão e link",
+          "Faturas e recibos",
+          "Conciliação"
+        ]
+      },
+      "scheduling": {
+        "title": "Agendamento",
+        "description": "Reserva online alinhada com sua equipe, salas e disponibilidade.",
+        "features": [
+          "Horários em tempo real",
+          "Lembretes",
+          "Sincronização de calendário"
+        ]
+      },
+      "records": {
+        "title": "Registros",
+        "description": "Uma linha do tempo unificada do paciente—arquivos, notas, receitas e resultados—segura por funções.",
+        "features": [
+          "Armazenamento seguro",
+          "Acesso rápido",
+          "Compartilhamento com permissões"
+        ]
+      },
+      "analytics": {
+        "title": "Análises",
+        "description": "Saiba o que acontece: utilização, tempo de espera, receita e tendências operacionais.",
+        "features": [
+          "Métricas ao vivo",
+          "Relatórios",
+          "Insights"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "Automação da unidade",
+    "title": "Faça sua unidade funcionar melhor—sem aumentar equipe",
+    "description": "Docito conecta agendamento, registros, laboratórios, imagem, farmácias e pagamentos para que o trabalho avance automaticamente entre etapas. Menos caos administrativo. Cuidado mais previsível.",
+    "flow": {
+      "intake": {
+        "title": "Triagem automática",
+        "description": "Colete formulários, consentimentos e sintomas antes da consulta—sem correr atrás de papel."
+      },
+      "scheduling": {
+        "title": "Agenda sempre cheia",
+        "description": "Disponibilidade em tempo real, lembretes e remarcação inteligente reduzem faltas."
+      },
+      "records": {
+        "title": "Registros que se atualizam sozinhos",
+        "description": "Notas, documentos e histórico em uma linha do tempo—estruturada e pesquisável."
+      },
+      "labs": {
+        "title": "Encaminhamento correto de exames",
+        "description": "Solicite testes, envie ao laboratório certo e devolva resultados ao prontuário."
+      },
+      "imaging": {
+        "title": "Imagem sem atrito",
+        "description": "Coordene pedidos, agendamentos e laudos de RM/TC/raio X/ultrassom de ponta a ponta."
+      },
+      "billing": {
+        "title": "Cobrança e pagamentos conectados",
+        "description": "Faturas, recibos e links de pagamento—sincronizados com consultas e serviços."
+      },
+      "reminders": {
+        "title": "Lembretes e follow-ups inteligentes",
+        "description": "SMS/email automáticos, instruções pós-consulta e orientações de próximos passos."
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "Fluxos com privacidade em primeiro lugar",
+        "description": "Acesso por funções e compartilhamento seguro—somente as pessoas certas veem os dados certos."
+      },
+      "tasks": {
+        "title": "Tarefas que se movem sozinhas",
+        "description": "Repasses entre recepção, clínicos, laboratório e farmácia—sem rastreamento manual."
+      }
     },
     "cta": {
       "primary": "Começar teste grátis de 14 dias",
-      "secondary": "Encontrar cuidado agora",
-      "note": "Sem demo. Sem cartão para começar. Cancele a qualquer momento."
+      "secondary": "Ver fluxos"
     },
-    "ecosystem": {
-      "doctors": "Médicos",
-      "clinics": "Clínicas",
-      "labs": "Laboratórios",
-      "imaging": "Imagem",
-      "pharmacies": "Farmácias",
-      "patients": "Pacientes"
+    "note": "Sem demo. Comece a usar Docito agora—e assine após o teste se fizer sentido."
+  },
+  "ctoOps": {
+    "badge": "Para CTOs e Operações",
+    "title": {
+      "prefix": "Um prontuário. Um fluxo.",
+      "highlight": "Zero repasses."
     },
-    "a11y": {
-      "scrollToSearch": "Ir para a busca"
+    "description": "Coordene o cuidado entre médicos, admins, laboratórios, farmácias e imagem — sem correr atrás de arquivos ou duplicar trabalho.",
+    "features": {
+      "roleAccess": {
+        "title": "Acesso por funções",
+        "description": "Mantenha cada nota, arquivo e ação visível apenas para as pessoas certas."
+      },
+      "auditSharing": {
+        "title": "Compartilhamento amigável a auditoria",
+        "description": "Compartilhe atualizações com confiança — com propriedade clara e rastreabilidade."
+      },
+      "secureMessaging": {
+        "title": "Mensagens seguras da equipe",
+        "description": "Coordene o cuidado sem vazar PHI em apps de chat comuns."
+      },
+      "realtimeHandoffs": {
+        "title": "Repasses em tempo real",
+        "description": "Mudanças de status acompanham o paciente — sem ligações, sem capturas, sem perseguição."
+      },
+      "timeline": {
+        "title": "Uma linha do tempo do paciente",
+        "description": "Consultas, notas, exames, imagem e receitas em um só lugar."
+      },
+      "integrations": {
+        "title": "Integrações quando precisar",
+        "description": "Conecte sistemas e fluxos sem reconstruir seu stack da noite para o dia."
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "Equipe de cuidado",
+        "description": "Atribuída + notificada automaticamente"
+      },
+      "accessControls": {
+        "title": "Controles de acesso",
+        "description": "Funções, permissões e trilhas de auditoria"
+      }
     }
+  },
+  "insurance": {
+    "badge": "Integração com seguros",
+    "title": "Funciona com seguradoras no mundo todo",
+    "description": "Docito integra fluxos de seguro globalmente — para que verificação, cobrança e sinistros aconteçam dentro da plataforma.",
+    "stepLabel": "Etapa {{step}}",
+    "steps": {
+      "selectProvider": {
+        "title": "Selecionar provedor",
+        "description": "O paciente seleciona o seguro durante o agendamento — a cobertura é verificada na hora."
+      },
+      "verification": {
+        "title": "Verificação instantânea",
+        "description": "Elegibilidade, coparticipação e franquia aparecem antes da consulta."
+      },
+      "directBilling": {
+        "title": "Cobrança direta",
+        "description": "Sinistros são enviados automaticamente — o paciente paga apenas sua parte."
+      }
+    },
+    "benefits": [
+      "Checagens instantâneas de elegibilidade",
+      "Envio direto de sinistros",
+      "Sem papelada para pacientes",
+      "Suporte a pré-autorização",
+      "Compatibilidade com múltiplos pagadores",
+      "Status do sinistro em tempo real"
+    ]
+  },
+  "global": {
+    "badge": "Plataforma global",
+    "title": "Uma plataforma. Qualquer país. Qualquer idioma.",
+    "description": "Docito foi feito para funcionar em qualquer lugar — não importa onde estejam sua equipe ou seus pacientes.",
+    "features": {
+      "multiLanguage": {
+        "title": "Multilíngue",
+        "description": "Use Docito em inglês, árabe, russo, uzbeque e mais — com suporte RTL completo."
+      },
+      "multiCurrency": {
+        "title": "Multimoeda",
+        "description": "Aceite pagamentos e exiba preços em qualquer moeda local."
+      },
+      "anyTimezone": {
+        "title": "Qualquer fuso",
+        "description": "Agendamento, lembretes e disponibilidade se adaptam automaticamente ao fuso do usuário."
+      },
+      "regionalCompliance": {
+        "title": "Conformidade regional",
+        "description": "Arquitetura projetada para suportar regulações de saúde em qualquer jurisdição."
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "Privacidade por design",
+        "description": "Acesso por funções e compartilhamento seguro"
+      },
+      "securityProgram": {
+        "title": "Programa de segurança",
+        "description": "Auth moderna, trilhas de auditoria e monitoramento"
+      },
+      "complianceReady": {
+        "title": "Arquitetura pronta para conformidade",
+        "description": "Projetada para fluxos regulados de saúde"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "App móvel",
+    "title": {
+      "line1": "Saúde no",
+      "highlight": "seu bolso"
+    },
+    "description": "Gerencie sua saúde em movimento. Agende consultas, acesse registros e fique conectado com sua equipe — tudo pelo smartphone.",
+    "features": {
+      "bookAppointments": "Agendar consultas",
+      "viewRecords": "Ver registros",
+      "getReminders": "Receber lembretes",
+      "secureAccess": "Acesso seguro"
+    },
+    "comingSoon": {
+      "title": "Em breve",
+      "platforms": "iOS e Android",
+      "description": "Estamos trabalhando para levar o Docito ao seu celular. Entre na lista de espera para ser avisado no lançamento."
+    },
+    "store": {
+      "comingTo": "Em breve em",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "Bom dia!",
+      "upcoming": "Próximos",
+      "yourAppointment": "Sua consulta",
+      "scheduleNow": "Agendar agora",
+      "book": "Agendar",
+      "records": "Registros",
+      "healthScore": "Pontuação de saúde"
+    }
+  },
+  "faq": {
+    "title": "Perguntas frequentes",
+    "subtitle": "Tudo o que você precisa saber sobre o Docito",
+    "items": {
+      "bookAppointment": {
+        "question": "Como agendo uma consulta?",
+        "answer": "Pesquise um médico por especialidade ou localização, veja horários disponíveis e agende na hora. Você receberá confirmação imediata por email e SMS."
+      },
+      "secureData": {
+        "question": "Meus dados de saúde estão seguros?",
+        "answer": "Sim. O Docito usa autenticação moderna, criptografia em trânsito e em repouso, e controles de acesso por funções."
+      },
+      "useInsurance": {
+        "question": "Posso usar meu seguro?",
+        "answer": "Se o seu provedor suportar, selecione seu seguro durante o agendamento. Os detalhes de cobertura aparecem antes da consulta e sinistros podem ser gerenciados na plataforma."
+      },
+      "doctorsJoin": {
+        "question": "Como médicos entram na plataforma?",
+        "answer": "Provedores criam um perfil, verificam a organização e começam a aceitar agendamentos conforme a equipe entra."
+      },
+      "mobileApp": {
+        "question": "Existe app móvel?",
+        "answer": "Um app móvel do Docito para iOS e Android está chegando. Entre na lista de espera para ser avisado no lançamento."
+      },
+      "cancelReschedule": {
+        "question": "E se eu precisar cancelar ou remarcar?",
+        "answer": "Você pode cancelar ou remarcar nos detalhes da consulta. A equipe é notificada e a disponibilidade atualiza em tempo real."
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "Lançando agora",
+    "title": {
+      "line1": "Comece em minutos.",
+      "highlight": "Conecte seu cuidado."
+    },
+    "description": "Crie uma conta e gerencie consultas, registros, receitas e pagamentos em um sistema conectado—para pacientes e provedores.",
+    "cta": {
+      "primary": "Começar teste grátis de 14 dias",
+      "secondary": "Explorar recursos"
+    },
+    "note": "Teste grátis de 14 dias • Sem cartão • Cancele a qualquer momento"
   }
 }
