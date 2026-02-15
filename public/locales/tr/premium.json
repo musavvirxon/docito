@@ -1,34 +1,480 @@
-
 {
   "hero": {
     "badge": "Tüm bakımınız, senkron",
     "title": {
       "line1": "Daha az bürokrasi. Daha çok bakım.",
-      "line2": "Sağlığın her adımı için tek platform."
+      "line2": "Tüm sisteminiz için tek platform."
     },
-    "description": "Docito; hastaları, sağlayıcıları, laboratuvarları, görüntülemeyi, eczaneleri ve sigortayı bir araya getirir—böylece randevular, kayıtlar, reçeteler, sonuçlar ve ödemeler tek yerde kalır.",
-    "cards": {
-      "patients": { "title": "Hastalar için", "description": "Bulun, randevu alın ve bakımı tek yerde takip edin" },
-      "clinics": { "title": "Klinikler için", "description": "Randevu, kayıt ve faturalama tek bir yapıda" },
-      "imaging": { "title": "Görüntüleme için", "description": "İstekler, raporlar ve sevk koordinasyonu" },
-      "pharmacy": { "title": "Eczane için", "description": "e-Reçete, karşılama ve teslimat" },
-      "labs": { "title": "Laboratuvarlar için", "description": "Test istemi, sonuçlar ve dijital teslim" }
+    "subtitle": "Docito randevu, kayıtlar, laboratuvarlar, görüntüleme, reçeteler ve ödemeleri tek bir hasta yolculuğunda birleştirir — klinikler ve hastalar için.",
+    "cta": {
+      "primary": "14 günlük ücretsiz denemeyi başlat",
+      "secondary": "Nasıl çalışır?"
+    },
+    "finePrint": "14 gün ücretsiz • Kart gerekmez • İstediğiniz zaman iptal"
+  },
+  "search": {
+    "badge": "Akıllı Arama",
+    "title": "Bakımı saniyeler içinde bulun",
+    "subtitle": "Doktorlar, klinikler, laboratuvarlar, görüntüleme ve eczanelerde tek yerden arayın.",
+    "specialty": "Uzmanlık veya sağlayıcı",
+    "location": "Şehir veya klinik",
+    "button": "Ara",
+    "voiceSearch": "Sesli arama",
+    "recent": "Son Aramalar",
+    "noRecent": "Son arama yok",
+    "trending": "Popüler Aramalar",
+    "trendingItems": [
+      "yakınımdaki kardiyolog",
+      "diş temizliği",
+      "çocuk doktoru",
+      "dermatolog",
+      "acil bakım",
+      "kan testi"
+    ],
+    "aiHint": "İpucu: Daha hızlı sonuç için “yakınımdaki kardiyolog” veya “Taşkent'te MR” deneyin."
+  },
+  "providers": {
+    "networkBadge": "Sağlık Ağı",
+    "networkTitle": "Tek ağ, tek hasta yolculuğu",
+    "networkDescription": "Doktorlar, klinikler, laboratuvarlar, görüntüleme merkezleri ve eczaneler—bakımın kurumlar arasında kaybolmaması için bağlı.",
+    "networkNote": "Yeni: Ekipler katıldıkça sağlayıcı profilleri görünür.",
+    "findProviders": "Sağlayıcı Bul",
+    "roleLabels": {
+      "doctor": "Doktor",
+      "clinic": "Klinik",
+      "lab": "Laboratuvar",
+      "pharmacy": "Eczane",
+      "imaging": "Görüntüleme",
+      "hospital": "Hastane"
+    },
+    "doctors": {
+      "title": "Doktorlar",
+      "description": "Profiller, uygunluk ve net sonraki adımlarla doktorları bulun ve randevu alın.",
+      "cta": "Sağlayıcı Bul"
+    },
+    "clinics": {
+      "title": "Klinikler",
+      "description": "Profiller, uygunluk ve net sonraki adımlarla klinikleri bulun ve randevu alın.",
+      "cta": "Sağlayıcı Bul"
+    },
+    "pharmacies": {
+      "title": "Eczaneler",
+      "description": "Profiller, uygunluk ve net sonraki adımlarla eczaneleri bulun ve randevu alın.",
+      "cta": "Sağlayıcı Bul"
+    },
+    "labs": {
+      "title": "Laboratuvarlar",
+      "description": "Profiller, uygunluk ve net sonraki adımlarla laboratuvarları bulun ve randevu alın.",
+      "cta": "Sağlayıcı Bul"
+    },
+    "imaging": {
+      "title": "Görüntüleme",
+      "description": "Profiller, uygunluk ve net sonraki adımlarla görüntüleme merkezlerini bulun ve randevu alın.",
+      "cta": "Sağlayıcı Bul"
+    },
+    "hospitals": {
+      "title": "Hastaneler",
+      "description": "Profiller, uygunluk ve net sonraki adımlarla hastaneleri bulun ve randevu alın.",
+      "cta": "Sağlayıcı Bul"
+    }
+  },
+  "specialties": {
+    "title": "Tıbbi Branşlar",
+    "subtitle": "Tüm tıbbi disiplinlerde uzmanları bulun",
+    "viewAll": "Tüm branşları görüntüle",
+    "browseAria": "{{specialty}} uzmanlarını görüntüle",
+    "list": {
+      "cardiology": "Kardiyoloji",
+      "neurology": "Nöroloji",
+      "ophthalmology": "Göz Hastalıkları",
+      "orthopedics": "Ortopedi",
+      "pediatrics": "Pediatri",
+      "dentistry": "Diş Hekimliği",
+      "generalMedicine": "Genel Tıp",
+      "gastroenterology": "Gastroenteroloji",
+      "dermatology": "Dermatoloji",
+      "endocrinology": "Endokrinoloji",
+      "pathology": "Patoloji",
+      "pulmonology": "Göğüs Hastalıkları",
+      "ent": "KBB",
+      "rheumatology": "Romatoloji",
+      "surgery": "Cerrahi",
+      "urology": "Üroloji",
+      "psychiatry": "Psikiyatri",
+      "oncology": "Onkoloji",
+      "nephrology": "Nefroloji",
+      "gynecology": "Jinekoloji",
+      "radiology": "Radyoloji",
+      "allergyImmunology": "Alerji ve İmmünoloji"
+    }
+  },
+  "diagnostics": {
+    "badge": "Tanı ve Eczane",
+    "title": {
+      "prefix": "Tüm bakım yolculuğunu",
+      "highlight": "bağlı tutun"
+    },
+    "description": "Laboratuvar, görüntüleme ve eczane güncellemelerini randevu ve ziyaret iş akışına entegre edin — hastalar ve ekipler her zaman en güncel bağlama sahip olsun.",
+    "services": {
+      "lab": {
+        "title": "Laboratuvar testleri",
+        "description": "Testleri isteyin, sonuçları alın ve her şeyi hasta kaydına otomatik bağlayın.",
+        "features": [
+          "İstekler ve sonuçlar dosyaya bağlı",
+          "Dijital sonuç teslimi",
+          "Faturalama iş akışlarına hazır"
+        ],
+        "browse": "Laboratuvarlara göz at",
+        "join": "Laboratuvar olarak katıl"
+      },
+      "imaging": {
+        "title": "Tıbbi görüntüleme",
+        "description": "Görüntüleme isteklerini ve raporlarını koordine edin — yönlendiren hekim ve hasta ek araç olmadan hizalı kalsın.",
+        "features": [
+          "Raporlar ziyarete eklenir",
+          "Yönlendirenlerle kolay paylaşım",
+          "Bakım yolunda durum güncellemeleri"
+        ],
+        "browse": "Görüntülemeye göz at",
+        "join": "Görüntüleme merkezi olarak katıl"
+      },
+      "pharmacy": {
+        "title": "Eczane hizmetleri",
+        "description": "Reçete yazın, karşılayın ve takip edin — ilaç güncellemeleri tüm ekip tarafından görülsün.",
+        "features": [
+          "eReçeteler ve yenilemeler",
+          "Stok + muadil önerileri",
+          "Teslim alma veya teslimat koordinasyonu"
+        ],
+        "browse": "Eczanelere göz at",
+        "join": "Eczane olarak katıl"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "Tek platform. Her iş akışı.",
+    "title": "Tek platform. Her iş akışı.",
+    "subtitle": "İlk aramadan takip sürecine kadar—Docito bakım ve operasyonu bağlı tutar.",
+    "cta": {
+      "primary": "Platformu keşfet",
+      "secondary": "Nasıl çalışır?"
+    },
+    "learnMore": "Daha fazla bilgi",
+    "items": {
+      "smartScheduling": {
+        "title": "Akıllı Planlama",
+        "description": "Online randevu, hatırlatmalar ve gerçek zamanlı uygunluk."
+      },
+      "digitalPrescriptions": {
+        "title": "Dijital Reçeteler",
+        "description": "Reçeteleri eczanelere gönderin ve her şeyi hasta zaman çizelgesinde tutun."
+      },
+      "secureRecords": {
+        "title": "Güvenli Kayıtlar",
+        "description": "Belgeleri saklayın ve dosyaları doğru kişilerle hızlı ve güvenli paylaşın."
+      },
+      "clinicalNotes": {
+        "title": "Klinik Notlar",
+        "description": "Bakımı tutarlı belgelemek için şablonlar ve yapılandırılmış notlar."
+      },
+      "teamCoordination": {
+        "title": "Ekip Koordinasyonu",
+        "description": "Personel, sağlayıcı ve tesisler arasında güvenli mesajlaşma ve devir."
+      },
+      "insuranceCoverage": {
+        "title": "Sigorta ve Kapsam",
+        "description": "Kapsam kontrolü ve faturalama desteği ile yazışmalar azalır."
+      },
+      "payments": {
+        "title": "Ödemeler",
+        "description": "Ödeme alın, fatura gönderin ve geliri tek yerden takip edin."
+      },
+      "automations": {
+        "title": "Otomasyonlar",
+        "description": "No-show ve manuel işi azaltan hatırlatmalar, güncellemeler ve takipler."
+      },
+      "telemedicine": {
+        "title": "Tele-tıp",
+        "description": "Yüz yüze mümkün olmadığında uzaktan görüşmeler sunun."
+      }
+    }
+  },
+  "workflows": {
+    "badge": "Bakımı tek sistemde yönetin",
+    "title": "Sağlığı hareket ettiren temel iş akışları",
+    "description": "Planlama, kayıtlar, ödemeler ve içgörüler—tüm bakım yolculuğunuz boyunca bağlı.",
+    "items": {
+      "payments": {
+        "title": "Ödemeler",
+        "description": "Ödeme alın, fatura gönderin ve uzlaştırın—online ya da resepsiyonda.",
+        "features": [
+          "Kart ve bağlantı ile ödeme",
+          "Faturalar ve makbuzlar",
+          "Uzlaştırma"
+        ]
+      },
+      "scheduling": {
+        "title": "Planlama",
+        "description": "Ekibiniz, odalarınız ve uygunluğunuzla hizalı online randevu.",
+        "features": [
+          "Gerçek zamanlı slotlar",
+          "Hatırlatmalar",
+          "Takvim senkronu"
+        ]
+      },
+      "records": {
+        "title": "Kayıtlar",
+        "description": "Tek bir hasta zaman çizelgesi—dosyalar, notlar, reçeteler ve sonuçlar—rollerle güvence altında.",
+        "features": [
+          "Güvenli saklama",
+          "Hızlı erişim",
+          "Yetkili paylaşım"
+        ]
+      },
+      "analytics": {
+        "title": "Analitik",
+        "description": "Neler olduğunu bilin: kullanım, bekleme süreleri, gelir ve operasyon trendleri.",
+        "features": [
+          "Canlı metrikler",
+          "Raporlar",
+          "İçgörüler"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "Tesis otomasyonu",
+    "title": "Personel eklemeden tesisinizi daha akıcı çalıştırın",
+    "description": "Docito planlama, kayıtlar, laboratuvar, görüntüleme, eczane ve ödemeleri bağlar; işler adımlar arasında otomatik ilerler. Daha az idari karmaşa. Daha öngörülebilir bakım.",
+    "flow": {
+      "intake": {
+        "title": "Otomatik kayıt",
+        "description": "Ziyaret öncesi formlar, onam ve semptomları toplayın—evrak peşinde koşmadan."
+      },
+      "scheduling": {
+        "title": "Dolu kalan planlama",
+        "description": "Gerçek zamanlı uygunluk, hatırlatmalar ve akıllı yeniden planlama no-show'u azaltır."
+      },
+      "records": {
+        "title": "Kendi kendini güncelleyen kayıtlar",
+        "description": "Notlar, belgeler ve ziyaret geçmişi tek zaman çizelgesinde—yapılandırılmış ve aranabilir."
+      },
+      "labs": {
+        "title": "Doğru laboratuvara yönlendirme",
+        "description": "Testleri isteyin, doğru laboratuvara gönderin ve sonuçları hasta kaydına geri bağlayın."
+      },
+      "imaging": {
+        "title": "Sürtünmesiz görüntüleme",
+        "description": "MR/BT/röntgen/USG istekleri, randevuları ve raporları uçtan uca koordine edin."
+      },
+      "billing": {
+        "title": "Bağlı faturalama ve ödemeler",
+        "description": "Faturalar, makbuzlar ve ödeme linkleri—randevu ve hizmetlerle senkron."
+      },
+      "reminders": {
+        "title": "Akıllı hatırlatmalar ve takip",
+        "description": "Otomatik SMS/email hatırlatmalar, ziyaret sonrası talimatlar ve sonraki adım yönlendirmeleri."
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "Gizlilik odaklı iş akışları",
+        "description": "Rol tabanlı erişim ve güvenli paylaşım—doğru kişiler doğru veriyi görür."
+      },
+      "tasks": {
+        "title": "Kendi kendine ilerleyen görevler",
+        "description": "Resepsiyon, klinisyen, laboratuvar ve eczane arasında devir—manuel takip olmadan."
+      }
     },
     "cta": {
       "primary": "14 günlük ücretsiz denemeyi başlat",
-      "secondary": "Şimdi bakım bulun",
-      "note": "Demo yok. Başlamak için kredi kartı yok. İstediğiniz zaman iptal edin."
+      "secondary": "İş akışlarını gör"
     },
-    "ecosystem": {
-      "doctors": "Doktorlar",
-      "clinics": "Klinikler",
-      "labs": "Laboratuvarlar",
-      "imaging": "Görüntüleme",
-      "pharmacies": "Eczaneler",
-      "patients": "Hastalar"
+    "note": "Demo yok. Docito'yu hemen kullanmaya başlayın—uygunsa deneme sonrası abone olun."
+  },
+  "ctoOps": {
+    "badge": "CTO'lar ve Operasyon için",
+    "title": {
+      "prefix": "Tek kayıt. Tek iş akışı.",
+      "highlight": "Sıfır devir."
     },
-    "a11y": {
-      "scrollToSearch": "Aramaya kaydır"
+    "description": "Doktorlar, adminler, laboratuvarlar, eczaneler ve görüntüleme arasında bakımı—dosya kovalamadan ve işi tekrar etmeden—koordin edin.",
+    "features": {
+      "roleAccess": {
+        "title": "Rol tabanlı erişim",
+        "description": "Her not, dosya ve eylem yalnızca doğru kişiler tarafından görülsün."
+      },
+      "auditSharing": {
+        "title": "Denetime uygun paylaşım",
+        "description": "Güncellemeleri güvenle paylaşın — net sahiplik ve izlenebilirlikle."
+      },
+      "secureMessaging": {
+        "title": "Güvenli ekip mesajlaşması",
+        "description": "PHI'yi tüketici sohbet uygulamalarına sızdırmadan koordinasyon sağlayın."
+      },
+      "realtimeHandoffs": {
+        "title": "Gerçek zamanlı devirler",
+        "description": "Durum değişiklikleri hasta ile birlikte ilerler — arama yok, ekran görüntüsü yok."
+      },
+      "timeline": {
+        "title": "Tek hasta zaman çizelgesi",
+        "description": "Randevular, notlar, testler, görüntüleme ve reçeteler tek yerde."
+      },
+      "integrations": {
+        "title": "Gerektiğinde entegrasyon",
+        "description": "Yığınınızı bir gecede yeniden kurmadan sistem ve iş akışlarını bağlayın."
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "Bakım ekibi",
+        "description": "Otomatik atanır + bilgilendirilir"
+      },
+      "accessControls": {
+        "title": "Erişim kontrolleri",
+        "description": "Roller, izinler ve denetim kayıtları"
+      }
     }
+  },
+  "insurance": {
+    "badge": "Sigorta Entegrasyonu",
+    "title": "Dünya genelindeki sigortacılarla çalışır",
+    "description": "Docito sigorta iş akışlarına global olarak entegre olur — doğrulama, faturalama ve talepler platform içinde yürür.",
+    "stepLabel": "Adım {{step}}",
+    "steps": {
+      "selectProvider": {
+        "title": "Sağlayıcı seçin",
+        "description": "Hasta randevu sırasında sigortasını seçer — kapsam anında kontrol edilir."
+      },
+      "verification": {
+        "title": "Anında doğrulama",
+        "description": "Uygunluk, katkı payı ve muafiyet detayları ziyaret öncesi görünür."
+      },
+      "directBilling": {
+        "title": "Doğrudan faturalama",
+        "description": "Talepler otomatik gönderilir — hasta yalnızca kendi payını öder."
+      }
+    },
+    "benefits": [
+      "Anında uygunluk kontrolleri",
+      "Doğrudan talep gönderimi",
+      "Hastalar için evrak yok",
+      "Ön onay desteği",
+      "Çoklu ödeyici uyumluluğu",
+      "Gerçek zamanlı talep durumu"
+    ]
+  },
+  "global": {
+    "badge": "Global platform",
+    "title": "Tek platform. Her ülke. Her dil.",
+    "description": "Docito her yerde çalışacak şekilde tasarlandı — ekibiniz veya hastalarınız nerede olursa olsun.",
+    "features": {
+      "multiLanguage": {
+        "title": "Çok dilli",
+        "description": "Docito'yu İngilizce, Arapça, Rusça, Özbekçe ve daha fazlasıyla kullanın — tam RTL desteğiyle."
+      },
+      "multiCurrency": {
+        "title": "Çok para birimi",
+        "description": "Ödemeleri kabul edin ve fiyatları yerel para biriminde gösterin."
+      },
+      "anyTimezone": {
+        "title": "Her zaman dilimi",
+        "description": "Planlama, hatırlatmalar ve uygunluk, kullanıcının zaman dilimine otomatik uyum sağlar."
+      },
+      "regionalCompliance": {
+        "title": "Bölgesel uyumluluk",
+        "description": "Mimari, her yargı alanında sağlık mevzuatlarını destekleyecek şekilde tasarlandı."
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "Tasarım gereği gizlilik",
+        "description": "Rol tabanlı erişim ve güvenli paylaşım"
+      },
+      "securityProgram": {
+        "title": "Güvenlik programı",
+        "description": "Modern kimlik doğrulama, denetim izleri ve izleme"
+      },
+      "complianceReady": {
+        "title": "Uyumluluğa hazır mimari",
+        "description": "Düzenlemeye tabi sağlık iş akışları için tasarlandı"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "Mobil Uygulama",
+    "title": {
+      "line1": "Sağlık",
+      "highlight": "Cebinizde"
+    },
+    "description": "Sağlığınızı hareket halindeyken yönetin. Randevu alın, kayıtlarınıza erişin ve bakım ekibinizle bağlantıda kalın — hepsi akıllı telefonunuzdan.",
+    "features": {
+      "bookAppointments": "Randevu al",
+      "viewRecords": "Kayıtları görüntüle",
+      "getReminders": "Hatırlatmalar",
+      "secureAccess": "Güvenli erişim"
+    },
+    "comingSoon": {
+      "title": "Yakında",
+      "platforms": "iOS ve Android",
+      "description": "Docito'yu mobil cihazınıza getirmek için çalışıyoruz. Lansman olduğunda haberdar olmak için bekleme listesine katılın."
+    },
+    "store": {
+      "comingTo": "Yakında",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "Günaydın!",
+      "upcoming": "Yaklaşan",
+      "yourAppointment": "Randevunuz",
+      "scheduleNow": "Şimdi planla",
+      "book": "Randevu",
+      "records": "Kayıtlar",
+      "healthScore": "Sağlık Skoru"
+    }
+  },
+  "faq": {
+    "title": "Sıkça Sorulan Sorular",
+    "subtitle": "Docito hakkında bilmeniz gereken her şey",
+    "items": {
+      "bookAppointment": {
+        "question": "Randevu nasıl alırım?",
+        "answer": "Uzmanlığa veya konuma göre bir doktor arayın, uygun saatleri görüntüleyin ve anında randevu alın. E-posta ve SMS ile hemen onay alırsınız."
+      },
+      "secureData": {
+        "question": "Sağlık verilerim güvenli mi?",
+        "answer": "Evet. Docito modern kimlik doğrulama, aktarımda ve depolamada şifreleme ve rol tabanlı erişim kontrolleri kullanır."
+      },
+      "useInsurance": {
+        "question": "Sigortamı kullanabilir miyim?",
+        "answer": "Sağlayıcınız destekliyorsa randevu sırasında sigortanızı seçebilirsiniz. Kapsam ayrıntıları ziyaret öncesi görünür ve talepler platform içinde gönderilebilir."
+      },
+      "doctorsJoin": {
+        "question": "Doktorlar platforma nasıl katılır?",
+        "answer": "Sağlayıcılar profillerini ve organizasyonlarını kaydeder, doğrulamayı tamamlar ve ekipleri katıldıktan sonra randevu almaya başlar."
+      },
+      "mobileApp": {
+        "question": "Mobil uygulama var mı?",
+        "answer": "Docito mobil uygulaması iOS ve Android için yakında geliyor. Lansmanda haberdar olmak için bekleme listesine katılın."
+      },
+      "cancelReschedule": {
+        "question": "İptal etmek veya yeniden planlamak istersem?",
+        "answer": "Randevular ekranından iptal edebilir veya yeniden planlayabilirsiniz. Ekip anında bilgilendirilir ve uygunluk gerçek zamanlı güncellenir."
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "Şimdi yayında",
+    "title": {
+      "line1": "Dakikalar içinde başlayın.",
+      "highlight": "Bakımı bağlayın."
+    },
+    "description": "Hesap oluşturun ve randevular, kayıtlar, reçeteler ve ödemeleri tek bir bağlı sistemde yönetin—hem hastalar hem sağlayıcılar için.",
+    "cta": {
+      "primary": "14 günlük ücretsiz denemeyi başlat",
+      "secondary": "Özellikleri keşfet"
+    },
+    "note": "14 gün ücretsiz deneme • Kredi kartı gerekmez • İstediğiniz zaman iptal"
   }
 }
