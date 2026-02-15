@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "의사 찾기 및 예약",
+    "placeholder": "의사, 진료과, 위치 검색...",
+    "searching": "검색 중...",
+    "filters": "필터",
+    "specialty": "진료과",
+    "location": "위치",
+    "rating": "최소 평점",
+    "consultationFee": "진료비",
+    "availability": "가능 여부",
+    "clearFilters": "필터 초기화",
+    "applyFilters": "필터 적용",
+    "availableToday": "오늘 가능",
+    "videoConsultation": "비디오 진료",
+    "acceptsInsurance": "보험 가능",
+    "priceRange": "가격 범위",
+    "distance": "거리",
+    "language": "언어",
+    "submit": "검색"
+  },
+  "profile": {
+    "about": "소개",
+    "experience": "경력",
+    "education": "학력",
+    "languages": "언어",
+    "services": "서비스",
+    "reviews": "리뷰",
+    "availability": "가능 여부",
+    "bookAppointment": "예약하기",
+    "contactDoctor": "의사에게 연락",
+    "yearsExperience": "{{years}}년 경력",
+    "patientsHelped": "{{count}}+ 환자 도움",
+    "responseTime": "{{time}} 내 응답",
+    "consultationFee": "진료비",
+    "nextAvailable": "다음 가능 시간",
+    "viewProfile": "프로필 보기",
+    "videoAvailable": "비디오 진료 가능",
+    "insuranceAccepted": "보험 가능",
+    "newPatientsWelcome": "신규 환자 수락",
+    "verifiedDoctor": "인증된 의사",
+    "licenseVerified": "면허 확인됨",
+    "hospitalAffiliations": "병원 제휴",
+    "specializations": "전문 분야",
+    "certifications": "자격증",
+    "contactInfo": "연락처",
+    "officeHours": "진료 시간",
+    "emergencyContact": "응급 연락처"
+  },
+  "booking": {
+    "title": "예약하기",
+    "selectDate": "날짜 선택",
+    "selectTime": "시간 선택",
+    "appointmentType": "예약 유형",
+    "inPerson": "대면 진료",
+    "videoCall": "비디오 진료",
+    "patientInfo": "환자 정보",
+    "fullName": "이름",
+    "phoneNumber": "전화번호",
+    "email": "이메일",
+    "reasonForVisit": "방문 사유",
+    "additionalNotes": "추가 메모 (선택)",
+    "confirmBooking": "예약 확정",
+    "bookingConfirmed": "예약 완료!",
+    "bookingConfirmedDesc": "예약이 성공적으로 완료되었습니다.",
+    "bookingError": "예약 실패",
+    "bookingErrorDesc": "다시 시도하거나 지원팀에 문의하세요.",
+    "loginRequired": "로그인이 필요합니다",
+    "loginRequiredDesc": "예약하려면 로그인하세요.",
+    "cancel": "취소",
+    "back": "뒤로",
+    "next": "다음",
+    "step": "{{total}} 중 {{current}}단계",
+    "appointmentSummary": "예약 요약",
+    "totalCost": "총 비용",
+    "paymentMethod": "결제 방법",
+    "payNow": "지금 결제",
+    "payLater": "방문 시 결제",
+    "insuranceInfo": "보험 정보",
+    "insuranceProvider": "보험사",
+    "policyNumber": "증권 번호",
+    "verifyInsurance": "보험 확인"
+  },
+  "page": {
+    "title": "의사 찾기",
+    "subtitle": "인증된 의사를 찾고 즉시 예약하세요",
+    "readyToFind": "맞는 의사를 찾을 준비가 되셨나요?",
+    "readyToFindDesc": "인증된 의료 전문가 네트워크에서 검색하고 몇 번의 클릭으로 예약하세요.",
+    "popularSearches": "인기 검색",
+    "foundText": "개의 결과",
+    "showingVerified": "인증된 의료 전문가 표시 중",
+    "noDoctors": "의사를 찾을 수 없습니다",
+    "searching": "검색 중...",
+    "error": "검색 오류",
+    "tryAgain": "나중에 다시 시도하세요.",
+    "bookNow": "예약",
+    "savedSuccessfully": "저장됨",
+    "savedSuccessfullyDesc": "저장한 의사 목록에 추가되었습니다.",
+    "removedFromSaved": "삭제됨",
+    "removedFromSavedDesc": "저장한 의사 목록에서 삭제되었습니다.",
+    "loginRequired": "로그인이 필요합니다",
+    "loginRequiredDesc": "예약하려면 로그인하세요.",
+    "searchButton": "검색"
+  },
+  "specialties": {
+    "all": "전체 진료과",
+    "generalPractice": "일반의",
+    "cardiology": "심장내과",
+    "neurology": "신경과",
+    "ophthalmology": "안과",
+    "orthopedics": "정형외과",
+    "pediatrics": "소아과",
+    "dentistry": "치과",
+    "dermatology": "피부과",
+    "endocrinology": "내분비과",
+    "pathology": "병리과",
+    "pulmonology": "호흡기내과"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "최근",
+      "popular": "인기",
+      "doctor": "의사",
+      "location": "위치",
+      "specialty": "진료과"
+    },
+    "clearRecent": "최근 검색어 지우기"
+  },
+  "location": {
+    "myLocation": "내 위치",
+    "useMyLocation": "내 위치 사용",
+    "locationDetected": "위치가 감지됨",
+    "clear": "지우기"
+  },
+  "filters": {
+    "distance": {
+      "label": "거리",
+      "any": "거리 제한 없음",
+      "km5": "5 km",
+      "km10": "10 km",
+      "km25": "25 km",
+      "km50": "50 km"
+    },
+    "rating": {
+      "minimum": "최소 평점: {{rating}}+ ★",
+      "any": "전체",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "오늘 가능",
+      "acceptsNewPatients": "신규 환자 수락"
+    },
+    "services": {
+      "title": "서비스",
+      "videoConsultation": "비디오 진료",
+      "acceptsInsurance": "보험 가능"
+    },
+    "language": {
+      "title": "언어",
+      "any": "언어 제한 없음"
+    },
+    "priceRanges": {
+      "any": "전체",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "비디오",
+      "insurance": "보험"
+    },
+    "languages": {
+      "english": "영어",
+      "spanish": "스페인어",
+      "french": "프랑스어",
+      "german": "독일어",
+      "russian": "러시아어",
+      "chinese": "중국어",
+      "arabic": "아랍어",
+      "turkish": "터키어",
+      "uzbek": "우즈베크어"
+    }
+  },
+  "results": {
+    "tryAdjusting": "필터나 검색어를 조정해 보세요",
+    "doctorPrefix": "Dr.",
+    "perVisit": "/방문",
+    "sortBy": "정렬",
+    "sortOptions": {
+      "relevance": "관련도",
+      "rating": "평점 높은 순",
+      "price_low": "가격: 낮은 순",
+      "price_high": "가격: 높은 순",
+      "distance": "거리",
+      "availability": "가장 빠른 예약"
+    }
+  }
+}
+{
+  "search": {
     "title": "의사 찾기",
     "placeholder": "이름, 전문 분야 또는 위치로 검색",
     "filters": "필터",
