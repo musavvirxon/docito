@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "ابحث واحجز الأطباء",
+    "placeholder": "ابحث عن الأطباء، التخصصات، المواقع...",
+    "searching": "جارٍ البحث...",
+    "filters": "عوامل التصفية",
+    "specialty": "التخصص",
+    "location": "الموقع",
+    "rating": "الحد الأدنى للتقييم",
+    "consultationFee": "رسوم الاستشارة",
+    "availability": "التوفر",
+    "clearFilters": "مسح عوامل التصفية",
+    "applyFilters": "تطبيق عوامل التصفية",
+    "availableToday": "متاح اليوم",
+    "videoConsultation": "استشارة بالفيديو",
+    "acceptsInsurance": "يقبل التأمين",
+    "priceRange": "نطاق السعر",
+    "distance": "المسافة",
+    "language": "اللغة",
+    "submit": "بحث"
+  },
+  "profile": {
+    "about": "نبذة",
+    "experience": "الخبرة",
+    "education": "التعليم",
+    "languages": "اللغات",
+    "services": "الخدمات",
+    "reviews": "المراجعات",
+    "availability": "التوفر",
+    "bookAppointment": "احجز موعدًا",
+    "contactDoctor": "اتصل بالطبيب",
+    "yearsExperience": "{{years}} سنوات خبرة",
+    "patientsHelped": "{{count}}+ مرضى تمت مساعدتهم",
+    "responseTime": "يرد خلال {{time}}",
+    "consultationFee": "رسوم الاستشارة",
+    "nextAvailable": "أقرب توفر",
+    "viewProfile": "عرض الملف",
+    "videoAvailable": "استشارة فيديو متاحة",
+    "insuranceAccepted": "يقبل التأمين",
+    "newPatientsWelcome": "يقبل مرضى جدد",
+    "verifiedDoctor": "طبيب موثّق",
+    "licenseVerified": "تم التحقق من الترخيص",
+    "hospitalAffiliations": "الارتباطات بالمستشفيات",
+    "specializations": "التخصصات",
+    "certifications": "الشهادات",
+    "contactInfo": "معلومات الاتصال",
+    "officeHours": "ساعات العمل",
+    "emergencyContact": "اتصال الطوارئ"
+  },
+  "booking": {
+    "title": "احجز موعدًا",
+    "selectDate": "اختر التاريخ",
+    "selectTime": "اختر الوقت",
+    "appointmentType": "نوع الموعد",
+    "inPerson": "زيارة حضورية",
+    "videoCall": "استشارة بالفيديو",
+    "patientInfo": "بيانات المريض",
+    "fullName": "الاسم الكامل",
+    "phoneNumber": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "reasonForVisit": "سبب الزيارة",
+    "additionalNotes": "ملاحظات إضافية (اختياري)",
+    "confirmBooking": "تأكيد الحجز",
+    "bookingConfirmed": "تم تأكيد الحجز!",
+    "bookingConfirmedDesc": "تم جدولة موعدك بنجاح.",
+    "bookingError": "فشل الحجز",
+    "bookingErrorDesc": "يرجى المحاولة مرة أخرى أو الاتصال بالدعم.",
+    "loginRequired": "تسجيل الدخول مطلوب",
+    "loginRequiredDesc": "يرجى تسجيل الدخول لحجز موعد.",
+    "cancel": "إلغاء",
+    "back": "رجوع",
+    "next": "التالي",
+    "step": "الخطوة {{current}} من {{total}}",
+    "appointmentSummary": "ملخص الموعد",
+    "totalCost": "التكلفة الإجمالية",
+    "paymentMethod": "طريقة الدفع",
+    "payNow": "ادفع الآن",
+    "payLater": "ادفع عند الزيارة",
+    "insuranceInfo": "معلومات التأمين",
+    "insuranceProvider": "شركة التأمين",
+    "policyNumber": "رقم الوثيقة",
+    "verifyInsurance": "تحقق من التأمين"
+  },
+  "page": {
+    "title": "ابحث عن أطباء",
+    "subtitle": "اكتشف أطباء موثّقين واحجز مواعيد فورًا",
+    "readyToFind": "جاهز للعثور على الطبيب المناسب؟",
+    "readyToFindDesc": "ابحث في شبكتنا من المتخصصين الصحيين الموثّقين واحجز موعدًا ببضع نقرات.",
+    "popularSearches": "عمليات بحث شائعة",
+    "foundText": "نتيجة",
+    "showingVerified": "عرض مختصين صحيين موثّقين",
+    "noDoctors": "لم يتم العثور على أطباء",
+    "searching": "جارٍ البحث...",
+    "error": "خطأ في البحث",
+    "tryAgain": "يرجى المحاولة لاحقًا.",
+    "bookNow": "احجز الآن",
+    "savedSuccessfully": "تم الحفظ",
+    "savedSuccessfullyDesc": "تمت الإضافة إلى قائمة الأطباء المحفوظين.",
+    "removedFromSaved": "تمت الإزالة",
+    "removedFromSavedDesc": "تمت الإزالة من قائمة الأطباء المحفوظين.",
+    "loginRequired": "تسجيل الدخول مطلوب",
+    "loginRequiredDesc": "يرجى تسجيل الدخول لحجز موعد.",
+    "searchButton": "بحث"
+  },
+  "specialties": {
+    "all": "كل التخصصات",
+    "generalPractice": "طب عام",
+    "cardiology": "أمراض القلب",
+    "neurology": "أمراض الأعصاب",
+    "ophthalmology": "طب العيون",
+    "orthopedics": "العظام",
+    "pediatrics": "طب الأطفال",
+    "dentistry": "طب الأسنان",
+    "dermatology": "الجلدية",
+    "endocrinology": "الغدد الصماء",
+    "pathology": "علم الأمراض",
+    "pulmonology": "أمراض الرئة"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "الأخيرة",
+      "popular": "الشائعة",
+      "doctor": "طبيب",
+      "location": "الموقع",
+      "specialty": "التخصص"
+    },
+    "clearRecent": "مسح عمليات البحث الأخيرة"
+  },
+  "location": {
+    "myLocation": "موقعي",
+    "useMyLocation": "استخدام موقعي",
+    "locationDetected": "تم تحديد الموقع",
+    "clear": "مسح"
+  },
+  "filters": {
+    "distance": {
+      "label": "المسافة",
+      "any": "أي مسافة",
+      "km5": "5 كم",
+      "km10": "10 كم",
+      "km25": "25 كم",
+      "km50": "50 كم"
+    },
+    "rating": {
+      "minimum": "الحد الأدنى للتقييم: {{rating}}+ ★",
+      "any": "أي",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "متاح اليوم",
+      "acceptsNewPatients": "يقبل مرضى جدد"
+    },
+    "services": {
+      "title": "الخدمات",
+      "videoConsultation": "استشارة بالفيديو",
+      "acceptsInsurance": "يقبل التأمين"
+    },
+    "language": {
+      "title": "اللغة",
+      "any": "أي لغة"
+    },
+    "priceRanges": {
+      "any": "أي",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "فيديو",
+      "insurance": "تأمين"
+    },
+    "languages": {
+      "english": "الإنجليزية",
+      "spanish": "الإسبانية",
+      "french": "الفرنسية",
+      "german": "الألمانية",
+      "russian": "الروسية",
+      "chinese": "الصينية",
+      "arabic": "العربية",
+      "turkish": "التركية",
+      "uzbek": "الأوزبكية"
+    }
+  },
+  "results": {
+    "tryAdjusting": "جرّب تعديل عوامل التصفية أو كلمات البحث",
+    "doctorPrefix": "د.",
+    "perVisit": "/زيارة",
+    "sortBy": "ترتيب حسب",
+    "sortOptions": {
+      "relevance": "الأكثر صلة",
+      "rating": "الأعلى تقييمًا",
+      "price_low": "السعر: من الأقل إلى الأعلى",
+      "price_high": "السعر: من الأعلى إلى الأقل",
+      "distance": "المسافة",
+      "availability": "الأقرب توفرًا"
+    }
+  }
+}
+{
+  "search": {
     "title": "البحث عن الأطباء",
     "placeholder": "البحث بالاسم أو التخصص أو الموقع",
     "filters": "المرشحات",
