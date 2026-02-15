@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "查找并预约医生",
+    "placeholder": "搜索医生、专科、地点...",
+    "searching": "正在搜索...",
+    "filters": "筛选",
+    "specialty": "专科",
+    "location": "地点",
+    "rating": "最低评分",
+    "consultationFee": "咨询费用",
+    "availability": "可预约",
+    "clearFilters": "清除筛选",
+    "applyFilters": "应用筛选",
+    "availableToday": "今日可约",
+    "videoConsultation": "视频问诊",
+    "acceptsInsurance": "支持保险",
+    "priceRange": "价格区间",
+    "distance": "距离",
+    "language": "语言",
+    "submit": "搜索"
+  },
+  "profile": {
+    "about": "简介",
+    "experience": "经验",
+    "education": "教育背景",
+    "languages": "语言",
+    "services": "服务",
+    "reviews": "评价",
+    "availability": "可预约",
+    "bookAppointment": "预约",
+    "contactDoctor": "联系医生",
+    "yearsExperience": "{{years}} 年经验",
+    "patientsHelped": "已帮助 {{count}}+ 位患者",
+    "responseTime": "{{time}} 内回复",
+    "consultationFee": "咨询费用",
+    "nextAvailable": "最近可约",
+    "viewProfile": "查看资料",
+    "videoAvailable": "支持视频问诊",
+    "insuranceAccepted": "支持保险",
+    "newPatientsWelcome": "接收新患者",
+    "verifiedDoctor": "认证医生",
+    "licenseVerified": "执照已验证",
+    "hospitalAffiliations": "医院合作",
+    "specializations": "专长",
+    "certifications": "资质证书",
+    "contactInfo": "联系方式",
+    "officeHours": "门诊时间",
+    "emergencyContact": "紧急联系方式"
+  },
+  "booking": {
+    "title": "预约",
+    "selectDate": "选择日期",
+    "selectTime": "选择时间",
+    "appointmentType": "预约类型",
+    "inPerson": "线下就诊",
+    "videoCall": "视频问诊",
+    "patientInfo": "患者信息",
+    "fullName": "姓名",
+    "phoneNumber": "手机号",
+    "email": "邮箱",
+    "reasonForVisit": "就诊原因",
+    "additionalNotes": "补充说明（可选）",
+    "confirmBooking": "确认预约",
+    "bookingConfirmed": "预约成功！",
+    "bookingConfirmedDesc": "您的预约已成功安排。",
+    "bookingError": "预约失败",
+    "bookingErrorDesc": "请重试或联系支持。",
+    "loginRequired": "需要登录",
+    "loginRequiredDesc": "请登录后再预约。",
+    "cancel": "取消",
+    "back": "返回",
+    "next": "下一步",
+    "step": "第 {{current}} 步，共 {{total}} 步",
+    "appointmentSummary": "预约摘要",
+    "totalCost": "总费用",
+    "paymentMethod": "支付方式",
+    "payNow": "立即支付",
+    "payLater": "到院支付",
+    "insuranceInfo": "保险信息",
+    "insuranceProvider": "保险机构",
+    "policyNumber": "保单号",
+    "verifyInsurance": "验证保险"
+  },
+  "page": {
+    "title": "查找医生",
+    "subtitle": "发现认证医生并快速预约",
+    "readyToFind": "准备好找到合适的医生了吗？",
+    "readyToFindDesc": "在我们的认证医疗专业人员网络中搜索，并轻松预约。",
+    "popularSearches": "热门搜索",
+    "foundText": "条结果",
+    "showingVerified": "显示认证医疗专业人员",
+    "noDoctors": "未找到医生",
+    "searching": "正在搜索...",
+    "error": "搜索错误",
+    "tryAgain": "请稍后再试。",
+    "bookNow": "预约",
+    "savedSuccessfully": "已保存",
+    "savedSuccessfullyDesc": "已加入保存的医生列表。",
+    "removedFromSaved": "已移除",
+    "removedFromSavedDesc": "已从保存的医生列表中移除。",
+    "loginRequired": "需要登录",
+    "loginRequiredDesc": "请登录后再预约。",
+    "searchButton": "搜索"
+  },
+  "specialties": {
+    "all": "全部专科",
+    "generalPractice": "全科",
+    "cardiology": "心内科",
+    "neurology": "神经科",
+    "ophthalmology": "眼科",
+    "orthopedics": "骨科",
+    "pediatrics": "儿科",
+    "dentistry": "牙科",
+    "dermatology": "皮肤科",
+    "endocrinology": "内分泌科",
+    "pathology": "病理科",
+    "pulmonology": "呼吸科"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "最近",
+      "popular": "热门",
+      "doctor": "医生",
+      "location": "地点",
+      "specialty": "专科"
+    },
+    "clearRecent": "清除最近搜索"
+  },
+  "location": {
+    "myLocation": "我的位置",
+    "useMyLocation": "使用我的位置",
+    "locationDetected": "已检测到位置",
+    "clear": "清除"
+  },
+  "filters": {
+    "distance": {
+      "label": "距离",
+      "any": "不限距离",
+      "km5": "5 公里",
+      "km10": "10 公里",
+      "km25": "25 公里",
+      "km50": "50 公里"
+    },
+    "rating": {
+      "minimum": "最低评分：{{rating}}+ ★",
+      "any": "不限",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "今日可约",
+      "acceptsNewPatients": "接收新患者"
+    },
+    "services": {
+      "title": "服务",
+      "videoConsultation": "视频问诊",
+      "acceptsInsurance": "支持保险"
+    },
+    "language": {
+      "title": "语言",
+      "any": "不限语言"
+    },
+    "priceRanges": {
+      "any": "不限",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "视频",
+      "insurance": "保险"
+    },
+    "languages": {
+      "english": "英语",
+      "spanish": "西班牙语",
+      "french": "法语",
+      "german": "德语",
+      "russian": "俄语",
+      "chinese": "中文",
+      "arabic": "阿拉伯语",
+      "turkish": "土耳其语",
+      "uzbek": "乌兹别克语"
+    }
+  },
+  "results": {
+    "tryAdjusting": "请尝试调整筛选条件或搜索关键词",
+    "doctorPrefix": "Dr.",
+    "perVisit": "/次就诊",
+    "sortBy": "排序",
+    "sortOptions": {
+      "relevance": "相关度",
+      "rating": "评分最高",
+      "price_low": "价格：从低到高",
+      "price_high": "价格：从高到低",
+      "distance": "距离",
+      "availability": "最早可约"
+    }
+  }
+}
+{
+  "search": {
     "title": "查找医生",
     "placeholder": "按姓名、专科或地点搜索",
     "filters": "筛选",
