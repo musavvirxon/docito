@@ -232,7 +232,7 @@ const SuperAdminDashboard = () => {
               </div>
             </div>
 
-            {(KPICards as any)({ stats })}
+            <KPICards />
             <AnalyticsCharts showAll />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
@@ -240,7 +240,7 @@ const SuperAdminDashboard = () => {
                 <ManagementTable title="Overview" type="doctors" />
               </div>
               <div className="space-y-6">
-                {(FeedbackInboxLink as any)({ onClick: () => {} })}
+                <FeedbackInboxLink onClick={() => {}} />
                 <ActivityFeed />
               </div>
             </div>
@@ -263,10 +263,10 @@ const SuperAdminDashboard = () => {
         return <DocumentVerificationLookup />;
 
       case "doctors":
-        return (EntityManagement as any)({ entityType: "doctors" });
+        return <EntityManagement entityType={"doctors" as any} />;
 
       case "practices":
-        return (EntityManagement as any)({ entityType: "practices" });
+        return <EntityManagement entityType={"practices" as any} />;
 
       case "pharmacies":
         return <EntityManagement entityType="pharmacy" />;
@@ -284,13 +284,13 @@ const SuperAdminDashboard = () => {
         return <GlobalStaffManagement />;
 
       case "patients":
-        return (EntityManagement as any)({ entityType: "patients" });
+        return <EntityManagement entityType={"patients" as any} />;
 
       case "appointments":
-        return (EntityManagement as any)({ entityType: "appointments" });
+        return <EntityManagement entityType={"appointments" as any} />;
 
       case "payments":
-        return (EntityManagement as any)({ entityType: "payments" });
+        return <EntityManagement entityType={"payments" as any} />;
 
       case "analytics":
         return <AnalyticsCharts showAll />;
