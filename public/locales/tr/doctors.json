@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "Doktor Bul ve Randevu Al",
+    "placeholder": "Doktor, uzmanlık, konum ara...",
+    "searching": "Aranıyor...",
+    "filters": "Filtreler",
+    "specialty": "Uzmanlık",
+    "location": "Konum",
+    "rating": "Minimum Puan",
+    "consultationFee": "Muayene Ücreti",
+    "availability": "Uygunluk",
+    "clearFilters": "Filtreleri Temizle",
+    "applyFilters": "Filtreleri Uygula",
+    "availableToday": "Bugün Uygun",
+    "videoConsultation": "Video Görüşme",
+    "acceptsInsurance": "Sigorta Kabul",
+    "priceRange": "Fiyat Aralığı",
+    "distance": "Mesafe",
+    "language": "Dil",
+    "submit": "Ara"
+  },
+  "profile": {
+    "about": "Hakkında",
+    "experience": "Deneyim",
+    "education": "Eğitim",
+    "languages": "Diller",
+    "services": "Hizmetler",
+    "reviews": "Yorumlar",
+    "availability": "Uygunluk",
+    "bookAppointment": "Randevu Al",
+    "contactDoctor": "Doktorla İletişime Geç",
+    "yearsExperience": "{{years}} yıl deneyim",
+    "patientsHelped": "{{count}}+ hastaya yardım",
+    "responseTime": "{{time}} içinde yanıtlar",
+    "consultationFee": "Muayene Ücreti",
+    "nextAvailable": "Bir Sonraki Uygun Zaman",
+    "viewProfile": "Profili Görüntüle",
+    "videoAvailable": "Video görüşme mevcut",
+    "insuranceAccepted": "Sigorta kabul edilir",
+    "newPatientsWelcome": "Yeni hasta kabul ediyor",
+    "verifiedDoctor": "Doğrulanmış Doktor",
+    "licenseVerified": "Lisans Doğrulandı",
+    "hospitalAffiliations": "Hastane Bağlantıları",
+    "specializations": "Uzmanlık Alanları",
+    "certifications": "Sertifikalar",
+    "contactInfo": "İletişim Bilgileri",
+    "officeHours": "Çalışma Saatleri",
+    "emergencyContact": "Acil İletişim"
+  },
+  "booking": {
+    "title": "Randevu Al",
+    "selectDate": "Tarih Seç",
+    "selectTime": "Saat Seç",
+    "appointmentType": "Randevu Türü",
+    "inPerson": "Yüz Yüze",
+    "videoCall": "Video Görüşme",
+    "patientInfo": "Hasta Bilgileri",
+    "fullName": "Ad Soyad",
+    "phoneNumber": "Telefon Numarası",
+    "email": "E-posta",
+    "reasonForVisit": "Ziyaret Nedeni",
+    "additionalNotes": "Ek Notlar (Opsiyonel)",
+    "confirmBooking": "Randevuyu Onayla",
+    "bookingConfirmed": "Randevu Onaylandı!",
+    "bookingConfirmedDesc": "Randevunuz başarıyla planlandı.",
+    "bookingError": "Randevu Hatası",
+    "bookingErrorDesc": "Lütfen tekrar deneyin veya destek ile iletişime geçin.",
+    "loginRequired": "Giriş Gerekli",
+    "loginRequiredDesc": "Randevu almak için giriş yapın.",
+    "cancel": "İptal",
+    "back": "Geri",
+    "next": "İleri",
+    "step": "{{total}} adımın {{current}}. adımı",
+    "appointmentSummary": "Randevu Özeti",
+    "totalCost": "Toplam Ücret",
+    "paymentMethod": "Ödeme Yöntemi",
+    "payNow": "Şimdi Öde",
+    "payLater": "Ziyarette Öde",
+    "insuranceInfo": "Sigorta Bilgileri",
+    "insuranceProvider": "Sigorta Sağlayıcı",
+    "policyNumber": "Poliçe Numarası",
+    "verifyInsurance": "Sigortayı Doğrula"
+  },
+  "page": {
+    "title": "Doktor Bul",
+    "subtitle": "Doğrulanmış doktorları keşfedin ve anında randevu alın",
+    "readyToFind": "Doğru doktoru bulmaya hazır mısınız?",
+    "readyToFindDesc": "Doğrulanmış sağlık profesyonelleri ağımızda arayın ve birkaç tıkla randevu alın.",
+    "popularSearches": "Popüler aramalar",
+    "foundText": "sonuç bulundu",
+    "showingVerified": "Doğrulanmış sağlık profesyonelleri gösteriliyor",
+    "noDoctors": "Doktor bulunamadı",
+    "searching": "Aranıyor...",
+    "error": "Arama Hatası",
+    "tryAgain": "Lütfen daha sonra tekrar deneyin.",
+    "bookNow": "Randevu Al",
+    "savedSuccessfully": "Kaydedildi",
+    "savedSuccessfullyDesc": "Kaydedilen doktorlara eklendi.",
+    "removedFromSaved": "Kaldırıldı",
+    "removedFromSavedDesc": "Kaydedilen doktorlardan kaldırıldı.",
+    "loginRequired": "Giriş Gerekli",
+    "loginRequiredDesc": "Randevu almak için giriş yapın.",
+    "searchButton": "Ara"
+  },
+  "specialties": {
+    "all": "Tüm Uzmanlıklar",
+    "generalPractice": "Genel Pratisyen",
+    "cardiology": "Kardiyoloji",
+    "neurology": "Nöroloji",
+    "ophthalmology": "Göz",
+    "orthopedics": "Ortopedi",
+    "pediatrics": "Pediatri",
+    "dentistry": "Diş",
+    "dermatology": "Dermatoloji",
+    "endocrinology": "Endokrinoloji",
+    "pathology": "Patoloji",
+    "pulmonology": "Göğüs Hastalıkları"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "Son",
+      "popular": "Popüler",
+      "doctor": "Doktor",
+      "location": "Konum",
+      "specialty": "Uzmanlık"
+    },
+    "clearRecent": "Son aramaları temizle"
+  },
+  "location": {
+    "myLocation": "Konumum",
+    "useMyLocation": "Konumumu kullan",
+    "locationDetected": "Konum algılandı",
+    "clear": "Temizle"
+  },
+  "filters": {
+    "distance": {
+      "label": "Mesafe",
+      "any": "Herhangi bir mesafe",
+      "km5": "5 km",
+      "km10": "10 km",
+      "km25": "25 km",
+      "km50": "50 km"
+    },
+    "rating": {
+      "minimum": "Minimum puan: {{rating}}+ ★",
+      "any": "Herhangi",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "Bugün müsait",
+      "acceptsNewPatients": "Yeni hasta kabul ediyor"
+    },
+    "services": {
+      "title": "Hizmetler",
+      "videoConsultation": "Video görüşme",
+      "acceptsInsurance": "Sigorta kabul ediyor"
+    },
+    "language": {
+      "title": "Dil",
+      "any": "Herhangi bir dil"
+    },
+    "priceRanges": {
+      "any": "Herhangi",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "Video",
+      "insurance": "Sigorta"
+    },
+    "languages": {
+      "english": "İngilizce",
+      "spanish": "İspanyolca",
+      "french": "Fransızca",
+      "german": "Almanca",
+      "russian": "Rusça",
+      "chinese": "Çince",
+      "arabic": "Arapça",
+      "turkish": "Türkçe",
+      "uzbek": "Özbekçe"
+    }
+  },
+  "results": {
+    "tryAdjusting": "Filtrelerinizi veya arama terimlerinizi değiştirmeyi deneyin",
+    "doctorPrefix": "Dr.",
+    "perVisit": "/ziyaret",
+    "sortBy": "Sırala",
+    "sortOptions": {
+      "relevance": "Alaka",
+      "rating": "En yüksek puan",
+      "price_low": "Fiyat: Düşükten yükseğe",
+      "price_high": "Fiyat: Yüksekten düşüğe",
+      "distance": "Mesafe",
+      "availability": "En yakın müsaitlik"
+    }
+  }
+}
+{
+  "search": {
     "title": "Doktor Bul",
     "placeholder": "İsim, uzmanlık veya konum ile ara",
     "filters": "Filtreler",
