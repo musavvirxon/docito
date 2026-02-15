@@ -1,33 +1,480 @@
 {
   "hero": {
-    "badge": "모든 케어를 한곳에, 완벽한 동기화",
+    "badge": "헬스케어 네트워크",
     "title": {
-      "line1": "행정은 줄이고, 케어는 늘리고.",
-      "line2": "의료 전 과정을 위한 하나의 플랫폼."
+      "line1": "하나의 네트워크, 하나의 환자 여정",
+      "line2": "진료가 처음부터 끝까지 연결됩니다"
     },
-    "description": "Docito는 환자, 의료기관, 검사실, 영상센터, 약국, 보험을 연결해—예약, 기록, 처방, 결과, 결제를 한곳에서 관리할 수 있게 합니다.",
-    "cards": {
-      "patients": { "title": "환자용", "description": "찾고, 예약하고, 케어를 한곳에서 추적" },
-      "clinics": { "title": "클리닉용", "description": "스케줄링, 기록, 청구를 통합" },
-      "imaging": { "title": "영상센터용", "description": "오더, 리포트, 의뢰 연계를 간편하게" },
-      "pharmacy": { "title": "약국용", "description": "전자처방, 조제, 배송" },
-      "labs": { "title": "검사실용", "description": "검사 의뢰, 결과, 디지털 전달" }
+    "subtitle": "의사, 클리닉, 검사실, 영상센터, 약국을 하나로 연결해 장소가 바뀌어도 진료가 끊기지 않게 합니다.",
+    "cta": {
+      "primary": "14일 무료로 시작",
+      "secondary": "플랫폼 둘러보기"
+    },
+    "finePrint": "14일 무료 • 카드 불필요 • 언제든 취소"
+  },
+  "search": {
+    "badge": "진료 찾기",
+    "title": "한 곳에서 의료기관 검색",
+    "subtitle": "의사, 클리닉, 검사, 영상, 약국, 병원을 찾아 예약하세요—프로필, 예약 가능 시간, 다음 단계가 명확합니다.",
+    "specialty": "진료과 또는 의료기관",
+    "location": "도시 또는 클리닉",
+    "button": "의료기관 찾기",
+    "voiceSearch": "음성 검색",
+    "recent": "최근 검색",
+    "noRecent": "최근 검색이 아직 없습니다",
+    "trending": "인기 검색",
+    "trendingItems": [
+      "근처 심장내과",
+      "치아 스케일링",
+      "소아과",
+      "피부과",
+      "응급 진료",
+      "혈액 검사"
+    ],
+    "aiHint": "팁: “근처 심장내과” 또는 “타슈켄트 MRI”처럼 입력하면 더 빠르게 찾을 수 있어요."
+  },
+  "providers": {
+    "networkBadge": "헬스케어 네트워크",
+    "networkTitle": "하나의 네트워크, 하나의 환자 여정",
+    "networkDescription": "의사, 클리닉, 검사실, 영상센터, 약국을 하나로 연결해 장소가 바뀌어도 진료가 끊기지 않게 합니다.",
+    "networkNote": "신규: 팀이 온보딩될수록 의료기관 프로필이 표시됩니다.",
+    "findProviders": "의료기관 찾기",
+    "roleLabels": {
+      "doctor": "의사",
+      "clinic": "클리닉",
+      "lab": "검사실",
+      "pharmacy": "약국",
+      "imaging": "영상",
+      "hospital": "병원"
+    },
+    "doctors": {
+      "title": "의사",
+      "description": "프로필, 예약 가능 시간, 다음 단계가 명확한 의사를 찾고 예약하세요.",
+      "cta": "의료기관 찾기"
+    },
+    "clinics": {
+      "title": "클리닉",
+      "description": "프로필, 예약 가능 시간, 다음 단계가 명확한 클리닉을 찾고 예약하세요.",
+      "cta": "의료기관 찾기"
+    },
+    "pharmacies": {
+      "title": "약국",
+      "description": "프로필, 이용 가능 정보, 다음 단계가 명확한 약국을 찾으세요.",
+      "cta": "의료기관 찾기"
+    },
+    "labs": {
+      "title": "검사실",
+      "description": "프로필, 이용 가능 정보, 다음 단계가 명확한 검사실을 찾으세요.",
+      "cta": "의료기관 찾기"
+    },
+    "imaging": {
+      "title": "영상",
+      "description": "프로필, 예약 가능 시간, 다음 단계가 명확한 영상 서비스를 찾고 예약하세요.",
+      "cta": "의료기관 찾기"
+    },
+    "hospitals": {
+      "title": "병원",
+      "description": "프로필, 예약 가능 시간, 다음 단계가 명확한 병원을 찾고 예약하세요.",
+      "cta": "의료기관 찾기"
+    }
+  },
+  "specialties": {
+    "title": "의료 تخصص(전문분야)",
+    "subtitle": "모든 진료 분야에서 متخصص(전문의)를 찾으세요",
+    "viewAll": "모든 전문분야 보기",
+    "browseAria": "{{specialty}} 의료기관 둘러보기",
+    "list": {
+      "cardiology": "심장내과",
+      "neurology": "신경과",
+      "ophthalmology": "안과",
+      "orthopedics": "정형외과",
+      "pediatrics": "소아청소년과",
+      "dentistry": "치과",
+      "generalMedicine": "일반의학",
+      "gastroenterology": "소화기내과",
+      "dermatology": "피부과",
+      "endocrinology": "내분비내과",
+      "pathology": "병리과",
+      "pulmonology": "호흡기내과",
+      "ent": "이비인후과",
+      "rheumatology": "류마티스내과",
+      "surgery": "외과",
+      "urology": "비뇨의학과",
+      "psychiatry": "정신건강의학과",
+      "oncology": "종양/암",
+      "nephrology": "신장내과",
+      "gynecology": "산부인과",
+      "radiology": "영상의학과",
+      "allergyImmunology": "알레르기·면역"
+    }
+  },
+  "diagnostics": {
+    "badge": "진단 & 약국",
+    "title": {
+      "prefix": "전체 진료 여정을",
+      "highlight": "끊김 없이 연결"
+    },
+    "description": "검사, 영상, 약국 업데이트를 예약과 진료 방문과 같은 워크플로우로 통합해—환자와 팀이 항상 최신 정보를 공유합니다.",
+    "services": {
+      "lab": {
+        "title": "검사(랩) 테스트",
+        "description": "검사를 오더하고 결과를 받으며, 모든 내용을 환자 기록과 자동으로 연결합니다.",
+        "features": [
+          "오더 & 결과가 차트에 연결",
+          "결과의 디지털 전달",
+          "청구 워크플로우 준비 완료"
+        ],
+        "browse": "검사실 둘러보기",
+        "join": "검사실로 참여하기"
+      },
+      "imaging": {
+        "title": "의료 영상",
+        "description": "영상 오더와 리포트를 조율해—의뢰자와 환자가 추가 도구 없이도 같은 정보를 공유합니다.",
+        "features": [
+          "리포트가 진료 방문에 첨부",
+          "의뢰자와 간편 공유",
+          "진료 경로 전반 상태 업데이트"
+        ],
+        "browse": "영상 둘러보기",
+        "join": "영상센터로 참여하기"
+      },
+      "pharmacy": {
+        "title": "약국 서비스",
+        "description": "처방, 조제, 추적—약물 업데이트가 진료팀 전체에 표시됩니다.",
+        "features": [
+          "전자 처방 및 리필",
+          "재고 + 대체 약 안내",
+          "픽업 또는 배송 조율"
+        ],
+        "browse": "약국 둘러보기",
+        "join": "약국으로 참여하기"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "하나의 플랫폼. 모든 워크플로우.",
+    "title": "하나의 플랫폼. 모든 워크플로우.",
+    "subtitle": "첫 검색부터 사후 관리까지—Docito가 진료와 운영을 연결합니다.",
+    "cta": {
+      "primary": "플랫폼 둘러보기",
+      "secondary": "작동 방식 보기"
+    },
+    "learnMore": "자세히 보기",
+    "items": {
+      "smartScheduling": {
+        "title": "스마트 예약",
+        "description": "온라인 예약, 리마인더, 실시간 가용 시간."
+      },
+      "digitalPrescriptions": {
+        "title": "디지털 처방",
+        "description": "처방을 약국으로 전송하고 환자 타임라인에 유지합니다."
+      },
+      "secureRecords": {
+        "title": "보안 기록",
+        "description": "문서를 저장하고 필요한 사람에게 빠르고 안전하게 공유합니다."
+      },
+      "clinicalNotes": {
+        "title": "진료 노트",
+        "description": "템플릿과 구조화 노트로 일관된 문서화를 지원합니다."
+      },
+      "teamCoordination": {
+        "title": "팀 협업",
+        "description": "직원·의료진·기관 간 안전한 메시징과 인수인계."
+      },
+      "insuranceCoverage": {
+        "title": "보험 & 보장",
+        "description": "보장 확인과 청구 지원을 통합해 불필요한 왕복을 줄입니다."
+      },
+      "payments": {
+        "title": "결제",
+        "description": "결제를 받고 인보이스를 보내며 수익을 한 곳에서 추적합니다."
+      },
+      "automations": {
+        "title": "자동화",
+        "description": "리마인더·업데이트·팔로업으로 노쇼와 수작업을 줄입니다."
+      },
+      "telemedicine": {
+        "title": "원격진료",
+        "description": "대면이 어려울 때 원격 방문을 제공합니다."
+      }
+    }
+  },
+  "workflows": {
+    "badge": "한 시스템에서 진료 운영",
+    "title": "헬스케어를 움직이는 핵심 워크플로우",
+    "description": "예약, 기록, 결제, 인사이트—전체 진료 여정에 걸쳐 연결됩니다.",
+    "items": {
+      "payments": {
+        "title": "결제",
+        "description": "결제를 받고 인보이스를 보내며 대사—온라인 또는 프런트에서.",
+        "features": [
+          "카드 및 링크 결제",
+          "인보이스 & 영수증",
+          "대사"
+        ]
+      },
+      "scheduling": {
+        "title": "예약",
+        "description": "팀, 룸, 가용 시간과 정렬되는 온라인 예약.",
+        "features": [
+          "실시간 슬롯",
+          "리마인더",
+          "캘린더 동기화"
+        ]
+      },
+      "records": {
+        "title": "기록",
+        "description": "통합 환자 타임라인—파일, 노트, 처방, 결과—역할 기반으로 보호됩니다.",
+        "features": [
+          "안전한 저장",
+          "빠른 접근",
+          "권한 공유"
+        ]
+      },
+      "analytics": {
+        "title": "분석",
+        "description": "이용률, 대기 시간, 수익, 운영 트렌드를 파악하세요.",
+        "features": [
+          "실시간 지표",
+          "리포트",
+          "인사이트"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "기관 자동화",
+    "title": "인력을 늘리지 않고 더 매끄럽게 운영하세요",
+    "description": "Docito는 예약, 기록, 검사, 영상, 약국, 결제를 연결해 업무가 단계 사이에서 자동으로 흐르도록 합니다. 행정 혼란은 줄이고, 예측 가능한 진료를 만듭니다.",
+    "flow": {
+      "intake": {
+        "title": "자동 문진/접수",
+        "description": "방문 전에 서류, 동의, 증상을 수집—종이 추적을 없앱니다."
+      },
+      "scheduling": {
+        "title": "항상 채워지는 예약",
+        "description": "실시간 가용 시간, 리마인더, 스마트 재예약으로 노쇼를 줄입니다."
+      },
+      "records": {
+        "title": "스스로 업데이트되는 기록",
+        "description": "노트, 문서, 방문 기록이 하나의 타임라인으로—구조화되고 검색 가능."
+      },
+      "labs": {
+        "title": "검사 라우팅 자동화",
+        "description": "검사를 오더하고 적절한 검사실로 전송하며 결과를 환자 기록으로 되돌립니다."
+      },
+      "imaging": {
+        "title": "마찰 없는 영상 흐름",
+        "description": "MRI/CT/X-ray/초음파 오더, 예약, 리포트를 엔드투엔드로 조율합니다."
+      },
+      "billing": {
+        "title": "청구와 결제 연결",
+        "description": "인보이스, 영수증, 결제 링크를 예약·서비스와 동기화합니다."
+      },
+      "reminders": {
+        "title": "스마트 리마인더 & 팔로업",
+        "description": "자동 SMS/이메일, 방문 후 안내, 다음 단계 알림."
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "프라이버시 우선 워크플로우",
+        "description": "역할 기반 접근과 안전한 공유—필요한 사람만 필요한 데이터를 봅니다."
+      },
+      "tasks": {
+        "title": "업무가 자동으로 이동",
+        "description": "프런트, 진료팀, 검사, 약국 간 인수인계—수동 추적 없이."
+      }
     },
     "cta": {
-      "primary": "14일 무료 체험 시작하기",
-      "secondary": "지금 케어 찾기",
-      "note": "데모 없음. 시작에 카드 불필요. 언제든 취소 가능."
+      "primary": "14일 무료로 시작",
+      "secondary": "워크플로우 보기"
     },
-    "ecosystem": {
-      "doctors": "의사",
-      "clinics": "클리닉",
-      "labs": "검사실",
-      "imaging": "영상",
-      "pharmacies": "약국",
-      "patients": "환자"
+    "note": "데모 없이 바로 시작하세요. 맞으면 체험 후 구독하면 됩니다."
+  },
+  "ctoOps": {
+    "badge": "CTO & 운영팀을 위해",
+    "title": {
+      "prefix": "하나의 기록. 하나의 워크플로우.",
+      "highlight": "인수인계 제로."
     },
-    "a11y": {
-      "scrollToSearch": "검색으로 스크롤"
+    "description": "의사, 행정, 검사, 약국, 영상 전반에서 진료를 조율—파일을 쫓거나 중복 작업을 하지 않습니다.",
+    "features": {
+      "roleAccess": {
+        "title": "역할 기반 접근",
+        "description": "모든 노트, 파일, 액션을 적절한 사람에게만 보이게 합니다."
+      },
+      "auditSharing": {
+        "title": "감사 친화적 공유",
+        "description": "명확한 소유권과 추적성으로 안심하고 공유하세요."
+      },
+      "secureMessaging": {
+        "title": "안전한 팀 메시징",
+        "description": "민감정보를 일반 채팅앱으로 흘리지 않고 협업합니다."
+      },
+      "realtimeHandoffs": {
+        "title": "실시간 인수인계",
+        "description": "상태 변경이 환자와 함께 이동—전화도, 스크린샷도, 추적도 필요 없습니다."
+      },
+      "timeline": {
+        "title": "하나의 환자 타임라인",
+        "description": "예약, 노트, 검사, 영상, 처방을 한 곳에서."
+      },
+      "integrations": {
+        "title": "필요할 때 통합",
+        "description": "스택을 밤새 갈아엎지 않고도 시스템과 워크플로우를 연결합니다."
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "케어 팀",
+        "description": "자동 할당 + 자동 알림"
+      },
+      "accessControls": {
+        "title": "접근 제어",
+        "description": "역할, 권한, 감사 추적"
+      }
     }
+  },
+  "insurance": {
+    "badge": "보험 통합",
+    "title": "전 세계 보험사와 연동",
+    "description": "Docito는 글로벌 보험 워크플로우와 연동되어—검증, 청구, 클레임이 플랫폼 안에서 처리됩니다.",
+    "stepLabel": "단계 {{step}}",
+    "steps": {
+      "selectProvider": {
+        "title": "보험 선택",
+        "description": "환자가 예약 시 보험을 선택하면—보장 범위를 즉시 확인합니다."
+      },
+      "verification": {
+        "title": "즉시 검증",
+        "description": "자격, 본인부담금, 공제액 정보가 방문 전에 표시됩니다."
+      },
+      "directBilling": {
+        "title": "직접 청구",
+        "description": "클레임이 자동 제출—환자는 본인 부담만 결제합니다."
+      }
+    },
+    "benefits": [
+      "즉시 자격 확인",
+      "클레임 직접 제출",
+      "환자 서류 작업 최소화",
+      "사전 승인 지원",
+      "다중 보험사 호환",
+      "실시간 클레임 상태"
+    ]
+  },
+  "global": {
+    "badge": "글로벌 플랫폼",
+    "title": "하나의 플랫폼. 모든 국가. 모든 언어.",
+    "description": "Docito는 어디서나 작동하도록 설계되었습니다—팀이나 환자가 어디에 있든.",
+    "features": {
+      "multiLanguage": {
+        "title": "다국어",
+        "description": "영어, 아랍어, 러시아어, 우즈베크어 등 지원—완전한 RTL 지원 포함."
+      },
+      "multiCurrency": {
+        "title": "다중 통화",
+        "description": "어떤 현지 통화로도 결제 받고 가격을 표시할 수 있습니다."
+      },
+      "anyTimezone": {
+        "title": "모든 시간대",
+        "description": "예약, 리마인더, 가용 시간이 사용자 시간대에 자동으로 맞춰집니다."
+      },
+      "regionalCompliance": {
+        "title": "지역 규정 대응",
+        "description": "어떤 관할권의 의료 규정도 지원할 수 있도록 설계된 아키텍처."
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "프라이버시 중심 설계",
+        "description": "역할 기반 접근과 안전한 공유"
+      },
+      "securityProgram": {
+        "title": "보안 프로그램",
+        "description": "현대적 인증, 감사 추적, 모니터링"
+      },
+      "complianceReady": {
+        "title": "컴플라이언스 준비 아키텍처",
+        "description": "규제 환경의 의료 워크플로우를 위해 설계"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "모바일 앱",
+    "title": {
+      "line1": "헬스케어를",
+      "highlight": "주머니에"
+    },
+    "description": "이동 중에도 건강을 관리하세요. 예약, 기록 열람, 케어 팀과의 연결을 스마트폰으로.",
+    "features": {
+      "bookAppointments": "예약하기",
+      "viewRecords": "기록 보기",
+      "getReminders": "리마인더 받기",
+      "secureAccess": "안전한 접근"
+    },
+    "comingSoon": {
+      "title": "곧 출시",
+      "platforms": "iOS & Android",
+      "description": "Docito 모바일을 준비 중입니다. 출시 알림을 받으려면 대기자 명단에 등록하세요."
+    },
+    "store": {
+      "comingTo": "곧 출시",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "좋은 아침이에요!",
+      "upcoming": "다가오는 일정",
+      "yourAppointment": "내 예약",
+      "scheduleNow": "지금 예약",
+      "book": "예약",
+      "records": "기록",
+      "healthScore": "건강 점수"
+    }
+  },
+  "faq": {
+    "title": "자주 묻는 질문",
+    "subtitle": "Docito에 대해 알아야 할 모든 것",
+    "items": {
+      "bookAppointment": {
+        "question": "예약은 어떻게 하나요?",
+        "answer": "전문분야나 지역으로 의사를 검색하고 가능한 시간을 확인한 뒤 바로 예약하세요. 이메일과 SMS로 즉시 확인을 받습니다."
+      },
+      "secureData": {
+        "question": "내 건강 데이터는 안전한가요?",
+        "answer": "네. Docito는 현대적 인증, 전송/저장 시 암호화, 역할 기반 접근 제어로 데이터를 보호합니다."
+      },
+      "useInsurance": {
+        "question": "보험을 사용할 수 있나요?",
+        "answer": "기관이 지원한다면 예약 시 보험을 선택하세요. 보장 정보가 방문 전에 표시되고 클레임도 플랫폼 안에서 처리할 수 있습니다."
+      },
+      "doctorsJoin": {
+        "question": "의료기관은 어떻게 참여하나요?",
+        "answer": "제공자가 프로필을 만들고 조직을 인증한 뒤, 팀이 온보딩되면서 예약을 받기 시작합니다."
+      },
+      "mobileApp": {
+        "question": "모바일 앱이 있나요?",
+        "answer": "Docito iOS/Android 앱은 곧 출시됩니다. 출시 알림을 받으려면 대기자 명단에 등록하세요."
+      },
+      "cancelReschedule": {
+        "question": "취소 또는 변경이 필요하면 어떻게 되나요?",
+        "answer": "예약 상세에서 취소하거나 변경할 수 있습니다. 팀에 알림이 가고 가용 시간은 실시간으로 업데이트됩니다."
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "지금 출시",
+    "title": {
+      "line1": "몇 분 만에 시작하세요.",
+      "highlight": "진료를 연결하세요."
+    },
+    "description": "계정을 만들고 예약, 기록, 처방, 결제를 하나의 연결된 시스템에서 운영하세요—환자와 기관 모두를 위해.",
+    "cta": {
+      "primary": "14일 무료로 시작",
+      "secondary": "기능 둘러보기"
+    },
+    "note": "14일 무료 • 카드 불필요 • 언제든 취소"
   }
 }
