@@ -2,11 +2,13 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Rocket, Layers } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { trackMarketingEvent } from "@/lib/marketing";
 
 export default function FinalCTA() {
   const navigate = useNavigate();
+  const { t } = useTranslation("premium");
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -43,17 +45,17 @@ export default function FinalCTA() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8"
           >
             <Sparkles className="w-4 h-4" />
-            Launching now
+            {t("finalCta.badge", "Launching now")}
           </motion.div>
 
           <h2 className="text-4xl md:text-6xl font-extralight tracking-tight text-foreground mb-6">
-            Start in minutes.
+            {t("finalCta.title.line1", "Start in minutes.")}
             <br />
-            <span className="font-normal text-primary">Connect your care.</span>
+            <span className="font-normal text-primary">{t("finalCta.title.highlight", "Connect your care.")}</span>
           </h2>
 
           <p className="text-lg md:text-xl text-muted-foreground font-light max-w-2xl mx-auto mb-12">
-            Create an account and run appointments, records, prescriptions, and payments in one connected system—built for both patients and providers.
+            {t("finalCta.description", "Create an account and run appointments, records, prescriptions, and payments in one connected system—built for both patients and providers.")}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -70,7 +72,7 @@ export default function FinalCTA() {
                 }}
               >
                 <Rocket className="w-5 h-5" />
-                Start free 14-day trial
+                {t("finalCta.cta.primary", "Start free 14-day trial")}
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </motion.div>
@@ -89,7 +91,7 @@ export default function FinalCTA() {
                 }}
               >
                 <Layers className="w-5 h-5" />
-                Explore features
+                {t("finalCta.cta.secondary", "Explore features")}
               </Button>
             </motion.div>
           </div>
@@ -101,7 +103,7 @@ export default function FinalCTA() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-8 text-sm text-muted-foreground"
           >
-            Free 14-day trial • No credit card required • Cancel anytime
+            {t("finalCta.note", "Free 14-day trial • No credit card required • Cancel anytime")}
           </motion.p>
         </motion.div>
       </div>
