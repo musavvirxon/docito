@@ -1,33 +1,480 @@
 {
   "hero": {
-    "badge": "你的所有医疗服务，同步协同",
+    "badge": "医疗网络",
     "title": {
-      "line1": "少些行政，多些关怀。",
-      "line2": "覆盖医疗全流程的一体化平台。"
+      "line1": "一个网络，一条患者旅程",
+      "line2": "端到端保持照护连贯"
     },
-    "description": "Docito 连接患者、医疗机构、实验室、影像中心、药房与保险—让预约、病历、处方、结果与支付集中在一个地方。",
-    "cards": {
-      "patients": { "title": "面向患者", "description": "查找、预约并在一处跟踪就医进度" },
-      "clinics": { "title": "面向诊所", "description": "排班、病历与账单统一管理" },
-      "imaging": { "title": "面向影像", "description": "医嘱、报告与转诊协同" },
-      "pharmacy": { "title": "面向药房", "description": "电子处方、配药与配送" },
-      "labs": { "title": "面向检验", "description": "检验申请、结果与数字化交付" }
+    "subtitle": "医生、诊所、实验室、影像中心与药房互联，避免照护在不同机构之间断档。",
+    "cta": {
+      "primary": "开启 14 天免费试用",
+      "secondary": "探索平台"
+    },
+    "finePrint": "14 天免费试用 • 无需信用卡 • 随时取消"
+  },
+  "search": {
+    "badge": "查找医疗服务",
+    "title": "一站式搜索服务机构",
+    "subtitle": "查找并预约医生、诊所、实验室、影像、药房与医院——含档案、可约时间与清晰下一步。",
+    "specialty": "专科或机构",
+    "location": "城市或诊所",
+    "button": "查找服务机构",
+    "voiceSearch": "语音搜索",
+    "recent": "最近搜索",
+    "noRecent": "暂无最近搜索",
+    "trending": "热门搜索",
+    "trendingItems": [
+      "附近的心脏科医生",
+      "洗牙",
+      "儿科医生",
+      "皮肤科医生",
+      "急诊/急救",
+      "血液检查"
+    ],
+    "aiHint": "提示：试试“附近的心脏科医生”或“塔什干 MRI”，结果更快。"
+  },
+  "providers": {
+    "networkBadge": "医疗网络",
+    "networkTitle": "一个网络，一条患者旅程",
+    "networkDescription": "医生、诊所、实验室、影像中心与药房互联，避免照护在不同机构之间断档。",
+    "networkNote": "全新上线：团队入驻后，服务机构档案将逐步显示。",
+    "findProviders": "查找服务机构",
+    "roleLabels": {
+      "doctor": "医生",
+      "clinic": "诊所",
+      "lab": "实验室",
+      "pharmacy": "药房",
+      "imaging": "影像",
+      "hospital": "医院"
+    },
+    "doctors": {
+      "title": "医生",
+      "description": "查找并预约医生——含档案、可约时间与清晰下一步。",
+      "cta": "查找服务机构"
+    },
+    "clinics": {
+      "title": "诊所",
+      "description": "查找并预约诊所——含档案、可约时间与清晰下一步。",
+      "cta": "查找服务机构"
+    },
+    "pharmacies": {
+      "title": "药房",
+      "description": "查找并预约药房——含档案、可约时间与清晰下一步。",
+      "cta": "查找服务机构"
+    },
+    "labs": {
+      "title": "实验室",
+      "description": "查找并预约实验室——含档案、可约时间与清晰下一步。",
+      "cta": "查找服务机构"
+    },
+    "imaging": {
+      "title": "影像",
+      "description": "查找并预约影像——含档案、可约时间与清晰下一步。",
+      "cta": "查找服务机构"
+    },
+    "hospitals": {
+      "title": "医院",
+      "description": "查找并预约医院——含档案、可约时间与清晰下一步。",
+      "cta": "查找服务机构"
+    }
+  },
+  "specialties": {
+    "title": "医疗专科",
+    "subtitle": "覆盖全部学科，轻松找到专家",
+    "viewAll": "查看全部专科",
+    "browseAria": "浏览 {{specialty}} 服务机构",
+    "list": {
+      "cardiology": "心脏科",
+      "neurology": "神经科",
+      "ophthalmology": "眼科",
+      "orthopedics": "骨科",
+      "pediatrics": "儿科",
+      "dentistry": "牙科",
+      "generalMedicine": "全科",
+      "gastroenterology": "消化内科",
+      "dermatology": "皮肤科",
+      "endocrinology": "内分泌科",
+      "pathology": "病理科",
+      "pulmonology": "呼吸科",
+      "ent": "耳鼻喉科",
+      "rheumatology": "风湿免疫科",
+      "surgery": "外科",
+      "urology": "泌尿科",
+      "psychiatry": "精神科",
+      "oncology": "肿瘤科",
+      "nephrology": "肾内科",
+      "gynecology": "妇科",
+      "radiology": "放射科",
+      "allergyImmunology": "过敏与免疫科"
+    }
+  },
+  "diagnostics": {
+    "badge": "诊断与药房",
+    "title": {
+      "prefix": "让完整照护旅程",
+      "highlight": "始终相连"
+    },
+    "description": "将检验、影像与药房更新纳入与预约和就诊相同的工作流——让患者与团队始终掌握最新信息。",
+    "services": {
+      "lab": {
+        "title": "实验室检验",
+        "description": "开立检验、接收结果，并自动绑定到患者病历。",
+        "features": [
+          "医嘱与结果关联到病历",
+          "结果数字化送达",
+          "支持计费流程"
+        ],
+        "browse": "浏览实验室",
+        "join": "以实验室身份加入"
+      },
+      "imaging": {
+        "title": "医学影像",
+        "description": "协同影像检查与报告，让转诊医生与患者保持一致——无需额外工具。",
+        "features": [
+          "报告附加到就诊记录",
+          "便捷分享给转诊医生",
+          "全程状态更新"
+        ],
+        "browse": "浏览影像",
+        "join": "以影像中心身份加入"
+      },
+      "pharmacy": {
+        "title": "药房服务",
+        "description": "开方、配药与随访——用药更新对照护团队可见。",
+        "features": [
+          "电子处方与续方",
+          "库存与替代方案",
+          "自取或配送协调"
+        ],
+        "browse": "浏览药房",
+        "join": "以药房身份加入"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "一个平台。所有工作流。",
+    "title": "一个平台。所有工作流。",
+    "subtitle": "从首次搜索到随访，Docito 让照护与运营保持连贯。",
+    "cta": {
+      "primary": "探索平台",
+      "secondary": "了解如何运作"
+    },
+    "learnMore": "了解更多",
+    "items": {
+      "smartScheduling": {
+        "title": "智能预约",
+        "description": "在线预约、提醒与实时可约时间。"
+      },
+      "digitalPrescriptions": {
+        "title": "电子处方",
+        "description": "将处方发送至药房，并保留在患者时间线中。"
+      },
+      "secureRecords": {
+        "title": "安全病历",
+        "description": "存储文档并与合适的人快速安全分享。"
+      },
+      "clinicalNotes": {
+        "title": "临床记录",
+        "description": "模板与结构化记录，确保文书一致。"
+      },
+      "teamCoordination": {
+        "title": "团队协同",
+        "description": "在员工、医生与机构之间安全沟通与交接。"
+      },
+      "insuranceCoverage": {
+        "title": "保险与覆盖",
+        "description": "集成的覆盖核验与计费支持，减少反复沟通。"
+      },
+      "payments": {
+        "title": "支付",
+        "description": "收款、开票并在一个地方追踪收入。"
+      },
+      "automations": {
+        "title": "自动化",
+        "description": "提醒、更新与随访降低爽约与手工工作。"
+      },
+      "telemedicine": {
+        "title": "远程医疗",
+        "description": "无法线下时提供远程就诊。"
+      }
+    }
+  },
+  "workflows": {
+    "badge": "用一个系统运行照护",
+    "title": "让医疗运转的核心工作流",
+    "description": "预约、病历、支付与洞察——贯穿整个照护旅程。",
+    "items": {
+      "payments": {
+        "title": "支付",
+        "description": "收款、开票与对账——线上或前台都可。",
+        "features": [
+          "卡支付与链接支付",
+          "发票与收据",
+          "对账"
+        ]
+      },
+      "scheduling": {
+        "title": "预约",
+        "description": "与团队、房间与可约时间一致的在线预约。",
+        "features": [
+          "实时号源",
+          "提醒",
+          "日历同步"
+        ]
+      },
+      "records": {
+        "title": "病历",
+        "description": "统一患者时间线——文件、记录、处方与结果——按角色保护。",
+        "features": [
+          "安全存储",
+          "快速访问",
+          "权限共享"
+        ]
+      },
+      "analytics": {
+        "title": "分析",
+        "description": "了解正在发生的事：利用率、等待时间、收入与运营趋势。",
+        "features": [
+          "实时指标",
+          "报表",
+          "洞察"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "机构自动化",
+    "title": "让机构运转更顺畅——无需增加人手",
+    "description": "Docito 连接预约、病历、检验、影像、药房与支付，让工作在步骤之间自动流转。更少行政混乱，更可预测的照护。",
+    "flow": {
+      "intake": {
+        "title": "自动入诊",
+        "description": "就诊前收集表单、同意与症状——无需追纸质材料。"
+      },
+      "scheduling": {
+        "title": "保持满员的预约",
+        "description": "实时可约、提醒与智能改期，减少爽约。"
+      },
+      "records": {
+        "title": "自动更新的病历",
+        "description": "记录、文档与就诊历史汇入一条时间线——结构化、可搜索。"
+      },
+      "labs": {
+        "title": "检验正确分发",
+        "description": "开立检查、发送到正确实验室，并将结果回写到病历。"
+      },
+      "imaging": {
+        "title": "无摩擦影像流程",
+        "description": "协调 MRI/CT/X 光/超声 的医嘱、预约与报告端到端。"
+      },
+      "billing": {
+        "title": "计费与支付联动",
+        "description": "发票、收据与支付链接与预约和服务保持同步。"
+      },
+      "reminders": {
+        "title": "智能提醒与随访",
+        "description": "自动短信/邮件提醒、就诊后指引与下一步提示。"
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "隐私优先的工作流",
+        "description": "基于角色的访问与安全共享——只有合适的人看到合适的数据。"
+      },
+      "tasks": {
+        "title": "任务自动流转",
+        "description": "前台、临床、实验室与药房之间交接——无需手动追踪。"
+      }
     },
     "cta": {
-      "primary": "开始 14 天免费试用",
-      "secondary": "立即查找医疗服务",
-      "note": "无需演示。无需信用卡即可开始。随时取消。"
+      "primary": "开启 14 天免费试用",
+      "secondary": "查看工作流"
     },
-    "ecosystem": {
-      "doctors": "医生",
-      "clinics": "诊所",
-      "labs": "实验室",
-      "imaging": "影像",
-      "pharmacies": "药房",
-      "patients": "患者"
+    "note": "无需演示。立即开始使用 Docito——试用后合适再订阅。"
+  },
+  "ctoOps": {
+    "badge": "面向 CTO 与运营",
+    "title": {
+      "prefix": "一个记录。一个工作流。",
+      "highlight": "零交接。"
     },
-    "a11y": {
-      "scrollToSearch": "滚动到搜索"
+    "description": "在医生、行政、实验室、药房与影像之间协同照护——无需追文件或重复劳动。",
+    "features": {
+      "roleAccess": {
+        "title": "基于角色的访问",
+        "description": "让每条记录、文件与操作仅对合适的人可见。"
+      },
+      "auditSharing": {
+        "title": "审计友好共享",
+        "description": "放心共享更新——清晰的归属与可追溯性。"
+      },
+      "secureMessaging": {
+        "title": "安全团队消息",
+        "description": "协同照护而不把敏感信息带入普通聊天应用。"
+      },
+      "realtimeHandoffs": {
+        "title": "实时交接",
+        "description": "状态随患者流转——无需电话、截图与追问。"
+      },
+      "timeline": {
+        "title": "统一患者时间线",
+        "description": "预约、记录、检验、影像与处方尽在一处。"
+      },
+      "integrations": {
+        "title": "按需集成",
+        "description": "无需一夜重建技术栈，也能连接系统与工作流。"
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "照护团队",
+        "description": "自动分配并通知"
+      },
+      "accessControls": {
+        "title": "访问控制",
+        "description": "角色、权限与审计轨迹"
+      }
     }
+  },
+  "insurance": {
+    "badge": "保险集成",
+    "title": "支持全球保险机构",
+    "description": "Docito 与全球保险工作流集成——核验、计费与理赔都在平台内完成。",
+    "stepLabel": "第 {{step}} 步",
+    "steps": {
+      "selectProvider": {
+        "title": "选择保险",
+        "description": "患者预约时选择保险——系统即时核验覆盖。"
+      },
+      "verification": {
+        "title": "即时核验",
+        "description": "就诊前展示资格、共付额与免赔额信息。"
+      },
+      "directBilling": {
+        "title": "直接计费",
+        "description": "理赔自动提交——患者仅支付自付部分。"
+      }
+    },
+    "benefits": [
+      "即时资格核验",
+      "直接提交理赔",
+      "患者无需纸质材料",
+      "支持预授权",
+      "多支付方兼容",
+      "实时理赔状态"
+    ]
+  },
+  "global": {
+    "badge": "全球平台",
+    "title": "一个平台。每个国家。任何语言。",
+    "description": "Docito 为全球而建——无论团队或患者身在何处都能使用。",
+    "features": {
+      "multiLanguage": {
+        "title": "多语言",
+        "description": "支持英语、阿拉伯语、俄语、乌兹别克语等，并提供完整 RTL 支持。"
+      },
+      "multiCurrency": {
+        "title": "多币种",
+        "description": "支持任意本地货币展示价格并收款。"
+      },
+      "anyTimezone": {
+        "title": "任意时区",
+        "description": "预约、提醒与可约时间自动适配用户时区。"
+      },
+      "regionalCompliance": {
+        "title": "区域合规",
+        "description": "架构设计可支持任何司法辖区的医疗法规。"
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "隐私优先设计",
+        "description": "角色访问与安全共享"
+      },
+      "securityProgram": {
+        "title": "安全体系",
+        "description": "现代认证、审计与监控"
+      },
+      "complianceReady": {
+        "title": "合规就绪架构",
+        "description": "为受监管医疗工作流而设计"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "移动应用",
+    "title": {
+      "line1": "掌上",
+      "highlight": "医疗"
+    },
+    "description": "随时管理健康：预约、查看记录、与照护团队保持连接——都在手机上完成。",
+    "features": {
+      "bookAppointments": "预约就诊",
+      "viewRecords": "查看记录",
+      "getReminders": "接收提醒",
+      "secureAccess": "安全访问"
+    },
+    "comingSoon": {
+      "title": "即将上线",
+      "platforms": "iOS 与 Android",
+      "description": "我们正在把 Docito 带到你的手机。加入候补名单，发布时第一时间通知你。"
+    },
+    "store": {
+      "comingTo": "即将登陆",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "早上好！",
+      "upcoming": "即将到来",
+      "yourAppointment": "你的预约",
+      "scheduleNow": "立即安排",
+      "book": "预约",
+      "records": "记录",
+      "healthScore": "健康评分"
+    }
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "关于 Docito 你需要了解的一切",
+    "items": {
+      "bookAppointment": {
+        "question": "如何预约？",
+        "answer": "按专科或地点搜索医生，查看可预约时间并立即预约。你会通过邮件与短信收到即时确认。"
+      },
+      "secureData": {
+        "question": "我的健康数据安全吗？",
+        "answer": "是的。Docito 使用现代认证、传输与静态加密，以及基于角色的访问控制来保护数据。"
+      },
+      "useInsurance": {
+        "question": "我可以使用保险吗？",
+        "answer": "如果机构支持，你可在预约时选择保险。覆盖信息会在就诊前显示，理赔也可在平台内处理。"
+      },
+      "doctorsJoin": {
+        "question": "医生如何加入平台？",
+        "answer": "服务机构创建档案、完成组织认证，并在团队入驻后开始接受预约。"
+      },
+      "mobileApp": {
+        "question": "有移动应用吗？",
+        "answer": "Docito 的 iOS 与 Android 移动应用即将推出。加入候补名单以在发布时获知。"
+      },
+      "cancelReschedule": {
+        "question": "如果需要取消或改期怎么办？",
+        "answer": "你可以在预约详情中取消或改期。团队会收到通知，可约时间会实时更新。"
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "正在上线",
+    "title": {
+      "line1": "几分钟即可开始。",
+      "highlight": "连接你的照护。"
+    },
+    "description": "创建账号，在一个互联系统中管理预约、记录、处方与支付——同时服务患者与机构。",
+    "cta": {
+      "primary": "开启 14 天免费试用",
+      "secondary": "探索功能"
+    },
+    "note": "14 天免费试用 • 无需信用卡 • 随时取消"
   }
 }
