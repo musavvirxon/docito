@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "医師を検索して予約",
+    "placeholder": "医師・診療科・場所を検索...",
+    "searching": "検索中...",
+    "filters": "フィルター",
+    "specialty": "診療科",
+    "location": "場所",
+    "rating": "最低評価",
+    "consultationFee": "診察料",
+    "availability": "空き状況",
+    "clearFilters": "フィルターをクリア",
+    "applyFilters": "フィルターを適用",
+    "availableToday": "本日予約可",
+    "videoConsultation": "オンライン診療",
+    "acceptsInsurance": "保険対応",
+    "priceRange": "料金範囲",
+    "distance": "距離",
+    "language": "言語",
+    "submit": "検索"
+  },
+  "profile": {
+    "about": "概要",
+    "experience": "経験",
+    "education": "学歴",
+    "languages": "言語",
+    "services": "サービス",
+    "reviews": "レビュー",
+    "availability": "空き状況",
+    "bookAppointment": "予約する",
+    "contactDoctor": "医師に連絡",
+    "yearsExperience": "経験{{years}}年",
+    "patientsHelped": "{{count}}+人の患者をサポート",
+    "responseTime": "{{time}}以内に返信",
+    "consultationFee": "診察料",
+    "nextAvailable": "次の空き",
+    "viewProfile": "プロフィールを見る",
+    "videoAvailable": "オンライン診療可",
+    "insuranceAccepted": "保険対応",
+    "newPatientsWelcome": "新規患者受付中",
+    "verifiedDoctor": "認証医師",
+    "licenseVerified": "ライセンス確認済み",
+    "hospitalAffiliations": "提携病院",
+    "specializations": "専門分野",
+    "certifications": "資格",
+    "contactInfo": "連絡先",
+    "officeHours": "診療時間",
+    "emergencyContact": "緊急連絡先"
+  },
+  "booking": {
+    "title": "予約する",
+    "selectDate": "日付を選択",
+    "selectTime": "時間を選択",
+    "appointmentType": "予約タイプ",
+    "inPerson": "対面診療",
+    "videoCall": "オンライン診療",
+    "patientInfo": "患者情報",
+    "fullName": "氏名",
+    "phoneNumber": "電話番号",
+    "email": "メール",
+    "reasonForVisit": "受診理由",
+    "additionalNotes": "追加メモ（任意）",
+    "confirmBooking": "予約を確定",
+    "bookingConfirmed": "予約が確定しました！",
+    "bookingConfirmedDesc": "予約が正常に登録されました。",
+    "bookingError": "予約に失敗しました",
+    "bookingErrorDesc": "再試行するかサポートに連絡してください。",
+    "loginRequired": "ログインが必要です",
+    "loginRequiredDesc": "予約するにはログインしてください。",
+    "cancel": "キャンセル",
+    "back": "戻る",
+    "next": "次へ",
+    "step": "{{total}}中{{current}}ステップ",
+    "appointmentSummary": "予約概要",
+    "totalCost": "合計",
+    "paymentMethod": "支払い方法",
+    "payNow": "今すぐ支払う",
+    "payLater": "来院時に支払う",
+    "insuranceInfo": "保険情報",
+    "insuranceProvider": "保険会社",
+    "policyNumber": "証券番号",
+    "verifyInsurance": "保険を確認"
+  },
+  "page": {
+    "title": "医師を探す",
+    "subtitle": "認証済み医師を見つけてすぐに予約",
+    "readyToFind": "最適な医師を見つけましょう",
+    "readyToFindDesc": "認証済み医療専門家ネットワークから検索し、数クリックで予約できます。",
+    "popularSearches": "人気の検索",
+    "foundText": "件の結果",
+    "showingVerified": "認証済み医療専門家を表示中",
+    "noDoctors": "医師が見つかりませんでした",
+    "searching": "検索中...",
+    "error": "検索エラー",
+    "tryAgain": "後でもう一度お試しください。",
+    "bookNow": "予約",
+    "savedSuccessfully": "保存しました",
+    "savedSuccessfullyDesc": "保存した医師に追加されました。",
+    "removedFromSaved": "削除しました",
+    "removedFromSavedDesc": "保存した医師から削除されました。",
+    "loginRequired": "ログインが必要です",
+    "loginRequiredDesc": "予約するにはログインしてください。",
+    "searchButton": "検索"
+  },
+  "specialties": {
+    "all": "すべての診療科",
+    "generalPractice": "総合診療",
+    "cardiology": "循環器内科",
+    "neurology": "神経内科",
+    "ophthalmology": "眼科",
+    "orthopedics": "整形外科",
+    "pediatrics": "小児科",
+    "dentistry": "歯科",
+    "dermatology": "皮膚科",
+    "endocrinology": "内分泌科",
+    "pathology": "病理",
+    "pulmonology": "呼吸器内科"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "最近",
+      "popular": "人気",
+      "doctor": "医師",
+      "location": "場所",
+      "specialty": "診療科"
+    },
+    "clearRecent": "最近の検索をクリア"
+  },
+  "location": {
+    "myLocation": "現在地",
+    "useMyLocation": "現在地を使用",
+    "locationDetected": "位置情報を検出しました",
+    "clear": "クリア"
+  },
+  "filters": {
+    "distance": {
+      "label": "距離",
+      "any": "距離指定なし",
+      "km5": "5 km",
+      "km10": "10 km",
+      "km25": "25 km",
+      "km50": "50 km"
+    },
+    "rating": {
+      "minimum": "最低評価：{{rating}}+ ★",
+      "any": "指定なし",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "本日予約可",
+      "acceptsNewPatients": "新規患者受付中"
+    },
+    "services": {
+      "title": "サービス",
+      "videoConsultation": "オンライン診療",
+      "acceptsInsurance": "保険対応"
+    },
+    "language": {
+      "title": "言語",
+      "any": "言語指定なし"
+    },
+    "priceRanges": {
+      "any": "指定なし",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "オンライン",
+      "insurance": "保険"
+    },
+    "languages": {
+      "english": "英語",
+      "spanish": "スペイン語",
+      "french": "フランス語",
+      "german": "ドイツ語",
+      "russian": "ロシア語",
+      "chinese": "中国語",
+      "arabic": "アラビア語",
+      "turkish": "トルコ語",
+      "uzbek": "ウズベク語"
+    }
+  },
+  "results": {
+    "tryAdjusting": "フィルターまたは検索条件を変更してみてください",
+    "doctorPrefix": "Dr.",
+    "perVisit": "/回",
+    "sortBy": "並び替え",
+    "sortOptions": {
+      "relevance": "関連度",
+      "rating": "評価が高い順",
+      "price_low": "料金：安い順",
+      "price_high": "料金：高い順",
+      "distance": "距離",
+      "availability": "最短で予約可能"
+    }
+  }
+}
+{
+  "search": {
     "title": "医師を探す",
     "placeholder": "名前、専門分野、または場所で検索",
     "filters": "フィルター",
