@@ -1,143 +1,193 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Clock, TrendingUp, User, MapPin, Stethoscope, X, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Search, MapPin, User, Stethoscope, TrendingUp, Clock, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { useSearchDiscovery, type SearchSuggestion } from '@/hooks/useSearchDiscovery';
 import { useTranslation } from 'react-i18next';
+
+interface SearchSuggestion {
+  id: string;
+  text: string;
+  type: 'recent' | 'popular' | 'doctor' | 'location' | 'specialty';
+}
 
 interface SearchAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
-  onSearch: (value: string) => void;
+  onSearch: (query: string) => void;
   placeholder?: string;
   className?: string;
-  autoFocus?: boolean;
 }
 
-const suggestionIcons: Record<SearchSuggestion['type'], React.ReactNode> = {
-  recent: <Clock className="h-4 w-4 text-muted-foreground" />,
-  popular: <TrendingUp className="h-4 w-4 text-primary" />,
-  doctor: <User className="h-4 w-4 text-blue-500" />,
-  location: <MapPin className="h-4 w-4 text-green-500" />,
-  specialty: <Stethoscope className="h-4 w-4 text-purple-500" />,
-};
-
-const suggestionLabels: Record<SearchSuggestion['type'], string> = {
-  recent: 'Recent',
-  popular: 'Popular',
-  doctor: 'Doctor',
-  location: 'Location',
-  specialty: 'Specialty',
+const suggestionIcons = {
+  recent: Clock,
+  popular: TrendingUp,
+  doctor: User,
+  location: MapPin,
+  specialty: Stethoscope
 };
 
 export function SearchAutocomplete({
   value,
   onChange,
   onSearch,
-  placeholder,
-  className,
-  autoFocus = false,
+  placeholder = 'Search doctors, specialties, locations...',
+  className
 }: SearchAutocompleteProps) {
-  const { t } = useTranslation(['doctors']);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const { t } = useTranslation(['doctors']);
+
+  const getSuggestionLabel = (type: SearchSuggestion['type']) =>
+    t(`doctors:autocomplete.labels.${type}`, { defaultValue: type });
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const { suggestions, isLoadingSuggestions, getSuggestions, clearSearchHistory, recentSearches } = useSearchDiscovery();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Debounced suggestion fetch
+  // Mock suggestions - replace with actual API call
+  const getMockSuggestions = (query: string): SearchSuggestion[] => {
+    const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    const popularSearches = [
+      'Cardiologist',
+      'Dermatologist',
+      'Pediatrician',
+      'Dentist',
+      'General Practice'
+    ];
+
+    if (!query) {
+      return [
+        ...recentSearches.slice(0, 3).map((search: string, index: number) => ({
+          id: `recent-${index}`,
+          text: search,
+          type: 'recent' as const
+        })),
+        ...popularSearches.slice(0, 3).map((search, index) => ({
+          id: `popular-${index}`,
+          text: search,
+          type: 'popular' as const
+        }))
+      ];
+    }
+
+    // Filter and return suggestions based on query
+    const filtered = [...popularSearches, ...recentSearches]
+      .filter(item => item.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 5);
+
+    return filtered.map((text, index) => ({
+      id: `suggestion-${index}`,
+      text,
+      type: popularSearches.includes(text) ? 'popular' : 'recent'
+    }));
+  };
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      getSuggestions(value);
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [value, getSuggestions]);
+    if (isOpen) {
+      setSuggestions(getMockSuggestions(value));
+    }
+  }, [value, isOpen]);
 
-  // Handle click outside
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        inputRef.current &&
+        !inputRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
+        setHighlightedIndex(-1);
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen) {
-      if (e.key === 'ArrowDown') {
-        setIsOpen(true);
-      }
-      return;
-    }
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (!isOpen) return;
 
-    switch (e.key) {
+    switch (event.key) {
       case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
+        event.preventDefault();
+        setHighlightedIndex(prev =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         );
         break;
       case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
+        event.preventDefault();
+        setHighlightedIndex(prev => (prev > 0 ? prev - 1 : -1));
         break;
       case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-          const suggestion = suggestions[selectedIndex];
-          onChange(suggestion.text);
-          onSearch(suggestion.text);
-          setIsOpen(false);
-        } else if (value.trim()) {
-          onSearch(value);
-          setIsOpen(false);
+        event.preventDefault();
+        if (highlightedIndex >= 0) {
+          const selected = suggestions[highlightedIndex];
+          handleSuggestionSelect(selected);
+        } else {
+          handleSearch();
         }
         break;
       case 'Escape':
         setIsOpen(false);
-        setSelectedIndex(-1);
+        setHighlightedIndex(-1);
         break;
     }
   };
 
-  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
+  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
     onChange(suggestion.text);
-    onSearch(suggestion.text);
     setIsOpen(false);
-    setSelectedIndex(-1);
+    setHighlightedIndex(-1);
+    onSearch(suggestion.text);
+    saveRecentSearch(suggestion.text);
+  };
+
+  const handleSearch = () => {
+    if (value.trim()) {
+      onSearch(value.trim());
+      saveRecentSearch(value.trim());
+      setIsOpen(false);
+      setHighlightedIndex(-1);
+    }
+  };
+
+  const saveRecentSearch = (search: string) => {
+    const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+    const updated = [search, ...recentSearches.filter((s: string) => s !== search)].slice(0, 10);
+    localStorage.setItem('recentSearches', JSON.stringify(updated));
+  };
+
+  const clearRecentSearches = () => {
+    localStorage.removeItem('recentSearches');
+    setSuggestions(getMockSuggestions(value));
+  };
+
+  const getIcon = (type: SearchSuggestion['type']) => {
+    const IconComponent = suggestionIcons[type];
+    return <IconComponent className="h-4 w-4" />;
   };
 
   return (
-    <div ref={containerRef} className={cn("relative", className)}>
+    <div className={cn("relative", className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
           ref={inputRef}
           value={value}
-          onChange={(e) => {
-            onChange(e.target.value);
-            setIsOpen(true);
-            setSelectedIndex(-1);
-          }}
-          onFocus={() => {
-            setIsOpen(true);
-            getSuggestions(value);
-          }}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder || t('doctors:search.placeholder')}
-          className="pl-10 pr-10 h-12 text-base bg-background border-border"
-          autoFocus={autoFocus}
+          placeholder={placeholder}
+          className="pl-10 pr-10"
         />
         {value && (
           <Button
             variant="ghost"
             size="sm"
-            className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
             onClick={() => {
               onChange('');
               inputRef.current?.focus();
@@ -148,65 +198,61 @@ export function SearchAutocomplete({
         )}
       </div>
 
-      <AnimatePresence>
-        {isOpen && (suggestions.length > 0 || isLoadingSuggestions) && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-            className="absolute z-50 w-full mt-2 bg-popover border border-border rounded-lg shadow-lg overflow-hidden"
-          >
-            {isLoadingSuggestions && suggestions.length === 0 ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      {isOpen && suggestions.length > 0 && (
+        <Card
+          ref={dropdownRef}
+          className="absolute top-full left-0 right-0 mt-1 p-2 shadow-lg z-50 max-h-80 overflow-y-auto"
+        >
+          <div className="space-y-1">
+            {/* Header for recent searches */}
+            {!value && suggestions.some(s => s.type === 'recent') && (
+              <div className="flex items-center justify-between px-2 py-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase">
+                  {getSuggestionLabel('recent')}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={clearRecentSearches}
+                >
+                  {t('doctors:autocomplete.clearRecent')}
+                </Button>
               </div>
-            ) : (
-              <>
-                <div className="max-h-[300px] overflow-y-auto">
-                  {suggestions.map((suggestion, index) => (
-                    <motion.button
-                      key={`${suggestion.type}-${suggestion.text}`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.03 }}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors",
-                        "hover:bg-accent",
-                        selectedIndex === index && "bg-accent"
-                      )}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                    >
-                      {suggestionIcons[suggestion.type]}
-                      <span className="flex-1 truncate">{suggestion.text}</span>
-                      <span className="text-xs text-muted-foreground capitalize">
-                        {suggestionLabels[suggestion.type]}
-                      </span>
-                    </motion.button>
-                  ))}
+            )}
+
+            {suggestions.map((suggestion, index) => (
+              <button
+                key={suggestion.id}
+                className={cn(
+                  "w-full flex items-center gap-3 px-2 py-2 rounded-md text-left transition-colors",
+                  highlightedIndex === index
+                    ? "bg-accent text-accent-foreground"
+                    : "hover:bg-muted"
+                )}
+                onClick={() => handleSuggestionSelect(suggestion)}
+                onMouseEnter={() => setHighlightedIndex(index)}
+              >
+                <div className={cn(
+                  "flex items-center justify-center w-8 h-8 rounded-md",
+                  suggestion.type === 'popular' ? "bg-primary/10 text-primary" :
+                  suggestion.type === 'recent' ? "bg-muted text-muted-foreground" :
+                  "bg-secondary text-secondary-foreground"
+                )}>
+                  {getIcon(suggestion.type)}
                 </div>
                 
-                {recentSearches.length > 0 && !value && (
-                  <div className="border-t border-border px-4 py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => {
-                        clearSearchHistory();
-                        getSuggestions('');
-                      }}
-                    >
-                      Clear recent searches
-                    </Button>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{suggestion.text}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {getSuggestionLabel(suggestion.type)}
                   </div>
-                )}
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </div>
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
     </div>
   );
 }
