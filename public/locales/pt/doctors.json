@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "Encontrar e agendar médicos",
+    "placeholder": "Buscar médicos, especialidades, locais...",
+    "searching": "Buscando...",
+    "filters": "Filtros",
+    "specialty": "Especialidade",
+    "location": "Local",
+    "rating": "Avaliação mínima",
+    "consultationFee": "Taxa de consulta",
+    "availability": "Disponibilidade",
+    "clearFilters": "Limpar filtros",
+    "applyFilters": "Aplicar filtros",
+    "availableToday": "Disponível hoje",
+    "videoConsultation": "Consulta por vídeo",
+    "acceptsInsurance": "Aceita convênio",
+    "priceRange": "Faixa de preço",
+    "distance": "Distância",
+    "language": "Idioma",
+    "submit": "Buscar"
+  },
+  "profile": {
+    "about": "Sobre",
+    "experience": "Experiência",
+    "education": "Educação",
+    "languages": "Idiomas",
+    "services": "Serviços",
+    "reviews": "Avaliações",
+    "availability": "Disponibilidade",
+    "bookAppointment": "Agendar consulta",
+    "contactDoctor": "Contatar médico",
+    "yearsExperience": "{{years}} anos de experiência",
+    "patientsHelped": "{{count}}+ pacientes ajudados",
+    "responseTime": "Responde em {{time}}",
+    "consultationFee": "Taxa de consulta",
+    "nextAvailable": "Próxima disponibilidade",
+    "viewProfile": "Ver perfil",
+    "videoAvailable": "Consulta por vídeo disponível",
+    "insuranceAccepted": "Convênio aceito",
+    "newPatientsWelcome": "Aceita novos pacientes",
+    "verifiedDoctor": "Médico verificado",
+    "licenseVerified": "Licença verificada",
+    "hospitalAffiliations": "Afiliações hospitalares",
+    "specializations": "Especializações",
+    "certifications": "Certificações",
+    "contactInfo": "Informações de contato",
+    "officeHours": "Horário de atendimento",
+    "emergencyContact": "Contato de emergência"
+  },
+  "booking": {
+    "title": "Agendar consulta",
+    "selectDate": "Selecionar data",
+    "selectTime": "Selecionar horário",
+    "appointmentType": "Tipo de consulta",
+    "inPerson": "Presencial",
+    "videoCall": "Vídeo",
+    "patientInfo": "Informações do paciente",
+    "fullName": "Nome completo",
+    "phoneNumber": "Número de telefone",
+    "email": "E-mail",
+    "reasonForVisit": "Motivo da visita",
+    "additionalNotes": "Notas adicionais (Opcional)",
+    "confirmBooking": "Confirmar agendamento",
+    "bookingConfirmed": "Agendamento confirmado!",
+    "bookingConfirmedDesc": "Sua consulta foi marcada com sucesso.",
+    "bookingError": "Falha no agendamento",
+    "bookingErrorDesc": "Tente novamente ou contate o suporte.",
+    "loginRequired": "Login necessário",
+    "loginRequiredDesc": "Faça login para agendar uma consulta.",
+    "cancel": "Cancelar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "step": "Etapa {{current}} de {{total}}",
+    "appointmentSummary": "Resumo da consulta",
+    "totalCost": "Custo total",
+    "paymentMethod": "Método de pagamento",
+    "payNow": "Pagar agora",
+    "payLater": "Pagar na visita",
+    "insuranceInfo": "Informações do convênio",
+    "insuranceProvider": "Operadora",
+    "policyNumber": "Número da apólice",
+    "verifyInsurance": "Verificar convênio"
+  },
+  "page": {
+    "title": "Buscar médicos",
+    "subtitle": "Descubra médicos verificados e agende consultas instantaneamente",
+    "readyToFind": "Pronto para encontrar o médico certo?",
+    "readyToFindDesc": "Pesquise na nossa rede de profissionais verificados e agende consultas com poucos cliques.",
+    "popularSearches": "Buscas populares",
+    "foundText": "resultados encontrados",
+    "showingVerified": "Mostrando profissionais verificados",
+    "noDoctors": "Nenhum médico encontrado",
+    "searching": "Buscando...",
+    "error": "Erro na busca",
+    "tryAgain": "Tente novamente mais tarde.",
+    "bookNow": "Agendar",
+    "savedSuccessfully": "Salvo",
+    "savedSuccessfullyDesc": "Adicionado à sua lista de médicos salvos.",
+    "removedFromSaved": "Removido",
+    "removedFromSavedDesc": "Removido da sua lista de médicos salvos.",
+    "loginRequired": "Login necessário",
+    "loginRequiredDesc": "Faça login para agendar uma consulta.",
+    "searchButton": "Buscar"
+  },
+  "specialties": {
+    "all": "Todas as especialidades",
+    "generalPractice": "Clínico geral",
+    "cardiology": "Cardiologia",
+    "neurology": "Neurologia",
+    "ophthalmology": "Oftalmologia",
+    "orthopedics": "Ortopedia",
+    "pediatrics": "Pediatria",
+    "dentistry": "Odontologia",
+    "dermatology": "Dermatologia",
+    "endocrinology": "Endocrinologia",
+    "pathology": "Patologia",
+    "pulmonology": "Pneumologia"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "Recentes",
+      "popular": "Populares",
+      "doctor": "Médico",
+      "location": "Local",
+      "specialty": "Especialidade"
+    },
+    "clearRecent": "Limpar buscas recentes"
+  },
+  "location": {
+    "myLocation": "Minha localização",
+    "useMyLocation": "Usar minha localização",
+    "locationDetected": "Localização detectada",
+    "clear": "Limpar"
+  },
+  "filters": {
+    "distance": {
+      "label": "Distância",
+      "any": "Qualquer distância",
+      "km5": "5 km",
+      "km10": "10 km",
+      "km25": "25 km",
+      "km50": "50 km"
+    },
+    "rating": {
+      "minimum": "Avaliação mínima: {{rating}}+ ★",
+      "any": "Qualquer",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "Disponível hoje",
+      "acceptsNewPatients": "Aceita novos pacientes"
+    },
+    "services": {
+      "title": "Serviços",
+      "videoConsultation": "Consulta por vídeo",
+      "acceptsInsurance": "Aceita convênio"
+    },
+    "language": {
+      "title": "Idioma",
+      "any": "Qualquer idioma"
+    },
+    "priceRanges": {
+      "any": "Qualquer",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "Vídeo",
+      "insurance": "Convênio"
+    },
+    "languages": {
+      "english": "Inglês",
+      "spanish": "Espanhol",
+      "french": "Francês",
+      "german": "Alemão",
+      "russian": "Russo",
+      "chinese": "Chinês",
+      "arabic": "Árabe",
+      "turkish": "Turco",
+      "uzbek": "Uzbeque"
+    }
+  },
+  "results": {
+    "tryAdjusting": "Tente ajustar seus filtros ou termos de busca",
+    "doctorPrefix": "Dr.",
+    "perVisit": "/visita",
+    "sortBy": "Ordenar por",
+    "sortOptions": {
+      "relevance": "Relevância",
+      "rating": "Melhor avaliação",
+      "price_low": "Preço: do menor para o maior",
+      "price_high": "Preço: do maior para o menor",
+      "distance": "Distância",
+      "availability": "Mais cedo disponível"
+    }
+  }
+}
+{
+  "search": {
     "title": "Encontrar Médicos",
     "placeholder": "Pesquisar por nome, especialidade ou localização",
     "filters": "Filtros",
