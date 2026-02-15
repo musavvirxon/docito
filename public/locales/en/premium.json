@@ -1,34 +1,480 @@
-
 {
   "hero": {
-    "badge": "All your care, in sync",
+    "badge": "Healthcare Network",
     "title": {
-      "line1": "Less admin. More care.",
-      "line2": "One platform for every step of healthcare."
+      "line1": "One network, one patient journey",
+      "line2": "Care stays connected end-to-end"
     },
-    "description": "Docito connects patients, providers, labs, imaging, pharmacies, and insurance—so bookings, records, prescriptions, results, and payments stay in one place.",
-    "cards": {
-      "patients": { "title": "For patients", "description": "Find, book, and track care in one place" },
-      "clinics": { "title": "For clinics", "description": "Scheduling, records, and billing unified" },
-      "imaging": { "title": "For imaging", "description": "Orders, reports, and referral coordination" },
-      "pharmacy": { "title": "For pharmacy", "description": "ePrescriptions, fulfillment, and delivery" },
-      "labs": { "title": "For labs", "description": "Test ordering, results, and digital delivery" }
+    "subtitle": "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.",
+    "cta": {
+      "primary": "Start free 14-day trial",
+      "secondary": "Explore platform"
+    },
+    "finePrint": "Free 14-day trial • No credit card required • Cancel anytime"
+  },
+  "search": {
+    "badge": "Find care",
+    "title": "Search providers in one place",
+    "subtitle": "Find and book doctors, clinics, labs, imaging, pharmacies, and hospitals—with profiles, availability, and clear next steps.",
+    "specialty": "Specialty or provider",
+    "location": "City or clinic",
+    "button": "Find Providers",
+    "voiceSearch": "Voice search",
+    "recent": "Recent searches",
+    "noRecent": "No recent searches yet",
+    "trending": "Trending",
+    "trendingItems": [
+      "cardiologist near me",
+      "teeth cleaning",
+      "pediatrician",
+      "dermatologist",
+      "urgent care",
+      "blood test"
+    ],
+    "aiHint": "Tip: try “cardiologist near me” or “MRI in Tashkent” for faster results."
+  },
+  "providers": {
+    "networkBadge": "Healthcare Network",
+    "networkTitle": "One network, one patient journey",
+    "networkDescription": "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.",
+    "networkNote": "Newly launched: provider profiles appear as teams onboard.",
+    "findProviders": "Find Providers",
+    "roleLabels": {
+      "doctor": "Doctors",
+      "clinic": "Clinics",
+      "lab": "Labs",
+      "pharmacy": "Pharmacies",
+      "imaging": "Imaging",
+      "hospital": "Hospitals"
+    },
+    "doctors": {
+      "title": "Doctors",
+      "description": "Find and book doctors—with profiles, availability, and clear next steps.",
+      "cta": "Find Providers"
+    },
+    "clinics": {
+      "title": "Clinics",
+      "description": "Find and book clinics—with profiles, availability, and clear next steps.",
+      "cta": "Find Providers"
+    },
+    "pharmacies": {
+      "title": "Pharmacies",
+      "description": "Find and book pharmacies—with profiles, availability, and clear next steps.",
+      "cta": "Find Providers"
+    },
+    "labs": {
+      "title": "Labs",
+      "description": "Find and book labs—with profiles, availability, and clear next steps.",
+      "cta": "Find Providers"
+    },
+    "imaging": {
+      "title": "Imaging",
+      "description": "Find and book imaging—with profiles, availability, and clear next steps.",
+      "cta": "Find Providers"
+    },
+    "hospitals": {
+      "title": "Hospitals",
+      "description": "Find and book hospitals—with profiles, availability, and clear next steps.",
+      "cta": "Find Providers"
+    }
+  },
+  "specialties": {
+    "title": "Medical Specialties",
+    "subtitle": "Find specialists across all medical disciplines",
+    "viewAll": "View all specialties",
+    "browseAria": "Browse {{specialty}} providers",
+    "list": {
+      "cardiology": "Cardiology",
+      "neurology": "Neurology",
+      "ophthalmology": "Ophthalmology",
+      "orthopedics": "Orthopedics",
+      "pediatrics": "Pediatrics",
+      "dentistry": "Dentistry",
+      "generalMedicine": "General Medicine",
+      "gastroenterology": "Gastroenterology",
+      "dermatology": "Dermatology",
+      "endocrinology": "Endocrinology",
+      "pathology": "Pathology",
+      "pulmonology": "Pulmonology",
+      "ent": "ENT",
+      "rheumatology": "Rheumatology",
+      "surgery": "Surgery",
+      "urology": "Urology",
+      "psychiatry": "Psychiatry",
+      "oncology": "Oncology",
+      "nephrology": "Nephrology",
+      "gynecology": "Gynecology",
+      "radiology": "Radiology",
+      "allergyImmunology": "Allergy & Immunology"
+    }
+  },
+  "diagnostics": {
+    "badge": "Diagnostics & Pharmacy",
+    "title": {
+      "prefix": "Keep the full care journey",
+      "highlight": "connected"
+    },
+    "description": "Bring labs, imaging, and pharmacy updates into the same workflow as scheduling and visits — so patients and teams always have the latest context.",
+    "services": {
+      "lab": {
+        "title": "Laboratory testing",
+        "description": "Order labs, receive results, and keep everything tied to the patient record — automatically.",
+        "features": [
+          "Orders & results linked to the chart",
+          "Digital result delivery",
+          "Ready for billing workflows"
+        ],
+        "browse": "Browse labs",
+        "join": "Join as a lab"
+      },
+      "imaging": {
+        "title": "Medical imaging",
+        "description": "Coordinate imaging orders and reports so referrers and patients stay aligned — without extra tools.",
+        "features": [
+          "Reports attached to the visit",
+          "Easy sharing with referrers",
+          "Status updates across the care path"
+        ],
+        "browse": "Browse imaging",
+        "join": "Join as an imaging center"
+      },
+      "pharmacy": {
+        "title": "Pharmacy services",
+        "description": "Prescribe, fulfill, and follow up — with medication updates visible across the care team.",
+        "features": [
+          "ePrescriptions and refills",
+          "Availability + substitutions",
+          "Pickup or delivery coordination"
+        ],
+        "browse": "Browse pharmacies",
+        "join": "Join as a pharmacy"
+      }
+    }
+  },
+  "capabilities": {
+    "badge": "One platform. Every workflow.",
+    "title": "One platform. Every workflow.",
+    "subtitle": "From first search to follow-up—Docito keeps care and operations connected.",
+    "cta": {
+      "primary": "Explore platform",
+      "secondary": "See how it works"
+    },
+    "learnMore": "Learn more",
+    "items": {
+      "smartScheduling": {
+        "title": "Smart Scheduling",
+        "description": "Online booking, reminders, and real-time availability."
+      },
+      "digitalPrescriptions": {
+        "title": "Digital Prescriptions",
+        "description": "Send prescriptions to pharmacies and keep everything in the patient timeline."
+      },
+      "secureRecords": {
+        "title": "Secure Records",
+        "description": "Store documents and share files with the right people—fast and secure."
+      },
+      "clinicalNotes": {
+        "title": "Clinical Notes",
+        "description": "Templates and structured notes to document care consistently."
+      },
+      "teamCoordination": {
+        "title": "Team Coordination",
+        "description": "Secure messaging and handoffs across staff, providers, and facilities."
+      },
+      "insuranceCoverage": {
+        "title": "Insurance & Coverage",
+        "description": "Integrated coverage checks and billing support that reduces back-and-forth."
+      },
+      "payments": {
+        "title": "Payments",
+        "description": "Collect payments, send invoices, and keep revenue tracking in one place."
+      },
+      "automations": {
+        "title": "Automations",
+        "description": "Reminders, updates, and follow-ups that cut no-shows and manual work."
+      },
+      "telemedicine": {
+        "title": "Telemedicine",
+        "description": "Offer remote visits when in-person care isn’t possible."
+      }
+    }
+  },
+  "workflows": {
+    "badge": "Run care in one system",
+    "title": "The core workflows that keep healthcare moving",
+    "description": "Scheduling, records, payments, and insights—connected across your entire care journey.",
+    "items": {
+      "payments": {
+        "title": "Payments",
+        "description": "Collect payments, send invoices, and reconcile—online or at the front desk.",
+        "features": [
+          "Card & link payments",
+          "Invoices & receipts",
+          "Reconciliation"
+        ]
+      },
+      "scheduling": {
+        "title": "Scheduling",
+        "description": "Online booking that stays aligned with your team, rooms, and availability.",
+        "features": [
+          "Real-time slots",
+          "Reminders",
+          "Calendar sync"
+        ]
+      },
+      "records": {
+        "title": "Records",
+        "description": "A unified patient timeline—files, notes, prescriptions, and results—secured by roles.",
+        "features": [
+          "Secure storage",
+          "Fast access",
+          "Permissioned sharing"
+        ]
+      },
+      "analytics": {
+        "title": "Analytics",
+        "description": "Know what’s happening: utilization, wait times, revenue, and operational trends.",
+        "features": [
+          "Live metrics",
+          "Reports",
+          "Insights"
+        ]
+      }
+    }
+  },
+  "automation": {
+    "badge": "Facility automation",
+    "title": "Make your facility run smoother—without adding staff",
+    "description": "Docito connects scheduling, records, labs, imaging, pharmacies, and payments so work moves automatically between steps. Less admin chaos. More predictable care.",
+    "flow": {
+      "intake": {
+        "title": "Intake, automatically",
+        "description": "Collect forms, consent, and symptoms before the visit—no chasing paperwork."
+      },
+      "scheduling": {
+        "title": "Scheduling that stays full",
+        "description": "Real-time availability, reminders, and smart rescheduling to reduce no-shows."
+      },
+      "records": {
+        "title": "Records that update themselves",
+        "description": "Notes, documents, and visit history in one timeline—structured and searchable."
+      },
+      "labs": {
+        "title": "Labs routed correctly",
+        "description": "Order tests, send to the right lab, and deliver results back to the patient record."
+      },
+      "imaging": {
+        "title": "Imaging without friction",
+        "description": "Coordinate MRI/CT/X-ray/ultrasound orders, appointments, and reports end-to-end."
+      },
+      "billing": {
+        "title": "Billing & payments connected",
+        "description": "Invoices, receipts, and payment links—kept in sync with appointments and services."
+      },
+      "reminders": {
+        "title": "Smart reminders & follow-ups",
+        "description": "Automated SMS/email reminders, post-visit instructions, and next-step prompts."
+      }
+    },
+    "highlights": {
+      "privacy": {
+        "title": "Privacy-first workflows",
+        "description": "Role-based access and secure sharing—only the right people see the right data."
+      },
+      "tasks": {
+        "title": "Tasks that move themselves",
+        "description": "Hand-offs between front desk, clinicians, labs, and pharmacy—without manual tracking."
+      }
     },
     "cta": {
       "primary": "Start free 14-day trial",
-      "secondary": "Find care now",
-      "note": "No demo. No credit card to start. Cancel anytime."
+      "secondary": "See workflows"
     },
-    "ecosystem": {
-      "doctors": "Doctors",
-      "clinics": "Clinics",
-      "labs": "Labs",
-      "imaging": "Imaging",
-      "pharmacies": "Pharmacies",
-      "patients": "Patients"
+    "note": "No demo. Start using Docito right away—then subscribe after the trial if it fits."
+  },
+  "ctoOps": {
+    "badge": "For CTOs & Operators",
+    "title": {
+      "prefix": "One record. One workflow.",
+      "highlight": "Zero handoffs."
     },
-    "a11y": {
-      "scrollToSearch": "Scroll to search"
+    "description": "Coordinate care across doctors, admins, labs, pharmacies, and imaging — without chasing files or duplicating work.",
+    "features": {
+      "roleAccess": {
+        "title": "Role-based access",
+        "description": "Keep every note, file, and action visible only to the right people."
+      },
+      "auditSharing": {
+        "title": "Audit-friendly sharing",
+        "description": "Share updates with confidence — with clear ownership and traceability."
+      },
+      "secureMessaging": {
+        "title": "Secure team messaging",
+        "description": "Coordinate care without leaking PHI into consumer chat apps."
+      },
+      "realtimeHandoffs": {
+        "title": "Real-time handoffs",
+        "description": "Status changes move with the patient — no calls, no screenshots, no chasing."
+      },
+      "timeline": {
+        "title": "One patient timeline",
+        "description": "Appointments, notes, labs, imaging, and prescriptions in one place."
+      },
+      "integrations": {
+        "title": "Integrations when you need them",
+        "description": "Connect systems and workflows without rebuilding your stack overnight."
+      }
+    },
+    "cards": {
+      "careTeam": {
+        "title": "Care team",
+        "description": "Assigned + notified automatically"
+      },
+      "accessControls": {
+        "title": "Access controls",
+        "description": "Roles, permissions, and audit trails"
+      }
     }
+  },
+  "insurance": {
+    "badge": "Insurance Integration",
+    "title": "Works with insurance providers worldwide",
+    "description": "Docito integrates with insurance workflows globally — so verification, billing, and claims happen inside the platform.",
+    "stepLabel": "Step {{step}}",
+    "steps": {
+      "selectProvider": {
+        "title": "Select provider",
+        "description": "Patient selects their insurance during booking — coverage is checked instantly."
+      },
+      "verification": {
+        "title": "Instant verification",
+        "description": "Eligibility, copay, and deductible details are surfaced before the visit."
+      },
+      "directBilling": {
+        "title": "Direct billing",
+        "description": "Claims are submitted automatically — patients only pay their share."
+      }
+    },
+    "benefits": [
+      "Instant eligibility checks",
+      "Direct claims submission",
+      "No paperwork for patients",
+      "Pre-authorization support",
+      "Multi-payer compatibility",
+      "Real-time claim status"
+    ]
+  },
+  "global": {
+    "badge": "Global platform",
+    "title": "One platform. Every country. Any language.",
+    "description": "Docito is built to work anywhere — no matter where your team or patients are located.",
+    "features": {
+      "multiLanguage": {
+        "title": "Multi-language",
+        "description": "Use Docito in English, Arabic, Russian, Uzbek, and more — with full RTL support."
+      },
+      "multiCurrency": {
+        "title": "Multi-currency",
+        "description": "Accept payments and display pricing in any local currency."
+      },
+      "anyTimezone": {
+        "title": "Any timezone",
+        "description": "Scheduling, reminders, and availability adapt to each user's timezone automatically."
+      },
+      "regionalCompliance": {
+        "title": "Regional compliance",
+        "description": "Architecture designed to support healthcare regulations in any jurisdiction."
+      }
+    },
+    "principles": {
+      "privacyFirst": {
+        "title": "Privacy-first by design",
+        "description": "Role-based access and secure sharing"
+      },
+      "securityProgram": {
+        "title": "Security program",
+        "description": "Modern auth, audit trails, and monitoring"
+      },
+      "complianceReady": {
+        "title": "Compliance-ready architecture",
+        "description": "Designed to support regulated healthcare workflows"
+      }
+    }
+  },
+  "mobile": {
+    "badge": "Mobile App",
+    "title": {
+      "line1": "Healthcare in",
+      "highlight": "Your Pocket"
+    },
+    "description": "Manage your health on the go. Book appointments, access records, and stay connected with your care team — all from your smartphone.",
+    "features": {
+      "bookAppointments": "Book Appointments",
+      "viewRecords": "View Records",
+      "getReminders": "Get Reminders",
+      "secureAccess": "Secure Access"
+    },
+    "comingSoon": {
+      "title": "Coming Soon",
+      "platforms": "iOS & Android",
+      "description": "We're working hard to bring Docito to your mobile device. Join the waitlist to be notified when we launch."
+    },
+    "store": {
+      "comingTo": "Coming to",
+      "appStore": "App Store",
+      "googlePlay": "Google Play"
+    },
+    "mock": {
+      "goodMorning": "Good morning!",
+      "upcoming": "Upcoming",
+      "yourAppointment": "Your Appointment",
+      "scheduleNow": "Schedule Now",
+      "book": "Book",
+      "records": "Records",
+      "healthScore": "Health Score"
+    }
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about Docito",
+    "items": {
+      "bookAppointment": {
+        "question": "How do I book an appointment?",
+        "answer": "Simply search for a doctor by specialty or location, view their available slots, and book instantly. You'll receive immediate confirmation via email and SMS."
+      },
+      "secureData": {
+        "question": "Is my health data secure?",
+        "answer": "Yes. Docito uses modern authentication, encryption in transit and at rest, and role-based access controls to protect your data."
+      },
+      "useInsurance": {
+        "question": "Can I use my insurance?",
+        "answer": "If your provider supports it, select your insurance during booking. Coverage details appear before the visit and claims can be handled inside the platform."
+      },
+      "doctorsJoin": {
+        "question": "How do doctors join the platform?",
+        "answer": "Providers create a profile, verify their organization, and begin accepting bookings as their team onboards."
+      },
+      "mobileApp": {
+        "question": "Is there a mobile app?",
+        "answer": "A Docito mobile app for iOS and Android is coming soon. Join the waitlist to be notified at launch."
+      },
+      "cancelReschedule": {
+        "question": "What if I need to cancel or reschedule?",
+        "answer": "You can cancel or reschedule from your appointment details. The team is notified and availability updates in real time."
+      }
+    }
+  },
+  "finalCta": {
+    "badge": "Launching now",
+    "title": {
+      "line1": "Start in minutes.",
+      "highlight": "Connect your care."
+    },
+    "description": "Create an account and run appointments, records, prescriptions, and payments in one connected system—built for both patients and providers.",
+    "cta": {
+      "primary": "Start free 14-day trial",
+      "secondary": "Explore features"
+    },
+    "note": "Free 14-day trial • No credit card required • Cancel anytime"
   }
 }
