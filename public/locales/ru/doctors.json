@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "Найти и записаться к врачу",
+    "placeholder": "Поиск врачей, специальностей, мест...",
+    "searching": "Поиск...",
+    "filters": "Фильтры",
+    "specialty": "Специальность",
+    "location": "Местоположение",
+    "rating": "Минимальный рейтинг",
+    "consultationFee": "Стоимость консультации",
+    "availability": "Доступность",
+    "clearFilters": "Очистить фильтры",
+    "applyFilters": "Применить фильтры",
+    "availableToday": "Доступен сегодня",
+    "videoConsultation": "Видеоконсультация",
+    "acceptsInsurance": "Принимает страховку",
+    "priceRange": "Ценовой диапазон",
+    "distance": "Расстояние",
+    "language": "Язык",
+    "submit": "Искать"
+  },
+  "profile": {
+    "about": "О враче",
+    "experience": "Опыт",
+    "education": "Образование",
+    "languages": "Языки",
+    "services": "Услуги",
+    "reviews": "Отзывы",
+    "availability": "Доступность",
+    "bookAppointment": "Записаться на прием",
+    "contactDoctor": "Связаться с врачом",
+    "yearsExperience": "Опыт {{years}} лет",
+    "patientsHelped": "{{count}}+ пациентов помогли",
+    "responseTime": "Отвечает в течение {{time}}",
+    "consultationFee": "Стоимость консультации",
+    "nextAvailable": "Ближайшая доступность",
+    "viewProfile": "Просмотреть профиль",
+    "videoAvailable": "Доступна видеоконсультация",
+    "insuranceAccepted": "Страховка принимается",
+    "newPatientsWelcome": "Принимает новых пациентов",
+    "verifiedDoctor": "Проверенный врач",
+    "licenseVerified": "Лицензия проверена",
+    "hospitalAffiliations": "Связанные больницы",
+    "specializations": "Специализации",
+    "certifications": "Сертификаты",
+    "contactInfo": "Контактная информация",
+    "officeHours": "Часы работы",
+    "emergencyContact": "Экстренный контакт"
+  },
+  "booking": {
+    "title": "Записаться на прием",
+    "selectDate": "Выбрать дату",
+    "selectTime": "Выбрать время",
+    "appointmentType": "Тип приема",
+    "inPerson": "Личный визит",
+    "videoCall": "Видеоконсультация",
+    "patientInfo": "Информация о пациенте",
+    "fullName": "Полное имя",
+    "phoneNumber": "Номер телефона",
+    "email": "Email адрес",
+    "reasonForVisit": "Причина визита",
+    "additionalNotes": "Дополнительные заметки (Необязательно)",
+    "confirmBooking": "Подтвердить запись",
+    "bookingConfirmed": "Запись подтверждена!",
+    "bookingConfirmedDesc": "Ваш прием успешно запланирован.",
+    "bookingError": "Ошибка записи",
+    "bookingErrorDesc": "Пожалуйста, попробуйте снова или обратитесь в службу поддержки.",
+    "loginRequired": "Требуется вход",
+    "loginRequiredDesc": "Пожалуйста, войдите, чтобы записаться на прием.",
+    "cancel": "Отмена",
+    "back": "Назад",
+    "next": "Далее",
+    "step": "Шаг {{current}} из {{total}}",
+    "appointmentSummary": "Сводка приема",
+    "totalCost": "Общая стоимость",
+    "paymentMethod": "Способ оплаты",
+    "payNow": "Оплатить сейчас",
+    "payLater": "Оплатить при визите",
+    "insuranceInfo": "Информация о страховке",
+    "insuranceProvider": "Страховая компания",
+    "policyNumber": "Номер полиса",
+    "verifyInsurance": "Проверить страховку"
+  },
+  "page": {
+    "title": "Найти врачей",
+    "subtitle": "Найдите проверенных врачей и записывайтесь на прием мгновенно",
+    "readyToFind": "Готовы найти подходящего врача?",
+    "readyToFindDesc": "Ищите среди нашей сети проверенных медицинских специалистов и записывайтесь на прием всего в несколько кликов.",
+    "popularSearches": "Популярные запросы",
+    "foundText": "результатов найдено",
+    "showingVerified": "Показаны проверенные медицинские специалисты",
+    "noDoctors": "Врачи не найдены",
+    "searching": "Поиск...",
+    "error": "Ошибка поиска",
+    "tryAgain": "Пожалуйста, попробуйте позже.",
+    "bookNow": "Записаться",
+    "savedSuccessfully": "Сохранено",
+    "savedSuccessfullyDesc": "Добавлено в список сохраненных врачей.",
+    "removedFromSaved": "Удалено",
+    "removedFromSavedDesc": "Удалено из списка сохраненных врачей.",
+    "loginRequired": "Требуется вход",
+    "loginRequiredDesc": "Пожалуйста, войдите, чтобы записаться на прием.",
+    "searchButton": "Искать"
+  },
+  "specialties": {
+    "all": "Все специальности",
+    "generalPractice": "Общая практика",
+    "cardiology": "Кардиология",
+    "neurology": "Неврология",
+    "ophthalmology": "Офтальмология",
+    "orthopedics": "Ортопедия",
+    "pediatrics": "Педиатрия",
+    "dentistry": "Стоматология",
+    "dermatology": "Дерматология",
+    "endocrinology": "Эндокринология",
+    "pathology": "Патология",
+    "pulmonology": "Пульмонология"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "Недавние",
+      "popular": "Популярное",
+      "doctor": "Врач",
+      "location": "Место",
+      "specialty": "Специальность"
+    },
+    "clearRecent": "Очистить недавние запросы"
+  },
+  "location": {
+    "myLocation": "Моё местоположение",
+    "useMyLocation": "Использовать моё местоположение",
+    "locationDetected": "Местоположение определено",
+    "clear": "Очистить"
+  },
+  "filters": {
+    "distance": {
+      "label": "Расстояние",
+      "any": "Любое расстояние",
+      "km5": "5 км",
+      "km10": "10 км",
+      "km25": "25 км",
+      "km50": "50 км"
+    },
+    "rating": {
+      "minimum": "Минимальный рейтинг: {{rating}}+ ★",
+      "any": "Любой",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "Доступен сегодня",
+      "acceptsNewPatients": "Принимает новых пациентов"
+    },
+    "services": {
+      "title": "Услуги",
+      "videoConsultation": "Видеоконсультация",
+      "acceptsInsurance": "Принимает страховку"
+    },
+    "language": {
+      "title": "Язык",
+      "any": "Любой язык"
+    },
+    "priceRanges": {
+      "any": "Любая",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "Видео",
+      "insurance": "Страховка"
+    },
+    "languages": {
+      "english": "Английский",
+      "spanish": "Испанский",
+      "french": "Французский",
+      "german": "Немецкий",
+      "russian": "Русский",
+      "chinese": "Китайский",
+      "arabic": "Арабский",
+      "turkish": "Турецкий",
+      "uzbek": "Узбекский"
+    }
+  },
+  "results": {
+    "tryAdjusting": "Попробуйте изменить фильтры или запрос",
+    "doctorPrefix": "Д-р",
+    "perVisit": "/визит",
+    "sortBy": "Сортировать",
+    "sortOptions": {
+      "relevance": "По релевантности",
+      "rating": "По рейтингу",
+      "price_low": "Цена: по возрастанию",
+      "price_high": "Цена: по убыванию",
+      "distance": "Расстояние",
+      "availability": "Ближайшее время"
+    }
+  }
+}
+{
+  "search": {
     "title": "Найти врачей",
     "placeholder": "Поиск по имени, специальности или местоположению",
     "filters": "Фильтры",
