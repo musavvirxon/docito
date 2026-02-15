@@ -1,5 +1,204 @@
 {
   "search": {
+    "title": "Shifokor topish va yozilish",
+    "placeholder": "Shifokorlar, mutaxassisliklar, manzillar...",
+    "searching": "Qidirilmoqda...",
+    "filters": "Filtrlar",
+    "specialty": "Mutaxassislik",
+    "location": "Manzil",
+    "rating": "Minimal reyting",
+    "consultationFee": "Konsultatsiya narxi",
+    "availability": "Mavjudlik",
+    "clearFilters": "Filtrlarni tozalash",
+    "applyFilters": "Filtrlarni qo'llash",
+    "availableToday": "Bugun mavjud",
+    "videoConsultation": "Video konsultatsiya",
+    "acceptsInsurance": "Sug'urtani qabul qiladi",
+    "priceRange": "Narx oralig'i",
+    "distance": "Masofa",
+    "language": "Til",
+    "submit": "Qidirish"
+  },
+  "profile": {
+    "about": "Haqida",
+    "experience": "Tajriba",
+    "education": "Ta'lim",
+    "languages": "Tillar",
+    "services": "Xizmatlar",
+    "reviews": "Sharhlar",
+    "availability": "Mavjudlik",
+    "bookAppointment": "Qabulga yozilish",
+    "contactDoctor": "Shifokor bilan bog'lanish",
+    "yearsExperience": "{{years}} yil tajriba",
+    "patientsHelped": "{{count}}+ bemorga yordam bergan",
+    "responseTime": "{{time}} ichida javob beradi",
+    "consultationFee": "Konsultatsiya narxi",
+    "nextAvailable": "Keyingi mavjud vaqt",
+    "viewProfile": "Profilni ko'rish",
+    "videoAvailable": "Video konsultatsiya mavjud",
+    "insuranceAccepted": "Sug'urta qabul qilinadi",
+    "newPatientsWelcome": "Yangi bemorlarni qabul qiladi",
+    "verifiedDoctor": "Tasdiqlangan shifokor",
+    "licenseVerified": "Litsenziya tasdiqlangan",
+    "hospitalAffiliations": "Shifoxona aloqalari",
+    "specializations": "Mutaxassisliklar",
+    "certifications": "Sertifikatlar",
+    "contactInfo": "Kontakt ma'lumotlari",
+    "officeHours": "Ish vaqti",
+    "emergencyContact": "Tez yordam kontakti"
+  },
+  "booking": {
+    "title": "Qabulga yozilish",
+    "selectDate": "Sana tanlang",
+    "selectTime": "Vaqt tanlang",
+    "appointmentType": "Qabul turi",
+    "inPerson": "Shaxsan tashrif",
+    "videoCall": "Video konsultatsiya",
+    "patientInfo": "Bemor ma'lumotlari",
+    "fullName": "To'liq ism",
+    "phoneNumber": "Telefon raqami",
+    "email": "Email manzil",
+    "reasonForVisit": "Tashrif sababi",
+    "additionalNotes": "Qo'shimcha izohlar (Ixtiyoriy)",
+    "confirmBooking": "Yozilishni tasdiqlash",
+    "bookingConfirmed": "Yozilish tasdiqlandi!",
+    "bookingConfirmedDesc": "Qabulingiz muvaffaqiyatli rejalashtirildi.",
+    "bookingError": "Yozilishda xatolik",
+    "bookingErrorDesc": "Iltimos, qayta urinib ko'ring yoki qo'llab-quvvatlash bilan bog'laning.",
+    "loginRequired": "Kirish talab qilinadi",
+    "loginRequiredDesc": "Qabulga yozilish uchun tizimga kiring.",
+    "cancel": "Bekor qilish",
+    "back": "Orqaga",
+    "next": "Keyingi",
+    "step": "{{total}} dan {{current}}-qadam",
+    "appointmentSummary": "Qabul xulosasi",
+    "totalCost": "Jami narx",
+    "paymentMethod": "To'lov usuli",
+    "payNow": "Hozir to'lash",
+    "payLater": "Tashrifda to'lash",
+    "insuranceInfo": "Sug'urta ma'lumotlari",
+    "insuranceProvider": "Sug'urta kompaniyasi",
+    "policyNumber": "Polis raqami",
+    "verifyInsurance": "Sug'urtani tekshirish"
+  },
+  "page": {
+    "title": "Shifokor topish",
+    "subtitle": "Tasdiqlangan shifokorlarni toping va darhol qabulga yoziling",
+    "readyToFind": "To'g'ri shifokorni topishga tayyormisiz?",
+    "readyToFindDesc": "Tasdiqlangan tibbiy mutaxassislar tarmog'imizdan qidiring va bir necha bosishda qabulga yoziling.",
+    "popularSearches": "Ommabop qidiruvlar",
+    "foundText": "natija topildi",
+    "showingVerified": "Tasdiqlangan tibbiy mutaxassislar ko'rsatilmoqda",
+    "noDoctors": "Shifokor topilmadi",
+    "searching": "Qidirilmoqda...",
+    "error": "Qidiruv xatosi",
+    "tryAgain": "Iltimos, keyinroq qayta urinib ko'ring.",
+    "bookNow": "Yozilish",
+    "savedSuccessfully": "Saqlangan",
+    "savedSuccessfullyDesc": "Saqlangan shifokorlar ro'yxatiga qo'shildi.",
+    "removedFromSaved": "Olib tashlandi",
+    "removedFromSavedDesc": "Saqlangan shifokorlar ro'yxatidan olib tashlandi.",
+    "loginRequired": "Kirish talab qilinadi",
+    "loginRequiredDesc": "Qabulga yozilish uchun tizimga kiring.",
+    "searchButton": "Qidirish"
+  },
+  "specialties": {
+    "all": "Barcha mutaxassisliklar",
+    "generalPractice": "Umumiy amaliyot",
+    "cardiology": "Kardiologiya",
+    "neurology": "Nevrologiya",
+    "ophthalmology": "Oftalmologiya",
+    "orthopedics": "Ortopediya",
+    "pediatrics": "Pediatriya",
+    "dentistry": "Stomatologiya",
+    "dermatology": "Dermatologiya",
+    "endocrinology": "Endokrinologiya",
+    "pathology": "Patologiya",
+    "pulmonology": "Pulmonologiya"
+  },
+  "autocomplete": {
+    "labels": {
+      "recent": "So‘nggi",
+      "popular": "Ommabop",
+      "doctor": "Shifokor",
+      "location": "Manzil",
+      "specialty": "Mutaxassislik"
+    },
+    "clearRecent": "So‘nggi qidiruvlarni tozalash"
+  },
+  "location": {
+    "myLocation": "Mening joylashuvim",
+    "useMyLocation": "Joylashuvimdan foydalanish",
+    "locationDetected": "Joylashuv aniqlandi",
+    "clear": "Tozalash"
+  },
+  "filters": {
+    "distance": {
+      "label": "Masofa",
+      "any": "Istalgan masofa",
+      "km5": "5 km",
+      "km10": "10 km",
+      "km25": "25 km",
+      "km50": "50 km"
+    },
+    "rating": {
+      "minimum": "Minimal reyting: {{rating}}+ ★",
+      "any": "Istalgan",
+      "max": "5 ★"
+    },
+    "availability": {
+      "availableToday": "Bugun mavjud",
+      "acceptsNewPatients": "Yangi bemorlarni qabul qiladi"
+    },
+    "services": {
+      "title": "Xizmatlar",
+      "videoConsultation": "Video konsultatsiya",
+      "acceptsInsurance": "Sug‘urtani qabul qiladi"
+    },
+    "language": {
+      "title": "Til",
+      "any": "Istalgan til"
+    },
+    "priceRanges": {
+      "any": "Istalgan",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "badges": {
+      "video": "Video",
+      "insurance": "Sug‘urta"
+    },
+    "languages": {
+      "english": "Inglizcha",
+      "spanish": "Ispancha",
+      "french": "Fransuzcha",
+      "german": "Nemischa",
+      "russian": "Ruscha",
+      "chinese": "Xitoycha",
+      "arabic": "Arabcha",
+      "turkish": "Turkcha",
+      "uzbek": "O‘zbekcha"
+    }
+  },
+  "results": {
+    "tryAdjusting": "Filtrlar yoki qidiruv so‘zlarini o‘zgartirib ko‘ring",
+    "doctorPrefix": "Dr.",
+    "perVisit": "/tashrif",
+    "sortBy": "Saralash",
+    "sortOptions": {
+      "relevance": "Mosligi bo‘yicha",
+      "rating": "Eng yuqori reyting",
+      "price_low": "Narx: pastdan yuqoriga",
+      "price_high": "Narx: yuqoridan pastga",
+      "distance": "Masofa",
+      "availability": "Eng yaqin vaqt"
+    }
+  }
+}
+{
+  "search": {
     "title": "Shifokorlarni topish",
     "placeholder": "Ism, mutaxassislik yoki joylashuv bo'yicha qidirish",
     "filters": "Filtrlar",
