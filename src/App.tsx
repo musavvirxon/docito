@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 
 // Layouts
@@ -128,6 +129,7 @@ export default function App() {
       <ThemeProvider>
         <AuthProvider>
           <Suspense fallback={<PageLoader />}>
+            <RouteErrorBoundary>
             <Routes>
               {/* Language-prefixed routes (e.g., /en/about, /ru/doctors) */}
               <Route path=":lang" element={<LanguageWrapper />}>
@@ -311,6 +313,7 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </RouteErrorBoundary>
           </Suspense>
 
           <Toaster position="top-right" richColors />

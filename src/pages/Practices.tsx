@@ -42,15 +42,15 @@ export default function Practices() {
     if (titleRef.current) {
       gsap.fromTo(
         titleRef.current,
-        { opacity: 0, y: 50 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.3 },
+        { y: 50 },
+        { y: 0, duration: 1, ease: "power3.out", delay: 0.3 },
       );
     }
     if (subtitleRef.current) {
       gsap.fromTo(
         subtitleRef.current,
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.5 },
+        { y: 30 },
+        { y: 0, duration: 1, ease: "power3.out", delay: 0.5 },
       );
     }
   }, []);
@@ -146,8 +146,7 @@ export default function Practices() {
 
               <h1
                 ref={titleRef}
-                className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight"
-                style={{ opacity: 0 }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight opacity-100"
               >
                 <span className="block text-foreground">{t("practicePage.hero.headlineLine1")}</span>
                 <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-normal">
@@ -157,8 +156,7 @@ export default function Practices() {
 
               <p
                 ref={subtitleRef}
-                className="text-lg sm:text-xl text-muted-foreground font-light leading-relaxed max-w-xl"
-                style={{ opacity: 0 }}
+                className="text-lg sm:text-xl text-muted-foreground font-light leading-relaxed max-w-xl opacity-100"
               >
                 {t("practicePage.hero.subheadline")}
               </p>
