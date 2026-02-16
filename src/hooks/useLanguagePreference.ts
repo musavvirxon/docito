@@ -18,7 +18,7 @@ export const useLanguagePreference = () => {
             .from('user_preferences')
             .select('preferred_language')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
           if (!error && data?.preferred_language) {
             if (i18n.language !== data.preferred_language) {

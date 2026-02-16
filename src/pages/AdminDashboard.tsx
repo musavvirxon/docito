@@ -360,7 +360,7 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-destructive" />
-                {t("admin.error")}
+                {t("admin.error.failed", { defaultValue: "Error" })}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
