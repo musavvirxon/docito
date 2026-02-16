@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, Mail, User, Lock } from "lucide-react";
 
 const SuperAdminSettingsPanel = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -99,8 +99,7 @@ const SuperAdminSettingsPanel = () => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/';
+    await signOut();
   };
 
   return (

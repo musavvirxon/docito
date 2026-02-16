@@ -2,6 +2,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, Save, ShieldCheck, UserRound, Bell, Globe2, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { languages } from "@/i18n/config";
 
@@ -27,6 +28,7 @@ type ProfileRow = {
 export default function SettingsDialog({ open, onOpenChange }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const { signOut } = useAuth();
 
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -149,12 +151,12 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
     // Supabase doesn’t have “sign out all devices” in client-only reliably.
     // Best practice: implement via edge function or admin action.
     // For now: sign out current session.
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({ variant: "destructive", title: "Sign out failed", description: error.message });
+    try {
+      await signOut();
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Sign out failed", description: e?.message || "Unknown error" });
       return;
     }
-    toast({ title: "Signed out", description: "You have been signed out." });
     onOpenChange(false);
   };
 

@@ -74,7 +74,7 @@ interface RecentAppointment {
 }
 
 export const useDoctorDashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, activeRole, bootstrapped } = useAuth();
   const [doctorProfile, setDoctorProfile] = useState<DoctorProfile | null>(null);
   const [stats, setStats] = useState<DoctorStats>({
     totalPatients: 0,
@@ -93,7 +93,7 @@ export const useDoctorDashboard = () => {
   const [retryCount, setRetryCount] = useState(0);
 
   const fetchDoctorProfile = async () => {
-    if (!user || profile?.role !== 'doctor') {
+    if (!user || (activeRole !== 'doctor' && profile?.role !== 'doctor')) {
       setLoading(false);
       return;
     }
@@ -369,7 +369,7 @@ export const useDoctorDashboard = () => {
   };
 
   const refreshAll = async () => {
-    if (!user || profile?.role !== 'doctor') return;
+    if (!user || (activeRole !== 'doctor' && profile?.role !== 'doctor')) return;
     setLoading(true);
     await fetchDoctorProfile();
     setRetryCount(prev => prev + 1);
@@ -377,8 +377,9 @@ export const useDoctorDashboard = () => {
   };
 
   useEffect(() => {
+    if (!bootstrapped) return;
     fetchDoctorProfile();
-  }, [user, profile?.role]);
+  }, [user?.id, activeRole, bootstrapped]);
 
   useEffect(() => {
     const loadDashboardData = async () => {

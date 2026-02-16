@@ -136,7 +136,7 @@ const SuperAdminLogin = () => {
 };
 
 const SuperAdminDashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation("dashboard");
 
@@ -150,7 +150,7 @@ const SuperAdminDashboard = () => {
     useAdvancedFinancialMetrics(stats?.totalRevenue || 0, "platform");
 
   const handleInactive = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     toast({
       title: t("superAdmin.sessionExpired"),
       description: t("superAdmin.sessionExpiredDesc"),
