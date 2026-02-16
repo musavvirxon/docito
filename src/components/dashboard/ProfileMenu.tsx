@@ -120,13 +120,13 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
           size={compact ? "icon" : "sm"}
           className={compact ? "h-9 w-9 rounded-xl" : "h-9 rounded-full text-sm font-medium text-foreground"}
         >
-          {compact ? <User className="h-4 w-4" /> : <span className="text-foreground">{profile?.full_name || "Account"}</span>}
+          {compact ? <User className="h-4 w-4" /> : <span className="text-foreground">{profile?.full_name || user?.user_metadata?.full_name || user?.email || "Account"}</span>}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-foreground">{profile?.full_name || user?.email || "Account"}</span>
+          <span className="text-sm font-medium text-foreground">{profile?.full_name || user?.user_metadata?.full_name || user?.email || "Account"}</span>
           <span className="text-xs text-muted-foreground">{user?.email}</span>
           {practiceName && (
             <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">

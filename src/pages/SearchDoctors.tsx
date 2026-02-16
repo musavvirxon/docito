@@ -13,7 +13,7 @@ import { SearchResultsEnhanced } from '@/components/search/SearchResultsEnhanced
 import { DoctorProfileModal } from '@/components/search/DoctorProfileModal';
 import { BookingModal } from '@/components/search/BookingModal';
 import { useDoctorSearch } from '@/hooks/useDoctorSearch';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 export default function SearchDoctors() {
@@ -235,8 +235,6 @@ export default function SearchDoctors() {
                 onSortChange={handleSortChange}
                 onViewProfile={handleViewProfile}
                 onBookAppointment={handleBookAppointment}
-                onSaveResult={handleSaveDoctor}
-                savedIds={savedDoctors}
                 totalCount={totalCount}
               />
             )}
