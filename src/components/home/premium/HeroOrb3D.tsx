@@ -223,58 +223,62 @@ function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
       color,
       transparent: true,
       opacity,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
     matRef.current = m;
-    const line = new THREE.Line(g, m);
-    line.frustumCulled = false;
-    return line;
-  }, [positions]);
+    const l = new THREE.Line(g, m);
+    l.frustumCulled = false;
+    return l;
+  }, [positions, color, opacity]);
 
   useEffect(() => {
-    if (!matRef.current) return;
-    matRef.current.color.set(color);
-    matRef.current.opacity = opacity;
-  }, [color, opacity]);
+    return () => {
+      lineObj.geometry.dispose();
+      (lineObj.material as THREE.Material).dispose();
+    };
+  }, [lineObj]);
 
   useFrame(() => {
-    const g = lineObj.geometry;
-    if (!g) return;
+    const g = lineObj.geometry as THREE.BufferGeometry;
+    const attr = g.getAttribute("position") as THREE.BufferAttribute;
+
+    // from center to node
     positions[0] = 0;
     positions[1] = 0;
     positions[2] = 0;
     positions[3] = nodePosition.x;
     positions[4] = nodePosition.y;
     positions[5] = nodePosition.z;
-    const attr = g.getAttribute("position") as THREE.BufferAttribute;
+
     attr.needsUpdate = true;
+
+    if (matRef.current) {
+      matRef.current.opacity = opacity;
+      (matRef.current as any).color?.set?.(color);
+      matRef.current.needsUpdate = true;
+    }
   });
 
-  useEffect(() => {
-    return () => {
-      lineObj.geometry.dispose();
-      matRef.current?.dispose();
-    };
-  }, [lineObj]);
-
-  return <primitive object={lineObj} ref={lineRef} />;
+  return <primitive object={lineObj} ref={lineRef as any} />;
 }
 
-// --- Lightweight procedural texture helpers (fast + cached) ---
-function mulberry32(seed: number) {
+// --- Procedural earth texture generator (fast + cached) ---
+function mulberry32(a: number) {
   return function () {
-    let t = (seed += 0x6d2b79f5);
+    let t = (a += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
-function smoothstep(t: number) {
-  return t * t * (3 - 2 * t);
-}
-
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
+}
+
+function smoothstep(t: number) {
+  return t * t * (3 - 2 * t);
 }
 
 function makeGridNoise(width: number, height: number, cell: number, seed: number) {
@@ -311,7 +315,12 @@ function sampleGridNoise(
   return lerp(vx0, vx1, ty);
 }
 
-type GlobeTextures = { earth: THREE.Texture; clouds: THREE.Texture };
+type GlobeTextures = {
+  earth: THREE.Texture;
+  clouds: THREE.Texture;
+  roughness: THREE.Texture;
+  bump: THREE.Texture;
+};
 const globeTextureCache: { mobile?: GlobeTextures; desktop?: GlobeTextures } = {};
 
 function configureTex(tex: THREE.Texture) {
@@ -325,38 +334,55 @@ function configureTex(tex: THREE.Texture) {
 }
 
 function generateEarthTextures(width: number, height: number, seed: number): GlobeTextures {
-  // --- Earth texture ---
+  // --- Earth color texture + roughness + bump (all canvas generated; lightweight) ---
   const earthCanvas = document.createElement("canvas");
   earthCanvas.width = width;
   earthCanvas.height = height;
+
   const ectx = earthCanvas.getContext("2d");
   if (!ectx) {
     const fallback = new THREE.Texture();
     configureTex(fallback);
-    return { earth: fallback, clouds: fallback };
+    return { earth: fallback, clouds: fallback, roughness: fallback, bump: fallback };
   }
 
-  // Ocean base
+  // Ocean base (slightly deeper, more Earth-like)
   const oceanGrad = ectx.createLinearGradient(0, 0, width, height);
-  oceanGrad.addColorStop(0, "#0b2a6d");
-  oceanGrad.addColorStop(0.55, "#1e40af");
-  oceanGrad.addColorStop(1, "#06224f");
+  oceanGrad.addColorStop(0, "#071f52");
+  oceanGrad.addColorStop(0.55, "#0b3a8a");
+  oceanGrad.addColorStop(1, "#06163b");
   ectx.fillStyle = oceanGrad;
   ectx.fillRect(0, 0, width, height);
 
-  // Fast 2-layer noise
+  // Fast 2-layer noise (seamless wrap)
   const n1 = makeGridNoise(width, height, Math.max(28, Math.floor(width / 10)), seed);
   const n2 = makeGridNoise(width, height, Math.max(14, Math.floor(width / 20)), seed + 1337);
 
   const img = ectx.getImageData(0, 0, width, height);
   const d = img.data;
 
+  // Roughness map (black = glossy ocean, white = rough land)
+  const roughCanvas = document.createElement("canvas");
+  roughCanvas.width = width;
+  roughCanvas.height = height;
+  const rctx = roughCanvas.getContext("2d");
+  const roughImg = ectx.createImageData(width, height);
+  const rd = roughImg.data;
+
+  // Bump map (grayscale elevation; subtle)
+  const bumpCanvas = document.createElement("canvas");
+  bumpCanvas.width = width;
+  bumpCanvas.height = height;
+  const bctx = bumpCanvas.getContext("2d");
+  const bumpImg = ectx.createImageData(width, height);
+  const bd = bumpImg.data;
+
   for (let y = 0; y < height; y++) {
     const lat = Math.abs((y / (height - 1)) * 2 - 1); // 0 equator, 1 poles
     const latBias = (1 - lat) * 0.16;
     const nearPole = lat > 0.78;
+
     for (let x = 0; x < width; x++) {
-      // Seamless wrap
       const base =
         sampleGridNoise(x, y, n1) * 0.72 +
         sampleGridNoise(x * 1.6 + 120, y * 1.6 + 40, n2) * 0.28;
@@ -366,13 +392,39 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const isLand = land > 0.585;
 
       const i = (y * width + x) * 4;
+
+      // Coast proximity approximation: higher near coast
+      const coastProx = THREE.MathUtils.clamp(1 - (0.585 - land) / 0.08, 0, 1);
+      const shallow = smoothstep(coastProx);
+
       if (!isLand) {
-        // Subtle ocean variation
+        // Ocean variation + shallow turquoise near coasts
         const w = sampleGridNoise(x + 500, y + 900, n2);
-        d[i + 0] = Math.round(lerp(6, 18, w));
-        d[i + 1] = Math.round(lerp(28, 84, w));
-        d[i + 2] = Math.round(lerp(92, 176, w));
+        const oR = lerp(4, 14, w);
+        const oG = lerp(24, 82, w);
+        const oB = lerp(92, 178, w);
+
+        const sR = 20;
+        const sG = 170;
+        const sB = 165;
+
+        d[i + 0] = Math.round(lerp(oR, sR, shallow * 0.45));
+        d[i + 1] = Math.round(lerp(oG, sG, shallow * 0.45));
+        d[i + 2] = Math.round(lerp(oB, sB, shallow * 0.45));
         d[i + 3] = 255;
+
+        // glossy oceans, slightly rougher near coast
+        const rv = Math.round(lerp(34, 54, w) + shallow * 18);
+        rd[i + 0] = rv;
+        rd[i + 1] = rv;
+        rd[i + 2] = rv;
+        rd[i + 3] = 255;
+
+        // bump: flat ocean
+        bd[i + 0] = 0;
+        bd[i + 1] = 0;
+        bd[i + 2] = 0;
+        bd[i + 3] = 255;
         continue;
       }
 
@@ -382,83 +434,110 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const mountain = elev > 0.72;
       const desert = dry > 0.64 && lat < 0.55;
 
+      // Land colors (slightly more natural)
       let r = 0;
       let g = 0;
       let b = 0;
 
       if (nearPole) {
         // snow / tundra
-        r = 224;
-        g = 236;
-        b = 244;
+        r = 232;
+        g = 242;
+        b = 248;
       } else if (mountain) {
-        r = 124;
-        g = 120;
-        b = 110;
+        // rocky
+        const m = THREE.MathUtils.clamp((elev - 0.72) / 0.18, 0, 1);
+        r = Math.round(lerp(120, 160, m));
+        g = Math.round(lerp(112, 148, m));
+        b = Math.round(lerp(104, 138, m));
       } else if (desert) {
-        r = 208;
-        g = 190;
-        b = 132;
+        r = 214;
+        g = 196;
+        b = 138;
       } else {
         // vegetation
         const lush = (1 - lat) * 0.62 + (1 - dry) * 0.38;
-        r = Math.round(lerp(34, 58, lush));
-        g = Math.round(lerp(112, 164, lush));
-        b = Math.round(lerp(52, 74, lush));
+        r = Math.round(lerp(22, 64, lush));
+        g = Math.round(lerp(86, 168, lush));
+        b = Math.round(lerp(30, 84, lush));
       }
 
-      // Coast blending
+      // Coast blending (fade land into ocean)
       const edge = THREE.MathUtils.clamp((land - 0.585) / 0.09, 0, 1);
       const coast = smoothstep(edge);
+
       const oceanR = d[i + 0];
       const oceanG = d[i + 1];
       const oceanB = d[i + 2];
+
       d[i + 0] = Math.round(lerp(oceanR, r, coast));
       d[i + 1] = Math.round(lerp(oceanG, g, coast));
       d[i + 2] = Math.round(lerp(oceanB, b, coast));
       d[i + 3] = 255;
+
+      // Roughness: land is rougher; mountains roughest
+      let rv = 165;
+      if (nearPole) rv = 150;
+      if (desert) rv = 172;
+      if (mountain) rv = 205;
+
+      // Slightly smoother near coasts (wet)
+      rv = Math.round(lerp(rv, rv - 18, 1 - coast));
+      rd[i + 0] = rv;
+      rd[i + 1] = rv;
+      rd[i + 2] = rv;
+      rd[i + 3] = 255;
+
+      // Bump: subtle elevation (mostly on land)
+      let bv = Math.round(THREE.MathUtils.clamp(elev * 1.15, 0, 1) * 255);
+      if (mountain) bv = Math.min(255, bv + 30);
+      if (nearPole) bv = Math.round(bv * 0.65);
+      // soften near coasts to avoid noisy shorelines
+      bv = Math.round(lerp(0, bv, coast));
+      bd[i + 0] = bv;
+      bd[i + 1] = bv;
+      bd[i + 2] = bv;
+      bd[i + 3] = 255;
     }
   }
 
   ectx.putImageData(img, 0, 0);
 
-  // Subtle latitude/longitude lines
-  ectx.save();
-  ectx.globalAlpha = 0.1;
-  ectx.strokeStyle = "#93c5fd";
-  ectx.lineWidth = 1;
-  for (let i = 1; i < 7; i++) {
-    const yy = (height / 7) * i;
-    ectx.beginPath();
-    ectx.moveTo(0, yy);
-    ectx.lineTo(width, yy);
-    ectx.stroke();
-  }
-  for (let i = 1; i < 13; i++) {
-    const xx = (width / 13) * i;
-    ectx.beginPath();
-    ectx.moveTo(xx, 0);
-    ectx.lineTo(xx, height);
-    ectx.stroke();
-  }
-  ectx.restore();
-
-  // Ice caps overlay
+  // Ice caps overlay (keeps a more realistic polar feel)
   ectx.save();
   const capTop = ectx.createLinearGradient(0, 0, 0, height * 0.2);
-  capTop.addColorStop(0, "rgba(255,255,255,0.85)");
+  capTop.addColorStop(0, "rgba(255,255,255,0.8)");
   capTop.addColorStop(1, "rgba(255,255,255,0)");
   ectx.fillStyle = capTop;
   ectx.fillRect(0, 0, width, height * 0.22);
+
   const capBottom = ectx.createLinearGradient(0, height, 0, height * 0.8);
-  capBottom.addColorStop(0, "rgba(255,255,255,0.85)");
+  capBottom.addColorStop(0, "rgba(255,255,255,0.8)");
   capBottom.addColorStop(1, "rgba(255,255,255,0)");
   ectx.fillStyle = capBottom;
   ectx.fillRect(0, height * 0.78, width, height * 0.22);
   ectx.restore();
 
+  // Final textures
   const earthTex = new THREE.CanvasTexture(earthCanvas);
   configureTex(earthTex);
+  if ("colorSpace" in earthTex && (THREE as any).SRGBColorSpace) {
+    (earthTex as any).colorSpace = (THREE as any).SRGBColorSpace;
+  }
+
+  if (rctx) rctx.putImageData(roughImg, 0, 0);
+  const roughnessTex = new THREE.CanvasTexture(roughCanvas);
+  configureTex(roughnessTex);
+  if ("colorSpace" in roughnessTex && (THREE as any).NoColorSpace) {
+    (roughnessTex as any).colorSpace = (THREE as any).NoColorSpace;
+  }
+
+  if (bctx) bctx.putImageData(bumpImg, 0, 0);
+  const bumpTex = new THREE.CanvasTexture(bumpCanvas);
+  configureTex(bumpTex);
+  if ("colorSpace" in bumpTex && (THREE as any).NoColorSpace) {
+    (bumpTex as any).colorSpace = (THREE as any).NoColorSpace;
+  }
 
   // --- Clouds texture ---
   const cloudsCanvas = document.createElement("canvas");
@@ -468,7 +547,7 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
   if (!cctx) {
     const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
     configureTex(cloudsTex);
-    return { earth: earthTex, clouds: cloudsTex };
+    return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
   }
 
   const cn1 = makeGridNoise(width, height, Math.max(22, Math.floor(width / 12)), seed + 7777);
@@ -476,6 +555,7 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
   const cimg = cctx.createImageData(width, height);
   const cd = cimg.data;
+
   for (let y = 0; y < height; y++) {
     const lat = Math.abs((y / (height - 1)) * 2 - 1);
     const latMask = THREE.MathUtils.clamp(1 - lat * 1.05, 0, 1);
@@ -483,6 +563,7 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const n =
         sampleGridNoise(x, y, cn1) * 0.7 +
         sampleGridNoise(x * 1.9 + 80, y * 1.9 + 40, cn2) * 0.3;
+
       const puff = THREE.MathUtils.clamp((n - 0.56) / 0.22, 0, 1);
       const alpha = Math.round(255 * puff * latMask);
 
@@ -493,11 +574,15 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       cd[i + 3] = alpha;
     }
   }
+
   cctx.putImageData(cimg, 0, 0);
   const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
   configureTex(cloudsTex);
+  if ("colorSpace" in cloudsTex && (THREE as any).SRGBColorSpace) {
+    (cloudsTex as any).colorSpace = (THREE as any).SRGBColorSpace;
+  }
 
-  return { earth: earthTex, clouds: cloudsTex };
+  return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
 }
 
 function requestIdle(cb: () => void) {
@@ -559,6 +644,8 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
         if (cancelled) {
           final.earth.dispose();
           final.clouds.dispose();
+          final.roughness.dispose();
+          final.bump.dispose();
           return;
         }
         const prev = globeTextureCache.desktop;
@@ -567,6 +654,8 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
         // dispose the old preview textures (keep only final in cache)
         prev?.earth.dispose();
         prev?.clouds.dispose();
+        prev?.roughness.dispose();
+        prev?.bump.dispose();
       });
     }
 
@@ -592,7 +681,10 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
     // Animate texture offset slightly for parallax feel
     if (textures?.earth) {
       const textureSpeed = isMobile ? 0.00035 : 0.0007;
-      textures.earth.offset.x = state.clock.elapsedTime * textureSpeed;
+      const ox = state.clock.elapsedTime * textureSpeed;
+      textures.earth.offset.x = ox;
+      if (textures.roughness) textures.roughness.offset.x = ox;
+      if (textures.bump) textures.bump.offset.x = ox;
     }
     if (textures?.clouds) {
       const textureSpeed = isMobile ? 0.0005 : 0.001;
@@ -609,13 +701,16 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
       <Sphere ref={globeRef} args={[GLOBE_RADIUS, earthSegW, earthSegH]}>
         <meshStandardMaterial
           map={textures?.earth || undefined}
+          roughnessMap={textures?.roughness || undefined}
+          bumpMap={textures?.bump || undefined}
+          bumpScale={isMobile ? 0.04 : 0.06}
           color={textures?.earth ? undefined : "#1e40af"}
           transparent
-          opacity={0.95 * opacity}
-          roughness={0.58}
-          metalness={0.05}
-          emissive="#0b2a6d"
-          emissiveIntensity={0.12}
+          opacity={0.96 * opacity}
+          roughness={0.62}
+          metalness={0}
+          emissive="#06163b"
+          emissiveIntensity={0.08}
         />
       </Sphere>
 
@@ -738,124 +833,131 @@ function FloatingNode({
             onMouseEnter={handlePointerEnter}
             onMouseLeave={handlePointerLeave}
           >
-            {/* Tooltip */}
             <div
-              className="absolute -top-14 px-3 py-2 rounded-lg backdrop-blur-md transition-all duration-200 whitespace-nowrap"
+              className="w-14 h-14 rounded-2xl flex items-center justify-center backdrop-blur-md shadow-lg"
               style={{
-                background: "rgba(15, 23, 42, 0.95)",
-                border: `1px solid ${node.color}60`,
-                boxShadow: `0 4px 20px ${node.color}40`,
-                opacity: localHover ? 1 : 0,
-                transform: localHover ? "translateY(0)" : "translateY(8px)",
-                pointerEvents: "none",
+                background: `${node.color}18`,
+                border: `1.5px solid ${node.color}45`,
+                boxShadow: localHover
+                  ? `0 0 28px ${node.color}55, 0 12px 30px rgba(0,0,0,0.35)`
+                  : `0 0 18px ${node.color}35, 0 8px 22px rgba(0,0,0,0.25)`,
+                transform: localHover ? "translateY(-2px) scale(1.05)" : "translateY(0) scale(1)",
+                transition: "all 220ms ease",
               }}
             >
-              <div className="text-xs font-semibold text-white">{node.name}</div>
-              <div className="text-[10px] opacity-70 text-slate-300">{node.role}</div>
+              <IconComponent
+                className="w-7 h-7"
+                style={{
+                  color: node.color,
+                  filter: "drop-shadow(0 0 10px rgba(255,255,255,0.25))",
+                }}
+              />
             </div>
 
-            {/* Node */}
+            {/* Label */}
             <div
-              className="flex items-center justify-center rounded-full cursor-pointer"
+              className="mt-2 text-center px-3 py-1.5 rounded-full text-xs font-medium"
               style={{
-                width: "52px",
-                height: "52px",
-                backgroundColor: `${node.color}40`,
-                border: `2px solid ${node.color}80`,
-                boxShadow: localHover
-                  ? `0 0 30px ${node.color}, 0 0 60px ${node.color}60`
-                  : `0 0 20px ${node.color}80`,
-                transform: localHover ? "scale(1.18)" : "scale(1)",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                animation: localHover ? "none" : "pulse-node 2.2s ease-in-out infinite",
+                background: "rgba(15, 23, 42, 0.65)",
+                border: `1px solid ${node.color}35`,
+                color: "rgba(226, 232, 240, 0.95)",
+                backdropFilter: "blur(10px)",
               }}
             >
-              <IconComponent size={24} style={{ color: node.color, filter: "brightness(1.2)" }} />
+              <span className="block leading-tight">{node.name}</span>
+              <span className="block text-[10px] opacity-70 leading-tight">{node.role}</span>
             </div>
           </div>
-
-          <style>{`
-            @keyframes pulse-node {
-              0%, 100% { transform: scale(1); }
-              50% { transform: scale(1.08); }
-            }
-          `}</style>
         </Html>
       </group>
     </>
   );
 }
 
-// Particle system for holographic effect
+// Particles (GPU-light, few points)
 function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
-  const particlesRef = useRef<THREE.Points>(null);
-  const count = isMobile ? 0 : 160;
+  const pointsRef = useRef<THREE.Points>(null);
 
-  const positions = useMemo(() => {
-    const pos = new Float32Array(Math.max(count, 1) * 3);
+  const count = isMobile ? 220 : 420;
+
+  const { positions, sizes } = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    const siz = new Float32Array(count);
+    const rand = mulberry32(424242);
+
     for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = 0.9 + Math.random() * 0.2;
-      pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i * 3 + 2] = r * Math.cos(phi);
+      const r = lerp(2.1, 5.8, rand());
+      const theta = rand() * Math.PI * 2;
+      const phi = Math.acos(lerp(-1, 1, rand()));
+      pos[i * 3 + 0] = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.cos(phi);
+      pos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      siz[i] = lerp(0.8, 2.4, rand());
     }
-    return pos;
+
+    return { positions: pos, sizes: siz };
   }, [count]);
 
   useFrame((state) => {
-    if (isMobile) return;
-    if (!particlesRef.current) return;
-    particlesRef.current.rotation.y = state.clock.elapsedTime * 0.04;
-    particlesRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.08) * 0.08;
+    if (!pointsRef.current) return;
+    pointsRef.current.rotation.y = state.clock.elapsedTime * (isMobile ? 0.02 : 0.05);
+    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.1) * 0.08;
   });
 
-  if (isMobile) return null;
-
   return (
-    <points ref={particlesRef} frustumCulled={false}>
+    <points ref={pointsRef} frustumCulled={false}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute
+          attach="attributes-position"
+          array={positions}
+          count={positions.length / 3}
+          itemSize={3}
+        />
+        <bufferAttribute
+          attach="attributes-size"
+          array={sizes}
+          count={sizes.length}
+          itemSize={1}
+        />
       </bufferGeometry>
       <pointsMaterial
         size={0.02}
-        color="#60a5fa"
+        color="#93c5fd"
         transparent
-        opacity={0.45 * opacity}
-        sizeAttenuation
+        opacity={0.25 * opacity}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
       />
     </points>
   );
 }
 
-// Orbiting rings
+// Orbit rings
 function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const ring1Ref = useRef<THREE.Mesh>(null);
   const ring2Ref = useRef<THREE.Mesh>(null);
   const ring3Ref = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
-    if (isMobile) return;
-    const time = state.clock.elapsedTime;
+    const t = state.clock.elapsedTime;
     if (ring1Ref.current) {
-      ring1Ref.current.rotation.x = Math.PI / 2 + Math.sin(time * 0.25) * 0.08;
-      ring1Ref.current.rotation.z = time * 0.08;
+      ring1Ref.current.rotation.z = t * (isMobile ? 0.06 : 0.12);
+      ring1Ref.current.rotation.x = Math.PI / 2 + Math.sin(t * 0.25) * 0.05;
     }
     if (ring2Ref.current) {
-      ring2Ref.current.rotation.x = Math.PI / 3;
-      ring2Ref.current.rotation.z = -time * 0.065;
+      ring2Ref.current.rotation.z = -t * (isMobile ? 0.045 : 0.09);
+      ring2Ref.current.rotation.y = Math.PI / 3 + Math.sin(t * 0.18) * 0.04;
     }
     if (ring3Ref.current) {
-      ring3Ref.current.rotation.x = Math.PI / 4;
-      ring3Ref.current.rotation.y = time * 0.095;
+      ring3Ref.current.rotation.z = t * (isMobile ? 0.03 : 0.06);
+      ring3Ref.current.rotation.y = -Math.PI / 4 + Math.sin(t * 0.16) * 0.04;
     }
   });
 
   return (
     <group>
       <mesh ref={ring1Ref} frustumCulled={false}>
-        <ringGeometry args={[GLOBE_RADIUS * 1.35, GLOBE_RADIUS * 1.365, 72]} />
+        <ringGeometry args={[GLOBE_RADIUS * 1.25, GLOBE_RADIUS * 1.265, 72]} />
         <meshBasicMaterial
           color="#3b82f6"
           transparent
@@ -978,73 +1080,51 @@ function NodeModal({ node, onClose }: { node: NodeData | null; onClose: () => vo
           <div
             className="w-12 h-12 rounded-xl flex items-center justify-center"
             style={{
-              background: `${node.color}20`,
-              border: `1px solid ${node.color}40`,
+              background: `${node.color}25`,
+              border: `1px solid ${node.color}55`,
             }}
           >
-            <IconComponent size={24} style={{ color: node.color }} />
+            <IconComponent className="w-6 h-6" style={{ color: node.color }} />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white">{node.name}</h3>
-            <p className="text-sm opacity-70 text-slate-300">{node.role}</p>
+            <p className="text-sm text-slate-300">{node.role}</p>
           </div>
         </div>
 
-        <p className="text-sm text-slate-400 mb-4">{node.description}</p>
+        <p className="text-sm text-slate-200 leading-relaxed mb-5">{node.description}</p>
 
-        <div className="flex gap-2">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{
-              background: `${node.color}20`,
-              border: `1px solid ${node.color}40`,
-              color: node.color,
-            }}
-          >
-            Close
-          </button>
-          <button
-            className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all"
-            style={{
-              background: node.color,
-            }}
-          >
-            Learn More
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          className="w-full py-2.5 rounded-xl text-sm font-medium transition"
+          style={{
+            background: `${node.color}22`,
+            border: `1px solid ${node.color}50`,
+            color: "white",
+          }}
+        >
+          Close
+        </button>
       </div>
     </div>
   );
 }
 
-// Main component
 export default function HeroOrb3D() {
   const opacity = useScrollOpacity();
-  const isTabVisible = useTabVisibility();
+  const isVisible = useTabVisibility();
   const isMobile = useIsMobile();
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
 
-  const shouldAnimate = isTabVisible && opacity > 0.02;
+  const shouldAnimate = opacity > 0.01 && isVisible;
 
   return (
-    <div
-      className="relative w-full h-[500px] lg:h-[600px]"
-      style={{ opacity }}
-      onClick={() => setSelectedNode(null)}
-    >
+    <div className="relative w-full h-full" onClick={() => selectedNode && setSelectedNode(null)}>
       <Canvas
+        dpr={isMobile ? 1 : [1, 1.6]}
         camera={{ position: CAMERA_POS, fov: CAMERA_FOV }}
-        style={{ background: "transparent", touchAction: isMobile ? "auto" : "none" }}
+        gl={{ antialias: !isMobile, alpha: true, powerPreference: "high-performance" }}
         frameloop="demand"
-        gl={{
-          alpha: true,
-          antialias: false,
-          powerPreference: "high-performance",
-          stencil: false,
-          depth: true,
-        }}
-        dpr={isMobile ? 1 : [1, 1.1]}
       >
         <FrameInvalidator shouldAnimate={shouldAnimate} />
         <Scene opacity={opacity} setSelectedNode={setSelectedNode} isMobile={isMobile} />
