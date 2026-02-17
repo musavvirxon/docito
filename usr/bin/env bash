@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# File: scripts/migrations_audit.sh
+# Simple audit for Supabase migrations:
+# - duplicate timestamps (YYYYMMDDHHMMSS)
+# - duplicate "slug" portion (after timestamp)
+# - exact-duplicate file contents (sha256)
+#
+# Usage:
+#   bash scripts/migrations_audit.sh
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MIG_DIR="${ROOT_DIR}/supabase/migrations"
+
+if [[ ! -d "${MIG_DIR}" ]]; then
+  echo "ERROR: supabase/migrations not found at: ${MIG_DIR}" >&2
+  exit 2
+fi
+
+mapfile -t files < <(find "${MIG_DIR}" -maxdepth 1 -type f -name "*.sql" | sort)
+
+if [[ ${#files[@]} -eq 0 ]]; then
+  echo "No migrations found."
+  exit 0
+fi
+
+echo "Migrations: ${#files[@]}"
+echo
+
+echo "== Duplicate timestamps =="
+printf "%s\n" "${files[@]}" \
+  | awk -F'/' '{print $NF}' \
+  | awk -F'_' '{print $1}' \
+  | sort \
+  | uniq -c \
+  | awk '$1>1 {print "  " $2 "  (count=" $1 ")"}' \
+  || true
+echo
+
+echo "== Duplicate slugs (after timestamp) =="
+printf "%s\n" "${files[@]}" \
+  | awk -F'/' '{print $NF}' \
+  | sed -E 's/^[0-9]{14}_//' \
+  | sort \
+  | uniq -c \
+  | awk '$1>1 {print "  " $2 "  (count=" $1 ")"}' \
+  || true
+echo
+
+echo "== Exact duplicate content (sha256) =="
+printf "%s\n" "${files[@]}" \
+  | while read -r f; do
+      sha="$(sha256sum "$f" | awk '{print $1}')"
+      bn="$(basename "$f")"
+      echo "${sha}  ${bn}"
+    done \
+  | sort \
+  | awk '{print $1}' \
+  | uniq -c \
+  | awk '$1>1 {print "  sha=" $2 "  (count=" $1 ")"}' \
+  || true
+echo
+
+echo "Done."
