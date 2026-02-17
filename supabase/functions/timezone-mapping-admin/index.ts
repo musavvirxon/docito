@@ -25,7 +25,7 @@ function requireEnv(name: string) {
   return v;
 }
 
-async function isSuperAdmin(service: ReturnType<typeof createClient>, userId: string) {
+async function isSuperAdmin(service: any, userId: string) {
   const { data, error } = await service
     .from("user_roles")
     .select("role")

@@ -58,7 +58,7 @@ function getUA(req: Request) {
   return req.headers.get("user-agent") || null;
 }
 
-async function isSuperAdmin(authedClient: ReturnType<typeof createClient>): Promise<boolean> {
+async function isSuperAdmin(authedClient: any): Promise<boolean> {
   // Preferred: SECURITY DEFINER RPC
   const rpc = await authedClient.rpc("is_super_admin");
   if (!rpc.error && typeof rpc.data === "boolean") return rpc.data;

@@ -350,7 +350,7 @@ serve(async (req) => {
     }));
 
     // filter zero
-    const filtered = ledgerInserts.filter((x) => Number(x.amount_cents) !== 0);
+    const filtered = ledgerInserts.filter((x: any) => Number(x.amount_cents) !== 0);
     if (filtered.length > 0) {
       const { data: ledgerRows, error: ledgerErr } = await serviceClient
         .from("finance_entries")

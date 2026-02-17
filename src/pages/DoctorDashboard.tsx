@@ -28,7 +28,7 @@ import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSecti
 import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { authApi } from "@/lib/api/supabase-api";
+// authApi import removed — use useAuth().signOut instead
 import QuickActionModals from "@/components/doctor/QuickActionModals";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
@@ -80,9 +80,10 @@ const DoctorDashboardContent = () => {
     };
   }, [refreshAll]);
 
+  const { signOut } = useAuth();
   const handleLogout = async () => {
-    await authApi.signOut();
-    navigate("/");
+    await signOut();
+    navigate("/auth");
   };
 
   const calculateProfileCompletion = () => {

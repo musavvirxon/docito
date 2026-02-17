@@ -503,11 +503,11 @@ export default function DoctorLandingPage() {
       <Helmet>
         <title>Join Docito® as a Doctor — Automate Your Practice | Less Admin, More Care</title>
         <meta name="description" content={t("doctorPage.hero.subheadline")} />
-        <link rel="canonical" href="https://docito.lovable.app/doctor" />
+        <link rel="canonical" href="https://docito.app/doctor" />
         <meta property="og:title" content="Join Docito® as a Doctor — Automate Your Practice" />
         <meta property="og:description" content={t("doctorPage.hero.subheadline")} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://docito.lovable.app/doctor" />
+        <meta property="og:url" content="https://docito.app/doctor" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org", "@type": "WebPage",

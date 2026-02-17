@@ -71,10 +71,11 @@ export default function DoctorPublicProfile() {
   const [doctor, setDoctor] = useState<PublicDoctorProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [isSaved, setIsSaved] = useState(false);
 
   const canonicalUrl = useMemo(() => {
     const safe = slug || "";
-    return `https://docito.lovable.app/doctor/${safe}`;
+    return `https://docito.app/doctor/${safe}`;
   }, [slug]);
 
   useEffect(() => {
@@ -209,7 +210,7 @@ export default function DoctorPublicProfile() {
       toast({ title: "Link copied to clipboard" });
     }
   };
-  const [isSaved, setIsSaved] = useState(false);
+  // isSaved state moved to top with other hooks
   const handleToggleSave = () => setIsSaved(!isSaved);
 
   // Map doctor to the format PremiumHeroSection expects
