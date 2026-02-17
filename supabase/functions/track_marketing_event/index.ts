@@ -84,7 +84,7 @@ serve(async (req) => {
         : null;
 
     const uaFromBody = body.user_agent ? String(body.user_agent) : "";
-    const user_agent = sanitizeString(context.userAgent || uaFromBody, 500);
+    const user_agent = sanitizeString((context as any).userAgent || uaFromBody, 500);
 
     const meta =
       body.meta && typeof body.meta === "object" && !Array.isArray(body.meta)

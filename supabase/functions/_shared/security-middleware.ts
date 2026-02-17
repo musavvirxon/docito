@@ -81,7 +81,7 @@ function getClientIp(req: Request): string {
   );
 }
 
-async function getUserRoles(serviceClient: ReturnType<typeof createClient>, userId: string): Promise<string[]> {
+async function getUserRoles(serviceClient: any, userId: string): Promise<string[]> {
   const { data, error } = await serviceClient
     .from("user_roles")
     .select("role")

@@ -1859,7 +1859,7 @@ serve(async (req: Request) => {
   const filenameSafe = verificationCode.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 64);
   const filename = `treatment-plan-${filenameSafe}.pdf`;
 
-  return new Response(pdfBytes, {
+  return new Response(pdfBytes as unknown as BodyInit, {
     status: 200,
     headers: {
       ...corsHeaders,
