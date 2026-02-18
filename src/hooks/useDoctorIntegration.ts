@@ -66,7 +66,7 @@ export interface Appointment {
   notes?: string | null;
   patient_id?: string | null;
   doctor_patient_id?: string | null;
-  consultation_type?: string | null;
+  appointment_type?: string | null;
   patient_name?: string;
   patient_email?: string;
   patient_phone?: string;
@@ -270,7 +270,7 @@ export const useDoctorIntegration = () => {
         supabase
           .from("appointments")
           .select(
-            "id, doctor_id, appointment_date, start_time, end_time, status, notes, patient_id, doctor_patient_id, consultation_type"
+            "id, doctor_id, appointment_date, start_time, end_time, status, notes, patient_id, doctor_patient_id, appointment_type"
           )
           .eq("doctor_id", doctorProfile.id)
           .gte("appointment_date", today)
@@ -281,7 +281,7 @@ export const useDoctorIntegration = () => {
         supabase
           .from("appointments")
           .select(
-            "id, doctor_id, appointment_date, start_time, end_time, status, notes, patient_id, doctor_patient_id, consultation_type"
+            "id, doctor_id, appointment_date, start_time, end_time, status, notes, patient_id, doctor_patient_id, appointment_type"
           )
           .eq("doctor_id", doctorProfile.id)
           .order("appointment_date", { ascending: false })
@@ -328,7 +328,7 @@ export const useDoctorIntegration = () => {
             notes: a.notes,
             patient_id: a.patient_id,
             doctor_patient_id: a.doctor_patient_id,
-            consultation_type: a.consultation_type,
+            appointment_type: a.appointment_type,
             patient_name: p?.full_name || "Patient",
             patient_email: p?.email || undefined,
             patient_phone: p?.phone || undefined,

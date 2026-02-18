@@ -3268,11 +3268,13 @@ export type Database = {
       }
       notifications: {
         Row: {
+          body: string | null
           created_at: string
           entity_id: string | null
           entity_type: string | null
           id: string
           is_read: boolean
+          level: string | null
           message: string
           related_id: string | null
           related_type: string | null
@@ -3281,11 +3283,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          body?: string | null
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
           id?: string
           is_read?: boolean
+          level?: string | null
           message: string
           related_id?: string | null
           related_type?: string | null
@@ -3294,11 +3298,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          body?: string | null
           created_at?: string
           entity_id?: string | null
           entity_type?: string | null
           id?: string
           is_read?: boolean
+          level?: string | null
           message?: string
           related_id?: string | null
           related_type?: string | null
@@ -8355,18 +8361,29 @@ export type Database = {
           user_id: string
         }[]
       }
-      send_notification_to_user: {
-        Args: {
-          p_data?: Json
-          p_expires_at?: string
-          p_message: string
-          p_notification_type: string
-          p_recipient_user_id: string
-          p_sender_user_id?: string
-          p_title: string
-        }
-        Returns: string
-      }
+      send_notification_to_user:
+        | {
+            Args: {
+              p_data?: Json
+              p_message?: string
+              p_notification_type?: string
+              p_recipient_user_id: string
+              p_title?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_data?: Json
+              p_expires_at?: string
+              p_message: string
+              p_notification_type: string
+              p_recipient_user_id: string
+              p_sender_user_id?: string
+              p_title: string
+            }
+            Returns: string
+          }
       send_patient_invitation_sms: {
         Args: {
           p_appointment_date: string

@@ -25,7 +25,7 @@ interface Appointment {
   notes?: string;
   patient_id?: string | null;
   doctor_patient_id?: string | null;
-  consultation_type?: string | null;
+  appointment_type?: string | null;
   patient_name?: string;
   patient_email?: string;
   patient_phone?: string;
@@ -354,7 +354,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
                     </span>
                     <span className="flex items-center gap-1">
                       <Stethoscope className="w-4 h-4" />
-                      {nextAppointment.consultation_type === 'video' ? t("doctor.appointmentDetails.videoConsultation", "Video Consultation") : t("doctor.appointmentDetails.inPerson", "In-Person")}
+                      {nextAppointment.appointment_type === 'video' ? t("doctor.appointmentDetails.videoConsultation", "Video Consultation") : t("doctor.appointmentDetails.inPerson", "In-Person")}
                     </span>
                   </div>
                 </div>
@@ -408,7 +408,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
                     <div>
                       <p className="text-sm text-muted-foreground">{t("doctor.appointmentDetails.type", "Type")}</p>
                       <p className="font-medium">
-                        {selectedAppointment.consultation_type === 'video' 
+                        {selectedAppointment.appointment_type === 'video' 
                           ? t("doctor.appointmentDetails.videoConsultation", "Video Consultation")
                           : t("doctor.appointmentDetails.inPerson", "In-Person")
                         }
