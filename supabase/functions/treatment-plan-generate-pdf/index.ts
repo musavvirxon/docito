@@ -1,7 +1,7 @@
 // Path: supabase/functions/treatment-plan-generate-pdf/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { PDFDocument, PDFFont, PDFPage, rgb } from "https://esm.sh/pdf-lib@1.17.1";
+import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
 import QRCode from "https://esm.sh/qrcode@1.5.3";
 import reshaper from "https://esm.sh/arabic-persian-reshaper@1.0.0";
@@ -40,10 +40,15 @@ const schema: ValidationSchema<ReqBody> = {
 };
 
 function b64ToBytes(b64: string): Uint8Array {
-  const bin = atob(b64);
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
+  try {
+    const bin = atob(b64);
+    if (bin.length < 16) throw new Error("base64 payload too small");
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  } catch {
+    return new Uint8Array(0);
+  }
 }
 
 function normalizeLocale(raw?: string | null): Locale {
@@ -858,17 +863,25 @@ async function fetchFontBytes(locale: Locale): Promise<Uint8Array> {
     fontBytesCache.set(key, buf);
     return buf;
   } catch {
-    // Hard fallback: embedded DejaVu subset used elsewhere in the project (Cyrillic-capable).
+    // Fallback: try embedded font, if invalid use null (caller uses StandardFonts)
     const fallback = b64ToBytes(DOCITO_FONT_TTF_BASE64);
-    fontBytesCache.set(key, fallback);
-    return fallback;
+    if (fallback.length > 0) {
+      fontBytesCache.set(key, fallback);
+      return fallback;
+    }
+    throw new Error("no_font_available");
   }
 }
 
 async function embedLocaleFont(pdf: PDFDocument, locale: Locale): Promise<PDFFont> {
   pdf.registerFontkit(fontkit);
-  const bytes = await fetchFontBytes(locale);
-  return await pdf.embedFont(bytes, { subset: true });
+  try {
+    const bytes = await fetchFontBytes(locale);
+    return await pdf.embedFont(bytes, { subset: true });
+  } catch {
+    // Fallback to built-in Helvetica if custom font unavailable
+    return await pdf.embedFont(StandardFonts.Helvetica);
+  }
 }
 
 async function getActorLocale(serviceClient: any, userId: string): Promise<Locale> {
@@ -1117,10 +1130,15 @@ async function generateTreatmentPlanPdf(params: {
   const font = await embedLocaleFont(pdf, params.locale);
 
   const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
-  const logo = await pdf.embedPng(logoBytes);
-
-  const logoW = 42;
-  const logoH = (logo.height / logo.width) * logoW;
+  let logo: Awaited<ReturnType<typeof pdf.embedPng>> | null = null;
+  let logoW = 42;
+  let logoH = 42;
+  if (logoBytes.length > 0) {
+    try {
+      logo = await pdf.embedPng(logoBytes);
+      logoH = (logo.height / logo.width) * logoW;
+    } catch { logo = null; }
+  }
 
   const rtl = isRtlLocale(params.locale);
 
@@ -1133,7 +1151,9 @@ async function generateTreatmentPlanPdf(params: {
   const header = () => {
     y = H - margin;
 
-    page.drawImage(logo, { x: margin, y: y - logoH, width: logoW, height: logoH });
+    if (logo) {
+      page.drawImage(logo, { x: margin, y: y - logoH, width: logoW, height: logoH });
+    }
 
     const brand = "docito.app";
     const brandSize = 10;
