@@ -14,12 +14,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 import EntityDetailDialog from "./EntityDetailDialog";
 
 interface EntityManagementProps {
-  entityType: 'clinic' | 'pharmacy' | 'laboratory' | 'imaging';
+  entityType: 'clinic' | 'pharmacy' | 'laboratory' | 'imaging' | 'doctors' | 'practices' | 'patients' | 'appointments' | 'payments';
 }
 
-const entityConfig = {
+const entityConfig: Record<string, {
+  title: string;
+  subtitle: string;
+  icon: typeof Building2;
+  table: string;
+  color: string;
+  nameField?: string;
+}> = {
   clinic: {
     title: "Clinics Management",
+    subtitle: "Manage all registered medical practices",
+    icon: Building2,
+    table: "practices",
+    color: "text-blue-500",
+  },
+  practices: {
+    title: "Practices Management",
     subtitle: "Manage all registered medical practices",
     icon: Building2,
     table: "practices",
@@ -46,10 +60,42 @@ const entityConfig = {
     table: "imaging_centers",
     color: "text-orange-500",
   },
+  doctors: {
+    title: "Doctors Management",
+    subtitle: "Manage all registered doctors",
+    icon: Building2,
+    table: "doctors",
+    color: "text-indigo-500",
+    nameField: "specialty",
+  },
+  patients: {
+    title: "Patients Management",
+    subtitle: "Manage all registered patients",
+    icon: Building2,
+    table: "profiles",
+    color: "text-teal-500",
+    nameField: "full_name",
+  },
+  appointments: {
+    title: "Appointments Management",
+    subtitle: "View all appointments across the platform",
+    icon: Building2,
+    table: "appointments",
+    color: "text-cyan-500",
+    nameField: "appointment_type",
+  },
+  payments: {
+    title: "Payments Management",
+    subtitle: "View all billing transactions",
+    icon: Building2,
+    table: "billing_transactions",
+    color: "text-amber-500",
+    nameField: "transaction_type",
+  },
 };
 
 const EntityManagement = ({ entityType }: EntityManagementProps) => {
-  const config = entityConfig[entityType];
+  const config = entityConfig[entityType] || entityConfig.clinic;
   const Icon = config.icon;
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,7 +120,7 @@ const EntityManagement = ({ entityType }: EntityManagementProps) => {
   });
 
   const filteredEntities = entities?.filter((entity: any) => {
-    const name = entity.name || entity.practice_name || '';
+    const name = entity.name || entity.practice_name || entity.full_name || entity.specialty || entity.transaction_type || entity.appointment_type || '';
     return name.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
@@ -175,7 +221,7 @@ const EntityManagement = ({ entityType }: EntityManagementProps) => {
                       className="border-b border-border hover:bg-muted/50 transition-colors"
                     >
                       <TableCell className="font-medium">
-                        {entity.name || entity.practice_name || 'N/A'}
+                        {entity.name || entity.practice_name || entity.full_name || entity.specialty || entity.transaction_type || entity.appointment_type || 'N/A'}
                       </TableCell>
                       <TableCell>
                         {entity.city}, {entity.country || 'N/A'}

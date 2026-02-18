@@ -136,7 +136,7 @@ const SuperAdminLogin = () => {
 };
 
 const SuperAdminDashboard = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, bootstrapped, signOut } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation("dashboard");
 
@@ -199,7 +199,7 @@ const SuperAdminDashboard = () => {
     checkSuperAdminRole();
   }, [user?.id]);
 
-  if (loading || checkingRole) {
+  if (!bootstrapped || checkingRole) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex items-center gap-2">
