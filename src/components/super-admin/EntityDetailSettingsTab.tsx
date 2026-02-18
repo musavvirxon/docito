@@ -29,7 +29,7 @@ export default function EntityDetailSettingsTab({ entityType, entityId, entityNa
     isFetching: settingsFetching,
   } = useQuery({
     queryKey: ["entity-settings", settingsEntityType, entityId],
-    enabled: Boolean(entityId),
+    enabled: Boolean(entityId) && Boolean(settingsEntityType),
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("entity-settings", {
         body: { action: "get", entityType: settingsEntityType, entityId },

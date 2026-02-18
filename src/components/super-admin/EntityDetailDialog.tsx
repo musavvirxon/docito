@@ -70,15 +70,22 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
   });
 
   const handleVerify = async () => {
-    const tableMap: Record<EntityType, string> = {
+    const tableMap: Partial<Record<EntityType, string>> = {
       clinic: "practices",
+      practices: "practices",
       pharmacy: "pharmacies",
       laboratory: "lab_centers",
       imaging: "imaging_centers",
+      doctors: "doctors",
+      patients: "profiles",
+      appointments: "appointments",
+      payments: "billing_transactions",
     };
+    const tableName = tableMap[entityType];
+    if (!tableName) return;
 
     const { error } = await supabase
-      .from(tableMap[entityType] as any)
+      .from(tableName as any)
       .update({ is_verified: true, status: "active" })
       .eq("id", entity.id);
 
@@ -93,15 +100,22 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
   };
 
   const handleSuspend = async () => {
-    const tableMap: Record<EntityType, string> = {
+    const tableMap: Partial<Record<EntityType, string>> = {
       clinic: "practices",
+      practices: "practices",
       pharmacy: "pharmacies",
       laboratory: "lab_centers",
       imaging: "imaging_centers",
+      doctors: "doctors",
+      patients: "profiles",
+      appointments: "appointments",
+      payments: "billing_transactions",
     };
+    const tableName = tableMap[entityType];
+    if (!tableName) return;
 
     const { error } = await supabase
-      .from(tableMap[entityType] as any)
+      .from(tableName as any)
       .update({ status: "suspended" })
       .eq("id", entity.id);
 

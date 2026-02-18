@@ -1,6 +1,6 @@
 import { Clock, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 
-export type EntityType = "clinic" | "pharmacy" | "laboratory" | "imaging";
+export type EntityType = "clinic" | "pharmacy" | "laboratory" | "imaging" | "doctors" | "practices" | "patients" | "appointments" | "payments";
 
 export type InsightData = {
   entity_type: string;
@@ -92,9 +92,12 @@ export function toIsoDate(d: string | null | undefined) {
   return dt.toLocaleDateString();
 }
 
-export function mapEntityTypeToSettings(t: EntityType): "clinic" | "lab" | "imaging" | "pharmacy" {
+export function mapEntityTypeToSettings(t: EntityType): "clinic" | "lab" | "imaging" | "pharmacy" | null {
   if (t === "laboratory") return "lab";
-  return t;
+  if (t === "clinic" || t === "practices") return "clinic";
+  if (t === "pharmacy") return "pharmacy";
+  if (t === "imaging") return "imaging";
+  return null;
 }
 
 export function planStaffLimit(planCode?: string | null) {
