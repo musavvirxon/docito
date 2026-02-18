@@ -1,4 +1,3 @@
-// src/components/home/premium/HeroOrb3D.tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, OrbitControls, Sphere } from "@react-three/drei";
@@ -333,6 +332,47 @@ function configureTex(tex: THREE.Texture) {
   tex.needsUpdate = true;
 }
 
+function setSRGB(tex: THREE.Texture) {
+  if ("colorSpace" in tex && (THREE as any).SRGBColorSpace) {
+    (tex as any).colorSpace = (THREE as any).SRGBColorSpace;
+    tex.needsUpdate = true;
+  }
+}
+function setNoColorSpace(tex: THREE.Texture) {
+  if ("colorSpace" in tex && (THREE as any).NoColorSpace) {
+    (tex as any).colorSpace = (THREE as any).NoColorSpace;
+    tex.needsUpdate = true;
+  }
+}
+
+function solidRGBA(hex: string, a255: number) {
+  const c = new THREE.Color(hex);
+  const data = new Uint8Array([
+    Math.round(c.r * 255),
+    Math.round(c.g * 255),
+    Math.round(c.b * 255),
+    a255,
+  ]);
+  const tex = new THREE.DataTexture(data, 1, 1);
+  tex.needsUpdate = true;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
+function solidGray(v255: number) {
+  const data = new Uint8Array([v255, v255, v255, 255]);
+  const tex = new THREE.DataTexture(data, 1, 1);
+  tex.needsUpdate = true;
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  return tex;
+}
+
 function generateEarthTextures(width: number, height: number, seed: number): GlobeTextures {
   // --- Earth color texture + roughness + bump (all canvas generated; lightweight) ---
   const earthCanvas = document.createElement("canvas");
@@ -341,16 +381,23 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
   const ectx = earthCanvas.getContext("2d");
   if (!ectx) {
-    const fallback = new THREE.Texture();
-    configureTex(fallback);
-    return { earth: fallback, clouds: fallback, roughness: fallback, bump: fallback };
+    // IMPORTANT: never return an "empty" THREE.Texture (it renders gray).
+    const earth = solidRGBA("#0b61d6", 255);
+    setSRGB(earth);
+    const clouds = solidRGBA("#ffffff", 0);
+    setSRGB(clouds);
+    const roughness = solidGray(42);
+    setNoColorSpace(roughness);
+    const bump = solidGray(0);
+    setNoColorSpace(bump);
+    return { earth, clouds, roughness, bump };
   }
 
-  // Ocean base (slightly deeper, more Earth-like)
+  // Ocean base (more saturated, Earth-like)
   const oceanGrad = ectx.createLinearGradient(0, 0, width, height);
-  oceanGrad.addColorStop(0, "#071f52");
-  oceanGrad.addColorStop(0.55, "#0b3a8a");
-  oceanGrad.addColorStop(1, "#06163b");
+  oceanGrad.addColorStop(0, "#01265f");
+  oceanGrad.addColorStop(0.55, "#0b61d6");
+  oceanGrad.addColorStop(1, "#01153a");
   ectx.fillStyle = oceanGrad;
   ectx.fillRect(0, 0, width, height);
 
@@ -398,23 +445,23 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const shallow = smoothstep(coastProx);
 
       if (!isLand) {
-        // Ocean variation + shallow turquoise near coasts
+        // Ocean variation + shallow turquoise near coasts (more vivid)
         const w = sampleGridNoise(x + 500, y + 900, n2);
-        const oR = lerp(4, 14, w);
-        const oG = lerp(24, 82, w);
-        const oB = lerp(92, 178, w);
+        const oR = lerp(0, 18, w);
+        const oG = lerp(28, 92, w);
+        const oB = lerp(110, 210, w);
 
-        const sR = 20;
-        const sG = 170;
-        const sB = 165;
+        const sR = 22;
+        const sG = 190;
+        const sB = 175;
 
-        d[i + 0] = Math.round(lerp(oR, sR, shallow * 0.45));
-        d[i + 1] = Math.round(lerp(oG, sG, shallow * 0.45));
-        d[i + 2] = Math.round(lerp(oB, sB, shallow * 0.45));
+        d[i + 0] = Math.round(lerp(oR, sR, shallow * 0.48));
+        d[i + 1] = Math.round(lerp(oG, sG, shallow * 0.48));
+        d[i + 2] = Math.round(lerp(oB, sB, shallow * 0.48));
         d[i + 3] = 255;
 
         // glossy oceans, slightly rougher near coast
-        const rv = Math.round(lerp(34, 54, w) + shallow * 18);
+        const rv = Math.round(lerp(30, 54, w) + shallow * 22);
         rd[i + 0] = rv;
         rd[i + 1] = rv;
         rd[i + 2] = rv;
@@ -434,32 +481,33 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const mountain = elev > 0.72;
       const desert = dry > 0.64 && lat < 0.55;
 
-      // Land colors (slightly more natural)
+      // Land colors (more Earth-like saturation)
       let r = 0;
       let g = 0;
       let b = 0;
 
       if (nearPole) {
         // snow / tundra
-        r = 232;
-        g = 242;
-        b = 248;
+        r = 236;
+        g = 245;
+        b = 250;
       } else if (mountain) {
         // rocky
         const m = THREE.MathUtils.clamp((elev - 0.72) / 0.18, 0, 1);
-        r = Math.round(lerp(120, 160, m));
-        g = Math.round(lerp(112, 148, m));
-        b = Math.round(lerp(104, 138, m));
+        r = Math.round(lerp(112, 170, m));
+        g = Math.round(lerp(106, 162, m));
+        b = Math.round(lerp(98, 150, m));
       } else if (desert) {
-        r = 214;
-        g = 196;
-        b = 138;
+        // warmer sands
+        r = 232;
+        g = 208;
+        b = 148;
       } else {
-        // vegetation
+        // vegetation (vivid greens, still natural)
         const lush = (1 - lat) * 0.62 + (1 - dry) * 0.38;
-        r = Math.round(lerp(22, 64, lush));
-        g = Math.round(lerp(86, 168, lush));
-        b = Math.round(lerp(30, 84, lush));
+        r = Math.round(lerp(18, 68, lush));
+        g = Math.round(lerp(108, 190, lush));
+        b = Math.round(lerp(28, 92, lush));
       }
 
       // Coast blending (fade land into ocean)
@@ -478,8 +526,8 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       // Roughness: land is rougher; mountains roughest
       let rv = 165;
       if (nearPole) rv = 150;
-      if (desert) rv = 172;
-      if (mountain) rv = 205;
+      if (desert) rv = 175;
+      if (mountain) rv = 210;
 
       // Slightly smoother near coasts (wet)
       rv = Math.round(lerp(rv, rv - 18, 1 - coast));
@@ -490,7 +538,7 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
       // Bump: subtle elevation (mostly on land)
       let bv = Math.round(THREE.MathUtils.clamp(elev * 1.15, 0, 1) * 255);
-      if (mountain) bv = Math.min(255, bv + 30);
+      if (mountain) bv = Math.min(255, bv + 32);
       if (nearPole) bv = Math.round(bv * 0.65);
       // soften near coasts to avoid noisy shorelines
       bv = Math.round(lerp(0, bv, coast));
@@ -503,41 +551,35 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
   ectx.putImageData(img, 0, 0);
 
-  // Ice caps overlay (keeps a more realistic polar feel)
+  // Ice caps overlay (more visible, still subtle)
   ectx.save();
-  const capTop = ectx.createLinearGradient(0, 0, 0, height * 0.2);
-  capTop.addColorStop(0, "rgba(255,255,255,0.8)");
+  const capTop = ectx.createLinearGradient(0, 0, 0, height * 0.22);
+  capTop.addColorStop(0, "rgba(255,255,255,0.82)");
   capTop.addColorStop(1, "rgba(255,255,255,0)");
   ectx.fillStyle = capTop;
-  ectx.fillRect(0, 0, width, height * 0.22);
+  ectx.fillRect(0, 0, width, height * 0.24);
 
-  const capBottom = ectx.createLinearGradient(0, height, 0, height * 0.8);
-  capBottom.addColorStop(0, "rgba(255,255,255,0.8)");
+  const capBottom = ectx.createLinearGradient(0, height, 0, height * 0.78);
+  capBottom.addColorStop(0, "rgba(255,255,255,0.82)");
   capBottom.addColorStop(1, "rgba(255,255,255,0)");
   ectx.fillStyle = capBottom;
-  ectx.fillRect(0, height * 0.78, width, height * 0.22);
+  ectx.fillRect(0, height * 0.76, width, height * 0.24);
   ectx.restore();
 
   // Final textures
   const earthTex = new THREE.CanvasTexture(earthCanvas);
   configureTex(earthTex);
-  if ("colorSpace" in earthTex && (THREE as any).SRGBColorSpace) {
-    (earthTex as any).colorSpace = (THREE as any).SRGBColorSpace;
-  }
+  setSRGB(earthTex);
 
   if (rctx) rctx.putImageData(roughImg, 0, 0);
   const roughnessTex = new THREE.CanvasTexture(roughCanvas);
   configureTex(roughnessTex);
-  if ("colorSpace" in roughnessTex && (THREE as any).NoColorSpace) {
-    (roughnessTex as any).colorSpace = (THREE as any).NoColorSpace;
-  }
+  setNoColorSpace(roughnessTex);
 
   if (bctx) bctx.putImageData(bumpImg, 0, 0);
   const bumpTex = new THREE.CanvasTexture(bumpCanvas);
   configureTex(bumpTex);
-  if ("colorSpace" in bumpTex && (THREE as any).NoColorSpace) {
-    (bumpTex as any).colorSpace = (THREE as any).NoColorSpace;
-  }
+  setNoColorSpace(bumpTex);
 
   // --- Clouds texture ---
   const cloudsCanvas = document.createElement("canvas");
@@ -545,8 +587,8 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
   cloudsCanvas.height = height;
   const cctx = cloudsCanvas.getContext("2d");
   if (!cctx) {
-    const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
-    configureTex(cloudsTex);
+    const cloudsTex = solidRGBA("#ffffff", 0);
+    setSRGB(cloudsTex);
     return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
   }
 
@@ -578,9 +620,7 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
   cctx.putImageData(cimg, 0, 0);
   const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
   configureTex(cloudsTex);
-  if ("colorSpace" in cloudsTex && (THREE as any).SRGBColorSpace) {
-    (cloudsTex as any).colorSpace = (THREE as any).SRGBColorSpace;
-  }
+  setSRGB(cloudsTex);
 
   return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
 }
@@ -704,13 +744,13 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
           roughnessMap={textures?.roughness || undefined}
           bumpMap={textures?.bump || undefined}
           bumpScale={isMobile ? 0.04 : 0.06}
-          color={textures?.earth ? undefined : "#1e40af"}
+          color={textures?.earth ? undefined : "#0b61d6"}
           transparent
           opacity={0.96 * opacity}
           roughness={0.62}
           metalness={0}
-          emissive="#06163b"
-          emissiveIntensity={0.08}
+          emissive="#041538"
+          emissiveIntensity={0.09}
         />
       </Sphere>
 
