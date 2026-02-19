@@ -621,7 +621,12 @@
       "financialStats": "Financial Stats",
       "clinicFinder": "Clinic Finder",
       "settings": "Settings",
-      "logout": "Log Out"
+      "logout": "Log Out",
+      "diagnoses": "Diagnoses",
+      "referrals": "Referrals"
+    },
+    "messaging": {
+      "description": "Communicate with patients and healthcare providers"
     },
     "clinic": {
       "verified": "Verified",
@@ -635,7 +640,10 @@
     },
     "profileCompletion": {
       "title": "Profile Completion",
-      "message": "Complete your profile to get more bookings"
+      "message": "Complete your profile to get more bookings",
+      "incomplete": "Profile Incomplete",
+      "completeProfile": "Your profile is {{percent}}% complete. Fill in missing details to attract more patients.",
+      "updateProfile": "Update Profile"
     },
     "stats": {
       "totalAppointments": "Total Appointments",
@@ -645,7 +653,9 @@
       "averageRating": "Average Rating",
       "basedOnReviews": "Based on {{count}} reviews",
       "revenue": "Revenue",
-      "totalEarnings": "Total earnings"
+      "totalEarnings": "Total earnings",
+      "rating": "Rating",
+      "earnings": "Earnings"
     },
     "upcomingAppointments": {
       "title": "Upcoming Appointments",

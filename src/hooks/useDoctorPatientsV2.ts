@@ -57,10 +57,10 @@ export const useDoctorPatientsV2 = () => {
         .from('doctors')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (doctorError) {
-        // Not a doctor
+      if (doctorError || !doctorData) {
+        // Not a doctor or no profile yet
         setPatients([]);
         return;
       }
