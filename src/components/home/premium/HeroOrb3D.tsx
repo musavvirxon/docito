@@ -1,3 +1,4 @@
+// src/components/home/premium/HeroOrb3D.tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, OrbitControls, Sphere } from "@react-three/drei";
@@ -219,16 +220,16 @@ function ConnectionLine({ nodePosition, color, opacity }: ConnectionLineProps) {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     const m = new THREE.LineBasicMaterial({
-      color,
       transparent: true,
       opacity,
-      blending: THREE.AdditiveBlending,
+      color: new THREE.Color(color),
       depthWrite: false,
+      blending: THREE.AdditiveBlending,
     });
     matRef.current = m;
-    const l = new THREE.Line(g, m);
-    l.frustumCulled = false;
-    return l;
+    const line = new THREE.Line(g, m);
+    line.frustumCulled = false;
+    return line;
   }, [positions, color, opacity]);
 
   useEffect(() => {
@@ -332,47 +333,6 @@ function configureTex(tex: THREE.Texture) {
   tex.needsUpdate = true;
 }
 
-function setSRGB(tex: THREE.Texture) {
-  if ("colorSpace" in tex && (THREE as any).SRGBColorSpace) {
-    (tex as any).colorSpace = (THREE as any).SRGBColorSpace;
-    tex.needsUpdate = true;
-  }
-}
-function setNoColorSpace(tex: THREE.Texture) {
-  if ("colorSpace" in tex && (THREE as any).NoColorSpace) {
-    (tex as any).colorSpace = (THREE as any).NoColorSpace;
-    tex.needsUpdate = true;
-  }
-}
-
-function solidRGBA(hex: string, a255: number) {
-  const c = new THREE.Color(hex);
-  const data = new Uint8Array([
-    Math.round(c.r * 255),
-    Math.round(c.g * 255),
-    Math.round(c.b * 255),
-    a255,
-  ]);
-  const tex = new THREE.DataTexture(data, 1, 1);
-  tex.needsUpdate = true;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  return tex;
-}
-
-function solidGray(v255: number) {
-  const data = new Uint8Array([v255, v255, v255, 255]);
-  const tex = new THREE.DataTexture(data, 1, 1);
-  tex.needsUpdate = true;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  return tex;
-}
-
 function generateEarthTextures(width: number, height: number, seed: number): GlobeTextures {
   // --- Earth color texture + roughness + bump (all canvas generated; lightweight) ---
   const earthCanvas = document.createElement("canvas");
@@ -381,23 +341,16 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
   const ectx = earthCanvas.getContext("2d");
   if (!ectx) {
-    // IMPORTANT: never return an "empty" THREE.Texture (it renders gray).
-    const earth = solidRGBA("#0b61d6", 255);
-    setSRGB(earth);
-    const clouds = solidRGBA("#ffffff", 0);
-    setSRGB(clouds);
-    const roughness = solidGray(42);
-    setNoColorSpace(roughness);
-    const bump = solidGray(0);
-    setNoColorSpace(bump);
-    return { earth, clouds, roughness, bump };
+    const fallback = new THREE.Texture();
+    configureTex(fallback);
+    return { earth: fallback, clouds: fallback, roughness: fallback, bump: fallback };
   }
 
-  // Ocean base (more saturated, Earth-like)
+  // Ocean base (slightly deeper, more Earth-like)
   const oceanGrad = ectx.createLinearGradient(0, 0, width, height);
-  oceanGrad.addColorStop(0, "#01265f");
-  oceanGrad.addColorStop(0.55, "#0b61d6");
-  oceanGrad.addColorStop(1, "#01153a");
+  oceanGrad.addColorStop(0, "#061f46");
+  oceanGrad.addColorStop(0.55, "#0b5fd1");
+  oceanGrad.addColorStop(1, "#04122f");
   ectx.fillStyle = oceanGrad;
   ectx.fillRect(0, 0, width, height);
 
@@ -445,23 +398,24 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const shallow = smoothstep(coastProx);
 
       if (!isLand) {
-        // Ocean variation + shallow turquoise near coasts (more vivid)
+        // Ocean variation + shallow turquoise near coasts
         const w = sampleGridNoise(x + 500, y + 900, n2);
-        const oR = lerp(0, 18, w);
-        const oG = lerp(28, 92, w);
-        const oB = lerp(110, 210, w);
+        const oR = lerp(2, 10, w);
+        const oG = lerp(34, 105, w);
+        const oB = lerp(120, 215, w);
 
-        const sR = 22;
-        const sG = 190;
-        const sB = 175;
+        // Shallow water tint near coasts
+        const sR = 18;
+        const sG = 188;
+        const sB = 180;
 
-        d[i + 0] = Math.round(lerp(oR, sR, shallow * 0.48));
-        d[i + 1] = Math.round(lerp(oG, sG, shallow * 0.48));
-        d[i + 2] = Math.round(lerp(oB, sB, shallow * 0.48));
+        d[i + 0] = Math.round(lerp(oR, sR, shallow * 0.45));
+        d[i + 1] = Math.round(lerp(oG, sG, shallow * 0.45));
+        d[i + 2] = Math.round(lerp(oB, sB, shallow * 0.45));
         d[i + 3] = 255;
 
         // glossy oceans, slightly rougher near coast
-        const rv = Math.round(lerp(30, 54, w) + shallow * 22);
+        const rv = Math.round(lerp(34, 54, w) + shallow * 18);
         rd[i + 0] = rv;
         rd[i + 1] = rv;
         rd[i + 2] = rv;
@@ -481,37 +435,57 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       const mountain = elev > 0.72;
       const desert = dry > 0.64 && lat < 0.55;
 
-      // Land colors (more Earth-like saturation)
+      // Land colors (slightly more natural)
       let r = 0;
       let g = 0;
       let b = 0;
 
       if (nearPole) {
         // snow / tundra
-        r = 236;
-        g = 245;
-        b = 250;
+        r = 232;
+        g = 242;
+        b = 248;
       } else if (mountain) {
         // rocky
         const m = THREE.MathUtils.clamp((elev - 0.72) / 0.18, 0, 1);
-        r = Math.round(lerp(112, 170, m));
-        g = Math.round(lerp(106, 162, m));
-        b = Math.round(lerp(98, 150, m));
+        r = Math.round(lerp(120, 160, m));
+        g = Math.round(lerp(112, 148, m));
+        b = Math.round(lerp(104, 138, m));
       } else if (desert) {
-        // warmer sands
-        r = 232;
-        g = 208;
-        b = 148;
+        r = 214;
+        g = 196;
+        b = 138;
       } else {
-        // vegetation (vivid greens, still natural)
-        const lush = (1 - lat) * 0.62 + (1 - dry) * 0.38;
-        r = Math.round(lerp(18, 68, lush));
-        g = Math.round(lerp(108, 190, lush));
-        b = Math.round(lerp(28, 92, lush));
+        // vegetation (more vibrant + forest patches)
+        const lush = (1 - lat) * 0.66 + (1 - dry) * 0.34;
+        r = Math.round(lerp(18, 58, lush));
+        g = Math.round(lerp(112, 192, lush));
+        b = Math.round(lerp(22, 78, lush));
+
+        // Add subtle forest variation (keeps it Earth-like without heavy textures)
+        const forest = sampleGridNoise(x * 3.1 + 40, y * 3.1 + 15, n2);
+        const forestMask = smoothstep(THREE.MathUtils.clamp((forest - 0.52) / 0.28, 0, 1));
+        r = Math.round(THREE.MathUtils.clamp(lerp(r, r - 12, forestMask), 0, 255));
+        g = Math.round(THREE.MathUtils.clamp(lerp(g, g + 26, forestMask), 0, 255));
+        b = Math.round(THREE.MathUtils.clamp(lerp(b, b - 8, forestMask), 0, 255));
       }
 
       // Coast blending (fade land into ocean)
       const edge = THREE.MathUtils.clamp((land - 0.585) / 0.09, 0, 1);
+
+      // Beaches near shore (helps the globe read as "Earth")
+      // edge: 0 = shoreline, 1 = inland. Peak sand around ~0.18.
+      const beachMask = THREE.MathUtils.clamp(1 - Math.abs(edge - 0.18) / 0.22, 0, 1);
+      if (!nearPole && !mountain && !desert && beachMask > 0) {
+        const sandR = 224;
+        const sandG = 210;
+        const sandB = 160;
+        const s = beachMask * 0.85;
+        r = Math.round(lerp(r, sandR, s));
+        g = Math.round(lerp(g, sandG, s));
+        b = Math.round(lerp(b, sandB, s));
+      }
+
       const coast = smoothstep(edge);
 
       const oceanR = d[i + 0];
@@ -526,8 +500,8 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
       // Roughness: land is rougher; mountains roughest
       let rv = 165;
       if (nearPole) rv = 150;
-      if (desert) rv = 175;
-      if (mountain) rv = 210;
+      if (desert) rv = 172;
+      if (mountain) rv = 205;
 
       // Slightly smoother near coasts (wet)
       rv = Math.round(lerp(rv, rv - 18, 1 - coast));
@@ -538,7 +512,7 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
       // Bump: subtle elevation (mostly on land)
       let bv = Math.round(THREE.MathUtils.clamp(elev * 1.15, 0, 1) * 255);
-      if (mountain) bv = Math.min(255, bv + 32);
+      if (mountain) bv = Math.min(255, bv + 30);
       if (nearPole) bv = Math.round(bv * 0.65);
       // soften near coasts to avoid noisy shorelines
       bv = Math.round(lerp(0, bv, coast));
@@ -551,35 +525,41 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
 
   ectx.putImageData(img, 0, 0);
 
-  // Ice caps overlay (more visible, still subtle)
+  // Ice caps overlay (keeps a more realistic polar feel)
   ectx.save();
-  const capTop = ectx.createLinearGradient(0, 0, 0, height * 0.22);
-  capTop.addColorStop(0, "rgba(255,255,255,0.82)");
+  const capTop = ectx.createLinearGradient(0, 0, 0, height * 0.2);
+  capTop.addColorStop(0, "rgba(255,255,255,0.8)");
   capTop.addColorStop(1, "rgba(255,255,255,0)");
   ectx.fillStyle = capTop;
-  ectx.fillRect(0, 0, width, height * 0.24);
+  ectx.fillRect(0, 0, width, height * 0.22);
 
-  const capBottom = ectx.createLinearGradient(0, height, 0, height * 0.78);
-  capBottom.addColorStop(0, "rgba(255,255,255,0.82)");
+  const capBottom = ectx.createLinearGradient(0, height, 0, height * 0.8);
+  capBottom.addColorStop(0, "rgba(255,255,255,0.8)");
   capBottom.addColorStop(1, "rgba(255,255,255,0)");
   ectx.fillStyle = capBottom;
-  ectx.fillRect(0, height * 0.76, width, height * 0.24);
+  ectx.fillRect(0, height * 0.78, width, height * 0.22);
   ectx.restore();
 
   // Final textures
   const earthTex = new THREE.CanvasTexture(earthCanvas);
   configureTex(earthTex);
-  setSRGB(earthTex);
+  if ("colorSpace" in earthTex && (THREE as any).SRGBColorSpace) {
+    (earthTex as any).colorSpace = (THREE as any).SRGBColorSpace;
+  }
 
   if (rctx) rctx.putImageData(roughImg, 0, 0);
   const roughnessTex = new THREE.CanvasTexture(roughCanvas);
   configureTex(roughnessTex);
-  setNoColorSpace(roughnessTex);
+  if ("colorSpace" in roughnessTex && (THREE as any).NoColorSpace) {
+    (roughnessTex as any).colorSpace = (THREE as any).NoColorSpace;
+  }
 
   if (bctx) bctx.putImageData(bumpImg, 0, 0);
   const bumpTex = new THREE.CanvasTexture(bumpCanvas);
   configureTex(bumpTex);
-  setNoColorSpace(bumpTex);
+  if ("colorSpace" in bumpTex && (THREE as any).NoColorSpace) {
+    (bumpTex as any).colorSpace = (THREE as any).NoColorSpace;
+  }
 
   // --- Clouds texture ---
   const cloudsCanvas = document.createElement("canvas");
@@ -587,8 +567,8 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
   cloudsCanvas.height = height;
   const cctx = cloudsCanvas.getContext("2d");
   if (!cctx) {
-    const cloudsTex = solidRGBA("#ffffff", 0);
-    setSRGB(cloudsTex);
+    const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
+    configureTex(cloudsTex);
     return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
   }
 
@@ -620,7 +600,9 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
   cctx.putImageData(cimg, 0, 0);
   const cloudsTex = new THREE.CanvasTexture(cloudsCanvas);
   configureTex(cloudsTex);
-  setSRGB(cloudsTex);
+  if ("colorSpace" in cloudsTex && (THREE as any).SRGBColorSpace) {
+    (cloudsTex as any).colorSpace = (THREE as any).SRGBColorSpace;
+  }
 
   return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
 }
@@ -658,8 +640,7 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
     let cancelled = false;
     let idleId: number | null = null;
 
-    const current =
-      cacheKey === "mobile" ? globeTextureCache.mobile : globeTextureCache.desktop;
+    const current = cacheKey === "mobile" ? globeTextureCache.mobile : globeTextureCache.desktop;
     if (current) {
       setTextures(current);
       return () => {
@@ -744,21 +725,18 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
           roughnessMap={textures?.roughness || undefined}
           bumpMap={textures?.bump || undefined}
           bumpScale={isMobile ? 0.04 : 0.06}
-          color={textures?.earth ? undefined : "#0b61d6"}
+          color={textures?.earth ? undefined : "#1e40af"}
           transparent
           opacity={0.96 * opacity}
           roughness={0.62}
           metalness={0}
-          emissive="#041538"
-          emissiveIntensity={0.09}
+          emissive="#06163b"
+          emissiveIntensity={0.05}
         />
       </Sphere>
 
       {/* Clouds layer */}
-      <Sphere
-        ref={cloudsRef}
-        args={[GLOBE_RADIUS * 1.012, isMobile ? 36 : 56, isMobile ? 18 : 28]}
-      >
+      <Sphere ref={cloudsRef} args={[GLOBE_RADIUS * 1.012, isMobile ? 36 : 56, isMobile ? 18 : 28]}>
         <meshStandardMaterial
           map={textures?.clouds || undefined}
           transparent
@@ -771,32 +749,17 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
 
       {/* Atmosphere glow */}
       <Sphere args={[GLOBE_RADIUS * 1.06, isMobile ? 18 : 30, isMobile ? 9 : 15]}>
-        <meshBasicMaterial
-          color="#60a5fa"
-          transparent
-          opacity={0.18 * opacity}
-          side={THREE.BackSide}
-        />
+        <meshBasicMaterial color="#60a5fa" transparent opacity={0.18 * opacity} side={THREE.BackSide} />
       </Sphere>
 
       {/* Mid glow */}
       <Sphere args={[GLOBE_RADIUS * 1.13, isMobile ? 18 : 30, isMobile ? 9 : 15]}>
-        <meshBasicMaterial
-          color="#818cf8"
-          transparent
-          opacity={0.11 * opacity}
-          side={THREE.BackSide}
-        />
+        <meshBasicMaterial color="#818cf8" transparent opacity={0.11 * opacity} side={THREE.BackSide} />
       </Sphere>
 
       {/* Outer glow */}
       <Sphere args={[GLOBE_RADIUS * 1.23, isMobile ? 18 : 30, isMobile ? 9 : 15]}>
-        <meshBasicMaterial
-          color="#3b82f6"
-          transparent
-          opacity={0.055 * opacity}
-          side={THREE.BackSide}
-        />
+        <meshBasicMaterial color="#3b82f6" transparent opacity={0.055 * opacity} side={THREE.BackSide} />
       </Sphere>
     </group>
   );
@@ -905,7 +868,9 @@ function FloatingNode({
               }}
             >
               <span className="block leading-tight">{node.name}</span>
-              <span className="block text-[10px] opacity-70 leading-tight">{node.role}</span>
+              <span className="block text-[10px] opacity-70 leading-tight">
+                {node.role}
+              </span>
             </div>
           </div>
         </Html>
@@ -953,12 +918,7 @@ function HolographicParticles({ opacity, isMobile }: { opacity: number; isMobile
           count={positions.length / 3}
           itemSize={3}
         />
-        <bufferAttribute
-          attach="attributes-size"
-          array={sizes}
-          count={sizes.length}
-          itemSize={1}
-        />
+        <bufferAttribute attach="attributes-size" array={sizes} count={sizes.length} itemSize={1} />
       </bufferGeometry>
       <pointsMaterial
         size={0.02}
@@ -998,30 +958,15 @@ function OrbitRings({ opacity, isMobile }: { opacity: number; isMobile: boolean 
     <group>
       <mesh ref={ring1Ref} frustumCulled={false}>
         <ringGeometry args={[GLOBE_RADIUS * 1.25, GLOBE_RADIUS * 1.265, 72]} />
-        <meshBasicMaterial
-          color="#3b82f6"
-          transparent
-          opacity={0.18 * opacity}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial color="#3b82f6" transparent opacity={0.18 * opacity} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={ring2Ref} frustumCulled={false}>
         <ringGeometry args={[GLOBE_RADIUS * 1.55, GLOBE_RADIUS * 1.565, 72]} />
-        <meshBasicMaterial
-          color="#8b5cf6"
-          transparent
-          opacity={0.14 * opacity}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial color="#8b5cf6" transparent opacity={0.14 * opacity} side={THREE.DoubleSide} />
       </mesh>
       <mesh ref={ring3Ref} frustumCulled={false}>
         <ringGeometry args={[GLOBE_RADIUS * 1.85, GLOBE_RADIUS * 1.865, 72]} />
-        <meshBasicMaterial
-          color="#06b6d4"
-          transparent
-          opacity={0.1 * opacity}
-          side={THREE.DoubleSide}
-        />
+        <meshBasicMaterial color="#06b6d4" transparent opacity={0.1 * opacity} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -1104,47 +1049,47 @@ function NodeModal({ node, onClose }: { node: NodeData | null; onClose: () => vo
   const IconComponent = node.Icon;
 
   return (
-    <div
-      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 animate-scale-in"
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="absolute inset-0 z-20 flex items-center justify-center p-4 pointer-events-none">
       <div
-        className="p-6 rounded-2xl backdrop-blur-xl min-w-[280px]"
+        className="w-full max-w-md rounded-3xl backdrop-blur-xl border shadow-2xl pointer-events-auto"
         style={{
-          background: "rgba(15, 23, 42, 0.95)",
-          border: `2px solid ${node.color}40`,
-          boxShadow: `0 0 40px ${node.color}30, 0 20px 60px rgba(0,0,0,0.5)`,
+          background: "rgba(15, 23, 42, 0.85)",
+          borderColor: `${node.color}40`,
+          boxShadow: `0 30px 70px rgba(0,0,0,0.55), 0 0 36px ${node.color}25`,
         }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center"
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{
+                background: `${node.color}25`,
+                border: `1px solid ${node.color}55`,
+              }}
+            >
+              <IconComponent className="w-6 h-6" style={{ color: node.color }} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">{node.name}</h3>
+              <p className="text-sm text-slate-300">{node.role}</p>
+            </div>
+          </div>
+
+          <p className="text-sm text-slate-200 leading-relaxed mb-5">{node.description}</p>
+
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 rounded-xl text-sm font-medium transition"
             style={{
-              background: `${node.color}25`,
-              border: `1px solid ${node.color}55`,
+              background: `${node.color}22`,
+              border: `1px solid ${node.color}50`,
+              color: "white",
             }}
           >
-            <IconComponent className="w-6 h-6" style={{ color: node.color }} />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-white">{node.name}</h3>
-            <p className="text-sm text-slate-300">{node.role}</p>
-          </div>
+            Close
+          </button>
         </div>
-
-        <p className="text-sm text-slate-200 leading-relaxed mb-5">{node.description}</p>
-
-        <button
-          onClick={onClose}
-          className="w-full py-2.5 rounded-xl text-sm font-medium transition"
-          style={{
-            background: `${node.color}22`,
-            border: `1px solid ${node.color}50`,
-            color: "white",
-          }}
-        >
-          Close
-        </button>
       </div>
     </div>
   );
