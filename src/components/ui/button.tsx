@@ -1,3 +1,4 @@
+// src/components/ui/button.tsx
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -9,11 +10,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground border-2 border-primary/80 hover:bg-primary/90 hover:border-primary shadow-md hover:shadow-lg dark:border dark:border-primary dark:shadow-glow-blue dark:hover:shadow-glow-blue-lg",
+        default:
+          "bg-primary text-primary-foreground border-2 border-primary/80 hover:bg-primary/90 hover:border-primary shadow-md hover:shadow-lg dark:border dark:border-primary dark:shadow-glow-blue dark:hover:shadow-glow-blue-lg",
         destructive:
           "bg-destructive text-destructive-foreground border-2 border-destructive/80 hover:bg-destructive/90 hover:border-destructive",
         outline:
-          "border-2 border-input bg-background hover:bg-accent hover:text-accent-foreground hover:border-accent dark:border-border dark:hover:border-primary dark:hover:shadow-glow-blue",
+          "border-2 border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground hover:border-accent dark:border-border dark:hover:border-primary dark:hover:shadow-glow-blue",
         secondary:
           "bg-secondary text-secondary-foreground border-2 border-secondary/80 hover:bg-secondary/80 hover:border-secondary dark:bg-transparent dark:text-accent dark:border-accent/50 dark:hover:bg-accent/10 dark:hover:border-accent dark:hover:shadow-glow-blue",
         ghost: "hover:bg-accent hover:text-accent-foreground",
