@@ -1,4 +1,5 @@
 // src/components/ui/calendar.tsx
+// File: src/components/ui/calendar.tsx
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker, Matcher } from "react-day-picker";
@@ -91,11 +92,7 @@ function Calendar({
           day: "p-0 text-center",
           day_button: cn(
             buttonVariants({ variant: "ghost" }),
-            "h-10 w-10 p-0 font-normal rounded-md border border-muted-foreground/20 transition-colors",
-            // ✅ Make selected day button FILLED (blue / primary)
-            "aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:border-primary",
-            "aria-selected:hover:bg-primary aria-selected:hover:text-primary-foreground",
-            "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            "h-10 w-10 p-0 font-normal rounded-md border border-muted-foreground/20 text-foreground aria-selected:opacity-100"
           ),
 
           // States
@@ -105,8 +102,7 @@ function Calendar({
           day_outside:
             "text-muted-foreground opacity-50 border-muted-foreground/10 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
           day_disabled: "text-muted-foreground opacity-60 bg-muted/40 border-muted-foreground/15",
-          // Keep range middle accent (if used) overriding the generic selected fill
-          day_range_middle: "aria-selected:!bg-accent aria-selected:!text-accent-foreground",
+          day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
           day_range_end: "day-range-end",
           day_hidden: "invisible",
 
