@@ -445,9 +445,15 @@ const TreatmentPlanningSection = () => {
       setLoading(true);
       const profileId = await loadDoctorProfileId();
       const chosenDoctorId = await detectDoctorIdForPlans(profileId);
-      await fetchTreatmentPlans(chosenDoctorId);
-      await fetchTemplates(profileId);
-      await fetchPatients(profileId, []); // initial
+      const [plansResult] = await Promise.all([
+        fetchTreatmentPlans(chosenDoctorId),
+        fetchTemplates(profileId),
+        fetchPatients(profileId, []),
+      ]);
+      // Re-fetch patients with plans data for registered patient resolution
+      if (treatmentPlans.length > 0) {
+        await fetchPatients(profileId, treatmentPlans);
+      }
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -597,26 +603,42 @@ const TreatmentPlanningSection = () => {
         </div>
       </div>
 
-      {/* ✅ SELF-CHECK (do not remove until it works) */}
-      <Alert className="border-amber-500/40 bg-amber-500/5">
-        <AlertTriangle className="h-4 w-4 text-amber-600" />
-        <AlertTitle className="text-amber-700">Self-check (why plans aren’t visible)</AlertTitle>
-        <AlertDescription className="text-sm text-amber-700">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-            <div>auth user id: <b>{diag.authUserId || "—"}</b></div>
-            <div>doctor profile id (doctors.id): <b>{diag.doctorProfileId || "—"}</b></div>
-            <div>plans where doctor_id = doctors.id: <b>{diag.countByDoctorProfile ?? "—"}</b></div>
-            <div>plans where doctor_id = auth.uid(): <b>{diag.countByAuthUser ?? "—"}</b></div>
-            <div>chosen doctor_id filter: <b>{diag.chosenDoctorId || "—"}</b></div>
-            <div>last loaded: <b>{diag.lastLoadedAt ? new Date(diag.lastLoadedAt).toLocaleString() : "—"}</b></div>
-          </div>
-          {diag.lastError ? (
-            <div className="mt-2">
-              <b>Last error:</b> {diag.lastError}
+      {/* Stats summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <FileText className="w-5 h-5 text-primary" />
             </div>
-          ) : null}
-        </AlertDescription>
-      </Alert>
+            <div>
+              <p className="text-2xl font-bold">{treatmentPlans.length}</p>
+              <p className="text-xs text-muted-foreground">{t("doctor.treatmentPlanning.treatmentPlans") || "Treatment Plans"}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-emerald-500/10">
+              <Users className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{patients.length}</p>
+              <p className="text-xs text-muted-foreground">{t("doctor.treatmentPlanning.patient") || "Patients"}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-blue-500/10">
+              <LayoutTemplate className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{templates.length}</p>
+              <p className="text-xs text-muted-foreground">Templates</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-md">

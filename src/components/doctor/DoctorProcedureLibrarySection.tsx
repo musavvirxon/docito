@@ -419,15 +419,15 @@ const DoctorProcedureLibrarySection = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <BookOpen className="w-6 h-6" />
-            {t("doctor.procedures.title")}
+            {t("doctor.procedureLibrary.title", "My Procedure Library")}
           </h2>
           <p className="text-muted-foreground">
-            Manage your procedure library and booking availability
+            {t("doctor.procedureLibrary.description", "Manage your dental procedures and treatments")}
           </p>
         </div>
         <Button onClick={() => setShowAddModal(true)} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Add New Procedure
+          {t("doctor.procedureLibrary.addProcedure", "Add New Procedure")}
         </Button>
       </div>
 
@@ -435,31 +435,31 @@ const DoctorProcedureLibrarySection = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Procedures</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.procedureLibrary.totalProcedures", "Total Procedures")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProcedures}</div>
-            <p className="text-xs text-muted-foreground">In your library</p>
+            <p className="text-xs text-muted-foreground">{t("doctor.procedureLibrary.activeProcedures", "In your library")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bookable Services</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.procedureLibrary.bookableServices", "Bookable Services")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{bookableProcedures.length}</div>
-            <p className="text-xs text-muted-foreground">Available for online booking</p>
+            <p className="text-xs text-muted-foreground">{t("doctor.procedureLibrary.availableForBooking", "Available for online booking")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Fee</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("doctor.procedureLibrary.averageFee", "Average Fee")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${averageFee.toFixed(0)}</div>
-            <p className="text-xs text-muted-foreground">Per procedure</p>
+            <p className="text-xs text-muted-foreground">{t("doctor.procedureLibrary.perProcedure", "Per procedure")}</p>
           </CardContent>
         </Card>
       </div>
@@ -467,23 +467,23 @@ const DoctorProcedureLibrarySection = () => {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>{t("doctor.procedureLibrary.quickActions", "Quick Actions")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 flex-wrap">
             <Button onClick={handleEnableAllBooking} variant="outline">
-              Enable All for Booking
+              {t("doctor.procedureLibrary.enableAll", "Enable All for Booking")}
             </Button>
             <Button onClick={handleDisableAllBooking} variant="outline">
-              Disable All Booking
+              {t("doctor.procedureLibrary.disableAll", "Disable All Booking")}
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowManageCategoriesModal(true)}>
               <Settings className="w-4 h-4" />
-              Manage Categories
+              {t("doctor.procedureLibrary.manageCategories", "Manage Categories")}
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowManageTypesModal(true)}>
               <Settings className="w-4 h-4" />
-              Manage Types
+              {t("doctor.procedureLibrary.manageTypes", "Manage Types")}
             </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={() => setSettingsOpen(true)}>
               <Settings className="w-4 h-4" />
@@ -499,18 +499,18 @@ const DoctorProcedureLibrarySection = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="w-5 h-5" />
-            Filters & Search
+            {t("doctor.procedureLibrary.filters", "Filters & Search")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input placeholder="Search procedures..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+              <Input placeholder={t("doctor.procedureLibrary.searchPlaceholder", "Search procedures...")} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
             </div>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by category" />
+                <SelectValue placeholder={t("doctor.procedureLibrary.filterByCategory", "Filter by category")} />
               </SelectTrigger>
               <SelectContent>
                 {categoryOptions.map(option => <SelectItem key={option.value} value={option.value}>
@@ -520,7 +520,7 @@ const DoctorProcedureLibrarySection = () => {
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by type" />
+                <SelectValue placeholder={t("doctor.procedureLibrary.filterByType", "Filter by type")} />
               </SelectTrigger>
               <SelectContent>
                 {typeOptions.map(option => <SelectItem key={option.value} value={option.value}>
@@ -533,7 +533,7 @@ const DoctorProcedureLibrarySection = () => {
             setCategoryFilter("all");
             setTypeFilter("all");
           }} variant="outline">
-              Clear Filters
+              {t("doctor.procedureLibrary.clearFilters", "Clear Filters")}
             </Button>
           </div>
         </CardContent>
@@ -542,7 +542,7 @@ const DoctorProcedureLibrarySection = () => {
       {/* Procedures Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Procedure List</CardTitle>
+          <CardTitle>{t("doctor.procedureLibrary.yourProcedures", "Your Procedures")}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? <div className="flex justify-center py-8">
