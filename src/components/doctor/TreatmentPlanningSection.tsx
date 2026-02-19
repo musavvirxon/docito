@@ -183,11 +183,23 @@ const TreatmentPlanningSection = () => {
     return p?.name || (t("doctor.treatmentPlanning.unknownPatient") || "Unknown patient");
   };
 
-  // Quick actions (works for both: pass prefixed key)
-  const handleMessagePatient = (patientKey: string) => navigate(`/messages?recipient=${patientKey}`);
-  const handleScheduleAppointment = (patientKey: string) =>
-    navigate(`/doctor-dashboard?section=calendar&patient=${patientKey}`);
-  const handleVideoCall = (patientKey: string) => navigate(`/video-call?patient=${patientKey}`);
+  // Quick actions — open messaging/calendar within the doctor dashboard instead of navigating away
+  const handleMessagePatient = (_patientKey: string) => {
+    toast.info("Opening messages...");
+    // Navigate to doctor dashboard messages section
+    const basePath = window.location.pathname.replace(/\/+$/, '');
+    const dashPath = basePath.includes('/doctor/dashboard') ? basePath : basePath.replace(/\/[^/]*$/, '/doctor/dashboard');
+    navigate(`${dashPath}?section=messages`);
+  };
+  const handleScheduleAppointment = (_patientKey: string) => {
+    toast.info("Opening calendar...");
+    const basePath = window.location.pathname.replace(/\/+$/, '');
+    const dashPath = basePath.includes('/doctor/dashboard') ? basePath : basePath.replace(/\/[^/]*$/, '/doctor/dashboard');
+    navigate(`${dashPath}?section=calendar`);
+  };
+  const handleVideoCall = (_patientKey: string) => {
+    toast.info("Video calls are available during active appointments.");
+  };
 
   const loadDoctorProfileId = useCallback(async () => {
     if (!user?.id) {

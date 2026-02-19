@@ -126,6 +126,12 @@ export const useDoctorIntegration = () => {
   const [resolvedDoctorId, setResolvedDoctorId] = useState<string | undefined>((profile as any)?.doctor_id);
   const [doctorIdResolved, setDoctorIdResolved] = useState(false);
 
+  // Reset resolution state when user changes (re-login / account switch)
+  useEffect(() => {
+    setResolvedDoctorId(undefined);
+    setDoctorIdResolved(false);
+  }, [user?.id]);
+
   // Resolve doctor_id: prefer profile.doctor_id, fallback to querying doctors table by user_id
   useEffect(() => {
     if ((profile as any)?.doctor_id) {
@@ -149,6 +155,20 @@ export const useDoctorIntegration = () => {
       });
     return () => { cancelled = true; };
   }, [user?.id, profile, activeRole]);
+
+  // Safety timeout: never stay loading forever
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(prev => {
+        if (prev) {
+          console.warn("[useDoctorIntegration] Safety timeout: forcing loading to false after 8s");
+          return false;
+        }
+        return prev;
+      });
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [user?.id]);
 
   const doctorIdFromProfile = resolvedDoctorId;
 
@@ -606,6 +626,11 @@ export const useDoctorIntegration = () => {
       channels.forEach((c) => supabase.removeChannel(c));
     };
   }, [doctorProfile, fetchAppointments, fetchDiagnoses, fetchServices, calculateStats]);
+
+  // Reset didInitialLoad when user changes (re-login)
+  useEffect(() => {
+    didInitialLoad.current = false;
+  }, [user?.id]);
 
   // Initial load
   useEffect(() => {
