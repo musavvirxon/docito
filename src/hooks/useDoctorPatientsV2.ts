@@ -65,7 +65,7 @@ export const useDoctorPatientsV2 = () => {
         return;
       }
 
-      // Fetch doctor's patients
+      // Fetch ALL doctor's patients (no status filter - include active, inactive, etc.)
       const { data: patientsData, error: patientsError } = await supabase
         .from('doctor_patients')
         .select('*')
