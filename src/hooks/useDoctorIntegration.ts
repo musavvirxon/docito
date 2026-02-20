@@ -128,8 +128,10 @@ export const useDoctorIntegration = () => {
 
   // Reset resolution state when user changes (re-login / account switch)
   useEffect(() => {
+    didInitialLoad.current = false;
     setResolvedDoctorId(undefined);
     setDoctorIdResolved(false);
+    setLoading(true);
   }, [user?.id]);
 
   // Resolve doctor_id: prefer profile.doctor_id, fallback to querying doctors table by user_id
@@ -237,11 +239,18 @@ export const useDoctorIntegration = () => {
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .eq("dentist_id", doctorProfile.id)
+        .or(`dentist_id.eq.${doctorProfile.id},doctor_id.eq.${doctorProfile.id}`)
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
-      setServices((data || []) as any);
+      // Deduplicate
+      const seen = new Set<string>();
+      const deduped = (data || []).filter((p: any) => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+      setServices(deduped as any);
     } catch (err: any) {
       console.error("Error fetching services:", err);
     }
@@ -627,10 +636,7 @@ export const useDoctorIntegration = () => {
     };
   }, [doctorProfile, fetchAppointments, fetchDiagnoses, fetchServices, calculateStats]);
 
-  // Reset didInitialLoad when user changes (re-login)
-  useEffect(() => {
-    didInitialLoad.current = false;
-  }, [user?.id]);
+  // didInitialLoad reset is now handled in the user?.id effect above
 
   // Initial load
   useEffect(() => {

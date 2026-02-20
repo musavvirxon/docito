@@ -74,7 +74,7 @@ export function useNotifications(args?: UseNotificationsArgs) {
 
       const { error } = await supabase
         .from("notifications")
-        .update({ is_read: true } as any)
+        .update({ is_read: true })
         .eq("id", notificationId)
         .eq("user_id", user.id);
 
@@ -95,7 +95,7 @@ export function useNotifications(args?: UseNotificationsArgs) {
 
     const { error } = await supabase
       .from("notifications")
-      .update({ is_read: true } as any)
+      .update({ is_read: true })
       .eq("user_id", user.id)
       .eq("is_read", false);
 

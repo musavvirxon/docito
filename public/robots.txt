@@ -12,3 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://www.docito.app/sitemap-index.xml
+Sitemap: https://www.docito.app/sitemap.xml

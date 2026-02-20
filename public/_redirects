@@ -1,0 +1,7 @@
+# Serve static files directly (not through SPA)
+/sitemap.xml       /sitemap.xml       200
+/sitemap-index.xml /sitemap-index.xml 200
+/robots.txt        /robots.txt        200
+
+# SPA catch-all (must be last)
+/*    /index.html   200

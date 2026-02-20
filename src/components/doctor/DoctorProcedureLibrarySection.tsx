@@ -296,15 +296,22 @@ const DoctorProcedureLibrarySection = () => {
         setDoctorId(resolvedDoctorId);
       }
 
-      // Fetch doctor's procedures
-      const {
-        data,
-        error
-      } = await supabase.from("procedures").select("*").eq("dentist_id", resolvedDoctorId).eq("is_active", true).order("created_at", {
-        ascending: false
-      });
+      // Fetch ALL doctor's procedures (including doctor_id for backward compat)
+      const { data, error } = await supabase
+        .from("procedures")
+        .select("*")
+        .or(`dentist_id.eq.${resolvedDoctorId},doctor_id.eq.${resolvedDoctorId}`)
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
       if (error) throw error;
-      setProcedures(data || []);
+      // Deduplicate by id
+      const seen = new Set<string>();
+      const deduped = (data || []).filter((p: any) => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+      setProcedures(deduped);
     } catch (error: any) {
       toast.error("Failed to load procedures: " + error.message);
     } finally {

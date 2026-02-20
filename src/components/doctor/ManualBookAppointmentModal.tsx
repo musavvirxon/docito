@@ -198,10 +198,15 @@ const ManualBookAppointmentModal = ({
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
+      // Trigger refetch BEFORE closing so the calendar updates
+      try {
+        await Promise.resolve(onSuccess?.());
+      } catch (err) {
+        console.error("onSuccess/refetch failed:", err);
+      }
+
       onClose();
       resetForm();
-
-      Promise.resolve(onSuccess?.()).catch((err) => console.error("onSuccess/refetch failed:", err));
     } catch (error: any) {
       console.error("❌ Booking error object:", error);
       toast.error(buildSupabaseErrorText(error));
