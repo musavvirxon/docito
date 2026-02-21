@@ -16,7 +16,7 @@
       "items": {
         "erx": {
           "title": "Digital Prescriptions (eRx)",
-          "description": "Receive prescriptions instantly from verified doctors across the Docito network."
+          "description": "Receive prescriptions instantly across the Docito network."
         },
         "refills": {
           "title": "Medication Refill Management",
