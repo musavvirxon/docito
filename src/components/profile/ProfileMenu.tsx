@@ -77,7 +77,7 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   const handleSwitchRole = (role: AppRole) => {

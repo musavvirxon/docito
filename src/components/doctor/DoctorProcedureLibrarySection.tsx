@@ -296,22 +296,15 @@ const DoctorProcedureLibrarySection = () => {
         setDoctorId(resolvedDoctorId);
       }
 
-      // Fetch ALL doctor's procedures (including doctor_id for backward compat)
+      // Fetch ALL doctor's procedures
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .or(`dentist_id.eq.${resolvedDoctorId},doctor_id.eq.${resolvedDoctorId}`)
+        .eq("dentist_id", resolvedDoctorId)
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      // Deduplicate by id
-      const seen = new Set<string>();
-      const deduped = (data || []).filter((p: any) => {
-        if (seen.has(p.id)) return false;
-        seen.add(p.id);
-        return true;
-      });
-      setProcedures(deduped);
+      setProcedures(data || []);
     } catch (error: any) {
       toast.error("Failed to load procedures: " + error.message);
     } finally {
