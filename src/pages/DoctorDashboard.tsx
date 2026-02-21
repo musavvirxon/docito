@@ -83,7 +83,7 @@ const DoctorDashboardContent = () => {
   const { signOut } = useAuth();
   const handleLogout = async () => {
     await signOut();
-    navigate("/auth");
+    navigate("/");
   };
 
   const calculateProfileCompletion = () => {

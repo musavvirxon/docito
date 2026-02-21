@@ -109,6 +109,7 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
 
   const handleLogout = async () => {
     await signOut();
+    navigate("/");
   };
 
   return (

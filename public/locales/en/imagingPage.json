@@ -1,72 +1,72 @@
 {
   "imagingPage": {
     "hero": {
-      "kicker": "For Modern Pharmacies",
+      "kicker": "For Modern Imaging Centers",
       "headlineLine1": "The Digital",
       "headlineLine2": "Backbone for",
-      "headlineLine3": "Modern Pharmacies",
-      "subheadline": "Manage prescriptions, inventory, payments, deliveries, and doctor integrations — all from one secure platform.",
-      "primaryCta": "Register Your Pharmacy",
+      "headlineLine3": "Medical Imaging",
+      "subheadline": "Manage scan orders, reports, scheduling, and doctor integrations — all from one secure platform.",
+      "primaryCta": "Register Your Imaging Center",
       "secondaryCta": "Request a Demo"
     },
     "features": {
-      "title": "Everything Your Pharmacy Needs",
+      "title": "Everything Your Imaging Center Needs",
       "subtitle": "In One Platform",
-      "description": "One platform to manage every aspect of your pharmacy operations",
+      "description": "One platform to manage every aspect of your imaging center operations",
       "items": {
         "erx": {
-          "title": "Digital Prescriptions (eRx)",
-          "description": "Receive prescriptions instantly from verified doctors across the Docito network."
+          "title": "Digital Scan Orders",
+          "description": "Receive imaging orders instantly from verified doctors across the Docito network."
         },
         "refills": {
-          "title": "Medication Refill Management",
-          "description": "Automated refill requests and smart patient reminders to boost adherence."
+          "title": "Appointment Scheduling",
+          "description": "Online booking with real-time availability for MRI, CT, X-ray, ultrasound, and more."
         },
         "inventory": {
-          "title": "Inventory & Stock Control",
-          "description": "Real-time stock levels, expiry alerts, and supplier insights in one view."
+          "title": "Equipment Management",
+          "description": "Track machine availability, maintenance schedules, and utilization in one view."
         },
         "delivery": {
-          "title": "Online Orders & Delivery",
-          "description": "Enable home delivery with real-time order tracking for patients."
+          "title": "Digital Report Delivery",
+          "description": "Share imaging reports and DICOM files securely with referring doctors and patients."
         },
         "payments": {
           "title": "Payments & Insurance",
           "description": "Accept cash, cards, digital wallets, and process insurance claims seamlessly."
         },
         "profiles": {
-          "title": "Patient Profiles",
-          "description": "Access medication history, allergies, and adherence tracking at a glance."
+          "title": "Patient Records",
+          "description": "Access imaging history, prior studies, and clinical notes at a glance."
         },
         "analytics": {
           "title": "Analytics Dashboard",
-          "description": "Sales trends, fast-moving drugs, and revenue insights to grow your business."
+          "description": "Scan volume trends, turnaround times, and revenue insights to grow your center."
         }
       }
     },
     "howItWorks": {
-      "title": "How Docito Works for Pharmacies",
+      "title": "How Docito Works for Imaging Centers",
       "subtitle": "From registration to revenue — your complete journey",
       "steps": {
         "step1": {
           "number": "01",
-          "title": "Register Your Pharmacy",
-          "description": "Verify licenses, locations, and operating hours in minutes."
+          "title": "Register Your Imaging Center",
+          "description": "Verify licenses, equipment, and operating hours in minutes."
         },
         "step2": {
           "number": "02",
-          "title": "Sync Inventory & Pricing",
-          "description": "Upload medicines, generics, and real-time availability."
+          "title": "Configure Modalities & Pricing",
+          "description": "Set up your available scans, protocols, and pricing structure."
         },
         "step3": {
           "number": "03",
-          "title": "Receive Digital Prescriptions",
+          "title": "Receive Imaging Orders",
           "description": "From doctors, clinics, and hospitals across the network."
         },
         "step4": {
           "number": "04",
-          "title": "Prepare & Fulfill Orders",
-          "description": "Streamlined workflow for in-store pickup or home delivery."
+          "title": "Perform & Report",
+          "description": "Streamlined workflow from patient check-in to report delivery."
         },
         "step5": {
           "number": "05",
@@ -76,13 +76,13 @@
         "step6": {
           "number": "06",
           "title": "Grow & Optimize",
-          "description": "Leverage insights, repeat customers, and referral programs."
+          "description": "Leverage insights, referral partnerships, and capacity optimization."
         }
       }
     },
     "ecosystem": {
-      "title": "The Future of Pharmacies Is Connected",
-      "description": "Pharmacies are no longer standalone stores — they are critical nodes in the healthcare ecosystem. Docito connects you directly with doctors, labs, clinics, and patients.",
+      "title": "The Future of Imaging Is Connected",
+      "description": "Imaging centers are critical nodes in the healthcare ecosystem. Docito connects you directly with doctors, labs, clinics, and patients.",
       "nodes": {
         "doctors": "Doctors",
         "clinics": "Clinics",
@@ -97,7 +97,7 @@
       "title": "Healthcare-Grade Compliance",
       "items": {
         "hipaaAligned": "HIPAA-Aligned",
-        "secureErx": "Secure eRx",
+        "secureErx": "Secure DICOM",
         "roleBasedAccess": "Role-Based Access",
         "encryptedData": "Encrypted Data",
         "auditTrails": "Audit Trails"
@@ -105,7 +105,7 @@
     },
     "pricing": {
       "title": "Pricing That Makes Sense",
-      "description": "Docito pricing scales with your pharmacy — from single retail locations to national chains.",
+      "description": "Docito pricing scales with your imaging center — from single locations to multi-site networks.",
       "bullets": {
         "noHiddenFees": "No hidden fees",
         "flexiblePlans": "Flexible plans",
@@ -116,9 +116,9 @@
       "secondaryCta": "Talk to Sales"
     },
     "finalCta": {
-      "headline": "Transform Your Pharmacy Into a Digital-First Healthcare Hub",
-      "subheadline": "Increase efficiency, boost revenue, and deliver better patient experiences with Docito.",
-      "primaryCta": "Register Your Pharmacy",
+      "headline": "Transform Your Imaging Center Into a Digital-First Hub",
+      "subheadline": "Increase efficiency, reduce turnaround times, and deliver better diagnostics with Docito.",
+      "primaryCta": "Register Your Imaging Center",
       "secondaryCta": "Request a Demo"
     }
   }

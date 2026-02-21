@@ -116,7 +116,7 @@ export default function PatientDashboard() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      navigate("/auth");
+      navigate("/");
     } catch (error: any) {
       toast({
         title: t("common.error", { defaultValue: "Error" }),

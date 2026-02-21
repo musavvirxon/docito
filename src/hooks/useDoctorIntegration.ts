@@ -239,18 +239,11 @@ export const useDoctorIntegration = () => {
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .or(`dentist_id.eq.${doctorProfile.id},doctor_id.eq.${doctorProfile.id}`)
+        .eq("dentist_id", doctorProfile.id)
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
-      // Deduplicate
-      const seen = new Set<string>();
-      const deduped = (data || []).filter((p: any) => {
-        if (seen.has(p.id)) return false;
-        seen.add(p.id);
-        return true;
-      });
-      setServices(deduped as any);
+      setServices((data || []) as any);
     } catch (err: any) {
       console.error("Error fetching services:", err);
     }

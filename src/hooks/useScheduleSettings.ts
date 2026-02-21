@@ -59,9 +59,29 @@ export const useScheduleSettings = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [resolvedDoctorId, setResolvedDoctorId] = useState<string | undefined>((profile as any)?.doctor_id);
 
-  // Use denormalized doctor_id from profile - no extra query
-  const doctorId = (profile as any)?.doctor_id;
+  // Resolve doctor_id with fallback
+  useEffect(() => {
+    if ((profile as any)?.doctor_id) {
+      setResolvedDoctorId((profile as any).doctor_id);
+      return;
+    }
+    if (!user?.id) return;
+    let cancelled = false;
+    supabase
+      .from("doctors")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data?.id) setResolvedDoctorId(data.id);
+      });
+    return () => { cancelled = true; };
+  }, [user?.id, profile]);
+
+  const doctorId = resolvedDoctorId;
 
   const fetchScheduleSettings = useCallback(async () => {
     if (!user || !doctorId) {
@@ -72,7 +92,6 @@ export const useScheduleSettings = () => {
     try {
       setLoading(true);
 
-      // Fetch schedule settings from backend using doctor_id directly
       const { data, error } = await supabase
         .from('schedule_settings')
         .select('*')
