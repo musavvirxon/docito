@@ -1,0 +1,42 @@
+public/locales/de/premiumHero.json
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "Ärzt:innen",
+      "clinics": "Kliniken",
+      "labs": "Labore",
+      "imaging": "Bildgebung",
+      "pharmacies": "Apotheken",
+      "patients": "Patient:innen"
+    },
+    "cards": {
+      "doctors": {
+        "title": "Für Ärzt:innen",
+        "description": "Termine, Zahlungen, Nachsorge, Telemedizin — durchgängig verbunden"
+      },
+      "patients": {
+        "title": "Für Patient:innen",
+        "description": "Versorgung finden, buchen und an einem Ort verfolgen"
+      },
+      "clinics": {
+        "title": "Für Kliniken",
+        "description": "Terminplanung, Akten und Abrechnung vereint"
+      },
+      "imaging": {
+        "title": "Für Bildgebung",
+        "description": "Aufträge, Befunde und Überweisungskoordination"
+      },
+      "pharmacy": {
+        "title": "Für Apotheken",
+        "description": "E-Rezepte, Abgabe und Lieferung"
+      },
+      "labs": {
+        "title": "Für Labore",
+        "description": "Testanforderung, Ergebnisse und digitale Zustellung"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "Zum Suchen scrollen"
+    }
+  }
+}
