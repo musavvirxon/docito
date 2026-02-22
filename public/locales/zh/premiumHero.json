@@ -1,0 +1,42 @@
+
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "医生",
+      "clinics": "诊所",
+      "labs": "实验室",
+      "imaging": "影像",
+      "pharmacies": "药房",
+      "patients": "患者"
+    },
+    "cards": {
+      "doctors": {
+        "title": "面向医生",
+        "description": "预约、支付、复诊随访、远程医疗——端到端打通"
+      },
+      "patients": {
+        "title": "面向患者",
+        "description": "一站式查找、预约并追踪就医进度"
+      },
+      "clinics": {
+        "title": "面向诊所",
+        "description": "排班、病历与结算统一管理"
+      },
+      "imaging": {
+        "title": "面向影像",
+        "description": "开单、报告与转诊协同"
+      },
+      "pharmacy": {
+        "title": "面向药房",
+        "description": "电子处方、配药与配送"
+      },
+      "labs": {
+        "title": "面向检验",
+        "description": "检查开单、结果与数字化交付"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "滚动到搜索"
+    }
+  }
+}
