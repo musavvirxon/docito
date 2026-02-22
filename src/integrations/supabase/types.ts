@@ -149,6 +149,94 @@ export type Database = {
         }
         Relationships: []
       }
+      appointment_diagnoses: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          created_by: string
+          diagnosis_template_id: string | null
+          diagnosis_title: string
+          doctor_id: string
+          doctor_patient_id: string | null
+          icd10_code: string | null
+          id: string
+          notes: string | null
+          patient_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          created_by: string
+          diagnosis_template_id?: string | null
+          diagnosis_title: string
+          doctor_id: string
+          doctor_patient_id?: string | null
+          icd10_code?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          created_by?: string
+          diagnosis_template_id?: string | null
+          diagnosis_title?: string
+          doctor_id?: string
+          doctor_patient_id?: string | null
+          icd10_code?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_diagnoses_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_diagnoses_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_diagnoses_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_diagnoses_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_diagnoses_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_diagnoses_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       appointment_holds: {
         Row: {
           appointment_type: string

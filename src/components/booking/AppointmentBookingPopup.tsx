@@ -203,13 +203,50 @@ export function AppointmentBookingPopup({
       if (!open || !providerId) return;
 
       try {
-        // Fetch doctor's schedule settings, blocked dates, etc. (if available in your app)
-        // This block remains minimal to avoid breaking existing behavior.
-        // If your project has dedicated schedule tables, keep existing logic as-is.
-        setBlockedDates([]);
-        setWorkingDays({});
+        // Fetch schedule settings to determine working days
+        const { data: sched, error: schedErr } = await supabase
+          .from("schedule_settings")
+          .select("working_days,holidays")
+          .eq("doctor_id", providerId)
+          .maybeSingle();
+
+        if (schedErr) {
+          console.error("Error fetching schedule settings:", schedErr);
+          setBlockedDates([]);
+          setWorkingDays({});
+          return;
+        }
+
+        // Map working days from schedule settings
+        // schedule_settings.working_days is { monday: { enabled, ... }, ... }
+        // We need to convert to { "1": true, "2": true, ... } where 1=Mon..7=Sun
+        const dayNameToNum: Record<string, string> = {
+          monday: "1", tuesday: "2", wednesday: "3", thursday: "4",
+          friday: "5", saturday: "6", sunday: "7"
+        };
+
+        const wd: Record<string, boolean> = {};
+        if (sched?.working_days && typeof sched.working_days === "object") {
+          const wdObj = sched.working_days as Record<string, { enabled?: boolean }>;
+          for (const [dayName, config] of Object.entries(wdObj)) {
+            const num = dayNameToNum[dayName];
+            if (num) {
+              wd[num] = config?.enabled ?? false;
+            }
+          }
+        }
+        setWorkingDays(wd);
+
+        // Parse holidays as blocked dates
+        const holidays = (sched?.holidays as string[]) ?? [];
+        const blocked = holidays
+          .map((h: string) => { try { return new Date(h + "T00:00:00"); } catch { return null; } })
+          .filter(Boolean) as Date[];
+        setBlockedDates(blocked);
       } catch (e) {
         console.error(e);
+        setBlockedDates([]);
+        setWorkingDays({});
       }
     };
 
