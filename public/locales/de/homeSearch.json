@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "Sprachsuche",
+    "recent": "Letzte Suchen",
+    "trending": "Beliebte Suchen",
+    "noRecent": "Keine letzten Suchen",
+    "aiHint": "Tipp: Kardiologe in meiner Nähe",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "Ergebnisse werden geladen...",
+    "trendingSearches": [
+      { "label": "Allgemeinmediziner", "term": "General Practitioner" },
+      { "label": "Zahnarzt", "term": "Dentist" },
+      { "label": "Augenuntersuchung", "term": "Eye Exam" },
+      { "label": "Bluttest", "term": "Blood Test" },
+      { "label": "Kardiologie", "term": "Cardiology" },
+      { "label": "Dermatologie", "term": "Dermatology" }
+    ]
+  }
+}
