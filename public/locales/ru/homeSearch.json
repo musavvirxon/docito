@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "Голосовой поиск",
+    "recent": "Недавние запросы",
+    "trending": "Популярные запросы",
+    "noRecent": "Нет недавних запросов",
+    "aiHint": "Попробуйте: кардиолог рядом со мной",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "Загрузка результатов...",
+    "trendingSearches": [
+      { "label": "Врач общей практики", "term": "General Practitioner" },
+      { "label": "Стоматолог", "term": "Dentist" },
+      { "label": "Проверка зрения", "term": "Eye Exam" },
+      { "label": "Анализ крови", "term": "Blood Test" },
+      { "label": "Кардиология", "term": "Cardiology" },
+      { "label": "Дерматология", "term": "Dermatology" }
+    ]
+  }
+}
