@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "Voice search",
+    "recent": "Recent Searches",
+    "trending": "Popular Searches",
+    "noRecent": "No recent searches",
+    "aiHint": "Try: cardiologist near me",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "Loading results...",
+    "trendingSearches": [
+      { "label": "General Practitioner", "term": "General Practitioner" },
+      { "label": "Dentist", "term": "Dentist" },
+      { "label": "Eye Exam", "term": "Eye Exam" },
+      { "label": "Blood Test", "term": "Blood Test" },
+      { "label": "Cardiology", "term": "Cardiology" },
+      { "label": "Dermatology", "term": "Dermatology" }
+    ]
+  }
+}
