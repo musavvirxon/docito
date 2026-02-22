@@ -113,6 +113,21 @@ export default function PremiumHero() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
               <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
                 <div className="flex items-center gap-2 mb-2">
+                  <Stethoscope className="w-4 h-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">
+                    {t("hero.cards.doctors.title", "For doctors")}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    "hero.cards.doctors.description",
+                    "Appointments, payments, follow-ups, telemedicine—connected end-to-end",
+                  )}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("hero.cards.patients.title", "For patients")}
