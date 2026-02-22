@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "بحث صوتي",
+    "recent": "عمليات البحث الأخيرة",
+    "trending": "عمليات بحث شائعة",
+    "noRecent": "لا توجد عمليات بحث حديثة",
+    "aiHint": "جرّب: طبيب قلب بالقرب مني",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "جارٍ تحميل النتائج...",
+    "trendingSearches": [
+      { "label": "طبيب عام", "term": "General Practitioner" },
+      { "label": "طبيب أسنان", "term": "Dentist" },
+      { "label": "فحص نظر", "term": "Eye Exam" },
+      { "label": "تحليل دم", "term": "Blood Test" },
+      { "label": "طب القلب", "term": "Cardiology" },
+      { "label": "طب الجلد", "term": "Dermatology" }
+    ]
+  }
+}
