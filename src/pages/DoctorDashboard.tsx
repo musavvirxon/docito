@@ -281,7 +281,7 @@ const DoctorDashboardContent = () => {
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">{t("doctor.stats.totalPatients")}</p>
                       <p className="text-4xl font-bold tracking-tight">{(stats as any)?.totalPatients || 0}</p>
-                      <p className="text-xs text-muted-foreground">active patients</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.stats.uniquePatients")}</p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
                       <Users className="h-7 w-7 text-emerald-500" />
@@ -301,7 +301,7 @@ const DoctorDashboardContent = () => {
                         <p className="text-4xl font-bold tracking-tight">{doctorProfile.average_rating?.toFixed(1) || "0.0"}</p>
                         <Star className="h-6 w-6 text-amber-500 fill-amber-500" />
                       </div>
-                      <p className="text-xs text-muted-foreground">{doctorProfile.num_reviews || 0} reviews</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.stats.basedOnReviews", { count: doctorProfile.num_reviews || 0 })}</p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center">
                       <TrendingUp className="h-7 w-7 text-amber-500" />
@@ -318,7 +318,7 @@ const DoctorDashboardContent = () => {
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">{t("doctor.stats.earnings")}</p>
                       <p className="text-4xl font-bold tracking-tight">${(stats as any)?.totalEarnings || 0}</p>
-                      <p className="text-xs text-muted-foreground">this month</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.stats.totalEarnings")}</p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
                       <Building2 className="h-7 w-7 text-blue-500" />
@@ -338,12 +338,12 @@ const DoctorDashboardContent = () => {
                       <Calendar className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{t("doctor.upcomingAppointments")}</CardTitle>
-                      <p className="text-sm text-muted-foreground">Your next scheduled visits</p>
+                      <CardTitle className="text-lg">{t("doctor.upcomingAppointments.title")}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{t("doctor.upcomingAppointments.scheduleIsClear", "Your next scheduled visits")}</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveSection("calendar")}>
-                    View Calendar
+                    {t("doctor.calendar.today", "View Calendar")}
                   </Button>
                 </CardHeader>
                 <CardContent className="pt-6">
@@ -354,7 +354,7 @@ const DoctorDashboardContent = () => {
                       <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
                         <Calendar className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <p className="text-muted-foreground">{t("doctor.noUpcomingAppointments")}</p>
+                      <p className="text-muted-foreground">{t("doctor.upcomingAppointments.noAppointments")}</p>
                     </div>
                   )}
                 </CardContent>
@@ -367,7 +367,7 @@ const DoctorDashboardContent = () => {
                     <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
                       <Activity className="h-5 w-5 text-primary-foreground" />
                     </div>
-                    <CardTitle className="text-lg">Quick Access</CardTitle>
+                    <CardTitle className="text-lg">{t("doctor.quickActions.title")}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-3">
@@ -380,8 +380,8 @@ const DoctorDashboardContent = () => {
                       <FileText className="h-5 w-5 text-primary" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium">My Procedures</p>
-                      <p className="text-xs text-muted-foreground">Custom templates</p>
+                      <p className="font-medium">{t("doctor.navigation.procedureLibrary")}</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.quickModals.procedures.title", "Custom templates")}</p>
                     </div>
                   </Button>
                   
@@ -394,8 +394,8 @@ const DoctorDashboardContent = () => {
                       <Calendar className="h-5 w-5 text-emerald-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium">Treatment Plans</p>
-                      <p className="text-xs text-muted-foreground">Active plans</p>
+                      <p className="font-medium">{t("doctor.navigation.treatmentPlanning")}</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.treatmentPlanning.title", "Active plans")}</p>
                     </div>
                   </Button>
                   
@@ -408,8 +408,8 @@ const DoctorDashboardContent = () => {
                       <Users className="h-5 w-5 text-blue-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium">My Patients</p>
-                      <p className="text-xs text-muted-foreground">Patient records</p>
+                      <p className="font-medium">{t("doctor.navigation.myPatients")}</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.stats.totalPatients")}</p>
                     </div>
                   </Button>
                   
@@ -422,8 +422,8 @@ const DoctorDashboardContent = () => {
                       <Briefcase className="h-5 w-5 text-amber-500" />
                     </div>
                     <div className="text-left">
-                      <p className="font-medium">My Services</p>
-                      <p className="text-xs text-muted-foreground">Diagnoses & services</p>
+                      <p className="font-medium">{t("doctor.navigation.diagnoses")}</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.quickModals.procedures.title", "Services")}</p>
                     </div>
                   </Button>
                 </CardContent>
@@ -475,7 +475,7 @@ const DoctorDashboardContent = () => {
                     <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Calendar className="h-5 w-5 text-blue-500" />
                     </div>
-                    <span className="text-sm font-medium">Block Time</span>
+                    <span className="text-sm font-medium">{t("doctor.quickActions.blockTime")}</span>
                   </Button>
                   
                   <Button 
