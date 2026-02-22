@@ -3,6 +3,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
+import { dashboardPerformanceResources } from "./resources/dashboardPerformance";
 
 // Static cache buster - changes only on app reload
 const APP_VERSION = Date.now();
@@ -57,6 +58,9 @@ async function initI18n() {
       .use(LanguageDetector)
       .use(initReactI18next)
       .init({
+        // Pre-bundled resources (dashboard: doctor.performance.*)
+        resources: dashboardPerformanceResources,
+
         fallbackLng: "en",
         debug: false,
         supportedLngs: languages.map((l) => l.code),
@@ -88,14 +92,14 @@ async function initI18n() {
         defaultNS: "common",
 
         partialBundledLanguages: true,
-        
+
         // Don't preload other namespaces - load them lazily when needed
         preload: false,
 
         react: {
           useSuspense: false,
           // Don't bind i18n store to trigger re-renders for namespace loading
-          bindI18nStore: '',
+          bindI18nStore: "",
         },
       });
 
