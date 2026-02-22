@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "语音搜索",
+    "recent": "最近搜索",
+    "trending": "热门搜索",
+    "noRecent": "暂无最近搜索",
+    "aiHint": "试试：附近的心脏科",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "正在加载结果...",
+    "trendingSearches": [
+      { "label": "全科医生", "term": "General Practitioner" },
+      { "label": "牙医", "term": "Dentist" },
+      { "label": "视力检查", "term": "Eye Exam" },
+      { "label": "血液检查", "term": "Blood Test" },
+      { "label": "心脏科", "term": "Cardiology" },
+      { "label": "皮肤科", "term": "Dermatology" }
+    ]
+  }
+}
