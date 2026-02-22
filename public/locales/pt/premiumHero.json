@@ -1,0 +1,42 @@
+
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "Médicos",
+      "clinics": "Clínicas",
+      "labs": "Laboratórios",
+      "imaging": "Imagem",
+      "pharmacies": "Farmácias",
+      "patients": "Pacientes"
+    },
+    "cards": {
+      "doctors": {
+        "title": "Para médicos",
+        "description": "Consultas, pagamentos, retornos, telemedicina—conectado de ponta a ponta"
+      },
+      "patients": {
+        "title": "Para pacientes",
+        "description": "Encontre, agende e acompanhe o cuidado em um só lugar"
+      },
+      "clinics": {
+        "title": "Para clínicas",
+        "description": "Agenda, prontuários e faturamento unificados"
+      },
+      "imaging": {
+        "title": "Para imagem",
+        "description": "Pedidos, laudos e coordenação de encaminhamentos"
+      },
+      "pharmacy": {
+        "title": "Para farmácias",
+        "description": "Prescrições eletrônicas, dispensação e entrega"
+      },
+      "labs": {
+        "title": "Para laboratórios",
+        "description": "Solicitação de exames, resultados e entrega digital"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "Rolar para a busca"
+    }
+  }
+}
