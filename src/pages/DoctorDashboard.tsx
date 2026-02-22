@@ -440,7 +440,7 @@ const DoctorDashboardContent = () => {
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
                     <Sparkles className="h-5 w-5 text-white" />
                   </div>
-                  <CardTitle className="text-lg">{t("doctor.quickActions")}</CardTitle>
+                  <CardTitle className="text-lg">{t("doctor.quickActions.title")}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="pt-6">
@@ -453,7 +453,7 @@ const DoctorDashboardContent = () => {
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Clock className="h-5 w-5 text-primary" />
                     </div>
-                    <span className="text-sm font-medium">{t("doctor.actions.updateSchedule")}</span>
+                    <span className="text-sm font-medium">{t("doctor.quickActions.updateSettings", "Update Schedule")}</span>
                   </Button>
                   
                   <Button 
@@ -464,7 +464,7 @@ const DoctorDashboardContent = () => {
                     <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <FileText className="h-5 w-5 text-emerald-500" />
                     </div>
-                    <span className="text-sm font-medium">{t("doctor.actions.manageProcedures")}</span>
+                    <span className="text-sm font-medium">{t("doctor.quickActions.addService", "Manage Procedures")}</span>
                   </Button>
                   
                   <Button 
@@ -486,7 +486,7 @@ const DoctorDashboardContent = () => {
                     <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Settings className="h-5 w-5 text-amber-500" />
                     </div>
-                    <span className="text-sm font-medium">{t("doctor.actions.updateSettings")}</span>
+                    <span className="text-sm font-medium">{t("doctor.quickActions.updateSettings", "Update Settings")}</span>
                   </Button>
                 </div>
               </CardContent>

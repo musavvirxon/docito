@@ -607,6 +607,7 @@
     "loading": "Loading dashboard...",
     "settingUp": "Setting up your doctor profile...",
     "navigation": {
+      "main": "Navigation",
       "dashboard": "Dashboard",
       "myProfile": "My Profile",
       "myServices": "My Services",
