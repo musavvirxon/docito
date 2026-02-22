@@ -1,0 +1,42 @@
+public/locales/uz/premiumHero.json
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "Shifokorlar",
+      "clinics": "Klinikalar",
+      "labs": "Laboratoriyalar",
+      "imaging": "Tasvirlash",
+      "pharmacies": "Dorixonalar",
+      "patients": "Bemorlar"
+    },
+    "cards": {
+      "doctors": {
+        "title": "Shifokorlar uchun",
+        "description": "Qabul, to‘lovlar, qayta ko‘riklar, telemeditsina — boshidan oxirigacha ulangan"
+      },
+      "patients": {
+        "title": "Bemorlar uchun",
+        "description": "Toping, yoziling va davolanishni bir joyda kuzating"
+      },
+      "clinics": {
+        "title": "Klinikalar uchun",
+        "description": "Jadval, kartalar va billing birlashtirilgan"
+      },
+      "imaging": {
+        "title": "Tasvirlash uchun",
+        "description": "Buyurtmalar, hisobotlar va yo‘llanma muvofiqlashtiruvi"
+      },
+      "pharmacy": {
+        "title": "Dorixonalar uchun",
+        "description": "e-reseptlar, berish va yetkazib berish"
+      },
+      "labs": {
+        "title": "Laboratoriyalar uchun",
+        "description": "Tahlil buyurtmalari, natijalar va raqamli yetkazish"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "Qidiruvga o‘tish"
+    }
+  }
+}
