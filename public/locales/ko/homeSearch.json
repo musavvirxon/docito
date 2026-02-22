@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "음성 검색",
+    "recent": "최근 검색",
+    "trending": "인기 검색",
+    "noRecent": "최근 검색이 없습니다",
+    "aiHint": "예: 내 주변 심장내과",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "결과 불러오는 중...",
+    "trendingSearches": [
+      { "label": "가정의학과", "term": "General Practitioner" },
+      { "label": "치과", "term": "Dentist" },
+      { "label": "시력 검사", "term": "Eye Exam" },
+      { "label": "혈액 검사", "term": "Blood Test" },
+      { "label": "심장내과", "term": "Cardiology" },
+      { "label": "피부과", "term": "Dermatology" }
+    ]
+  }
+}
