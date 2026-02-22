@@ -1,0 +1,42 @@
+
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "医師",
+      "clinics": "クリニック",
+      "labs": "検査機関",
+      "imaging": "画像診断",
+      "pharmacies": "薬局",
+      "patients": "患者"
+    },
+    "cards": {
+      "doctors": {
+        "title": "医師向け",
+        "description": "予約、支払い、フォローアップ、遠隔診療—エンドツーエンドで接続"
+      },
+      "patients": {
+        "title": "患者向け",
+        "description": "受診先の検索・予約・経過管理を一つの場所で"
+      },
+      "clinics": {
+        "title": "クリニック向け",
+        "description": "予約管理、記録、請求を一元化"
+      },
+      "imaging": {
+        "title": "画像診断向け",
+        "description": "オーダー、レポート、紹介連携"
+      },
+      "pharmacy": {
+        "title": "薬局向け",
+        "description": "電子処方、調剤、配送"
+      },
+      "labs": {
+        "title": "検査機関向け",
+        "description": "検査依頼、結果、デジタル配信"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "検索へスクロール"
+    }
+  }
+}
