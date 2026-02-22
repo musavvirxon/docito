@@ -1,8 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, TrendingUp, TrendingDown, DollarSign, Target, Calculator } from "lucide-react";
+import { Settings, TrendingUp, DollarSign, Target, Calculator } from "lucide-react";
 import { useState } from "react";
 import FinancialInputsModal from "./FinancialInputsModal";
+import { useTranslation } from "react-i18next";
 
 interface AdvancedMetrics {
   roi: number | null;
@@ -28,130 +29,159 @@ interface AdvancedFinancialMetricsProps {
 }
 
 const AdvancedFinancialMetrics = ({ metrics, revenue, onUpdateInputs }: AdvancedFinancialMetricsProps) => {
+  const { t } = useTranslation("dashboard");
   const [showInputsModal, setShowInputsModal] = useState(false);
 
+  const na = t("doctor.performance.notAvailable");
+
   const formatCurrency = (value: number | null) => {
-    if (value === null) return "N/A";
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    if (value === null) return na;
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
   };
 
   const formatPercentage = (value: number | null) => {
-    if (value === null) return "N/A";
+    if (value === null) return na;
     return `${value.toFixed(2)}%`;
   };
 
   const formatNumber = (value: number | null) => {
-    if (value === null) return "N/A";
+    if (value === null) return na;
     return value.toFixed(2);
   };
 
   const metricsData = [
     {
-      title: "ROI (Return on Investment)",
+      title: t("doctor.performance.advancedFinancial.metrics.roi.title"),
       value: formatPercentage(metrics.roi),
       icon: TrendingUp,
       color: "text-green-500",
-      description: "Overall investment return"
+      description: t("doctor.performance.advancedFinancial.metrics.roi.description"),
     },
     {
-      title: "ROAS (Return on Ad Spend)",
+      title: t("doctor.performance.advancedFinancial.metrics.roas.title"),
       value: formatNumber(metrics.roas),
       icon: Target,
       color: "text-blue-500",
-      description: "Revenue per ad dollar"
+      description: t("doctor.performance.advancedFinancial.metrics.roas.description"),
     },
     {
-      title: "Ad Revenue / Cost",
+      title: t("doctor.performance.advancedFinancial.metrics.adRevenueCost.title"),
       value: `${formatCurrency(metrics.adRevenue)} / ${formatCurrency(metrics.adCost)}`,
       icon: DollarSign,
       color: "text-purple-500",
-      description: "Advertising performance"
+      description: t("doctor.performance.advancedFinancial.metrics.adRevenueCost.description"),
     },
     {
-      title: "Working Capital",
+      title: t("doctor.performance.advancedFinancial.metrics.workingCapital.title"),
       value: formatCurrency(metrics.workingCapital),
       icon: DollarSign,
       color: "text-indigo-500",
-      description: "Current assets - liabilities"
+      description: t("doctor.performance.advancedFinancial.metrics.workingCapital.description"),
     },
     {
-      title: "Working Capital Ratio",
+      title: t("doctor.performance.advancedFinancial.metrics.workingCapitalRatio.title"),
       value: formatNumber(metrics.workingCapitalRatio),
       icon: Calculator,
       color: "text-cyan-500",
-      description: "Liquidity measure"
+      description: t("doctor.performance.advancedFinancial.metrics.workingCapitalRatio.description"),
     },
     {
-      title: "Net Profit Margin",
+      title: t("doctor.performance.advancedFinancial.metrics.netProfitMargin.title"),
       value: formatPercentage(metrics.netProfitMargin),
       icon: TrendingUp,
       color: "text-green-500",
-      description: "Profitability after all expenses"
+      description: t("doctor.performance.advancedFinancial.metrics.netProfitMargin.description"),
     },
     {
-      title: "Gross Profit Margin",
+      title: t("doctor.performance.advancedFinancial.metrics.grossProfitMargin.title"),
       value: formatPercentage(metrics.grossProfitMargin),
       icon: TrendingUp,
       color: "text-emerald-500",
-      description: "Revenue minus COGS"
+      description: t("doctor.performance.advancedFinancial.metrics.grossProfitMargin.description"),
     },
     {
-      title: "EBITDA",
+      title: t("doctor.performance.advancedFinancial.metrics.ebitda.title"),
       value: formatCurrency(metrics.ebitda),
       icon: DollarSign,
       color: "text-yellow-500",
-      description: "Earnings before interest, taxes, depreciation"
+      description: t("doctor.performance.advancedFinancial.metrics.ebitda.description"),
     },
     {
-      title: "Break-Even Point (Units)",
-      value: metrics.breakEvenUnits !== null ? Math.ceil(metrics.breakEvenUnits).toString() : "N/A",
+      title: t("doctor.performance.advancedFinancial.metrics.breakEvenUnits.title"),
+      value: metrics.breakEvenUnits !== null ? Math.ceil(metrics.breakEvenUnits).toString() : na,
       icon: Target,
       color: "text-orange-500",
-      description: "Units needed to break even"
+      description: t("doctor.performance.advancedFinancial.metrics.breakEvenUnits.description"),
     },
     {
-      title: "Revenue Run Rate",
+      title: t("doctor.performance.advancedFinancial.metrics.revenueRunRate.title"),
       value: formatCurrency(metrics.revenueRunRate),
       icon: TrendingUp,
       color: "text-blue-500",
-      description: "Annualized revenue projection"
+      description: t("doctor.performance.advancedFinancial.metrics.revenueRunRate.description"),
     },
     {
-      title: "CAC (Customer Acquisition Cost)",
+      title: t("doctor.performance.advancedFinancial.metrics.cac.title"),
       value: formatCurrency(metrics.cac),
       icon: DollarSign,
       color: "text-red-500",
-      description: "Cost to acquire one customer"
+      description: t("doctor.performance.advancedFinancial.metrics.cac.description"),
     },
     {
-      title: "LTV (Lifetime Value)",
+      title: t("doctor.performance.advancedFinancial.metrics.ltv.title"),
       value: formatCurrency(metrics.ltv),
       icon: TrendingUp,
       color: "text-green-500",
-      description: "Customer lifetime revenue"
+      description: t("doctor.performance.advancedFinancial.metrics.ltv.description"),
     },
     {
-      title: "CAC to LTV Ratio",
-      value: metrics.cacToLtvRatio !== null ? `1:${metrics.cacToLtvRatio.toFixed(2)}` : "N/A",
+      title: t("doctor.performance.advancedFinancial.metrics.cacToLtv.title"),
+      value: metrics.cacToLtvRatio !== null ? `1:${metrics.cacToLtvRatio.toFixed(2)}` : na,
       icon: Calculator,
       color: metrics.cacToLtvRatio && metrics.cacToLtvRatio >= 3 ? "text-green-500" : "text-orange-500",
-      description: "Customer value vs acquisition cost"
-    }
+      description: t("doctor.performance.advancedFinancial.metrics.cacToLtv.description"),
+    },
   ];
+
+  const cacToLtvInsight =
+    metrics.cacToLtvRatio === null
+      ? null
+      : metrics.cacToLtvRatio >= 3
+        ? t("doctor.performance.advancedFinancial.insights.cacToLtvHealthy")
+        : t("doctor.performance.advancedFinancial.insights.cacToLtvNeedsImprovement");
+
+  const netProfitInsight =
+    metrics.netProfitMargin === null
+      ? null
+      : metrics.netProfitMargin > 15
+        ? t("doctor.performance.advancedFinancial.insights.netProfitStrong")
+        : t("doctor.performance.advancedFinancial.insights.netProfitBelowAvg");
+
+  const workingCapitalInsight =
+    metrics.workingCapitalRatio === null
+      ? null
+      : metrics.workingCapitalRatio >= 1.5
+        ? t("doctor.performance.advancedFinancial.insights.workingCapitalHealthy")
+        : t("doctor.performance.advancedFinancial.insights.workingCapitalTight");
+
+  const roasInsight =
+    metrics.roas === null
+      ? null
+      : metrics.roas >= 4
+        ? t("doctor.performance.advancedFinancial.insights.roasExcellent")
+        : t("doctor.performance.advancedFinancial.insights.roasNeedsOptimization");
 
   return (
     <>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">Advanced Financial Metrics</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Track key financial KPIs and profitability metrics
-            </p>
+            <h2 className="text-2xl font-bold text-foreground">{t("doctor.performance.advancedFinancial.title")}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t("doctor.performance.advancedFinancial.description")}</p>
           </div>
           <Button onClick={() => setShowInputsModal(true)} variant="outline">
             <Settings className="h-4 w-4 mr-2" />
-            Configure Inputs
+            {t("doctor.performance.advancedFinancial.configureInputs")}
           </Button>
         </div>
 
@@ -177,43 +207,59 @@ const AdvancedFinancialMetrics = ({ metrics, revenue, onUpdateInputs }: Advanced
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calculator className="h-5 w-5" />
-              Key Insights
+              {t("doctor.performance.advancedFinancial.keyInsightsTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {metrics.cacToLtvRatio !== null && (
-              <p className={metrics.cacToLtvRatio >= 3 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
-                • CAC to LTV ratio is {metrics.cacToLtvRatio >= 3 ? "healthy" : "needs improvement"} 
-                {metrics.cacToLtvRatio >= 3 ? " (>3:1 is ideal)" : " (<3:1 indicates high acquisition costs)"}
+            {cacToLtvInsight && (
+              <p
+                className={
+                  metrics.cacToLtvRatio !== null && metrics.cacToLtvRatio >= 3
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-orange-600 dark:text-orange-400"
+                }
+              >
+                {cacToLtvInsight}
               </p>
             )}
-            {metrics.netProfitMargin !== null && (
-              <p className={metrics.netProfitMargin > 15 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
-                • Net profit margin is {metrics.netProfitMargin > 15 ? "strong" : "below average"} 
-                {metrics.netProfitMargin > 15 ? " (>15% is excellent)" : " (aim for >15%)"}
+            {netProfitInsight && (
+              <p
+                className={
+                  metrics.netProfitMargin !== null && metrics.netProfitMargin > 15
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-orange-600 dark:text-orange-400"
+                }
+              >
+                {netProfitInsight}
               </p>
             )}
-            {metrics.workingCapitalRatio !== null && (
-              <p className={metrics.workingCapitalRatio >= 1.5 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
-                • Working capital ratio is {metrics.workingCapitalRatio >= 1.5 ? "healthy" : "tight"} 
-                {metrics.workingCapitalRatio >= 1.5 ? " (1.5-2.0 is ideal)" : " (should be >1.5)"}
+            {workingCapitalInsight && (
+              <p
+                className={
+                  metrics.workingCapitalRatio !== null && metrics.workingCapitalRatio >= 1.5
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-orange-600 dark:text-orange-400"
+                }
+              >
+                {workingCapitalInsight}
               </p>
             )}
-            {metrics.roas !== null && (
-              <p className={metrics.roas >= 4 ? "text-green-600 dark:text-green-400" : "text-orange-600 dark:text-orange-400"}>
-                • ROAS is {metrics.roas >= 4 ? "excellent" : "needs optimization"} 
-                {metrics.roas >= 4 ? " (4:1 or higher)" : " (aim for at least 4:1)"}
+            {roasInsight && (
+              <p
+                className={
+                  metrics.roas !== null && metrics.roas >= 4
+                    ? "text-green-600 dark:text-green-400"
+                    : "text-orange-600 dark:text-orange-400"
+                }
+              >
+                {roasInsight}
               </p>
             )}
           </CardContent>
         </Card>
       </div>
 
-      <FinancialInputsModal
-        open={showInputsModal}
-        onOpenChange={setShowInputsModal}
-        onSave={onUpdateInputs}
-      />
+      <FinancialInputsModal open={showInputsModal} onOpenChange={setShowInputsModal} onSave={onUpdateInputs} />
     </>
   );
 };
