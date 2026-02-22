@@ -1,8 +1,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Users, Clock, MapPin, Lightbulb } from "lucide-react";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { TrendingUp, Users, Clock, Lightbulb } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import { useTranslation } from "react-i18next";
 
 interface PerformanceTrendsProps {
   dailyTrends: Array<{ date: string; appointments: number; completed: number; cancelled: number }>;
@@ -15,45 +29,47 @@ interface PerformanceTrendsProps {
 
 export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: PerformanceTrendsProps) {
   const { t } = useTranslation("dashboard");
-  
+
   const patientTypeData = [
-    { name: t("doctor.performance.returning"), value: stats.returningPatients, color: '#10b981' },
-    { name: t("doctor.performance.new"), value: stats.newPatients, color: '#3b82f6' }
+    { name: t("doctor.performance.returning"), value: stats.returningPatients, color: "#10b981" },
+    { name: t("doctor.performance.new"), value: stats.newPatients, color: "#3b82f6" },
   ];
 
-  // Get recommendations based on data
   const getRecommendations = () => {
-    const recommendations = [];
-    
+    const recommendations: Array<{ title: string; description: string; priority: string }> = [];
+
     if (popularTimeSlots.length > 0) {
       const topSlot = popularTimeSlots[0];
       recommendations.push({
-        title: 'Peak Time Identified',
-        description: `Your busiest time is ${topSlot.time}. Consider adding more slots during this period.`,
-        priority: 'high'
+        title: t("doctor.performance.trends.peakTimeIdentified"),
+        description: t("doctor.performance.trends.peakTimeDesc", { time: topSlot.time }),
+        priority: "high",
       });
     }
 
     if (stats.returningPatients > stats.newPatients * 2) {
       recommendations.push({
-        title: 'Strong Patient Retention',
-        description: 'You have excellent patient loyalty! Focus on maintaining this high standard.',
-        priority: 'positive'
+        title: t("doctor.performance.trends.strongRetention"),
+        description: t("doctor.performance.trends.strongRetentionDesc"),
+        priority: "positive",
       });
     } else if (stats.newPatients > stats.returningPatients * 2) {
       recommendations.push({
-        title: 'Focus on Retention',
-        description: 'Consider implementing follow-up reminders to convert more new patients to returning patients.',
-        priority: 'medium'
+        title: t("doctor.performance.trends.focusOnRetention"),
+        description: t("doctor.performance.trends.focusOnRetentionDesc"),
+        priority: "medium",
       });
     }
 
-    const recentCancellations = dailyTrends.slice(-7).reduce((sum, day) => sum + day.cancelled, 0);
-    if (recentCancellations > dailyTrends.slice(-7).reduce((sum, day) => sum + day.appointments, 0) * 0.15) {
+    const last7 = dailyTrends.slice(-7);
+    const recentCancellations = last7.reduce((sum, day) => sum + day.cancelled, 0);
+    const recentTotal = last7.reduce((sum, day) => sum + day.appointments, 0);
+
+    if (recentTotal > 0 && recentCancellations > recentTotal * 0.15) {
       recommendations.push({
-        title: 'High Recent Cancellations',
-        description: 'Recent cancellation rate is elevated. Consider sending appointment reminders 24h in advance.',
-        priority: 'high'
+        title: t("doctor.performance.trends.highCancellations"),
+        description: t("doctor.performance.trends.highCancellationsDesc"),
+        priority: "high",
       });
     }
 
@@ -64,10 +80,14 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700 border-red-300';
-      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
-      case 'positive': return 'bg-green-100 text-green-700 border-green-300';
-      default: return 'bg-blue-100 text-blue-700 border-blue-300';
+      case "high":
+        return "bg-red-100 text-red-700 border-red-300";
+      case "medium":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case "positive":
+        return "bg-green-100 text-green-700 border-green-300";
+      default:
+        return "bg-blue-100 text-blue-700 border-blue-300";
     }
   };
 
@@ -106,9 +126,26 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="appointments" stroke="hsl(var(--primary))" name={t("doctor.performance.overview.total")} strokeWidth={2} />
-              <Line type="monotone" dataKey="completed" stroke="#10b981" name={t("doctor.performance.overview.completed")} strokeWidth={2} />
-              <Line type="monotone" dataKey="cancelled" stroke="#f59e0b" name={t("doctor.performance.overview.cancelled")} />
+              <Line
+                type="monotone"
+                dataKey="appointments"
+                stroke="hsl(var(--primary))"
+                name={t("doctor.performance.overview.total")}
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="completed"
+                stroke="#10b981"
+                name={t("doctor.performance.overview.completed")}
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="cancelled"
+                stroke="#f59e0b"
+                name={t("doctor.performance.overview.cancelled")}
+              />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -141,7 +178,7 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
-            
+
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">{stats.newPatients}</p>
@@ -167,7 +204,7 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                 <XAxis dataKey="time" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--primary))" name="Bookings" />
+                <Bar dataKey="count" fill="hsl(var(--primary))" name={t("doctor.performance.services.bookings")} />
               </BarChart>
             </ResponsiveContainer>
 
@@ -179,7 +216,9 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                     <Clock className="w-4 h-4 text-muted-foreground" />
                     <span className="font-medium">{slot.time}</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">{slot.count} {t("doctor.performance.trends.bookings")}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {slot.count} {t("doctor.performance.trends.bookings")}
+                  </span>
                 </div>
               ))}
             </div>
@@ -200,7 +239,10 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                 <h4 className="font-semibold">{t("doctor.performance.trends.growthTrend")}</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                {t("doctor.performance.trends.appointmentsTrending")} {dailyTrends[dailyTrends.length - 1]?.appointments > dailyTrends[0]?.appointments ? t("doctor.performance.trends.upward") : t("doctor.performance.trends.stable")}
+                {t("doctor.performance.trends.appointmentsTrending")}{" "}
+                {dailyTrends[dailyTrends.length - 1]?.appointments > dailyTrends[0]?.appointments
+                  ? t("doctor.performance.trends.upward")
+                  : t("doctor.performance.trends.stable")}
               </p>
             </div>
 
@@ -210,7 +252,10 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                 <h4 className="font-semibold">{t("doctor.performance.trends.patientLoyalty")}</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                {stats.returningPatients > stats.newPatients ? t("doctor.performance.trends.strong") : t("doctor.performance.trends.building")} {t("doctor.performance.trends.patientRetention")}
+                {stats.returningPatients > stats.newPatients
+                  ? t("doctor.performance.trends.strong")
+                  : t("doctor.performance.trends.building")}{" "}
+                {t("doctor.performance.trends.patientRetention")}
               </p>
             </div>
 
@@ -220,7 +265,7 @@ export function PerformanceTrends({ dailyTrends, popularTimeSlots, stats }: Perf
                 <h4 className="font-semibold">{t("doctor.performance.trends.bestTime")}</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                {t("doctor.performance.trends.peakDemandAt")} {popularTimeSlots[0]?.time || 'N/A'}
+                {t("doctor.performance.trends.peakDemandAt")} {popularTimeSlots[0]?.time || t("doctor.performance.notAvailable")}
               </p>
             </div>
           </div>
