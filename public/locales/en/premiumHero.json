@@ -1,0 +1,41 @@
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "Doctors",
+      "clinics": "Clinics",
+      "labs": "Labs",
+      "imaging": "Imaging",
+      "pharmacies": "Pharmacies",
+      "patients": "Patients"
+    },
+    "cards": {
+      "doctors": {
+        "title": "For doctors",
+        "description": "Appointments, payments, follow-ups, telemedicine—connected end-to-end"
+      },
+      "patients": {
+        "title": "For patients",
+        "description": "Find, book, and track care in one place"
+      },
+      "clinics": {
+        "title": "For clinics",
+        "description": "Scheduling, records, and billing unified"
+      },
+      "imaging": {
+        "title": "For imaging",
+        "description": "Orders, reports, and referral coordination"
+      },
+      "pharmacy": {
+        "title": "For pharmacy",
+        "description": "ePrescriptions, fulfillment, and delivery"
+      },
+      "labs": {
+        "title": "For labs",
+        "description": "Test ordering, results, and digital delivery"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "Scroll to search"
+    }
+  }
+}
