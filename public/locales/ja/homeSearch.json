@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "音声検索",
+    "recent": "最近の検索",
+    "trending": "人気の検索",
+    "noRecent": "最近の検索はありません",
+    "aiHint": "例: 近くの循環器内科",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "結果を読み込み中...",
+    "trendingSearches": [
+      { "label": "総合診療医", "term": "General Practitioner" },
+      { "label": "歯科医", "term": "Dentist" },
+      { "label": "眼科検診", "term": "Eye Exam" },
+      { "label": "血液検査", "term": "Blood Test" },
+      { "label": "循環器科", "term": "Cardiology" },
+      { "label": "皮膚科", "term": "Dermatology" }
+    ]
+  }
+}
