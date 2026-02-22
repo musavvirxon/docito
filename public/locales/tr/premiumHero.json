@@ -1,0 +1,42 @@
+public/locales/tr/premiumHero.json
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "Doktorlar",
+      "clinics": "Klinikler",
+      "labs": "Laboratuvarlar",
+      "imaging": "Görüntüleme",
+      "pharmacies": "Eczaneler",
+      "patients": "Hastalar"
+    },
+    "cards": {
+      "doctors": {
+        "title": "Doktorlar için",
+        "description": "Randevular, ödemeler, kontroller, tele-tıp—uçtan uca bağlı"
+      },
+      "patients": {
+        "title": "Hastalar için",
+        "description": "Bakımı tek yerde bulun, randevu alın ve takip edin"
+      },
+      "clinics": {
+        "title": "Klinikler için",
+        "description": "Planlama, kayıtlar ve faturalama bir arada"
+      },
+      "imaging": {
+        "title": "Görüntüleme için",
+        "description": "İstekler, raporlar ve sevk koordinasyonu"
+      },
+      "pharmacy": {
+        "title": "Eczaneler için",
+        "description": "e-Reçete, karşılama ve teslimat"
+      },
+      "labs": {
+        "title": "Laboratuvarlar için",
+        "description": "Test istemi, sonuçlar ve dijital teslim"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "Aramaya kaydır"
+    }
+  }
+}
