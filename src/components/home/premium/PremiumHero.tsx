@@ -36,23 +36,40 @@ function scrollToId(id: string) {
 
 export default function PremiumHero() {
   const navigate = useNavigate();
-  const { t } = useTranslation("premium");
+  const { t } = useTranslation(["premium", "premiumHero"]);
   const { getLocalizedPath } = useLocalizedPath();
   const [isVisible, setIsVisible] = useState(false);
 
   const ecosystem = useMemo<EcosystemChip[]>(
     () => [
-      { label: t("hero.ecosystem.doctors", "Doctors"), Icon: Stethoscope },
-      { label: t("hero.ecosystem.clinics", "Clinics"), Icon: Building2 },
-      { label: t("hero.ecosystem.labs", "Labs"), Icon: FlaskConical },
-      { label: t("hero.ecosystem.imaging", "Imaging"), Icon: ScanLine },
-      { label: t("hero.ecosystem.pharmacies", "Pharmacies"), Icon: Pill },
-      { label: t("hero.ecosystem.patients", "Patients"), Icon: Users },
+      {
+        label: t("premiumHero:hero.ecosystem.doctors", "Doctors"),
+        Icon: Stethoscope,
+      },
+      {
+        label: t("premiumHero:hero.ecosystem.clinics", "Clinics"),
+        Icon: Building2,
+      },
+      {
+        label: t("premiumHero:hero.ecosystem.labs", "Labs"),
+        Icon: FlaskConical,
+      },
+      {
+        label: t("premiumHero:hero.ecosystem.imaging", "Imaging"),
+        Icon: ScanLine,
+      },
+      {
+        label: t("premiumHero:hero.ecosystem.pharmacies", "Pharmacies"),
+        Icon: Pill,
+      },
+      {
+        label: t("premiumHero:hero.ecosystem.patients", "Patients"),
+        Icon: Users,
+      },
     ],
     [t],
   );
 
-  // Trigger CSS animations after mount
   useEffect(() => {
     const timer = requestAnimationFrame(() => setIsVisible(true));
     return () => cancelAnimationFrame(timer);
@@ -72,7 +89,7 @@ export default function PremiumHero() {
       section: "hero",
     });
     if (!scrollToId("search")) {
-      navigate(`${getLocalizedPath("/") }#search`);
+      navigate(`${getLocalizedPath("/")}#search`);
     }
   };
 
@@ -104,8 +121,8 @@ export default function PremiumHero() {
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
               {t(
-                "hero.description",
-                "Docito connects patients, providers, labs, imaging, pharmacies, and insurance—so bookings, records, prescriptions, results, and payments stay in one place.",
+                "hero.subtitle",
+                "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.",
               )}
             </p>
 
@@ -115,12 +132,12 @@ export default function PremiumHero() {
                 <div className="flex items-center gap-2 mb-2">
                   <Stethoscope className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {t("hero.cards.doctors.title", "For doctors")}
+                    {t("premiumHero:hero.cards.doctors.title", "For doctors")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {t(
-                    "hero.cards.doctors.description",
+                    "premiumHero:hero.cards.doctors.description",
                     "Appointments, payments, follow-ups, telemedicine—connected end-to-end",
                   )}
                 </p>
@@ -130,11 +147,14 @@ export default function PremiumHero() {
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {t("hero.cards.patients.title", "For patients")}
+                    {t("premiumHero:hero.cards.patients.title", "For patients")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("hero.cards.patients.description", "Find, book, and track care in one place")}
+                  {t(
+                    "premiumHero:hero.cards.patients.description",
+                    "Find, book, and track care in one place",
+                  )}
                 </p>
               </div>
 
@@ -142,11 +162,14 @@ export default function PremiumHero() {
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {t("hero.cards.clinics.title", "For clinics")}
+                    {t("premiumHero:hero.cards.clinics.title", "For clinics")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("hero.cards.clinics.description", "Scheduling, records, and billing unified")}
+                  {t(
+                    "premiumHero:hero.cards.clinics.description",
+                    "Scheduling, records, and billing unified",
+                  )}
                 </p>
               </div>
 
@@ -154,11 +177,14 @@ export default function PremiumHero() {
                 <div className="flex items-center gap-2 mb-2">
                   <ScanLine className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {t("hero.cards.imaging.title", "For imaging")}
+                    {t("premiumHero:hero.cards.imaging.title", "For imaging")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("hero.cards.imaging.description", "Orders, reports, and referral coordination")}
+                  {t(
+                    "premiumHero:hero.cards.imaging.description",
+                    "Orders, reports, and referral coordination",
+                  )}
                 </p>
               </div>
 
@@ -166,11 +192,14 @@ export default function PremiumHero() {
                 <div className="flex items-center gap-2 mb-2">
                   <Pill className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {t("hero.cards.pharmacy.title", "For pharmacy")}
+                    {t("premiumHero:hero.cards.pharmacy.title", "For pharmacy")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("hero.cards.pharmacy.description", "ePrescriptions, fulfillment, and delivery")}
+                  {t(
+                    "premiumHero:hero.cards.pharmacy.description",
+                    "ePrescriptions, fulfillment, and delivery",
+                  )}
                 </p>
               </div>
 
@@ -178,11 +207,14 @@ export default function PremiumHero() {
                 <div className="flex items-center gap-2 mb-2">
                   <FlaskConical className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
-                    {t("hero.cards.labs.title", "For labs")}
+                    {t("premiumHero:hero.cards.labs.title", "For labs")}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("hero.cards.labs.description", "Test ordering, results, and digital delivery")}
+                  {t(
+                    "premiumHero:hero.cards.labs.description",
+                    "Test ordering, results, and digital delivery",
+                  )}
                 </p>
               </div>
             </div>
@@ -210,7 +242,10 @@ export default function PremiumHero() {
             </div>
 
             <div className="text-sm text-muted-foreground">
-              {t("hero.cta.note", "No demo. No credit card to start. Cancel anytime.")}
+              {t(
+                "hero.finePrint",
+                "Free 14-day trial • No credit card required • Cancel anytime",
+              )}
             </div>
 
             {/* Mobile-only ecosystem chips (replaces 3D orb on small screens) */}
@@ -253,7 +288,7 @@ export default function PremiumHero() {
             });
             scrollToId("search");
           }}
-          aria-label={t("hero.a11y.scrollToSearch", "Scroll to search")}
+          aria-label={t("premiumHero:hero.a11y.scrollToSearch", "Scroll to search")}
           className="w-6 h-10 border-2 border-muted-foreground/30 rounded-full flex justify-center animate-bounce bg-transparent"
         >
           <div className="w-1.5 h-3 bg-muted-foreground/50 rounded-full mt-2" />
