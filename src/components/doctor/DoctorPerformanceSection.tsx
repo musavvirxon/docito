@@ -31,11 +31,11 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
   const { t } = useTranslation("dashboard");
   const [dateRange] = useState<{ from: Date; to: Date }>({
     from: subDays(new Date(), 30),
-    to: new Date()
+    to: new Date(),
   });
 
-  const { 
-    stats, 
+  const {
+    stats,
     dailyTrends,
     servicePerformance,
     popularTimeSlots,
@@ -43,10 +43,13 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
     newAchievements,
     loading,
     error,
-    refreshData
+    refreshData,
   } = useDoctorPerformance(dateRange.from, dateRange.to);
-  
-  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.monthlyRevenue, 'doctor');
+
+  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(
+    stats.monthlyRevenue,
+    "doctor",
+  );
 
   const handleExport = () => {
     toast.success(t("doctor.performance.exportComingSoon"));
@@ -120,7 +123,7 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
               <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                 <Award className="w-10 h-10" />
               </div>
-               <div>
+              <div>
                 <h3 className="text-2xl font-bold">{t("doctor.performance.newAchievement")}</h3>
                 <p className="text-lg">{newAchievements[0].title}</p>
               </div>
@@ -136,7 +139,7 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
           <TabsTrigger value="services">{t("doctor.performance.tabs.services")}</TabsTrigger>
           <TabsTrigger value="reviews">{t("doctor.performance.tabs.reviews")}</TabsTrigger>
           <TabsTrigger value="trends">{t("doctor.performance.tabs.trends")}</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced KPIs</TabsTrigger>
+          <TabsTrigger value="advanced">{t("doctor.performance.tabs.advanced")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -148,24 +151,16 @@ const DoctorPerformanceSection = ({ doctorProfile, stats: providedStats }: Docto
         </TabsContent>
 
         <TabsContent value="reviews">
-          <PerformanceReviews 
-            reviews={recentReviews as any}
-            averageRating={stats.averageRating}
-            totalReviews={stats.totalReviews}
-          />
+          <PerformanceReviews reviews={recentReviews as any} averageRating={stats.averageRating} totalReviews={stats.totalReviews} />
         </TabsContent>
 
         <TabsContent value="trends">
-          <PerformanceTrends 
-            dailyTrends={dailyTrends as any}
-            popularTimeSlots={popularTimeSlots as any}
-            stats={stats}
-          />
+          <PerformanceTrends dailyTrends={dailyTrends as any} popularTimeSlots={popularTimeSlots as any} stats={stats} />
         </TabsContent>
-        
+
         <TabsContent value="advanced">
-          <AdvancedFinancialMetrics 
-            metrics={advancedMetrics} 
+          <AdvancedFinancialMetrics
+            metrics={advancedMetrics}
             revenue={stats.monthlyRevenue}
             onUpdateInputs={() => {
               refreshData();
