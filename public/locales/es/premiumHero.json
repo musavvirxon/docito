@@ -1,0 +1,42 @@
+public/locales/es/premiumHero.json
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "Médicos",
+      "clinics": "Clínicas",
+      "labs": "Laboratorios",
+      "imaging": "Imagenología",
+      "pharmacies": "Farmacias",
+      "patients": "Pacientes"
+    },
+    "cards": {
+      "doctors": {
+        "title": "Para médicos",
+        "description": "Citas, pagos, seguimientos y telemedicina—conectado de principio a fin"
+      },
+      "patients": {
+        "title": "Para pacientes",
+        "description": "Encuentra, reserva y sigue tu atención en un solo lugar"
+      },
+      "clinics": {
+        "title": "Para clínicas",
+        "description": "Agenda, historia clínica y facturación unificadas"
+      },
+      "imaging": {
+        "title": "Para imagenología",
+        "description": "Órdenes, informes y coordinación de derivaciones"
+      },
+      "pharmacy": {
+        "title": "Para farmacia",
+        "description": "Recetas electrónicas, dispensación y entrega"
+      },
+      "labs": {
+        "title": "Para laboratorios",
+        "description": "Solicitud de pruebas, resultados y entrega digital"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "Desplazarse a la búsqueda"
+    }
+  }
+}
