@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "Sesli arama",
+    "recent": "Son aramalar",
+    "trending": "Popüler aramalar",
+    "noRecent": "Son arama yok",
+    "aiHint": "Deneyin: yakınımdaki kardiyolog",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "Sonuçlar yükleniyor...",
+    "trendingSearches": [
+      { "label": "Pratisyen hekim", "term": "General Practitioner" },
+      { "label": "Diş hekimi", "term": "Dentist" },
+      { "label": "Göz muayenesi", "term": "Eye Exam" },
+      { "label": "Kan testi", "term": "Blood Test" },
+      { "label": "Kardiyoloji", "term": "Cardiology" },
+      { "label": "Dermatoloji", "term": "Dermatology" }
+    ]
+  }
+}
