@@ -1,11 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, Clock, TrendingUp, Activity, ArrowUpDown } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { DollarSign, Clock, TrendingUp, Activity } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 interface Service {
   id: string;
@@ -24,16 +23,16 @@ interface PerformanceServicesProps {
 
 export function PerformanceServices({ services }: PerformanceServicesProps) {
   const { t } = useTranslation("dashboard");
-  const [sortBy, setSortBy] = useState<'bookings' | 'revenue' | 'conversionRate'>('bookings');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<"bookings" | "revenue" | "conversionRate">("bookings");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
 
-  const categories = ['all', ...Array.from(new Set(services.map(s => s.category)))];
+  const categories = ["all", ...Array.from(new Set(services.map((s) => s.category)))];
 
   const filteredServices = services
-    .filter(s => filterCategory === 'all' || s.category === filterCategory)
+    .filter((s) => filterCategory === "all" || s.category === filterCategory)
     .sort((a, b) => {
-      if (sortBy === 'bookings') return b.bookings - a.bookings;
-      if (sortBy === 'revenue') return b.revenue - a.revenue;
+      if (sortBy === "bookings") return b.bookings - a.bookings;
+      if (sortBy === "revenue") return b.revenue - a.revenue;
       return b.conversionRate - a.conversionRate;
     });
 
@@ -81,28 +80,28 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
         <CardContent className="pt-6">
           <div className="flex gap-4 items-center">
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Sort By</label>
+              <label className="text-sm font-medium mb-2 block">{t("doctor.performance.services.sortBy")}</label>
               <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="bookings">Most Booked</SelectItem>
-                  <SelectItem value="revenue">Highest Revenue</SelectItem>
-                  <SelectItem value="conversionRate">Best Conversion</SelectItem>
+                  <SelectItem value="bookings">{t("doctor.performance.services.mostBookedSort")}</SelectItem>
+                  <SelectItem value="revenue">{t("doctor.performance.services.highestRevenue")}</SelectItem>
+                  <SelectItem value="conversionRate">{t("doctor.performance.services.bestConversion")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Category</label>
+              <label className="text-sm font-medium mb-2 block">{t("doctor.performance.services.category")}</label>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map(cat => (
+                  {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
-                      {cat === 'all' ? 'All Categories' : cat}
+                      {cat === "all" ? t("doctor.performance.services.allCategories") : cat}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -115,7 +114,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
       {/* Services Revenue Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Revenue by Service</CardTitle>
+          <CardTitle>{t("doctor.performance.services.revenueByService")}</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -124,7 +123,11 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
               <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="revenue" fill="hsl(var(--primary))" name="Revenue ($)" />
+              <Bar
+                dataKey="revenue"
+                fill="hsl(var(--primary))"
+                name={t("doctor.performance.services.revenueUsd")}
+              />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -146,7 +149,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
                   </div>
                 </div>
                 <Badge variant={service.bookings > 10 ? "default" : "secondary"}>
-                  {service.bookings > 10 ? 'Popular' : 'Standard'}
+                  {service.bookings > 10 ? t("doctor.performance.services.popular") : t("doctor.performance.services.standard")}
                 </Badge>
               </div>
 
@@ -154,7 +157,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
                 <div className="flex items-center gap-2">
                   <Activity className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Bookings</p>
+                    <p className="text-sm text-muted-foreground">{t("doctor.performance.services.bookings")}</p>
                     <p className="text-lg font-bold">{service.bookings}</p>
                   </div>
                 </div>
@@ -162,7 +165,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Revenue</p>
+                    <p className="text-sm text-muted-foreground">{t("doctor.performance.services.revenue")}</p>
                     <p className="text-lg font-bold text-green-600">${service.revenue.toLocaleString()}</p>
                   </div>
                 </div>
@@ -170,23 +173,27 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Avg. Duration</p>
-                    <p className="text-lg font-bold">{service.avgDuration} min</p>
+                    <p className="text-sm text-muted-foreground">{t("doctor.performance.services.avgDuration")}</p>
+                    <p className="text-lg font-bold">
+                      {service.avgDuration} {t("doctor.performance.services.minutes")}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Completion</p>
+                    <p className="text-sm text-muted-foreground">{t("doctor.performance.services.completion")}</p>
                     <p className="text-lg font-bold text-blue-600">{service.conversionRate.toFixed(1)}%</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <div>
-                    <p className="text-sm text-muted-foreground">Completed</p>
-                    <p className="text-lg font-bold">{service.completed}/{service.bookings}</p>
+                    <p className="text-sm text-muted-foreground">{t("doctor.performance.services.completed")}</p>
+                    <p className="text-lg font-bold">
+                      {service.completed}/{service.bookings}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -198,7 +205,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
           <Card>
             <CardContent className="py-12 text-center">
               <Activity className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-muted-foreground">No services found for this category</p>
+              <p className="text-muted-foreground">{t("doctor.performance.services.noServicesFound")}</p>
             </CardContent>
           </Card>
         )}
