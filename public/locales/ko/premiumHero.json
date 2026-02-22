@@ -1,0 +1,42 @@
+
+{
+  "hero": {
+    "ecosystem": {
+      "doctors": "의사",
+      "clinics": "클리닉",
+      "labs": "검사실",
+      "imaging": "영상",
+      "pharmacies": "약국",
+      "patients": "환자"
+    },
+    "cards": {
+      "doctors": {
+        "title": "의사용",
+        "description": "예약, 결제, 추적 진료, 원격진료—엔드투엔드로 연결"
+      },
+      "patients": {
+        "title": "환자용",
+        "description": "한 곳에서 찾고, 예약하고, 치료 과정을 추적하세요"
+      },
+      "clinics": {
+        "title": "클리닉용",
+        "description": "일정, 기록, 청구를 하나로"
+      },
+      "imaging": {
+        "title": "영상센터용",
+        "description": "오더, 리포트, 의뢰 연계"
+      },
+      "pharmacy": {
+        "title": "약국용",
+        "description": "전자처방, 조제, 배송"
+      },
+      "labs": {
+        "title": "검사실용",
+        "description": "검사 주문, 결과, 디지털 전달"
+      }
+    },
+    "a11y": {
+      "scrollToSearch": "검색으로 스크롤"
+    }
+  }
+}
