@@ -1,0 +1,20 @@
+
+{
+  "search": {
+    "voiceSearch": "Ovozli qidiruv",
+    "recent": "So‘nggi qidiruvlar",
+    "trending": "Ommabop qidiruvlar",
+    "noRecent": "So‘nggi qidiruvlar yo‘q",
+    "aiHint": "Sinab ko‘ring: yaqin atrofdagi kardiolog",
+    "aiHintTerm": "cardiologist",
+    "resultsLoading": "Natijalar yuklanmoqda...",
+    "trendingSearches": [
+      { "label": "Umumiy amaliyot shifokori", "term": "General Practitioner" },
+      { "label": "Stomatolog", "term": "Dentist" },
+      { "label": "Ko‘z tekshiruvi", "term": "Eye Exam" },
+      { "label": "Qon tahlili", "term": "Blood Test" },
+      { "label": "Kardiologiya", "term": "Cardiology" },
+      { "label": "Dermatologiya", "term": "Dermatology" }
+    ]
+  }
+}
