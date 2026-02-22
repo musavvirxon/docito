@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, CheckCircle2, XCircle, UserX, Clock, TrendingUp, Users, Award } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { Calendar, CheckCircle2, XCircle, UserX, Clock, Users, Award } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useTranslation } from "react-i18next";
 
 interface PerformanceOverviewProps {
   stats: {
@@ -25,23 +25,29 @@ interface PerformanceOverviewProps {
 
 export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewProps) {
   const { t } = useTranslation("dashboard");
-  
+
   const getBadgeColor = (badge: string) => {
     switch (badge) {
-      case 'Gold': return 'bg-yellow-500';
-      case 'Silver': return 'bg-gray-400';
-      default: return 'bg-orange-600';
+      case "Gold":
+        return "bg-yellow-500";
+      case "Silver":
+        return "bg-gray-400";
+      default:
+        return "bg-orange-600";
     }
   };
 
   const getAlertStatus = (rate: number, threshold: number) => {
-    if (rate > threshold) return { color: 'text-red-600', status: t("doctor.performance.high") };
-    if (rate > threshold * 0.7) return { color: 'text-yellow-600', status: t("doctor.performance.medium") };
-    return { color: 'text-green-600', status: t("doctor.performance.low") };
+    if (rate > threshold) return { color: "text-red-600", status: t("doctor.performance.high") };
+    if (rate > threshold * 0.7) return { color: "text-yellow-600", status: t("doctor.performance.medium") };
+    return { color: "text-green-600", status: t("doctor.performance.low") };
   };
 
   const cancellationAlert = getAlertStatus(stats.cancellationRate, 15);
   const noShowAlert = getAlertStatus(stats.noShowRate, 10);
+
+  const badgeKey = (stats.performanceBadge || "").toLowerCase();
+  const badgeLabel = t(`doctor.performance.levels.${badgeKey}`, stats.performanceBadge);
 
   return (
     <div className="space-y-6">
@@ -54,10 +60,12 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
               <p className="text-muted-foreground">{t("doctor.performance.overview.basedOn")}</p>
             </div>
             <div className="text-center">
-              <div className={`w-20 h-20 ${getBadgeColor(stats.performanceBadge)} rounded-full flex items-center justify-center mb-2`}>
+              <div
+                className={`w-20 h-20 ${getBadgeColor(stats.performanceBadge)} rounded-full flex items-center justify-center mb-2`}
+              >
                 <Award className="w-10 h-10 text-white" />
               </div>
-              <Badge className="text-lg px-4 py-1">{stats.performanceBadge}</Badge>
+              <Badge className="text-lg px-4 py-1">{badgeLabel}</Badge>
             </div>
           </div>
         </CardContent>
@@ -83,7 +91,9 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.completedAppointments}</div>
-            <p className="text-xs text-muted-foreground mt-1">{stats.completionRate.toFixed(1)}% {t("doctor.performance.overview.completionRate")}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.completionRate.toFixed(1)}% {t("doctor.performance.overview.completionRate")}
+            </p>
           </CardContent>
         </Card>
 
@@ -144,7 +154,9 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageSessionLength} {t("doctor.performance.services.minutes")}</div>
+            <div className="text-2xl font-bold">
+              {stats.averageSessionLength} {t("doctor.performance.services.minutes")}
+            </div>
             <p className="text-xs text-muted-foreground mt-1">{t("doctor.performance.overview.perAppointment")}</p>
           </CardContent>
         </Card>
@@ -163,9 +175,26 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="appointments" stroke="hsl(var(--primary))" name={t("doctor.performance.overview.total")} strokeWidth={2} />
-              <Line type="monotone" dataKey="completed" stroke="#10b981" name={t("doctor.performance.overview.completed")} strokeWidth={2} />
-              <Line type="monotone" dataKey="cancelled" stroke="#f59e0b" name={t("doctor.performance.overview.cancelled")} />
+              <Line
+                type="monotone"
+                dataKey="appointments"
+                stroke="hsl(var(--primary))"
+                name={t("doctor.performance.overview.total")}
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="completed"
+                stroke="#10b981"
+                name={t("doctor.performance.overview.completed")}
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="cancelled"
+                stroke="#f59e0b"
+                name={t("doctor.performance.overview.cancelled")}
+              />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
@@ -184,7 +213,7 @@ export function PerformanceOverview({ stats, dailyTrends }: PerformanceOverviewP
             </div>
             <Progress value={stats.completionRate} className="h-2" />
           </div>
-          
+
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium">{t("doctor.performance.overview.cancellationRate")}</span>
