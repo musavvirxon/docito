@@ -25,7 +25,7 @@ export const languages: LanguageConfig[] = [
   { code: "zh", name: "中文", flag: "🇨🇳", dir: "ltr" },
   { code: "pt", name: "Português", flag: "🇧🇷", dir: "ltr" },
   { code: "ja", name: "日本語", flag: "🇯🇵", dir: "ltr" },
-  { code: "ko", name: "한국어", flag: "🇰🇷", dir: "ltr" },
+  { code: "ko", name: "한국어", flag: "🇰🇷", dir: "ltr" }
 ];
 
 export const rtlLanguages = ["ar", "he", "fa", "ur"];
@@ -67,38 +67,30 @@ async function initI18n() {
         detection: {
           order: ["localStorage", "navigator", "htmlTag"],
           caches: ["localStorage"],
-          lookupLocalStorage: "i18nextLng",
+          lookupLocalStorage: "i18nextLng"
         },
 
-        // IMPORTANT: translations are stored in public/locales/{lng}/{ns}.json
+        // IMPORTANT: translations are served from public/locales/{lng}/{ns}.json
         backend: {
           loadPath: `${import.meta.env.BASE_URL}locales/{{lng}}/{{ns}}.json?v=${APP_VERSION}`,
           parse: safeJsonParse,
-          requestOptions: {
-            cache: "default",
-            mode: "cors",
-          },
+          requestOptions: { cache: "default", mode: "cors" }
         },
 
-        interpolation: {
-          escapeValue: false,
-        },
+        interpolation: { escapeValue: false },
 
-        // Load the most-used namespaces upfront (prevents showing raw keys on dashboards)
-        ns: ["common", "home", "dashboard", "auth"],
+        // Keep initial load small; other namespaces (e.g. "dashboard") load on demand via useTranslation("dashboard")
+        ns: ["common", "home"],
         defaultNS: "common",
 
-        partialBundledLanguages: true,
-        preload: false,
-
         // CRITICAL FIX:
-        // Enable store bindings so components re-render after namespaces load.
-        // Without this, you will see raw keys like "doctor.profileSetup.settingUp" forever.
+        // Re-render components when namespaces load, otherwise you'll keep seeing keys like
+        // "doctor.performance.title" instead of real translations (even though they exist in public/locales/*/dashboard.json).
         react: {
           useSuspense: false,
           bindI18n: "languageChanged loaded",
-          bindI18nStore: "added removed",
-        },
+          bindI18nStore: "added removed"
+        }
       });
 
     applyDirection(i18n.language);
@@ -114,12 +106,7 @@ async function initI18n() {
 
 void initI18n();
 
-i18n.on("initialized", () => {
-  applyDirection(i18n.language);
-});
-
-i18n.on("languageChanged", (lng) => {
-  applyDirection(lng);
-});
+i18n.on("initialized", () => applyDirection(i18n.language));
+i18n.on("languageChanged", (lng) => applyDirection(lng));
 
 export default i18n;
