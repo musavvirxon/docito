@@ -1883,4 +1883,111 @@
     "sessionExpired": "Session expired",
     "sessionExpiredDesc": "You have been logged out due to inactivity"
   }
+  // public/locales/en/dashboard.json
+// MERGE INTO: doctor
+{
+  "financialStats": {
+    "overview": {
+      "tbd": "TBD"
+    },
+    "tabs": {
+      "earningsChart": "Earnings Over Time",
+      "byService": "By Service",
+      "payouts": "Payouts",
+      "pending": "Pending",
+      "insights": "Insights"
+    },
+    "chart": {
+      "noDataDesc": "Complete appointments to see earnings history",
+      "earningsLabel": "Earnings ($)"
+    },
+    "services": {
+      "minutes": "min"
+    },
+    "payouts": {
+      "noData": "No payout records available",
+      "statusCompleted": "Completed"
+    },
+    "pending": {
+      "noData": "No pending payments",
+      "paymentMarked": "Payment marked as received"
+    }
+  },
+  "performance": {
+    "tabs": {
+      "advanced": "Advanced KPIs"
+    },
+    "notAvailable": "N/A",
+    "advancedFinancial": {
+      "title": "Advanced Financial Metrics",
+      "description": "Track key financial KPIs and profitability metrics",
+      "configureInputs": "Configure Inputs",
+      "keyInsightsTitle": "Key Insights",
+      "insights": {
+        "cacToLtvHealthy": "CAC to LTV ratio is healthy (≥ 3:1)",
+        "cacToLtvNeedsImprovement": "CAC to LTV ratio needs improvement (< 3:1)",
+        "netProfitStrong": "Net profit margin is strong (>15% is excellent)",
+        "netProfitBelowAvg": "Net profit margin is below average (target: >15%)",
+        "workingCapitalHealthy": "Working capital ratio is healthy (1.5–2.0 is ideal)",
+        "workingCapitalTight": "Working capital ratio is tight (aim for >1.5)",
+        "roasExcellent": "ROAS is excellent (4:1 or higher)",
+        "roasNeedsOptimization": "ROAS needs optimization (target: at least 4:1)"
+      },
+      "metrics": {
+        "roi": {
+          "title": "ROI (Return on Investment)",
+          "description": "Overall investment return"
+        },
+        "roas": {
+          "title": "ROAS (Return on Ad Spend)",
+          "description": "Revenue per ad dollar"
+        },
+        "adRevenueCost": {
+          "title": "Ad Revenue / Cost",
+          "description": "Advertising performance"
+        },
+        "workingCapital": {
+          "title": "Working Capital",
+          "description": "Current assets - liabilities"
+        },
+        "workingCapitalRatio": {
+          "title": "Working Capital Ratio",
+          "description": "Liquidity measure"
+        },
+        "netProfitMargin": {
+          "title": "Net Profit Margin",
+          "description": "Profitability after all expenses"
+        },
+        "grossProfitMargin": {
+          "title": "Gross Profit Margin",
+          "description": "Revenue minus COGS"
+        },
+        "ebitda": {
+          "title": "EBITDA",
+          "description": "Earnings before interest, taxes, depreciation"
+        },
+        "breakEvenUnits": {
+          "title": "Break-Even Point (Units)",
+          "description": "Units needed to break even"
+        },
+        "revenueRunRate": {
+          "title": "Revenue Run Rate",
+          "description": "Annualized revenue projection"
+        },
+        "cac": {
+          "title": "CAC (Customer Acquisition Cost)",
+          "description": "Cost to acquire one customer"
+        },
+        "ltv": {
+          "title": "LTV (Lifetime Value)",
+          "description": "Customer lifetime revenue"
+        },
+        "cacToLtv": {
+          "title": "CAC to LTV Ratio",
+          "description": "Customer value vs acquisition cost"
+        }
+      }
+    }
+  }
+}
 }
