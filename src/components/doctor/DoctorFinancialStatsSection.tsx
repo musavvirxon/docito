@@ -168,7 +168,7 @@ export const DoctorFinancialStatsSection = () => {
           <TabsTrigger value="payouts">{t("doctor.financialStats.tabs.payouts")}</TabsTrigger>
           <TabsTrigger value="pending">{t("doctor.financialStats.tabs.pending")}</TabsTrigger>
           <TabsTrigger value="insights">{t("doctor.financialStats.tabs.insights")}</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced KPIs</TabsTrigger>
+          <TabsTrigger value="advanced">{t("doctor.financialStats.tabs.advancedKPIs", "Advanced KPIs")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chart" className="space-y-6">

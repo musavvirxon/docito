@@ -878,7 +878,8 @@
         "overview": "Overview",
         "services": "Services",
         "reviews": "Reviews",
-        "trends": "Trends"
+        "trends": "Trends",
+        "advanced": "Advanced KPIs"
       },
       "overview": {
         "performanceLevel": "Performance Level",
@@ -1006,7 +1007,8 @@
         "byService": "By Service",
         "payouts": "Payouts",
         "pending": "Pending",
-        "insights": "Insights"
+        "insights": "Insights",
+        "advancedKPIs": "Advanced KPIs"
       },
       "chart": {
         "title": "Earnings Over Time",

@@ -127,10 +127,14 @@ export const useDoctorIntegration = () => {
   const [doctorIdResolved, setDoctorIdResolved] = useState(false);
 
   // Reset resolution state when user changes (re-login / account switch)
+  const prevUserIdRef = useRef<string | undefined>(undefined);
   useEffect(() => {
+    if (prevUserIdRef.current === user?.id) return;
+    prevUserIdRef.current = user?.id;
     didInitialLoad.current = false;
     setResolvedDoctorId(undefined);
     setDoctorIdResolved(false);
+    setDoctorProfile(null);
     setLoading(true);
   }, [user?.id]);
 
@@ -254,12 +258,10 @@ export const useDoctorIntegration = () => {
     if (!doctorProfile) return;
     setDiagnosisLoading(true);
     try {
-      // NOTE: public.procedure_templates does NOT have doctor_id/code/updated_at columns.
-      // Keep UI-compatible mapped shape while querying real columns.
       const { data, error } = await (supabase as any)
         .from("procedure_templates")
         .select("id, name, description, category, duration_minutes, default_price, is_active, created_at")
-        .eq("is_active", true)
+        .eq("doctor_id", doctorProfile.id)
         .order("name", { ascending: true });
       if (error) throw error;
       // Map to expected diagnosis format
@@ -502,6 +504,7 @@ export const useDoctorIntegration = () => {
         description: (diagnosis.description || null) as string | null,
         category: Array.isArray(diagnosis.tags) && diagnosis.tags.length > 0 ? diagnosis.tags[0] : null,
         is_active: diagnosis.is_active ?? true,
+        doctor_id: doctorProfile.id,
         // Optional fields supported by the real schema
         duration_minutes: diagnosis.duration_minutes ?? null,
         default_price: diagnosis.default_price ?? null,
