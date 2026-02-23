@@ -3,7 +3,6 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
-import { dashboardPerformanceResources } from "./resources/dashboardPerformance";
 
 // Static cache buster - changes only on app reload
 const APP_VERSION = Date.now();
@@ -58,9 +57,6 @@ async function initI18n() {
       .use(LanguageDetector)
       .use(initReactI18next)
       .init({
-        // Pre-bundled resources (dashboard: doctor.performance.*)
-        resources: dashboardPerformanceResources,
-
         fallbackLng: "en",
         debug: false,
         supportedLngs: languages.map((l) => l.code),
@@ -87,19 +83,22 @@ async function initI18n() {
           escapeValue: false,
         },
 
-        // Only load essential namespaces initially - others will be loaded on demand
-        ns: ["common", "home"],
+        // Load essentials up-front (prevents raw keys on first render for dashboards)
+        ns: ["common", "home", "dashboard"],
         defaultNS: "common",
 
         partialBundledLanguages: true,
 
-        // Don't preload other namespaces - load them lazily when needed
+        // Don't preload all namespaces - keep lazy loading
         preload: false,
 
+        // IMPORTANT:
+        // We must bind to i18n store events so components re-render after namespaces load.
+        // If this is disabled, you'll see raw keys like "doctor.profileSetup.settingUp".
         react: {
           useSuspense: false,
-          // Don't bind i18n store to trigger re-renders for namespace loading
-          bindI18nStore: "",
+          bindI18n: "languageChanged loaded",
+          bindI18nStore: "added removed",
         },
       });
 
