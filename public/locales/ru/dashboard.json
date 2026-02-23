@@ -1976,4 +1976,82 @@
       }
     }
   }
+  // public/locales/ru/dashboard.json
+// MERGE INTO: doctor.performance
+{
+  "tabs": {
+    "advanced": "Расширенные KPI"
+  },
+  "notAvailable": "Н/Д",
+  "advancedFinancial": {
+    "title": "Расширенные финансовые показатели",
+    "description": "Отслеживайте ключевые финансовые KPI и показатели прибыльности",
+    "configureInputs": "Настроить входные данные",
+    "keyInsightsTitle": "Ключевые выводы",
+    "insights": {
+      "cacToLtvHealthy": "Соотношение CAC к LTV в хорошем диапазоне (≥ 3:1)",
+      "cacToLtvNeedsImprovement": "Соотношение CAC к LTV требует улучшения (< 3:1)",
+      "netProfitStrong": "Маржа чистой прибыли высокая (> 15% — отлично)",
+      "netProfitBelowAvg": "Маржа чистой прибыли ниже среднего (цель: > 15%)",
+      "workingCapitalHealthy": "Коэффициент оборотного капитала в норме (1.5–2.0 — хороший диапазон)",
+      "workingCapitalTight": "Коэффициент оборотного капитала напряженный (желательно > 1.5)",
+      "roasExcellent": "ROAS отличный (4:1 и выше)",
+      "roasNeedsOptimization": "ROAS требует оптимизации (цель: минимум 4:1)"
+    },
+    "metrics": {
+      "roi": {
+        "title": "ROI (возврат на инвестиции)",
+        "description": "Общая доходность инвестиций"
+      },
+      "roas": {
+        "title": "ROAS (возврат на рекламные расходы)",
+        "description": "Выручка на каждый доллар рекламы"
+      },
+      "adRevenueCost": {
+        "title": "Доход / Расходы на рекламу",
+        "description": "Эффективность рекламных расходов"
+      },
+      "workingCapital": {
+        "title": "Оборотный капитал",
+        "description": "Текущие активы минус обязательства"
+      },
+      "workingCapitalRatio": {
+        "title": "Коэффициент оборотного капитала",
+        "description": "Показатель ликвидности"
+      },
+      "netProfitMargin": {
+        "title": "Маржа чистой прибыли",
+        "description": "Прибыльность после всех расходов"
+      },
+      "grossProfitMargin": {
+        "title": "Валовая маржа",
+        "description": "Выручка минус себестоимость"
+      },
+      "ebitda": {
+        "title": "EBITDA",
+        "description": "Прибыль до процентов, налогов и амортизации"
+      },
+      "breakEvenUnits": {
+        "title": "Точка безубыточности (ед.)",
+        "description": "Количество единиц, необходимое для выхода в ноль"
+      },
+      "revenueRunRate": {
+        "title": "Run rate выручки",
+        "description": "Прогноз годовой выручки на основе текущих данных"
+      },
+      "cac": {
+        "title": "CAC (стоимость привлечения клиента)",
+        "description": "Стоимость привлечения одного клиента"
+      },
+      "ltv": {
+        "title": "LTV (пожизненная ценность клиента)",
+        "description": "Пожизненная выручка от клиента"
+      },
+      "cacToLtv": {
+        "title": "Соотношение CAC к LTV",
+        "description": "Ценность клиента относительно стоимости привлечения"
+      }
+    }
+  }
+}
 }
