@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
 
-// Static cache buster - changes only on app reload
+// Cache buster (changes only on app reload)
 const APP_VERSION = Date.now();
 
 export interface LanguageConfig {
@@ -44,7 +44,6 @@ const safeJsonParse = (data: string) => {
   try {
     return JSON.parse(data);
   } catch (err) {
-    // Prevent runtime crashes on invalid locale JSON
     console.error("[i18n] Failed to parse locale JSON:", err);
     return {};
   }
@@ -59,6 +58,7 @@ async function initI18n() {
       .init({
         fallbackLng: "en",
         debug: false,
+
         supportedLngs: languages.map((l) => l.code),
         nonExplicitSupportedLngs: true,
         load: "languageOnly",
@@ -70,8 +70,9 @@ async function initI18n() {
           lookupLocalStorage: "i18nextLng",
         },
 
+        // IMPORTANT: translations are stored in public/locales/{lng}/{ns}.json
         backend: {
-          loadPath: `/locales/{{lng}}/{{ns}}.json?v=${APP_VERSION}`,
+          loadPath: `${import.meta.env.BASE_URL}locales/{{lng}}/{{ns}}.json?v=${APP_VERSION}`,
           parse: safeJsonParse,
           requestOptions: {
             cache: "default",
@@ -83,18 +84,16 @@ async function initI18n() {
           escapeValue: false,
         },
 
-        // Load essentials up-front (prevents raw keys on first render for dashboards)
-        ns: ["common", "home", "dashboard"],
+        // Load the most-used namespaces upfront (prevents showing raw keys on dashboards)
+        ns: ["common", "home", "dashboard", "auth"],
         defaultNS: "common",
 
         partialBundledLanguages: true,
-
-        // Don't preload all namespaces - keep lazy loading
         preload: false,
 
-        // IMPORTANT:
-        // We must bind to i18n store events so components re-render after namespaces load.
-        // If this is disabled, you'll see raw keys like "doctor.profileSetup.settingUp".
+        // CRITICAL FIX:
+        // Enable store bindings so components re-render after namespaces load.
+        // Without this, you will see raw keys like "doctor.profileSetup.settingUp" forever.
         react: {
           useSuspense: false,
           bindI18n: "languageChanged loaded",
