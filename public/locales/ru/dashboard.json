@@ -1976,8 +1976,6 @@
       }
     }
   }
-  // public/locales/ru/dashboard.json
-// MERGE INTO: doctor.performance
 {
   "tabs": {
     "advanced": "Расширенные KPI"
