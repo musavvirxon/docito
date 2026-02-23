@@ -34,8 +34,25 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Use prop or denormalized doctor_id from profile
-  const doctorId = doctorIdProp || (profile as any)?.doctor_id || null;
+  // Use prop or denormalized doctor_id from profile, with fallback resolution
+  const [resolvedId, setResolvedId] = useState<string | null>(null);
+  const doctorId = doctorIdProp || (profile as any)?.doctor_id || resolvedId || null;
+
+  // Fallback: resolve doctor_id from doctors table if not available from profile
+  useEffect(() => {
+    if (doctorIdProp || (profile as any)?.doctor_id || resolvedId) return;
+    if (!user?.id) return;
+    let cancelled = false;
+    supabase
+      .from('doctors')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data?.id) setResolvedId(data.id);
+      });
+    return () => { cancelled = true; };
+  }, [user?.id, doctorIdProp, profile, resolvedId]);
 
   // State
   const [selectedDate, setSelectedDate] = useState(new Date());

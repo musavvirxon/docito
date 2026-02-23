@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 const DoctorSettingsSection = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation("dashboard");
   const {
     loading,
     saving,
@@ -259,10 +259,10 @@ const DoctorSettingsSection = () => {
               </div>
 
               <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{t("doctor.settings.privacy.marketingComms")}</div>
-                  <div className="text-sm text-muted-foreground">{t("doctor.settings.privacy.marketingCommsDesc")}</div>
-                </div>
+                 <div>
+                   <div className="font-medium">{t("doctor.settings.privacy.marketingCommunications")}</div>
+                   <div className="text-sm text-muted-foreground">{t("doctor.settings.privacy.marketingCommunicationsDesc")}</div>
+                 </div>
                 <Switch
                   checked={localPrivacySettings.marketingCommunications}
                   onCheckedChange={(checked) => {
@@ -275,7 +275,7 @@ const DoctorSettingsSection = () => {
 
               <Button onClick={handleSavePrivacySettings} disabled={saving || !hasPrivacyChanges}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {t("doctor.settings.privacy.savePrivacySettings")}
+                {t("doctor.settings.privacy.saveSettings", "Save Privacy Settings")}
               </Button>
             </CardContent>
           </Card>
@@ -432,7 +432,7 @@ const DoctorSettingsSection = () => {
 
               <Button onClick={handleSaveNotifications} disabled={saving || !hasNotificationChanges}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {t("doctor.settings.notificationPreferences.saveNotificationSettings")}
+                {t("doctor.settings.notificationPreferences.save", "Save Notification Preferences")}
               </Button>
             </CardContent>
           </Card>
@@ -443,9 +443,9 @@ const DoctorSettingsSection = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                {t("doctor.settings.calendar.title")}
+                {t("doctor.settings.calendarIntegration.title", "Calendar Integration")}
               </CardTitle>
-              <p className="text-muted-foreground">{t("doctor.settings.calendar.description")}</p>
+              <p className="text-muted-foreground">{t("doctor.settings.calendarIntegration.description", "Sync your appointments with external calendars")}</p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -454,14 +454,14 @@ const DoctorSettingsSection = () => {
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                       <RefreshCw className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div>
-                      <div className="font-medium">{t("doctor.settings.calendar.google")}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {calendarSync.googleCalendar
-                          ? t("doctor.settings.calendar.connected")
-                          : t("doctor.settings.calendar.notConnected")}
-                      </div>
-                    </div>
+                     <div>
+                       <div className="font-medium">{t("doctor.settings.calendarIntegration.googleCalendar", "Google Calendar")}</div>
+                       <div className="text-sm text-muted-foreground">
+                         {calendarSync.googleCalendar
+                           ? t("doctor.settings.calendarIntegration.connected", "Connected")
+                           : t("doctor.settings.calendarIntegration.notConnected", "Not connected")}
+                       </div>
+                     </div>
                   </div>
                   <Switch
                     checked={calendarSync.googleCalendar}
@@ -475,14 +475,14 @@ const DoctorSettingsSection = () => {
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                       <RefreshCw className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div>
-                      <div className="font-medium">{t("doctor.settings.calendar.outlook")}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {calendarSync.outlookCalendar
-                          ? t("doctor.settings.calendar.connected")
-                          : t("doctor.settings.calendar.notConnected")}
-                      </div>
-                    </div>
+                     <div>
+                       <div className="font-medium">{t("doctor.settings.calendarIntegration.outlookCalendar", "Outlook Calendar")}</div>
+                       <div className="text-sm text-muted-foreground">
+                         {calendarSync.outlookCalendar
+                           ? t("doctor.settings.calendarIntegration.connected", "Connected")
+                           : t("doctor.settings.calendarIntegration.notConnected", "Not connected")}
+                       </div>
+                     </div>
                   </div>
                   <Switch
                     checked={calendarSync.outlookCalendar}
@@ -495,14 +495,14 @@ const DoctorSettingsSection = () => {
                     <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                       <RefreshCw className="w-5 h-5 text-gray-600" />
                     </div>
-                    <div>
-                      <div className="font-medium">{t("doctor.settings.calendar.apple")}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {calendarSync.appleCalendar
-                          ? t("doctor.settings.calendar.connected")
-                          : t("doctor.settings.calendar.notConnected")}
-                      </div>
-                    </div>
+                     <div>
+                       <div className="font-medium">{t("doctor.settings.calendarIntegration.appleCalendar", "Apple Calendar")}</div>
+                       <div className="text-sm text-muted-foreground">
+                         {calendarSync.appleCalendar
+                           ? t("doctor.settings.calendarIntegration.connected", "Connected")
+                           : t("doctor.settings.calendarIntegration.notConnected", "Not connected")}
+                       </div>
+                     </div>
                   </div>
                   <Switch
                     checked={calendarSync.appleCalendar}
@@ -512,11 +512,11 @@ const DoctorSettingsSection = () => {
               </div>
 
               <div className="p-4 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">{t("doctor.settings.calendar.syncSettings")}</h4>
+                <h4 className="font-medium mb-2">{t("doctor.settings.calendarIntegration.syncSettings.title", "Sync Settings")}</h4>
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>• {t("doctor.settings.calendar.syncAppointments")}</p>
-                  <p>• {t("doctor.settings.calendar.syncBlockedTime")}</p>
-                  <p>• {t("doctor.settings.calendar.twoWaySync")}</p>
+                  <p>• {t("doctor.settings.calendarIntegration.syncSettings.realTime", "Appointments will be synced in real-time")}</p>
+                  <p>• {t("doctor.settings.calendarIntegration.syncSettings.noImport", "External calendar events won't be imported")}</p>
+                  <p>• {t("doctor.settings.calendarIntegration.syncSettings.disconnect", "You can disconnect at any time")}</p>
                 </div>
               </div>
             </CardContent>

@@ -5123,6 +5123,7 @@ export type Database = {
           created_at: string | null
           default_price: number | null
           description: string | null
+          doctor_id: string | null
           duration_minutes: number | null
           id: string
           is_active: boolean | null
@@ -5133,6 +5134,7 @@ export type Database = {
           created_at?: string | null
           default_price?: number | null
           description?: string | null
+          doctor_id?: string | null
           duration_minutes?: number | null
           id?: string
           is_active?: boolean | null
@@ -5143,12 +5145,28 @@ export type Database = {
           created_at?: string | null
           default_price?: number | null
           description?: string | null
+          doctor_id?: string | null
           duration_minutes?: number | null
           id?: string
           is_active?: boolean | null
           name?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "procedure_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procedure_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       procedures: {
         Row: {
