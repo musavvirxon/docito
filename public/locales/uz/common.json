@@ -97,5 +97,30 @@
       "saved": "Cookie parametrlari saqlandi",
       "error": "Parametrlarni saqlashda xatolik"
     }
+  },
+  "nav": {
+    "doctors": "Shifokorlar"
+  },
+  "language": {
+    "select": "Tilni tanlang"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "Shifokorlar",
+      "clinics": "Klinikalar",
+      "labs": "Laboratoriyalar",
+      "pharmacies": "Dorixonalar",
+      "imaging": "Tasvirlash",
+      "hospitals": "Kasalxonalar",
+      "pricing": "Narxlar"
+    },
+    "actions": {
+      "signIn": "Kirish",
+      "register": "Ro'yxatdan o'tish"
+    },
+    "a11y": {
+      "closeMenu": "Menyuni yopish",
+      "openMenu": "Menyuni ochish"
+    }
   }
 }

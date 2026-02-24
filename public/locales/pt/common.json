@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "Selecionar idioma"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "Médicos",
+      "clinics": "Clínicas",
+      "labs": "Laboratórios",
+      "pharmacies": "Farmácias",
+      "imaging": "Imagem",
+      "hospitals": "Hospitais",
+      "pricing": "Preços"
+    },
+    "actions": {
+      "signIn": "Entrar",
+      "register": "Registrar"
+    },
+    "a11y": {
+      "closeMenu": "Fechar menu",
+      "openMenu": "Abrir menu"
+    }
   }
 }

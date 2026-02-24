@@ -176,7 +176,7 @@ export default function LabDashboardPage() {
     [navigate],
   );
 
-  const isLoading = authLoading || loadingCenter;
+  const isLoading = authLoading || loadingCenter || !user;
 
   if (isLoading) {
     return (

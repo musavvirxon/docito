@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, Component, type ReactNode } from "react";
 import { PublicChromeProvider } from "@/contexts/PublicChromeContext";
 
 // Lazy load nav and footer to reduce initial JS execution time
@@ -44,6 +44,32 @@ const DASHBOARD_PREFIXES = [
   "/imaging/register",
 ];
 
+// Inline error boundary for public page content
+class OutletErrorBoundary extends Component<{ children: ReactNode; resetKey: string }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidUpdate(prevProps: { resetKey: string }) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <p className="text-lg font-medium text-foreground">Something went wrong</p>
+            <button onClick={() => this.setState({ hasError: false })} className="text-primary underline text-sm">
+              Try again
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function PublicLayout() {
   const location = useLocation();
   const path = location.pathname || "/";
@@ -76,7 +102,9 @@ export default function PublicLayout() {
           <PremiumTopNav />
         </Suspense>
         <main className="flex-1 [&_footer]:hidden">
-          <Outlet />
+          <OutletErrorBoundary resetKey={location.pathname + location.search}>
+            <Outlet />
+          </OutletErrorBoundary>
         </main>
         <Suspense fallback={null}>
           <PremiumFooter />

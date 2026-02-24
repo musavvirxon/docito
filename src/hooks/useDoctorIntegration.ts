@@ -145,8 +145,9 @@ export const useDoctorIntegration = () => {
       setDoctorIdResolved(true);
       return;
     }
-    if (!user?.id) return;
-    if (activeRole !== "doctor") return;
+    // Don't attempt resolution until profile has loaded (profile is null during bootstrap)
+    if (!user?.id || !profile) return;
+    if (activeRole !== "doctor" && profile?.role !== "doctor") return;
 
     let cancelled = false;
     supabase

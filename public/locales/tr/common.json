@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "Dil seçin"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "Doktorlar",
+      "clinics": "Klinikler",
+      "labs": "Laboratuvarlar",
+      "pharmacies": "Eczaneler",
+      "imaging": "Görüntüleme",
+      "hospitals": "Hastaneler",
+      "pricing": "Fiyatlandırma"
+    },
+    "actions": {
+      "signIn": "Giriş Yap",
+      "register": "Kayıt Ol"
+    },
+    "a11y": {
+      "closeMenu": "Menüyü kapat",
+      "openMenu": "Menüyü aç"
+    }
   }
 }

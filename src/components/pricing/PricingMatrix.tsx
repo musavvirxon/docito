@@ -306,15 +306,39 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                       </div>
 
                       <div className="mt-6">
-                        <Button
-                          asChild
-                          className={cn(
-                            "w-full rounded-2xl",
-                            isPopular ? "" : "bg-foreground text-background hover:bg-foreground/90",
-                          )}
-                        >
-                          <Link to="/auth">{t(`plans.${p.key}.cta`)}</Link>
-                        </Button>
+                        {(() => {
+                          const checkoutUrl = activeRole === "patient" && p.key === "plus" && period === "monthly"
+                            ? "https://artsydevelopers.lemonsqueezy.com/checkout/buy/4b62b538-2154-48e9-b97e-d5e9aefd13c5"
+                            : null;
+
+                          if (checkoutUrl) {
+                            return (
+                              <Button
+                                asChild
+                                className={cn(
+                                  "w-full rounded-2xl",
+                                  isPopular ? "" : "bg-foreground text-background hover:bg-foreground/90",
+                                )}
+                              >
+                                <a href={checkoutUrl} target="_blank" rel="noopener noreferrer">
+                                  {t(`plans.${p.key}.cta`)}
+                                </a>
+                              </Button>
+                            );
+                          }
+
+                          return (
+                            <Button
+                              asChild
+                              className={cn(
+                                "w-full rounded-2xl",
+                                isPopular ? "" : "bg-foreground text-background hover:bg-foreground/90",
+                              )}
+                            >
+                              <Link to="/auth">{t(`plans.${p.key}.cta`)}</Link>
+                            </Button>
+                          );
+                        })()}
 
                         <div className="mt-3 text-xs text-muted-foreground flex items-center justify-between">
                           <span className="capitalize">{t(`roles.${activeRole}.key`)}</span>

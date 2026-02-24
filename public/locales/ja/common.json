@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "言語を選択"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "医師",
+      "clinics": "クリニック",
+      "labs": "検査室",
+      "pharmacies": "薬局",
+      "imaging": "画像診断",
+      "hospitals": "病院",
+      "pricing": "料金"
+    },
+    "actions": {
+      "signIn": "ログイン",
+      "register": "登録"
+    },
+    "a11y": {
+      "closeMenu": "メニューを閉じる",
+      "openMenu": "メニューを開く"
+    }
   }
 }
