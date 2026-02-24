@@ -1,378 +1,169 @@
 {
-  "createClinic": {
-    "title": "إعداد عيادتك",
-    "description": "أكمل ملف تعريف عيادتك لبدء إدارة الأطباء والمواعيد.",
-    "clinicName": "اسم العيادة",
-    "clinicNameRequired": "اسم العيادة مطلوب",
-    "description_field": "الوصف",
-    "phone": "الهاتف",
-    "email": "البريد الإلكتروني",
-    "address": "العنوان",
-    "city": "المدينة",
-    "country": "البلد",
-    "cancel": "إلغاء",
-    "create": "إنشاء ملف تعريف العيادة",
-    "creating": "جاري الإنشاء...",
-    "success": "تم إنشاء ملف تعريف العيادة بنجاح!",
-    "error": "فشل في إنشاء ملف تعريف العيادة"
-  },
-  "admin": {
-    "title": "لوحة العيادة",
-    "unverifiedPractice": "عيادة غير موثقة",
-    "loading": "جاري تحميل اللوحة...",
-    "error": {
-      "failed": "فشل تحميل اللوحة",
-      "tryAgain": "حاول مرة أخرى"
-    },
-    "welcome": {
-      "title": "مرحباً بك في لوحة المسؤول!",
-      "description": "دعنا نقوم بإعداد معلومات عيادتك حتى تتمكن من البدء في إدارة الأطباء والمواعيد.",
-      "needProvide": "ستحتاج إلى تقديم:",
-      "requirements": {
-        "clinicName": "اسم العيادة والوصف",
-        "location": "الموقع ومعلومات الاتصال",
-        "operating": "تفاصيل التشغيل"
-      },
-      "createProfile": "إنشاء ملف العيادة"
-    },
-    "header": {
-      "previewProfile": "معاينة الملف العام",
-      "profile": "الملف الشخصي",
-      "profileSettings": "إعدادات الملف الشخصي",
-      "practiceSettings": "إعدادات العيادة",
-      "logout": "تسجيل الخروج"
-    },
-    "verification": {
-      "status": "حالة التوثيق:",
-      "verified": "عيادتك موثقة ومباشرة! يمكن للمرضى الآن العثور عليك والحجز معك.",
-      "rejected": "فشل التوثيق. يرجى مراجعة المتطلبات وإعادة إرسال المستندات.",
-      "underReview": "توثيقك قيد المراجعة. سنخطرك بمجرد اكتمال المراجعة (2-3 أيام عمل).",
-      "pending": "للظهور علناً في نتائج البحث، يجب إكمال توثيق العيادة.",
-      "verifyPractice": "توثيق العيادة",
-      "resubmit": "إعادة إرسال التوثيق",
-      "viewRequirements": "عرض المتطلبات",
-      "statuses": {
-        "verified": "موثق",
-        "rejected": "مرفوض",
-        "under_review": "قيد المراجعة",
-        "pending": "معلق"
-      }
-    },
-    "metrics": {
-      "totalBookings": "إجمالي الحجوزات",
-      "totalPatients": "إجمالي المرضى",
-      "revenueThisMonth": "الإيرادات هذا الشهر",
-      "clinicRating": "تقييم العيادة",
-      "pendingInvites": "الدعوات المعلقة",
-      "locations": "المواقع"
-    },
-    "tabs": {
-      "overview": "نظرة عامة",
-      "providers": "الأطباء",
-      "services": "الخدمات",
-      "staff": "الموظفون",
-      "locations": "المواقع",
-      "patients": "المرضى",
-      "billing": "الفواتير",
-      "analytics": "التحليلات"
-    },
-    "overview": {
-      "recentAppointments": "المواعيد الأخيرة",
-      "recentMessages": "الرسائل الأخيرة",
-      "noAppointments": "لا توجد مواعيد مجدولة",
-      "noMessages": "لا توجد رسائل حديثة"
-    },
-    "providers": {
-      "title": "إدارة الأطباء",
-      "inviteProvider": "دعوة طبيب",
-      "noProviders": "لا يوجد أطباء بعد",
-      "noProvidersDesc": "قم بدعوة الأطباء للانضمام إلى عيادتك للبدء",
-      "inviteFirst": "دعوة أول طبيب",
-      "reviews": "التقييمات",
-      "rating": "التقييم",
-      "verified": "موثق",
-      "pending": "معلق",
-      "edit": "تعديل"
-    },
-    "locations": {
-      "title": "مواقع العيادة",
-      "addLocation": "إضافة موقع جديد",
-      "noLocations": "لا توجد مواقع بعد",
-      "noLocationsDesc": "أضف مواقع عيادتك لمساعدة المرضى في العثور عليك",
-      "addFirst": "إضافة أول موقع",
-      "primary": "رئيسي",
-      "photos": "الصور",
-      "edit": "تعديل"
-    },
-    "services": {
-      "title": "الخدمات والعلاجات",
-      "addService": "إضافة خدمة جديدة",
-      "noServices": "لا توجد خدمات بعد",
-      "noServicesDesc": "أضف الخدمات والعلاجات المقدمة في عيادتك",
-      "addFirst": "إضافة أول خدمة",
-      "availableWith": "متاح مع:",
-      "price": "السعر",
-      "duration": "المدة",
-      "edit": "تعديل"
-    },
-    "staff": {
-      "title": "إدارة الموظفين",
-      "inviteStaff": "دعوة موظف",
-      "noStaff": "لا يوجد موظفون بعد",
-      "noStaffDesc": "أضف موظفين للمساعدة في إدارة عيادتك",
-      "inviteFirst": "دعوة أول موظف",
-      "activeStaff": "الموظفون النشطون",
-      "edit": "تعديل"
-    },
-    "patients": {
-      "title": "إدارة المرضى",
-      "searchPlaceholder": "البحث عن مرضى...",
-      "export": "تصدير",
-      "noPatients": "لا يوجد مرضى بعد",
-      "tableHeaders": {
-        "name": "اسم المريض",
-        "lastVisit": "آخر زيارة",
-        "provider": "الطبيب",
-        "status": "الحالة"
-      }
-    },
-    "billing": {
-      "title": "الفواتير والمدفوعات",
-      "generateReport": "إنشاء تقرير",
-      "paymentSummary": "ملخص الدفعات",
-      "totalRevenue": "إجمالي الإيرادات (هذا الشهر)",
-      "pendingPayments": "الدفعات المعلقة",
-      "completedPayments": "الدفعات المكتملة",
-      "recentTransactions": "المعاملات الأخيرة",
-      "noTransactions": "لا توجد معاملات بعد"
-    },
-    "analytics": {
-      "title": "تحليلات العيادة",
-      "last30Days": "آخر 30 يوماً",
-      "exportReport": "تصدير التقرير",
-      "bookingTrends": "اتجاهات الحجز",
-      "chartPlaceholder": "سيتم عرض الرسم البياني هنا",
-      "performanceMetrics": "مقاييس الأداء",
-      "averageRating": "متوسط التقييم",
-      "patientSatisfaction": "رضا المرضى",
-      "appointmentCompletion": "معدل إتمام المواعيد",
-      "responseTime": "متوسط وقت الاستجابة"
-    }
-  },
-  "patient": {
-    "title": "لوحة المريض",
-    "loading": "جاري تحميل لوحة التحكم...",
+  "doctor": {
+    "title": "لوحة الطبيب",
+    "loading": "جارٍ تحميل لوحتك...",
+    "settingUp": "جارٍ إعداد ملفك الطبي...",
+
     "navigation": {
       "dashboard": "لوحة التحكم",
-      "myAppointments": "مواعيدي",
-      "medications": "الأدوية",
-      "medicalRecords": "السجلات الطبية",
-      "findDoctors": "البحث عن أطباء",
+      "myProfile": "ملفي الشخصي",
+      "myServices": "خدماتي",
+      "assignedServices": "الخدمات المعيّنة",
+      "scheduleSettings": "إعدادات الجدول",
+      "procedureLibrary": "مكتبة الإجراءات",
+      "treatmentPlanning": "تخطيط العلاج",
+      "myPatients": "مرضاي",
+      "calendar": "التقويم",
+      "messages": "الرسائل",
+      "performance": "الأداء",
+      "financialStats": "الإحصائيات المالية",
+      "clinicFinder": "البحث عن العيادات",
       "settings": "الإعدادات",
       "logout": "تسجيل الخروج"
     },
-    "stats": {
-      "upcomingAppointments": "المواعيد القادمة",
-      "medicalRecords": "السجلات الطبية",
-      "pendingReminders": "التذكيرات المعلقة",
-      "nextAppointment": "الموعد التالي",
-      "none": "لا يوجد"
+
+    "clinic": {
+      "verified": "تم التحقق",
+      "requestToLeave": "طلب مغادرة"
     },
+
+    "verification": {
+      "pending": "قيد التحقق",
+      "message": "ملفك الشخصي قيد المراجعة. أكمل ملفك لتسريع التحقق.",
+      "completeProfile": "أكمل الملف الشخصي",
+      "viewProfile": "عرض الملف الشخصي"
+    },
+
+    "profileCompletion": {
+      "title": "إكمال الملف الشخصي",
+      "message": "أكمل ملفك الشخصي لجذب المزيد من المرضى"
+    },
+
+    "stats": {
+      "totalAppointments": "إجمالي المواعيد",
+      "allTimeBookings": "إجمالي الحجوزات",
+      "totalPatients": "إجمالي المرضى",
+      "uniquePatients": "المرضى الفريدون الذين تمت خدمتهم",
+      "averageRating": "متوسط التقييم",
+      "basedOnReviews": "استنادًا إلى {{count}} مراجعة",
+      "revenue": "الإيرادات",
+      "totalEarnings": "إجمالي الأرباح"
+    },
+
+    "appointmentStatus": {
+      "confirmed": "مؤكد",
+      "pending": "قيد الانتظار",
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "canceled": "ملغي",
+      "rescheduled": "أُعيدت جدولته"
+    },
+
+    "upcomingAppointments": {
+      "title": "المواعيد القادمة",
+      "noAppointments": "لا توجد مواعيد قادمة",
+      "scheduleIsClear": "جدولك فارغ حاليًا"
+    },
+
+    "recentActivity": {
+      "title": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث",
+      "startBuildingHistory": "ابدأ ببناء سجل النشاط"
+    },
+
     "quickActions": {
       "title": "إجراءات سريعة",
-      "findDoctors": "البحث عن أطباء",
-      "bookAppointment": "حجز موعد",
-      "viewAppointments": "عرض المواعيد"
+      "setAvailability": "تعيين التوفر",
+      "manageProcedures": "إدارة الإجراءات",
+      "addService": "إضافة خدمة",
+      "blockTime": "حظر وقت",
+      "updateSettings": "تحديث الإعدادات"
     },
-    "nextAppointment": {
-      "title": "الموعد التالي",
-      "location": "تفاصيل الموقع"
+
+    "todaysSchedule": {
+      "title": "جدول اليوم",
+      "patients": "مرضى",
+      "viewFull": "عرض الجدول الكامل",
+      "noAppointments": "لا توجد مواعيد اليوم",
+      "freeDay": "يومك خالٍ اليوم!"
     },
-    "appointments": {
-      "title": "مواعيدي",
-      "noAppointments": "لا توجد مواعيد مجدولة",
-      "bookFirst": "احجز موعدك الأول",
-      "doctor": "الطبيب"
-    },
-    "records": {
-      "title": "السجلات الطبية",
-      "noRecords": "لا توجد سجلات طبية بعد"
-    },
-    "medications": {
-      "title": "تذكيرات الأدوية",
-      "todaysReminders": "تذكيرات اليوم",
-      "upcomingReminders": "التذكيرات القادمة",
-      "allReminders": "جميع التذكيرات",
-      "pending": "معلق",
-      "taken": "تم تناوله",
-      "missed": "فائت",
-      "skipped": "متخطى",
-      "overdue": "متأخر",
-      "markTaken": "وضع علامة كمأخوذ",
-      "markSkipped": "تخطي",
-      "snooze": "تأجيل",
-      "completionRate": "معدل الإنجاز اليوم",
-      "noReminders": "لا توجد تذكيرات للأدوية",
-      "addFirst": "أضف تذكير الدواء الأول"
-    },
-    "findDoctors": {
-      "title": "البحث عن طبيب",
-      "subtitle": "البحث وحجز المواعيد مع متخصصي الرعاية الصحية المؤهلين",
-      "searchPlaceholder": "البحث بالاسم أو التخصص",
-      "filters": "الفلاتر",
-      "resetFilters": "إعادة تعيين الفلاتر",
-      "specialty": "التخصص",
-      "allSpecialties": "جميع التخصصات",
-      "country": "البلد",
-      "allCountries": "جميع البلدان",
-      "region": "المنطقة",
-      "allRegions": "جميع المناطق",
-      "minimumRating": "الحد الأدنى للتقييم",
-      "sortBy": "ترتيب حسب",
-      "relevance": "الأهمية",
-      "rating": "التقييم",
-      "experience": "الخبرة",
-      "price": "السعر",
-      "results": "{{count}} طبيب تم العثور عليهم",
-      "bookNow": "احجز الآن",
+
+    "dashboardContent": {
+      "welcomeBack": "مرحبًا بعودتك",
+      "specialtyNotProvided": "لم يتم تحديد التخصص",
+      "completeProfileBanner": "أكمل ملفك الشخصي ({{completion}}%)",
+      "completeProfileMessage": "الملف الشخصي الكامل يساعد المرضى على العثور عليك بسهولة أكبر والثقة بك",
+
+      "clinicProfile": "ملف العيادة",
+      "requestToLeave": "طلب مغادرة",
+      "verificationPending": "التحقق قيد الانتظار",
+      "verificationMessage": "لكي تصبح عامًا وتظهر في نتائج البحث، يجب إكمال التحقق الخاص بك.",
+      "completeProfile": "أكمل الملف الشخصي",
       "viewProfile": "عرض الملف الشخصي",
-      "consultationFee": "رسوم الاستشارة",
-      "reviews": "مراجعات",
-      "noResults": "لم يتم العثور على أطباء",
-      "adjustFilters": "حاول تعديل الفلاتر"
+      "profileCompletion": "إكمال الملف الشخصي",
+      "profileMessage": "أكمل ملفك الشخصي للحصول على المزيد من الحجوزات",
+      "totalAppointments": "إجمالي المواعيد",
+      "allTimeBookings": "إجمالي الحجوزات",
+      "totalPatients": "إجمالي المرضى",
+      "uniquePatients": "المرضى الفريدون الذين تمت خدمتهم",
+      "averageRating": "متوسط التقييم",
+      "basedOnReviews": "استنادًا إلى {{count}} مراجعة",
+      "revenue": "الإيرادات",
+      "totalEarnings": "إجمالي الأرباح",
+      "upcomingAppointments": "المواعيد القادمة",
+      "noUpcomingAppointments": "لا توجد مواعيد قادمة",
+      "scheduleIsClear": "جدولك فارغ",
+      "recentActivity": "النشاط الأخير",
+      "noRecentActivity": "لا يوجد نشاط حديث",
+      "startBuildingHistory": "ابدأ ببناء سجل النشاط",
+      "quickActions": "إجراءات سريعة",
+      "viewTodaysSchedule": "عرض جدول اليوم",
+      "manageSchedule": "إدارة الجدول",
+      "quickAddService": "إضافة خدمة بسرعة",
+      "findClinics": "ابحث عن عيادات",
+      "blockTime": "حظر وقت"
     },
-    "settings": {
-      "title": "الإعدادات",
-      "subtitle": "إدارة تفضيلات الحساب والإعدادات",
-      "account": "الحساب",
-      "notifications": "الإشعارات",
-      "privacy": "الخصوصية",
-      "security": "الأمان",
-      "save": "حفظ التغييرات",
-      "changePassword": "تغيير كلمة المرور",
-      "currentPassword": "كلمة المرور الحالية",
-      "newPassword": "كلمة المرور الجديدة",
-      "confirmPassword": "تأكيد كلمة المرور",
-      "emailNotifications": "إشعارات البريد الإلكتروني",
-      "smsNotifications": "إشعارات الرسائل القصيرة",
-      "appointmentReminders": "تذكيرات المواعيد",
-      "medicationReminders": "تذكيرات الأدوية",
-      "marketingEmails": "رسائل التسويق",
-      "profileVisibility": "رؤية الملف الشخصي",
-      "shareDataWithDoctors": "مشاركة البيانات مع الأطباء",
-      "showActivityStatus": "إظهار حالة النشاط",
-      "instructions": "التعليمات"
+
+    "profileSetup": {
+      "required": "إعداد الملف الشخصي مطلوب",
+      "message": "يرجى إكمال إعداد ملف الطبيب للوصول إلى لوحة التحكم.",
+      "tryAgain": "حاول مرة أخرى",
+      "completeSetup": "إكمال إعداد الملف الشخصي",
+      "goHome": "الذهاب إلى الصفحة الرئيسية",
+      "retryLoading": "إعادة محاولة التحميل",
+      "settingUp": "جارٍ إعداد الملف الشخصي",
+      "unableToLoad": "تعذر تحميل ملف الطبيب الخاص بك. ربما ما زال ملفك قيد الإعداد أو حدثت مشكلة مؤقتة."
     },
-    "settings": {
-      "title": "الإعدادات",
-      "description": "إدارة إعدادات حسابك",
-      "tabs": {
-        "general": "عام",
-        "notifications": "الإشعارات",
-        "calendar": "التقويم",
-        "security": "الأمان"
-      },
-      "account": {
-        "title": "معلومات الحساب",
-        "description": "تحديث معلوماتك الشخصية",
-        "email": "البريد الإلكتروني",
-        "phone": "رقم الهاتف",
-        "timezone": "المنطقة الزمنية",
-        "language": "اللغة",
-        "saveChanges": "حفظ التغييرات"
-      },
-      "privacy": {
-        "title": "إعدادات الخصوصية",
-        "description": "إدارة إعدادات الخصوصية ومشاركة البيانات",
-        "profileVisibility": "ظهور الملف الشخصي",
-        "profileVisibilityDesc": "اجعل ملفك الشخصي مرئيًا للمرضى",
-        "shareAnalytics": "مشاركة بيانات التحليلات",
-        "shareAnalyticsDesc": "مشاركة البيانات لتحسين الخدمة",
-        "marketingComms": "الاتصالات التسويقية",
-        "marketingCommsDesc": "تلقي التحديثات والعروض",
-        "savePrivacySettings": "حفظ الإعدادات"
-      },
-      "notificationPreferences": {
-        "title": "إعدادات الإشعارات",
-        "description": "اختر كيفية تلقي الإشعارات",
-        "email": {
-          "title": "إشعارات البريد الإلكتروني",
-          "bookings": "تأكيدات الحجز",
-          "bookingsDesc": "احصل على إشعار بالحجوزات الجديدة",
-          "reminders": "تذكيرات المواعيد",
-          "remindersDesc": "تذكيرات بالمواعيد القادمة",
-          "cancellations": "إشعارات الإلغاء",
-          "cancellationsDesc": "احصل على إشعار بالمواعيد الملغاة"
-        },
-        "sms": {
-          "title": "إشعارات الرسائل النصية",
-          "bookings": "تأكيدات الحجز",
-          "bookingsDesc": "احصل على رسائل نصية للحجوزات الجديدة",
-          "reminders": "تذكيرات المواعيد",
-          "remindersDesc": "رسائل نصية للمواعيد القادمة",
-          "cancellations": "إشعارات الإلغاء",
-          "cancellationsDesc": "احصل على رسائل نصية للمواعيد الملغاة"
-        },
-        "push": {
-          "title": "الإشعارات الفورية",
-          "browserNotifications": "تمكين إشعارات المتصفح"
-        },
-        "saveNotificationSettings": "حفظ الإعدادات"
-      },
-      "calendar": {
-        "title": "تكامل التقويم",
-        "description": "مزامنة مع تطبيقات التقويم الخاصة بك",
-        "google": "تقويم Google",
-        "outlook": "تقويم Outlook",
-        "apple": "تقويم Apple",
-        "connected": "متصل",
-        "notConnected": "غير متصل",
-        "connect": "اتصال",
-        "disconnect": "قطع الاتصال",
-        "syncSettings": "إعدادات المزامنة",
-        "syncAppointments": "مزامنة المواعيد تلقائيًا",
-        "syncBlockedTime": "مزامنة الوقت المحجوب",
-        "twoWaySync": "تمكين المزامنة الثنائية"
-      },
-      "timezones": {
-        "eastern": "التوقيت الشرقي (ET)",
-        "central": "التوقيت المركزي (CT)",
-        "mountain": "التوقيت الجبلي (MT)",
-        "pacific": "توقيت المحيط الهادئ (PT)"
-      },
-      "languages": {
-        "en": "English",
-        "es": "Español",
-        "fr": "Français"
-      },
-      "toast": {
-        "accountSuccess": "تم حفظ إعدادات الحساب",
-        "accountError": "فشل في حفظ إعدادات الحساب",
-        "notificationsSuccess": "تم حفظ إعدادات الإشعارات",
-        "notificationsError": "فشل في حفظ إعدادات الإشعارات",
-        "privacySuccess": "تم حفظ إعدادات الخصوصية",
-        "privacyError": "فشل في حفظ إعدادات الخصوصية"
-      }
-    }
-  },
-  "doctor": {
-    "loading": "جارٍ تحميل لوحة التحكم الخاصة بك...",
-    "settingUp": "جارٍ إعداد ملفك الشخصي...",
+
     "calendar": {
+      "title": "تقويمي",
       "today": "اليوم",
+      "clinicCalendar": "تقويم العيادة",
+      "myCalendar": "تقويمي",
+      "description": "إدارة التوفر والمواعيد",
+      "clinicDescription": "عرض الجدول المتزامن مع حجوزات العيادة",
+      "clinicCalendarDesc": "عرض وإدارة مواعيد العيادة",
+      "myCalendarDesc": "عرض وإدارة مواعيدك وتوفرك",
+
       "views": {
         "day": "يوم",
         "week": "أسبوع",
         "month": "شهر"
       },
-      "searchPlaceholder": "البحث عن مريض أو ملاحظات...",
+
+      "viewMode": "وضع العرض",
+      "day": "يوم",
+      "week": "أسبوع",
+      "month": "شهر",
+
+      "searchPlaceholder": "ابحث عن مريض أو ملاحظات...",
       "filters": "الفلاتر",
       "appointmentType": "نوع الموعد",
       "types": {
         "in-person": "حضوري",
         "video": "مكالمة فيديو",
         "home": "زيارة منزلية",
-        "chat": "محادثة"
+        "chat": "دردشة"
       },
       "status": "الحالة",
       "statuses": {
@@ -382,115 +173,99 @@
         "canceled": "ملغي",
         "no-show": "لم يحضر"
       },
-      "showBuffers": "إظهار الفترات الفاصلة",
-      "blockTime": "حجب الوقت",
+
+      "showBuffers": "إظهار الفواصل الزمنية",
+      "blockTime": "حظر وقت",
       "setAvailability": "تعيين التوفر",
       "addAppointment": "إضافة موعد",
-      "scheduleHealth": "صحة الجدول",
+      "bookAppointment": "حجز موعد",
+      "scheduleHealth": "حالة الجدول",
       "nextAppointment": "الموعد التالي",
-      "upcomingToday": "مواعيد اليوم",
+      "upcomingToday": "اليوم",
       "noAppointments": "لا توجد مواعيد",
+      "noAppointmentsScheduled": "لا توجد مواعيد مجدولة",
       "noWorkingHours": "لا توجد ساعات عمل",
-      "dayOff": "هذا اليوم غير مضبوط كيوم عمل في إعدادات الجدول.",
+      "dayOff": "هذا اليوم غير مُعد كيوم عمل في إعدادات الجدول.",
+      "notWorkingDay": "ليس يوم عمل",
+      "officeClosed": "العيادة مغلقة",
+
       "startVisit": "بدء الزيارة",
       "addNote": "إضافة ملاحظة",
-      "addPrescription": "إضافة وصفة طبية",
-      "markComplete": "وضع علامة مكتمل",
+      "addPrescription": "إضافة وصفة",
+      "markComplete": "تحديد كمكتمل",
       "details": "التفاصيل",
       "patient": "المريض",
-      "referral": "الإحالة",
+      "referral": "إحالة",
       "referralAppointment": "موعد إحالة",
-      "referralDetails": "تم إنشاء هذا الموعد من إحالة.",
+      "referralDetails": "تم إنشاء هذا الموعد عبر إحالة.",
       "procedure": "الإجراء",
       "notes": "الملاحظات",
       "sendMessage": "إرسال رسالة",
-      "reschedule": "إعادة الجدولة",
+      "reschedule": "إعادة جدولة",
       "cancel": "إلغاء",
       "close": "إغلاق",
-      "profileLoading": "ملف الطبيب لا يزال قيد التحميل. يرجى التحديث.",
+
+      "profileLoading": "لا يزال ملف الطبيب قيد التحميل. يرجى تحديث الصفحة.",
       "rescheduleSuccess": "تمت إعادة جدولة الموعد بنجاح",
       "cancelSuccess": "تم إلغاء الموعد بنجاح",
-      "cancelConfirm": "هل أنت متأكد من إلغاء هذا الموعد؟",
+      "cancelConfirm": "هل أنت متأكد أنك تريد إلغاء هذا الموعد؟",
       "cancelConfirmTitle": "إلغاء الموعد",
       "cancelReason": "سبب الإلغاء (اختياري)",
       "confirmCancel": "نعم، إلغاء",
-      "keepAppointment": "الاحتفاظ بالموعد"
+      "keepAppointment": "الاحتفاظ بالموعد",
+
+      "calendarSettings": "إعدادات التقويم",
+      "scheduleOverview": "نظرة عامة على الجدول",
+      "selectProcedure": "اختر إجراء/خدمة",
+      "selectProcedurePlaceholder": "اختر إجراءً لعرض الأوقات المتاحة",
+      "standardAppointment": "موعد قياسي (30 دقيقة)",
+      "loadingSlots": "جارٍ تحميل الأوقات...",
+      "holidayDayOff": "عطلة / يوم إجازة",
+      "holiday": "عطلة / يوم إجازة",
+      "quickActions": "إجراءات سريعة",
+      "syncGoogleCalendar": "مزامنة مع تقويم Google",
+      "syncGoogle": "مزامنة مع تقويم Google",
+
+      "timeBlockedSuccess": "تم حظر الوقت بنجاح",
+      "appointmentBookedSuccess": "تم حجز الموعد بنجاح",
+      "availabilityUpdated": "تم تحديث التوفر",
+
+      "availabilitySettings": "إعدادات التوفر",
+      "configureWorkingHours": "قم بتكوين ساعات العمل وإعدادات المواعيد",
+      "availabilityDescription": "قم بتكوين ساعات العمل وإعدادات المواعيد",
+
+      "bufferTime": "الفاصل الزمني بين المواعيد",
+      "noBuffer": "بدون فاصل",
+      "minutes15": "15 دقيقة",
+      "minutes30": "30 دقيقة",
+      "minutes45": "45 دقيقة",
+      "bufferTimeDesc": "وقت للتحضير بين المواعيد",
+      "bufferDescription": "وقت إضافي بين المواعيد للتحضير",
+
+      "weeklySchedule": "الجدول الأسبوعي",
+      "to": "إلى",
+      "closed": "مغلق",
+
+      "saveAvailabilitySettings": "حفظ إعدادات التوفر",
+      "saveAvailability": "حفظ التوفر",
+      "saving": "جارٍ الحفظ..."
     },
-    "profileSetup": {
-      "settingUp": "إعداد ملفك الشخصي",
-      "unableToLoad": "غير قادر على تحميل ملف الطبيب الخاص بك. قد يكون ذلك بسبب أن ملفك الشخصي لا يزال قيد الإعداد أو هناك مشكلة مؤقتة.",
-      "retryLoading": "إعادة المحاولة",
-      "completeSetup": "إكمال إعداد الملف الشخصي",
-      "goHome": "الذهاب إلى الصفحة الرئيسية",
-      "required": "إعداد الملف الشخصي مطلوب",
-      "message": "يرجى إكمال إعداد ملف الطبيب الخاص بك للوصول إلى لوحة التحكم.",
-      "tryAgain": "حاول مجدداً"
-    },
-    "clinic": {
-      "verified": "موثّق",
-      "requestToLeave": "طلب المغادرة"
-    },
-    "verification": {
-      "pending": "في انتظار التحقق",
-      "message": "ملفك الشخصي قيد المراجعة. أكمل ملفك الشخصي لتسريع عملية التحقق.",
-      "completeProfile": "إكمال الملف الشخصي",
-      "viewProfile": "عرض الملف الشخصي"
-    },
-    "profileCompletion": {
-      "title": "اكتمال الملف الشخصي",
-      "message": "أكمل ملفك الشخصي لجذب المزيد من المرضى"
-    },
-    "stats": {
-      "totalAppointments": "إجمالي المواعيد",
-      "allTimeBookings": "جميع الحجوزات",
-      "totalPatients": "إجمالي المرضى",
-      "uniquePatients": "المرضى الفريدون الذين تم خدمتهم",
-      "averageRating": "متوسط التقييم",
-      "basedOnReviews": "بناءً على {{count}} تقييمات",
-      "revenue": "الإيرادات",
-      "totalEarnings": "إجمالي الأرباح"
-    },
-    "appointmentStatus": {
-      "confirmed": "مؤكد",
-      "pending": "قيد الانتظار",
-      "completed": "مكتمل",
-      "cancelled": "ملغى"
-    },
-    "upcomingAppointments": {
-      "title": "المواعيد القادمة",
-      "noAppointments": "لا توجد مواعيد قادمة",
-      "scheduleIsClear": "جدولك خالٍ في الوقت الحالي"
-    },
-    "quickActions": {
-      "title": "إجراءات سريعة",
-      "updateSettings": "تحديث إعدادات الجدول",
-      "addService": "إضافة خدمة جديدة",
-      "blockTime": "حظر فترة زمنية"
-    },
-    "todaysSchedule": {
-      "viewFull": "عرض جدول اليوم"
-    },
-    "dashboardContent": {
-      "welcomeBack": "مرحباً بعودتك",
-      "specialtyNotProvided": "لم يتم تحديد التخصص",
-      "completeProfileBanner": "أكمل ملفك الشخصي ({{completion}}% منجز)",
-      "completeProfileMessage": "الملف الشخصي الكامل يساعد المرضى على إيجادك والثقة بك بسهولة أكبر"
-    },
+
     "quickModals": {
       "settings": {
         "title": "إعدادات الملف السريعة",
         "specialty": "التخصص",
         "selectSpecialty": "اختر التخصص",
         "specialties": {
-          "generalPractice": "الممارسة العامة",
+          "generalPractice": "طب عام",
           "cardiology": "أمراض القلب",
           "dermatology": "الأمراض الجلدية",
           "pediatrics": "طب الأطفال",
           "orthopedics": "جراحة العظام",
-          "neurology": "طب الأعصاب"
+          "neurology": "الأعصاب"
         },
         "consultationFee": "رسوم الاستشارة ($)",
-        "bio": "السيرة الذاتية",
+        "bio": "نبذة",
         "bioPlaceholder": "أخبر المرضى عن خبرتك...",
         "cancel": "إلغاء",
         "updateProfile": "تحديث الملف الشخصي",
@@ -514,7 +289,7 @@
           "30min": "30 دقيقة",
           "45min": "45 دقيقة",
           "1hour": "ساعة واحدة",
-          "1.5hours": "1.5 ساعة"
+          "1.5hours": "ساعة ونصف"
         },
         "cancel": "إلغاء",
         "addService": "إضافة خدمة",
@@ -524,14 +299,15 @@
         "timeBlocked": "تم حظر الوقت من {{start}} إلى {{end}}"
       }
     },
+
     "schedule": {
-      "title": "إعدادات الجدول الزمني",
-      "description": "قم بتكوين ساعات العمل والفترات الاستراحة والتوافر",
+      "title": "إعدادات الجدول",
+      "description": "إدارة ساعات العمل والفواصل والتوفر",
       "loading": "جارٍ تحميل إعدادات الجدول...",
       "saving": "جارٍ الحفظ...",
       "saveSettings": "حفظ إعدادات الجدول",
       "scheduleUpdated": "تم تحديث الجدول",
-      "scheduleUpdatedDesc": "تم حفظ إعدادات الجدول الزمني بنجاح",
+      "scheduleUpdatedDesc": "تم حفظ إعدادات الجدول بنجاح",
       "error": "خطأ",
       "saveFailed": "فشل حفظ إعدادات الجدول",
       "workingHours": "ساعات العمل",
@@ -546,157 +322,152 @@
       },
       "startTime": "وقت البدء",
       "endTime": "وقت الانتهاء",
-      "breaks": "فترات الراحة",
-      "addBreak": "إضافة فترة راحة",
-      "breakName": "اسم فترة الراحة",
+      "breaks": "الفواصل",
+      "addBreak": "إضافة فاصل",
+      "breakName": "اسم الفاصل",
       "appointmentSettings": "إعدادات المواعيد",
-      "bufferTime": "الوقت الافتراضي بين المواعيد",
-      "bufferTimeDesc": "الوقت بين المواعيد للتحضير والملاحظات",
-      "minutes": "دقائق",
+      "bufferTime": "الفاصل الافتراضي بين المواعيد",
+      "bufferTimeDesc": "وقت بين المواعيد للتحضير والملاحظات",
+      "bufferTimeDescription": "وقت بين المواعيد للتحضير والملاحظات",
+      "minutes": "دقيقة",
       "holidaysTitle": "العطلات وأيام الإجازة",
+      "holidays": "العطلات وأيام الإجازة",
       "addHoliday": "إضافة عطلة/يوم إجازة",
       "addDayOff": "إضافة يوم إجازة",
+      "selectDate": "اختر التاريخ",
       "noHolidays": "لا توجد عطلات مجدولة",
+      "removeHoliday": "إزالة",
       "quickActions": "إجراءات سريعة",
-      "copyMondayToWeekdays": "نسخ الاثنين إلى أيام الأسبوع",
-      "disableWeekends": "تعطيل عطلات نهاية الأسبوع",
+      "copyMondayToWeekdays": "نسخ يوم الاثنين إلى أيام الأسبوع",
+      "disableWeekends": "تعطيل عطلة نهاية الأسبوع",
       "scheduleCopied": "تم نسخ الجدول",
       "scheduleCopiedDesc": "تم تطبيق جدول الاثنين على أيام الأسبوع",
-      "weekendsDisabled": "تم تعطيل عطلات نهاية الأسبوع",
+      "weekendsDisabled": "تم تعطيل عطلة نهاية الأسبوع",
       "weekendsDisabledDesc": "تم تعطيل السبت والأحد"
     },
-    "title": "لوحة الطبيب",
-    "loading": "جاري تحميل لوحة التحكم...",
-    "settingUp": "جاري إعداد ملف الطبيب الخاص بك...",
-    "navigation": {
-      "dashboard": "لوحة التحكم",
-      "myProfile": "ملفي الشخصي",
-      "myServices": "خدماتي",
-      "assignedServices": "الخدمات المعينة",
-      "scheduleSettings": "إعدادات الجدول",
-      "procedureLibrary": "مكتبة الإجراءات",
-      "treatmentPlanning": "تخطيط العلاج",
-      "myPatients": "مرضاي",
-      "calendar": "التقويم",
-      "messages": "الرسائل",
-      "performance": "الأداء",
-      "financialStats": "الإحصائيات المالية",
-      "clinicFinder": "البحث عن عيادة",
-      "settings": "الإعدادات",
-      "logout": "تسجيل الخروج"
-    },
-    "clinic": {
+
+    "profile": {
+      "title": "إكمال الملف الشخصي",
+      "description": "أكمل ملفك الشخصي لزيادة الظهور",
       "verified": "تم التحقق",
-      "requestToLeave": "طلب المغادرة"
+      "pendingVerification": "بانتظار التحقق",
+      "progress": "التقدم",
+      "basicInformation": "المعلومات الأساسية",
+      "uploadPhoto": "رفع صورة",
+      "uploading": "جارٍ الرفع...",
+      "professionalHeadshot": "يوصى بصورة شخصية احترافية",
+      "fullName": "الاسم الكامل",
+      "yearsExperience": "سنوات الخبرة",
+      "specialty": "التخصص",
+      "email": "البريد الإلكتروني",
+      "aboutMe": "نبذة / تعريف",
+      "bioPlaceholder": "أخبر المرضى عن خبرتك ونهجك في الرعاية وما الذي يميزك...",
+      "languagesSpoken": "اللغات التي تتحدثها",
+      "languagesDescription": "اختر جميع اللغات التي تتقنها",
+      "professionalDetails": "التفاصيل المهنية",
+      "medicalLicense": "رقم الترخيص الطبي",
+      "licenseNumber": "رقم الترخيص",
+      "phoneNumber": "رقم الهاتف",
+      "consultationTypes": "أنواع الاستشارات المقدمة",
+      "defaultPrice": "السعر الافتراضي للاستشارة",
+      "primaryLocation": "الموقع الأساسي",
+      "verificationDocuments": "مستندات التحقق",
+      "medicalLicenseDoc": "الترخيص الطبي",
+      "uploadLicenseDoc": "ارفع مستند الترخيص (PDF, JPG, PNG)",
+      "professionalId": "الهوية المهنية",
+      "uploadIdDoc": "ارفع مستندًا (اختياري)",
+      "chooseFile": "اختيار ملف",
+      "changeFile": "تغيير الملف",
+      "verificationNote": "ارفع مستندات قابلة للتحقق لتسريع عملية التحقق",
+      "saveChanges": "حفظ التغييرات",
+      "submitForVerification": "إرسال للتحقق",
+      "saving": "جارٍ الحفظ...",
+      "submitting": "جارٍ الإرسال..."
     },
-    "verification": {
-      "pending": "التحقق قيد الانتظار",
-      "message": "للظهور علناً في نتائج البحث، يجب إكمال التحقق الخاص بك.",
-      "completeProfile": "إكمال الملف الشخصي",
-      "viewProfile": "عرض الملف الشخصي"
-    },
-    "profileCompletion": {
-      "title": "اكتمال الملف الشخصي",
-      "message": "أكمل ملفك الشخصي للحصول على المزيد من الحجوزات"
-    },
-    "stats": {
-      "totalAppointments": "إجمالي المواعيد",
-      "allTimeBookings": "جميع الحجوزات على الإطلاق",
-      "totalPatients": "إجمالي المرضى",
-      "uniquePatients": "المرضى الفريدين الذين تم خدمتهم",
-      "averageRating": "متوسط التقييم",
-      "basedOnReviews": "بناءً على {{count}} تقييم",
-      "revenue": "الإيرادات",
-      "totalEarnings": "إجمالي الأرباح"
-    },
-    "upcomingAppointments": {
-      "title": "المواعيد القادمة",
-      "noAppointments": "لا توجد مواعيد قادمة",
-      "scheduleIsClear": "جدولك خالٍ"
-    },
-    "recentActivity": {
-      "title": "النشاط الأخير",
-      "noActivity": "لا يوجد نشاط حديث",
-      "startBuildingHistory": "ابدأ في بناء تاريخ نشاطك"
-    },
-    "quickActions": {
-      "title": "إجراءات سريعة",
-      "setAvailability": "تعيين التوفر",
-      "manageProcedures": "إدارة الإجراءات",
+
+    "services": {
+      "title": "خدماتي",
+      "description": "إدارة الخدمات التي تقدمها للمرضى",
+      "assignedServices": "الخدمات المعيّنة",
+      "assignedServicesDesc": "الخدمات المعيّنة لك من العيادة",
+      "assignedByClinic": "مُعيّنة بواسطة إدارة العيادة",
+      "noServicesAssigned": "لا توجد خدمات معيّنة بعد.",
       "addService": "إضافة خدمة",
-      "blockTime": "حظر الوقت",
-      "updateSettings": "تحديث الإعدادات"
+      "addNewService": "إضافة خدمة جديدة",
+      "noServices": "لم يتم العثور على خدمات. أضف أول خدمة للبدء.",
+      "serviceName": "اسم الخدمة",
+      "serviceNamePlaceholder": "مثال: استشارة عامة",
+      "category": "الفئة",
+      "selectCategory": "اختر الفئة",
+      "description": "الوصف",
+      "descriptionPlaceholder": "صف الخدمة...",
+      "price": "السعر ($)",
+      "duration": "المدة (دقائق)",
+      "cancel": "إلغاء",
+      "updateService": "تحديث الخدمة",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "assigned": "مُعيّن",
+      "editService": "تعديل الخدمة"
     },
-    "todaysSchedule": {
-      "title": "جدول اليوم",
-      "patients": "مرضى",
-      "viewFull": "عرض الجدول الكامل",
-      "noAppointments": "لا توجد مواعيد اليوم",
-      "freeDay": "لديك يوم حر!"
-    },
-    "profileSetup": {
-      "required": "مطلوب إعداد الملف الشخصي",
-      "message": "يجب إعداد ملف الطبيب الخاص بك. دعنا نكمل ملفك الشخصي.",
-      "tryAgain": "حاول مرة أخرى",
-      "completeSetup": "إكمال إعداد الملف الشخصي",
-      "goHome": "الذهاب إلى الصفحة الرئيسية",
-      "retryLoading": "إعادة محاولة التحميل",
-      "settingUp": "جاري إعداد الملف الشخصي",
-      "unableToLoad": "غير قادر على تحميل ملف الطبيب الخاص بك. دعنا نقوم بإعداد حسابك."
-    },
-    "dashboardContent": {
-      "clinicProfile": "ملف العيادة",
-      "requestToLeave": "طلب المغادرة",
-      "verificationPending": "التحقق قيد الانتظار",
-      "verificationMessage": "للظهور علناً في نتائج البحث، يجب إكمال التحقق الخاص بك.",
-      "completeProfile": "إكمال الملف الشخصي",
-      "viewProfile": "عرض الملف الشخصي",
-      "profileCompletion": "اكتمال الملف الشخصي",
-      "profileMessage": "أكمل ملفك الشخصي للحصول على المزيد من الحجوزات",
-      "totalAppointments": "إجمالي المواعيد",
-      "allTimeBookings": "جميع الحجوزات على الإطلاق",
-      "totalPatients": "إجمالي المرضى",
-      "uniquePatients": "المرضى الفريدين الذين تم خدمتهم",
-      "averageRating": "متوسط التقييم",
-      "basedOnReviews": "بناءً على {{count}} تقييم",
-      "revenue": "الإيرادات",
-      "totalEarnings": "إجمالي الأرباح",
-      "upcomingAppointments": "المواعيد القادمة",
-      "noUpcomingAppointments": "لا توجد مواعيد قادمة",
-      "scheduleIsClear": "جدولك خالٍ",
-      "recentActivity": "النشاط الأخير",
-      "noRecentActivity": "لا يوجد نشاط حديث",
-      "startBuildingHistory": "ابدأ في بناء تاريخ نشاطك",
+
+    "procedureLibrary": {
+      "title": "مكتبة الإجراءات الخاصة بي",
+      "description": "إدارة إجراءات وعلاجات الأسنان",
+      "addProcedure": "إضافة إجراء",
+      "loading": "جارٍ تحميل مكتبة الإجراءات...",
+      "totalProcedures": "إجمالي الإجراءات",
+      "activeProcedures": "الإجراءات النشطة",
+      "bookableServices": "الخدمات القابلة للحجز",
+      "availableForBooking": "متاحة للحجز عبر الإنترنت",
+      "averageFee": "متوسط الرسوم",
+      "perProcedure": "لكل إجراء",
       "quickActions": "إجراءات سريعة",
-      "viewTodaysSchedule": "عرض جدول اليوم",
-      "manageSchedule": "إدارة الجدول",
-      "quickAddService": "إضافة سريعة للخدمة",
-      "findClinics": "البحث عن عيادات",
-      "blockTime": "حظر الوقت",
-      "welcomeBack": "مرحبًا بعودتك",
-      "specialtyNotProvided": "التخصص - غير متوفر",
-      "completeProfileBanner": "أكمل ملفك الشخصي ({{completion}}٪)",
-      "completeProfileMessage": "أكمل ملفك الشخصي للحصول على التحقق وبدء قبول المرضى."
+      "enableAll": "تفعيل الكل للحجز",
+      "disableAll": "تعطيل الكل للحجز",
+      "manageCategories": "إدارة الفئات",
+      "manageTypes": "إدارة الأنواع",
+      "filters": "الفلاتر والبحث",
+      "searchPlaceholder": "ابحث عن إجراءات...",
+      "filterByCategory": "تصفية حسب الفئة",
+      "filterByType": "تصفية حسب النوع",
+      "clearFilters": "مسح الفلاتر",
+      "allCategories": "كل الفئات",
+      "allTypes": "كل الأنواع",
+      "yourProcedures": "إجراءاتك",
+      "noProcedures": "لم يتم العثور على إجراءات. أنشئ أول إجراء للبدء.",
+      "addFirstProcedure": "إضافة أول إجراء",
+      "procedureName": "اسم الإجراء",
+      "defaultCost": "التكلفة الافتراضية",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "notSet": "غير محدد",
+      "bookable": "قابل للحجز",
+      "notBookable": "غير قابل للحجز"
     },
+
     "treatmentPlanning": {
       "title": "تخطيط العلاج",
-      "description": "إنشاء وإدارة خطط علاج شاملة لمرضاك",
-      "loading": "جاري تحميل خطط العلاج...",
-      "signInRequired": "يرجى تسجيل الدخول لإنشاء خطط العلاج",
+      "description": "أنشئ وأدر خطط علاج شاملة لمرضاك",
+      "loading": "جارٍ تحميل خطط العلاج...",
+      "signInRequired": "يرجى تسجيل الدخول لإنشاء خطط علاج",
       "createPlan": "إنشاء خطة علاج",
       "filtersTitle": "الفلاتر والبحث",
-      "searchPlaceholder": "البحث عن خطط العلاج...",
+      "filters": "الفلاتر والبحث",
+      "searchPlaceholder": "ابحث عن خطط علاج...",
       "filterByStatus": "تصفية حسب الحالة",
       "filterByPatient": "تصفية حسب المريض",
       "clearFilters": "مسح الفلاتر",
-      "allStatuses": "جميع الحالات",
+      "allStatuses": "كل الحالات",
       "draft": "مسودة",
       "published": "منشور",
       "inProgress": "قيد التنفيذ",
       "completed": "مكتمل",
-      "allPatients": "جميع المرضى",
+      "allPatients": "كل المرضى",
       "treatmentPlansCount": "خطط العلاج ({{count}})",
-      "noPlansFound": "لم يتم العثور على خطط علاج. أنشئ خطة العلاج الأولى للبدء.",
+      "treatmentPlans": "خطط العلاج",
+      "noPlansFound": "لم يتم العثور على خطط علاج. أنشئ أول خطة علاج للبدء.",
+      "noPlans": "لم يتم العثور على خطط علاج. أنشئ أول خطة للبدء.",
       "createFirstPlan": "إنشاء أول خطة علاج",
       "planTitle": "عنوان الخطة",
       "patient": "المريض",
@@ -710,309 +481,703 @@
       "manageMedications": "إدارة الأدوية",
       "publishPlan": "نشر الخطة",
       "deletePlan": "حذف الخطة",
-      "deleteConfirm": "هل أنت متأكد من رغبتك في حذف خطة العلاج هذه؟",
+      "deleteConfirm": "هل أنت متأكد أنك تريد حذف خطة العلاج هذه؟",
       "deleteSuccess": "تم حذف خطة العلاج بنجاح",
       "deleteFailed": "فشل حذف خطة العلاج",
       "publishSuccess": "تم نشر خطة العلاج بنجاح",
       "publishFailed": "فشل نشر خطة العلاج",
       "loadFailed": "فشل تحميل خطط العلاج"
     },
+
+    "clinicFinder": {
+      "title": "البحث عن عيادات للانضمام",
+      "description": "ابحث وقدّم طلبات للانضمام إلى الممارسات الطبية والعيادات القائمة",
+      "searchPlaceholder": "ابحث باسم العيادة أو المدينة أو العنوان...",
+      "filters": "الفلاتر",
+      "allRatings": "كل التقييمات",
+      "verified": "تم التحقق",
+      "reviews": "مراجعات",
+      "appointments": "مواعيد",
+      "viewDetails": "عرض التفاصيل",
+      "requestToJoin": "طلب الانضمام",
+      "requestPending": "الطلب قيد الانتظار",
+      "cancelRequest": "إلغاء الطلب",
+      "requestAccepted": "تم قبول الطلب",
+      "requestRejected": "تم رفض الطلب",
+      "noClinicsFound": "لم يتم العثور على عيادات",
+      "adjustCriteria": "جرّب تعديل معايير البحث أو عد لاحقًا لعرض قوائم جديدة.",
+      "pendingRequests": "الطلبات المعلقة",
+      "pending": "قيد الانتظار",
+      "cancel": "إلغاء",
+      "noDescription": "الوصف غير متاح",
+      "loadingError": "تعذر تحميل العيادات."
+    },
+
     "performance": {
       "title": "تحليلات الأداء",
-      "description": "تتبع مقاييس الأداء والرؤى",
-      "loading": "جاري تحميل بيانات الأداء...",
+      "description": "تتبع مؤشرات الأداء والتحليلات",
+      "loading": "جارٍ تحميل بيانات الأداء...",
       "errorLoading": "خطأ في تحميل بيانات الأداء",
+      "error": "خطأ في تحميل بيانات الأداء",
       "tryAgain": "حاول مرة أخرى",
       "refresh": "تحديث",
       "export": "تصدير التقرير",
-      "tabs": {
-        "overview": "نظرة عامة",
-        "services": "الخدمات",
-        "reviews": "المراجعات",
-        "trends": "الاتجاهات"
-      },
-      "exportComingSoon": "ميزة التصدير قريباً",
+      "exportComingSoon": "ميزة التصدير قريبًا",
       "dataRefreshed": "تم تحديث بيانات الأداء بنجاح",
-      "newAchievement": "إنجاز جديد تم فتحه!",
+      "newAchievement": "تم فتح إنجاز جديد!",
       "high": "مرتفع",
       "medium": "متوسط",
       "low": "منخفض",
-      "returning": "العائدون",
-      "new": "جديد",
+      "returning": "عائدون",
+      "new": "جدد",
       "overview": {
         "performanceLevel": "مستوى الأداء",
         "basedOn": "بناءً على معدل الإكمال والتقييمات والنشاط",
         "totalAppointments": "إجمالي المواعيد",
         "inSelectedPeriod": "في الفترة المحددة",
+        "inPeriod": "في الفترة المحددة",
         "completed": "مكتمل",
         "completionRate": "معدل الإكمال",
+        "completionRateLabel": "معدل الإكمال",
         "cancelled": "ملغي",
         "noShows": "عدم الحضور",
         "activeDays": "الأيام النشطة",
         "daysWithAppointments": "أيام بها مواعيد",
-        "avgDailyPatients": "متوسط يومي",
+        "daysWithAppts": "أيام بها مواعيد",
+        "avgDailyPatients": "متوسط المرضى يوميًا",
         "patientsPerDay": "مرضى في اليوم النشط",
         "avgDuration": "متوسط المدة",
         "perAppointment": "لكل موعد",
         "appointmentTrends": "اتجاهات المواعيد",
         "dailyBreakdown": "التوزيع اليومي للمواعيد",
         "total": "الإجمالي",
-        "performanceMetrics": "مقاييس الأداء",
-        "completionRateLabel": "معدل الإكمال",
+        "performanceMetrics": "مؤشرات الأداء",
         "cancellationRate": "معدل الإلغاء",
         "noShowRate": "معدل عدم الحضور"
       },
-      "trends": {
-        "aiRecommendations": "توصيات مدعومة بالذكاء الاصطناعي",
-        "insightsToImprove": "رؤى لتحسين ممارستك",
-        "peakTimeIdentified": "تم تحديد وقت الذروة",
-        "peakTimeDesc": "أكثر أوقاتك ازدحاماً هو {{time}}. فكر في إضافة المزيد من الفترات خلال هذه الفترة.",
-        "strongRetention": "احتفاظ قوي بالمرضى",
-        "strongRetentionDesc": "لديك ولاء ممتاز للمرضى! ركز على الحفاظ على هذا المستوى العالي.",
-        "focusOnRetention": "التركيز على الاحتفاظ",
-        "focusOnRetentionDesc": "فكر في تطبيق تذكيرات المتابعة لتحويل المزيد من المرضى الجدد إلى مرضى عائدين.",
-        "highCancellations": "إلغاءات أخيرة عالية",
-        "highCancellationsDesc": "معدل الإلغاء الأخير مرتفع. فكر في إرسال تذكيرات بالموعد قبل 24 ساعة.",
-        "appointmentTrends": "اتجاهات المواعيد",
-        "dailyBreakdown": "التوزيع اليومي للمواعيد",
-        "patientTypeDistribution": "توزيع نوع المريض",
-        "newVsReturning": "مرضى جدد مقابل عائدين",
-        "newPatients": "مرضى جدد",
-        "returning": "عائدون",
-        "popularTimeSlots": "الفترات الزمنية الأكثر شعبية",
-        "peakBookingTimes": "أوقات الحجز الذروة",
-        "bookings": "حجوزات",
-        "keyInsights": "رؤى رئيسية",
-        "growthTrend": "اتجاه النمو",
-        "appointmentsTrending": "اتجاه المواعيد",
-        "upward": "تصاعدي",
-        "stable": "مستقر",
-        "patientLoyalty": "ولاء المرضى",
-        "strong": "قوي",
-        "building": "في البناء",
-        "patientRetention": "الاحتفاظ بالمرضى",
-        "bestTime": "أفضل وقت",
-        "peakDemandAt": "ذروة الطلب في"
+      "tabs": {
+        "overview": "نظرة عامة",
+        "services": "الخدمات",
+        "reviews": "المراجعات",
+        "trends": "الاتجاهات"
       },
       "reviews": {
-        "overallRating": "التقييم الإجمالي",
-        "basedOnReviews": "بناءً على {{count}} مراجعة",
-        "reviewInsights": "رؤى المراجعات",
-        "positiveReviews": "مراجعات إيجابية",
+        "overallRating": "التقييم العام",
+        "basedOnReviews": "استنادًا إلى {{count}} مراجعة",
+        "reviewInsights": "تحليلات المراجعات",
+        "positiveReviews": "المراجعات الإيجابية",
         "withComments": "مع تعليقات",
         "ratingTrend": "اتجاه التقييم",
         "vsLastMonth": "مقارنة بالشهر الماضي",
-        "allReviews": "جميع المراجعات",
+        "allReviews": "كل المراجعات",
         "excellent": "ممتاز",
         "helpful": "مفيد",
         "reply": "رد",
-        "noReviewsFilter": "لم يتم العثور على مراجعات لهذا الفلتر"
+        "noReviewsFilter": "لم يتم العثور على مراجعات لهذا الفلتر",
+        "insights": "تحليلات المراجعات",
+        "noReviews": "لم يتم العثور على مراجعات لهذا الفلتر"
       },
       "services": {
-        "topPerforming": "الخدمة الأفضل أداءً",
-        "mostBooked": "خدمتك الأكثر حجزاً",
-        "bestSeller": "الأكثر مبيعاً",
+        "topPerforming": "أفضل خدمة أداءً",
+        "topService": "🏆 أفضل خدمة",
+        "mostBooked": "الخدمة الأكثر حجزًا لديك",
+        "bestSeller": "الأكثر مبيعًا",
         "totalBookings": "إجمالي الحجوزات",
         "revenue": "الإيرادات",
         "completionRate": "معدل الإكمال",
         "sortBy": "ترتيب حسب",
-        "mostBookedSort": "الأكثر حجزاً",
-        "highestRevenue": "أعلى إيرادات",
+        "mostBookedSort": "الأكثر حجزًا",
+        "highestRevenue": "أعلى إيراد",
         "bestConversion": "أفضل تحويل",
         "category": "الفئة",
-        "allCategories": "جميع الفئات",
-        "revenueByService": "الإيرادات حسب الخدمة",
-        "popular": "شعبي",
+        "allCategories": "كل الفئات",
+        "revenueByService": "الإيراد حسب الخدمة",
+        "revenueLabel": "الإيراد ($)",
+        "popular": "شائع",
         "standard": "قياسي",
         "bookings": "الحجوزات",
         "avgDuration": "متوسط المدة",
         "completion": "الإكمال",
         "completed": "مكتمل",
         "minutes": "دقيقة",
-        "noServicesFound": "لم يتم العثور على خدمات لهذه الفئة"
-      }
+        "noServicesFound": "لم يتم العثور على خدمات لهذه الفئة",
+        "noServices": "لم يتم العثور على خدمات لهذه الفئة"
+      },
+      "trends": {
+        "aiRecommendations": "توصيات الذكاء الاصطناعي",
+        "insightsToImprove": "رؤى لتحسين ممارستك",
+        "insightsDesc": "رؤى لتحسين ممارستك",
+        "peakTimeIdentified": "تم تحديد وقت الذروة",
+        "peakTime": "تم تحديد وقت الذروة",
+        "peakTimeDesc": "أكثر أوقاتك ازدحامًا هو {{time}}. فكّر في إضافة مواعيد إضافية خلال هذه الفترة.",
+        "strongRetention": "احتفاظ قوي بالمرضى",
+        "strongRetentionDesc": "لديك ولاء ممتاز من المرضى! ركّز على الحفاظ على هذا المستوى العالي.",
+        "focusOnRetention": "ركّز على الاحتفاظ",
+        "focusRetention": "ركّز على الاحتفاظ",
+        "focusOnRetentionDesc": "فكّر في تطبيق تذكيرات لتحويل المرضى الجدد إلى مرضى دائمين.",
+        "focusRetentionDesc": "فكّر في تطبيق تذكيرات لتحويل المرضى الجدد إلى مرضى دائمين.",
+        "highCancellations": "ارتفاع في الإلغاءات الأخيرة",
+        "highCancellationsDesc": "معدل الإلغاء الأخير مرتفع. فكّر في إرسال تذكيرات قبل 24 ساعة.",
+        "appointmentTrends": "اتجاهات المواعيد",
+        "dailyBreakdown": "التوزيع اليومي للمواعيد",
+        "patientTypeDistribution": "توزيع أنواع المرضى",
+        "patientDistribution": "توزيع أنواع المرضى",
+        "newVsReturning": "الجدد مقابل العائدين",
+        "newPatients": "مرضى جدد",
+        "returning": "عائدون",
+        "returningPatients": "مرضى عائدون",
+        "popularTimeSlots": "الفترات الزمنية الشائعة",
+        "peakBookingTimes": "أوقات ذروة الحجز",
+        "bookings": "الحجوزات",
+        "bookingsCount": "{{count}} حجوزات",
+        "keyInsights": "أهم الرؤى",
+        "growthTrend": "اتجاه النمو",
+        "appointmentsTrending": "المواعيد",
+        "upward": "تصاعدي",
+        "stable": "مستقر",
+        "trendingUpward": "المواعيد في ارتفاع",
+        "trendingStable": "المواعيد مستقرة",
+        "patientLoyalty": "ولاء المرضى",
+        "strong": "قوي",
+        "building": "قيد البناء",
+        "patientRetention": "الاحتفاظ بالمرضى",
+        "strongLoyalty": "احتفاظ قوي بالمرضى",
+        "buildingLoyalty": "بناء احتفاظ المرضى",
+        "bestTime": "أفضل وقت",
+        "peakDemandAt": "ذروة الطلب عند",
+        "peakDemand": "ذروة الطلب عند {{time}}",
+        "notAvailable": "غير متاح",
+        "total": "الإجمالي",
+        "completed": "مكتمل",
+        "cancelled": "ملغي"
+      },
+
+      "performanceLevel": "مستوى الأداء",
+      "performanceLevelDesc": "استنادًا إلى الإكمال والتقييمات والنشاط",
+      "totalAppointments": "إجمالي المواعيد",
+      "inSelectedPeriod": "في الفترة المحددة",
+      "completed": "مكتمل",
+      "completionRate": "معدل الإكمال",
+      "cancelled": "ملغي",
+      "noShows": "عدم الحضور",
+      "activeDays": "الأيام النشطة",
+      "daysWithAppointments": "أيام بها مواعيد",
+      "avgDailyPatients": "متوسط المرضى يوميًا",
+      "patientsPerDay": "مرضى في اليوم النشط",
+      "avgDuration": "متوسط المدة",
+      "perAppointment": "لكل موعد",
+      "appointmentTrends": "اتجاهات المواعيد",
+      "appointmentTrendsDesc": "التوزيع اليومي للمواعيد",
+      "performanceMetrics": "مؤشرات الأداء",
+      "cancellationRate": "معدل الإلغاء",
+      "noShowRate": "معدل عدم الحضور",
+      "topPerformingService": "🏆 أفضل خدمة",
+      "mostBookedService": "الخدمة الأكثر طلبًا لديك",
+      "bestSeller": "الأكثر مبيعًا",
+      "totalBookings": "إجمالي الحجوزات",
+      "revenue": "الإيرادات",
+      "completion": "معدل الإكمال",
+      "sortBy": "ترتيب حسب",
+      "mostBooked": "الأكثر طلبًا",
+      "highestRevenue": "أعلى إيراد",
+      "bestConversion": "أفضل تحويل",
+      "category": "الفئة",
+      "allCategories": "كل الفئات",
+      "revenueByService": "الإيراد حسب الخدمة",
+      "popular": "شائع",
+      "standard": "قياسي",
+      "bookings": "الحجوزات",
+      "noServicesFound": "لم يتم العثور على خدمات لهذه الفئة",
+      "overallRating": "التقييم العام",
+      "basedOnReviews": "استنادًا إلى {{count}} مراجعة",
+      "reviewInsights": "تحليل المراجعات",
+      "positiveReviews": "المراجعات الإيجابية",
+      "withComments": "مع تعليقات",
+      "ratingTrend": "اتجاه التقييم",
+      "vsLastMonth": "مقارنة بالشهر الماضي",
+      "allReviews": "كل المراجعات",
+      "excellent": "ممتاز",
+      "helpful": "مفيد",
+      "reply": "رد",
+      "noReviewsFound": "لم يتم العثور على مراجعات لهذا الفلتر",
+      "aiRecommendations": "توصيات الذكاء الاصطناعي",
+      "aiRecommendationsDesc": "أفكار لتحسين ممارستك",
+      "patientTypeDistribution": "توزيع أنواع المرضى",
+      "patientTypeDesc": "الجدد مقابل العائدين",
+      "returning": "عائدون",
+      "new": "جدد",
+      "newPatients": "مرضى جدد",
+      "popularTimeSlots": "الفترات الزمنية الشائعة",
+      "peakBookingTimes": "أوقات ذروة الحجز",
+      "keyInsights": "أهم الرؤى",
+      "growthTrend": "اتجاه النمو",
+      "trendingUpward": "في ارتفاع",
+      "trendingStable": "مستقر",
+      "appointmentsTrending": "المواعيد",
+      "patientLoyalty": "ولاء المرضى",
+      "strongLoyalty": "قوي",
+      "buildingLoyalty": "قيد البناء",
+      "patientRetention": "الاحتفاظ بالمرضى",
+      "bestTime": "أفضل وقت",
+      "peakDemand": "ذروة الطلب",
+      "total": "الإجمالي",
+      "min": "دقيقة",
+      "serviceName": "اسم الخدمة",
+      "avgDurationLabel": "متوسط المدة",
+      "completedLabel": "مكتمل"
     },
+
     "financialStats": {
-      "title": "التحليلات المالية",
-      "description": "تتبع أرباحك ومدفوعاتك ورؤى مالية",
-      "7days": "7 أيام",
-      "30days": "30 يوم",
-      "90days": "90 يوم",
-      "refresh": "تحديث",
-      "export": "تصدير",
-      "csvExported": "تم تصدير التقرير المالي كملف CSV",
-      "exportComingSoon": "تصدير {{format}} قريباً",
-      "dataRefreshed": "تم تحديث البيانات المالية بنجاح",
+      "title": "الإحصائيات المالية",
+      "description": "تتبّع أرباحك وأدائك المالي",
+      "loading": "جارٍ تحميل البيانات المالية...",
       "errorLoading": "خطأ في تحميل البيانات المالية",
       "retry": "إعادة المحاولة",
+      "7days": "7 أيام",
+      "30days": "30 يومًا",
+      "90days": "90 يومًا",
+      "refresh": "تحديث",
+      "export": "تصدير",
+      "csvExported": "تم تنزيل تقرير CSV بنجاح",
+      "exportComingSoon": "سيتوفر تصدير {{format}} قريبًا",
+      "dataRefreshed": "تم تحديث البيانات المالية بنجاح",
+
       "overview": {
         "totalEarnings": "إجمالي الأرباح",
-        "allTimeRevenue": "الإيرادات على مر الزمن",
+        "allTimeRevenue": "إيرادات كل الوقت",
         "thisMonth": "هذا الشهر",
-        "thisWeek": "هذا الأسبوع",
+        "thisWeek": "هذا الأسبوع: ${{amount}}",
         "unpaidEarnings": "الأرباح غير المدفوعة",
         "pendingAppointments": "المواعيد المعلقة",
         "netEarnings": "صافي الأرباح",
         "afterPlatformFee": "بعد رسوم المنصة 15%",
-        "payoutInfo": "معلومات الدفع",
-        "payoutsProcessed": "المدفوعات المعالجة",
-        "nextPayout": "الدفع التالي",
-        "tbd": "سيتم تحديده",
+        "payoutInfo": "معلومات السحب",
+        "payoutsProcessed": "عمليات السحب المُعالجة",
+        "nextPayout": "السحب القادم",
+        "tbd": "سيتم التحديد لاحقًا",
         "platformCommission": "عمولة المنصة"
       },
+
       "tabs": {
-        "earningsChart": "رسم بياني للأرباح",
+        "earningsChart": "مخطط الأرباح",
         "byService": "حسب الخدمة",
-        "payouts": "المدفوعات",
-        "pending": "قيد الانتظار",
-        "insights": "رؤى"
+        "payouts": "السحوبات",
+        "pending": "معلّق",
+        "insights": "الرؤى"
       },
+
       "chart": {
-        "title": "الأرباح عبر الزمن",
-        "line": "خط",
-        "bar": "عمود",
+        "title": "الأرباح بمرور الوقت",
+        "line": "خطي",
+        "bar": "أعمدة",
         "noData": "لا توجد بيانات أرباح للفترة المحددة",
-        "noDataDesc": "ابدأ بقبول المواعيد لرؤية أرباحك هنا",
-        "earningsLabel": "الأرباح"
+        "noDataDesc": "ابدأ باستقبال المرضى لرؤية الأرباح هنا",
+        "completeToSee": "أكمل المواعيد لرؤية سجل الأرباح",
+        "earningsLabel": "الأرباح",
+        "earnings": "الأرباح ($)"
       },
+
       "services": {
-        "title": "الأرباح حسب الخدمة",
+        "title": "الأرباح حسب الخدمة/الإجراء",
         "serviceName": "اسم الخدمة",
         "bookings": "الحجوزات",
         "totalRevenue": "إجمالي الإيرادات",
         "avgRevenue": "متوسط الإيرادات",
         "avgDuration": "متوسط المدة",
         "minutes": "دقيقة",
-        "noData": "لا توجد بيانات أرباح الخدمات"
+        "noData": "لا توجد بيانات أرباح للخدمات"
       },
+
       "payouts": {
-        "title": "سجل المدفوعات",
-        "referenceId": "رقم المرجع",
+        "title": "سجل السحوبات",
+        "referenceId": "المرجع",
         "amount": "المبلغ",
         "status": "الحالة",
         "date": "التاريخ",
         "paymentMethod": "طريقة الدفع",
         "statusCompleted": "مكتمل",
-        "statusPending": "قيد الانتظار",
+        "statusPending": "قيد المعالجة",
         "statusFailed": "فشل",
-        "noData": "لا توجد سجلات دفع"
+        "noData": "لا توجد سجلات سحب",
+        "noRecords": "لا توجد سجلات سحب"
       },
+
       "pending": {
         "title": "المدفوعات المعلقة",
-        "total": "الإجمالي",
+        "total": "الإجمالي: ${{amount}}",
         "patientName": "اسم المريض",
         "service": "الخدمة",
         "amount": "المبلغ",
         "date": "التاريخ",
         "status": "الحالة",
         "action": "الإجراء",
-        "markPaid": "وضع علامة كمدفوع",
-        "paymentMarked": "تم وضع علامة على الدفع كمستلم",
-        "noData": "لا توجد مدفوعات معلقة"
+        "markPaid": "تحديد كمدفوع",
+        "paymentMarked": "تم تحديد الدفعة كمستلمة",
+        "markedPaid": "تم تحديد الدفعة كمستلمة",
+        "noData": "لا توجد مدفوعات معلقة",
+        "noPayments": "لا توجد مدفوعات معلقة"
       },
+
       "insights": {
         "mostProfitable": "الخدمة الأكثر ربحية",
         "bookings": "حجوزات",
-        "noData": "لا توجد بيانات متاحة",
-        "revenuePerHour": "الإيرادات في الساعة",
-        "basedOnHours": "بناءً على {{hours}} ساعات عمل",
-        "refundRate": "معدل الاسترداد/الإلغاء",
+        "noData": "لا توجد بيانات",
+        "revenuePerHour": "الإيراد لكل ساعة",
+        "basedOnHours": "استنادًا إلى {{hours}} ساعة عمل",
+        "refundRate": "معدل الإلغاء/الاسترداد",
         "excellent": "ممتاز",
         "good": "جيد",
         "needsImprovement": "يحتاج إلى تحسين",
-        "busiestDays": "الأيام الأكثر ازدحاماً"
+        "busiestDays": "الأيام الأكثر ازدحامًا (إيراد)"
       }
     },
-    "calendar": {
-      "clinicCalendar": "تقويم العيادة",
-      "myCalendar": "تقويمي",
-      "clinicCalendarDesc": "عرض وإدارة مواعيد العيادة",
-      "myCalendarDesc": "عرض وإدارة مواعيدك وتوفرك",
-      "calendarSettings": "إعدادات التقويم",
-      "scheduleOverview": "نظرة عامة على الجدول",
-      "selectProcedure": "اختر الإجراء/الخدمة",
-      "selectProcedurePlaceholder": "اختر إجراءً لرؤية الأوقات المتاحة",
-      "standardAppointment": "موعد قياسي (30 دقيقة)",
-      "loadingSlots": "جاري تحميل الأوقات...",
-      "holidayDayOff": "عطلة / يوم إجازة",
-      "noAppointmentsScheduled": "لا توجد مواعيد مجدولة",
-      "notWorkingDay": "ليس يوم عمل",
-      "officeClosed": "المكتب مغلق",
-      "quickActions": "إجراءات سريعة",
-      "blockTime": "حجب الوقت",
-      "setAvailability": "تعيين التوفر",
-      "bookAppointment": "حجز موعد",
-      "syncGoogleCalendar": "المزامنة مع Google Calendar",
-      "timeBlockedSuccess": "تم حجب الوقت بنجاح",
-      "appointmentBookedSuccess": "تم حجز الموعد بنجاح",
-      "availabilityUpdated": "تم تحديث التوفر",
-      "availabilitySettings": "إعدادات التوفر",
-      "configureWorkingHours": "قم بتكوين ساعات العمل وإعدادات المواعيد",
-      "bufferTime": "وقت الفاصل بين المواعيد",
-      "noBuffer": "بدون فاصل",
-      "minutes15": "15 دقيقة",
-      "minutes30": "30 دقيقة",
-      "minutes45": "45 دقيقة",
-      "bufferTimeDesc": "الوقت المضاف بين المواعيد للتحضير",
-      "weeklySchedule": "الجدول الأسبوعي",
-      "to": "إلى",
-      "closed": "مغلق",
-      "saveAvailabilitySettings": "حفظ إعدادات التوفر",
-      "saving": "جاري الحفظ..."
+
+    "settings": {
+      "title": "الإعدادات",
+      "description": "إدارة إعدادات حسابك وأمانه",
+      "account": "الحساب",
+      "notifications": "الإشعارات",
+      "calendar": "التقويم",
+      "security": "الأمان",
+      "practice": "العيادة",
+      "tabs": {
+        "general": "عام",
+        "notifications": "الإشعارات",
+        "calendar": "التقويم",
+        "security": "الأمان"
+      },
+
+      "accountInfo": {
+        "title": "المعلومات الشخصية",
+        "description": "حدّث معلومات حسابك",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "timezone": "المنطقة الزمنية",
+        "language": "اللغة",
+        "selectTimezone": "اختر المنطقة الزمنية",
+        "selectLanguage": "اختر اللغة",
+        "saving": "جارٍ الحفظ...",
+        "saveChanges": "حفظ التغييرات"
+      },
+
+      "account": {
+        "title": "معلومات الحساب",
+        "description": "حدّث بيانات الحساب الأساسية",
+        "email": "عنوان البريد الإلكتروني",
+        "phone": "رقم الهاتف",
+        "timezone": "المنطقة الزمنية",
+        "language": "اللغة",
+        "saveChanges": "حفظ التغييرات"
+      },
+
+      "privacy": {
+        "title": "إعدادات الخصوصية",
+        "description": "إدارة تفضيلات الخصوصية",
+        "profileVisibility": "ظهور الملف الشخصي",
+        "profileVisibilityDesc": "السماح للمرضى بعرض ملفك الشخصي",
+        "shareAnalytics": "مشاركة التحليلات",
+        "shareAnalyticsDesc": "ساعدنا على تحسين الخدمة ببيانات مجهولة",
+        "marketingCommunications": "اتصالات تسويقية",
+        "marketingCommunicationsDesc": "تلقي تحديثات حول الميزات الجديدة",
+        "saveSettings": "حفظ إعدادات الخصوصية"
+      },
+
+      "notificationSettings": {
+        "emailTitle": "إشعارات البريد الإلكتروني",
+        "emailDescription": "إدارة تفضيلات إشعارات البريد الإلكتروني",
+        "smsTitle": "إشعارات الرسائل النصية",
+        "smsDescription": "إدارة تفضيلات إشعارات الرسائل النصية",
+        "pushTitle": "الإشعارات الفورية",
+        "pushDescription": "إدارة الإشعارات داخل التطبيق",
+        "appointmentBookings": "حجوزات المواعيد",
+        "appointmentBookingsDesc": "تلقي إشعار عند حجز المرضى",
+        "appointmentReminders": "تذكيرات المواعيد",
+        "appointmentRemindersDesc": "تلقي تذكيرات قبل المواعيد",
+        "cancellations": "الإلغاءات",
+        "cancellationsDesc": "تلقي إشعارات عند إلغاء المواعيد",
+        "smsBookings": "إشعارات الحجز عبر SMS",
+        "smsBookingsDesc": "تلقي رسائل SMS عند حجز المرضى",
+        "smsReminders": "تذكيرات SMS",
+        "smsRemindersDesc": "تلقي تذكيرات SMS قبل المواعيد",
+        "smsCancellations": "إلغاءات SMS",
+        "smsCancellationsDesc": "تلقي رسائل SMS عند الإلغاء",
+        "enablePush": "تفعيل الإشعارات الفورية",
+        "enablePushDesc": "تلقي إشعارات فورية داخل التطبيق"
+      },
+
+      "notificationPreferences": {
+        "title": "إعدادات الإشعارات",
+        "description": "اختر كيف تريد تلقي الإشعارات",
+        "email": {
+          "title": "إشعارات البريد الإلكتروني",
+          "bookings": "تأكيدات الحجز",
+          "bookingsDesc": "تلقي إشعارات لحجوزات المرضى",
+          "reminders": "تذكيرات المواعيد",
+          "remindersDesc": "تذكيرات بالمواعيد القادمة",
+          "cancellations": "الإلغاءات",
+          "cancellationsDesc": "تلقي إشعارات عند إلغاء المرضى"
+        },
+        "sms": {
+          "title": "إشعارات الرسائل النصية",
+          "bookings": "تأكيدات الحجز",
+          "bookingsDesc": "إشعارات SMS للحجوزات الجديدة",
+          "reminders": "تذكيرات المواعيد",
+          "remindersDesc": "تذكيرات SMS قبل المواعيد",
+          "cancellations": "الإلغاءات",
+          "cancellationsDesc": "إشعارات SMS عند الإلغاءات"
+        },
+        "push": {
+          "title": "الإشعارات الفورية",
+          "browser": "إشعارات المتصفح",
+          "browserDesc": "إشعارات فورية في المتصفح"
+        },
+        "save": "حفظ إعدادات الإشعارات"
+      },
+
+      "calendarSync": {
+        "title": "تكامل التقويم",
+        "description": "مزامنة المواعيد مع تقويمك",
+        "googleCalendar": "تقويم Google",
+        "googleCalendarDesc": "مزامنة مع تقويم Google",
+        "outlookCalendar": "تقويم Outlook",
+        "outlookCalendarDesc": "مزامنة مع Microsoft Outlook",
+        "appleCalendar": "تقويم Apple",
+        "appleCalendarDesc": "مزامنة مع تقويم Apple"
+      },
+
+      "calendarIntegration": {
+        "title": "تكامل التقويم",
+        "description": "مزامنة المواعيد مع تقاويم خارجية",
+        "googleCalendar": "تقويم Google",
+        "outlookCalendar": "تقويم Outlook",
+        "appleCalendar": "تقويم Apple",
+        "connected": "متصل",
+        "notConnected": "غير متصل",
+        "syncSettings": {
+          "title": "إعدادات المزامنة",
+          "realTime": "ستتم مزامنة المواعيد في الوقت الفعلي",
+          "noImport": "لن يتم استيراد الأحداث من التقاويم الخارجية",
+          "disconnect": "يمكنك قطع الاتصال في أي وقت"
+        }
+      },
+
+      "practiceInfo": {
+        "title": "معلومات العيادة",
+        "description": "إدارة عيادتك",
+        "comingSoon": "ميزات إدارة العيادة قريبًا..."
+      },
+
+      "personalInfo": "المعلومات الشخصية",
+      "updateDetails": "حدّث تفاصيل حسابك",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "doctor@example.com",
+      "phone": "الهاتف",
+      "phonePlaceholder": "+966 (___) ___ __ __",
+      "timezone": "المنطقة الزمنية",
+      "selectTimezone": "اختر المنطقة الزمنية",
+      "language": "اللغة",
+      "selectLanguage": "اختر اللغة",
+      "english": "الإنجليزية",
+      "spanish": "الإسبانية",
+      "french": "الفرنسية",
+      "saveChanges": "حفظ التغييرات",
+      "saving": "جارٍ الحفظ...",
+
+      "privacySettings": "إعدادات الخصوصية",
+      "privacyDesc": "إدارة إعدادات الخصوصية",
+      "profileVisibility": "ظهور الملف الشخصي",
+      "profileVisibilityDesc": "السماح للمرضى بعرض ملفك الشخصي",
+      "shareAnalytics": "مشاركة التحليلات",
+      "shareAnalyticsDesc": "ساعدنا على تحسين خدمتنا ببيانات مجهولة",
+      "marketingComms": "اتصالات تسويقية",
+      "marketingCommsDesc": "تلقي تحديثات حول الميزات الجديدة",
+      "marketingCommunications": "اتصالات تسويقية",
+      "marketingDesc": "تلقي تحديثات حول الميزات الجديدة",
+
+      "emailNotifications": "إشعارات البريد الإلكتروني",
+      "emailNotificationsDesc": "إدارة تفضيلات إشعارات البريد الإلكتروني",
+      "appointmentBookings": "حجوزات المواعيد",
+      "appointmentBookingsDesc": "تلقي إشعارات عند حجز المرضى",
+      "appointmentReminders": "تذكيرات المواعيد",
+      "appointmentRemindersDesc": "تلقي تذكيرات قبل المواعيد",
+      "cancellations": "الإلغاءات",
+      "cancellationsDesc": "تلقي إشعارات عند إلغاء المواعيد",
+      "smsNotifications": "إشعارات الرسائل النصية",
+      "smsNotificationsDesc": "إدارة تفضيلات إشعارات الرسائل النصية",
+      "smsBookings": "إشعارات الحجز عبر SMS",
+      "smsBookingsDesc": "تلقي رسائل SMS عند حجز المرضى",
+      "smsReminders": "تذكيرات SMS",
+      "smsRemindersDesc": "تلقي تذكيرات SMS للمواعيد",
+      "smsCancellations": "إلغاءات SMS",
+      "smsCancellationsDesc": "تلقي رسائل SMS للإلغاءات",
+      "pushNotifications": "الإشعارات الفورية",
+      "pushNotificationsDesc": "إدارة الإشعارات الفورية داخل التطبيق",
+      "enablePush": "تفعيل الإشعارات الفورية",
+      "enablePushDesc": "تلقي إشعارات فورية داخل التطبيق",
+
+      "calendarIntegration": "تكامل التقويم",
+      "calendarIntegrationDesc": "مزامنة المواعيد مع تقويمك",
+      "googleCalendar": "تقويم Google",
+      "googleCalendarDesc": "مزامنة مع تقويم Google",
+      "outlookCalendar": "تقويم Outlook",
+      "outlookCalendarDesc": "مزامنة مع Microsoft Outlook",
+      "appleCalendar": "تقويم Apple",
+      "appleCalendarDesc": "مزامنة مع تقويم Apple",
+
+      "practiceInfo": "معلومات العيادة",
+      "practiceInfoDesc": "إدارة ارتباطك بالعيادة",
+      "practiceComingSoon": "ميزات إدارة العيادة قريبًا...",
+
+      "timezones": {
+        "eastern": "التوقيت الشرقي القياسي",
+        "central": "التوقيت المركزي القياسي",
+        "mountain": "توقيت الجبال القياسي",
+        "pacific": "توقيت المحيط الهادئ القياسي",
+        "est": "التوقيت الشرقي (EST)",
+        "cst": "التوقيت المركزي (CST)",
+        "mst": "توقيت الجبال (MST)",
+        "pst": "توقيت المحيط الهادئ (PST)"
+      },
+
+      "languages": {
+        "en": "الإنجليزية",
+        "es": "الإسبانية",
+        "fr": "الفرنسية",
+        "ru": "الروسية",
+        "uz": "الأوزبكية",
+        "ar": "العربية"
+      },
+
+      "changePassword": "تغيير كلمة المرور",
+      "changePasswordDesc": "حدّث كلمة المرور لحماية حسابك",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور الجديدة",
+      "updatePassword": "تحديث كلمة المرور",
+      "updating": "جارٍ التحديث...",
+
+      "recentActivity": "النشاط الأخير",
+      "recentActivityDesc": "عرض سجل تسجيلات الدخول والتغييرات",
+      "loadingActivity": "جارٍ تحميل النشاط...",
+      "noRecentActivity": "لا يوجد نشاط حديث",
+
+      "twoFactorAuth": "المصادقة الثنائية (قريبًا)",
+      "twoFactorAuthDesc": "أضف طبقة أمان إضافية",
+      "twoFactorComingSoon": "ستتوفر المصادقة الثنائية في التحديث القادم. سيسمح ذلك بحماية حسابك عبر الرسائل النصية أو تطبيق المصادقة.",
+
+      "dangerZone": "المنطقة الخطرة",
+      "dangerZoneDesc": "إجراءات حساب غير قابلة للتراجع",
+      "exportData": "تصدير بيانات الحساب",
+      "exportDataDesc": "تنزيل جميع بيانات سجلك",
+      "requestExport": "طلب التصدير",
+      "deactivateAccount": "تعطيل الحساب",
+      "deactivateAccountDesc": "طلب تعطيل نهائي",
+      "requestDeactivation": "طلب التعطيل",
+
+      "pendingRequests": "لديك طلبات معلقة. يرجى انتظار معالجتها.",
+      "passwordRequired": "يرجى ملء جميع حقول كلمة المرور",
+      "passwordMismatch": "كلمات المرور الجديدة غير متطابقة",
+      "passwordLength": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+      "enterCurrentPassword": "أدخل كلمة المرور الحالية",
+      "enterNewPassword": "أدخل كلمة المرور الجديدة (8 أحرف على الأقل)",
+      "confirmNewPassword": "أكد كلمة المرور الجديدة",
+      "activityType": "نوع النشاط",
+      "ip": "IP",
+
+      "toast": {
+        "accountSuccess": "تم حفظ إعدادات الحساب بنجاح",
+        "accountError": "فشل حفظ إعدادات الحساب",
+        "notificationsSuccess": "تم حفظ إعدادات الإشعارات بنجاح",
+        "notificationsError": "فشل حفظ إعدادات الإشعارات",
+        "privacySuccess": "تم حفظ إعدادات الخصوصية بنجاح",
+        "privacyError": "فشل حفظ إعدادات الخصوصية"
+      }
+    }
+  },
+
+  "superAdmin": {
+    "login": {
+      "title": "وصول المشرف الأعلى",
+      "subtitle": "دخول مالك المنصة - للموظفين المصرح لهم فقط",
+      "subtitleSignUp": "إنشاء حساب مشرف أعلى",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "signIn": "تسجيل الدخول",
+      "signUp": "إنشاء حساب",
+      "signingIn": "جارٍ تسجيل الدخول...",
+      "creatingAccount": "جارٍ إنشاء الحساب...",
+      "alreadyHaveAccount": "لديك حساب بالفعل؟ سجّل الدخول",
+      "needAccount": "تحتاج إلى حساب؟ سجّل الآن",
+      "signUpFailed": "فشل التسجيل",
+      "accountCreated": "تم إنشاء الحساب",
+      "accountCreatedDesc": "يمكنك الآن تسجيل الدخول باستخدام بياناتك",
+      "authFailed": "فشل المصادقة",
+      "error": "خطأ",
+      "unexpectedError": "حدث خطأ غير متوقع"
     },
+    "dashboard": {
+      "title": "نظرة عامة على اللوحة",
+      "subtitle": "مؤشرات المنصة في لمحة",
+      "recentAppointments": "أحدث المواعيد"
+    },
+    "doctors": {
+      "title": "إدارة الأطباء",
+      "subtitle": "إدارة جميع أطباء المنصة",
+      "allDoctors": "كل الأطباء",
+      "verifications": "تحققات الأطباء",
+      "pendingVerifications": "تحققات الأطباء المعلقة"
+    },
+    "practices": {
+      "title": "إدارة العيادات",
+      "subtitle": "إدارة جميع العيادات الطبية",
+      "allPractices": "كل العيادات",
+      "verifications": "تحققات العيادات",
+      "pendingVerifications": "التحققات المعلقة"
+    },
+    "patients": {
+      "title": "إدارة المرضى",
+      "subtitle": "عرض جميع مرضى المنصة",
+      "allPatients": "كل المرضى"
+    },
+    "appointments": {
+      "title": "إدارة المواعيد",
+      "subtitle": "مراقبة جميع المواعيد",
+      "allAppointments": "كل المواعيد"
+    },
+    "payments": {
+      "title": "المدفوعات والمعاملات",
+      "subtitle": "نظرة مالية عامة ومعاملات",
+      "allTransactions": "كل المعاملات"
+    },
+    "analytics": {
+      "title": "تحليلات المنصة",
+      "subtitle": "إحصاءات ومؤشرات مفصلة"
+    },
+    "settings": {
+      "title": "إعدادات النظام",
+      "subtitle": "إدارة إعدادات المنصة"
+    },
+    "logs": {
+      "title": "سجلات النظام",
+      "subtitle": "سجل التدقيق وأحداث النظام"
+    },
+    "footer": "© 2025 لوحة إدارة Docito - وصول آمن فقط",
+    "sessionExpired": "انتهت الجلسة",
+    "sessionExpiredDesc": "تم تسجيل خروجك بسبب عدم النشاط",
     "performance": {
       "title": "تحليلات الأداء",
-      "description": "تتبع مقاييس الأداء والرؤى",
-      "loading": "جاري تحميل بيانات الأداء...",
+      "description": "تتبّع مؤشرات الأداء والرؤى",
+      "loading": "جارٍ تحميل بيانات الأداء...",
       "errorLoading": "خطأ في تحميل بيانات الأداء",
       "tryAgain": "حاول مرة أخرى",
       "refresh": "تحديث",
       "export": "تصدير التقرير",
-      "exportComingSoon": "ميزة التصدير قادمة قريباً",
+      "exportComingSoon": "ميزة التصدير قريبًا",
       "dataRefreshed": "تم تحديث بيانات الأداء بنجاح",
-      "tabs": {
-        "overview": "نظرة عامة",
-        "services": "الخدمات",
-        "reviews": "التقييمات",
-        "trends": "الاتجاهات"
-      }
-    },
-    "financialStats": {
-      "title": "التحليلات المالية",
-      "description": "تتبع أرباحك والمدفوعات والرؤى المالية",
-      "7days": "7 أيام",
-      "30days": "30 يوماً",
-      "90days": "90 يوماً",
-      "refresh": "تحديث",
-      "export": "تصدير",
-      "csvExported": "تم تصدير التقرير المالي بصيغة CSV",
-      "exportComingSoon": "تصدير {{format}} قادم قريباً",
-      "dataRefreshed": "تم تحديث البيانات المالية بنجاح",
-      "errorLoading": "خطأ في تحميل البيانات المالية",
-      "retry": "إعادة المحاولة",
-      "tabs": {
-        "earningsChart": "رسم بياني للأرباح",
-        "byService": "حسب الخدمة",
-        "payouts": "المدفوعات",
-        "pending": "قيد الانتظار",
-        "insights": "الرؤى"
-    },
-    "performance": {
-      "title": "تحليلات الأداء",
-      "description": "تتبع مقاييس أدائك ورؤيتك",
-      "loading": "جاري تحميل بيانات الأداء...",
-      "errorLoading": "خطأ في تحميل بيانات الأداء",
-      "tryAgain": "حاول مرة أخرى",
-      "refresh": "تحديث",
-      "export": "تصدير التقرير",
-      "exportComingSoon": "ميزة التصدير قريباً",
-      "dataRefreshed": "تم تحديث بيانات الأداء بنجاح",
-      "newAchievement": "إنجاز جديد تم فتحه!",
+      "newAchievement": "تم فتح إنجاز جديد!",
       "high": "مرتفع",
       "medium": "متوسط",
       "low": "منخفض",
-      "returning": "عائد",
-      "new": "جديد",
       "tabs": {
         "overview": "نظرة عامة",
         "services": "الخدمات",
@@ -1021,137 +1186,88 @@
       },
       "overview": {
         "performanceLevel": "مستوى الأداء",
-        "basedOn": "بناءً على معدل الإكمال والتقييمات والنشاط",
+        "basedOn": "استنادًا إلى معدل الإكمال والتقييمات والنشاط",
         "totalAppointments": "إجمالي المواعيد",
-        "inSelectedPeriod": "في الفترة المحددة",
         "completed": "مكتمل",
-        "completionRate": "معدل الإكمال",
-        "cancelled": "ملغى",
-        "noShows": "عدم الحضور",
-        "activeDays": "أيام نشطة",
-        "daysWithAppointments": "أيام بها مواعيد",
-        "avgDailyPatients": "متوسط المرضى اليومي",
-        "patientsPerDay": "مرضى لكل يوم نشط",
-        "avgDuration": "متوسط المدة",
-        "perAppointment": "لكل موعد",
-        "appointmentTrends": "اتجاهات المواعيد",
-        "dailyBreakdown": "تفصيل المواعيد اليومية",
-        "total": "المجموع",
-        "performanceMetrics": "مقاييس الأداء",
-        "completionRateLabel": "معدل الإكمال",
-        "cancellationRate": "معدل الإلغاء",
-        "noShowRate": "معدل عدم الحضور"
-      },
-      "trends": {
-        "aiRecommendations": "توصيات مدعومة بالذكاء الاصطناعي",
-        "insightsToImprove": "رؤى لتحسين ممارستك",
-        "peakTimeIdentified": "تم تحديد وقت الذروة",
-        "peakTimeDesc": "أكثر أوقاتك ازدحاماً هو {{time}}. فكر في إضافة المزيد من الفترات خلال هذه الفترة.",
-        "strongRetention": "احتفاظ قوي بالمرضى",
-        "strongRetentionDesc": "لديك ولاء ممتاز للمرضى! ركز على الحفاظ على هذا المستوى العالي.",
-        "focusOnRetention": "التركيز على الاحتفاظ",
-        "focusOnRetentionDesc": "فكر في تنفيذ تذكيرات المتابعة لتحويل المزيد من المرضى الجدد إلى مرضى عائدين.",
-        "highCancellations": "إلغاءات حديثة عالية",
-        "highCancellationsDesc": "معدل الإلغاء الأخير مرتفع. فكر في إرسال تذكيرات المواعيد قبل 24 ساعة.",
-        "appointmentTrends": "اتجاهات المواعيد",
-        "dailyBreakdown": "تفصيل يومي للمواعيد",
-        "patientTypeDistribution": "توزيع نوع المريض",
-        "newVsReturning": "مرضى جدد مقابل عائدين",
-        "newPatients": "مرضى جدد",
-        "returning": "عائدون",
-        "popularTimeSlots": "الفترات الزمنية الأكثر شعبية",
-        "peakBookingTimes": "أوقات الحجز القصوى",
-        "bookings": "حجوزات",
-        "keyInsights": "رؤى رئيسية",
-        "growthTrend": "اتجاه النمو",
-        "appointmentsTrending": "المواعيد في اتجاه",
-        "upward": "صاعد",
-        "stable": "مستقر",
-        "patientLoyalty": "ولاء المريض",
-        "strong": "قوي",
-        "building": "بناء",
-        "patientRetention": "احتفاظ المريض",
-        "bestTime": "أفضل وقت",
-        "peakDemandAt": "ذروة الطلب عند"
-      },
-      "reviews": {
-        "overallRating": "التقييم الإجمالي",
-        "basedOnReviews": "بناءً على {{count}} مراجعة",
-        "reviewInsights": "رؤى المراجعة",
-        "positiveReviews": "مراجعات إيجابية",
-        "withComments": "مع تعليقات",
-        "ratingTrend": "اتجاه التقييم",
-        "vsLastMonth": "مقابل الشهر الماضي",
-        "allReviews": "جميع المراجعات",
-        "excellent": "ممتاز",
-        "helpful": "مفيد",
-        "reply": "رد",
-        "noReviewsFilter": "لم يتم العثور على مراجعات لهذا الفلتر"
-      },
-      "services": {
-        "title": "تحليل الخدمات",
-        "minutes": "دقائق",
-        "servicePerformance": "أداء الخدمة",
-        "revenueByService": "الإيرادات حسب الخدمة",
-        "service": "خدمة",
-        "bookings": "حجوزات",
-        "revenue": "إيرادات",
-        "avgCost": "متوسط التكلفة",
-        "topPerformingServices": "الخدمات الأفضل أداءً",
-        "basedOnBookings": "بناءً على عدد الحجوزات",
-        "revenueBreakdown": "تفصيل الإيرادات",
-        "byService": "حسب الخدمة",
-        "noServicesData": "لا توجد بيانات خدمات متاحة"
+        "cancelled": "ملغي"
       }
+    }
+  },
+
+  "tabs": {
+    "advanced": "مؤشرات الأداء الرئيسية المتقدمة"
+  },
+
+  "notAvailable": "غير متاح",
+
+  "advancedFinancial": {
+    "title": "المؤشرات المالية المتقدمة",
+    "description": "تتبّع مؤشرات الأداء المالية الأساسية ومقاييس الربحية",
+    "configureInputs": "إعداد المدخلات",
+    "keyInsightsTitle": "أهم الرؤى",
+    "insights": {
+      "cacToLtvHealthy": "نسبة CAC إلى LTV ضمن نطاق صحي (≥ 3:1)",
+      "cacToLtvNeedsImprovement": "نسبة CAC إلى LTV تحتاج إلى تحسين (< 3:1)",
+      "netProfitStrong": "هامش صافي الربح قوي (> 15% ممتاز)",
+      "netProfitBelowAvg": "هامش صافي الربح أقل من المتوسط (الهدف: > 15%)",
+      "workingCapitalHealthy": "نسبة رأس المال العامل صحية (1.5–2.0 نطاق جيد)",
+      "workingCapitalTight": "نسبة رأس المال العامل منخفضة (يفضل > 1.5)",
+      "roasExcellent": "عائد الإنفاق الإعلاني ROAS ممتاز (4:1 أو أكثر)",
+      "roasNeedsOptimization": "ROAS يحتاج إلى تحسين (الهدف 4:1 على الأقل)"
     },
-    "financial": {
-      "title": "نظرة مالية",
-      "description": "تتبع إيراداتك وأرباحك",
-      "tabs": {
-        "overview": "نظرة عامة",
-        "services": "الخدمات",
-        "payouts": "المدفوعات",
-        "pending": "معلق"
+    "metrics": {
+      "roi": {
+        "title": "ROI (العائد على الاستثمار)",
+        "description": "العائد الإجمالي على الاستثمار"
       },
-      "overview": {
-        "totalRevenue": "إجمالي الإيرادات",
-        "totalEarnings": "إجمالي الأرباح",
-        "allTime": "كل الوقت",
-        "thisMonth": "هذا الشهر",
-        "monthlyIncome": "الدخل الشهري",
-        "lastMonth": "الشهر الماضي",
-        "pendingPayouts": "المدفوعات المعلقة",
-        "awaitingProcessing": "في انتظار المعالجة",
-        "avgPerAppointment": "متوسط لكل موعد",
-        "perBooking": "لكل حجز",
-        "completedAppointments": "المواعيد المكتملة",
-        "paidAppointments": "المواعيد المدفوعة",
-        "revenueOverTime": "الإيرادات مع مرور الوقت",
-        "monthlyBreakdown": "تفصيل شهري"
+      "roas": {
+        "title": "ROAS (العائد على الإنفاق الإعلاني)",
+        "description": "الإيراد لكل دولار إعلانات"
       },
-      "insights": {
-        "mostProfitable": "الخدمة الأكثر ربحية",
-        "bookings": "حجوزات",
-        "noData": "لا توجد بيانات متاحة",
-        "revenuePerHour": "الإيرادات في الساعة",
-        "basedOnHours": "بناءً على {{hours}} ساعات عمل",
-        "refundRate": "معدل الاسترداد/الإلغاء",
-        "excellent": "ممتاز",
-        "good": "جيد",
-        "needsImprovement": "يحتاج إلى تحسين",
-        "busiestDays": "أكثر الأيام ازدحاماً"
+      "adRevenueCost": {
+        "title": "إيراد / تكلفة الإعلان",
+        "description": "كفاءة أداء الإعلانات"
       },
-      "serviceRevenue": {
-        "title": "إيرادات الخدمة",
-        "description": "أداء الإيرادات حسب الخدمة",
-        "serviceName": "اسم الخدمة",
-        "bookings": "حجوزات",
-        "revenue": "إيرادات",
-        "avgPrice": "متوسط السعر",
-        "noServices": "لا توجد بيانات خدمات متاحة"
+      "workingCapital": {
+        "title": "رأس المال العامل",
+        "description": "الأصول المتداولة ناقص الالتزامات"
+      },
+      "workingCapitalRatio": {
+        "title": "نسبة رأس المال العامل",
+        "description": "مؤشر السيولة"
+      },
+      "netProfitMargin": {
+        "title": "هامش صافي الربح",
+        "description": "الربحية بعد جميع المصروفات"
+      },
+      "grossProfitMargin": {
+        "title": "هامش الربح الإجمالي",
+        "description": "الإيراد ناقص تكلفة المبيعات"
+      },
+      "ebitda": {
+        "title": "EBITDA",
+        "description": "الأرباح قبل الفوائد والضرائب والإهلاك والاستهلاك"
+      },
+      "breakEvenUnits": {
+        "title": "نقطة التعادل (وحدات)",
+        "description": "عدد الوحدات المطلوبة للوصول إلى التعادل"
+      },
+      "revenueRunRate": {
+        "title": "معدل الإيراد السنوي المتوقع",
+        "description": "توقع الإيراد السنوي بناءً على البيانات الحالية"
+      },
+      "cac": {
+        "title": "CAC (تكلفة اكتساب العميل)",
+        "description": "تكلفة اكتساب عميل واحد"
+      },
+      "ltv": {
+        "title": "LTV (القيمة العمرية للعميل)",
+        "description": "إيراد العميل على مدى عمره"
+      },
+      "cacToLtv": {
+        "title": "نسبة CAC إلى LTV",
+        "description": "قيمة العميل مقارنةً بتكلفة اكتسابه"
       }
     }
   }
-}
-{ "financialStats": { "overview": { "tbd": "سيتم التحديد لاحقًا" }, "tabs": { "earningsChart": "الأرباح عبر الزمن", "byService": "حسب الخدمة", "payouts": "المدفوعات", "pending": "المعلّقة", "insights": "الرؤى" }, "chart": { "noDataDesc": "أكمل المواعيد لعرض سجل الأرباح", "earningsLabel": "الأرباح ($)" }, "services": { "minutes": "دقيقة" }, "payouts": { "noData": "لا توجد سجلات دفعات", "statusCompleted": "مكتمل" }, "pending": { "noData": "لا توجد مدفوعات معلّقة", "paymentMarked": "تم تعليم الدفعة كمستلمة" } }, "performance": { "tabs": { "advanced": "مؤشرات KPI متقدمة" }, "notAvailable": "غير متاح", "advancedFinancial": { "title": "مقاييس مالية متقدمة", "description": "تتبّع مؤشرات الأداء المالية الرئيسية ومقاييس الربحية", "configureInputs": "تهيئة المدخلات", "keyInsightsTitle": "أهم الرؤى", "insights": { "cacToLtvHealthy": "نسبة CAC إلى LTV جيدة (≥ 3:1)", "cacToLtvNeedsImprovement": "نسبة CAC إلى LTV تحتاج تحسينًا (< 3:1)", "netProfitStrong": "هامش صافي الربح قوي (>15% ممتاز)", "netProfitBelowAvg": "هامش صافي الربح أقل من المتوسط (الهدف: >15%)", "workingCapitalHealthy": "نسبة رأس المال العامل جيدة (1.5–2.0 مثالية)", "workingCapitalTight": "نسبة رأس المال العامل منخفضة (استهدف >1.5)", "roasExcellent": "ROAS ممتاز (4:1 أو أعلى)", "roasNeedsOptimization": "ROAS يحتاج إلى تحسين (الهدف: على الأقل 4:1)" }, "metrics": { "roi": { "title": "ROI (العائد على الاستثمار)", "description": "العائد الإجمالي على الاستثمار" }, "roas": { "title": "ROAS (العائد على الإنفاق الإعلاني)", "description": "الإيراد لكل دولار إعلاني" }, "adRevenueCost": { "title": "إيرادات الإعلانات / التكلفة", "description": "أداء الإعلانات" }, "workingCapital": { "title": "رأس المال العامل", "description": "الأصول المتداولة - الالتزامات" }, "workingCapitalRatio": { "title": "نسبة رأس المال العامل", "description": "مقياس السيولة" }, "netProfitMargin": { "title": "هامش صافي الربح", "description": "الربحية بعد جميع المصروفات" }, "grossProfitMargin": { "title": "هامش الربح الإجمالي", "description": "الإيراد مطروحًا منه تكلفة البضاعة المباعة" }, "ebitda": { "title": "EBITDA", "description": "الأرباح قبل الفوائد والضرائب والاستهلاك والإطفاء" }, "breakEvenUnits": { "title": "نقطة التعادل (بالوحدات)", "description": "عدد الوحدات اللازمة للوصول إلى التعادل" }, "revenueRunRate": { "title": "معدل الإيراد السنوي المتوقع", "description": "توقع الإيراد السنوي بناءً على الأداء الحالي" }, "cac": { "title": "CAC (تكلفة اكتساب العميل)", "description": "تكلفة اكتساب عميل واحد" }, "ltv": { "title": "LTV (القيمة العمرية للعميل)", "description": "إيراد العميل على مدى عمره" }, "cacToLtv": { "title": "نسبة CAC إلى LTV", "description": "قيمة العميل مقابل تكلفة اكتسابه" } } } } }
 }
