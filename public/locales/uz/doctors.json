@@ -1,607 +1,1659 @@
 {
-  "search": {
-    "title": "Shifokor topish va yozilish",
-    "placeholder": "Shifokorlar, mutaxassisliklar, manzillar...",
-    "searching": "Qidirilmoqda...",
-    "filters": "Filtrlar",
-    "specialty": "Mutaxassislik",
-    "location": "Manzil",
-    "rating": "Minimal reyting",
-    "consultationFee": "Konsultatsiya narxi",
-    "availability": "Mavjudlik",
-    "clearFilters": "Filtrlarni tozalash",
-    "applyFilters": "Filtrlarni qo'llash",
-    "availableToday": "Bugun mavjud",
-    "videoConsultation": "Video konsultatsiya",
-    "acceptsInsurance": "Sug'urtani qabul qiladi",
-    "priceRange": "Narx oralig'i",
-    "distance": "Masofa",
-    "language": "Til",
-    "submit": "Qidirish"
-  },
-  "profile": {
-    "about": "Haqida",
-    "experience": "Tajriba",
-    "education": "Ta'lim",
-    "languages": "Tillar",
-    "services": "Xizmatlar",
-    "reviews": "Sharhlar",
-    "availability": "Mavjudlik",
-    "bookAppointment": "Qabulga yozilish",
-    "contactDoctor": "Shifokor bilan bog'lanish",
-    "yearsExperience": "{{years}} yil tajriba",
-    "patientsHelped": "{{count}}+ bemorga yordam bergan",
-    "responseTime": "{{time}} ichida javob beradi",
-    "consultationFee": "Konsultatsiya narxi",
-    "nextAvailable": "Keyingi mavjud vaqt",
-    "viewProfile": "Profilni ko'rish",
-    "videoAvailable": "Video konsultatsiya mavjud",
-    "insuranceAccepted": "Sug'urta qabul qilinadi",
-    "newPatientsWelcome": "Yangi bemorlarni qabul qiladi",
-    "verifiedDoctor": "Tasdiqlangan shifokor",
-    "licenseVerified": "Litsenziya tasdiqlangan",
-    "hospitalAffiliations": "Shifoxona aloqalari",
-    "specializations": "Mutaxassisliklar",
-    "certifications": "Sertifikatlar",
-    "contactInfo": "Kontakt ma'lumotlari",
-    "officeHours": "Ish vaqti",
-    "emergencyContact": "Tez yordam kontakti"
-  },
-  "booking": {
-    "title": "Qabulga yozilish",
-    "selectDate": "Sana tanlang",
-    "selectTime": "Vaqt tanlang",
-    "appointmentType": "Qabul turi",
-    "inPerson": "Shaxsan tashrif",
-    "videoCall": "Video konsultatsiya",
-    "patientInfo": "Bemor ma'lumotlari",
-    "fullName": "To'liq ism",
-    "phoneNumber": "Telefon raqami",
-    "email": "Email manzil",
-    "reasonForVisit": "Tashrif sababi",
-    "additionalNotes": "Qo'shimcha izohlar (Ixtiyoriy)",
-    "confirmBooking": "Yozilishni tasdiqlash",
-    "bookingConfirmed": "Yozilish tasdiqlandi!",
-    "bookingConfirmedDesc": "Qabulingiz muvaffaqiyatli rejalashtirildi.",
-    "bookingError": "Yozilishda xatolik",
-    "bookingErrorDesc": "Iltimos, qayta urinib ko'ring yoki qo'llab-quvvatlash bilan bog'laning.",
-    "loginRequired": "Kirish talab qilinadi",
-    "loginRequiredDesc": "Qabulga yozilish uchun tizimga kiring.",
+  "createClinic": {
+    "title": "Klinikangizni sozlash",
+    "description": "Shifokorlar va qabul yozuvlarini boshqarishni boshlash uchun klinika profilingizni to‘ldiring.",
+    "clinicName": "Klinika nomi",
+    "clinicNameRequired": "Klinika nomi majburiy",
+    "description_field": "Tavsif",
+    "phone": "Telefon",
+    "email": "Email",
+    "address": "Manzil",
+    "city": "Shahar",
+    "country": "Mamlakat",
     "cancel": "Bekor qilish",
-    "back": "Orqaga",
-    "next": "Keyingi",
-    "step": "{{total}} dan {{current}}-qadam",
-    "appointmentSummary": "Qabul xulosasi",
-    "totalCost": "Jami narx",
-    "paymentMethod": "To'lov usuli",
-    "payNow": "Hozir to'lash",
-    "payLater": "Tashrifda to'lash",
-    "insuranceInfo": "Sug'urta ma'lumotlari",
-    "insuranceProvider": "Sug'urta kompaniyasi",
-    "policyNumber": "Polis raqami",
-    "verifyInsurance": "Sug'urtani tekshirish"
+    "create": "Klinika profilini yaratish",
+    "creating": "Yaratilmoqda...",
+    "success": "Klinika profili muvaffaqiyatli yaratildi!",
+    "error": "Klinika profilini yaratib bo‘lmadi"
   },
-  "page": {
-    "title": "Shifokor topish",
-    "subtitle": "Tasdiqlangan shifokorlarni toping va darhol qabulga yoziling",
-    "readyToFind": "To'g'ri shifokorni topishga tayyormisiz?",
-    "readyToFindDesc": "Tasdiqlangan tibbiy mutaxassislar tarmog'imizdan qidiring va bir necha bosishda qabulga yoziling.",
-    "popularSearches": "Ommabop qidiruvlar",
-    "foundText": "natija topildi",
-    "showingVerified": "Tasdiqlangan tibbiy mutaxassislar ko'rsatilmoqda",
-    "noDoctors": "Shifokor topilmadi",
-    "searching": "Qidirilmoqda...",
-    "error": "Qidiruv xatosi",
-    "tryAgain": "Iltimos, keyinroq qayta urinib ko'ring.",
-    "bookNow": "Yozilish",
-    "savedSuccessfully": "Saqlangan",
-    "savedSuccessfullyDesc": "Saqlangan shifokorlar ro'yxatiga qo'shildi.",
-    "removedFromSaved": "Olib tashlandi",
-    "removedFromSavedDesc": "Saqlangan shifokorlar ro'yxatidan olib tashlandi.",
-    "loginRequired": "Kirish talab qilinadi",
-    "loginRequiredDesc": "Qabulga yozilish uchun tizimga kiring.",
-    "searchButton": "Qidirish"
-  },
-  "specialties": {
-    "all": "Barcha mutaxassisliklar",
-    "generalPractice": "Umumiy amaliyot",
-    "cardiology": "Kardiologiya",
-    "neurology": "Nevrologiya",
-    "ophthalmology": "Oftalmologiya",
-    "orthopedics": "Ortopediya",
-    "pediatrics": "Pediatriya",
-    "dentistry": "Stomatologiya",
-    "dermatology": "Dermatologiya",
-    "endocrinology": "Endokrinologiya",
-    "pathology": "Patologiya",
-    "pulmonology": "Pulmonologiya"
-  },
-  "autocomplete": {
-    "labels": {
-      "recent": "So‘nggi",
-      "popular": "Ommabop",
-      "doctor": "Shifokor",
-      "location": "Manzil",
-      "specialty": "Mutaxassislik"
+  "admin": {
+    "title": "Amaliyot paneli",
+    "unverifiedPractice": "Tasdiqlanmagan amaliyot",
+    "loading": "Panel yuklanmoqda...",
+    "error": {
+      "failed": "Panelni yuklab bo‘lmadi",
+      "tryAgain": "Qayta urinish"
     },
-    "clearRecent": "So‘nggi qidiruvlarni tozalash"
-  },
-  "location": {
-    "myLocation": "Mening joylashuvim",
-    "useMyLocation": "Joylashuvimdan foydalanish",
-    "locationDetected": "Joylashuv aniqlandi",
-    "clear": "Tozalash"
-  },
-  "filters": {
-    "distance": {
-      "label": "Masofa",
-      "any": "Istalgan masofa",
-      "km5": "5 km",
-      "km10": "10 km",
-      "km25": "25 km",
-      "km50": "50 km"
+    "welcome": {
+      "title": "Administrator paneliga xush kelibsiz!",
+      "description": "Keling, klinikangiz ma’lumotlarini sozlaymiz, shunda siz shifokorlar va qabullarni boshqarishni boshlashingiz mumkin.",
+      "needProvide": "Siz quyidagilarni taqdim etishingiz kerak:",
+      "requirements": {
+        "clinicName": "Klinika nomi va tavsifi",
+        "location": "Joylashuv va aloqa ma’lumotlari",
+        "operating": "Ish faoliyati tafsilotlari"
+      },
+      "createProfile": "Klinika profilini yaratish"
     },
-    "rating": {
-      "minimum": "Minimal reyting: {{rating}}+ ★",
-      "any": "Istalgan",
-      "max": "5 ★"
+    "header": {
+      "previewProfile": "Ommaviy profilni ko‘rish",
+      "profile": "Profil",
+      "profileSettings": "Profil sozlamalari",
+      "practiceSettings": "Amaliyot sozlamalari",
+      "logout": "Chiqish"
     },
-    "availability": {
-      "availableToday": "Bugun mavjud",
-      "acceptsNewPatients": "Yangi bemorlarni qabul qiladi"
+    "verification": {
+      "status": "Tasdiqlash holati:",
+      "verified": "Amaliyotingiz tasdiqlandi va faol! Endi bemorlar sizni topib, qabulga yozilishi mumkin.",
+      "rejected": "Tasdiqlash rad etildi. Iltimos, talablarni ko‘rib chiqing va hujjatlarni qayta yuboring.",
+      "underReview": "Tasdiqlashingiz ko‘rib chiqilmoqda. Tekshiruv yakunlangach sizga xabar beramiz (2-3 ish kuni).",
+      "pending": "Ommaviy bo‘lish va qidiruv natijalarida chiqish uchun amaliyotni tasdiqlashni yakunlashingiz kerak.",
+      "verifyPractice": "Amaliyotni tasdiqlash",
+      "resubmit": "Tasdiqlashga qayta yuborish",
+      "viewRequirements": "Talablarni ko‘rish",
+      "statuses": {
+        "verified": "TASDIQLANGAN",
+        "rejected": "RAD ETILGAN",
+        "under_review": "KO‘RIB CHIQILMOQDA",
+        "pending": "KUTILMOQDA"
+      }
+    },
+    "metrics": {
+      "totalBookings": "Jami yozuvlar",
+      "totalPatients": "Jami bemorlar",
+      "revenueThisMonth": "Joriy oy daromadi",
+      "clinicRating": "Klinika reytingi",
+      "pendingInvites": "Kutilayotgan takliflar",
+      "locations": "Lokatsiyalar"
+    },
+    "tabs": {
+      "overview": "Umumiy ko‘rinish",
+      "providers": "Shifokorlar",
+      "services": "Xizmatlar",
+      "staff": "Xodimlar",
+      "locations": "Lokatsiyalar",
+      "patients": "Bemorlar",
+      "billing": "To‘lovlar",
+      "analytics": "Analitika"
+    },
+    "overview": {
+      "recentAppointments": "So‘nggi qabullar",
+      "recentMessages": "So‘nggi xabarlar",
+      "noAppointments": "Rejalashtirilgan qabullar yo‘q",
+      "noMessages": "So‘nggi xabarlar yo‘q"
+    },
+    "providers": {
+      "title": "Shifokorlarni boshqarish",
+      "inviteProvider": "Shifokorni taklif qilish",
+      "noProviders": "Hozircha shifokorlar yo‘q",
+      "noProvidersDesc": "Boshlash uchun shifokorlarni amaliyotingizga taklif qiling",
+      "inviteFirst": "Birinchi shifokorni taklif qilish",
+      "reviews": "Sharhlar",
+      "rating": "Reyting",
+      "verified": "Tasdiqlangan",
+      "pending": "Kutilmoqda",
+      "edit": "Tahrirlash"
+    },
+    "locations": {
+      "title": "Amaliyot lokatsiyalari",
+      "addLocation": "Yangi lokatsiya qo‘shish",
+      "noLocations": "Hozircha lokatsiyalar yo‘q",
+      "noLocationsDesc": "Bemorlar sizni topishi uchun amaliyot lokatsiyalarini qo‘shing",
+      "addFirst": "Birinchi lokatsiyani qo‘shish",
+      "primary": "Asosiy",
+      "photos": "Rasmlar",
+      "edit": "Tahrirlash"
     },
     "services": {
-      "title": "Xizmatlar",
-      "videoConsultation": "Video konsultatsiya",
-      "acceptsInsurance": "Sug‘urtani qabul qiladi"
+      "title": "Xizmatlar va muolajalar",
+      "addService": "Yangi xizmat qo‘shish",
+      "noServices": "Hozircha xizmatlar yo‘q",
+      "noServicesDesc": "Amaliyotingiz taklif qiladigan xizmat va muolajalarni qo‘shing",
+      "addFirst": "Birinchi xizmatni qo‘shish",
+      "availableWith": "Quyidagilar bilan mavjud:",
+      "price": "Narx",
+      "duration": "Davomiyligi",
+      "edit": "Tahrirlash"
     },
-    "language": {
-      "title": "Til",
-      "any": "Istalgan til"
+    "staff": {
+      "title": "Xodimlarni boshqarish",
+      "inviteStaff": "Xodimni taklif qilish",
+      "noStaff": "Hozircha xodimlar yo‘q",
+      "noStaffDesc": "Amaliyotingizni boshqarishda yordam berish uchun xodim qo‘shing",
+      "inviteFirst": "Birinchi xodimni taklif qilish",
+      "activeStaff": "Faol xodimlar",
+      "edit": "Tahrirlash"
     },
-    "priceRanges": {
-      "any": "Istalgan",
-      "0_50": "$0 - $50",
-      "50_100": "$50 - $100",
-      "100_200": "$100 - $200",
-      "200_plus": "$200+"
+    "patients": {
+      "title": "Bemorlarni boshqarish",
+      "searchPlaceholder": "Bemorlarni qidirish...",
+      "export": "Eksport",
+      "noPatients": "Hozircha bemorlar yo‘q",
+      "tableHeaders": {
+        "name": "Bemor ismi",
+        "lastVisit": "Oxirgi tashrif",
+        "provider": "Shifokor",
+        "status": "Holat"
+      }
     },
-    "badges": {
-      "video": "Video",
-      "insurance": "Sug‘urta"
+    "billing": {
+      "title": "Hisob-kitob va to‘lovlar",
+      "generateReport": "Hisobot yaratish",
+      "paymentSummary": "To‘lovlar xulosasi",
+      "totalRevenue": "Jami daromad (joriy oy)",
+      "pendingPayments": "Kutilayotgan to‘lovlar",
+      "completedPayments": "Yakunlangan to‘lovlar",
+      "recentTransactions": "So‘nggi tranzaksiyalar",
+      "noTransactions": "Hozircha tranzaksiyalar yo‘q"
     },
-    "languages": {
-      "english": "Inglizcha",
-      "spanish": "Ispancha",
-      "french": "Fransuzcha",
-      "german": "Nemischa",
-      "russian": "Ruscha",
-      "chinese": "Xitoycha",
-      "arabic": "Arabcha",
-      "turkish": "Turkcha",
-      "uzbek": "O‘zbekcha"
+    "analytics": {
+      "title": "Amaliyot analitikasi",
+      "last30Days": "So‘nggi 30 kun",
+      "exportReport": "Hisobotni eksport qilish",
+      "bookingTrends": "Yozuvlar trendi",
+      "chartPlaceholder": "Bu yerda grafik vizualizatsiyasi bo‘ladi",
+      "performanceMetrics": "Samaradorlik ko‘rsatkichlari",
+      "averageRating": "O‘rtacha reyting",
+      "patientSatisfaction": "Bemorlar qoniqishi",
+      "appointmentCompletion": "Qabulni yakunlash foizi",
+      "responseTime": "O‘rtacha javob vaqti"
     }
   },
-  "results": {
-    "tryAdjusting": "Filtrlar yoki qidiruv so‘zlarini o‘zgartirib ko‘ring",
-    "doctorPrefix": "Dr.",
-    "perVisit": "/tashrif",
-    "sortBy": "Saralash",
-    "sortOptions": {
-      "relevance": "Mosligi bo‘yicha",
-      "rating": "Eng yuqori reyting",
-      "price_low": "Narx: pastdan yuqoriga",
-      "price_high": "Narx: yuqoridan pastga",
-      "distance": "Masofa",
-      "availability": "Eng yaqin vaqt"
+  "superAdmin": {
+    "login": {
+      "title": "Superadmin kirishi",
+      "subtitle": "Platforma egasi kirishi - faqat ruxsat berilgan xodimlar uchun",
+      "subtitleSignUp": "Superadmin akkauntini yaratish",
+      "email": "Elektron pochta",
+      "password": "Parol",
+      "signIn": "Kirish",
+      "signUp": "Akkaunt yaratish",
+      "signingIn": "Kirilmoqda...",
+      "creatingAccount": "Akkaunt yaratilmoqda...",
+      "alreadyHaveAccount": "Akkauntingiz bormi? Kirish",
+      "needAccount": "Akkaunt yaratish kerakmi? Ro‘yxatdan o‘tish",
+      "signUpFailed": "Ro‘yxatdan o‘tish muvaffaqiyatsiz",
+      "accountCreated": "Akkaunt yaratildi",
+      "accountCreatedDesc": "Endi ma’lumotlaringiz bilan tizimga kirishingiz mumkin",
+      "authFailed": "Autentifikatsiya xatosi",
+      "error": "Xato",
+      "unexpectedError": "Kutilmagan xatolik yuz berdi"
+    },
+    "dashboard": {
+      "title": "Panel umumiy ko‘rinishi",
+      "subtitle": "Platforma ko‘rsatkichlari bir qarashda",
+      "recentAppointments": "So‘nggi yozuvlar"
+    },
+    "doctors": {
+      "title": "Shifokorlarni boshqarish",
+      "subtitle": "Platformadagi barcha shifokorlarni boshqarish",
+      "allDoctors": "Barcha shifokorlar",
+      "verifications": "Shifokor verifikatsiyasi",
+      "pendingVerifications": "Verifikatsiyasi kutilayotgan shifokorlar"
+    },
+    "practices": {
+      "title": "Klinikalarni boshqarish",
+      "subtitle": "Barcha tibbiy klinikalarni boshqarish",
+      "allPractices": "Barcha klinikalar",
+      "verifications": "Klinikalar verifikatsiyasi",
+      "pendingVerifications": "Kutilayotgan verifikatsiyalar"
+    },
+    "patients": {
+      "title": "Bemorlarni boshqarish",
+      "subtitle": "Platformadagi barcha bemorlarni ko‘rish",
+      "allPatients": "Barcha bemorlar"
+    },
+    "appointments": {
+      "title": "Yozuvlarni boshqarish",
+      "subtitle": "Barcha yozuvlarni monitoring qilish",
+      "allAppointments": "Barcha yozuvlar"
+    },
+    "payments": {
+      "title": "To‘lovlar va tranzaksiyalar",
+      "subtitle": "Moliyaviy umumiy ko‘rinish va tranzaksiyalar",
+      "allTransactions": "Barcha tranzaksiyalar"
+    },
+    "analytics": {
+      "title": "Platforma analitikasi",
+      "subtitle": "Batafsil statistika va ko‘rsatkichlar"
+    },
+    "settings": {
+      "title": "Tizim sozlamalari",
+      "subtitle": "Platforma parametrlarini sozlash"
+    },
+    "logs": {
+      "title": "Tizim jurnallari",
+      "subtitle": "Audit jurnali va tizim hodisalari"
+    },
+    "footer": "© 2025 Docito ma'muriy paneli - faqat xavfsiz kirish",
+    "sessionExpired": "Sessiya tugadi",
+    "sessionExpiredDesc": "Faollik bo‘lmagani sababli tizimdan chiqarildingiz",
+    "performance": {
+      "title": "Samaradorlik analitikasi",
+      "description": "Samaradorlik ko‘rsatkichlaringiz va insightlarni kuzating",
+      "loading": "Samaradorlik ma’lumotlari yuklanmoqda...",
+      "errorLoading": "Samaradorlik ma’lumotlarini yuklashda xatolik",
+      "tryAgain": "Qayta urinish",
+      "refresh": "Yangilash",
+      "export": "Hisobotni eksport qilish",
+      "exportComingSoon": "Eksport funksiyasi tez orada",
+      "dataRefreshed": "Samaradorlik ma’lumotlari muvaffaqiyatli yangilandi",
+      "newAchievement": "Yangi yutuq ochildi!",
+      "high": "Yuqori",
+      "medium": "O‘rta",
+      "low": "Past",
+      "tabs": {
+        "overview": "Umumiy ko‘rinish",
+        "services": "Xizmatlar",
+        "reviews": "Sharhlar",
+        "trends": "Trendlar"
+      },
+      "overview": {
+        "performanceLevel": "Samaradorlik darajasi",
+        "basedOn": "Yakunlash foizi, reytinglar va faollik asosida",
+        "totalAppointments": "Jami qabullar",
+        "completed": "Yakunlangan",
+        "cancelled": "Bekor qilingan"
+      }
+    }
+  },
+  "tabs": {
+    "advanced": "Kengaytirilgan KPIlar"
+  },
+  "notAvailable": "Mavjud emas",
+  "advancedFinancial": {
+    "title": "Kengaytirilgan moliyaviy ko‘rsatkichlar",
+    "description": "Asosiy moliyaviy KPI va rentabellik ko‘rsatkichlarini kuzating",
+    "configureInputs": "Kirish ma’lumotlarini sozlash",
+    "keyInsightsTitle": "Asosiy xulosalar",
+    "insights": {
+      "cacToLtvHealthy": "CAC va LTV nisbati sog‘lom diapazonda (≥ 3:1)",
+      "cacToLtvNeedsImprovement": "CAC va LTV nisbati yaxshilanishi kerak (< 3:1)",
+      "netProfitStrong": "Sof foyda marjasi yuqori (> 15% — a’lo)",
+      "netProfitBelowAvg": "Sof foyda marjasi o‘rtachadan past (maqsad: > 15%)",
+      "workingCapitalHealthy": "Aylanma kapital koeffitsienti me’yorda (1.5–2.0 — yaxshi diapazon)",
+      "workingCapitalTight": "Aylanma kapital koeffitsienti tarang (ma’quli > 1.5)",
+      "roasExcellent": "ROAS a’lo (4:1 va undan yuqori)",
+      "roasNeedsOptimization": "ROAS optimallashtirishni talab qiladi (maqsad: kamida 4:1)"
+    },
+    "metrics": {
+      "roi": {
+        "title": "ROI (investitsiya qaytimi)",
+        "description": "Investitsiyalarning umumiy qaytimi"
+      },
+      "roas": {
+        "title": "ROAS (reklama xarajati qaytimi)",
+        "description": "Reklamaga sarflangan har bir dollar uchun tushum"
+      },
+      "adRevenueCost": {
+        "title": "Reklama daromadi / Reklama xarajati",
+        "description": "Reklama xarajatlari samaradorligi"
+      },
+      "workingCapital": {
+        "title": "Aylanma kapital",
+        "description": "Joriy aktivlar minus majburiyatlar"
+      },
+      "workingCapitalRatio": {
+        "title": "Aylanma kapital koeffitsienti",
+        "description": "Likvidlik ko‘rsatkichi"
+      },
+      "netProfitMargin": {
+        "title": "Sof foyda marjasi",
+        "description": "Barcha xarajatlardan keyingi foydalilik"
+      },
+      "grossProfitMargin": {
+        "title": "Yalpi foyda marjasi",
+        "description": "Tushum minus mahsulot tannarxi"
+      },
+      "ebitda": {
+        "title": "EBITDA",
+        "description": "Foizlar, soliqlar va amortizatsiyagacha bo‘lgan foyda"
+      },
+      "breakEvenUnits": {
+        "title": "Break-even nuqtasi (dona)",
+        "description": "Zararsizlik nuqtasiga chiqish uchun kerak bo‘ladigan birliklar soni"
+      },
+      "revenueRunRate": {
+        "title": "Daromad run rate",
+        "description": "Joriy ma’lumotlarga asoslangan yillik daromad prognozi"
+      },
+      "cac": {
+        "title": "CAC (mijozni jalb qilish qiymati)",
+        "description": "Bitta mijozni jalb qilish narxi"
+      },
+      "ltv": {
+        "title": "LTV (mijozning umrboqiy qiymati)",
+        "description": "Bitta mijozdan olinadigan umrboqiy tushum"
+      },
+      "cacToLtv": {
+        "title": "CAC / LTV nisbati",
+        "description": "Mijoz qiymatining jalb qilish xarajatiga nisbati"
+      }
     }
   }
 }
 {
-  "search": {
-    "title": "Shifokorlarni topish",
-    "placeholder": "Ism, mutaxassislik yoki joylashuv bo'yicha qidirish",
-    "filters": "Filtrlar",
-    "availability": "Mavjudlik",
-    "rating": "Reyting",
-    "experience": "Tajriba",
-    "consultationFee": "Konsultatsiya narxi",
-    "specialty": "Mutaxassislik",
-    "location": "Joylashuv",
-    "applyFilters": "Filtrlarni qo'llash",
-    "clearFilters": "Filtrlarni tozalash"
-  },
-  "profile": {
-    "viewProfile": "Profilni ko'rish",
-    "bookAppointment": "Qabulga yozilish",
-    "specialty": "Mutaxassislik",
-    "experience": "yillik tajriba",
-    "consultationFee": "Konsultatsiya narxi",
-    "rating": "Reyting",
-    "reviews": "sharh",
-    "availability": "Mavjudlik",
-    "about": "Shifokor haqida",
-    "education": "Ta'lim",
-    "languages": "Tillar",
-    "services": "Taqdim etiladigan xizmatlar",
-    "save": "Saqlash",
-    "saved": "Saqlandi",
-    "yearsExperience": "yil tajriba",
-    "videoConsultations": "Video konsultatsiyalar mavjud",
-    "booking": "Bron qilinmoqda...",
-    "videoCall": "Video Qo'ng'iroq",
-    "tabs": {
-      "about": "Haqida",
-      "practiceInfo": "Klinika Ma'lumoti",
-      "services": "Xizmatlar",
-      "reviews": "Sharhlar",
-      "availability": "Mavjudlik"
+  "patient": {
+    "title": "Bemor paneli",
+    "loading": "Panel yuklanmoqda...",
+    "navigation": {
+      "dashboard": "Panel",
+      "myAppointments": "Mening qabullarim",
+      "medications": "Dori vositalari",
+      "medicalRecords": "Tibbiy yozuvlar",
+      "findDoctors": "Shifokor topish",
+      "settings": "Sozlamalar",
+      "logout": "Chiqish"
     },
-    "aboutDoctor": "Dr. {{name}} Haqida",
-    "certifications": "Sertifikatlar",
-    "directions": "Yo'nalishlar",
-    "servicesPricing": "Xizmatlar va Narxlar",
-    "insuranceAccepted": "Sug'urta qabul qilinadi",
-    "bookService": "Xizmatni Bron Qilish",
-    "patientReviews": "Bemor Sharhlari",
-    "bookYourAppointment": "Uchrashuvingizni Belgilang",
-    "selectDate": "Sanani Tanlang",
-    "slotsAvailable": "vaqt oralig'i mavjud",
-    "selectTime": "Vaqtni Tanlang",
-    "selectDateFirst": "Avval sanani tanlang",
-    "appointmentSummary": "Uchrashuv Xulosasi",
-    "at": "soat",
-    "confirmAppointment": "Uchrashuvni Tasdiqlash"
-  },
-  "page": {
-    "signIn": "Kirish",
-    "title": "Mukammal Shifokoringizni Toping",
-    "subtitle": "Minglab tasdiqlangan tibbiy mutaxassislar orasidan qidiring",
-    "showFilters": "Filtrlarni Ko'rsatish",
-    "hideFilters": "Filtrlarni Yashirish",
-    "clearAll": "Hammasini Tozalash",
-    "minRating": "Minimal Reyting",
-    "anyRating": "Har Qanday Reyting",
-    "threeStars": "3+ Yulduz",
-    "fourStars": "4+ Yulduz",
-    "fourHalfStars": "4.5+ Yulduz",
-    "searching": "Qidirilmoqda...",
-    "foundText": "Shifokor Topildi",
-    "showingVerified": "Tasdiqlangan tibbiy mutaxassislar ko'rsatilmoqda",
-    "noDoctors": "Mezonlaringizga mos shifokorlar topilmadi",
-    "available": "Qabulga yozilish mumkin",
-    "consultationLabel": "Konsultatsiya",
-    "bookNow": "Hozir Yozilish"
-  },
-  "specialties": {
-    "all": "Barcha mutaxassisliklar",
-    "generalPractice": "Umumiy amaliyot",
-    "cardiology": "Kardiologiya",
-    "dermatology": "Dermatologiya",
-    "pediatrics": "Pediatriya",
-    "orthopedics": "Ortopediya",
-    "neurology": "Nevrologiya",
-    "psychiatry": "Psixiatriya",
-    "dentistry": "Stomatologiya",
-    "ophthalmology": "Oftalmologiya",
-    "ent": "LOR"
+    "stats": {
+      "upcomingAppointments": "Yaqinlashayotgan qabullar",
+      "medicalRecords": "Tibbiy yozuvlar",
+      "pendingReminders": "Kutilayotgan eslatmalar",
+      "nextAppointment": "Keyingi qabul",
+      "none": "Yo‘q"
+    },
+    "quickActions": {
+      "title": "Tezkor amallar",
+      "findDoctors": "Shifokor topish",
+      "bookAppointment": "Qabulga yozilish",
+      "viewAppointments": "Qabullarni ko‘rish"
+    },
+    "nextAppointment": {
+      "title": "Keyingi qabul",
+      "location": "Joylashuv tafsilotlari"
+    },
+    "appointments": {
+      "title": "Mening qabullarim",
+      "noAppointments": "Rejalashtirilgan qabullar yo‘q",
+      "bookFirst": "Birinchi qabulga yoziling",
+      "doctor": "Shifokor"
+    },
+    "records": {
+      "title": "Tibbiy yozuvlar",
+      "noRecords": "Hozircha tibbiy yozuvlar yo‘q"
+    },
+    "medications": {
+      "title": "Dori eslatmalari",
+      "todaysReminders": "Bugungi eslatmalar",
+      "upcomingReminders": "Yaqinlashayotgan eslatmalar",
+      "allReminders": "Barcha eslatmalar",
+      "pending": "Kutilmoqda",
+      "taken": "Qabul qilindi",
+      "missed": "O‘tkazib yuborildi",
+      "skipped": "Bekor qilindi",
+      "overdue": "Muddati o‘tgan",
+      "markTaken": "Qabul qilindi deb belgilash",
+      "markSkipped": "O‘tkazib yuborish",
+      "snooze": "Kechiktirish",
+      "completionRate": "Bugungi bajarilish darajasi",
+      "noReminders": "Dori eslatmalari yo‘q",
+      "addFirst": "Birinchi dori eslatmasini qo‘shing"
+    },
+    "findDoctors": {
+      "title": "Shifokor topish",
+      "subtitle": "Malakali tibbiyot mutaxassislarini qidiring va qabulga yoziling",
+      "searchPlaceholder": "Ism yoki mutaxassislik bo‘yicha qidirish",
+      "filters": "Filtrlar",
+      "resetFilters": "Filtrlarni tiklash",
+      "specialty": "Mutaxassislik",
+      "allSpecialties": "Barcha mutaxassisliklar",
+      "country": "Mamlakat",
+      "allCountries": "Barcha mamlakatlar",
+      "region": "Hudud",
+      "allRegions": "Barcha hududlar",
+      "minimumRating": "Minimal reyting",
+      "sortBy": "Saralash",
+      "relevance": "Moslik",
+      "rating": "Reyting",
+      "experience": "Tajriba",
+      "price": "Narx",
+      "showFilters": "Filtrlarni ko‘rsatish",
+      "hideFilters": "Filtrlarni yashirish",
+      "regionCity": "Hudud/Shahar",
+      "stars": "Yulduzlar",
+      "loadingDoctors": "Shifokorlar yuklanmoqda...",
+      "doctorsFound": "shifokor",
+      "doctorsFoundPlural": "shifokorlar",
+      "found": "topildi",
+      "noDoctorsFound": "Shifokorlar topilmadi",
+      "tryAdjustingFilters": "Filtrlar yoki qidiruv mezonlarini o‘zgartirib ko‘ring",
+      "resetAllFilters": "Barcha filtrlarni tiklash",
+      "perVisit": "har tashrif uchun",
+      "results": "Topilgan shifokorlar: {{count}}",
+      "bookNow": "Qabulga yozilish",
+      "viewProfile": "Profilni ko‘rish",
+      "consultationFee": "Konsultatsiya narxi",
+      "reviews": "sharhlar",
+      "noResults": "Shifokorlar topilmadi",
+      "adjustFilters": "Filtrlarni o‘zgartirib ko‘ring",
+      "doctorProfile": "Shifokor profili",
+      "practiceInformation": "Amaliyot haqida ma’lumot",
+      "about": "Shifokor haqida",
+      "appointmentsCompleted": "qabul yakunlangan",
+      "verifiedHealthcareProfessional": "Tasdiqlangan tibbiyot mutaxassisi",
+      "bookAppointmentWith": "Dr. bilan qabulga yozilish"
+    },
+    "settings": {
+      "title": "Sozlamalar",
+      "subtitle": "Akkaunt sozlamalarini boshqarish",
+      "account": "Akkaunt",
+      "notifications": "Bildirishnomalar",
+      "privacy": "Maxfiylik",
+      "security": "Xavfsizlik",
+      "save": "O‘zgarishlarni saqlash",
+      "changePassword": "Parolni o‘zgartirish",
+      "currentPassword": "Joriy parol",
+      "newPassword": "Yangi parol",
+      "confirmPassword": "Parolni tasdiqlang",
+      "emailNotifications": "Email bildirishnomalar",
+      "smsNotifications": "SMS bildirishnomalar",
+      "appointmentReminders": "Qabul eslatmalari",
+      "medicationReminders": "Dori eslatmalari",
+      "marketingEmails": "Marketing xatlari",
+      "profileVisibility": "Profil ko‘rinishi",
+      "shareDataWithDoctors": "Ma’lumotlarni shifokorlar bilan ulashish",
+      "showActivityStatus": "Faollik holatini ko‘rsatish",
+      "instructions": "Akkaunt sozlamalari, bildirishnomalar va maxfiylik parametrlarini boshqarish",
+      "account": {
+        "title": "Shaxsiy ma’lumotlar",
+        "description": "Shaxsiy ma’lumotlaringizni yangilang",
+        "fullName": "To‘liq ism",
+        "email": "Email",
+        "phone": "Telefon",
+        "dateOfBirth": "Tug‘ilgan sana",
+        "address": "Manzil",
+        "saveChanges": "O‘zgarishlarni saqlash"
+      },
+      "notifications": {
+        "emailTitle": "Email bildirishnomalar",
+        "emailDescription": "Email bildirishnoma sozlamalarini boshqarish",
+        "smsTitle": "SMS bildirishnomalar",
+        "smsDescription": "SMS bildirishnoma sozlamalarini boshqarish",
+        "bookingConfirmations": "Yozuv tasdiqlari",
+        "bookingConfirmationsDesc": "Qabulga yozilganda email olish",
+        "appointmentReminders": "Qabul eslatmalari",
+        "appointmentRemindersDesc": "Qabuldan oldin eslatmalar olish",
+        "cancellationNotices": "Bekor qilish xabarlari",
+        "cancellationNoticesDesc": "Bekor qilinganligi haqida tasdiq olish",
+        "smsReminders": "SMS eslatmalar",
+        "smsRemindersDesc": "Qabuldan oldin SMS eslatmalar olish",
+        "pushNotifications": "Push bildirishnomalar",
+        "pushNotificationsDesc": "Ilovada bildirishnomalar olish",
+        "saveSettings": "Bildirishnoma sozlamalarini saqlash"
+      },
+      "privacy": {
+        "title": "Maxfiylik sozlamalari",
+        "description": "Maxfiylik parametrlarini boshqarish",
+        "profileVisibility": "Profil ko‘rinishi",
+        "profileVisibilityDesc": "Shifokorlarga profilingizni ko‘rishga ruxsat berish",
+        "shareAnalytics": "Analitikani ulashish",
+        "shareAnalyticsDesc": "Anonim ma’lumotlar bilan yaxshilanishimizga yordam bering",
+        "marketingCommunications": "Marketing xabarlari",
+        "marketingCommunicationsDesc": "Reklama xatlarini olish",
+        "saveSettings": "Maxfiylik sozlamalarini saqlash"
+      },
+      "security": {
+        "title": "Parolni o‘zgartirish",
+        "description": "Akkaunt xavfsizligi uchun parolingizni yangilang",
+        "currentPassword": "Joriy parol",
+        "newPassword": "Yangi parol",
+        "confirmPassword": "Yangi parolni tasdiqlang",
+        "updatePassword": "Parolni yangilash"
+      }
+    },
+    "filters": {
+      "title": "Filtrlar",
+      "providerType": "Ta’minotchi turi",
+      "doctorsOnly": "Faqat shifokorlar",
+      "practicesOnly": "Faqat klinikalar",
+      "availability": "Mavjudlik",
+      "acceptingNewPatients": "Yangi bemorlarni qabul qiladi",
+      "availableToday": "Bugun mavjud",
+      "services": "Xizmatlar",
+      "acceptsInsurance": "Sug‘urtani qabul qiladi",
+      "videoConsultation": "Video konsultatsiya",
+      "reset": "Tiklash",
+      "apply": "Qo‘llash"
+    },
+    "resultCard": {
+      "doctor": "Shifokor",
+      "practice": "Klinika",
+      "reviews": "sharhlar",
+      "consultation": "konsultatsiya",
+      "experience": "tajriba",
+      "doctors": "shifokorlar",
+      "affiliatedDoctors": "hamkor shifokorlar",
+      "bookNow": "Qabulga yozilish",
+      "booking": "Yozilmoqda...",
+      "bookAppointment": "Qabulga yozilish",
+      "viewProfile": "Profilni ko‘rish",
+      "availableToday": "Bugun mavjud",
+      "acceptingNewPatients": "Yangi bemorlarni qabul qiladi",
+      "acceptsInsurance": "Sug‘urtani qabul qiladi"
+    }
   }
 }
 {
   "doctor": {
-    "actions": {
-      "manageProcedures": "Protseduralarni boshqarish",
-      "updateSchedule": "Jadvalni yangilash",
-      "updateSettings": "Sozlamalarni yangilash"
-    },
-    "appointmentDetails": {
-      "addDiagnosis": "Tashxis qo‘shish",
-      "addDiagnosisBtn": "Qo‘shish",
-      "customDiagnosis": "O‘zingiz kiritish",
-      "date": "Sana",
-      "diagnosesTitle": "Tashxislar",
-      "diagnosisCode": "ICD-10 (ixtiyoriy)",
-      "diagnosisCodePlaceholder": "masalan, I10",
-      "diagnosisName": "Tashxis",
-      "diagnosisNamePlaceholder": "masalan, Gipertoniya",
-      "diagnosisNotes": "Izohlar",
-      "diagnosisNotesPlaceholder": "Ixtiyoriy izohlar, asos, reja...",
-      "inPerson": "Klinikada",
-      "loadingDiagnosis": "Yuklanmoqda...",
-      "message": "Bemorga xabar yozish",
-      "noDiagnoses": "Hozircha tashxis qo‘shilmagan.",
-      "notes": "Izohlar",
-      "schedule": "Qayta qabulni rejalash",
-      "selectDiagnosis": "Kutubxonadan tanlang yoki o‘zingiz kiriting",
-      "selectedDiagnosis": "Tanlandi",
-      "status": "Holat",
-      "telemedicine": "Telemeditsina",
-      "time": "Vaqt",
-      "title": "Qabul tafsilotlari",
-      "type": "Turi",
-      "viewPatient": "Bemor ma’lumotlarini ko‘rish"
-    },
-    "appointmentModal": {
-      "actions": {
-        "addDiagnosis": "Tashxis qo‘shish",
-        "cancel": "Bekor qilish",
-        "complete": "Yakunlangan deb belgilash",
-        "confirm": "Qabulni tasdiqlash",
-        "message": "Bemorga xabar",
-        "reschedule": "Ko‘chirish",
-        "save": "Saqlash"
-      },
-      "addDiagnosis": "Tashxis qo‘shish",
-      "appointmentId": "Qabul ID",
-      "appointmentType": "Qabul turi",
-      "cancelConfirm": {
-        "cancel": "Bekor qilish",
-        "confirm": "Ha, bekor qiling",
-        "description": "Qabul bekor qilinadi va bemorga xabar yuboriladi.",
-        "title": "Ushbu qabulni bekor qilasizmi?"
-      },
-      "close": "Yopish",
-      "date": "Sana",
-      "diagnoses": "Tashxislar",
-      "diagnosisCode": "ICD-10 kodi (ixtiyoriy)",
-      "diagnosisCodePlaceholder": "masalan, K02.9",
-      "diagnosisName": "Tashxis",
-      "diagnosisNamePlaceholder": "masalan, Tish kariyesi",
-      "diagnosisNotes": "Izohlar",
-      "diagnosisNotesPlaceholder": "Ixtiyoriy izohlar...",
-      "doctorNotes": "Shifokor izohlari",
-      "doctorNotesPlaceholder": "Qabul haqida izoh qoldiring...",
-      "loading": "Qabul yuklanmoqda...",
-      "noDiagnoses": "Hozircha tashxis yo‘q",
-      "patient": "Bemor",
-      "payment": {
-        "amount": "Summa",
-        "method": "Usul",
-        "paid": "To‘langan",
-        "status": "To‘lov holati",
-        "unpaid": "To‘lanmagan"
-      },
-      "reason": "Sabab",
-      "status": "Holat",
-      "time": "Vaqt",
-      "title": "Qabul",
-      "type": {
-        "inPerson": "Klinikada",
-        "telemedicine": "Telemeditsina"
-      }
-    },
-    "appointmentStatus": {
-      "canceled": "Bekor qilingan",
-      "completed": "Yakunlangan",
-      "confirmed": "Tasdiqlangan",
-      "pending": "Kutilmoqda",
-      "rescheduled": "Ko‘chirilgan"
-    },
-    "calendar": {
-      "addBlock": "Blok qo‘shish",
-      "addEvent": "Tadbir qo‘shish",
-      "allDay": "Butun kun",
-      "available": "Bo‘sh",
-      "blocked": "Band",
-      "cancel": "Bekor qilish",
-      "create": "Yaratish",
-      "day": "Kun",
-      "delete": "O‘chirish",
-      "details": "Tafsilotlar",
-      "edit": "Tahrirlash",
-      "end": "Tugash",
-      "eventTitle": "Tadbir nomi",
-      "month": "Oy",
-      "notes": "Izohlar",
-      "save": "Saqlash",
-      "start": "Boshlanish",
-      "today": "Bugun",
-      "week": "Hafta"
-    },
-    "clinic": {
-      "requestToLeave": "Chiqish so‘rovi",
-      "verified": "Tasdiqlangan"
-    },
-    "clinicFinder": {
-      "failedToLoad": "Klinikalarni yuklab bo‘lmadi.",
-      "tryAgain": "Qayta urinib ko‘ring"
-    },
-    "currentAppointment": {
-      "noAppointments": "Kelgusi qabul yo‘q",
-      "scheduleEmpty": "Jadvalingiz bo‘sh",
-      "title": "Joriy/Kelgusi qabul",
-      "today": "Bugungi qabul",
-      "upcoming": "Keyingi qabul",
-      "upcomingCount": "Kelgusi soni"
-    },
-    "dashboard": {
-      "emptyState": {
-        "description": "Hozircha hech narsa yo‘q.",
-        "title": "Bo‘sh"
-      },
-      "title": "Shifokor paneli"
-    },
-    "diagnoses": {
-      "addDiagnosis": "Tashxis qo‘shish",
-      "categoryLabel": "Kategoriya",
-      "categoryPlaceholder": "masalan, Umumiy stomatologiya",
-      "codeLabel": "ICD-10 kodi (ixtiyoriy)",
-      "codePlaceholder": "masalan, K02.9",
-      "create": "Yaratish",
-      "delete": "O‘chirish",
-      "descriptionLabel": "Tavsif",
-      "descriptionPlaceholder": "Qisqa tavsif...",
-      "edit": "Tahrirlash",
-      "emptyState": "Hozircha tashxis yo‘q",
-      "nameLabel": "Nomi",
-      "namePlaceholder": "masalan, Tish kariyesi",
-      "notesLabel": "Izohlar",
-      "notesPlaceholder": "Ixtiyoriy izohlar...",
-      "save": "Saqlash",
-      "searchPlaceholder": "Tashxislarni qidirish...",
-      "title": "Tashxislar",
-      "titleLabel": "Tashxis",
-      "titlePlaceholder": "masalan, Gipertoniya"
-    },
-    "errors": {
-      "generic": "Nimadir xato ketdi.",
-      "tryAgain": "Qayta urinib ko‘ring"
-    },
-    "financialStats": {
-      "chart": {
-        "earningsLabel": "Daromad",
-        "noDataDesc": "Ma’lumot yo‘q"
-      },
-      "insights": {
-        "tbd": "Tez orada"
-      },
-      "overview": {
-        "tbd": "Tez orada"
-      },
-      "payouts": {
-        "noData": "To‘lovlar bo‘yicha ma’lumot yo‘q"
-      },
-      "pending": {
-        "noData": "Kutilayotgan to‘lovlar yo‘q",
-        "paymentMarked": "To‘lov belgilandi"
-      },
-      "services": {
-        "minutes": "Daqiqa"
-      },
-      "tabs": {
-        "byService": "Xizmat bo‘yicha",
-        "earningsChart": "Daromad grafigi",
-        "insights": "Tahlillar",
-        "payouts": "To‘lovlar",
-        "pending": "Kutilmoqda"
-      }
-    },
-    "loading": "Panel yuklanmoqda...",
-    "messaging": {
-      "description": "Bemorlar va tibbiyot xodimlari bilan muloqot qiling",
-      "title": "Xabarlar"
-    },
-    "navigation": {
-      "calendar": "Kalendar",
-      "clinicFinder": "Klinika qidirish",
-      "dashboard": "Panel",
-      "diagnoses": "Tashxislar",
-      "financialStats": "Moliyaviy statistika",
-      "main": "Asosiy",
-      "messages": "Xabarlar",
-      "myPatients": "Mening bemorlarim",
-      "myProfile": "Mening profilim",
-      "performance": "Ko‘rsatkichlar",
-      "procedureLibrary": "Protseduralar kutubxonasi",
-      "referrals": "Yo‘llanmalar",
-      "scheduleSettings": "Jadval sozlamalari",
-      "settings": "Sozlamalar",
-      "treatmentPlanning": "Davolash rejalari"
-    },
-    "noUpcomingAppointments": "Kelgusi qabul yo‘q",
-    "profileCompletion": {
-      "completeProfile": "Profilni to‘ldiring ({{percent}}%)",
-      "incomplete": "To‘liq emas",
-      "updateProfile": "Profilni yangilash"
-    },
-    "profileSetup": {
-      "completeSetup": "Profil sozlashni yakunlash",
-      "goHome": "Bosh sahifaga",
-      "message": "Shifokor profilingiz sozlanishi kerak. Keling, profilni to‘ldiramiz.",
-      "required": "Profil sozlash talab qilinadi",
-      "retryLoading": "Qayta yuklash",
-      "settingUp": "Profil sozlanmoqda",
-      "tryAgain": "Qayta urinib ko‘ring",
-      "unableToLoad": "Shifokor profilingizni yuklab bo‘lmadi. Hisobingizni sozlaymiz."
-    },
-    "quickActions": "Tezkor amallar",
-    "referrals": {
-      "title": "Yo‘llanmalar"
-    },
-    "schedule": {
-      "addTimeBlock": "Vaqt blokini qo‘shish",
-      "apply": "Qo‘llash",
-      "availability": "Mavjudlik",
-      "cancel": "Bekor qilish",
-      "dayOff": "Dam olish kuni",
-      "delete": "O‘chirish",
-      "duration": "Davomiyligi",
-      "end": "Tugash",
-      "notes": "Izohlar",
-      "save": "Saqlash",
-      "start": "Boshlanish",
-      "title": "Jadval sozlamalari"
-    },
-    "services": {
-      "add": "Qo‘shish",
-      "addProcedure": "Protsedura qo‘shish",
-      "category": "Kategoriya",
-      "create": "Yaratish",
-      "delete": "O‘chirish",
-      "description": "Tavsif",
-      "duration": "Davomiyligi",
-      "edit": "Tahrirlash",
-      "emptyState": "Hozircha protsedura yo‘q",
-      "fee": "Narx",
-      "minutes": "daqiqa",
-      "name": "Nomi",
-      "save": "Saqlash",
-      "searchPlaceholder": "Protseduralarni qidirish...",
-      "title": "Protseduralar kutubxonasi"
-    },
+    "title": "Shifokor paneli",
+    "loading": "Panelingiz yuklanmoqda...",
     "settingUp": "Shifokor profilingiz sozlanmoqda...",
-    "settings": {
-      "account": {
-        "description": "Hisob ma’lumotlari va afzalliklarni boshqaring",
-        "email": "Email",
-        "language": "Til",
-        "phone": "Telefon",
-        "saveChanges": "O‘zgarishlarni saqlash",
-        "timezone": "Vaqt zonasi",
-        "title": "Hisob"
-      },
-      "calendar": {
-        "description": "Kalendar sinxronizatsiyasini ulash va boshqarish",
-        "title": "Kalendar"
-      },
-      "email": "Email",
-      "emailPlaceholder": "Email kiriting",
-      "language": "Til",
-      "notifications": "Bildirishnomalar",
-      "personalInfo": "Shaxsiy ma’lumotlar",
-      "phone": "Telefon",
-      "phonePlaceholder": "Telefon kiriting",
-      "practice": "Klinika",
-      "privacy": "Maxfiylik",
-      "security": "Xavfsizlik",
-      "timeFormat": "Vaqt formati",
-      "timezone": "Vaqt zonasi",
-      "timezoneHint": "Kalendar vaqtni ushbu vaqt zonasida ko‘rsatadi.",
-      "title": "Sozlamalar",
-      "updateDetails": "Shaxsiy ma’lumotlaringizni yangilang"
+
+    "navigation": {
+      "dashboard": "Panel",
+      "myProfile": "Mening profilim",
+      "myServices": "Mening xizmatlarim",
+      "assignedServices": "Biriktirilgan xizmatlar",
+      "scheduleSettings": "Jadval sozlamalari",
+      "procedureLibrary": "Muolajalar kutubxonasi",
+      "treatmentPlanning": "Davolashni rejalashtirish",
+      "myPatients": "Mening bemorlarim",
+      "calendar": "Kalendar",
+      "messages": "Xabarlar",
+      "performance": "Samaradorlik",
+      "financialStats": "Moliyaviy statistika",
+      "clinicFinder": "Klinika qidiruvi",
+      "settings": "Sozlamalar",
+      "logout": "Chiqish"
     },
+
+    "clinic": {
+      "verified": "Tasdiqlangan",
+      "requestToLeave": "Chiqish so‘rovini yuborish"
+    },
+
+    "verification": {
+      "pending": "Tasdiqlash kutilmoqda",
+      "message": "Profilingiz tekshiruvda. Verifikatsiyani tezlashtirish uchun profilingizni yakunlang.",
+      "completeProfile": "Profilni to‘ldirish",
+      "viewProfile": "Profilni ko‘rish"
+    },
+
+    "profileCompletion": {
+      "title": "Profilni to‘ldirish",
+      "message": "Ko‘proq bemorlarni jalb qilish uchun profilingizni to‘ldiring"
+    },
+
     "stats": {
-      "allTimeBookings": "Umumiy yozuvlar",
+      "totalAppointments": "Jami qabullar",
+      "allTimeBookings": "Barcha vaqt bo‘yicha yozuvlar",
+      "totalPatients": "Jami bemorlar",
+      "uniquePatients": "Xizmat ko‘rsatilgan noyob bemorlar",
       "averageRating": "O‘rtacha reyting",
       "basedOnReviews": "{{count}} ta sharh asosida",
-      "earnings": "Daromad",
-      "rating": "Reyting",
-      "revenue": "Tushum",
-      "totalAppointments": "Jami qabullar",
-      "totalEarnings": "Umumiy daromad",
-      "totalPatients": "Jami bemorlar",
-      "uniquePatients": "Xizmat ko‘rsatilgan noyob bemorlar"
+      "revenue": "Daromad",
+      "totalEarnings": "Jami daromad"
     },
+
+    "appointmentStatus": {
+      "confirmed": "Tasdiqlangan",
+      "pending": "Kutilmoqda",
+      "completed": "Yakunlangan",
+      "cancelled": "Bekor qilingan",
+      "canceled": "Bekor qilingan",
+      "rescheduled": "Qayta rejalashtirilgan"
+    },
+
     "upcomingAppointments": {
-      "noAppointments": "Kelgusi qabul yo‘q",
-      "scheduleIsClear": "Jadvalingiz bo‘sh",
-      "title": "Kelgusi qabullar"
+      "title": "Yaqinlashayotgan qabullar",
+      "noAppointments": "Yaqinlashayotgan qabullar yo‘q",
+      "scheduleIsClear": "Jadvalingiz hozircha bo‘sh"
     },
-    "verification": {
+
+    "recentActivity": {
+      "title": "So‘nggi faollik",
+      "noActivity": "So‘nggi faollik yo‘q",
+      "startBuildingHistory": "Faollik tarixini yaratishni boshlang"
+    },
+
+    "quickActions": {
+      "title": "Tezkor amallar",
+      "setAvailability": "Mavjudlikni belgilash",
+      "manageProcedures": "Muolajalarni boshqarish",
+      "addService": "Xizmat qo‘shish",
+      "blockTime": "Vaqtni bloklash",
+      "updateSettings": "Sozlamalarni yangilash"
+    },
+
+    "todaysSchedule": {
+      "title": "Bugungi jadval",
+      "patients": "bemor",
+      "viewFull": "To‘liq jadvalni ko‘rish",
+      "noAppointments": "Bugun qabullar yo‘q",
+      "freeDay": "Bugun bo‘sh kun!"
+    },
+
+    "dashboardContent": {
+      "welcomeBack": "Qaytganingiz bilan",
+      "specialtyNotProvided": "Mutaxassislik ko‘rsatilmagan",
+      "completeProfileBanner": "Profilingizni to‘ldiring ({{completion}}%)",
+      "completeProfileMessage": "To‘liq profil bemorlarga sizni topish va ishonishni osonlashtiradi",
+
+      "clinicProfile": "Klinika profili",
+      "requestToLeave": "Chiqish so‘rovi",
+      "verificationPending": "Tasdiqlash kutilmoqda",
+      "verificationMessage": "Ommaviy bo‘lish va qidiruv natijalarida ko‘rinish uchun verifikatsiya yakunlangan bo‘lishi kerak.",
       "completeProfile": "Profilni to‘ldirish",
-      "message": "Ommaviy bo‘lish va qidiruvda chiqish uchun tasdiqlash jarayonini yakunlash kerak.",
-      "pending": "Tasdiqlash kutilmoqda",
-      "viewProfile": "Profilni ko‘rish"
+      "viewProfile": "Profilni ko‘rish",
+      "profileCompletion": "Profilni to‘ldirish",
+      "profileMessage": "Ko‘proq yozuv olish uchun profilingizni to‘ldiring",
+      "totalAppointments": "Jami qabullar",
+      "allTimeBookings": "Barcha vaqt bo‘yicha yozuvlar",
+      "totalPatients": "Jami bemorlar",
+      "uniquePatients": "Xizmat ko‘rsatilgan noyob bemorlar",
+      "averageRating": "O‘rtacha reyting",
+      "basedOnReviews": "{{count}} ta sharh asosida",
+      "revenue": "Daromad",
+      "totalEarnings": "Jami daromad",
+      "upcomingAppointments": "Yaqinlashayotgan qabullar",
+      "noUpcomingAppointments": "Yaqinlashayotgan qabullar yo‘q",
+      "scheduleIsClear": "Jadvalingiz bo‘sh",
+      "recentActivity": "So‘nggi faollik",
+      "noRecentActivity": "So‘nggi faollik yo‘q",
+      "startBuildingHistory": "Faollik tarixini yaratishni boshlang",
+      "quickActions": "Tezkor amallar",
+      "viewTodaysSchedule": "Bugungi jadvalni ko‘rish",
+      "manageSchedule": "Jadvalni boshqarish",
+      "quickAddService": "Tezkor xizmat qo‘shish",
+      "findClinics": "Klinikalarni topish",
+      "blockTime": "Vaqtni bloklash"
+    },
+
+    "profileSetup": {
+      "required": "Profilni sozlash talab qilinadi",
+      "message": "Panelga kirish uchun shifokor profilingizni to‘ldiring.",
+      "tryAgain": "Qayta urinish",
+      "completeSetup": "Profil sozlamasini yakunlash",
+      "goHome": "Bosh sahifaga",
+      "retryLoading": "Qayta yuklash",
+      "settingUp": "Profil sozlanmoqda",
+      "unableToLoad": "Shifokor profilingizni yuklab bo‘lmadi. Profilingiz hali sozlanayotgan bo‘lishi yoki vaqtinchalik muammo yuzaga kelgan bo‘lishi mumkin."
+    },
+
+    "calendar": {
+      "title": "Mening kalendarim",
+      "today": "Bugun",
+      "clinicCalendar": "Klinika kalendari",
+      "myCalendar": "Mening kalendarim",
+      "description": "Mavjudlik va qabullarni boshqarish",
+      "clinicDescription": "Klinika yozuvlari bilan sinxronlangan jadvalni ko‘rish",
+      "clinicCalendarDesc": "Klinika qabullarini ko‘rish va boshqarish",
+      "myCalendarDesc": "Qabullaringiz va mavjudligingizni ko‘rish va boshqarish",
+
+      "views": {
+        "day": "Kun",
+        "week": "Hafta",
+        "month": "Oy"
+      },
+
+      "viewMode": "Ko‘rish rejimi",
+      "day": "Kun",
+      "week": "Hafta",
+      "month": "Oy",
+
+      "searchPlaceholder": "Bemor yoki eslatmalarni qidirish...",
+      "filters": "Filtrlar",
+      "appointmentType": "Qabul turi",
+      "types": {
+        "in-person": "Oflayn",
+        "video": "Videoqo‘ng‘iroq",
+        "home": "Uyga tashrif",
+        "chat": "Chat"
+      },
+      "status": "Holat",
+      "statuses": {
+        "scheduled": "Rejalashtirilgan",
+        "confirmed": "Tasdiqlangan",
+        "completed": "Yakunlangan",
+        "canceled": "Bekor qilingan",
+        "no-show": "Kelmagan"
+      },
+
+      "showBuffers": "Bufferlarni ko‘rsatish",
+      "blockTime": "Vaqtni bloklash",
+      "setAvailability": "Mavjudlikni belgilash",
+      "addAppointment": "Qabul qo‘shish",
+      "bookAppointment": "Qabulga yozish",
+      "scheduleHealth": "Jadval holati",
+      "nextAppointment": "Keyingi qabul",
+      "upcomingToday": "Bugun",
+      "noAppointments": "Qabullar yo‘q",
+      "noAppointmentsScheduled": "Rejalashtirilgan qabullar yo‘q",
+      "noWorkingHours": "Ish soatlari yo‘q",
+      "dayOff": "Bu kun jadval sozlamalarida ish kuni sifatida belgilanmagan.",
+      "notWorkingDay": "Ish kuni emas",
+      "officeClosed": "Ofis yopiq",
+
+      "startVisit": "Tashrifni boshlash",
+      "addNote": "Eslatma qo‘shish",
+      "addPrescription": "Retsept qo‘shish",
+      "markComplete": "Yakunlangan deb belgilash",
+      "details": "Tafsilotlar",
+      "patient": "Bemor",
+      "referral": "Yo‘llanma",
+      "referralAppointment": "Yo‘llanma bo‘yicha qabul",
+      "referralDetails": "Bu qabul yo‘llanma asosida yaratilgan.",
+      "procedure": "Muolaja",
+      "notes": "Eslatmalar",
+      "sendMessage": "Xabar yuborish",
+      "reschedule": "Qayta rejalashtirish",
+      "cancel": "Bekor qilish",
+      "close": "Yopish",
+
+      "profileLoading": "Shifokor profili hali yuklanmoqda. Sahifani yangilang.",
+      "rescheduleSuccess": "Qabul muvaffaqiyatli qayta rejalashtirildi",
+      "cancelSuccess": "Qabul muvaffaqiyatli bekor qilindi",
+      "cancelConfirm": "Haqiqatan ham bu qabulni bekor qilmoqchimisiz?",
+      "cancelConfirmTitle": "Qabulni bekor qilish",
+      "cancelReason": "Bekor qilish sababi (ixtiyoriy)",
+      "confirmCancel": "Ha, bekor qilish",
+      "keepAppointment": "Qabulni saqlab qolish",
+
+      "calendarSettings": "Kalendar sozlamalari",
+      "scheduleOverview": "Jadval ko‘rinishi",
+      "selectProcedure": "Muolaja/xizmatni tanlang",
+      "selectProcedurePlaceholder": "Mavjud vaqt slotlarini ko‘rish uchun muolajani tanlang",
+      "standardAppointment": "Standart qabul (30 daqiqa)",
+      "loadingSlots": "Slotlar yuklanmoqda...",
+      "holidayDayOff": "Bayram / Dam olish kuni",
+      "holiday": "Bayram / Dam olish kuni",
+      "quickActions": "Tezkor amallar",
+      "syncGoogleCalendar": "Google Kalendar bilan sinxronlash",
+      "syncGoogle": "Google Kalendar bilan sinxronlash",
+
+      "timeBlockedSuccess": "Vaqt muvaffaqiyatli bloklandi",
+      "appointmentBookedSuccess": "Qabul muvaffaqiyatli band qilindi",
+      "availabilityUpdated": "Mavjudlik yangilandi",
+
+      "availabilitySettings": "Mavjudlik sozlamalari",
+      "configureWorkingHours": "Ish soatlari va qabul parametrlarini sozlang",
+      "availabilityDescription": "Ish soatlari va qabul parametrlarini sozlang",
+
+      "bufferTime": "Qabullar orasidagi buffer vaqt",
+      "noBuffer": "Buffersiz",
+      "minutes15": "15 daqiqa",
+      "minutes30": "30 daqiqa",
+      "minutes45": "45 daqiqa",
+      "bufferTimeDesc": "Qabullar orasidagi tayyorgarlik vaqti",
+      "bufferDescription": "Tayyorgarlik uchun qabullar orasiga qo‘shiladigan vaqt",
+
+      "weeklySchedule": "Haftalik jadval",
+      "to": "dan",
+      "closed": "Yopiq",
+
+      "saveAvailabilitySettings": "Mavjudlik sozlamalarini saqlash",
+      "saveAvailability": "Mavjudlikni saqlash",
+      "saving": "Saqlanmoqda..."
+    },
+
+    "quickModals": {
+      "settings": {
+        "title": "Tezkor profil sozlamalari",
+        "specialty": "Mutaxassislik",
+        "selectSpecialty": "Mutaxassislikni tanlang",
+        "specialties": {
+          "generalPractice": "Umumiy amaliyot",
+          "cardiology": "Kardiologiya",
+          "dermatology": "Dermatologiya",
+          "pediatrics": "Pediatriya",
+          "orthopedics": "Ortopediya",
+          "neurology": "Nevrologiya"
+        },
+        "consultationFee": "Konsultatsiya narxi ($)",
+        "bio": "Bio",
+        "bioPlaceholder": "Bemorlarga tajribangiz haqida aytib bering...",
+        "cancel": "Bekor qilish",
+        "updateProfile": "Profilni yangilash",
+        "profileUpdated": "Profil muvaffaqiyatli yangilandi"
+      },
+      "procedures": {
+        "title": "Xizmatni tezkor qo‘shish",
+        "serviceName": "Xizmat nomi",
+        "serviceNamePlaceholder": "masalan, Umumiy konsultatsiya",
+        "category": "Kategoriya",
+        "categories": {
+          "general": "Umumiy",
+          "preventive": "Profilaktik",
+          "restorative": "Tiklovchi",
+          "cosmetic": "Kosmetik"
+        },
+        "cost": "Narx ($)",
+        "duration": "Davomiyligi",
+        "durations": {
+          "15min": "15 daqiqa",
+          "30min": "30 daqiqa",
+          "45min": "45 daqiqa",
+          "1hour": "1 soat",
+          "1.5hours": "1.5 soat"
+        },
+        "cancel": "Bekor qilish",
+        "addService": "Xizmat qo‘shish",
+        "serviceAdded": "Xizmat muvaffaqiyatli qo‘shildi"
+      },
+      "blockTime": {
+        "timeBlocked": "{{start}} dan {{end}} gacha vaqt bloklandi"
+      }
+    },
+
+    "schedule": {
+      "title": "Jadval sozlamalari",
+      "description": "Ish soatlari, tanaffuslar va mavjudlikni boshqaring",
+      "loading": "Jadval sozlamalari yuklanmoqda...",
+      "saving": "Saqlanmoqda...",
+      "saveSettings": "Jadval sozlamalarini saqlash",
+      "scheduleUpdated": "Jadval yangilandi",
+      "scheduleUpdatedDesc": "Jadval sozlamalaringiz muvaffaqiyatli saqlandi",
+      "error": "Xato",
+      "saveFailed": "Jadval sozlamalarini saqlab bo‘lmadi",
+
+      "workingHours": "Ish soatlari",
+      "days": {
+        "monday": "Dushanba",
+        "tuesday": "Seshanba",
+        "wednesday": "Chorshanba",
+        "thursday": "Payshanba",
+        "friday": "Juma",
+        "saturday": "Shanba",
+        "sunday": "Yakshanba"
+      },
+
+      "startTime": "Boshlanish vaqti",
+      "endTime": "Tugash vaqti",
+      "breaks": "Tanaffuslar",
+      "addBreak": "Tanaffus qo‘shish",
+      "breakName": "Tanaffus nomi",
+
+      "appointmentSettings": "Qabul sozlamalari",
+      "bufferTime": "Qabullar orasidagi standart buffer vaqt",
+      "bufferTimeDesc": "Tayyorgarlik va eslatmalar uchun qabullar orasidagi vaqt",
+      "bufferTimeDescription": "Tayyorgarlik va yozuvlar uchun qabullar orasidagi vaqt",
+      "minutes": "daqiqa",
+
+      "holidaysTitle": "Bayramlar va dam olish kunlari",
+      "holidays": "Bayramlar va dam olish kunlari",
+      "addHoliday": "Bayram/dam olish kunini qo‘shish",
+      "addDayOff": "Dam olish kuni qo‘shish",
+      "selectDate": "Sanani tanlash",
+      "noHolidays": "Bayramlar belgilanmagan",
+      "removeHoliday": "Olib tashlash",
+
+      "quickActions": "Tezkor amallar",
+      "copyMondayToWeekdays": "Dushanbadagi jadvalni ish kunlariga nusxalash",
+      "disableWeekends": "Dam olish kunlarini o‘chirish",
+      "scheduleCopied": "Jadval nusxalandi",
+      "scheduleCopiedDesc": "Dushanba jadvali ish kunlariga qo‘llandi",
+      "weekendsDisabled": "Dam olish kunlari o‘chirildi",
+      "weekendsDisabledDesc": "Shanba va yakshanba o‘chirildi"
+    },
+
+    "profile": {
+      "title": "Profilni to‘ldirish",
+      "description": "Ko‘rinuvchanlikni oshirish uchun profilingizni to‘ldiring",
+      "verified": "Tasdiqlangan",
+      "pendingVerification": "Tasdiqlash kutilmoqda",
+      "progress": "Jarayon",
+      "basicInformation": "Asosiy ma’lumot",
+      "uploadPhoto": "Rasm yuklash",
+      "uploading": "Yuklanmoqda...",
+      "professionalHeadshot": "Professional surat tavsiya etiladi",
+      "fullName": "To‘liq ism",
+      "yearsExperience": "Tajriba yillari",
+      "specialty": "Mutaxassislik",
+      "email": "Email",
+      "aboutMe": "Men haqimda / Bio",
+      "bioPlaceholder": "Bemorlarga tajribangiz, yondashuvingiz va sizni ajratib turadigan jihatlar haqida yozing...",
+      "languagesSpoken": "Muloqot tillari",
+      "languagesDescription": "Erkin so‘zlasha oladigan barcha tillarni tanlang",
+
+      "professionalDetails": "Professional ma’lumotlar",
+      "medicalLicense": "Tibbiy litsenziya raqami",
+      "licenseNumber": "Litsenziya raqami",
+      "phoneNumber": "Telefon raqami",
+      "consultationTypes": "Taklif qilinadigan konsultatsiya turlari",
+      "defaultPrice": "Standart konsultatsiya narxi",
+      "primaryLocation": "Asosiy joylashuv",
+
+      "verificationDocuments": "Tasdiqlash hujjatlari",
+      "medicalLicenseDoc": "Tibbiy litsenziya",
+      "uploadLicenseDoc": "Litsenziya hujjatini yuklang (PDF, JPG, PNG)",
+      "professionalId": "Professional ID",
+      "uploadIdDoc": "Hujjatni yuklash (ixtiyoriy)",
+      "chooseFile": "Faylni tanlash",
+      "changeFile": "Faylni almashtirish",
+      "verificationNote": "Tekshiruv jarayonini tezlashtirish uchun tasdiqlovchi hujjatlarni yuklang",
+
+      "saveChanges": "O‘zgarishlarni saqlash",
+      "submitForVerification": "Tasdiqlashga yuborish",
+      "saving": "Saqlanmoqda...",
+      "submitting": "Yuborilmoqda..."
+    },
+
+    "services": {
+      "title": "Mening xizmatlarim",
+      "description": "Bemorlarga taklif qiladigan xizmatlarni boshqaring",
+      "assignedServices": "Biriktirilgan xizmatlar",
+      "assignedServicesDesc": "Klinika tomonidan sizga biriktirilgan xizmatlar",
+      "assignedByClinic": "Klinika administratsiyasi tomonidan biriktirilgan",
+      "noServicesAssigned": "Hozircha biriktirilgan xizmatlar yo‘q.",
+      "addService": "Xizmat qo‘shish",
+      "addNewService": "Yangi xizmat qo‘shish",
+      "noServices": "Xizmatlar topilmadi. Boshlash uchun birinchi xizmatni qo‘shing.",
+      "serviceName": "Xizmat nomi",
+      "serviceNamePlaceholder": "masalan, Umumiy konsultatsiya",
+      "category": "Kategoriya",
+      "selectCategory": "Kategoriyani tanlang",
+      "description": "Tavsif",
+      "descriptionPlaceholder": "Xizmatni tasvirlab bering...",
+      "price": "Narx ($)",
+      "duration": "Davomiyligi (daqiqalarda)",
+      "cancel": "Bekor qilish",
+      "updateService": "Xizmatni yangilash",
+      "active": "Faol",
+      "inactive": "Nofaol",
+      "assigned": "Biriktirilgan",
+      "editService": "Xizmatni tahrirlash"
+    },
+
+    "procedureLibrary": {
+      "title": "Mening muolajalar kutubxonam",
+      "description": "Stomatologik muolajalar va davolashlarni boshqarish",
+      "addProcedure": "Muolaja qo‘shish",
+      "loading": "Muolajalar kutubxonasi yuklanmoqda...",
+      "totalProcedures": "Jami muolajalar",
+      "activeProcedures": "Faol muolajalar",
+      "bookableServices": "Band qilish mumkin bo‘lgan xizmatlar",
+      "availableForBooking": "Onlayn band qilish uchun mavjud",
+      "averageFee": "O‘rtacha narx",
+      "perProcedure": "Har bir muolaja uchun",
+
+      "quickActions": "Tezkor amallar",
+      "enableAll": "Hammasini band qilish uchun yoqish",
+      "disableAll": "Hammasini band qilish uchun o‘chirish",
+      "manageCategories": "Kategoriyalarni boshqarish",
+      "manageTypes": "Turlarni boshqarish",
+
+      "filters": "Filtrlar va qidiruv",
+      "searchPlaceholder": "Muolajalarni qidirish...",
+      "filterByCategory": "Kategoriya bo‘yicha filtr",
+      "filterByType": "Tur bo‘yicha filtr",
+      "clearFilters": "Filtrlarni tozalash",
+      "allCategories": "Barcha kategoriyalar",
+      "allTypes": "Barcha turlar",
+
+      "yourProcedures": "Sizning muolajalaringiz",
+      "noProcedures": "Muolajalar topilmadi. Boshlash uchun birinchi muolajani yarating.",
+      "addFirstProcedure": "Birinchi muolajani qo‘shish",
+
+      "procedureName": "Muolaja nomi",
+      "defaultCost": "Standart narx",
+      "status": "Holat",
+      "actions": "Amallar",
+      "notSet": "Belgilanmagan",
+      "bookable": "Band qilish mumkin",
+      "notBookable": "Band qilib bo‘lmaydi"
+    },
+
+    "treatmentPlanning": {
+      "title": "Davolashni rejalashtirish",
+      "description": "Bemorlar uchun davolash rejalarini yaratish va boshqarish",
+      "loading": "Davolash rejalari yuklanmoqda...",
+      "signInRequired": "Davolash rejalarini yaratish uchun tizimga kiring",
+      "createPlan": "Davolash rejasini yaratish",
+
+      "filtersTitle": "Filtrlar va qidiruv",
+      "filters": "Filtrlar va qidiruv",
+      "searchPlaceholder": "Davolash rejalarini qidirish...",
+      "filterByStatus": "Holat bo‘yicha filtr",
+      "filterByPatient": "Bemor bo‘yicha filtr",
+      "clearFilters": "Filtrlarni tozalash",
+
+      "allStatuses": "Barcha holatlar",
+      "allPatients": "Barcha bemorlar",
+      "draft": "Qoralama",
+      "published": "Nashr qilingan",
+      "inProgress": "Jarayonda",
+      "completed": "Yakunlangan",
+
+      "treatmentPlansCount": "Davolash rejalari ({{count}})",
+      "treatmentPlans": "Davolash rejalari",
+      "noPlansFound": "Davolash rejalari topilmadi. Boshlash uchun birinchi davolash rejasini yarating.",
+      "noPlans": "Davolash rejalari topilmadi. Boshlash uchun birinchi rejani yarating.",
+      "createFirstPlan": "Birinchi davolash rejasini yaratish",
+
+      "planTitle": "Reja nomi",
+      "patient": "Bemor",
+      "status": "Holat",
+      "totalCost": "Umumiy narx",
+      "created": "Yaratilgan",
+      "actions": "Amallar",
+      "notCalculated": "Hisoblanmagan",
+      "unknownPatient": "Noma’lum bemor",
+
+      "viewDetails": "Tafsilotlarni ko‘rish",
+      "manageMedications": "Dorilarni boshqarish",
+      "publishPlan": "Rejani nashr qilish",
+      "deletePlan": "Rejani o‘chirish",
+
+      "deleteConfirm": "Haqiqatan ham ushbu davolash rejasini o‘chirmoqchimisiz?",
+      "deleteSuccess": "Davolash rejasi muvaffaqiyatli o‘chirildi",
+      "deleteFailed": "Davolash rejasini o‘chirib bo‘lmadi",
+      "publishSuccess": "Davolash rejasi muvaffaqiyatli nashr qilindi",
+      "publishFailed": "Davolash rejasini nashr qilib bo‘lmadi",
+      "loadFailed": "Davolash rejalarini yuklab bo‘lmadi"
+    },
+
+    "clinicFinder": {
+      "title": "Qo‘shilish uchun klinikalarni topish",
+      "description": "Mavjud tibbiy amaliyotlar va klinikalarga qo‘shilish uchun qidiring va ariza yuboring",
+      "searchPlaceholder": "Klinika nomi, shahar yoki manzil bo‘yicha qidirish...",
+      "filters": "Filtrlar",
+      "allRatings": "Barcha reytinglar",
+      "verified": "Tasdiqlangan",
+      "reviews": "sharhlar",
+      "appointments": "qabullar",
+      "viewDetails": "Tafsilotlarni ko‘rish",
+      "requestToJoin": "Qo‘shilish so‘rovini yuborish",
+      "requestPending": "So‘rov kutilmoqda",
+      "cancelRequest": "So‘rovni bekor qilish",
+      "requestAccepted": "So‘rov qabul qilindi",
+      "requestRejected": "So‘rov rad etildi",
+      "noClinicsFound": "Klinikalar topilmadi",
+      "adjustCriteria": "Qidiruv mezonlarini o‘zgartirib ko‘ring yoki keyinroq qayta tekshiring.",
+      "pendingRequests": "Kutilayotgan so‘rovlar",
+      "pending": "Kutilmoqda",
+      "cancel": "Bekor qilish",
+      "noDescription": "Tavsif mavjud emas",
+      "loadingError": "Klinikalarni yuklab bo‘lmadi."
+    },
+
+    "performance": {
+      "title": "Samaradorlik va analitika",
+      "description": "Samaradorlik ko‘rsatkichlari va analitikani kuzating",
+      "loading": "Samaradorlik ma’lumotlari yuklanmoqda...",
+      "errorLoading": "Samaradorlik ma’lumotlarini yuklashda xatolik",
+      "error": "Samaradorlik ma’lumotlarini yuklashda xatolik",
+      "tryAgain": "Qayta urinish",
+      "refresh": "Yangilash",
+      "export": "Hisobotni eksport qilish",
+      "exportComingSoon": "Eksport funksiyasi tez orada paydo bo‘ladi",
+      "dataRefreshed": "Samaradorlik ma’lumotlari muvaffaqiyatli yangilandi",
+      "newAchievement": "Yangi yutuq ochildi!",
+
+      "high": "Yuqori",
+      "medium": "O‘rta",
+      "low": "Past",
+      "returning": "Qaytuvchi",
+      "new": "Yangi",
+      "notAvailable": "Mavjud emas",
+
+      "tabs": {
+        "overview": "Umumiy ko‘rinish",
+        "services": "Xizmatlar",
+        "reviews": "Sharhlar",
+        "trends": "Trendlar"
+      },
+
+      "overview": {
+        "performanceLevel": "Samaradorlik darajasi",
+        "basedOn": "Yakunlash foizi, reytinglar va faollik asosida",
+        "totalAppointments": "Jami qabullar",
+        "inSelectedPeriod": "Tanlangan davrda",
+        "inPeriod": "Tanlangan davrda",
+        "completed": "Yakunlangan",
+        "completionRate": "yakunlash foizi",
+        "completionRateLabel": "Yakunlash foizi",
+        "cancelled": "Bekor qilingan",
+        "noShows": "Kelmaganlar",
+        "activeDays": "Faol kunlar",
+        "daysWithAppointments": "Qabullar bo‘lgan kunlar",
+        "daysWithAppts": "Qabullar bo‘lgan kunlar",
+        "avgDailyPatients": "Kunlik o‘rtacha bemorlar",
+        "patientsPerDay": "Faol kunda bemorlar",
+        "avgDuration": "O‘rtacha davomiylik",
+        "perAppointment": "Har bir qabul uchun",
+        "appointmentTrends": "Qabullar trendi",
+        "dailyBreakdown": "Qabullarning kunlik taqsimoti",
+        "total": "Jami",
+        "performanceMetrics": "Samaradorlik ko‘rsatkichlari",
+        "cancellationRate": "Bekor qilish foizi",
+        "noShowRate": "Kelmaslik foizi"
+      },
+
+      "services": {
+        "topPerforming": "Eng yaxshi xizmat",
+        "topService": "🏆 Eng yaxshi xizmat",
+        "mostBooked": "Eng ko‘p band qilinadigan xizmatingiz",
+        "mostBookedSort": "Eng ko‘p band qilinganlar",
+        "bestSeller": "Bestseller",
+        "totalBookings": "Jami yozuvlar",
+        "revenue": "Daromad",
+        "revenueLabel": "Daromad ($)",
+        "completionRate": "Yakunlash foizi",
+        "sortBy": "Saralash",
+        "highestRevenue": "Eng yuqori daromad",
+        "bestConversion": "Eng yaxshi konversiya",
+        "category": "Kategoriya",
+        "allCategories": "Barcha kategoriyalar",
+        "revenueByService": "Xizmatlar bo‘yicha daromad",
+        "popular": "Ommabop",
+        "standard": "Standart",
+        "bookings": "Yozuvlar",
+        "avgDuration": "O‘rtacha davomiylik",
+        "completion": "Yakunlash",
+        "completed": "Yakunlangan",
+        "minutes": "daq",
+        "noServicesFound": "Bu kategoriya uchun xizmatlar topilmadi",
+        "noServices": "Bu kategoriya uchun xizmatlar topilmadi"
+      },
+
+      "reviews": {
+        "overallRating": "Umumiy reyting",
+        "basedOnReviews": "{{count}} ta sharh asosida",
+        "reviewInsights": "Sharhlar tahlili",
+        "insights": "Sharhlar analitikasi",
+        "positiveReviews": "Ijobiy sharhlar",
+        "withComments": "Izohli sharhlar",
+        "ratingTrend": "Reyting trendi",
+        "vsLastMonth": "o‘tgan oyga nisbatan",
+        "allReviews": "Barcha sharhlar",
+        "excellent": "A’lo",
+        "helpful": "Foydali",
+        "reply": "Javob berish",
+        "noReviewsFilter": "Bu filtr uchun sharhlar topilmadi",
+        "noReviews": "Bu filtr uchun sharhlar topilmadi"
+      },
+
+      "trends": {
+        "aiRecommendations": "AI tavsiyalari",
+        "insightsToImprove": "Amaliyotingizni yaxshilash uchun tavsiyalar",
+        "insightsDesc": "Amaliyotingizni yaxshilash uchun tahliliy tavsiyalar",
+
+        "peakTimeIdentified": "Pik vaqt aniqlandi",
+        "peakTime": "Pik vaqt aniqlandi",
+        "peakTimeDesc": "Eng band vaqtingiz {{time}}. Shu davrda qo‘shimcha slotlar qo‘shishni ko‘rib chiqing.",
+
+        "strongRetention": "Bemorlarni ushlab qolish kuchli",
+        "strongRetentionDesc": "Bemorlar sadoqati juda yaxshi! Shu yuqori darajani saqlashga e’tibor qarating.",
+
+        "focusOnRetention": "Ushlab qolishga e’tibor qarating",
+        "focusRetention": "Ushlab qolishga e’tibor qarating",
+        "focusOnRetentionDesc": "Yangi bemorlarni doimiy bemorlarga aylantirish uchun eslatmalar joriy etishni ko‘rib chiqing.",
+        "focusRetentionDesc": "Yangi bemorlarni doimiy bemorlarga aylantirish uchun eslatmalarni joriy etishni ko‘rib chiqing.",
+
+        "highCancellations": "So‘nggi bekor qilishlar yuqori",
+        "highCancellationsDesc": "Bekor qilish foizi oshgan. 24 soat oldin eslatma yuborishni ko‘rib chiqing.",
+
+        "appointmentTrends": "Qabullar trendi",
+        "dailyBreakdown": "Qabullarning kunlik taqsimoti",
+        "total": "Jami",
+        "completed": "Yakunlangan",
+        "cancelled": "Bekor qilingan",
+
+        "patientTypeDistribution": "Bemor turlari taqsimoti",
+        "patientDistribution": "Bemor turlari taqsimoti",
+        "newVsReturning": "Yangi va qaytuvchi bemorlar",
+        "patientTypeDesc": "Yangi va qaytuvchi bemorlar",
+        "newPatients": "Yangi bemorlar",
+        "returningPatients": "Qaytuvchi bemorlar",
+
+        "popularTimeSlots": "Ommabop vaqt slotlari",
+        "peakBookingTimes": "Pik band qilish vaqtlari",
+        "bookings": "Band qilishlar",
+        "bookingsCount": "{{count}} ta band qilish",
+
+        "keyInsights": "Asosiy tahliliy xulosalar",
+        "growthTrend": "O‘sish trendi",
+        "appointmentsTrending": "Qabullar",
+        "upward": "yuqoriga",
+        "stable": "barqaror",
+        "trendingUpward": "qabullar o‘smoqda",
+        "trendingStable": "qabullar barqaror",
+
+        "patientLoyalty": "Bemorlar sadoqati",
+        "strong": "Kuchli",
+        "building": "Shakllanmoqda",
+        "strongLoyalty": "Kuchli bemor sadoqati",
+        "buildingLoyalty": "Bemor sadoqati shakllanmoqda",
+        "patientRetention": "bemorlarni ushlab qolish",
+
+        "bestTime": "Eng yaxshi vaqt",
+        "peakDemandAt": "Pik talab vaqti",
+        "peakDemand": "{{time}} da pik talab"
+      },
+
+      "performanceLevel": "Samaradorlik darajasi",
+      "performanceLevelDesc": "Yakunlash darajasi, reytinglar va faollik asosida",
+      "totalAppointments": "Jami qabullar",
+      "inSelectedPeriod": "Tanlangan davrda",
+      "completed": "Yakunlangan",
+      "completionRate": "yakunlash foizi",
+      "cancelled": "Bekor qilingan",
+      "noShows": "Kelmaganlar",
+      "activeDays": "Faol kunlar",
+      "daysWithAppointments": "Qabullar bo‘lgan kunlar",
+      "avgDailyPatients": "O‘rtacha bemorlar soni",
+      "patientsPerDay": "Faol kunda bemorlar",
+      "avgDuration": "O‘rtacha davomiylik",
+      "perAppointment": "Har bir qabul uchun",
+      "appointmentTrends": "Qabullar trendi",
+      "appointmentTrendsDesc": "Qabullarning kunlik taqsimoti",
+      "performanceMetrics": "Samaradorlik ko‘rsatkichlari",
+      "cancellationRate": "Bekor qilish foizi",
+      "noShowRate": "Kelmaslik foizi",
+      "topPerformingService": "🏆 Eng yaxshi xizmat",
+      "mostBookedService": "Eng talabgir xizmatingiz",
+      "completion": "Yakunlash foizi",
+      "mostBooked": "Eng talabgirlar",
+      "overallRating": "Umumiy reyting",
+      "reviewInsights": "Sharhlar tahlili",
+      "withComments": "Izohlar bilan",
+      "ratingTrend": "Reyting trendi",
+      "allReviews": "Barcha sharhlar",
+      "noReviewsFound": "Bu filtr uchun sharhlar topilmadi",
+      "aiRecommendations": "AI asosidagi tavsiyalar",
+      "aiRecommendationsDesc": "Amaliyotingizni yaxshilash bo‘yicha g‘oyalar",
+      "patientTypeDistribution": "Bemor turlari taqsimoti",
+      "patientTypeDesc": "Yangi va qaytuvchi bemorlar",
+      "popularTimeSlots": "Ommabop vaqt slotlari",
+      "peakBookingTimes": "Pik yozilish vaqtlari",
+      "keyInsights": "Asosiy xulosalar",
+      "growthTrend": "O‘sish trendi",
+      "trendingUpward": "o‘smoqda",
+      "trendingStable": "barqaror",
+      "appointmentsTrending": "Qabullar",
+      "patientLoyalty": "Bemorlar sadoqati",
+      "strongLoyalty": "Kuchli",
+      "buildingLoyalty": "Shakllanmoqda",
+      "patientRetention": "bemorlarni ushlab qolish",
+      "bestTime": "Eng yaxshi vaqt",
+      "peakDemand": "Pik talab",
+      "total": "Jami",
+      "min": "daq",
+      "serviceName": "Xizmat nomi",
+      "avgDurationLabel": "O‘rtacha davomiylik",
+      "completedLabel": "Yakunlangan"
+    },
+
+    "financialStats": {
+      "title": "Moliyaviy statistika",
+      "description": "Daromadlaringiz va moliyaviy samaradorlikni kuzating",
+      "loading": "Moliyaviy ma’lumotlar yuklanmoqda...",
+      "errorLoading": "Moliyaviy ma’lumotlarni yuklashda xatolik",
+      "retry": "Qayta urinish",
+
+      "7days": "7 kun",
+      "30days": "30 kun",
+      "90days": "90 kun",
+      "refresh": "Yangilash",
+      "export": "Eksport",
+      "csvExported": "Moliyaviy hisobot CSV formatida eksport qilindi",
+      "exportComingSoon": "{{format}} eksporti tez orada paydo bo‘ladi",
+      "dataRefreshed": "Moliyaviy ma’lumotlar muvaffaqiyatli yangilandi",
+
+      "overview": {
+        "totalEarnings": "Jami daromad",
+        "allTimeRevenue": "Barcha vaqt bo‘yicha daromad",
+        "thisMonth": "Joriy oy",
+        "thisWeek": "Joriy hafta: ${{amount}}",
+        "unpaidEarnings": "To‘lanmagan daromad",
+        "pendingAppointments": "Kutilayotgan qabullar",
+        "netEarnings": "Sof daromad",
+        "afterPlatformFee": "15% platforma komissiyasidan keyin",
+        "payoutInfo": "To‘lov (payout) ma’lumotlari",
+        "payoutsProcessed": "Qayta ishlangan payoutlar",
+        "nextPayout": "Keyingi payout",
+        "tbd": "Aniqlanadi",
+        "platformCommission": "Platforma komissiyasi"
+      },
+
+      "tabs": {
+        "earningsChart": "Daromad grafigi",
+        "byService": "Xizmatlar bo‘yicha",
+        "payouts": "Payoutlar",
+        "pending": "Kutilmoqda",
+        "insights": "Analitika"
+      },
+
+      "chart": {
+        "title": "Vaqt bo‘yicha daromad",
+        "line": "Chiziq",
+        "bar": "Ustunlar",
+        "noData": "Tanlangan davr uchun moliyaviy ma’lumotlar hali mavjud emas",
+        "completeToSee": "Daromad tarixini ko‘rish uchun qabullarni yakunlang",
+        "noDataDesc": "Daromadni bu yerda ko‘rish uchun bemor qabul qilishni boshlang",
+        "earnings": "Daromad ($)",
+        "earningsLabel": "Daromad"
+      },
+
+      "services": {
+        "title": "Xizmat/muolajalar bo‘yicha daromad",
+        "serviceName": "Xizmat nomi",
+        "bookings": "Yozuvlar",
+        "totalRevenue": "Jami daromad",
+        "avgRevenue": "O‘rtacha daromad",
+        "avgDuration": "O‘rtacha davomiylik",
+        "minutes": "daq",
+        "noData": "Xizmatlar bo‘yicha daromad ma’lumotlari mavjud emas"
+      },
+
+      "payouts": {
+        "title": "Payout tarixi",
+        "referenceId": "Havola ID",
+        "amount": "Summa",
+        "status": "Holat",
+        "date": "Sana",
+        "paymentMethod": "To‘lov usuli",
+        "statusCompleted": "Yakunlangan",
+        "statusPending": "Jarayonda",
+        "statusFailed": "Muvaffaqiyatsiz",
+        "noData": "Payout yozuvlari yo‘q",
+        "noRecords": "Payout yozuvlari yo‘q"
+      },
+
+      "pending": {
+        "title": "Kutilayotgan to‘lovlar",
+        "total": "Jami: ${{amount}}",
+        "patientName": "Bemor ismi",
+        "service": "Xizmat",
+        "amount": "Summa",
+        "date": "Sana",
+        "status": "Holat",
+        "action": "Amal",
+        "markPaid": "To‘langan deb belgilash",
+        "paymentMarked": "To‘lov qabul qilingan deb belgilandi",
+        "markedPaid": "To‘lov qabul qilingan deb belgilandi",
+        "noData": "Kutilayotgan to‘lovlar yo‘q",
+        "noPayments": "Kutilayotgan to‘lovlar yo‘q"
+      },
+
+      "insights": {
+        "mostProfitable": "Eng foydali xizmat",
+        "bookings": "yozuvlar",
+        "noData": "Ma’lumot yo‘q",
+        "revenuePerHour": "Soatlik daromad",
+        "basedOnHours": "{{hours}} ishlangan soat asosida",
+        "refundRate": "Bekor qilish/qaytarish foizi",
+        "excellent": "A’lo",
+        "good": "Yaxshi",
+        "needsImprovement": "Yaxshilash kerak",
+        "busiestDays": "Eng band kunlar (daromad)"
+      }
+    },
+
+    "settings": {
+      "title": "Sozlamalar",
+      "description": "Akkaunt sozlamalaringiz va xavfsizlikni boshqaring",
+
+      "account": "Akkaunt",
+      "notifications": "Bildirishnomalar",
+      "calendar": "Kalendar",
+      "security": "Xavfsizlik",
+      "practice": "Amaliyot",
+
+      "tabs": {
+        "general": "Umumiy",
+        "notifications": "Bildirishnomalar",
+        "calendar": "Kalendar",
+        "security": "Xavfsizlik"
+      },
+
+      "accountInfo": {
+        "title": "Shaxsiy ma’lumotlar",
+        "description": "Akkauntingiz ma’lumotlarini yangilang",
+        "email": "Email",
+        "phone": "Telefon",
+        "timezone": "Vaqt zonasi",
+        "language": "Til",
+        "selectTimezone": "Vaqt zonasini tanlang",
+        "selectLanguage": "Tilni tanlang",
+        "saving": "Saqlanmoqda...",
+        "saveChanges": "O‘zgarishlarni saqlash"
+      },
+
+      "account": {
+        "title": "Akkaunt ma’lumotlari",
+        "description": "Asosiy akkaunt ma’lumotlarini yangilang",
+        "email": "Email manzil",
+        "phone": "Telefon raqami",
+        "timezone": "Vaqt zonasi",
+        "language": "Til",
+        "saveChanges": "O‘zgarishlarni saqlash"
+      },
+
+      "personalInfo": "Shaxsiy ma’lumotlar",
+      "updateDetails": "Akkauntingiz ma’lumotlarini yangilang",
+      "email": "Email",
+      "emailPlaceholder": "doctor@example.com",
+      "phone": "Telefon",
+      "phonePlaceholder": "+7 (___) ___-__-__",
+      "timezone": "Vaqt zonasi",
+      "selectTimezone": "Vaqt zonasini tanlang",
+      "language": "Til",
+      "selectLanguage": "Tilni tanlang",
+      "english": "Inglizcha",
+      "spanish": "Ispancha",
+      "french": "Fransuzcha",
+      "saveChanges": "O‘zgarishlarni saqlash",
+      "saving": "Saqlanmoqda...",
+
+      "privacy": {
+        "title": "Maxfiylik sozlamalari",
+        "description": "Maxfiylik parametrlarini boshqaring",
+        "profileVisibility": "Profil ko‘rinishi",
+        "profileVisibilityDesc": "Bemorlarga profilingizni ko‘rishga ruxsat berish",
+        "shareAnalytics": "Analitikani ulashish",
+        "shareAnalyticsDesc": "Anonim ma’lumotlar orqali xizmatni yaxshilashga yordam bering",
+        "marketingCommunications": "Marketing xabarlari",
+        "marketingCommunicationsDesc": "Yangi funksiyalar haqida yangilanishlarni olish",
+        "saveSettings": "Maxfiylik sozlamalarini saqlash"
+      },
+
+      "privacySettings": "Maxfiylik sozlamalari",
+      "privacyDesc": "Maxfiylik sozlamalarini boshqarish",
+      "profileVisibility": "Profil ko‘rinishi",
+      "profileVisibilityDesc": "Bemorlarga profilingizni ko‘rishga ruxsat berish",
+      "shareAnalytics": "Analitikani ulashish",
+      "shareAnalyticsDesc": "Anonim ma’lumotlar bilan xizmatni yaxshilashga yordam bering",
+      "marketingComms": "Marketing xabarlari",
+      "marketingCommsDesc": "Yangi funksiyalar haqida yangilanishlarni olish",
+      "marketingCommunications": "Marketing xabarlari",
+      "marketingDesc": "Yangi funksiyalar haqida yangilanishlarni olish",
+
+      "notificationSettings": {
+        "emailTitle": "Email bildirishnomalar",
+        "emailDescription": "Email bildirishnoma sozlamalarini boshqarish",
+        "smsTitle": "SMS bildirishnomalar",
+        "smsDescription": "SMS bildirishnoma sozlamalarini boshqarish",
+        "pushTitle": "Push bildirishnomalar",
+        "pushDescription": "Ilovadagi push bildirishnomalarni boshqarish",
+
+        "appointmentBookings": "Qabul yozuvlari",
+        "appointmentBookingsDesc": "Bemor yozilganda bildirishnoma olish",
+        "appointmentReminders": "Qabul eslatmalari",
+        "appointmentRemindersDesc": "Qabuldan oldin eslatmalar olish",
+        "cancellations": "Bekor qilishlar",
+        "cancellationsDesc": "Qabullar bekor qilinganda bildirishnoma olish",
+
+        "smsBookings": "SMS yozuvlar",
+        "smsBookingsDesc": "Bemor yozilganda SMS olish",
+        "smsReminders": "SMS eslatmalar",
+        "smsRemindersDesc": "Qabuldan oldin SMS eslatmalar olish",
+        "smsCancellations": "SMS bekor qilishlar",
+        "smsCancellationsDesc": "Bekor qilishlar haqida SMS olish",
+
+        "enablePush": "Push bildirishnomalarni yoqish",
+        "enablePushDesc": "Ilovada real vaqt bildirishnomalarini olish"
+      },
+
+      "notificationPreferences": {
+        "title": "Bildirishnoma sozlamalari",
+        "description": "Bildirishnomalarni qanday olishni tanlang",
+        "email": {
+          "title": "Email bildirishnomalar",
+          "bookings": "Yozuv tasdiqlari",
+          "bookingsDesc": "Bemor yozilganda bildirishnoma olish",
+          "reminders": "Qabul eslatmalari",
+          "remindersDesc": "Yaqinlashayotgan qabullar uchun eslatmalar",
+          "cancellations": "Bekor qilishlar",
+          "cancellationsDesc": "Bemor bekor qilganda bildirishnoma olish"
+        },
+        "sms": {
+          "title": "SMS bildirishnomalar",
+          "bookings": "Yozuv tasdiqlari",
+          "bookingsDesc": "Yangi yozuvlar bo‘yicha SMS bildirishnomalar",
+          "reminders": "Qabul eslatmalari",
+          "remindersDesc": "Qabuldan oldin SMS eslatmalar",
+          "cancellations": "Bekor qilishlar",
+          "cancellationsDesc": "Bekor qilishlar bo‘yicha SMS bildirishnomalar"
+        },
+        "push": {
+          "title": "Push bildirishnomalar",
+          "browser": "Brauzer bildirishnomalari",
+          "browserDesc": "Brauzerda real vaqt bildirishnomalari"
+        },
+        "save": "Bildirishnoma sozlamalarini saqlash"
+      },
+
+      "emailNotifications": "Email bildirishnomalar",
+      "emailNotificationsDesc": "Email bildirishnoma sozlamalarini boshqarish",
+      "appointmentBookings": "Qabul yozuvlari",
+      "appointmentBookingsDesc": "Bemorlar qabulga yozilganda bildirishnoma olish",
+      "appointmentReminders": "Qabul eslatmalari",
+      "appointmentRemindersDesc": "Qabuldan oldin eslatmalar olish",
+      "cancellations": "Bekor qilishlar",
+      "cancellationsDesc": "Qabul bekor qilinganda bildirishnoma olish",
+      "smsNotifications": "SMS bildirishnomalar",
+      "smsNotificationsDesc": "SMS bildirishnoma sozlamalarini boshqarish",
+      "smsBookings": "SMS yozuvlar",
+      "smsBookingsDesc": "Bemor yozilganda SMS olish",
+      "smsReminders": "SMS eslatmalar",
+      "smsRemindersDesc": "Qabullar bo‘yicha SMS eslatmalar olish",
+      "smsCancellations": "SMS bekor qilishlar",
+      "smsCancellationsDesc": "Bekor qilishlar haqida SMS olish",
+      "pushNotifications": "Push bildirishnomalar",
+      "pushNotificationsDesc": "Ilova ichidagi push bildirishnomalarni boshqarish",
+      "enablePush": "Push bildirishnomalarni yoqish",
+      "enablePushDesc": "Ilovada real vaqt bildirishnomalarini olish",
+
+      "calendarSync": {
+        "title": "Kalendar integratsiyasi",
+        "description": "Qabullarni kalendaringiz bilan sinxronlash",
+        "googleCalendar": "Google Kalendar",
+        "googleCalendarDesc": "Google Kalendar bilan sinxronlash",
+        "outlookCalendar": "Outlook Kalendar",
+        "outlookCalendarDesc": "Microsoft Outlook bilan sinxronlash",
+        "appleCalendar": "Apple Kalendar",
+        "appleCalendarDesc": "Apple Kalendar bilan sinxronlash"
+      },
+
+      "calendarIntegration": {
+        "title": "Kalendar integratsiyasi",
+        "description": "Yozuvlarni tashqi kalendarlar bilan sinxronlash",
+        "googleCalendar": "Google Kalendar",
+        "outlookCalendar": "Outlook Kalendar",
+        "appleCalendar": "Apple Kalendar",
+        "connected": "Ulangan",
+        "notConnected": "Ulanmagan",
+        "syncSettings": {
+          "title": "Sinxronlash sozlamalari",
+          "realTime": "Yozuvlar real vaqt rejimida sinxronlanadi",
+          "noImport": "Tashqi kalendarlardagi hodisalar import qilinmaydi",
+          "disconnect": "Istalgan paytda uzishingiz mumkin"
+        }
+      },
+
+      "calendarIntegrationDesc": "Qabullarni kalendaringiz bilan sinxronlash",
+      "googleCalendar": "Google Kalendar",
+      "googleCalendarDesc": "Google Kalendar bilan sinxronlash",
+      "outlookCalendar": "Outlook Kalendar",
+      "outlookCalendarDesc": "Microsoft Outlook bilan sinxronlash",
+      "appleCalendar": "Apple Kalendar",
+      "appleCalendarDesc": "Apple Kalendar bilan sinxronlash",
+
+      "practiceInfo": {
+        "title": "Amaliyot ma’lumotlari",
+        "description": "Amaliyotingizni boshqarish",
+        "comingSoon": "Amaliyotni boshqarish funksiyalari tez orada..."
+      },
+
+      "practiceInfo": "Amaliyot ma’lumotlari",
+      "practiceInfoDesc": "Amaliyot bilan bog‘liqligingizni boshqaring",
+      "practiceComingSoon": "Amaliyotni boshqarish funksiyalari tez orada...",
+
+      "changePassword": "Parolni o‘zgartirish",
+      "changePasswordDesc": "Akkauntni himoya qilish uchun parolni yangilang",
+      "currentPassword": "Joriy parol",
+      "newPassword": "Yangi parol",
+      "confirmPassword": "Yangi parolni tasdiqlang",
+      "updatePassword": "Parolni yangilash",
+      "updating": "Yangilanmoqda...",
+
+      "recentActivity": "So‘nggi faollik",
+      "recentActivityDesc": "Kirishlar va o‘zgarishlar tarixini ko‘rish",
+      "loadingActivity": "Faollik yuklanmoqda...",
+      "noRecentActivity": "So‘nggi faollik yo‘q",
+      "activityType": "faollik turi",
+      "ip": "IP",
+
+      "twoFactorAuth": "Ikki bosqichli autentifikatsiya (Tez orada)",
+      "twoFactorAuthDesc": "Qo‘shimcha xavfsizlik qatlamini qo‘shing",
+      "twoFactorComingSoon": "Ikki bosqichli autentifikatsiya keyingi yangilanishda mavjud bo‘ladi. Bu SMS yoki autentifikator ilovasi orqali akkauntingizni himoya qilishga yordam beradi.",
+
+      "dangerZone": "Xavfli zona",
+      "dangerZoneDesc": "Akkaunt bilan bog‘liq qaytarib bo‘lmaydigan amallar",
+      "exportData": "Akkaunt ma’lumotlarini eksport qilish",
+      "exportDataDesc": "Akkauntingizdagi barcha ma’lumotlarni yuklab olish",
+      "requestExport": "Eksport so‘rash",
+      "deactivateAccount": "Akkauntni deaktivatsiya qilish",
+      "deactivateAccountDesc": "Yakuniy deaktivatsiya so‘rovini yuborish",
+      "requestDeactivation": "Deaktivatsiya so‘rash",
+      "pendingRequests": "Sizda kutilayotgan so‘rovlar mavjud. Iltimos, ular ko‘rib chiqilishini kuting.",
+
+      "passwordRequired": "Parol maydonlarini to‘ldiring",
+      "passwordMismatch": "Yangi parollar mos kelmadi",
+      "passwordLength": "Parol kamida 8 ta belgidan iborat bo‘lishi kerak",
+      "enterCurrentPassword": "Joriy parolni kiriting",
+      "enterNewPassword": "Yangi parolni kiriting (kamida 8 ta belgi)",
+      "confirmNewPassword": "Yangi parolni tasdiqlang",
+
+      "timezones": {
+        "eastern": "Sharqiy standart vaqt",
+        "central": "Markaziy standart vaqt",
+        "mountain": "Tog‘li hudud standart vaqti",
+        "pacific": "Tinch okeani standart vaqti",
+        "est": "Sharqiy vaqt (EST)",
+        "cst": "Markaziy vaqt (CST)",
+        "mst": "Tog‘li vaqt (MST)",
+        "pst": "Tinch okeani vaqti (PST)"
+      },
+
+      "languages": {
+        "en": "Inglizcha",
+        "es": "Ispancha",
+        "pt": "Portugalcha",
+        "ru": "Ruscha",
+        "uz": "O‘zbekcha",
+        "ar": "Arabcha"
+        "de": "Nemischa"
+        "zh": "Xitoycha"
+        "ko": "Koreyscha"
+        "ja": "Yaponcha"
+        "tr": "Turkcha"
+      },
+
+      "easternTime": "Sharqiy vaqt (EST)",
+      "centralTime": "Markaziy vaqt (CST)",
+      "mountainTime": "Tog‘li vaqt (MST)",
+      "pacificTime": "Tinch okeani vaqti (PST)",
+
+      "toast": {
+        "accountSuccess": "Akkaunt sozlamalari muvaffaqiyatli saqlandi",
+        "accountError": "Akkaunt sozlamalarini saqlab bo‘lmadi",
+        "notificationsSuccess": "Bildirishnoma sozlamalari muvaffaqiyatli saqlandi",
+        "notificationsError": "Bildirishnoma sozlamalarini saqlab bo‘lmadi",
+        "privacySuccess": "Maxfiylik sozlamalari muvaffaqiyatli saqlandi",
+        "privacyError": "Maxfiylik sozlamalarini saqlab bo‘lmadi"
+      }
     }
   }
 }
