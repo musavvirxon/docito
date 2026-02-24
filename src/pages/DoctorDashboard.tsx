@@ -44,7 +44,7 @@ type DoctorStatus = "independent" | "clinic-member";
 const DoctorDashboardContent = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, profile } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const {
     doctorProfile,
     stats,
@@ -108,7 +108,7 @@ const DoctorDashboardContent = () => {
   const profileCompletion = calculateProfileCompletion();
   const isProfileIncomplete = profileCompletion < 80;
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center space-y-4">

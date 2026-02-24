@@ -143,7 +143,7 @@ export default function ImagingDashboard() {
     ];
   }, [overview]);
 
-  const isLoading = authLoading || centerLoading;
+  const isLoading = authLoading || centerLoading || !user;
 
   if (isLoading) {
     return (

@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "اختر اللغة"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "الأطباء",
+      "clinics": "العيادات",
+      "labs": "المختبرات",
+      "pharmacies": "الصيدليات",
+      "imaging": "التصوير",
+      "hospitals": "المستشفيات",
+      "pricing": "الأسعار"
+    },
+    "actions": {
+      "signIn": "تسجيل الدخول",
+      "register": "إنشاء حساب"
+    },
+    "a11y": {
+      "closeMenu": "إغلاق القائمة",
+      "openMenu": "فتح القائمة"
+    }
   }
 }

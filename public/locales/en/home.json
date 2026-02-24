@@ -221,7 +221,16 @@
       "terms": "Terms",
       "privacy": "Privacy",
       "cookies": "Cookies",
-      "about": "About"
+      "about": "About",
+      "findDoctors": "Find Doctors",
+      "searchDoctors": "Search Doctors",
+      "specialties": "Specialties",
+      "howItWorks": "How It Works",
+      "helpCenter": "Help Center",
+      "contact": "Contact",
+      "faqs": "FAQs",
+      "support": "Support",
+      "hipaa": "HIPAA"
     }
   },
   "visuals": {

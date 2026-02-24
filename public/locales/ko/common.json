@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "언어 선택"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "의사",
+      "clinics": "병원",
+      "labs": "검사실",
+      "pharmacies": "약국",
+      "imaging": "영상의학",
+      "hospitals": "병원",
+      "pricing": "요금"
+    },
+    "actions": {
+      "signIn": "로그인",
+      "register": "회원가입"
+    },
+    "a11y": {
+      "closeMenu": "메뉴 닫기",
+      "openMenu": "메뉴 열기"
+    }
   }
 }

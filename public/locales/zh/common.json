@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "选择语言"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "医生",
+      "clinics": "诊所",
+      "labs": "实验室",
+      "pharmacies": "药房",
+      "imaging": "影像中心",
+      "hospitals": "医院",
+      "pricing": "定价"
+    },
+    "actions": {
+      "signIn": "登录",
+      "register": "注册"
+    },
+    "a11y": {
+      "closeMenu": "关闭菜单",
+      "openMenu": "打开菜单"
+    }
   }
 }

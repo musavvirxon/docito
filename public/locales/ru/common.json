@@ -113,5 +113,24 @@
   },
   "language": {
     "select": "Выберите язык"
+  },
+  "topNav": {
+    "links": {
+      "doctors": "Врачи",
+      "clinics": "Клиники",
+      "labs": "Лаборатории",
+      "pharmacies": "Аптеки",
+      "imaging": "Диагностика",
+      "hospitals": "Больницы",
+      "pricing": "Цены"
+    },
+    "actions": {
+      "signIn": "Войти",
+      "register": "Регистрация"
+    },
+    "a11y": {
+      "closeMenu": "Закрыть меню",
+      "openMenu": "Открыть меню"
+    }
   }
 }
