@@ -48,6 +48,10 @@ import {
   TrendingDown,
   Minus,
   Filter,
+  Search,
+  ArrowUpRight,
+  Beaker,
+  BellRing,
 } from "lucide-react";
 
 type LabCenterRow = {
@@ -59,6 +63,7 @@ type LabCenterRow = {
 
 type AnyOrder = Record<string, any>;
 type RangeDays = 7 | 30 | 90;
+type QueueFilterKey = "all" | "pending" | "in_progress" | "overdue" | "ready";
 
 type PeriodMetrics = {
   total: number;
@@ -72,6 +77,14 @@ type PeriodMetrics = {
   avgTatHours: number;
   completionRatePct: number;
   breakdown: Array<{ label: string; count: number }>;
+};
+
+type ActivityItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  at: Date | null;
+  type: "created" | "updated" | "completed" | "overdue" | "ready";
 };
 
 function toDateSafe(value: unknown): Date | null {
@@ -93,6 +106,12 @@ function normalizeStatus(value: unknown): string {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, "_");
+}
+
+function humanizeStatus(value: unknown): string {
+  const s = normalizeStatus(value);
+  if (!s) return "unknown";
+  return s.split("_").join(" ");
 }
 
 function isCompletedStatus(status: string): boolean {
@@ -124,6 +143,50 @@ function getCreatedAt(order: AnyOrder): Date | null {
   return pickDate(order, ["created_at", "ordered_at", "requested_at", "scheduled_at"]);
 }
 
+function getUpdatedAt(order: AnyOrder): Date | null {
+  return pickDate(order, ["updated_at", "modified_at", "status_updated_at"]);
+}
+
+function getCompletedAt(order: AnyOrder): Date | null {
+  return pickDate(order, ["completed_at", "result_ready_at", "reported_at", "finalized_at"]);
+}
+
+function getDueAt(order: AnyOrder): Date | null {
+  return pickDate(order, [
+    "due_at",
+    "expected_completion_at",
+    "promised_at",
+    "target_at",
+    "deadline_at",
+    "scheduled_result_at",
+  ]);
+}
+
+function getDeliveredAt(order: AnyOrder): Date | null {
+  return pickDate(order, ["result_delivered_at", "delivered_at", "shared_at", "patient_notified_at", "sent_at"]);
+}
+
+function getPatientLabel(order: AnyOrder): string {
+  return (
+    order?.patient_name ||
+    order?.patient_full_name ||
+    order?.full_name ||
+    [order?.first_name, order?.last_name].filter(Boolean).join(" ") ||
+    (order?.patient_id ? `Patient #${order.patient_id}` : "Patient")
+  );
+}
+
+function getOrderLabel(order: AnyOrder): string {
+  return (
+    order?.order_number ||
+    order?.test_name ||
+    order?.panel_name ||
+    order?.service_name ||
+    order?.test_type ||
+    (order?.id ? `Order ${String(order.id).slice(0, 8)}` : "Order")
+  );
+}
+
 function getOrderCategoryLabel(order: AnyOrder): string {
   const raw =
     order?.test_category ??
@@ -138,6 +201,78 @@ function getOrderCategoryLabel(order: AnyOrder): string {
   const value = String(raw || "").trim();
   if (!value) return "Other";
   return value.length > 32 ? `${value.slice(0, 32)}…` : value;
+}
+
+function isHomeCollectionOrder(order: AnyOrder): boolean {
+  const modeCandidates = [
+    order?.collection_type,
+    order?.service_mode,
+    order?.appointment_type,
+    order?.visit_type,
+    order?.order_type,
+    order?.fulfillment_type,
+  ]
+    .map((v) => String(v || "").toLowerCase())
+    .join(" | ");
+
+  if (
+    modeCandidates.includes("home") ||
+    modeCandidates.includes("domiciliary") ||
+    modeCandidates.includes("home_collection")
+  ) {
+    return true;
+  }
+
+  if (order?.is_home_collection === true) return true;
+  if (order?.home_collection === true) return true;
+  if (order?.requires_home_collection === true) return true;
+
+  return false;
+}
+
+function matchesQueueFilter(order: AnyOrder, filter: QueueFilterKey, now: Date): boolean {
+  if (filter === "all") return true;
+  const status = normalizeStatus(order?.status);
+
+  if (filter === "pending") return isPendingStatus(status);
+  if (filter === "in_progress") return isInProgressStatus(status);
+
+  if (filter === "ready") {
+    return isReadyStatus(status) && !getDeliveredAt(order);
+  }
+
+  if (filter === "overdue") {
+    if (isCompletedStatus(status)) return false;
+    const dueAt = getDueAt(order);
+    return !!dueAt && dueAt.getTime() < now.getTime();
+  }
+
+  return true;
+}
+
+function matchesQueueSearch(order: AnyOrder, q: string): boolean {
+  const query = q.trim().toLowerCase();
+  if (!query) return true;
+
+  const haystack = [
+    order?.order_number,
+    order?.test_name,
+    order?.panel_name,
+    order?.service_name,
+    order?.test_type,
+    order?.category,
+    order?.status,
+    order?.patient_name,
+    order?.patient_full_name,
+    order?.full_name,
+    order?.phone,
+    order?.id,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase())
+    .join(" | ");
+
+  return haystack.includes(query);
 }
 
 function buildPeriodMetrics(list: AnyOrder[], now: Date): PeriodMetrics {
@@ -171,14 +306,7 @@ function buildPeriodMetrics(list: AnyOrder[], now: Date): PeriodMetrics {
     const status = normalizeStatus(o?.status);
     if (isCompletedStatus(status)) return false;
 
-    const due = pickDate(o, [
-      "due_at",
-      "expected_completion_at",
-      "promised_at",
-      "target_at",
-      "deadline_at",
-      "scheduled_result_at",
-    ]);
+    const due = getDueAt(o);
     if (!due) return false;
     return due.getTime() < now.getTime();
   }).length;
@@ -186,9 +314,7 @@ function buildPeriodMetrics(list: AnyOrder[], now: Date): PeriodMetrics {
   const readyNotDelivered = list.filter((o) => {
     const status = normalizeStatus(o?.status);
     if (!isReadyStatus(status)) return false;
-
-    const delivered = pickDate(o, ["result_delivered_at", "delivered_at", "shared_at", "patient_notified_at", "sent_at"]);
-    return !delivered;
+    return !getDeliveredAt(o);
   }).length;
 
   const tatHoursValues = list
@@ -247,6 +373,86 @@ function pctDelta(current: number, previous: number): number | null {
   return Math.round(((current - previous) / previous) * 100);
 }
 
+function relativeTimeLabel(date: Date | null): string {
+  if (!date) return "Unknown time";
+  const diffMs = Date.now() - date.getTime();
+  const abs = Math.abs(diffMs);
+  const minutes = Math.round(abs / (1000 * 60));
+  const hours = Math.round(abs / (1000 * 60 * 60));
+  const days = Math.round(abs / (1000 * 60 * 60 * 24));
+
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
+function buildRecentActivities(orders: AnyOrder[]): ActivityItem[] {
+  const items: ActivityItem[] = [];
+  const now = new Date();
+
+  for (const o of orders) {
+    const status = normalizeStatus(o?.status);
+    const orderLabel = getOrderLabel(o);
+    const patientLabel = getPatientLabel(o);
+    const createdAt = getCreatedAt(o);
+    const updatedAt = getUpdatedAt(o);
+    const completedAt = getCompletedAt(o);
+    const dueAt = getDueAt(o);
+
+    if (createdAt) {
+      items.push({
+        id: `${o?.id || orderLabel}-created`,
+        title: `New order: ${orderLabel}`,
+        subtitle: `${patientLabel} • ${humanizeStatus(status)}`,
+        at: createdAt,
+        type: "created",
+      });
+    }
+
+    if (completedAt) {
+      items.push({
+        id: `${o?.id || orderLabel}-completed`,
+        title: `Completed: ${orderLabel}`,
+        subtitle: `${patientLabel} • results ready`,
+        at: completedAt,
+        type: "completed",
+      });
+    } else if (isReadyStatus(status) && !getDeliveredAt(o)) {
+      const at = updatedAt || getCreatedAt(o);
+      items.push({
+        id: `${o?.id || orderLabel}-ready`,
+        title: `Ready not delivered: ${orderLabel}`,
+        subtitle: `${patientLabel} • follow-up required`,
+        at,
+        type: "ready",
+      });
+    }
+
+    if (dueAt && dueAt.getTime() < now.getTime() && !isCompletedStatus(status)) {
+      items.push({
+        id: `${o?.id || orderLabel}-overdue`,
+        title: `Overdue: ${orderLabel}`,
+        subtitle: `${patientLabel} • due ${dueAt.toLocaleString()}`,
+        at: dueAt,
+        type: "overdue",
+      });
+    } else if (updatedAt && updatedAt !== createdAt) {
+      items.push({
+        id: `${o?.id || orderLabel}-updated`,
+        title: `Updated: ${orderLabel}`,
+        subtitle: `${patientLabel} • ${humanizeStatus(status)}`,
+        at: updatedAt,
+        type: "updated",
+      });
+    }
+  }
+
+  return items
+    .sort((a, b) => (b.at?.getTime() || 0) - (a.at?.getTime() || 0))
+    .slice(0, 12);
+}
+
 async function fetchMyLabCenter(userId: string): Promise<LabCenterRow | null> {
   const { data: adminRow, error: adminErr } = await supabase
     .from("lab_centers")
@@ -287,6 +493,8 @@ export default function LabDashboardPage() {
   >("overview");
 
   const [analyticsRange, setAnalyticsRange] = useState<RangeDays>(30);
+  const [queueFilter, setQueueFilter] = useState<QueueFilterKey>("all");
+  const [queueSearch, setQueueSearch] = useState("");
 
   const [center, setCenter] = useState<LabCenterRow | null>(null);
   const [loadingCenter, setLoadingCenter] = useState(true);
@@ -373,6 +581,51 @@ export default function LabDashboardPage() {
     ];
   }, [analyticsComputed.currentMetrics, analyticsRange]);
 
+  const overviewOpsData = useMemo(() => {
+    const now = new Date();
+
+    const filteredQueue = orders.filter((o) => matchesQueueFilter(o, queueFilter, now) && matchesQueueSearch(o, queueSearch));
+    const queuePreview = filteredQueue.slice(0, 80);
+
+    const homeOrders = orders.filter(isHomeCollectionOrder);
+    const homePending = homeOrders.filter((o) => isPendingStatus(normalizeStatus(o?.status))).length;
+    const homeInProgress = homeOrders.filter((o) => isInProgressStatus(normalizeStatus(o?.status))).length;
+    const homeCompleted = homeOrders.filter((o) => isCompletedStatus(normalizeStatus(o?.status))).length;
+    const homeOverdue = homeOrders.filter((o) => {
+      const due = getDueAt(o);
+      const status = normalizeStatus(o?.status);
+      return !!due && due.getTime() < now.getTime() && !isCompletedStatus(status);
+    }).length;
+
+    const sampleBottlenecks = {
+      awaitingSample: orders.filter((o) => ["awaiting_sample", "pending", "new"].includes(normalizeStatus(o?.status))).length,
+      receivedNotProcessing: orders.filter((o) => ["received", "sample_collected"].includes(normalizeStatus(o?.status))).length,
+      processingBacklog: orders.filter((o) => ["in_progress", "processing", "analyzing", "testing"].includes(normalizeStatus(o?.status))).length,
+      reviewBacklog: orders.filter((o) => ["under_review"].includes(normalizeStatus(o?.status))).length,
+      readyNotDelivered: orders.filter((o) => isReadyStatus(normalizeStatus(o?.status)) && !getDeliveredAt(o)).length,
+      overdue: orders.filter((o) => {
+        const due = getDueAt(o);
+        return !!due && due.getTime() < now.getTime() && !isCompletedStatus(normalizeStatus(o?.status));
+      }).length,
+    };
+
+    const recentActivities = buildRecentActivities(orders);
+
+    return {
+      filteredQueue,
+      queuePreview,
+      home: {
+        total: homeOrders.length,
+        pending: homePending,
+        inProgress: homeInProgress,
+        completed: homeCompleted,
+        overdue: homeOverdue,
+      },
+      sampleBottlenecks,
+      recentActivities,
+    };
+  }, [orders, queueFilter, queueSearch]);
+
   const fetchOrders = async () => {
     if (!labCenterId) return;
     setOrdersLoading(true);
@@ -410,6 +663,16 @@ export default function LabDashboardPage() {
     const parsedRange = Number(rangeParam);
     if ([7, 30, 90].includes(parsedRange)) {
       setAnalyticsRange(parsedRange as RangeDays);
+    }
+
+    const filterParam = (params.get("qf") || "").trim().toLowerCase();
+    if (["all", "pending", "in_progress", "overdue", "ready"].includes(filterParam)) {
+      setQueueFilter(filterParam as QueueFilterKey);
+    }
+
+    const searchParam = params.get("qs");
+    if (typeof searchParam === "string") {
+      setQueueSearch(searchParam);
     }
 
     if (!desired) return;
@@ -524,7 +787,22 @@ export default function LabDashboardPage() {
       previous: analyticsComputed.previousMetrics.completionRatePct,
       delta: analyticsComputed.trends.completionRate,
     },
-  ];
+  ] as const;
+
+  const updateOverviewQueryParams = (next: Partial<{ range: RangeDays; qf: QueueFilterKey; qs: string }>) => {
+    const params = new URLSearchParams(location.search);
+    params.set("tab", "overview");
+    params.set("range", String(next.range ?? analyticsRange));
+    params.set("qf", String(next.qf ?? queueFilter));
+    params.set("qs", String(next.qs ?? queueSearch));
+    navigate(
+      {
+        pathname: location.pathname,
+        search: `?${params.toString()}`,
+      },
+      { replace: true },
+    );
+  };
 
   return (
     <DashboardShell
@@ -540,6 +818,8 @@ export default function LabDashboardPage() {
         const params = new URLSearchParams(location.search);
         params.set("tab", String(next));
         params.set("range", String(analyticsRange));
+        params.set("qf", String(queueFilter));
+        params.set("qs", String(queueSearch));
         navigate(
           {
             pathname: location.pathname,
@@ -557,7 +837,7 @@ export default function LabDashboardPage() {
             title="Lab Command Center"
             description="Operations, analytics, billing, referrals, and finance visibility in one overview."
             actions={
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center rounded-md border bg-background p-1">
                   <span className="px-2 text-xs text-muted-foreground inline-flex items-center gap-1">
                     <Filter className="h-3.5 w-3.5" />
@@ -570,17 +850,7 @@ export default function LabDashboardPage() {
                       onClick={() => {
                         const next = d as RangeDays;
                         setAnalyticsRange(next);
-
-                        const params = new URLSearchParams(location.search);
-                        params.set("tab", "overview");
-                        params.set("range", String(next));
-                        navigate(
-                          {
-                            pathname: location.pathname,
-                            search: `?${params.toString()}`,
-                          },
-                          { replace: true },
-                        );
+                        updateOverviewQueryParams({ range: next });
                       }}
                       className={`h-8 px-3 rounded text-sm ${
                         analyticsRange === d
@@ -726,33 +996,90 @@ export default function LabDashboardPage() {
 
           <LabDashboardContent />
 
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <CardTitle>Advanced Analytics Snapshot</CardTitle>
-              <CardDescription>
-                Referral volume, completion rates, and turnaround metrics available directly on the overview.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LabAnalytics labCenterId={labCenterId} />
-            </CardContent>
-          </Card>
-
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid gap-6 xl:grid-cols-2 mt-6">
             <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle>Orders Queue Snapshot</CardTitle>
-                <CardDescription>Recent orders and workflow actions without switching tabs.</CardDescription>
+                <CardDescription>Filter queue by status, search by patient/order, and deep-link into full order management.</CardDescription>
               </CardHeader>
-              <CardContent className="max-h-[620px] overflow-auto pr-2">
-                {ordersLoading ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Loading queue…</span>
+              <CardContent className="space-y-4">
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {([
+                      ["all", "All"],
+                      ["pending", "Pending"],
+                      ["in_progress", "In Progress"],
+                      ["overdue", "Overdue"],
+                      ["ready", "Ready (Not Delivered)"],
+                    ] as Array<[QueueFilterKey, string]>).map(([key, label]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          setQueueFilter(key);
+                          updateOverviewQueryParams({ qf: key });
+                        }}
+                        className={`h-8 px-3 rounded-md text-xs border ${
+                          queueFilter === key
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background hover:bg-accent hover:text-accent-foreground"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <LabOrderQueue orders={orders as any} labCenterId={labCenterId} onRefresh={fetchOrders} />
-                )}
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        value={queueSearch}
+                        onChange={(e) => {
+                          setQueueSearch(e.target.value);
+                        }}
+                        onBlur={() => updateOverviewQueryParams({ qs: queueSearch })}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            updateOverviewQueryParams({ qs: queueSearch });
+                          }
+                        }}
+                        placeholder="Search patient, order number, test..."
+                        className="w-full h-9 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const params = new URLSearchParams(location.search);
+                        params.set("tab", "orders");
+                        params.set("range", String(analyticsRange));
+                        navigate({ pathname: location.pathname, search: `?${params.toString()}` }, { replace: false });
+                        setActiveTab("orders");
+                      }}
+                      className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5"
+                    >
+                      View All Orders
+                      <ArrowUpRight className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground">
+                    Showing {overviewOpsData.queuePreview.length} of {overviewOpsData.filteredQueue.length} matching orders
+                  </div>
+                </div>
+
+                <div className="max-h-[620px] overflow-auto pr-2">
+                  {ordersLoading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Loading queue…</span>
+                    </div>
+                  ) : (
+                    <LabOrderQueue orders={overviewOpsData.queuePreview as any} labCenterId={labCenterId} onRefresh={fetchOrders} />
+                  )}
+                </div>
               </CardContent>
             </Card>
 
@@ -767,7 +1094,164 @@ export default function LabDashboardPage() {
             </Card>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
+          <div className="grid gap-6 xl:grid-cols-3 mt-6">
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Home className="h-5 w-5" />
+                  Home Collection Snapshot
+                </CardTitle>
+                <CardDescription>Quick home-collection workload summary and shortcuts.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="rounded border p-3">
+                    <div className="text-muted-foreground">Total</div>
+                    <div className="text-xl font-semibold">{overviewOpsData.home.total}</div>
+                  </div>
+                  <div className="rounded border p-3">
+                    <div className="text-muted-foreground">Pending</div>
+                    <div className="text-xl font-semibold">{overviewOpsData.home.pending}</div>
+                  </div>
+                  <div className="rounded border p-3">
+                    <div className="text-muted-foreground">In Progress</div>
+                    <div className="text-xl font-semibold">{overviewOpsData.home.inProgress}</div>
+                  </div>
+                  <div className="rounded border p-3">
+                    <div className="text-muted-foreground">Completed</div>
+                    <div className="text-xl font-semibold">{overviewOpsData.home.completed}</div>
+                  </div>
+                  <div className="rounded border p-3 col-span-2">
+                    <div className="text-muted-foreground">Overdue Home Collections</div>
+                    <div className="text-xl font-semibold">{overviewOpsData.home.overdue}</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const params = new URLSearchParams(location.search);
+                      params.set("tab", "home");
+                      params.set("range", String(analyticsRange));
+                      navigate({ pathname: location.pathname, search: `?${params.toString()}` });
+                      setActiveTab("home");
+                    }}
+                    className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5"
+                  >
+                    Open Home Collection
+                    <ArrowUpRight className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const params = new URLSearchParams(location.search);
+                      params.set("tab", "orders");
+                      params.set("qf", "pending");
+                      navigate({ pathname: location.pathname, search: `?${params.toString()}` });
+                      setActiveTab("orders");
+                    }}
+                    className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm"
+                  >
+                    Pending Orders
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Beaker className="h-5 w-5" />
+                  Sample Workflow Bottlenecks
+                </CardTitle>
+                <CardDescription>Where samples are piling up in the lifecycle.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {[
+                  ["Awaiting Sample", overviewOpsData.sampleBottlenecks.awaitingSample],
+                  ["Received / Collected", overviewOpsData.sampleBottlenecks.receivedNotProcessing],
+                  ["Processing Backlog", overviewOpsData.sampleBottlenecks.processingBacklog],
+                  ["Review Backlog", overviewOpsData.sampleBottlenecks.reviewBacklog],
+                  ["Ready Not Delivered", overviewOpsData.sampleBottlenecks.readyNotDelivered],
+                  ["Overdue", overviewOpsData.sampleBottlenecks.overdue],
+                ].map(([label, value]) => (
+                  <div key={String(label)} className="flex items-center justify-between rounded border p-3 text-sm">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className="font-semibold">{value as number}</span>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const params = new URLSearchParams(location.search);
+                    params.set("tab", "samples");
+                    params.set("range", String(analyticsRange));
+                    navigate({ pathname: location.pathname, search: `?${params.toString()}` });
+                    setActiveTab("samples");
+                  }}
+                  className="w-full h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center justify-center gap-1.5"
+                >
+                  Open Sample Manager
+                  <ArrowUpRight className="h-4 w-4" />
+                </button>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BellRing className="h-5 w-5" />
+                  Recent Activity Feed
+                </CardTitle>
+                <CardDescription>Latest operational events from orders and result workflow.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {overviewOpsData.recentActivities.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No recent activity found.</div>
+                ) : (
+                  <div className="space-y-3 max-h-[420px] overflow-auto pr-1">
+                    {overviewOpsData.recentActivities.map((item) => {
+                      const typeStyles =
+                        item.type === "overdue"
+                          ? "border-rose-200 bg-rose-50 text-rose-700"
+                          : item.type === "completed"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : item.type === "ready"
+                              ? "border-amber-200 bg-amber-50 text-amber-700"
+                              : "border-border bg-muted/40 text-foreground";
+                      return (
+                        <div key={item.id} className={`rounded-lg border p-3 ${typeStyles}`}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="font-medium truncate">{item.title}</div>
+                              <div className="text-xs opacity-80 mt-1">{item.subtitle}</div>
+                            </div>
+                            <div className="text-xs whitespace-nowrap opacity-80">{relativeTimeLabel(item.at)}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="mt-6 overflow-hidden">
+            <CardHeader>
+              <CardTitle>Advanced Analytics Snapshot</CardTitle>
+              <CardDescription>
+                Referral volume, completion rates, and turnaround metrics available directly on the overview.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LabAnalytics labCenterId={labCenterId} />
+            </CardContent>
+          </Card>
+
+          <div className="grid gap-6 xl:grid-cols-2 mt-6">
             <Card className="overflow-hidden">
               <CardHeader>
                 <CardTitle>Billing & Insurance Snapshot</CardTitle>
