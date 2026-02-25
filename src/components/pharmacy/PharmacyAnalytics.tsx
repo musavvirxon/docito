@@ -1,10 +1,45 @@
 // File: src/components/pharmacy/PharmacyAnalytics.tsx
+// FULL FILE REPLACEMENT
 
-import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useMemo, useState } from "react";
+import { format, startOfDay, subDays, differenceInMinutes } from "date-fns";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  Legend,
+} from "recharts";
+import {
+  BarChart3,
+  RefreshCw,
+  DollarSign,
+  Package,
+  Pill,
+  AlertTriangle,
+  Snowflake,
+  ShieldAlert,
+  Clock3,
+  TrendingUp,
+  Truck,
+  CreditCard,
+  CheckCircle2,
+} from "lucide-react";
+
+import { usePrescriptions, FulfillmentOrder, Prescription } from "@/hooks/usePrescriptions";
+import { usePharmacyInventory, InventoryItem } from "@/hooks/usePharmacyInventory";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -12,39 +47,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  BarChart3,
-  TrendingUp,
-  DollarSign,
-  Pill,
-  RefreshCw,
-  Truck,
-  Shield,
-  AlertTriangle,
-  Clock3,
-  CheckCircle2,
-  ClipboardList,
-  ThermometerSnowflake,
-  Syringe,
-  Boxes,
-} from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   pharmacyId: string;
@@ -52,114 +55,20 @@ interface Props {
 
 type TimeRange = "7d" | "30d" | "90d";
 
-type OrderRow = {
-  id: string;
-  order_number?: string | null;
-  pharmacy_id?: string | null;
-  patient_id?: string | null;
-  prescription_id?: string | null;
-  status?: string | null;
-  priority?: string | null;
-  total_amount?: number | null;
-  insurance_amount?: number | null;
-  copay_amount?: number | null;
-  payment_status?: string | null;
-  pickup_method?: string | null;
-  estimated_ready_at?: string | null;
-  ready_at?: string | null;
-  picked_up_at?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
+type FulfillmentOrderExt = FulfillmentOrder & {
+  created_at?: string;
+  updated_at?: string;
+  notes?: string | null;
 };
 
-type PrescriptionRow = {
-  id: string;
-  pharmacy_id?: string | null;
-  status?: string | null;
-  prescribed_at?: string | null;
-  created_at?: string | null;
-  expires_at?: string | null;
-  refills_remaining?: number | null;
-  refills_total?: number | null;
+type PrescriptionExt = Prescription & {
+  created_at?: string;
 };
 
-type PrescriptionItemRow = {
-  id: string;
-  prescription_id?: string | null;
-  medication_name?: string | null;
-  quantity?: number | null;
-  unit?: string | null;
-};
-
-type InventoryRow = {
-  id: string;
-  pharmacy_id?: string | null;
-  medication_name?: string | null;
-  quantity_on_hand?: number | null;
-  quantity_reserved?: number | null;
-  reorder_level?: number | null;
-  unit_cost?: number | null;
-  unit_price?: number | null;
-  expiry_date?: string | null;
-  requires_refrigeration?: boolean | null;
-  is_controlled_substance?: boolean | null;
-  controlled_substance_schedule?: string | null;
-  manufacturer?: string | null;
-};
-
-type ReferralRow = {
-  id: string;
-  status?: string | null;
-  receiver_type?: string | null;
-  receiver_entity_id?: string | null;
-  created_at?: string | null;
-};
-
-type AnalyticsState = {
-  kpis: {
-    revenue: number;
-    orders: number;
-    avgOrderValue: number;
-    prescriptions: number;
-    deliveries: number;
-    insuranceCovered: number;
-    copayTotal: number;
-    claimableOrders: number;
-    lowStockItems: number;
-    expiringSoon: number;
-    outOfStock: number;
-    referralsReceived: number;
-    fillCompletionRate: number;
-    deliveryShare: number;
-    avgReadyMinutes: number;
-    avgCompletionMinutes: number;
-    onTimeReadyRate: number;
-    paidOrders: number;
-    unpaidOrders: number;
-    inventorySkuCount: number;
-    inventoryUnits: number;
-    inventoryRetailValue: number;
-    inventoryCostValue: number;
-    controlledSubstanceSkus: number;
-    refrigeratedSkus: number;
-  };
-  changes: {
-    revenuePct: number;
-    ordersPct: number;
-    prescriptionsPct: number;
-    referralsPct: number;
-  };
-  trend: Array<{ date: string; revenue: number; orders: number; completed: number; deliveries: number }>;
-  statusBreakdown: Array<{ name: string; value: number }>;
-  paymentBreakdown: Array<{ name: string; value: number }>;
-  pickupBreakdown: Array<{ name: string; value: number }>;
-  claimBreakdown: Array<{ name: string; value: number }>;
-  prescriptionStatusBreakdown: Array<{ name: string; value: number }>;
-  topMedications: Array<{ name: string; qty: number; rxCount: number }>;
-  topRevenueOrders: Array<{ label: string; value: number }>;
-  inventoryRiskBuckets: Array<{ name: string; value: number }>;
-  warnings: string[];
-  dataSources: string[];
+const RANGE_DAYS: Record<TimeRange, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
 };
 
 const PIE_COLORS = [
@@ -171,7 +80,7 @@ const PIE_COLORS = [
   "hsl(var(--muted-foreground))",
 ];
 
-function toNumber(v: unknown): number {
+function toNum(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
   if (typeof v === "string") {
     const n = Number(v);
@@ -180,503 +89,416 @@ function toNumber(v: unknown): number {
   return 0;
 }
 
-function safeDate(value?: string | null): Date | null {
-  if (!value) return null;
-  const d = new Date(value);
+function money(n: number): string {
+  return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function safeDate(v?: string | null): Date | null {
+  if (!v) return null;
+  const d = new Date(v);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function formatMoney(n: number): string {
-  return `$${Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function statusLabel(v?: string | null): string {
+  const s = (v || "unknown").toLowerCase().trim();
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatPercent(n: number): string {
-  const v = Number.isFinite(n) ? n : 0;
-  return `${v.toFixed(1)}%`;
+function normalizeStatus(v?: string | null): string {
+  return (v || "unknown").toLowerCase().trim();
 }
 
-function humanize(value: string): string {
-  return String(value || "unknown")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+function inRange(dateValue: string | undefined | null, days: number): boolean {
+  const d = safeDate(dateValue);
+  if (!d) return false;
+  const cutoff = startOfDay(subDays(new Date(), days - 1));
+  return d >= cutoff;
 }
 
-function startOfUTCDay(date: Date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+function avg(nums: number[]): number {
+  if (!nums.length) return 0;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-function endOfUTCDay(date: Date) {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999));
+function percentile(nums: number[], p: number): number {
+  if (!nums.length) return 0;
+  const sorted = [...nums].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.floor((p / 100) * (sorted.length - 1))));
+  return sorted[idx];
 }
 
-function getRangeWindow(timeRange: TimeRange) {
-  const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
-  const today = new Date();
-  const end = endOfUTCDay(today);
-  const start = startOfUTCDay(new Date(end.getTime() - (days - 1) * 24 * 60 * 60 * 1000));
-
-  const previousEnd = endOfUTCDay(new Date(start.getTime() - 24 * 60 * 60 * 1000));
-  const previousStart = startOfUTCDay(new Date(previousEnd.getTime() - (days - 1) * 24 * 60 * 60 * 1000));
-
-  return { days, start, end, previousStart, previousEnd };
-}
-
-function pctChange(current: number, previous: number): number {
-  if (!Number.isFinite(current)) current = 0;
-  if (!Number.isFinite(previous)) previous = 0;
-  if (previous === 0) return current === 0 ? 0 : 100;
-  return ((current - previous) / Math.abs(previous)) * 100;
-}
-
-function minutesBetween(a?: string | null, b?: string | null): number | null {
-  const d1 = safeDate(a);
-  const d2 = safeDate(b);
-  if (!d1 || !d2) return null;
-  const diff = (d2.getTime() - d1.getTime()) / 60000;
-  return Number.isFinite(diff) && diff >= 0 ? diff : null;
-}
-
-function buildEmptyAnalytics(): AnalyticsState {
-  return {
-    kpis: {
-      revenue: 0,
-      orders: 0,
-      avgOrderValue: 0,
-      prescriptions: 0,
-      deliveries: 0,
-      insuranceCovered: 0,
-      copayTotal: 0,
-      claimableOrders: 0,
-      lowStockItems: 0,
-      expiringSoon: 0,
-      outOfStock: 0,
-      referralsReceived: 0,
-      fillCompletionRate: 0,
-      deliveryShare: 0,
-      avgReadyMinutes: 0,
-      avgCompletionMinutes: 0,
-      onTimeReadyRate: 0,
-      paidOrders: 0,
-      unpaidOrders: 0,
-      inventorySkuCount: 0,
-      inventoryUnits: 0,
-      inventoryRetailValue: 0,
-      inventoryCostValue: 0,
-      controlledSubstanceSkus: 0,
-      refrigeratedSkus: 0,
-    },
-    changes: { revenuePct: 0, ordersPct: 0, prescriptionsPct: 0, referralsPct: 0 },
-    trend: [],
-    statusBreakdown: [],
-    paymentBreakdown: [],
-    pickupBreakdown: [],
-    claimBreakdown: [],
-    prescriptionStatusBreakdown: [],
-    topMedications: [],
-    topRevenueOrders: [],
-    inventoryRiskBuckets: [],
-    warnings: [],
-    dataSources: [],
-  };
-}
-
-async function queryFulfillmentOrders(
-  pharmacyId: string,
-  startIso: string,
-  endIso: string,
-): Promise<{ rows: OrderRow[]; source: string; warning?: string }> {
-  const columns =
-    "id,order_number,pharmacy_id,patient_id,prescription_id,status,priority,total_amount,insurance_amount,copay_amount,payment_status,pickup_method,estimated_ready_at,ready_at,picked_up_at,created_at,updated_at";
-
-  const primary = await (supabase as any)
-    .from("fulfillment_orders")
-    .select(columns)
-    .eq("pharmacy_id", pharmacyId)
-    .gte("created_at", startIso)
-    .lte("created_at", endIso)
-    .order("created_at", { ascending: true });
-
-  if (!primary.error) {
-    return { rows: (primary.data || []) as OrderRow[], source: "fulfillment_orders" };
-  }
-
-  const fallback = await (supabase as any)
-    .from("pharmacy_orders")
-    .select(columns)
-    .eq("pharmacy_id", pharmacyId)
-    .gte("created_at", startIso)
-    .lte("created_at", endIso)
-    .order("created_at", { ascending: true });
-
-  if (!fallback.error) {
-    return {
-      rows: (fallback.data || []) as OrderRow[],
-      source: "pharmacy_orders",
-      warning: "Using fallback orders table (pharmacy_orders).",
-    };
-  }
-
-  throw primary.error || fallback.error || new Error("Unable to read fulfillment/pharmacy orders");
-}
-
-async function queryPrescriptions(
-  pharmacyId: string,
-  startIso: string,
-  endIso: string,
-): Promise<{ rows: PrescriptionRow[]; warning?: string }> {
-  const { data, error } = await (supabase as any)
-    .from("prescriptions")
-    .select("id,pharmacy_id,status,prescribed_at,created_at,expires_at,refills_remaining,refills_total")
-    .eq("pharmacy_id", pharmacyId)
-    .or(`prescribed_at.gte.${startIso},created_at.gte.${startIso}`)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    return { rows: [], warning: `Prescriptions unavailable: ${error.message || "query failed"}` };
-  }
-
-  const startMs = new Date(startIso).getTime();
-  const endMs = new Date(endIso).getTime();
-
-  const rows = ((data || []) as PrescriptionRow[]).filter((row) => {
-    const d = safeDate(row.prescribed_at || row.created_at);
-    if (!d) return false;
-    return d.getTime() >= startMs && d.getTime() <= endMs;
-  });
-
-  return { rows };
-}
-
-async function queryPrescriptionItems(prescriptionIds: string[]): Promise<{ rows: PrescriptionItemRow[]; warning?: string }> {
-  if (!prescriptionIds.length) return { rows: [] };
-
-  const { data, error } = await (supabase as any)
-    .from("prescription_items")
-    .select("id,prescription_id,medication_name,quantity,unit")
-    .in("prescription_id", prescriptionIds.slice(0, 1000));
-
-  if (error) {
-    return { rows: [], warning: `Prescription item details unavailable: ${error.message || "query failed"}` };
-  }
-
-  return { rows: (data || []) as PrescriptionItemRow[] };
-}
-
-async function queryInventory(pharmacyId: string): Promise<{ rows: InventoryRow[]; warning?: string }> {
-  const { data, error } = await (supabase as any)
-    .from("pharmacy_inventory")
-    .select(
-      "id,pharmacy_id,medication_name,quantity_on_hand,quantity_reserved,reorder_level,unit_cost,unit_price,expiry_date,requires_refrigeration,is_controlled_substance,controlled_substance_schedule,manufacturer",
-    )
-    .eq("pharmacy_id", pharmacyId);
-
-  if (error) {
-    return { rows: [], warning: `Inventory analytics unavailable: ${error.message || "query failed"}` };
-  }
-
-  return { rows: (data || []) as InventoryRow[] };
-}
-
-async function queryReferrals(
-  pharmacyId: string,
-  startIso: string,
-  endIso: string,
-): Promise<{ rows: ReferralRow[]; warning?: string }> {
-  const { data, error } = await (supabase as any)
-    .from("referrals")
-    .select("id,status,receiver_type,receiver_entity_id,created_at")
-    .eq("receiver_type", "pharmacy")
-    .eq("receiver_entity_id", pharmacyId)
-    .gte("created_at", startIso)
-    .lte("created_at", endIso)
-    .order("created_at", { ascending: true });
-
-  if (error) {
-    return { rows: [], warning: `Referrals unavailable: ${error.message || "query failed"}` };
-  }
-
-  return { rows: (data || []) as ReferralRow[] };
-}
-
-function sum<T>(rows: T[], fn: (row: T) => number) {
-  return rows.reduce((acc, row) => acc + fn(row), 0);
-}
-
-function countBy<T>(rows: T[], keyFn: (row: T) => string | null | undefined): Record<string, number> {
-  return rows.reduce<Record<string, number>>((acc, row) => {
-    const key = String(keyFn(row) || "unknown").trim() || "unknown";
-    acc[key] = (acc[key] || 0) + 1;
-    return acc;
-  }, {});
-}
-
-function toBreakdown(map: Record<string, number>) {
-  return Object.entries(map)
-    .map(([name, value]) => ({ name: humanize(name), value }))
-    .sort((a, b) => b.value - a.value);
+function getOrderCreatedAt(order: FulfillmentOrderExt): string | undefined {
+  return order.created_at || (order as any)?.prescription?.created_at || undefined;
 }
 
 export default function PharmacyAnalytics({ pharmacyId }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
-  const [data, setData] = useState<AnalyticsState>(buildEmptyAnalytics());
 
-  const hasAnyData = useMemo(() => {
-    return (
-      data.kpis.orders > 0 ||
-      data.kpis.prescriptions > 0 ||
-      data.kpis.inventorySkuCount > 0 ||
-      data.kpis.referralsReceived > 0
+  const {
+    prescriptions,
+    fulfillmentOrders,
+    loading: rxLoading,
+    fetchPrescriptions,
+    fetchFulfillmentOrders,
+  } = usePrescriptions(pharmacyId ? { pharmacyId } : undefined);
+
+  const {
+    inventory,
+    lowStockItems,
+    expiringItems,
+    loading: invLoading,
+    fetchInventory,
+  } = usePharmacyInventory(pharmacyId || undefined);
+
+  const loading = rxLoading || invLoading;
+
+  const analytics = useMemo(() => {
+    const days = RANGE_DAYS[timeRange];
+    const now = new Date();
+
+    const orders = (fulfillmentOrders || []) as FulfillmentOrderExt[];
+    const allPrescriptions = (prescriptions || []) as PrescriptionExt[];
+    const inv = (inventory || []) as InventoryItem[];
+
+    const ordersInRange = orders.filter((o) => inRange(getOrderCreatedAt(o), days));
+    const prescriptionsInRange = allPrescriptions.filter((p) =>
+      inRange(p.prescribed_at || p.created_at, days),
     );
-  }, [data]);
 
-  const fetchAnalytics = async (isManual = false) => {
-    if (!pharmacyId) return;
+    const totalRevenue = ordersInRange.reduce((sum, o) => sum + toNum(o.total_amount), 0);
+    const insuranceRevenue = ordersInRange.reduce((sum, o) => sum + toNum(o.insurance_amount), 0);
+    const copayRevenue = ordersInRange.reduce((sum, o) => sum + toNum(o.copay_amount), 0);
+    const avgOrderValue = ordersInRange.length ? totalRevenue / ordersInRange.length : 0;
 
-    if (isManual) setRefreshing(true);
-    else setLoading(true);
+    const orderStatusCounts = ordersInRange.reduce<Record<string, number>>((acc, o) => {
+      const key = normalizeStatus(o.status);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
 
-    try {
-      const { start, end, previousStart, previousEnd, days } = getRangeWindow(timeRange);
+    const paymentStatusCounts = ordersInRange.reduce<Record<string, number>>((acc, o) => {
+      const key = normalizeStatus(o.payment_status);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
 
-      const [ordersCurrentRes, ordersPrevRes, rxCurrentRes, rxPrevRes, inventoryRes, referralsCurrentRes, referralsPrevRes] =
-        await Promise.all([
-          queryFulfillmentOrders(pharmacyId, start.toISOString(), end.toISOString()),
-          queryFulfillmentOrders(pharmacyId, previousStart.toISOString(), previousEnd.toISOString()),
-          queryPrescriptions(pharmacyId, start.toISOString(), end.toISOString()),
-          queryPrescriptions(pharmacyId, previousStart.toISOString(), previousEnd.toISOString()),
-          queryInventory(pharmacyId),
-          queryReferrals(pharmacyId, start.toISOString(), end.toISOString()),
-          queryReferrals(pharmacyId, previousStart.toISOString(), previousEnd.toISOString()),
-        ]);
+    const pickupMethodCounts = ordersInRange.reduce<Record<string, number>>((acc, o) => {
+      const key = normalizeStatus(o.pickup_method || "unknown");
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
 
-      const warnings: string[] = [];
-      const dataSources = new Set<string>();
+    const completedStatuses = new Set([
+      "ready",
+      "ready_for_pickup",
+      "picked_up",
+      "completed",
+      "delivered",
+    ]);
+    const activeStatuses = new Set(["pending", "new", "processing", "confirmed"]);
+    const cancelledStatuses = new Set(["cancelled", "canceled", "rejected"]);
 
-      if (ordersCurrentRes.warning) warnings.push(ordersCurrentRes.warning);
-      if (ordersPrevRes.warning) warnings.push(ordersPrevRes.warning);
-      if (rxCurrentRes.warning) warnings.push(rxCurrentRes.warning);
-      if (rxPrevRes.warning) warnings.push(rxPrevRes.warning);
-      if (inventoryRes.warning) warnings.push(inventoryRes.warning);
-      if (referralsCurrentRes.warning) warnings.push(referralsCurrentRes.warning);
-      if (referralsPrevRes.warning) warnings.push(referralsPrevRes.warning);
+    const completedOrders = ordersInRange.filter((o) => completedStatuses.has(normalizeStatus(o.status)));
+    const activeOrders = ordersInRange.filter((o) => activeStatuses.has(normalizeStatus(o.status)));
+    const cancelledOrders = ordersInRange.filter((o) => cancelledStatuses.has(normalizeStatus(o.status)));
 
-      dataSources.add(ordersCurrentRes.source);
-      dataSources.add("prescriptions");
-      if (!inventoryRes.warning) dataSources.add("pharmacy_inventory");
-      if (!referralsCurrentRes.warning) dataSources.add("referrals");
+    const fillRate = ordersInRange.length ? (completedOrders.length / ordersInRange.length) * 100 : 0;
 
-      const ordersCurrent = ordersCurrentRes.rows;
-      const ordersPrevious = ordersPrevRes.rows;
-      const prescriptionsCurrent = rxCurrentRes.rows;
-      const prescriptionsPrevious = rxPrevRes.rows;
-      const inventoryRows = inventoryRes.rows;
-      const referralsCurrent = referralsCurrentRes.rows;
-      const referralsPrevious = referralsPrevRes.rows;
+    const overdueOrders = ordersInRange.filter((o) => {
+      const estimated = safeDate(o.estimated_ready_at || null);
+      const ready = safeDate(o.ready_at || null);
+      const done = completedStatuses.has(normalizeStatus(o.status)) || cancelledStatuses.has(normalizeStatus(o.status));
+      return !!estimated && !ready && !done && estimated < now;
+    });
 
-      const [rxItemsCurrentRes, rxItemsPrevRes] = await Promise.all([
-        queryPrescriptionItems(prescriptionsCurrent.map((p) => p.id)),
-        queryPrescriptionItems(prescriptionsPrevious.map((p) => p.id)),
-      ]);
+    const prepMinutes = completedOrders
+      .map((o) => {
+        const created = safeDate(getOrderCreatedAt(o));
+        const ready = safeDate(o.ready_at || null);
+        if (!created || !ready || ready < created) return null;
+        return differenceInMinutes(ready, created);
+      })
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 
-      if (rxItemsCurrentRes.warning) warnings.push(rxItemsCurrentRes.warning);
-      if (rxItemsPrevRes.warning) warnings.push(rxItemsPrevRes.warning);
-      if (!rxItemsCurrentRes.warning) dataSources.add("prescription_items");
+    const pickupMinutes = completedOrders
+      .map((o) => {
+        const ready = safeDate(o.ready_at || null);
+        const picked = safeDate(o.picked_up_at || null);
+        if (!ready || !picked || picked < ready) return null;
+        return differenceInMinutes(picked, ready);
+      })
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 
-      const revenue = sum(ordersCurrent, (o) => toNumber(o.total_amount));
-      const revenuePrev = sum(ordersPrevious, (o) => toNumber(o.total_amount));
-      const ordersCount = ordersCurrent.length;
-      const ordersPrevCount = ordersPrevious.length;
-      const prescriptionsCount = prescriptionsCurrent.length;
-      const deliveries = ordersCurrent.filter((o) => String(o.pickup_method || "").toLowerCase() === "delivery").length;
-      const insuranceCovered = sum(ordersCurrent, (o) => toNumber(o.insurance_amount));
-      const copayTotal = sum(ordersCurrent, (o) => toNumber(o.copay_amount));
-      const claimableOrders = ordersCurrent.filter((o) => toNumber(o.insurance_amount) > 0).length;
+    // Compare with previous period
+    const previousPeriodStart = startOfDay(subDays(new Date(), (days * 2) - 1));
+    const previousPeriodEnd = startOfDay(subDays(new Date(), days));
 
-      const completedStatuses = new Set(["completed", "delivered", "picked_up"]);
-      const completedOrders = ordersCurrent.filter((o) => completedStatuses.has(String(o.status || ""))).length;
-      const paidOrders = ordersCurrent.filter((o) =>
-        ["paid", "succeeded", "completed"].includes(String(o.payment_status || "").toLowerCase()),
-      ).length;
-      const unpaidOrders = ordersCurrent.filter(
-        (o) => !["paid", "succeeded", "completed"].includes(String(o.payment_status || "").toLowerCase()),
-      ).length;
+    const ordersPrevPeriod = orders.filter((o) => {
+      const d = safeDate(getOrderCreatedAt(o));
+      return !!d && d >= previousPeriodStart && d < previousPeriodEnd;
+    });
 
-      const readyTimes = ordersCurrent
-        .map((o) => minutesBetween(o.created_at, o.ready_at || o.estimated_ready_at))
-        .filter((v): v is number => typeof v === "number");
+    const prevRevenue = ordersPrevPeriod.reduce((sum, o) => sum + toNum(o.total_amount), 0);
+    const prevOrderCount = ordersPrevPeriod.length;
 
-      const completionTimes = ordersCurrent
-        .map((o) => minutesBetween(o.created_at, o.picked_up_at || o.updated_at))
-        .filter((v): v is number => typeof v === "number");
+    const revenueChangePct =
+      prevRevenue > 0 ? ((totalRevenue - prevRevenue) / prevRevenue) * 100 : totalRevenue > 0 ? 100 : 0;
+    const ordersChangePct =
+      prevOrderCount > 0
+        ? ((ordersInRange.length - prevOrderCount) / prevOrderCount) * 100
+        : ordersInRange.length > 0
+          ? 100
+          : 0;
 
-      const onTimeReadyEligible = ordersCurrent.filter((o) => safeDate(o.estimated_ready_at) && safeDate(o.ready_at));
-      const onTimeReadyCount = onTimeReadyEligible.filter((o) => {
-        const est = safeDate(o.estimated_ready_at)!;
-        const actual = safeDate(o.ready_at)!;
-        return actual.getTime() <= est.getTime();
-      }).length;
-
-      const inventoryNow = inventoryRows.map((row) => {
-        const onHand = toNumber(row.quantity_on_hand);
-        const reserved = toNumber(row.quantity_reserved);
-        const available = Math.max(0, onHand - reserved);
-        const reorder = toNumber(row.reorder_level);
-        const expiry = safeDate(row.expiry_date);
-        return { ...row, onHand, reserved, available, reorder, expiry };
+    // Daily trend (client-side aggregation)
+    const dayMap = new Map<string, { date: string; label: string; revenue: number; orders: number; completed: number }>();
+    for (let i = days - 1; i >= 0; i--) {
+      const d = startOfDay(subDays(now, i));
+      const key = format(d, "yyyy-MM-dd");
+      dayMap.set(key, {
+        date: key,
+        label: format(d, days <= 7 ? "EEE" : "MMM d"),
+        revenue: 0,
+        orders: 0,
+        completed: 0,
       });
-
-      const now = new Date();
-      const in30Days = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      const expiringSoon = inventoryNow.filter((i) => i.expiry && i.expiry.getTime() <= in30Days.getTime()).length;
-      const outOfStock = inventoryNow.filter((i) => i.available <= 0).length;
-      const lowStockItems = inventoryNow.filter((i) => i.available > 0 && i.available <= i.reorder).length;
-      const inventorySkuCount = inventoryNow.length;
-      const inventoryUnits = sum(inventoryNow, (i) => i.onHand);
-      const inventoryRetailValue = sum(inventoryNow, (i) => i.onHand * toNumber(i.unit_price));
-      const inventoryCostValue = sum(inventoryNow, (i) => i.onHand * toNumber(i.unit_cost));
-      const controlledSubstanceSkus = inventoryNow.filter((i) => Boolean(i.is_controlled_substance)).length;
-      const refrigeratedSkus = inventoryNow.filter((i) => Boolean(i.requires_refrigeration)).length;
-
-      const statusBreakdown = toBreakdown(countBy(ordersCurrent, (o) => o.status));
-      const paymentBreakdown = toBreakdown(countBy(ordersCurrent, (o) => o.payment_status));
-      const pickupBreakdown = toBreakdown(countBy(ordersCurrent, (o) => o.pickup_method));
-      const prescriptionStatusBreakdown = toBreakdown(countBy(prescriptionsCurrent, (p) => p.status));
-
-      const claimBreakdownMap: Record<string, number> = {
-        "Claimable Orders": claimableOrders,
-        "Non-Claim Orders": Math.max(0, ordersCount - claimableOrders),
-      };
-      const claimBreakdown = Object.entries(claimBreakdownMap).map(([name, value]) => ({ name, value }));
-
-      const dayBuckets = new Map<string, { date: string; revenue: number; orders: number; completed: number; deliveries: number }>();
-      for (let i = 0; i < days; i++) {
-        const d = new Date(start.getTime() + i * 24 * 60 * 60 * 1000);
-        const key = d.toISOString().slice(0, 10);
-        dayBuckets.set(key, {
-          date: d.toLocaleDateString(undefined, { month: "short", day: "numeric" }),
-          revenue: 0,
-          orders: 0,
-          completed: 0,
-          deliveries: 0,
-        });
-      }
-
-      ordersCurrent.forEach((o) => {
-        const d = safeDate(o.created_at);
-        if (!d) return;
-        const key = d.toISOString().slice(0, 10);
-        const bucket = dayBuckets.get(key);
-        if (!bucket) return;
-        bucket.orders += 1;
-        bucket.revenue += toNumber(o.total_amount);
-        if (completedStatuses.has(String(o.status || ""))) bucket.completed += 1;
-        if (String(o.pickup_method || "").toLowerCase() === "delivery") bucket.deliveries += 1;
-      });
-
-      const trend = Array.from(dayBuckets.values());
-
-      const medMap = new Map<string, { name: string; qty: number; rxIds: Set<string> }>();
-      rxItemsCurrentRes.rows.forEach((item) => {
-        const name = (item.medication_name || "Unknown medication").trim() || "Unknown medication";
-        const key = name.toLowerCase();
-        if (!medMap.has(key)) medMap.set(key, { name, qty: 0, rxIds: new Set<string>() });
-        const entry = medMap.get(key)!;
-        entry.qty += Math.max(0, toNumber(item.quantity) || 1);
-        if (item.prescription_id) entry.rxIds.add(item.prescription_id);
-      });
-
-      let topMedications = Array.from(medMap.values())
-        .map((m) => ({ name: m.name, qty: m.qty, rxCount: m.rxIds.size }))
-        .sort((a, b) => b.qty - a.qty)
-        .slice(0, 8);
-
-      if (topMedications.length === 0 && inventoryNow.length > 0) {
-        topMedications = inventoryNow
-          .slice()
-          .sort((a, b) => b.onHand - a.onHand)
-          .slice(0, 8)
-          .map((i) => ({ name: i.medication_name || "Inventory item", qty: i.onHand, rxCount: 0 }));
-        warnings.push("Top medications are shown from inventory stock because prescription item data was unavailable.");
-      }
-
-      const topRevenueOrders = ordersCurrent
-        .slice()
-        .sort((a, b) => toNumber(b.total_amount) - toNumber(a.total_amount))
-        .slice(0, 8)
-        .map((o) => ({ label: o.order_number || o.id.slice(0, 8), value: toNumber(o.total_amount) }));
-
-      const inventoryRiskBuckets = [
-        { name: "Healthy", value: inventoryNow.filter((i) => i.available > i.reorder && i.available > 0).length },
-        { name: "Low Stock", value: lowStockItems },
-        { name: "Out of Stock", value: outOfStock },
-        { name: "Expiring ≤30d", value: expiringSoon },
-      ];
-
-      const fillCompletionRate = ordersCount > 0 ? (completedOrders / ordersCount) * 100 : 0;
-      const deliveryShare = ordersCount > 0 ? (deliveries / ordersCount) * 100 : 0;
-
-      setData({
-        kpis: {
-          revenue,
-          orders: ordersCount,
-          avgOrderValue: ordersCount > 0 ? revenue / ordersCount : 0,
-          prescriptions: prescriptionsCount,
-          deliveries,
-          insuranceCovered,
-          copayTotal,
-          claimableOrders,
-          lowStockItems,
-          expiringSoon,
-          outOfStock,
-          referralsReceived: referralsCurrent.length,
-          fillCompletionRate,
-          deliveryShare,
-          avgReadyMinutes: readyTimes.length ? sum(readyTimes, (x) => x) / readyTimes.length : 0,
-          avgCompletionMinutes: completionTimes.length ? sum(completionTimes, (x) => x) / completionTimes.length : 0,
-          onTimeReadyRate: onTimeReadyEligible.length ? (onTimeReadyCount / onTimeReadyEligible.length) * 100 : 0,
-          paidOrders,
-          unpaidOrders,
-          inventorySkuCount,
-          inventoryUnits,
-          inventoryRetailValue,
-          inventoryCostValue,
-          controlledSubstanceSkus,
-          refrigeratedSkus,
-        },
-        changes: {
-          revenuePct: pctChange(revenue, revenuePrev),
-          ordersPct: pctChange(ordersCount, ordersPrevCount),
-          prescriptionsPct: pctChange(prescriptionsCount, prescriptionsPrevious.length),
-          referralsPct: pctChange(referralsCurrent.length, referralsPrevious.length),
-        },
-        trend,
-        statusBreakdown,
-        paymentBreakdown,
-        pickupBreakdown,
-        claimBreakdown,
-        prescriptionStatusBreakdown,
-        topMedications,
-        topRevenueOrders,
-        inventoryRiskBuckets,
-        warnings: Array.from(new Set(warnings)),
-        dataSources: Array.from(dataSources),
-      });
-    } catch (e: any) {
-      console.error("Pharmacy analytics error:", e);
-      toast.error(e?.message || "Failed to load pharmacy analytics");
-      setData({ ...buildEmptyAnalytics(), warnings: [e?.message || "Failed to load analytics"] });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
-  };
 
-  useEffect(() => {
-    fetchAnalytics(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pharmacyId, timeRange]);
+    ordersInRange.forEach((o) => {
+      const d = safeDate(getOrderCreatedAt(o));
+      if (!d) return;
+      const key = format(d, "yyyy-MM-dd");
+      const row = dayMap.get(key);
+      if (!row) return;
+      row.orders += 1;
+      row.revenue += toNum(o.total_amount);
+      if (completedStatuses.has(normalizeStatus(o.status))) row.completed += 1;
+    });
+
+    const dailyTrend = Array.from(dayMap.values());
+
+    // Top medications (from prescriptions in range)
+    const medMap = new Map<string, { name: string; units: number; rxCount: number }>();
+    prescriptionsInRange.forEach((p) => {
+      const seenThisRx = new Set<string>();
+      (p.items || []).forEach((it: any) => {
+        const name = String(it?.medication_name || "Unknown medication").trim() || "Unknown medication";
+        const qty = Math.max(0, toNum(it?.quantity));
+        const key = name.toLowerCase();
+        if (!medMap.has(key)) medMap.set(key, { name, units: 0, rxCount: 0 });
+        const row = medMap.get(key)!;
+        row.units += qty;
+        if (!seenThisRx.has(key)) {
+          row.rxCount += 1;
+          seenThisRx.add(key);
+        }
+      });
+    });
+
+    const topMedications = Array.from(medMap.values())
+      .sort((a, b) => b.units - a.units || b.rxCount - a.rxCount)
+      .slice(0, 10);
+
+    // Inventory analytics (not time-range filtered: current snapshot)
+    const inventoryRows = inv.map((item) => {
+      const onHand = toNum(item.quantity_on_hand);
+      const reserved = toNum(item.quantity_reserved);
+      const available = Math.max(0, onHand - reserved);
+      const reorder = toNum(item.reorder_level);
+      const unitCost = toNum(item.unit_cost);
+      const unitPrice = toNum(item.unit_price);
+      const costValue = onHand * unitCost;
+      const retailValue = onHand * unitPrice;
+      const expiry = safeDate(item.expiry_date || null);
+      const daysToExpiry = expiry ? Math.floor((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : null;
+      const low = available <= reorder && onHand > 0;
+      const out = onHand <= 0;
+      const expired = daysToExpiry !== null && daysToExpiry < 0;
+      const expSoon = daysToExpiry !== null && daysToExpiry <= 30;
+
+      return {
+        ...item,
+        onHand,
+        reserved,
+        available,
+        reorder,
+        unitCost,
+        unitPrice,
+        costValue,
+        retailValue,
+        daysToExpiry,
+        low,
+        out,
+        expired,
+        expSoon,
+      };
+    });
+
+    const inventoryTotals = inventoryRows.reduce(
+      (acc, r) => {
+        acc.skus += 1;
+        acc.onHandUnits += r.onHand;
+        acc.availableUnits += r.available;
+        acc.reservedUnits += r.reserved;
+        acc.costValue += r.costValue;
+        acc.retailValue += r.retailValue;
+        if (r.low) acc.lowStock += 1;
+        if (r.out) acc.outOfStock += 1;
+        if (r.expSoon) acc.expiringSoon += 1;
+        if (r.expired) acc.expired += 1;
+        if (r.requires_refrigeration) acc.refrigerated += 1;
+        if (r.is_controlled_substance) acc.controlled += 1;
+        return acc;
+      },
+      {
+        skus: 0,
+        onHandUnits: 0,
+        availableUnits: 0,
+        reservedUnits: 0,
+        costValue: 0,
+        retailValue: 0,
+        lowStock: 0,
+        outOfStock: 0,
+        expiringSoon: 0,
+        expired: 0,
+        refrigerated: 0,
+        controlled: 0,
+      },
+    );
+
+    const inventoryHealth = [
+      { name: "Healthy", value: Math.max(0, inventoryRows.length - inventoryTotals.lowStock - inventoryTotals.outOfStock) },
+      { name: "Low Stock", value: inventoryTotals.lowStock },
+      { name: "Out of Stock", value: inventoryTotals.outOfStock },
+      { name: "Expiring", value: inventoryTotals.expiringSoon },
+    ].filter((x) => x.value > 0);
+
+    const expiryBuckets = [
+      { label: "Expired", count: 0 },
+      { label: "0–7d", count: 0 },
+      { label: "8–30d", count: 0 },
+      { label: "31–90d", count: 0 },
+      { label: "90d+", count: 0 },
+      { label: "No expiry", count: 0 },
+    ];
+
+    inventoryRows.forEach((r) => {
+      const d = r.daysToExpiry;
+      if (d === null) expiryBuckets[5].count += 1;
+      else if (d < 0) expiryBuckets[0].count += 1;
+      else if (d <= 7) expiryBuckets[1].count += 1;
+      else if (d <= 30) expiryBuckets[2].count += 1;
+      else if (d <= 90) expiryBuckets[3].count += 1;
+      else expiryBuckets[4].count += 1;
+    });
+
+    const topInventoryValue = [...inventoryRows]
+      .sort((a, b) => b.retailValue - a.retailValue)
+      .slice(0, 8)
+      .map((r) => ({
+        name: r.medication_name.length > 18 ? `${r.medication_name.slice(0, 18)}…` : r.medication_name,
+        value: Number(r.retailValue.toFixed(2)),
+      }));
+
+    const manufacturerCounts = inventoryRows.reduce<Record<string, number>>((acc, r) => {
+      const k = (r.manufacturer || "Unknown").trim() || "Unknown";
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {});
+    const manufacturerChart = Object.entries(manufacturerCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({
+        name: name.length > 16 ? `${name.slice(0, 16)}…` : name,
+        count,
+      }));
+
+    // Breakdown arrays for charts
+    const statusBreakdown = Object.entries(orderStatusCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: statusLabel(name), value }));
+
+    const paymentBreakdown = Object.entries(paymentStatusCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: statusLabel(name), value }));
+
+    const pickupBreakdown = Object.entries(pickupMethodCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: statusLabel(name), value }));
+
+    // Alerts
+    const unpaidOrders = ordersInRange.filter((o) => {
+      const p = normalizeStatus(o.payment_status);
+      return !["paid", "captured", "succeeded", "completed"].includes(p);
+    });
+
+    const recentAlerts = [
+      ...lowStockItems.slice(0, 5).map((x) => ({
+        kind: "inventory-low",
+        title: `${x.medication_name} low stock`,
+        subtitle: `${toNum(x.quantity_on_hand) - toNum(x.quantity_reserved)} available • reorder ${toNum(x.reorder_level)}`,
+        severity: "warning" as const,
+      })),
+      ...expiringItems.slice(0, 5).map((x) => ({
+        kind: "inventory-expiring",
+        title: `${x.medication_name} expiring`,
+        subtitle: x.expiry_date ? `Expiry ${x.expiry_date}` : "Expiry soon",
+        severity: "warning" as const,
+      })),
+      ...overdueOrders.slice(0, 5).map((o) => ({
+        kind: "order-overdue",
+        title: `${o.order_number || "Order"} overdue`,
+        subtitle: `Status: ${statusLabel(o.status)}${o.estimated_ready_at ? ` • ETA ${format(new Date(o.estimated_ready_at), "MMM d, HH:mm")}` : ""}`,
+        severity: "critical" as const,
+      })),
+      ...unpaidOrders.slice(0, 5).map((o) => ({
+        kind: "payment-open",
+        title: `${o.order_number || "Order"} payment pending`,
+        subtitle: `${statusLabel(o.payment_status)} • ${money(toNum(o.total_amount))}`,
+        severity: "info" as const,
+      })),
+    ].slice(0, 10);
+
+    return {
+      days,
+      ordersInRange,
+      prescriptionsInRange,
+      totalRevenue,
+      insuranceRevenue,
+      copayRevenue,
+      avgOrderValue,
+      fillRate,
+      completedCount: completedOrders.length,
+      activeCount: activeOrders.length,
+      cancelledCount: cancelledOrders.length,
+      overdueCount: overdueOrders.length,
+      revenueChangePct,
+      ordersChangePct,
+      dailyTrend,
+      topMedications,
+      statusBreakdown,
+      paymentBreakdown,
+      pickupBreakdown,
+      prepMinutesAvg: avg(prepMinutes),
+      prepMinutesP90: percentile(prepMinutes, 90),
+      pickupMinutesAvg: avg(pickupMinutes),
+      pickupMinutesP90: percentile(pickupMinutes, 90),
+      inventoryTotals,
+      inventoryHealth,
+      expiryBuckets,
+      topInventoryValue,
+      manufacturerChart,
+      recentAlerts,
+      hasAnyData:
+        ordersInRange.length > 0 ||
+        prescriptionsInRange.length > 0 ||
+        inventoryRows.length > 0,
+    };
+  }, [timeRange, fulfillmentOrders, prescriptions, inventory, lowStockItems, expiringItems]);
+
+  const handleRefresh = async () => {
+    await Promise.allSettled([fetchPrescriptions(), fetchFulfillmentOrders(), fetchInventory()]);
+  };
 
   if (loading) {
     return (
@@ -686,78 +508,23 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
     );
   }
 
-  const statusTotal = data.statusBreakdown.reduce((a, b) => a + b.value, 0);
-  const paymentTotal = data.paymentBreakdown.reduce((a, b) => a + b.value, 0);
-  const pickupTotal = data.pickupBreakdown.reduce((a, b) => a + b.value, 0);
-  const topMedMax = Math.max(1, ...data.topMedications.map((m) => m.qty));
-
-  const kpiCards = [
-    {
-      title: "Revenue",
-      value: formatMoney(data.kpis.revenue),
-      sub: `${data.changes.revenuePct >= 0 ? "+" : ""}${data.changes.revenuePct.toFixed(1)}% vs previous`,
-      icon: <DollarSign className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Orders",
-      value: data.kpis.orders.toLocaleString(),
-      sub: `${data.changes.ordersPct >= 0 ? "+" : ""}${data.changes.ordersPct.toFixed(1)}% vs previous`,
-      icon: <ClipboardList className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Prescriptions",
-      value: data.kpis.prescriptions.toLocaleString(),
-      sub: `${data.changes.prescriptionsPct >= 0 ? "+" : ""}${data.changes.prescriptionsPct.toFixed(1)}% vs previous`,
-      icon: <Pill className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Avg Order Value",
-      value: formatMoney(data.kpis.avgOrderValue),
-      sub: `${formatPercent(data.kpis.fillCompletionRate)} fill completion`,
-      icon: <TrendingUp className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Delivery Share",
-      value: formatPercent(data.kpis.deliveryShare),
-      sub: `${data.kpis.deliveries} delivery order(s)`,
-      icon: <Truck className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Insurance Covered",
-      value: formatMoney(data.kpis.insuranceCovered),
-      sub: `${data.kpis.claimableOrders} claimable order(s)`,
-      icon: <Shield className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Low/Out of Stock",
-      value: `${data.kpis.lowStockItems + data.kpis.outOfStock}`,
-      sub: `${data.kpis.outOfStock} out • ${data.kpis.lowStockItems} low`,
-      icon: <AlertTriangle className="h-5 w-5 text-primary" />,
-    },
-    {
-      title: "Expiring Soon",
-      value: data.kpis.expiringSoon.toLocaleString(),
-      sub: `Next 30 days`,
-      icon: <Clock3 className="h-5 w-5 text-primary" />,
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Header / Controls */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <BarChart3 className="h-6 w-6" />
-            Pharmacy Analytics
+            Analytics Dashboard
           </h2>
           <p className="text-sm text-muted-foreground">
-            Revenue, fulfillment throughput, inventory health, claims proxy, and referral-driven activity.
+            End-to-end pharmacy analytics across fulfillment, prescriptions, payments, and inventory
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Time range" />
             </SelectTrigger>
             <SelectContent>
@@ -766,111 +533,230 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
               <SelectItem value="90d">Last 90 days</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={() => fetchAnalytics(true)} disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
         </div>
       </div>
 
-      {!!data.warnings.length && (
-        <Card className="border-yellow-500/30">
-          <CardContent className="pt-6 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-              Some metrics use partial data / fallbacks
-            </div>
-            <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-              {data.warnings.slice(0, 5).map((w, i) => (
-                <li key={`${w}-${i}`}>{w}</li>
-              ))}
-            </ul>
-            {!!data.dataSources.length && (
-              <div className="flex flex-wrap gap-2 pt-1">
-                {data.dataSources.map((s) => (
-                  <Badge key={s} variant="outline">
-                    {s}
-                  </Badge>
-                ))}
+      {/* Executive KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Revenue ({analytics.days}d)</p>
+                <p className="text-2xl font-bold">{money(analytics.totalRevenue)}</p>
+                <p className={`text-xs mt-1 ${analytics.revenueChangePct >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {analytics.revenueChangePct >= 0 ? "+" : ""}
+                  {analytics.revenueChangePct.toFixed(1)}% vs previous period
+                </p>
               </div>
-            )}
+              <div className="p-2 rounded-lg bg-primary/10">
+                <DollarSign className="h-5 w-5 text-primary" />
+              </div>
+            </div>
           </CardContent>
         </Card>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {kpiCards.map((kpi) => (
-          <Card key={kpi.title}>
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm text-muted-foreground">{kpi.title}</p>
-                  <p className="text-2xl font-bold break-words">{kpi.value}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{kpi.sub}</p>
-                </div>
-                <div className="p-2 rounded-lg bg-primary/10 shrink-0">{kpi.icon}</div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Fulfillment Orders</p>
+                <p className="text-2xl font-bold">{analytics.ordersInRange.length.toLocaleString()}</p>
+                <p className={`text-xs mt-1 ${analytics.ordersChangePct >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {analytics.ordersChangePct >= 0 ? "+" : ""}
+                  {analytics.ordersChangePct.toFixed(1)}% vs previous period
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+              <div className="p-2 rounded-lg bg-accent/10">
+                <Package className="h-5 w-5 text-accent" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={analytics.overdueCount > 0 ? "border-orange-500/30" : undefined}>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Fill Rate</p>
+                <p className="text-2xl font-bold">{analytics.fillRate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {analytics.completedCount} completed • {analytics.activeCount} active
+                </p>
+              </div>
+              <div className="p-2 rounded-lg bg-green-500/10">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Order Value</p>
+                <p className="text-2xl font-bold">{money(analytics.avgOrderValue)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Insurance {money(analytics.insuranceRevenue)} • Copay {money(analytics.copayRevenue)}
+                </p>
+              </div>
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <TrendingUp className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Operations + SLA + Inventory snapshot */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <Card className={analytics.overdueCount > 0 ? "border-yellow-500/30" : undefined}>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <Clock3 className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Prep Time (avg / P90)</p>
+                <p className="text-xl font-bold">
+                  {analytics.prepMinutesAvg ? `${Math.round(analytics.prepMinutesAvg)}m` : "—"} /{" "}
+                  {analytics.prepMinutesP90 ? `${Math.round(analytics.prepMinutesP90)}m` : "—"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <Truck className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Pickup Time (avg / P90)</p>
+                <p className="text-xl font-bold">
+                  {analytics.pickupMinutesAvg ? `${Math.round(analytics.pickupMinutesAvg)}m` : "—"} /{" "}
+                  {analytics.pickupMinutesP90 ? `${Math.round(analytics.pickupMinutesP90)}m` : "—"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={analytics.inventoryTotals.lowStock + analytics.inventoryTotals.outOfStock > 0 ? "border-yellow-500/30" : undefined}>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Inventory Risk</p>
+                <p className="text-xl font-bold">
+                  {analytics.inventoryTotals.lowStock + analytics.inventoryTotals.outOfStock}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {analytics.inventoryTotals.lowStock} low • {analytics.inventoryTotals.outOfStock} out
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <CreditCard className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Current Inventory Value</p>
+                <p className="text-xl font-bold">{money(analytics.inventoryTotals.retailValue)}</p>
+                <p className="text-xs text-muted-foreground">
+                  Cost basis {money(analytics.inventoryTotals.costValue)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trend + Status */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Orders & Revenue Trend</CardTitle>
-            <CardDescription>Daily order count, completed orders, deliveries, and revenue for the selected range.</CardDescription>
+            <CardTitle>Revenue & Order Trend</CardTitle>
+            <CardDescription>Daily performance for the selected period</CardDescription>
           </CardHeader>
           <CardContent>
-            {data.trend.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No trend data available.</div>
-            ) : (
-              <div className="h-[340px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.trend}>
-                    <defs>
-                      <linearGradient id="pharmacyRevenueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                    <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-                    <Tooltip
-                      formatter={(value: any, name: string) => {
-                        if (name === "revenue") return [formatMoney(toNumber(value)), "Revenue"];
-                        return [toNumber(value).toLocaleString(), humanize(name)];
-                      }}
-                    />
-                    <Legend />
-                    <Area yAxisId="right" type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" fill="url(#pharmacyRevenueGradient)" />
-                    <Line yAxisId="left" type="monotone" dataKey="orders" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} />
-                    <Line yAxisId="left" type="monotone" dataKey="completed" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
-                    <Line yAxisId="left" type="monotone" dataKey="deliveries" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
+            <div className="h-[320px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={analytics.dailyTrend}>
+                  <defs>
+                    <linearGradient id="pharmacyRevenueFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    formatter={(value: any, name: string) => {
+                      if (name === "revenue") return [money(toNum(value)), "Revenue"];
+                      if (name === "orders") return [toNum(value), "Orders"];
+                      if (name === "completed") return [toNum(value), "Completed"];
+                      return [value, name];
+                    }}
+                  />
+                  <Legend />
+                  <Area
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="revenue"
+                    name="Revenue"
+                    stroke="hsl(var(--primary))"
+                    fill="url(#pharmacyRevenueFill)"
+                    strokeWidth={2}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="orders"
+                    name="Orders"
+                    stroke="hsl(var(--accent))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="completed"
+                    name="Completed"
+                    stroke="hsl(var(--chart-3))"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Order Status Mix</CardTitle>
-            <CardDescription>{statusTotal} order(s) in selected period</CardDescription>
+            <CardTitle>Fulfillment Status Mix</CardTitle>
+            <CardDescription>Order status distribution ({analytics.days}d)</CardDescription>
           </CardHeader>
           <CardContent>
-            {data.statusBreakdown.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No status data available.</div>
+            {analytics.statusBreakdown.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No order data in this period.</div>
             ) : (
               <>
                 <div className="h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={data.statusBreakdown} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} paddingAngle={2}>
-                        {data.statusBreakdown.map((_, i) => (
+                      <Pie data={analytics.statusBreakdown} dataKey="value" nameKey="name" innerRadius={54} outerRadius={84}>
+                        {analytics.statusBreakdown.map((_, i) => (
                           <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                         ))}
                       </Pie>
@@ -878,14 +764,18 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-2 mt-3">
-                  {data.statusBreakdown.slice(0, 6).map((s, i) => (
-                    <div key={s.name} className="flex items-center justify-between text-sm gap-3">
+
+                <div className="space-y-2 mt-2">
+                  {analytics.statusBreakdown.slice(0, 6).map((row, i) => (
+                    <div key={row.name} className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
-                        <span className="truncate text-muted-foreground">{s.name}</span>
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                        />
+                        <span className="truncate text-muted-foreground">{row.name}</span>
                       </div>
-                      <span className="font-medium">{s.value}</span>
+                      <span className="font-medium">{row.value}</span>
                     </div>
                   ))}
                 </div>
@@ -895,280 +785,269 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Status</CardTitle>
-            <CardDescription>{paymentTotal} order(s) with payment state</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.paymentBreakdown.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No payment breakdown available.</div>
-            ) : (
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.paymentBreakdown} layout="vertical" margin={{ left: 8, right: 8 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" tick={{ fontSize: 12 }} />
-                    <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Paid Orders</div>
-                <div className="text-lg font-semibold">{data.kpis.paidOrders}</div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Unpaid / Pending</div>
-                <div className="text-lg font-semibold">{data.kpis.unpaidOrders}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Pickup & Delivery Mix</CardTitle>
-            <CardDescription>{pickupTotal} order(s) by pickup method</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.pickupBreakdown.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No pickup method data available.</div>
-            ) : (
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={data.pickupBreakdown} dataKey="value" nameKey="name" innerRadius={45} outerRadius={82}>
-                      {data.pickupBreakdown.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3 mt-2">
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Claimable Orders</div>
-                <div className="text-lg font-semibold">{data.kpis.claimableOrders}</div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Copay Total</div>
-                <div className="text-lg font-semibold">{formatMoney(data.kpis.copayTotal)}</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Operational SLA</CardTitle>
-            <CardDescription>Turnaround and readiness performance (from available timestamps)</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Avg Ready Time</div>
-                <div className="text-lg font-semibold">
-                  {Number.isFinite(data.kpis.avgReadyMinutes) ? `${Math.round(data.kpis.avgReadyMinutes)} min` : "—"}
-                </div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Avg Completion Time</div>
-                <div className="text-lg font-semibold">
-                  {Number.isFinite(data.kpis.avgCompletionMinutes) ? `${Math.round(data.kpis.avgCompletionMinutes)} min` : "—"}
-                </div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">On-Time Ready</div>
-                <div className="text-lg font-semibold">{formatPercent(data.kpis.onTimeReadyRate)}</div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Referrals Received</div>
-                <div className="text-lg font-semibold">{data.kpis.referralsReceived}</div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Fill Completion Rate</span>
-                <span className="font-medium">{formatPercent(data.kpis.fillCompletionRate)}</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, data.kpis.fillCompletionRate))}%` }} />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between text-sm mb-1">
-                <span className="text-muted-foreground">Delivery Share</span>
-                <span className="font-medium">{formatPercent(data.kpis.deliveryShare)}</span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, data.kpis.deliveryShare))}%` }} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Boxes className="h-5 w-5" /> Inventory Health
-            </CardTitle>
-            <CardDescription>Stock risk, valuation, and controlled/refrigerated inventory coverage.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">SKUs</div>
-                <div className="text-xl font-semibold">{data.kpis.inventorySkuCount}</div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Units On Hand</div>
-                <div className="text-xl font-semibold">{data.kpis.inventoryUnits.toLocaleString()}</div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Retail Value</div>
-                <div className="text-xl font-semibold">{formatMoney(data.kpis.inventoryRetailValue)}</div>
-              </div>
-              <div className="rounded-lg bg-muted/40 p-3">
-                <div className="text-xs text-muted-foreground">Cost Value</div>
-                <div className="text-xl font-semibold">{formatMoney(data.kpis.inventoryCostValue)}</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="h-[260px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.inventoryRiskBuckets}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="space-y-3">
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-center gap-2 text-sm font-medium mb-1">
-                    <Syringe className="h-4 w-4 text-primary" /> Controlled Substances
-                  </div>
-                  <div className="text-2xl font-semibold">{data.kpis.controlledSubstanceSkus}</div>
-                  <div className="text-xs text-muted-foreground">SKU(s) marked as controlled substance</div>
-                </div>
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-center gap-2 text-sm font-medium mb-1">
-                    <ThermometerSnowflake className="h-4 w-4 text-primary" /> Refrigerated Inventory
-                  </div>
-                  <div className="text-2xl font-semibold">{data.kpis.refrigeratedSkus}</div>
-                  <div className="text-xs text-muted-foreground">SKU(s) requiring refrigeration</div>
-                </div>
-                <div className="rounded-lg border p-3">
-                  <div className="text-sm font-medium mb-1">Inventory Risk Summary</div>
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <div>{data.kpis.lowStockItems} low-stock SKU(s) at/under reorder level</div>
-                    <div>{data.kpis.outOfStock} out-of-stock SKU(s)</div>
-                    <div>{data.kpis.expiringSoon} SKU(s) expiring within 30 days</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Prescriptions & Claims Proxy</CardTitle>
-            <CardDescription>Prescription pipeline, insurance-eligible orders, and payment mix visibility.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="h-[260px]">
-                {data.prescriptionStatusBreakdown.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No prescription status data available.</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.prescriptionStatusBreakdown} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis type="number" tick={{ fontSize: 12 }} />
-                      <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <div className="rounded-lg bg-muted/40 p-3">
-                  <div className="text-xs text-muted-foreground">Claimable Orders</div>
-                  <div className="text-xl font-semibold">{data.kpis.claimableOrders}</div>
-                  <div className="text-xs text-muted-foreground mt-1">Orders with insurance amount captured</div>
-                </div>
-                <div className="rounded-lg bg-muted/40 p-3">
-                  <div className="text-xs text-muted-foreground">Insurance Covered</div>
-                  <div className="text-xl font-semibold">{formatMoney(data.kpis.insuranceCovered)}</div>
-                  <div className="text-xs text-muted-foreground mt-1">Insurance amounts in selected period</div>
-                </div>
-                <div className="rounded-lg bg-muted/40 p-3">
-                  <div className="text-xs text-muted-foreground">Copay Amount</div>
-                  <div className="text-xl font-semibold">{formatMoney(data.kpis.copayTotal)}</div>
-                  <div className="text-xs text-muted-foreground mt-1">Copay totals from fulfillment orders</div>
-                </div>
-                <div className="h-[140px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={data.claimBreakdown} dataKey="value" nameKey="name" outerRadius={55}>
-                        {data.claimBreakdown.map((_, i) => (
-                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Medication + payment/pickup */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Top Medications</CardTitle>
-            <CardDescription>
-              Based on prescription item quantities in the selected period
-              {data.topMedications.length === 0 ? "" : " (fallbacks may use inventory stock)."}
-            </CardDescription>
+            <CardDescription>Dispensed / prescribed quantities in selected period</CardDescription>
           </CardHeader>
           <CardContent>
-            {data.topMedications.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No medication-level data available yet.</div>
+            {analytics.topMedications.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No medication line-items in this period.</div>
+            ) : (
+              <div className="space-y-4">
+                {analytics.topMedications.slice(0, 8).map((m, i) => {
+                  const maxUnits = analytics.topMedications[0]?.units || 1;
+                  const pct = Math.max(2, Math.round((m.units / maxUnits) * 100));
+                  return (
+                    <div key={`${m.name}-${i}`} className="space-y-1.5">
+                      <div className="flex items-center justify-between gap-3 text-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Pill className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="font-medium truncate">{m.name}</span>
+                        </div>
+                        <span className="text-muted-foreground shrink-0">
+                          {m.units} units • {m.rxCount} Rx
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Payments & Pickup Methods</CardTitle>
+            <CardDescription>Operational mix for selected orders</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {analytics.paymentBreakdown.length === 0 && analytics.pickupBreakdown.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No payment or pickup data in this period.</div>
+            ) : (
+              <>
+                <div>
+                  <div className="text-sm font-medium mb-2">Payment Status</div>
+                  <div className="h-[180px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={analytics.paymentBreakdown}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} interval={0} angle={-15} textAnchor="end" height={54} />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip formatter={(v: any) => [toNum(v), "Orders"]} />
+                        <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm font-medium mb-2">Pickup / Delivery Mix</div>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {analytics.pickupBreakdown.map((row, i) => (
+                      <Badge key={row.name} variant="outline" className="gap-2">
+                        <span
+                          className="inline-block w-2 h-2 rounded-full"
+                          style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                        />
+                        {row.name}: {row.value}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="h-[160px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analytics.pickupBreakdown.map((r, idx) => ({ ...r, idx: idx + 1 }))}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                        <YAxis tick={{ fontSize: 12 }} />
+                        <Tooltip formatter={(v: any) => [toNum(v), "Orders"]} />
+                        <Line type="monotone" dataKey="value" stroke="hsl(var(--accent))" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Inventory analytics */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory Health</CardTitle>
+            <CardDescription>Current stock snapshot by risk</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analytics.inventoryHealth.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No inventory records yet.</div>
+            ) : (
+              <>
+                <div className="h-[220px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={analytics.inventoryHealth} dataKey="value" nameKey="name" innerRadius={46} outerRadius={78}>
+                        {analytics.inventoryHealth.map((_, i) => (
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="space-y-2 mt-2 text-sm">
+                  {analytics.inventoryHealth.map((row, i) => (
+                    <div key={row.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                        />
+                        <span className="text-muted-foreground">{row.name}</span>
+                      </div>
+                      <span className="font-medium">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                  <div className="rounded-md border p-2">
+                    <div className="text-muted-foreground">SKUs</div>
+                    <div className="font-semibold">{analytics.inventoryTotals.skus}</div>
+                  </div>
+                  <div className="rounded-md border p-2">
+                    <div className="text-muted-foreground">Units On Hand</div>
+                    <div className="font-semibold">{analytics.inventoryTotals.onHandUnits.toLocaleString()}</div>
+                  </div>
+                  <div className="rounded-md border p-2">
+                    <div className="text-muted-foreground flex items-center gap-1">
+                      <ShieldAlert className="h-3.5 w-3.5" />
+                      Controlled
+                    </div>
+                    <div className="font-semibold">{analytics.inventoryTotals.controlled}</div>
+                  </div>
+                  <div className="rounded-md border p-2">
+                    <div className="text-muted-foreground flex items-center gap-1">
+                      <Snowflake className="h-3.5 w-3.5" />
+                      Refrigerated
+                    </div>
+                    <div className="font-semibold">{analytics.inventoryTotals.refrigerated}</div>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Expiry Distribution</CardTitle>
+            <CardDescription>Current inventory expiry buckets</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[310px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.expiryBuckets}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(v: any) => [toNum(v), "SKUs"]} />
+                  <Bar dataKey="count" fill="hsl(var(--accent))" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Inventory Value & Manufacturers</CardTitle>
+            <CardDescription>Highest-value stock and supplier concentration</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {analytics.topInventoryValue.length > 0 ? (
+              <div>
+                <div className="text-sm font-medium mb-2">Top Stock by Retail Value</div>
+                <div className="h-[150px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analytics.topInventoryValue}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="name" hide />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip formatter={(v: any) => [money(toNum(v)), "Retail Value"]} />
+                      <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">No inventory value data yet.</div>
+            )}
+
+            {analytics.manufacturerChart.length > 0 && (
+              <div>
+                <div className="text-sm font-medium mb-2">Top Manufacturers (SKU count)</div>
+                <div className="h-[140px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={analytics.manufacturerChart}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={50} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip formatter={(v: any) => [toNum(v), "SKUs"]} />
+                      <Line type="monotone" dataKey="count" stroke="hsl(var(--chart-3))" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Alerts / Operational feed */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Operational Alerts</CardTitle>
+            <CardDescription>Cross-module issues needing attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analytics.recentAlerts.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No current alerts across fulfillment and inventory.</div>
             ) : (
               <div className="space-y-3">
-                {data.topMedications.map((m) => (
-                  <div key={m.name} className="rounded-lg border p-3">
-                    <div className="flex items-center justify-between gap-3 mb-2">
-                      <div className="font-medium truncate">{m.name}</div>
-                      <div className="text-sm text-muted-foreground shrink-0">{m.qty.toLocaleString()} units</div>
+                {analytics.recentAlerts.map((a, i) => (
+                  <div key={`${a.kind}-${i}`} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-medium text-sm">{a.title}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{a.subtitle}</div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={
+                          a.severity === "critical"
+                            ? "border-destructive/30 text-destructive bg-destructive/10"
+                            : a.severity === "warning"
+                              ? "border-yellow-500/30 text-yellow-700 bg-yellow-500/10"
+                              : "border-primary/30 text-primary bg-primary/10"
+                        }
+                      >
+                        {a.severity}
+                      </Badge>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2 mb-2">
-                      <div className="h-2 rounded-full bg-primary" style={{ width: `${Math.min(100, (m.qty / topMedMax) * 100)}%` }} />
-                    </div>
-                    <div className="text-xs text-muted-foreground">{m.rxCount.toLocaleString()} prescription(s)</div>
                   </div>
                 ))}
               </div>
@@ -1178,39 +1057,64 @@ export default function PharmacyAnalytics({ pharmacyId }: Props) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Largest Orders</CardTitle>
-            <CardDescription>Highest-value fulfillment orders in the selected period.</CardDescription>
+            <CardTitle>Quick Snapshot</CardTitle>
+            <CardDescription>Period + current inventory summary</CardDescription>
           </CardHeader>
-          <CardContent>
-            {data.topRevenueOrders.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No order value data available.</div>
-            ) : (
-              <div className="h-[360px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.topRevenueOrders} layout="vertical" margin={{ left: 8, right: 8 }}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis type="number" tick={{ fontSize: 12 }} />
-                    <YAxis type="category" dataKey="label" width={110} tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(v: any) => [formatMoney(toNumber(v)), "Order Value"]} />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Orders ({analytics.days}d)</div>
+                <div className="font-semibold text-lg">{analytics.ordersInRange.length}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Prescriptions ({analytics.days}d)</div>
+                <div className="font-semibold text-lg">{analytics.prescriptionsInRange.length}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Overdue Orders</div>
+                <div className="font-semibold text-lg">{analytics.overdueCount}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Cancelled / Rejected</div>
+                <div className="font-semibold text-lg">{analytics.cancelledCount}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Low Stock Items</div>
+                <div className="font-semibold text-lg">{analytics.inventoryTotals.lowStock}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Expiring Soon</div>
+                <div className="font-semibold text-lg">{analytics.inventoryTotals.expiringSoon}</div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <div className="text-sm font-medium mb-2">Revenue Composition</div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Insurance-paid</span>
+                  <span className="font-medium">{money(analytics.insuranceRevenue)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Copay / patient-paid</span>
+                  <span className="font-medium">{money(analytics.copayRevenue)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <span className="text-muted-foreground">Total order amount</span>
+                  <span className="font-semibold">{money(analytics.totalRevenue)}</span>
+                </div>
+              </div>
+            </div>
+
+            {!analytics.hasAnyData && (
+              <div className="text-sm text-muted-foreground">
+                No data has been recorded yet. Once prescriptions, fulfillment orders, and inventory items are added,
+                analytics will populate automatically from live Supabase data.
               </div>
             )}
           </CardContent>
         </Card>
       </div>
-
-      {!hasAnyData && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4" />
-              No analytics data yet for this pharmacy. Once prescriptions, fulfillment orders, referrals, and inventory records are added, this dashboard will populate automatically.
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }
