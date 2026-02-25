@@ -285,17 +285,17 @@ export function usePharmacyStaffDashboard(pharmacyIdOverride?: string) {
     };
   }, [inventory, lowStockItems, expiringItems]);
 
-  const stats = useMemo<Stat[]>(() => {
+  const stats = useMemo((): Stat[] => {
     const totalOrders = enrichedOrders.length;
     const totalRevenue = enrichedOrders.reduce((sum, o) => sum + num(o.total_amount), 0);
 
     return [
-      { title: "Fulfillment Orders", value: String(totalOrders), trend: "neutral" },
-      { title: "Processing / Ready", value: String(queueMeta.processing + queueMeta.ready), trend: "neutral" },
-      { title: "Completed", value: String(queueMeta.completed), trend: "neutral" },
-      { title: "Low Stock Items", value: String(inventoryMeta.lowStockCount), trend: "neutral" },
-      { title: "Inventory Value (Cost)", value: `$${totalRevenue >= 0 ? inventoryMeta.stockValue.toFixed(2) : "0.00"}`.replace("$-","$"), trend: "neutral" },
-      { title: "Incoming Referrals", value: String(referralCount), trend: "neutral" },
+      { title: "Fulfillment Orders", value: String(totalOrders), trend: "neutral" as const },
+      { title: "Processing / Ready", value: String(queueMeta.processing + queueMeta.ready), trend: "neutral" as const },
+      { title: "Completed", value: String(queueMeta.completed), trend: "neutral" as const },
+      { title: "Low Stock Items", value: String(inventoryMeta.lowStockCount), trend: "neutral" as const },
+      { title: "Inventory Value (Cost)", value: `$${totalRevenue >= 0 ? inventoryMeta.stockValue.toFixed(2) : "0.00"}`.replace("$-","$"), trend: "neutral" as const },
+      { title: "Incoming Referrals", value: String(referralCount), trend: "neutral" as const },
     ].slice(0, 4);
   }, [enrichedOrders, queueMeta, inventoryMeta, referralCount]);
 
