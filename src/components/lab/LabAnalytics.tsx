@@ -1360,3 +1360,470 @@ export default function LabAnalytics({ labCenterId }: Props) {
     </div>
   );
 }
+// File: src/components/lab/LabAnalytics.tsx
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
+import { Loader2, RefreshCw, BarChart3, Clock, CheckCircle2, Hourglass, XCircle, TestTube2 } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+} from "recharts";
+
+type Props = {
+  labCenterId: string;
+};
+
+type TimeRange = "7d" | "30d" | "90d";
+
+type LabOrderRow = {
+  id: string;
+  status?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  completed_at?: string | null;
+  reported_at?: string | null;
+  verified_at?: string | null;
+  total_amount?: number | string | null;
+  total_amount_cents?: number | string | null;
+  amount?: number | string | null;
+  amount_cents?: number | string | null;
+  test_name?: string | null;
+  panel_name?: string | null;
+  test_type?: string | null;
+};
+
+const COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--accent))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+];
+
+function daysFromRange(r: TimeRange) {
+  if (r === "30d") return 30;
+  if (r === "90d") return 90;
+  return 7;
+}
+
+function toNum(v: unknown): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v.replace(/,/g, ".").trim());
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
+}
+
+function majorAmount(row: LabOrderRow) {
+  const cents = toNum(row.total_amount_cents) || toNum(row.amount_cents);
+  if (cents > 0) return cents / 100;
+  return toNum(row.total_amount) || toNum(row.amount);
+}
+
+function safeDate(v?: string | null): Date | null {
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function dayKey(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
+
+function dayLabel(key: string) {
+  return new Date(`${key}T00:00:00Z`).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+function pct(current: number, prev: number) {
+  if (!prev && !current) return 0;
+  if (!prev) return 100;
+  return Number((((current - prev) / prev) * 100).toFixed(1));
+}
+
+function money(v: number) {
+  return `$${Number(v || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+async function fetchLabOrders(labCenterId: string, sinceIso: string): Promise<LabOrderRow[]> {
+  const table = (supabase as any).from.bind(supabase as any);
+
+  const attempts = [
+    () =>
+      table("lab_orders")
+        .select("id,status,created_at,updated_at,completed_at,reported_at,verified_at,total_amount,total_amount_cents,amount,amount_cents,test_name,panel_name,test_type")
+        .eq("lab_center_id", labCenterId)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false }),
+    () =>
+      table("lab_orders")
+        .select("id,status,created_at,updated_at,completed_at,reported_at,verified_at,total_amount,total_amount_cents,amount,amount_cents,test_name,panel_name,test_type")
+        .eq("lab_id", labCenterId)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false }),
+    () =>
+      table("lab_orders")
+        .select("id,status,created_at,updated_at,completed_at,reported_at,verified_at,total_amount,total_amount_cents,amount,amount_cents,test_name,panel_name,test_type")
+        .eq("center_id", labCenterId)
+        .gte("created_at", sinceIso)
+        .order("created_at", { ascending: false }),
+  ];
+
+  let lastErr: any = null;
+  for (const run of attempts) {
+    const resp = await run();
+    if (!resp.error) return (resp.data || []) as LabOrderRow[];
+    lastErr = resp.error;
+  }
+
+  throw lastErr;
+}
+
+export default function LabAnalytics({ labCenterId }: Props) {
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const [loading, setLoading] = useState(true);
+
+  const [kpis, setKpis] = useState({
+    total: 0,
+    completed: 0,
+    pending: 0,
+    cancelled: 0,
+    avgTurnaroundHours: 0,
+    revenue: 0,
+    ordersChangePct: 0,
+    revenueChangePct: 0,
+  });
+
+  const [trend, setTrend] = useState<Array<{ date: string; referrals: number; completed: number; revenue: number }>>([]);
+  const [statusData, setStatusData] = useState<Array<{ name: string; value: number }>>([]);
+  const [topTests, setTopTests] = useState<Array<{ name: string; count: number }>>([]);
+
+  const fetchAnalytics = useCallback(async () => {
+    if (!labCenterId) return;
+
+    try {
+      setLoading(true);
+
+      const days = daysFromRange(timeRange);
+      const now = new Date();
+      const start = new Date(now);
+      start.setDate(start.getDate() - (days - 1));
+      start.setHours(0, 0, 0, 0);
+
+      const prevStart = new Date(start);
+      prevStart.setDate(prevStart.getDate() - days);
+
+      const [orders, referralsResp] = await Promise.all([
+        fetchLabOrders(labCenterId, prevStart.toISOString()),
+        (supabase as any)
+          .from("referrals")
+          .select("id,status,created_at")
+          .eq("receiver_entity_id", labCenterId)
+          .in("receiver_type", ["lab", "lab_center"])
+          .gte("created_at", prevStart.toISOString()),
+      ]);
+
+      if (referralsResp.error) {
+        console.warn("referrals fetch failed for lab analytics", referralsResp.error);
+      }
+
+      const current = orders.filter((o) => {
+        const d = safeDate(o.created_at);
+        return !!d && d >= start;
+      });
+      const prev = orders.filter((o) => {
+        const d = safeDate(o.created_at);
+        return !!d && d >= prevStart && d < start;
+      });
+
+      const completedStatuses = new Set(["completed", "reported", "verified", "done", "finished"]);
+      const cancelledStatuses = new Set(["cancelled", "canceled", "rejected", "void"]);
+      const pendingStatuses = new Set(["pending", "new", "processing", "in_progress", "sample_collected"]);
+
+      const completed = current.filter((o) => completedStatuses.has((o.status || "").toLowerCase())).length;
+      const cancelled = current.filter((o) => cancelledStatuses.has((o.status || "").toLowerCase())).length;
+      const pending = current.filter((o) => pendingStatuses.has((o.status || "").toLowerCase())).length;
+
+      const currentRevenue = current.reduce((sum, o) => sum + majorAmount(o), 0);
+      const prevRevenue = prev.reduce((sum, o) => sum + majorAmount(o), 0);
+
+      const turnaroundHours = current
+        .map((o) => {
+          const a = safeDate(o.created_at);
+          const b = safeDate(o.verified_at || o.reported_at || o.completed_at || o.updated_at);
+          if (!a || !b || b <= a) return null;
+          return (b.getTime() - a.getTime()) / (1000 * 60 * 60);
+        })
+        .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+
+      const avgTurnaroundHours = turnaroundHours.length
+        ? Number((turnaroundHours.reduce((s, x) => s + x, 0) / turnaroundHours.length).toFixed(1))
+        : 0;
+
+      const trendMap = new Map<string, { referrals: number; completed: number; revenue: number }>();
+      for (let i = 0; i < days; i++) {
+        const d = new Date(start);
+        d.setDate(start.getDate() + i);
+        trendMap.set(dayKey(d), { referrals: 0, completed: 0, revenue: 0 });
+      }
+
+      const statusMap = new Map<string, number>();
+      const testsMap = new Map<string, number>();
+
+      for (const o of current) {
+        const d = safeDate(o.created_at);
+        if (d) {
+          const row = trendMap.get(dayKey(d));
+          if (row) {
+            row.referrals += 1;
+            row.revenue += majorAmount(o);
+            if (completedStatuses.has((o.status || "").toLowerCase())) row.completed += 1;
+          }
+        }
+
+        const s = (o.status || "unknown").replaceAll("_", " ");
+        statusMap.set(s, (statusMap.get(s) || 0) + 1);
+
+        const testName = (o.test_name || o.panel_name || o.test_type || "Unknown test").toString();
+        testsMap.set(testName, (testsMap.get(testName) || 0) + 1);
+      }
+
+      setKpis({
+        total: current.length,
+        completed,
+        pending,
+        cancelled,
+        avgTurnaroundHours,
+        revenue: Number(currentRevenue.toFixed(2)),
+        ordersChangePct: pct(current.length, prev.length),
+        revenueChangePct: pct(currentRevenue, prevRevenue),
+      });
+
+      setTrend(
+        Array.from(trendMap.entries()).map(([k, v]) => ({
+          date: dayLabel(k),
+          referrals: v.referrals,
+          completed: v.completed,
+          revenue: Number(v.revenue.toFixed(2)),
+        })),
+      );
+
+      setStatusData(
+        Array.from(statusMap.entries())
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value),
+      );
+
+      setTopTests(
+        Array.from(testsMap.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 8),
+      );
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to load lab analytics");
+      setKpis({
+        total: 0,
+        completed: 0,
+        pending: 0,
+        cancelled: 0,
+        avgTurnaroundHours: 0,
+        revenue: 0,
+        ordersChangePct: 0,
+        revenueChangePct: 0,
+      });
+      setTrend([]);
+      setStatusData([]);
+      setTopTests([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [labCenterId, timeRange]);
+
+  useEffect(() => {
+    void fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  const chartData = useMemo(() => trend, [trend]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <BarChart3 className="h-6 w-6" />
+          Lab Analytics
+        </h2>
+
+        <div className="flex items-center gap-3">
+          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Time range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button variant="ghost" size="sm" onClick={() => void fetchAnalytics()}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
+        <Card className="xl:col-span-2">
+          <CardContent className="pt-6">
+            <div className="text-sm text-muted-foreground">Revenue</div>
+            <div className="text-3xl font-bold">{money(kpis.revenue)}</div>
+            <div className={`text-xs mt-1 ${kpis.revenueChangePct >= 0 ? "text-green-600" : "text-red-600"}`}>
+              {kpis.revenueChangePct >= 0 ? "+" : ""}
+              {kpis.revenueChangePct}% vs previous period
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground">Total Orders</div><div className="text-3xl font-bold">{kpis.total}</div><div className="text-xs mt-1 text-muted-foreground">{kpis.ordersChangePct >= 0 ? "+" : ""}{kpis.ordersChangePct}% change</div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Completed</div><div className="text-3xl font-bold">{kpis.completed}</div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground flex items-center gap-1"><Hourglass className="h-4 w-4" /> Pending</div><div className="text-3xl font-bold">{kpis.pending}</div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground flex items-center gap-1"><XCircle className="h-4 w-4" /> Cancelled</div><div className="text-3xl font-bold">{kpis.cancelled}</div></CardContent></Card>
+        <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="h-4 w-4" /> Avg TAT</div><div className="text-3xl font-bold">{kpis.avgTurnaroundHours}h</div></CardContent></Card>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-3">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>Order Trend</CardTitle>
+            <CardDescription>Incoming lab orders, completed orders, and revenue over time</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[320px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="labRefFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="labCompFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.22} />
+                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" />
+                  <YAxis yAxisId="left" allowDecimals={false} />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip
+                    formatter={(v: any, n: any) =>
+                      n === "revenue" ? [money(Number(v)), "Revenue"] : [Number(v), n === "referrals" ? "Orders" : "Completed"]
+                    }
+                  />
+                  <Legend />
+                  <Area yAxisId="left" type="monotone" dataKey="referrals" name="Orders" stroke="hsl(var(--primary))" fill="url(#labRefFill)" />
+                  <Area yAxisId="left" type="monotone" dataKey="completed" name="Completed" stroke="hsl(var(--accent))" fill="url(#labCompFill)" />
+                  <Bar yAxisId="right" dataKey="revenue" name="Revenue" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Status Breakdown</CardTitle>
+            <CardDescription>Selected range</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData.length ? statusData : [{ name: "No data", value: 1 }]}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={52}
+                    outerRadius={86}
+                  >
+                    {(statusData.length ? statusData : [{ name: "No data", value: 1 }]).map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="space-y-2">
+              {statusData.slice(0, 6).map((s, i) => (
+                <div key={`${s.name}-${i}`} className="flex items-center justify-between text-sm">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                    <span className="truncate capitalize">{s.name}</span>
+                  </div>
+                  <span className="font-medium">{s.value}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TestTube2 className="h-5 w-5" />
+            Top Tests / Panels
+          </CardTitle>
+          <CardDescription>Most ordered tests in selected period</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {topTests.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No test-level order data yet.</p>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {topTests.map((t, idx) => (
+                <div key={`${t.name}-${idx}`} className="rounded-lg border p-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{t.name}</div>
+                    <div className="text-xs text-muted-foreground">Orders in selected range</div>
+                  </div>
+                  <div className="text-lg font-semibold">{t.count}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4 text-xs text-muted-foreground">
+            Direct Supabase analytics (no edge function dependency).
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
