@@ -1,11 +1,11 @@
-// src/pages/Legal.tsx
+// File: src/pages/Legal.tsx
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, FileText, Cookie, Info, ArrowLeft } from 'lucide-react';
+import { Shield, FileText, Cookie, Info, ArrowLeft, ReceiptText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
 import { LegalIllustration } from '@/components/Visuals/illustrations';
@@ -22,19 +22,23 @@ const iconMap: Record<string, any> = {
   'privacy-policy': Shield,
   'terms-of-service': FileText,
   'cookies': Cookie,
+  'cookie-policy': Cookie,
   'hipaa': Shield,
+  'refund-policy': ReceiptText,
 };
 
 export default function Legal() {
   const { t } = useTranslation(['common', 'legal']);
   const { getTranslatedField } = useContentTranslation();
+  const { lang } = useParams<{ lang?: string }>();
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const withLang = (path: string) => (lang ? `/${lang}${path}` : path);
 
   useEffect(() => {
     fetchLegalPages();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('legal-pages-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'legal_pages' }, () => {
@@ -49,11 +53,7 @@ export default function Legal() {
 
   const fetchLegalPages = async () => {
     try {
-      const { data, error } = await supabase
-        .from('legal_pages')
-        .select('*')
-        .eq('is_published', true)
-        .order('title');
+      const { data, error } = await supabase.from('legal_pages').select('*').eq('is_published', true).order('title');
 
       if (error) throw error;
       setLegalPages(data || []);
@@ -64,14 +64,27 @@ export default function Legal() {
     }
   };
 
+  const staticRefundCard = {
+    id: 'static-refund-policy',
+    slug: 'refund-policy',
+    title: t('legal:refundPolicy.title', { defaultValue: 'Refund Policy' }),
+    description: t('legal:refundPolicy.summary', {
+      defaultValue:
+        'Rules for subscription refunds, telemedicine consultation refunds, and provider/entity refund responsibilities on Docito.',
+    }),
+    updated_at: '2026-02-25T00:00:00.000Z',
+  };
+
+  const dbSlugs = new Set((legalPages || []).map((p) => p.slug));
+  const shouldShowStaticRefundCard = !dbSlugs.has('refund-policy');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary/10 to-accent/10 py-12">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
-              <Link to="/">
+              <Link to={withLang('/')}>
                 <Button variant="ghost" size="sm" className="mb-4">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   {t('legal:backHome')}
@@ -108,7 +121,7 @@ export default function Legal() {
               {legalPages.map((page) => {
                 const Icon = iconMap[page.slug] || FileText;
                 return (
-                  <Link key={page.id} to={`/legal/${page.slug}`}>
+                  <Link key={page.id} to={withLang(`/legal/${page.slug}`)}>
                     <Card className="h-full transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 group">
                       <CardHeader>
                         <div className="flex items-start gap-4">
@@ -135,7 +148,32 @@ export default function Legal() {
                 );
               })}
 
-              <Link to="/about">
+              {shouldShowStaticRefundCard && (
+                <Link to={withLang('/legal/refund-policy')}>
+                  <Card className="h-full transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 group">
+                    <CardHeader>
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                          <ReceiptText className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="mb-2 group-hover:text-primary transition-colors">
+                            {staticRefundCard.title}
+                          </CardTitle>
+                          <CardDescription className="line-clamp-2">{staticRefundCard.description}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        {t('legal:lastUpdated')}: {format(new Date(staticRefundCard.updated_at), 'MMMM d, yyyy')}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )}
+
+              <Link to={withLang('/about')}>
                 <Card className="h-full transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 group">
                   <CardHeader>
                     <div className="flex items-start gap-4">
