@@ -44,6 +44,10 @@ import {
   AlertTriangle,
   PackageCheck,
   Percent,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Filter,
 } from "lucide-react";
 
 type LabCenterRow = {
@@ -54,6 +58,21 @@ type LabCenterRow = {
 };
 
 type AnyOrder = Record<string, any>;
+type RangeDays = 7 | 30 | 90;
+
+type PeriodMetrics = {
+  total: number;
+  createdToday: number;
+  pending: number;
+  inProgress: number;
+  completedTotal: number;
+  completedToday: number;
+  overdue: number;
+  readyNotDelivered: number;
+  avgTatHours: number;
+  completionRatePct: number;
+  breakdown: Array<{ label: string; count: number }>;
+};
 
 function toDateSafe(value: unknown): Date | null {
   if (!value) return null;
@@ -101,6 +120,133 @@ function isReadyStatus(status: string): boolean {
   return ["result_ready", "completed", "reported", "finalized"].includes(status);
 }
 
+function getCreatedAt(order: AnyOrder): Date | null {
+  return pickDate(order, ["created_at", "ordered_at", "requested_at", "scheduled_at"]);
+}
+
+function getOrderCategoryLabel(order: AnyOrder): string {
+  const raw =
+    order?.test_category ??
+    order?.category ??
+    order?.test_type ??
+    order?.panel_name ??
+    order?.test_name ??
+    order?.exam_name ??
+    order?.service_name ??
+    order?.name;
+
+  const value = String(raw || "").trim();
+  if (!value) return "Other";
+  return value.length > 32 ? `${value.slice(0, 32)}…` : value;
+}
+
+function buildPeriodMetrics(list: AnyOrder[], now: Date): PeriodMetrics {
+  const isSameLocalDay = (value?: unknown) => {
+    const d = toDateSafe(value);
+    if (!d) return false;
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  };
+
+  const pending = list.filter((o) => isPendingStatus(normalizeStatus(o?.status))).length;
+  const inProgress = list.filter((o) => isInProgressStatus(normalizeStatus(o?.status))).length;
+  const completedTotal = list.filter((o) => isCompletedStatus(normalizeStatus(o?.status))).length;
+
+  const completedToday = list.filter((o) => {
+    const status = normalizeStatus(o?.status);
+    if (!isCompletedStatus(status)) return false;
+    const completedAt = pickDate(o, [
+      "completed_at",
+      "result_ready_at",
+      "reported_at",
+      "finalized_at",
+      "updated_at",
+      "created_at",
+    ]);
+    return isSameLocalDay(completedAt?.toISOString());
+  }).length;
+
+  const createdToday = list.filter((o) => isSameLocalDay(getCreatedAt(o)?.toISOString())).length;
+
+  const overdue = list.filter((o) => {
+    const status = normalizeStatus(o?.status);
+    if (isCompletedStatus(status)) return false;
+
+    const due = pickDate(o, [
+      "due_at",
+      "expected_completion_at",
+      "promised_at",
+      "target_at",
+      "deadline_at",
+      "scheduled_result_at",
+    ]);
+    if (!due) return false;
+    return due.getTime() < now.getTime();
+  }).length;
+
+  const readyNotDelivered = list.filter((o) => {
+    const status = normalizeStatus(o?.status);
+    if (!isReadyStatus(status)) return false;
+
+    const delivered = pickDate(o, ["result_delivered_at", "delivered_at", "shared_at", "patient_notified_at", "sent_at"]);
+    return !delivered;
+  }).length;
+
+  const tatHoursValues = list
+    .filter((o) => isCompletedStatus(normalizeStatus(o?.status)))
+    .map((o) => {
+      const startedAt = pickDate(o, ["sample_collected_at", "collected_at", "received_at", "scheduled_at", "created_at"]);
+      const finishedAt = pickDate(o, ["completed_at", "result_ready_at", "reported_at", "finalized_at", "updated_at"]);
+      if (!startedAt || !finishedAt) return null;
+
+      const diffMs = finishedAt.getTime() - startedAt.getTime();
+      if (diffMs <= 0) return null;
+
+      const hours = diffMs / (1000 * 60 * 60);
+      if (!Number.isFinite(hours) || hours > 24 * 30) return null;
+
+      return hours;
+    })
+    .filter((v): v is number => v !== null);
+
+  const avgTatHours =
+    tatHoursValues.length > 0
+      ? Math.round((tatHoursValues.reduce((sum, v) => sum + v, 0) / tatHoursValues.length) * 10) / 10
+      : 0;
+
+  const completionRatePct = list.length > 0 ? Math.round((completedTotal / list.length) * 100) : 0;
+
+  const breakdownMap = new Map<string, number>();
+  for (const order of list) {
+    const label = getOrderCategoryLabel(order);
+    breakdownMap.set(label, (breakdownMap.get(label) || 0) + 1);
+  }
+
+  const breakdown = [...breakdownMap.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
+
+  return {
+    total: list.length,
+    createdToday,
+    pending,
+    inProgress,
+    completedTotal,
+    completedToday,
+    overdue,
+    readyNotDelivered,
+    avgTatHours,
+    completionRatePct,
+    breakdown,
+  };
+}
+
+function pctDelta(current: number, previous: number): number | null {
+  if (previous === 0 && current === 0) return 0;
+  if (previous === 0) return null;
+  return Math.round(((current - previous) / previous) * 100);
+}
+
 async function fetchMyLabCenter(userId: string): Promise<LabCenterRow | null> {
   const { data: adminRow, error: adminErr } = await supabase
     .from("lab_centers")
@@ -140,6 +286,8 @@ export default function LabDashboardPage() {
     "overview" | "orders" | "home" | "samples" | "analytics" | "billing" | "finances" | "referrals" | "staff"
   >("overview");
 
+  const [analyticsRange, setAnalyticsRange] = useState<RangeDays>(30);
+
   const [center, setCenter] = useState<LabCenterRow | null>(null);
   const [loadingCenter, setLoadingCenter] = useState(true);
 
@@ -170,114 +318,60 @@ export default function LabDashboardPage() {
 
   const labCenterId = center?.id || "";
 
-  const overviewStatCards = useMemo<StatCardProps[]>(() => {
-    const list = orders || [];
+  const analyticsComputed = useMemo(() => {
     const now = new Date();
 
-    const isSameLocalDay = (value?: unknown) => {
-      const d = toDateSafe(value);
-      if (!d) return false;
-      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+    const currentStart = new Date(now);
+    currentStart.setHours(0, 0, 0, 0);
+    currentStart.setDate(currentStart.getDate() - (analyticsRange - 1));
+
+    const prevEnd = new Date(currentStart.getTime() - 1);
+    const prevStart = new Date(currentStart);
+    prevStart.setDate(prevStart.getDate() - analyticsRange);
+
+    const currentOrders = orders.filter((o) => {
+      const created = getCreatedAt(o);
+      return !!created && created >= currentStart && created <= now;
+    });
+
+    const previousOrders = orders.filter((o) => {
+      const created = getCreatedAt(o);
+      return !!created && created >= prevStart && created <= prevEnd;
+    });
+
+    const currentMetrics = buildPeriodMetrics(currentOrders, now);
+    const previousMetrics = buildPeriodMetrics(previousOrders, now);
+
+    return {
+      currentStart,
+      prevStart,
+      prevEnd,
+      currentMetrics,
+      previousMetrics,
+      trends: {
+        total: pctDelta(currentMetrics.total, previousMetrics.total),
+        completed: pctDelta(currentMetrics.completedTotal, previousMetrics.completedTotal),
+        tat: pctDelta(currentMetrics.avgTatHours, previousMetrics.avgTatHours),
+        completionRate: pctDelta(currentMetrics.completionRatePct, previousMetrics.completionRatePct),
+      },
     };
+  }, [orders, analyticsRange]);
 
-    const pending = list.filter((o) => isPendingStatus(normalizeStatus(o?.status))).length;
-
-    const inProgress = list.filter((o) => isInProgressStatus(normalizeStatus(o?.status))).length;
-
-    const completedTotal = list.filter((o) => isCompletedStatus(normalizeStatus(o?.status))).length;
-
-    const completedToday = list.filter((o) => {
-      const status = normalizeStatus(o?.status);
-      if (!isCompletedStatus(status)) return false;
-      const completedAt = pickDate(o, [
-        "completed_at",
-        "result_ready_at",
-        "reported_at",
-        "finalized_at",
-        "updated_at",
-        "created_at",
-      ]);
-      return isSameLocalDay(completedAt?.toISOString());
-    }).length;
-
-    const todayCreated = list.filter((o) => isSameLocalDay(o?.created_at)).length;
-
-    const overdue = list.filter((o) => {
-      const status = normalizeStatus(o?.status);
-      if (isCompletedStatus(status)) return false;
-
-      const due = pickDate(o, [
-        "due_at",
-        "expected_completion_at",
-        "promised_at",
-        "target_at",
-        "deadline_at",
-        "scheduled_result_at",
-      ]);
-      if (!due) return false;
-      return due.getTime() < now.getTime();
-    }).length;
-
-    const readyNotDelivered = list.filter((o) => {
-      const status = normalizeStatus(o?.status);
-      if (!isReadyStatus(status)) return false;
-
-      const delivered = pickDate(o, [
-        "result_delivered_at",
-        "delivered_at",
-        "shared_at",
-        "patient_notified_at",
-        "sent_at",
-      ]);
-      return !delivered;
-    }).length;
-
-    const tatHoursValues = list
-      .filter((o) => isCompletedStatus(normalizeStatus(o?.status)))
-      .map((o) => {
-        const startedAt = pickDate(o, [
-          "sample_collected_at",
-          "collected_at",
-          "received_at",
-          "scheduled_at",
-          "created_at",
-        ]);
-        const finishedAt = pickDate(o, [
-          "completed_at",
-          "result_ready_at",
-          "reported_at",
-          "finalized_at",
-          "updated_at",
-        ]);
-        if (!startedAt || !finishedAt) return null;
-        const diffMs = finishedAt.getTime() - startedAt.getTime();
-        if (diffMs <= 0) return null;
-        const hours = diffMs / (1000 * 60 * 60);
-        if (!Number.isFinite(hours)) return null;
-        if (hours > 24 * 30) return null;
-        return hours;
-      })
-      .filter((v): v is number => v !== null);
-
-    const avgTatHours =
-      tatHoursValues.length > 0
-        ? Math.round((tatHoursValues.reduce((sum, v) => sum + v, 0) / tatHoursValues.length) * 10) / 10
-        : 0;
-
-    const completionRatePct = list.length > 0 ? Math.round((completedTotal / list.length) * 100) : 0;
+  const overviewStatCards = useMemo<StatCardProps[]>(() => {
+    const m = analyticsComputed.currentMetrics;
 
     return [
-      { label: "Orders Today", value: todayCreated, icon: <Calendar className="h-6 w-6" /> },
-      { label: "Pending", value: pending, icon: <ClipboardList className="h-6 w-6" /> },
-      { label: "In Progress", value: inProgress, icon: <Activity className="h-6 w-6" /> },
-      { label: "Completed Today", value: completedToday, icon: <CheckCircle2 className="h-6 w-6" /> },
+      { label: `Orders (${analyticsRange}d)`, value: m.total, icon: <Calendar className="h-6 w-6" /> },
+      { label: "Pending", value: m.pending, icon: <ClipboardList className="h-6 w-6" /> },
+      { label: "In Progress", value: m.inProgress, icon: <Activity className="h-6 w-6" /> },
+      { label: "Completed Today", value: m.completedToday, icon: <CheckCircle2 className="h-6 w-6" /> },
 
-      { label: "Overdue Tests", value: overdue, icon: <AlertTriangle className="h-6 w-6" /> },
-      { label: "Avg TAT (hrs)", value: avgTatHours, icon: <Clock3 className="h-6 w-6" /> },
-      { label: "Ready, Not Delivered", value: readyNotDelivered, icon: <PackageCheck className="h-6 w-6" /> },
-      { label: "Completion Rate (%)", value: completionRatePct, icon: <Percent className="h-6 w-6" /> },
+      { label: "Overdue Tests", value: m.overdue, icon: <AlertTriangle className="h-6 w-6" /> },
+      { label: "Avg TAT (hrs)", value: m.avgTatHours, icon: <Clock3 className="h-6 w-6" /> },
+      { label: "Ready, Not Delivered", value: m.readyNotDelivered, icon: <PackageCheck className="h-6 w-6" /> },
+      { label: "Completion Rate (%)", value: m.completionRatePct, icon: <Percent className="h-6 w-6" /> },
     ];
-  }, [orders]);
+  }, [analyticsComputed.currentMetrics, analyticsRange]);
 
   const fetchOrders = async () => {
     if (!labCenterId) return;
@@ -288,7 +382,7 @@ export default function LabDashboardPage() {
         .select("*")
         .eq("lab_center_id", labCenterId)
         .order("created_at", { ascending: false })
-        .limit(1000);
+        .limit(2000);
 
       if (error) throw error;
       setOrders((data || []) as AnyOrder[]);
@@ -311,6 +405,12 @@ export default function LabDashboardPage() {
     const raw = (params.get("tab") || params.get("section") || "").trim();
     const hash = (location.hash || "").replace("#", "").trim();
     const desired = (raw || hash).toLowerCase();
+
+    const rangeParam = (params.get("range") || "").trim();
+    const parsedRange = Number(rangeParam);
+    if ([7, 30, 90].includes(parsedRange)) {
+      setAnalyticsRange(parsedRange as RangeDays);
+    }
 
     if (!desired) return;
 
@@ -398,6 +498,34 @@ export default function LabDashboardPage() {
     );
   }
 
+  const trendCardData = [
+    {
+      label: `Orders (${analyticsRange}d)`,
+      current: analyticsComputed.currentMetrics.total,
+      previous: analyticsComputed.previousMetrics.total,
+      delta: analyticsComputed.trends.total,
+    },
+    {
+      label: `Completed (${analyticsRange}d)`,
+      current: analyticsComputed.currentMetrics.completedTotal,
+      previous: analyticsComputed.previousMetrics.completedTotal,
+      delta: analyticsComputed.trends.completed,
+    },
+    {
+      label: "Avg TAT (hrs)",
+      current: analyticsComputed.currentMetrics.avgTatHours,
+      previous: analyticsComputed.previousMetrics.avgTatHours,
+      delta: analyticsComputed.trends.tat,
+      lowerIsBetter: true,
+    },
+    {
+      label: "Completion Rate (%)",
+      current: analyticsComputed.currentMetrics.completionRatePct,
+      previous: analyticsComputed.previousMetrics.completionRatePct,
+      delta: analyticsComputed.trends.completionRate,
+    },
+  ];
+
   return (
     <DashboardShell
       role={activeRole as any}
@@ -411,6 +539,7 @@ export default function LabDashboardPage() {
 
         const params = new URLSearchParams(location.search);
         params.set("tab", String(next));
+        params.set("range", String(analyticsRange));
         navigate(
           {
             pathname: location.pathname,
@@ -428,20 +557,172 @@ export default function LabDashboardPage() {
             title="Lab Command Center"
             description="Operations, analytics, billing, referrals, and finance visibility in one overview."
             actions={
-              <button
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
-                onClick={() => {
-                  void fetchOrders();
-                }}
-                disabled={ordersLoading}
-              >
-                {ordersLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Refresh Overview
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center rounded-md border bg-background p-1">
+                  <span className="px-2 text-xs text-muted-foreground inline-flex items-center gap-1">
+                    <Filter className="h-3.5 w-3.5" />
+                    Range
+                  </span>
+                  {[7, 30, 90].map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => {
+                        const next = d as RangeDays;
+                        setAnalyticsRange(next);
+
+                        const params = new URLSearchParams(location.search);
+                        params.set("tab", "overview");
+                        params.set("range", String(next));
+                        navigate(
+                          {
+                            pathname: location.pathname,
+                            search: `?${params.toString()}`,
+                          },
+                          { replace: true },
+                        );
+                      }}
+                      className={`h-8 px-3 rounded text-sm ${
+                        analyticsRange === d
+                          ? "bg-primary text-primary-foreground"
+                          : "text-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => {
+                    void fetchOrders();
+                  }}
+                  disabled={ordersLoading}
+                >
+                  {ordersLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                  Refresh Overview
+                </button>
+              </div>
             }
           />
 
           <StatsGrid stats={overviewStatCards} className="mb-8" />
+
+          <Card className="mb-6 overflow-hidden">
+            <CardHeader>
+              <CardTitle>Range Comparison ({analyticsRange} days vs previous {analyticsRange} days)</CardTitle>
+              <CardDescription>
+                Quick trend comparison to match practice-style analytics controls and performance tracking.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {trendCardData.map((item) => {
+                  const delta = item.delta;
+                  const isPositive = (delta ?? 0) > 0;
+                  const isNegative = (delta ?? 0) < 0;
+                  const improved =
+                    delta === null ? null : item.lowerIsBetter ? (delta < 0 ? true : delta > 0 ? false : null) : isPositive;
+
+                  return (
+                    <div key={item.label} className="rounded-lg border p-4 bg-card">
+                      <div className="text-sm text-muted-foreground">{item.label}</div>
+                      <div className="mt-1 text-2xl font-semibold">{item.current}</div>
+                      <div className="mt-2 flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Prev: {item.previous}</span>
+                        <span
+                          className={`inline-flex items-center gap-1 ${
+                            delta === null
+                              ? "text-muted-foreground"
+                              : improved === true
+                                ? "text-emerald-600"
+                                : improved === false
+                                  ? "text-rose-600"
+                                  : "text-muted-foreground"
+                          }`}
+                        >
+                          {delta === null ? (
+                            <Minus className="h-3.5 w-3.5" />
+                          ) : isPositive ? (
+                            <TrendingUp className="h-3.5 w-3.5" />
+                          ) : isNegative ? (
+                            <TrendingDown className="h-3.5 w-3.5" />
+                          ) : (
+                            <Minus className="h-3.5 w-3.5" />
+                          )}
+                          {delta === null ? "n/a" : `${delta > 0 ? "+" : ""}${delta}%`}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-2">
+                <div className="rounded-lg border p-4">
+                  <div className="font-medium">Top Test Categories ({analyticsRange}d)</div>
+                  <p className="text-sm text-muted-foreground mb-4">Category mix for the selected range.</p>
+
+                  {analyticsComputed.currentMetrics.breakdown.length === 0 ? (
+                    <div className="text-sm text-muted-foreground">No orders found for the selected range.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {analyticsComputed.currentMetrics.breakdown.map((item) => {
+                        const max = analyticsComputed.currentMetrics.breakdown[0]?.count || 1;
+                        const width = Math.max(8, Math.round((item.count / max) * 100));
+                        return (
+                          <div key={item.label}>
+                            <div className="flex items-center justify-between text-sm mb-1">
+                              <span className="truncate pr-2">{item.label}</span>
+                              <span className="text-muted-foreground">{item.count}</span>
+                            </div>
+                            <div className="h-2 rounded bg-muted overflow-hidden">
+                              <div className="h-full rounded bg-primary" style={{ width: `${width}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-lg border p-4">
+                  <div className="font-medium">Operational Range Snapshot</div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Selected range: {analyticsRange} days • Compared with the previous {analyticsRange}-day period.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded border p-3">
+                      <div className="text-muted-foreground">Current Pending</div>
+                      <div className="text-xl font-semibold">{analyticsComputed.currentMetrics.pending}</div>
+                    </div>
+                    <div className="rounded border p-3">
+                      <div className="text-muted-foreground">Prev Pending</div>
+                      <div className="text-xl font-semibold">{analyticsComputed.previousMetrics.pending}</div>
+                    </div>
+                    <div className="rounded border p-3">
+                      <div className="text-muted-foreground">Current Overdue</div>
+                      <div className="text-xl font-semibold">{analyticsComputed.currentMetrics.overdue}</div>
+                    </div>
+                    <div className="rounded border p-3">
+                      <div className="text-muted-foreground">Prev Overdue</div>
+                      <div className="text-xl font-semibold">{analyticsComputed.previousMetrics.overdue}</div>
+                    </div>
+                    <div className="rounded border p-3">
+                      <div className="text-muted-foreground">Ready Not Delivered</div>
+                      <div className="text-xl font-semibold">{analyticsComputed.currentMetrics.readyNotDelivered}</div>
+                    </div>
+                    <div className="rounded border p-3">
+                      <div className="text-muted-foreground">Created Today</div>
+                      <div className="text-xl font-semibold">{analyticsComputed.currentMetrics.createdToday}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <LabDashboardContent />
 
