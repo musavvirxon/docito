@@ -124,7 +124,6 @@ function normalizePermissions(raw: any): PermissionKey[] {
 }
 
 function permissionsToStorage(perms: PermissionKey[]) {
-  // JSON object is the safest for mixed schema setups
   return perms.reduce<Record<string, boolean>>((acc, key) => {
     acc[key] = true;
     return acc;
@@ -314,7 +313,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
 
       const labStaffRows: StaffRow[] = Array.isArray(staffData) ? staffData : [];
 
-      // Optional fallback: if your project uses a separate invitations table, merge it in
       let mergedRows = [...labStaffRows];
       try {
         const { data: inviteRows, error: inviteErr } = await sb
@@ -333,7 +331,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
             invited_email: inv.email || inv.invited_email || inv.contact_email,
             role: inv.role || inv.staff_role || "viewer",
           }));
-          // Only merge if not already represented in lab_staff
           const existingEmails = new Set(labStaffRows.map((r) => getStaffEmail(r)).filter(Boolean));
           const deduped = mapped.filter((r) => {
             const email = getStaffEmail(r);
@@ -342,30 +339,26 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
           mergedRows = [...mergedRows, ...deduped];
         }
       } catch {
-        // silently ignore optional table absence
+        // optional table may not exist
       }
 
       setRows(mergedRows);
 
       const userIds = [...new Set(mergedRows.map((r) => getStaffUserId(r)).filter(Boolean))];
+      let nextProfilesById: Record<string, ProfileRow> = {};
+
       if (userIds.length > 0) {
         try {
           const { data: profileRows, error: profileErr } = await sb.from("profiles").select("*").in("id", userIds);
           if (!profileErr && Array.isArray(profileRows)) {
-            const map: Record<string, ProfileRow> = {};
-            for (const p of profileRows) map[String(p.id)] = p;
-            setProfilesById(map);
-          } else {
-            setProfilesById({});
+            for (const p of profileRows) nextProfilesById[String(p.id)] = p;
           }
         } catch {
-          setProfilesById({});
+          // ignore
         }
-      } else {
-        setProfilesById({});
       }
+      setProfilesById(nextProfilesById);
 
-      // Try real audit logs first, fallback to synthetic audit from staff rows
       let auditItems: AuditItem[] = [];
       try {
         const { data: logs, error: logsErr } = await sb
@@ -393,11 +386,11 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
           }));
         }
       } catch {
-        // ignore and use synthetic
+        // ignore
       }
 
       if (!auditItems.length) {
-        auditItems = buildSyntheticAudit(mergedRows, profilesById);
+        auditItems = buildSyntheticAudit(mergedRows, nextProfilesById);
       }
 
       setAuditTrail(auditItems);
@@ -420,7 +413,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
   }, [inviteRole]);
 
   useEffect(() => {
-    // initialize row drafts when rows change
     const nextRoles: Record<string, string> = {};
     const nextPerms: Record<string, PermissionKey[]> = {};
 
@@ -481,7 +473,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
       lastError = error;
     }
 
-    // Fallback to a separate invitations table if used in this repo
     try {
       const { error } = await sb.from("lab_staff_invitations").insert({
         lab_center_id: labCenterId,
@@ -605,7 +596,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
     const rowId = String(row.id);
     setActingRowId(rowId);
     try {
-      // soft-delete first
       const soft = await sb.from("lab_staff").update({ status: "removed", updated_at: toIsoNow() }).eq("id", rowId);
       if (!soft.error) {
         toast.success("Staff removed");
@@ -614,7 +604,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         return;
       }
 
-      // hard-delete fallback
       const hard = await sb.from("lab_staff").delete().eq("id", rowId);
       if (hard.error) throw hard.error;
 
@@ -702,7 +691,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Staff overview stats */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
@@ -749,7 +737,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         </Card>
       </div>
 
-      {/* Invite workflow */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -833,7 +820,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         </CardContent>
       </Card>
 
-      {/* Pending invitations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -894,7 +880,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         </CardContent>
       </Card>
 
-      {/* Active staff + role/permission management */}
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -1086,7 +1071,6 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         </CardContent>
       </Card>
 
-      {/* Audit trail */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
