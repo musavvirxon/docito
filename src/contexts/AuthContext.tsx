@@ -120,6 +120,7 @@ function getRoleFromMetadata(user: User | null): AppRole {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bootstrapVersionRef = useRef(0);
   const pendingRoleOverrideRef = useRef<AppRole | null>(null);
+  const profileRef = useRef<Profile | null>(null);
 
   // Initialize from cache for instant rendering
   const cached = useRef(readCache()).current;
@@ -148,6 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSession(null);
     setUser(null);
     setProfile(null);
+    profileRef.current = null;
     setRoleStatus({});
     _setActiveRole("patient");
     setAllRoles([]);
@@ -304,9 +306,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAllRoles([metaRole]);
       }
 
-      // Always mark bootstrapped immediately so redirects happen instantly
-      // DB verification continues in the background below
-      setLoading(false);
+      // Mark bootstrapped with cached/meta roles for instant redirect,
+      // but keep loading=true until profile loads from DB
       setBootstrapped(true);
 
       // Background: load authoritative data from DB
@@ -316,8 +317,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (result.profile) {
         setProfile(result.profile);
+        profileRef.current = result.profile;
       } else {
         setProfile(null);
+        profileRef.current = null;
       }
 
       setAllRoles(result.roles);
@@ -332,6 +335,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       _setActiveRole(resolvedRole);
+      setLoading(false);
       writeCache(uid, resolvedRole, result.roles);
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
@@ -372,6 +376,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (event === "TOKEN_REFRESHED") {
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
+        // If profile was lost (tab inactive / GC), re-bootstrap
+        if (!profileRef.current) {
+          try { await runBootstrap(nextSession); } catch {}
+        }
         return;
       }
 

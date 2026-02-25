@@ -565,6 +565,45 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: unknown
+          resource_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown
+          resource_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown
+          resource_id?: string | null
+        }
+        Relationships: []
+      }
       availability_overrides: {
         Row: {
           created_at: string
@@ -2634,6 +2673,53 @@ export type Database = {
           },
         ]
       }
+      imaging_staff_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          imaging_center_id: string
+          invited_by: string | null
+          staff_role: string
+          status: string
+          token: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          id?: string
+          imaging_center_id: string
+          invited_by?: string | null
+          staff_role?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          imaging_center_id?: string
+          invited_by?: string | null
+          staff_role?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imaging_staff_invitations_imaging_center_id_fkey"
+            columns: ["imaging_center_id"]
+            isOneToOne: false
+            referencedRelation: "imaging_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insurance_plans: {
         Row: {
           coverage_type: string
@@ -2931,6 +3017,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "lab_staff_lab_center_id_fkey"
+            columns: ["lab_center_id"]
+            isOneToOne: false
+            referencedRelation: "lab_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_staff_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string | null
+          id: string
+          invited_by: string | null
+          lab_center_id: string
+          staff_role: string
+          status: string
+          token: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string | null
+          id?: string
+          invited_by?: string | null
+          lab_center_id: string
+          staff_role?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string | null
+          id?: string
+          invited_by?: string | null
+          lab_center_id?: string
+          staff_role?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_staff_invitations_lab_center_id_fkey"
             columns: ["lab_center_id"]
             isOneToOne: false
             referencedRelation: "lab_centers"
@@ -4085,6 +4218,84 @@ export type Database = {
             columns: ["pharmacy_id"]
             isOneToOne: false
             referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pharmacy_orders: {
+        Row: {
+          amount: number | null
+          amount_cents: number | null
+          copay_amount: number | null
+          created_at: string
+          id: string
+          insurance_amount: number | null
+          notes: string | null
+          order_number: string
+          patient_id: string
+          patient_name: string | null
+          payment_status: string | null
+          pharmacy_id: string
+          prescription_id: string | null
+          priority: string | null
+          status: string
+          total_amount: number | null
+          total_amount_cents: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount?: number | null
+          amount_cents?: number | null
+          copay_amount?: number | null
+          created_at?: string
+          id?: string
+          insurance_amount?: number | null
+          notes?: string | null
+          order_number?: string
+          patient_id: string
+          patient_name?: string | null
+          payment_status?: string | null
+          pharmacy_id: string
+          prescription_id?: string | null
+          priority?: string | null
+          status?: string
+          total_amount?: number | null
+          total_amount_cents?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number | null
+          amount_cents?: number | null
+          copay_amount?: number | null
+          created_at?: string
+          id?: string
+          insurance_amount?: number | null
+          notes?: string | null
+          order_number?: string
+          patient_id?: string
+          patient_name?: string | null
+          payment_status?: string | null
+          pharmacy_id?: string
+          prescription_id?: string | null
+          priority?: string | null
+          status?: string
+          total_amount?: number | null
+          total_amount_cents?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_orders_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pharmacy_orders_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
             referencedColumns: ["id"]
           },
         ]
