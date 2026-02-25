@@ -1,4 +1,3 @@
-// File: src/pages/pharmacy/PharmacyDashboard.tsx
 import DashboardTopNav from "@/components/dashboard/DashboardTopNav";
 import type { AppRole } from "@/lib/rbac";
 import PharmacyDashboardPage from "@/pages/pharmacy/PharmacyDashboardPage";
