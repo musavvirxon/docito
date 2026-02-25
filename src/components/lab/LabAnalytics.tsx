@@ -1,59 +1,159 @@
 // File: src/components/lab/LabAnalytics.tsx
 // FULL FILE REPLACEMENT
+
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
+import { format, startOfDay, subDays, differenceInHours, differenceInMinutes } from "date-fns";
 import {
-  Loader2,
-  RefreshCw,
   BarChart3,
+  RefreshCw,
+  Loader2,
+  TestTube2,
   Clock3,
   CheckCircle2,
   Hourglass,
   XCircle,
   AlertTriangle,
-  Percent,
+  CircleDollarSign,
+  FlaskConical,
+  ShieldCheck,
   Activity,
+  ClipboardList,
 } from "lucide-react";
 import {
   ResponsiveContainer,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   PieChart,
   Pie,
   Cell,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
 } from "recharts";
+import { toast } from "sonner";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 type Props = {
   labCenterId: string;
 };
 
 type TimeRange = "7d" | "30d" | "90d";
-type OrderRow = Record<string, any>;
 
-type Kpis = {
-  total: number;
-  completed: number;
-  pending: number;
-  inProgress: number;
-  cancelled: number;
-  overdue: number;
-  completionRatePct: number;
-  avgTurnaroundHours: number;
-  avgProcessingHours: number;
+type LabOrder = {
+  id: string;
+  order_number: string;
+  created_at: string;
+  updated_at: string;
+  completed_at: string | null;
+  sample_collected_at: string | null;
+  scheduled_date: string | null;
+  scheduled_time: string | null;
+  status: string | null;
+  priority: string | null;
+  payment_status: string | null;
+  total_amount: number | null;
+  insurance_covered: boolean | null;
+  patient_id: string | null;
+  patient_name?: string | null;
+  patient_snapshot_full_name?: string | null;
 };
 
-const COLORS = [
+type LabOrderItem = {
+  id: string;
+  test_order_id: string;
+  test_id: string;
+  created_at: string;
+  updated_at: string;
+  status: string | null;
+  price: number | null;
+  notes: string | null;
+  test?: {
+    id: string;
+    name: string;
+    test_code: string;
+    category: string;
+    sample_type: string | null;
+    turnaround_hours: number | null;
+    price: number | null;
+  } | null;
+};
+
+type LabResult = {
+  id: string;
+  test_order_item_id: string;
+  created_at: string;
+  updated_at: string;
+  performed_at: string | null;
+  verified_at: string | null;
+  status: string | null;
+  is_abnormal: boolean | null;
+  abnormal_flag: string | null;
+  test_order_item?: {
+    id: string;
+    test_order_id: string;
+    test_id: string;
+    status: string | null;
+    created_at: string;
+    updated_at: string;
+  } | null;
+};
+
+type LabReferral = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  accepted_at: string | null;
+  completed_at: string | null;
+  sent_at: string | null;
+  status: string | null;
+  priority: string | null;
+  referral_type_enum: string | null;
+};
+
+type CatalogRow = {
+  id: string;
+  name: string;
+  test_code: string;
+  category: string;
+  sample_type: string | null;
+  turnaround_hours: number | null;
+  price: number | null;
+  is_active: boolean | null;
+  is_global: boolean | null;
+};
+
+type AnalyticsState = {
+  orders: LabOrder[];
+  orderItems: LabOrderItem[];
+  results: LabResult[];
+  referrals: LabReferral[];
+  catalog: CatalogRow[];
+};
+
+const RANGE_DAYS: Record<TimeRange, number> = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+};
+
+const PIE_COLORS = [
   "hsl(var(--primary))",
   "hsl(var(--accent))",
   "hsl(var(--chart-3))",
@@ -62,151 +162,179 @@ const COLORS = [
   "hsl(var(--muted-foreground))",
 ];
 
-function daysFromRange(r: TimeRange) {
-  if (r === "30d") return 30;
-  if (r === "90d") return 90;
-  return 7;
+function toNum(v: unknown): number {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const n = Number(v);
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
 }
 
-function normalizeStatus(value: unknown): string {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "_");
-}
-
-function isPendingStatus(status: string) {
-  return ["pending", "new", "awaiting_sample", "awaiting_confirmation"].includes(status);
-}
-
-function isInProgressStatus(status: string) {
-  return [
-    "in_progress",
-    "processing",
-    "under_review",
-    "sample_collected",
-    "analyzing",
-    "testing",
-    "in_lab",
-    "received",
-  ].includes(status);
-}
-
-function isCompletedStatus(status: string) {
-  return ["completed", "done", "result_ready", "reported", "finalized"].includes(status);
-}
-
-function isCancelledStatus(status: string) {
-  return ["cancelled", "canceled", "rejected", "declined", "voided"].includes(status);
-}
-
-function isReadyStatus(status: string) {
-  return ["result_ready", "completed", "reported", "finalized"].includes(status);
-}
-
-function toDateSafe(value: unknown): Date | null {
-  if (!value) return null;
-  const d = new Date(String(value));
+function safeDate(v?: string | null): Date | null {
+  if (!v) return null;
+  const d = new Date(v);
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function pickDate(row: OrderRow, keys: string[]): Date | null {
-  for (const k of keys) {
-    const d = toDateSafe(row?.[k]);
-    if (d) return d;
-  }
-  return null;
+function normalizeStatus(v?: string | null): string {
+  return (v || "unknown").toLowerCase().trim();
 }
 
-function getCreatedAt(order: OrderRow) {
-  return pickDate(order, ["created_at", "ordered_at", "requested_at", "scheduled_at"]);
+function titleCaseStatus(v?: string | null): string {
+  return (v || "unknown")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function getCompletedAt(order: OrderRow) {
-  return pickDate(order, ["completed_at", "result_ready_at", "reported_at", "finalized_at", "updated_at"]);
+function avg(nums: number[]): number {
+  if (!nums.length) return 0;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
-function getDueAt(order: OrderRow) {
-  return pickDate(order, ["due_at", "expected_completion_at", "promised_at", "target_at", "deadline_at"]);
+function percentile(nums: number[], p: number): number {
+  if (!nums.length) return 0;
+  const sorted = [...nums].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.max(0, Math.floor((p / 100) * (sorted.length - 1))));
+  return sorted[idx];
 }
 
-function getStartedAt(order: OrderRow) {
-  return pickDate(order, ["sample_collected_at", "collected_at", "received_at", "accepted_at", "created_at"]);
+function chunk<T>(arr: T[], size = 500): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
 }
 
-function getDeliveredAt(order: OrderRow) {
-  return pickDate(order, ["result_delivered_at", "delivered_at", "shared_at", "patient_notified_at", "sent_at"]);
+function formatCurrency(n: number) {
+  return `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-function getCategory(order: OrderRow): string {
-  const raw =
-    order?.test_category ??
-    order?.category ??
-    order?.test_type ??
-    order?.panel_name ??
-    order?.test_name ??
-    order?.service_name ??
-    order?.name;
-
-  const s = String(raw || "").trim();
-  if (!s) return "Other";
-  return s.length > 28 ? `${s.slice(0, 28)}…` : s;
-}
-
-function dayKey(date: Date) {
-  const y = date.getFullYear();
-  const m = `${date.getMonth() + 1}`.padStart(2, "0");
-  const d = `${date.getDate()}`.padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function labelFromDayKey(key: string) {
-  const d = new Date(`${key}T00:00:00`);
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
-function mean(values: number[]) {
-  if (!values.length) return 0;
-  return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
-}
-
-function percentile(values: number[], p: number) {
-  if (!values.length) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const idx = Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * p)));
-  return Math.round(sorted[idx] * 10) / 10;
+function isInCurrentRange(dateValue: string | null | undefined, days: number) {
+  const d = safeDate(dateValue);
+  if (!d) return false;
+  const cutoff = startOfDay(subDays(new Date(), days - 1));
+  return d >= cutoff;
 }
 
 export default function LabAnalytics({ labCenterId }: Props) {
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [data, setData] = useState<AnalyticsState>({
+    orders: [],
+    orderItems: [],
+    results: [],
+    referrals: [],
+    catalog: [],
+  });
 
   const fetchAnalytics = async () => {
-    if (!labCenterId) return;
-    setLoading(true);
+    if (!labCenterId) {
+      setData({ orders: [], orderItems: [], results: [], referrals: [], catalog: [] });
+      setLoading(false);
+      return;
+    }
 
     try {
-      const days = daysFromRange(timeRange);
-      const from = new Date();
-      from.setHours(0, 0, 0, 0);
-      from.setDate(from.getDate() - (days - 1));
+      setLoading(true);
 
-      const { data, error } = await supabase
-        .from("test_orders")
-        .select("*")
-        .eq("lab_center_id", labCenterId)
-        .gte("created_at", from.toISOString())
-        .order("created_at", { ascending: true })
-        .limit(5000);
+      const days = RANGE_DAYS[timeRange];
+      const extendedWindowDays = Math.max(days * 2 + 7, 30);
+      const sinceIso = subDays(new Date(), extendedWindowDays).toISOString();
 
-      if (error) throw error;
+      const [
+        ordersResp,
+        referralsResp,
+        catalogResp,
+      ] = await Promise.all([
+        supabase
+          .from("test_orders")
+          .select(
+            "id,order_number,created_at,updated_at,completed_at,sample_collected_at,scheduled_date,scheduled_time,status,priority,payment_status,total_amount,insurance_covered,patient_id,patient_name,patient_snapshot_full_name",
+          )
+          .eq("lab_center_id", labCenterId)
+          .gte("created_at", sinceIso)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("referrals")
+          .select("id,created_at,updated_at,accepted_at,completed_at,sent_at,status,priority,referral_type_enum")
+          .eq("receiver_type", "lab")
+          .eq("receiver_entity_id", labCenterId)
+          .gte("created_at", sinceIso)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("test_catalog")
+          .select("id,name,test_code,category,sample_type,turnaround_hours,price,is_active,is_global")
+          .or(`lab_center_id.eq.${labCenterId},is_global.eq.true`)
+          .order("created_at", { ascending: false }),
+      ]);
 
-      setOrders((data || []) as OrderRow[]);
+      if (ordersResp.error) throw ordersResp.error;
+      if (referralsResp.error) throw referralsResp.error;
+      if (catalogResp.error) throw catalogResp.error;
+
+      const orders = ((ordersResp.data || []) as any[]).map(
+        (o) =>
+          ({
+            ...o,
+            total_amount: o.total_amount === null ? null : Number(o.total_amount),
+          }) as LabOrder,
+      );
+
+      const referrals = ((referralsResp.data || []) as any[]) as LabReferral[];
+      const catalog = ((catalogResp.data || []) as any[]) as CatalogRow[];
+
+      const orderIds = orders.map((o) => o.id);
+      let orderItems: LabOrderItem[] = [];
+      let results: LabResult[] = [];
+
+      if (orderIds.length > 0) {
+        const itemChunks = chunk(orderIds, 500);
+        const itemQueries = itemChunks.map((ids) =>
+          supabase
+            .from("test_order_items")
+            .select(
+              "id,test_order_id,test_id,created_at,updated_at,status,price,notes,test:test_catalog(id,name,test_code,category,sample_type,turnaround_hours,price)",
+            )
+            .in("test_order_id", ids),
+        );
+
+        const itemResponses = await Promise.all(itemQueries);
+        for (const r of itemResponses) {
+          if (r.error) throw r.error;
+          orderItems.push(...(((r.data || []) as any[]) as LabOrderItem[]));
+        }
+
+        const itemIds = orderItems.map((i) => i.id);
+        if (itemIds.length > 0) {
+          const resultChunks = chunk(itemIds, 500);
+          const resultQueries = resultChunks.map((ids) =>
+            supabase
+              .from("test_results")
+              .select(
+                "id,test_order_item_id,created_at,updated_at,performed_at,verified_at,status,is_abnormal,abnormal_flag,test_order_item:test_order_items(id,test_order_id,test_id,status,created_at,updated_at)",
+              )
+              .in("test_order_item_id", ids),
+          );
+          const resultResponses = await Promise.all(resultQueries);
+          for (const r of resultResponses) {
+            if (r.error) throw r.error;
+            results.push(...(((r.data || []) as any[]) as LabResult[]));
+          }
+        }
+      }
+
+      setData({
+        orders,
+        orderItems,
+        results,
+        referrals,
+        catalog,
+      });
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to load analytics");
-      setOrders([]);
+      toast.error(e?.message || "Failed to load lab analytics");
+      setData({ orders: [], orderItems: [], results: [], referrals: [], catalog: [] });
     } finally {
       setLoading(false);
     }
@@ -218,172 +346,419 @@ export default function LabAnalytics({ labCenterId }: Props) {
   }, [labCenterId, timeRange]);
 
   const analytics = useMemo(() => {
+    const days = RANGE_DAYS[timeRange];
     const now = new Date();
-    const days = daysFromRange(timeRange);
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - (days - 1));
 
-    const filtered = orders.filter((o) => {
-      const created = getCreatedAt(o);
-      return !!created && created >= start && created <= now;
+    const currentCutoff = startOfDay(subDays(now, days - 1));
+    const prevStart = startOfDay(subDays(now, days * 2 - 1));
+    const prevEnd = startOfDay(subDays(now, days));
+
+    const ordersCurrent = data.orders.filter((o) => {
+      const d = safeDate(o.created_at);
+      return !!d && d >= currentCutoff;
     });
 
-    const total = filtered.length;
-    const completed = filtered.filter((o) => isCompletedStatus(normalizeStatus(o?.status))).length;
-    const pending = filtered.filter((o) => isPendingStatus(normalizeStatus(o?.status))).length;
-    const inProgress = filtered.filter((o) => isInProgressStatus(normalizeStatus(o?.status))).length;
-    const cancelled = filtered.filter((o) => isCancelledStatus(normalizeStatus(o?.status))).length;
+    const ordersPrev = data.orders.filter((o) => {
+      const d = safeDate(o.created_at);
+      return !!d && d >= prevStart && d < prevEnd;
+    });
 
-    const overdue = filtered.filter((o) => {
-      const due = getDueAt(o);
-      const status = normalizeStatus(o?.status);
-      return !!due && due < now && !isCompletedStatus(status) && !isCancelledStatus(status);
-    }).length;
+    const orderById = new Map(data.orders.map((o) => [o.id, o]));
+    const itemsCurrent = data.orderItems.filter((i) => {
+      const order = orderById.get(i.test_order_id);
+      return !!order && isInCurrentRange(order.created_at, days);
+    });
+    const itemById = new Map(data.orderItems.map((i) => [i.id, i]));
 
-    const completionRatePct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    const resultsCurrent = data.results.filter((r) => {
+      const item = itemById.get(r.test_order_item_id);
+      if (!item) return false;
+      const order = orderById.get(item.test_order_id);
+      if (!order) return false;
+      return isInCurrentRange(order.created_at, days);
+    });
 
-    const turnaroundHoursList = filtered
-      .filter((o) => isCompletedStatus(normalizeStatus(o?.status)))
+    const referralsCurrent = data.referrals.filter((r) => isInCurrentRange(r.created_at, days));
+    const referralsPrev = data.referrals.filter((r) => {
+      const d = safeDate(r.created_at);
+      return !!d && d >= prevStart && d < prevEnd;
+    });
+
+    const completedOrderStatuses = new Set(["completed", "done", "result_ready"]);
+    const inProgressStatuses = new Set(["processing", "in_progress", "under_review", "sample_collected"]);
+    const pendingStatuses = new Set(["pending", "new", "scheduled"]);
+    const cancelledStatuses = new Set(["cancelled", "canceled", "rejected", "expired"]);
+
+    const completedOrders = ordersCurrent.filter((o) => completedOrderStatuses.has(normalizeStatus(o.status)));
+    const inProgressOrders = ordersCurrent.filter((o) => inProgressStatuses.has(normalizeStatus(o.status)));
+    const pendingOrders = ordersCurrent.filter((o) => pendingStatuses.has(normalizeStatus(o.status)));
+    const cancelledOrders = ordersCurrent.filter((o) => cancelledStatuses.has(normalizeStatus(o.status)));
+
+    const completionRate = ordersCurrent.length ? (completedOrders.length / ordersCurrent.length) * 100 : 0;
+
+    const totalRevenueCurrent = ordersCurrent.reduce((sum, o) => sum + toNum(o.total_amount), 0);
+    const totalRevenuePrev = ordersPrev.reduce((sum, o) => sum + toNum(o.total_amount), 0);
+    const avgOrderValue = ordersCurrent.length ? totalRevenueCurrent / ordersCurrent.length : 0;
+
+    const totalTestsCurrent = itemsCurrent.length;
+    const avgTestsPerOrder = ordersCurrent.length ? totalTestsCurrent / ordersCurrent.length : 0;
+
+    const createdToCompletedHours = completedOrders
       .map((o) => {
-        const created = getCreatedAt(o);
-        const completedAt = getCompletedAt(o);
-        if (!created || !completedAt) return null;
-        const h = (completedAt.getTime() - created.getTime()) / (1000 * 60 * 60);
-        if (!Number.isFinite(h) || h <= 0 || h > 24 * 60) return null;
-        return h;
+        const created = safeDate(o.created_at);
+        const completed = safeDate(o.completed_at);
+        if (!created || !completed || completed < created) return null;
+        return differenceInHours(completed, created);
       })
-      .filter((v): v is number => v !== null);
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 
-    const processingHoursList = filtered
-      .filter((o) => isCompletedStatus(normalizeStatus(o?.status)))
+    const createdToSampleMinutes = ordersCurrent
       .map((o) => {
-        const started = getStartedAt(o);
-        const completedAt = getCompletedAt(o);
-        if (!started || !completedAt) return null;
-        const h = (completedAt.getTime() - started.getTime()) / (1000 * 60 * 60);
-        if (!Number.isFinite(h) || h <= 0 || h > 24 * 60) return null;
-        return h;
+        const created = safeDate(o.created_at);
+        const sampled = safeDate(o.sample_collected_at);
+        if (!created || !sampled || sampled < created) return null;
+        return differenceInMinutes(sampled, created);
       })
-      .filter((v): v is number => v !== null);
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
 
-    const kpis: Kpis = {
-      total,
-      completed,
-      pending,
-      inProgress,
-      cancelled,
-      overdue,
-      completionRatePct,
-      avgTurnaroundHours: mean(turnaroundHoursList),
-      avgProcessingHours: mean(processingHoursList),
-    };
+    const orderStatusBreakdown = ordersCurrent.reduce<Record<string, number>>((acc, o) => {
+      const key = normalizeStatus(o.status);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
 
-    const trendMap = new Map<
+    const paymentStatusBreakdown = ordersCurrent.reduce<Record<string, number>>((acc, o) => {
+      const key = normalizeStatus(o.payment_status);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const priorityBreakdown = ordersCurrent.reduce<Record<string, number>>((acc, o) => {
+      const key = normalizeStatus(o.priority || "routine");
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const categoryBreakdown = itemsCurrent.reduce<Record<string, number>>((acc, i) => {
+      const key = (i.test?.category || "Uncategorized").trim() || "Uncategorized";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const sampleTypeBreakdown = itemsCurrent.reduce<Record<string, number>>((acc, i) => {
+      const key = (i.test?.sample_type || "Unknown").trim() || "Unknown";
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const topTestsMap = new Map<
       string,
       {
-        day: string;
-        label: string;
-        created: number;
-        completed: number;
-        overdueOpened: number;
-        readyNotDelivered: number;
+        id: string;
+        name: string;
+        code: string;
+        category: string;
+        volume: number;
+        revenue: number;
+        abnormal: number;
       }
     >();
 
-    for (let i = 0; i < days; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      const key = dayKey(d);
-      trendMap.set(key, {
-        day: key,
-        label: labelFromDayKey(key),
-        created: 0,
-        completed: 0,
-        overdueOpened: 0,
-        readyNotDelivered: 0,
+    itemsCurrent.forEach((i) => {
+      const key = i.test_id;
+      const name = i.test?.name || "Unknown test";
+      const code = i.test?.test_code || "—";
+      const category = i.test?.category || "Uncategorized";
+      const price = i.price ?? i.test?.price ?? 0;
+      if (!topTestsMap.has(key)) {
+        topTestsMap.set(key, { id: key, name, code, category, volume: 0, revenue: 0, abnormal: 0 });
+      }
+      const row = topTestsMap.get(key)!;
+      row.volume += 1;
+      row.revenue += toNum(price);
+    });
+
+    const resultByItemId = new Map<string, LabResult[]>();
+    resultsCurrent.forEach((r) => {
+      if (!resultByItemId.has(r.test_order_item_id)) resultByItemId.set(r.test_order_item_id, []);
+      resultByItemId.get(r.test_order_item_id)!.push(r);
+    });
+
+    itemsCurrent.forEach((i) => {
+      const row = topTestsMap.get(i.test_id);
+      if (!row) return;
+      const list = resultByItemId.get(i.id) || [];
+      if (list.some((r) => r.is_abnormal === true)) row.abnormal += 1;
+    });
+
+    const topTests = Array.from(topTestsMap.values())
+      .sort((a, b) => b.volume - a.volume || b.revenue - a.revenue)
+      .slice(0, 10);
+
+    const abnormalCount = resultsCurrent.filter((r) => r.is_abnormal === true).length;
+    const verifiedCount = resultsCurrent.filter((r) => !!r.verified_at).length;
+    const performedCount = resultsCurrent.filter((r) => !!r.performed_at).length;
+    const abnormalRate = resultsCurrent.length ? (abnormalCount / resultsCurrent.length) * 100 : 0;
+    const verificationRate = resultsCurrent.length ? (verifiedCount / resultsCurrent.length) * 100 : 0;
+
+    const resultTurnaroundHours = resultsCurrent
+      .map((r) => {
+        const item = itemById.get(r.test_order_item_id);
+        const order = item ? orderById.get(item.test_order_id) : null;
+        const created = safeDate(order?.created_at || null);
+        const done = safeDate(r.verified_at || r.performed_at || r.updated_at || null);
+        if (!created || !done || done < created) return null;
+        return differenceInHours(done, created);
+      })
+      .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
+
+    const slaBreaches = itemsCurrent.filter((i) => {
+      const targetHours = toNum(i.test?.turnaround_hours);
+      if (!targetHours) return false;
+      const order = orderById.get(i.test_order_id);
+      const created = safeDate(order?.created_at || null);
+      const itemResults = (resultByItemId.get(i.id) || []).slice().sort((a, b) => {
+        return new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime();
+      });
+      const done = safeDate(itemResults[itemResults.length - 1]?.verified_at || itemResults[itemResults.length - 1]?.performed_at || itemResults[itemResults.length - 1]?.updated_at || null);
+      if (!created) return false;
+      const effectiveDone = done || now;
+      const hours = differenceInHours(effectiveDone, created);
+      return hours > targetHours;
+    }).length;
+
+    const overdueOrders = ordersCurrent.filter((o) => {
+      const status = normalizeStatus(o.status);
+      if (completedOrderStatuses.has(status) || cancelledStatuses.has(status)) return false;
+      const created = safeDate(o.created_at);
+      if (!created) return false;
+      return differenceInHours(now, created) > 48;
+    });
+
+    const pendingVerification = resultsCurrent.filter((r) => !r.verified_at).length;
+
+    const referralStatusBreakdown = referralsCurrent.reduce<Record<string, number>>((acc, r) => {
+      const key = normalizeStatus(r.status);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    const referralPriorityBreakdown = referralsCurrent.reduce<Record<string, number>>((acc, r) => {
+      const key = normalizeStatus(r.priority || "routine");
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+
+    const referralCompleted = referralsCurrent.filter((r) =>
+      ["completed", "done"].includes(normalizeStatus(r.status)),
+    ).length;
+    const referralAccepted = referralsCurrent.filter((r) =>
+      ["accepted", "booked", "in_progress", "completed"].includes(normalizeStatus(r.status)),
+    ).length;
+
+    const revenueChangePct =
+      totalRevenuePrev > 0
+        ? ((totalRevenueCurrent - totalRevenuePrev) / totalRevenuePrev) * 100
+        : totalRevenueCurrent > 0
+          ? 100
+          : 0;
+    const ordersChangePct =
+      ordersPrev.length > 0
+        ? ((ordersCurrent.length - ordersPrev.length) / ordersPrev.length) * 100
+        : ordersCurrent.length > 0
+          ? 100
+          : 0;
+    const referralsChangePct =
+      referralsPrev.length > 0
+        ? ((referralsCurrent.length - referralsPrev.length) / referralsPrev.length) * 100
+        : referralsCurrent.length > 0
+          ? 100
+          : 0;
+
+    // Daily trend
+    const dayMap = new Map<
+      string,
+      {
+        date: string;
+        label: string;
+        orders: number;
+        completedOrders: number;
+        tests: number;
+        results: number;
+        revenue: number;
+      }
+    >();
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = startOfDay(subDays(now, i));
+      const key = format(d, "yyyy-MM-dd");
+      dayMap.set(key, {
+        date: key,
+        label: format(d, days <= 7 ? "EEE" : "MMM d"),
+        orders: 0,
+        completedOrders: 0,
+        tests: 0,
+        results: 0,
+        revenue: 0,
       });
     }
 
-    filtered.forEach((o) => {
-      const created = getCreatedAt(o);
-      const completedAt = getCompletedAt(o);
-      const due = getDueAt(o);
-      const status = normalizeStatus(o?.status);
-
-      if (created) {
-        const key = dayKey(created);
-        const row = trendMap.get(key);
-        if (row) row.created += 1;
-      }
-
-      if (completedAt && isCompletedStatus(status)) {
-        const key = dayKey(completedAt);
-        const row = trendMap.get(key);
-        if (row) row.completed += 1;
-      }
-
-      if (due && due < now && !isCompletedStatus(status) && !isCancelledStatus(status)) {
-        const key = dayKey(due);
-        const row = trendMap.get(key);
-        if (row) row.overdueOpened += 1;
-      }
-
-      if (isReadyStatus(status) && !getDeliveredAt(o)) {
-        const key = dayKey(getCompletedAt(o) || getCreatedAt(o) || now);
-        const row = trendMap.get(key);
-        if (row) row.readyNotDelivered += 1;
-      }
+    ordersCurrent.forEach((o) => {
+      const created = safeDate(o.created_at);
+      if (!created) return;
+      const key = format(created, "yyyy-MM-dd");
+      const row = dayMap.get(key);
+      if (!row) return;
+      row.orders += 1;
+      row.revenue += toNum(o.total_amount);
+      if (completedOrderStatuses.has(normalizeStatus(o.status))) row.completedOrders += 1;
     });
 
-    const trend = [...trendMap.values()];
-
-    const statusBreakdownRaw = [
-      { name: "Completed", value: completed },
-      { name: "Pending", value: pending },
-      { name: "In Progress", value: inProgress },
-      { name: "Cancelled", value: cancelled },
-      { name: "Overdue", value: overdue },
-    ];
-    const statusBreakdown = statusBreakdownRaw.filter((r) => r.value > 0);
-    if (!statusBreakdown.length) statusBreakdown.push({ name: "No data", value: 1 });
-
-    const categoryMap = new Map<string, number>();
-    filtered.forEach((o) => {
-      const c = getCategory(o);
-      categoryMap.set(c, (categoryMap.get(c) || 0) + 1);
-    });
-    const topCategories = [...categoryMap.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 8);
-
-    const tatDistributionSource = turnaroundHoursList.length ? turnaroundHoursList : processingHoursList;
-    const tatBuckets = [
-      { name: "≤6h", count: 0 },
-      { name: "6–12h", count: 0 },
-      { name: "12–24h", count: 0 },
-      { name: "1–2d", count: 0 },
-      { name: ">2d", count: 0 },
-    ];
-
-    tatDistributionSource.forEach((h) => {
-      if (h <= 6) tatBuckets[0].count += 1;
-      else if (h <= 12) tatBuckets[1].count += 1;
-      else if (h <= 24) tatBuckets[2].count += 1;
-      else if (h <= 48) tatBuckets[3].count += 1;
-      else tatBuckets[4].count += 1;
+    itemsCurrent.forEach((i) => {
+      const order = orderById.get(i.test_order_id);
+      const created = safeDate(order?.created_at || null);
+      if (!created) return;
+      const key = format(created, "yyyy-MM-dd");
+      const row = dayMap.get(key);
+      if (!row) return;
+      row.tests += 1;
     });
 
-    const operational = {
-      p50TatHours: percentile(tatDistributionSource, 0.5),
-      p90TatHours: percentile(tatDistributionSource, 0.9),
-      readyNotDelivered: filtered.filter((o) => isReadyStatus(normalizeStatus(o?.status)) && !getDeliveredAt(o)).length,
-      reportedDelivered: filtered.filter((o) => isReadyStatus(normalizeStatus(o?.status)) && !!getDeliveredAt(o)).length,
+    resultsCurrent.forEach((r) => {
+      const item = itemById.get(r.test_order_item_id);
+      const order = item ? orderById.get(item.test_order_id) : null;
+      const created = safeDate(order?.created_at || null);
+      if (!created) return;
+      const key = format(created, "yyyy-MM-dd");
+      const row = dayMap.get(key);
+      if (!row) return;
+      row.results += 1;
+    });
+
+    const dailyTrend = Array.from(dayMap.values());
+
+    const orderStatusChart = Object.entries(orderStatusBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: titleCaseStatus(name), value }));
+
+    const paymentStatusChart = Object.entries(paymentStatusBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: titleCaseStatus(name), value }));
+
+    const priorityChart = Object.entries(priorityBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: titleCaseStatus(name), value }));
+
+    const categoryChart = Object.entries(categoryBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([name, value]) => ({ name, value }));
+
+    const sampleTypeChart = Object.entries(sampleTypeBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, value]) => ({ name, value }));
+
+    const referralStatusChart = Object.entries(referralStatusBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: titleCaseStatus(name), value }));
+
+    const referralPriorityChart = Object.entries(referralPriorityBreakdown)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, value]) => ({ name: titleCaseStatus(name), value }));
+
+    const catalogTotal = data.catalog.length;
+    const activeCatalog = data.catalog.filter((c) => c.is_active !== false).length;
+    const localCatalog = data.catalog.filter((c) => c.is_global !== true).length;
+    const catalogCategories = new Set(
+      data.catalog.map((c) => (c.category || "").trim()).filter(Boolean),
+    ).size;
+
+    const alerts = [
+      ...overdueOrders.slice(0, 5).map((o) => ({
+        type: "overdue-order",
+        severity: "warning" as const,
+        title: `${o.order_number} overdue`,
+        subtitle: `${titleCaseStatus(o.status)} • created ${format(new Date(o.created_at), "MMM d, HH:mm")}`,
+      })),
+      ...(pendingVerification > 0
+        ? [
+            {
+              type: "verification-backlog",
+              severity: "critical" as const,
+              title: "Pending result verification",
+              subtitle: `${pendingVerification} result(s) not yet verified`,
+            },
+          ]
+        : []),
+      ...(slaBreaches > 0
+        ? [
+            {
+              type: "sla-breach",
+              severity: "warning" as const,
+              title: "Turnaround SLA breaches",
+              subtitle: `${slaBreaches} test item(s) exceeded target turnaround`,
+            },
+          ]
+        : []),
+    ].slice(0, 8);
+
+    return {
+      days,
+      ordersCurrent,
+      ordersPrev,
+      itemsCurrent,
+      resultsCurrent,
+      referralsCurrent,
+      totalRevenueCurrent,
+      avgOrderValue,
+      totalTestsCurrent,
+      avgTestsPerOrder,
+      completionRate,
+      completedOrdersCount: completedOrders.length,
+      inProgressOrdersCount: inProgressOrders.length,
+      pendingOrdersCount: pendingOrders.length,
+      cancelledOrdersCount: cancelledOrders.length,
+      overdueOrdersCount: overdueOrders.length,
+      abnormalCount,
+      abnormalRate,
+      verifiedCount,
+      verificationRate,
+      performedCount,
+      pendingVerification,
+      slaBreaches,
+      revenueChangePct,
+      ordersChangePct,
+      referralsChangePct,
+      createdToCompletedAvgHours: avg(createdToCompletedHours),
+      createdToCompletedP90Hours: percentile(createdToCompletedHours, 90),
+      createdToSampleAvgMin: avg(createdToSampleMinutes),
+      createdToSampleP90Min: percentile(createdToSampleMinutes, 90),
+      resultTurnaroundAvgHours: avg(resultTurnaroundHours),
+      resultTurnaroundP90Hours: percentile(resultTurnaroundHours, 90),
+      dailyTrend,
+      orderStatusChart,
+      paymentStatusChart,
+      priorityChart,
+      categoryChart,
+      sampleTypeChart,
+      referralStatusChart,
+      referralPriorityChart,
+      topTests,
+      referralCompleted,
+      referralAccepted,
+      catalogTotal,
+      activeCatalog,
+      localCatalog,
+      catalogCategories,
+      alerts,
+      hasData:
+        ordersCurrent.length > 0 ||
+        itemsCurrent.length > 0 ||
+        resultsCurrent.length > 0 ||
+        referralsCurrent.length > 0 ||
+        data.catalog.length > 0,
     };
-
-    return { kpis, trend, statusBreakdown, topCategories, tatBuckets, operational };
-  }, [orders, timeRange]);
+  }, [data, timeRange]);
 
   if (loading) {
     return (
@@ -395,15 +770,21 @@ export default function LabAnalytics({ labCenterId }: Props) {
 
   return (
     <div className="space-y-6">
+      {/* Header / Controls */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-6 w-6" />
-          Analytics Dashboard
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <BarChart3 className="h-6 w-6" />
+            Analytics Dashboard
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Lab operations analytics across orders, tests, results, referrals, and catalog performance
+          </p>
+        </div>
 
         <div className="flex items-center gap-3">
           <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
-            <SelectTrigger className="w-[170px]">
+            <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Time range" />
             </SelectTrigger>
             <SelectContent>
@@ -413,145 +794,183 @@ export default function LabAnalytics({ labCenterId }: Props) {
             </SelectContent>
           </Select>
 
-          <Button variant="ghost" size="sm" onClick={() => void fetchAnalytics()}>
-            <RefreshCw className="h-4 w-4" />
+          <Button variant="outline" size="sm" onClick={() => void fetchAnalytics()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
           </Button>
         </div>
       </div>
 
+      {/* Executive KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Orders in range</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.total.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Created in selected window</div>
-            </div>
-            <Activity className="h-5 w-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.completed.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Results finalized / reported</div>
-            </div>
-            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending + In Progress</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">
-                {(analytics.kpis.pending + analytics.kpis.inProgress).toLocaleString()}
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Orders ({analytics.days}d)</p>
+                <p className="text-2xl font-bold">{analytics.ordersCurrent.length.toLocaleString()}</p>
+                <p className={`text-xs mt-1 ${analytics.ordersChangePct >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {analytics.ordersChangePct >= 0 ? "+" : ""}
+                  {analytics.ordersChangePct.toFixed(1)}% vs previous period
+                </p>
               </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {analytics.kpis.pending} pending • {analytics.kpis.inProgress} processing
+              <div className="p-2 rounded-lg bg-primary/10">
+                <ClipboardList className="h-5 w-5 text-primary" />
               </div>
             </div>
-            <Hourglass className="h-5 w-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+
+        <Card className={analytics.overdueOrdersCount > 0 ? "border-yellow-500/30" : undefined}>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Completion Rate</p>
+                <p className="text-2xl font-bold">{analytics.completionRate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {analytics.completedOrdersCount} completed • {analytics.pendingOrdersCount} pending
+                </p>
+              </div>
+              <div className="p-2 rounded-lg bg-green-500/10">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completion rate</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.completionRatePct}%</div>
-              <div className="text-xs text-muted-foreground mt-1">Completed ÷ total orders</div>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Test Volume</p>
+                <p className="text-2xl font-bold">{analytics.totalTestsCurrent.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {analytics.avgTestsPerOrder.toFixed(1)} tests / order
+                </p>
+              </div>
+              <div className="p-2 rounded-lg bg-accent/10">
+                <TestTube2 className="h-5 w-5 text-accent" />
+              </div>
             </div>
-            <Percent className="h-5 w-5 text-muted-foreground" />
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Overdue</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.overdue.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Past due and not completed</div>
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Revenue ({analytics.days}d)</p>
+                <p className="text-2xl font-bold">{formatCurrency(analytics.totalRevenueCurrent)}</p>
+                <p className={`text-xs mt-1 ${analytics.revenueChangePct >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {analytics.revenueChangePct >= 0 ? "+" : ""}
+                  {analytics.revenueChangePct.toFixed(1)}% vs previous period
+                </p>
+              </div>
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <CircleDollarSign className="h-5 w-5 text-purple-600" />
+              </div>
             </div>
-            <AlertTriangle className="h-5 w-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Cancelled</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.cancelled.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground mt-1">Rejected / cancelled orders</div>
-            </div>
-            <XCircle className="h-5 w-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg TAT</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.avgTurnaroundHours.toLocaleString()}h</div>
-              <div className="text-xs text-muted-foreground mt-1">Created → completed</div>
-            </div>
-            <Clock3 className="h-5 w-5 text-muted-foreground" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Avg Processing</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-start justify-between">
-            <div>
-              <div className="text-2xl font-bold">{analytics.kpis.avgProcessingHours.toLocaleString()}h</div>
-              <div className="text-xs text-muted-foreground mt-1">Collection/received → completed</div>
-            </div>
-            <BarChart3 className="h-5 w-5 text-muted-foreground" />
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      {/* SLA / Result Quality / Referrals / Catalog */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <Clock3 className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Turnaround (avg / P90)</p>
+                <p className="text-xl font-bold">
+                  {analytics.createdToCompletedAvgHours ? `${Math.round(analytics.createdToCompletedAvgHours)}h` : "—"} /{" "}
+                  {analytics.createdToCompletedP90Hours ? `${Math.round(analytics.createdToCompletedP90Hours)}h` : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground">Order created → completed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={analytics.pendingVerification > 0 ? "border-orange-500/30" : undefined}>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Result Verification</p>
+                <p className="text-xl font-bold">{analytics.verificationRate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">
+                  {analytics.verifiedCount} verified • {analytics.pendingVerification} pending
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <FlaskConical className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Abnormal Results</p>
+                <p className="text-xl font-bold">{analytics.abnormalRate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">
+                  {analytics.abnormalCount} of {analytics.resultsCurrent.length} results
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-5">
+            <div className="flex items-center gap-3">
+              <Activity className="h-5 w-5 text-primary" />
+              <div>
+                <p className="text-sm text-muted-foreground">Incoming Referrals</p>
+                <p className="text-xl font-bold">{analytics.referralsCurrent.length}</p>
+                <p className={`text-xs mt-1 ${analytics.referralsChangePct >= 0 ? "text-green-600" : "text-red-600"}`}>
+                  {analytics.referralsChangePct >= 0 ? "+" : ""}
+                  {analytics.referralsChangePct.toFixed(1)}% vs previous period
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Trend + Status mix */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Order Volume Trend</CardTitle>
-            <CardDescription>Created vs completed orders across the selected range.</CardDescription>
+            <CardTitle>Orders, Tests & Results Trend</CardTitle>
+            <CardDescription>Daily lab throughput in selected period</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[320px]">
+            <div className="h-[330px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={analytics.trend}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="label" className="text-muted-foreground" />
-                  <YAxis allowDecimals={false} className="text-muted-foreground" />
+                <AreaChart data={analytics.dailyTrend}>
+                  <defs>
+                    <linearGradient id="labOrdersFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.28} />
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "10px",
+                    formatter={(value: any, name: string) => {
+                      if (name === "revenue") return [formatCurrency(toNum(value)), "Revenue"];
+                      return [toNum(value), name];
                     }}
                   />
                   <Legend />
-                  <Area type="monotone" dataKey="created" name="Created" fillOpacity={0.15} strokeWidth={2} />
-                  <Area type="monotone" dataKey="completed" name="Completed" fillOpacity={0.12} strokeWidth={2} />
+                  <Area yAxisId="left" type="monotone" dataKey="orders" name="Orders" stroke="hsl(var(--primary))" fill="url(#labOrdersFill)" strokeWidth={2} />
+                  <Line yAxisId="left" type="monotone" dataKey="tests" name="Tests" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} />
+                  <Line yAxisId="left" type="monotone" dataKey="results" name="Results" stroke="hsl(var(--chart-3))" strokeWidth={2} dot={false} />
+                  <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={false} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -560,137 +979,384 @@ export default function LabAnalytics({ labCenterId }: Props) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Status Breakdown</CardTitle>
-            <CardDescription>Distribution of order outcomes and queue state.</CardDescription>
+            <CardTitle>Order Status Mix</CardTitle>
+            <CardDescription>Status distribution for lab test orders</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={analytics.statusBreakdown}
-                    dataKey="value"
-                    nameKey="name"
-                    outerRadius={110}
-                    innerRadius={55}
-                    paddingAngle={2}
-                  >
-                    {analytics.statusBreakdown.map((_, idx) => (
-                      <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "10px",
-                    }}
-                  />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            {analytics.orderStatusChart.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No orders in this period.</div>
+            ) : (
+              <>
+                <div className="h-[240px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={analytics.orderStatusChart} dataKey="value" nameKey="name" innerRadius={50} outerRadius={82}>
+                        {analytics.orderStatusChart.map((_, idx) => (
+                          <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="space-y-2 text-sm mt-2">
+                  {analytics.orderStatusChart.slice(0, 7).map((row, idx) => (
+                    <div key={row.name} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+                        />
+                        <span className="text-muted-foreground truncate">{row.name}</span>
+                      </div>
+                      <span className="font-medium">{row.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      {/* Top tests + category/payment/priority */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Top Test Categories</CardTitle>
-            <CardDescription>Most ordered tests/panels in the selected period.</CardDescription>
+            <CardTitle>Top Tests</CardTitle>
+            <CardDescription>Most ordered tests in selected period</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analytics.topCategories}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" interval={0} angle={-20} textAnchor="end" height={70} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "10px",
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="count" name="Orders" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            {analytics.topTests.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No test items found in this period.</div>
+            ) : (
+              <div className="space-y-4">
+                {analytics.topTests.slice(0, 8).map((t, idx) => {
+                  const maxVol = analytics.topTests[0]?.volume || 1;
+                  const width = Math.max(2, Math.round((t.volume / maxVol) * 100));
+                  const abnormalPct = t.volume ? (t.abnormal / t.volume) * 100 : 0;
+
+                  return (
+                    <div key={t.id} className="space-y-1.5">
+                      <div className="flex items-start justify-between gap-3 text-sm">
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{t.name}</div>
+                          <div className="text-xs text-muted-foreground truncate">
+                            {t.code} • {t.category}
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="font-medium">{t.volume} tests</div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatCurrency(t.revenue)} • {abnormalPct.toFixed(0)}% abnormal
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full rounded-full bg-primary" style={{ width: `${width}%` }} />
+                      </div>
+                      {idx < analytics.topTests.length - 1 && <div className="pt-1" />}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Turnaround Distribution</CardTitle>
-            <CardDescription>How completed orders are distributed by turnaround time.</CardDescription>
+            <CardTitle>Operational Mix</CardTitle>
+            <CardDescription>Priority, payment, and category distributions</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={analytics.tatBuckets}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="name" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "10px",
-                    }}
-                  />
-                  <Legend />
-                  <Bar dataKey="count" name="Completed Orders" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+          <CardContent className="space-y-6">
+            <div>
+              <div className="text-sm font-medium mb-2">Priority Mix</div>
+              <div className="flex flex-wrap gap-2">
+                {analytics.priorityChart.length ? (
+                  analytics.priorityChart.map((row, i) => (
+                    <Badge key={row.name} variant="outline" className="gap-2">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full"
+                        style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                      />
+                      {row.name}: {row.value}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-sm text-muted-foreground">No priority data</span>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-medium mb-2">Payment Status</div>
+              <div className="h-[170px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.paymentStatusChart}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={52} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(v: any) => [toNum(v), "Orders"]} />
+                    <Bar dataKey="value" fill="hsl(var(--accent))" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-medium mb-2">Test Categories</div>
+              <div className="h-[170px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={analytics.categoryChart}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={56} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(v: any) => [toNum(v), "Items"]} />
+                    <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-3))" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* Turnaround / quality / referrals / catalog */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">P50 TAT</CardTitle>
+          <CardHeader>
+            <CardTitle>Turnaround & Quality</CardTitle>
+            <CardDescription>SLA and quality indicators</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.operational.p50TatHours}h</div>
-            <div className="text-xs text-muted-foreground mt-1">Median turnaround</div>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Order TAT avg / P90</div>
+                <div className="font-semibold text-lg">
+                  {analytics.createdToCompletedAvgHours ? `${Math.round(analytics.createdToCompletedAvgHours)}h` : "—"} /{" "}
+                  {analytics.createdToCompletedP90Hours ? `${Math.round(analytics.createdToCompletedP90Hours)}h` : "—"}
+                </div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Result TAT avg / P90</div>
+                <div className="font-semibold text-lg">
+                  {analytics.resultTurnaroundAvgHours ? `${Math.round(analytics.resultTurnaroundAvgHours)}h` : "—"} /{" "}
+                  {analytics.resultTurnaroundP90Hours ? `${Math.round(analytics.resultTurnaroundP90Hours)}h` : "—"}
+                </div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Sample collection avg / P90</div>
+                <div className="font-semibold text-lg">
+                  {analytics.createdToSampleAvgMin ? `${Math.round(analytics.createdToSampleAvgMin)}m` : "—"} /{" "}
+                  {analytics.createdToSampleP90Min ? `${Math.round(analytics.createdToSampleP90Min)}m` : "—"}
+                </div>
+              </div>
+              <div className={`rounded-md border p-3 ${analytics.slaBreaches > 0 ? "border-yellow-500/30" : ""}`}>
+                <div className="text-muted-foreground">SLA Breaches</div>
+                <div className="font-semibold text-lg">{analytics.slaBreaches}</div>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Performed results</span>
+                <span className="font-medium">{analytics.performedCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Verified results</span>
+                <span className="font-medium">{analytics.verifiedCount}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Pending verification</span>
+                <span className="font-medium">{analytics.pendingVerification}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Abnormal results</span>
+                <span className="font-medium">{analytics.abnormalCount}</span>
+              </div>
+            </div>
+
+            {analytics.sampleTypeChart.length > 0 && (
+              <div>
+                <div className="text-sm font-medium mb-2">Sample Type Mix</div>
+                <div className="flex flex-wrap gap-2">
+                  {analytics.sampleTypeChart.map((row, i) => (
+                    <Badge key={row.name} variant="outline" className="gap-2">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full"
+                        style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                      />
+                      {row.name}: {row.value}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">P90 TAT</CardTitle>
+          <CardHeader>
+            <CardTitle>Referral Funnel</CardTitle>
+            <CardDescription>Incoming referral pipeline for this lab</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.operational.p90TatHours}h</div>
-            <div className="text-xs text-muted-foreground mt-1">Long-tail turnaround</div>
+          <CardContent className="space-y-5">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Received</div>
+                <div className="font-semibold text-lg">{analytics.referralsCurrent.length}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Accepted / Active</div>
+                <div className="font-semibold text-lg">{analytics.referralAccepted}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Completed</div>
+                <div className="font-semibold text-lg">{analytics.referralCompleted}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Completion Rate</div>
+                <div className="font-semibold text-lg">
+                  {analytics.referralsCurrent.length
+                    ? `${((analytics.referralCompleted / analytics.referralsCurrent.length) * 100).toFixed(1)}%`
+                    : "—"}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-medium mb-2">Referral Status</div>
+              <div className="h-[180px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analytics.referralStatusChart}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={52} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip formatter={(v: any) => [toNum(v), "Referrals"]} />
+                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {analytics.referralPriorityChart.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {analytics.referralPriorityChart.map((row, i) => (
+                  <Badge key={row.name} variant="outline" className="gap-2">
+                    <span
+                      className="inline-block w-2 h-2 rounded-full"
+                      style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}
+                    />
+                    {row.name}: {row.value}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Ready, Not Delivered</CardTitle>
+          <CardHeader>
+            <CardTitle>Catalog Coverage</CardTitle>
+            <CardDescription>Test catalog breadth and readiness</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.operational.readyNotDelivered}</div>
-            <div className="text-xs text-muted-foreground mt-1">Follow-up / notification gap</div>
-          </CardContent>
-        </Card>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Catalog Total</div>
+                <div className="font-semibold text-lg">{analytics.catalogTotal}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Active Tests</div>
+                <div className="font-semibold text-lg">{analytics.activeCatalog}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Local Tests</div>
+                <div className="font-semibold text-lg">{analytics.localCatalog}</div>
+              </div>
+              <div className="rounded-md border p-3">
+                <div className="text-muted-foreground">Categories</div>
+                <div className="font-semibold text-lg">{analytics.catalogCategories}</div>
+              </div>
+            </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Ready + Delivered</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.operational.reportedDelivered}</div>
-            <div className="text-xs text-muted-foreground mt-1">Result delivery recorded</div>
+            <div className="rounded-lg border p-4">
+              <div className="text-sm font-medium mb-3">Current Period Snapshot</div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Avg order value</span>
+                  <span className="font-medium">{formatCurrency(analytics.avgOrderValue)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">In progress orders</span>
+                  <span className="font-medium">{analytics.inProgressOrdersCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Cancelled orders</span>
+                  <span className="font-medium">{analytics.cancelledOrdersCount}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Overdue orders (&gt;48h)</span>
+                  <span className="font-medium">{analytics.overdueOrdersCount}</span>
+                </div>
+              </div>
+            </div>
+
+            {!analytics.hasData && (
+              <div className="text-sm text-muted-foreground">
+                No analytics data yet. This dashboard will populate automatically as test orders, results, referrals,
+                and catalog items are added.
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Alerts */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Operational Alerts</CardTitle>
+          <CardDescription>Items requiring attention across lab workflow</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {analytics.alerts.length === 0 ? (
+            <div className="text-sm text-muted-foreground">No active alerts.</div>
+          ) : (
+            <div className="space-y-3">
+              {analytics.alerts.map((a, idx) => (
+                <div key={`${a.type}-${idx}`} className="rounded-lg border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium flex items-center gap-2">
+                        {a.severity === "critical" ? (
+                          <AlertTriangle className="h-4 w-4 text-destructive" />
+                        ) : a.severity === "warning" ? (
+                          <Hourglass className="h-4 w-4 text-yellow-600" />
+                        ) : (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        )}
+                        <span>{a.title}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">{a.subtitle}</div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={
+                        a.severity === "critical"
+                          ? "border-destructive/30 text-destructive bg-destructive/10"
+                          : "border-yellow-500/30 text-yellow-700 bg-yellow-500/10"
+                      }
+                    >
+                      {a.severity}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
