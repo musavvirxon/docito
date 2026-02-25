@@ -1,3 +1,4 @@
+// File: src/pages/LegalDetail.tsx
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +12,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
+import RefundPolicy from '@/pages/legal/RefundPolicy';
 
 interface LegalPageData {
   id: string;
@@ -20,8 +22,8 @@ interface LegalPageData {
   updated_at: string;
 }
 
-export default function LegalDetail() {
-  const { slug } = useParams<{ slug: string }>();
+function LegalDetailDynamic() {
+  const { slug, lang } = useParams<{ slug: string; lang?: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation(['common', 'legal']);
@@ -31,14 +33,20 @@ export default function LegalDetail() {
   const [hasAccepted, setHasAccepted] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
 
+  const legalHref = lang ? `/${lang}/legal` : '/legal';
+
   useEffect(() => {
-    if (slug) {
-      fetchLegalPage();
-      if (user) {
-        checkAcceptance();
-      }
+    if (!slug) return;
+
+    fetchLegalPage();
+
+    if (user) {
+      checkAcceptance();
+    } else {
+      setHasAccepted(false);
     }
-  }, [slug, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug, user?.id]);
 
   const fetchLegalPage = async () => {
     try {
@@ -54,7 +62,7 @@ export default function LegalDetail() {
     } catch (error) {
       console.error('Error fetching legal page:', error);
       toast.error(t('legal:detail.loadError'));
-      navigate('/legal');
+      navigate(legalHref);
     } finally {
       setLoading(false);
     }
@@ -118,7 +126,7 @@ export default function LegalDetail() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="mb-8">
-          <Link to="/legal">
+          <Link to={legalHref}>
             <Button variant="ghost" size="sm" className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
               {t('legal:detail.backToLegal')}
@@ -186,4 +194,14 @@ export default function LegalDetail() {
       </div>
     </div>
   );
+}
+
+export default function LegalDetail() {
+  const { slug } = useParams<{ slug: string }>();
+
+  if (slug === 'refund-policy') {
+    return <RefundPolicy />;
+  }
+
+  return <LegalDetailDynamic />;
 }
