@@ -181,7 +181,7 @@ const Header = () => {
 
                       <DropdownMenuSeparator />
 
-                      <DropdownMenuItem onClick={signOut}>
+                      <DropdownMenuItem onClick={() => { signOut(); navigate("/"); }}>
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Logout</span>
                       </DropdownMenuItem>
@@ -290,6 +290,7 @@ const Header = () => {
                         onClick={() => {
                           signOut();
                           setIsMobileMenuOpen(false);
+                          navigate("/");
                         }}
                         className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground"
                       >

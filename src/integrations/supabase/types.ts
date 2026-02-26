@@ -712,6 +712,101 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_plans: {
+        Row: {
+          amount_cents: number
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          features: Json | null
+          id: string
+          interval: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      billing_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          plan_id: string | null
+          provider: string | null
+          provider_subscription_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          plan_id?: string | null
+          provider?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          plan_id?: string | null
+          provider?: string | null
+          provider_subscription_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "billing_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_transactions: {
         Row: {
           amount: number
@@ -2179,6 +2274,57 @@ export type Database = {
         }
         Relationships: []
       }
+      facility_patients: {
+        Row: {
+          address: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          facility_id: string
+          facility_type: string
+          full_name: string
+          gender: string | null
+          id: string
+          id_number: string | null
+          notes: string | null
+          phone: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          facility_id: string
+          facility_type: string
+          full_name: string
+          gender?: string | null
+          id?: string
+          id_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          facility_id?: string
+          facility_type?: string
+          full_name?: string
+          gender?: string | null
+          id?: string
+          id_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       facility_verification_requests: {
         Row: {
           comment: string | null
@@ -2265,6 +2411,275 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      finance_budgets: {
+        Row: {
+          budget_cents: number
+          category_id: string | null
+          created_at: string
+          currency: string
+          entity_id: string
+          entity_type: string
+          id: string
+          month_start: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          budget_cents?: number
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          month_start: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          budget_cents?: number
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          month_start?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_budgets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          is_active: boolean
+          kind: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      finance_entries: {
+        Row: {
+          amount_cents: number
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string | null
+          entity_id: string
+          entity_type: string
+          entry_type: string
+          id: string
+          metadata: Json | null
+          occurred_at: string
+          reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          entity_id: string
+          entity_type: string
+          entry_type?: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string | null
+          entity_id?: string
+          entity_type?: string
+          entry_type?: string
+          id?: string
+          metadata?: Json | null
+          occurred_at?: string
+          reference?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_entries_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_recurring_expenses: {
+        Row: {
+          amount_cents: number
+          autopost: boolean
+          category_id: string | null
+          created_at: string
+          currency: string
+          day_of_month: number | null
+          description: string | null
+          entity_id: string
+          entity_type: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_posted_at: string | null
+          month_of_year: number | null
+          next_run_at: string | null
+          notes: string | null
+          updated_at: string
+          weekday: number | null
+        }
+        Insert: {
+          amount_cents?: number
+          autopost?: boolean
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          day_of_month?: number | null
+          description?: string | null
+          entity_id: string
+          entity_type: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_posted_at?: string | null
+          month_of_year?: number | null
+          next_run_at?: string | null
+          notes?: string | null
+          updated_at?: string
+          weekday?: number | null
+        }
+        Update: {
+          amount_cents?: number
+          autopost?: boolean
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          day_of_month?: number | null
+          description?: string | null
+          entity_id?: string
+          entity_type?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_posted_at?: string | null
+          month_of_year?: number | null
+          next_run_at?: string | null
+          notes?: string | null
+          updated_at?: string
+          weekday?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_recurring_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_recurring_templates: {
+        Row: {
+          amount_cents: number
+          category_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          entity_id: string
+          entity_type: string
+          entry_type: string
+          frequency: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          entity_id: string
+          entity_type: string
+          entry_type?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          category_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          entity_id?: string
+          entity_type?: string
+          entry_type?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_recurring_templates_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       financial_inputs: {
         Row: {
@@ -3042,6 +3457,147 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      lab_home_collections: {
+        Row: {
+          address: string
+          assigned_collector: string | null
+          collected_at: string | null
+          created_at: string
+          facility_patient_id: string | null
+          id: string
+          lab_center_id: string
+          notes: string | null
+          patient_id: string | null
+          patient_name: string | null
+          patient_phone: string | null
+          preferred_date: string | null
+          preferred_time: string | null
+          status: string
+          test_order_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          assigned_collector?: string | null
+          collected_at?: string | null
+          created_at?: string
+          facility_patient_id?: string | null
+          id?: string
+          lab_center_id: string
+          notes?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          status?: string
+          test_order_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          assigned_collector?: string | null
+          collected_at?: string | null
+          created_at?: string
+          facility_patient_id?: string | null
+          id?: string
+          lab_center_id?: string
+          notes?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          patient_phone?: string | null
+          preferred_date?: string | null
+          preferred_time?: string | null
+          status?: string
+          test_order_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_home_collections_facility_patient_id_fkey"
+            columns: ["facility_patient_id"]
+            isOneToOne: false
+            referencedRelation: "facility_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_home_collections_test_order_id_fkey"
+            columns: ["test_order_id"]
+            isOneToOne: false
+            referencedRelation: "test_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lab_samples: {
+        Row: {
+          barcode: string | null
+          collected_at: string | null
+          collected_by: string | null
+          created_at: string
+          facility_patient_id: string | null
+          id: string
+          lab_center_id: string
+          notes: string | null
+          patient_id: string | null
+          patient_name: string | null
+          sample_type: string
+          status: string
+          storage_location: string | null
+          test_order_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          barcode?: string | null
+          collected_at?: string | null
+          collected_by?: string | null
+          created_at?: string
+          facility_patient_id?: string | null
+          id?: string
+          lab_center_id: string
+          notes?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          sample_type?: string
+          status?: string
+          storage_location?: string | null
+          test_order_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          collected_at?: string | null
+          collected_by?: string | null
+          created_at?: string
+          facility_patient_id?: string | null
+          id?: string
+          lab_center_id?: string
+          notes?: string | null
+          patient_id?: string | null
+          patient_name?: string | null
+          sample_type?: string
+          status?: string
+          storage_location?: string | null
+          test_order_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_samples_facility_patient_id_fkey"
+            columns: ["facility_patient_id"]
+            isOneToOne: false
+            referencedRelation: "facility_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lab_samples_test_order_id_fkey"
+            columns: ["test_order_id"]
+            isOneToOne: false
+            referencedRelation: "test_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lab_staff: {
         Row: {
@@ -6020,6 +6576,7 @@ export type Database = {
           diagnosis_codes: string[] | null
           estimated_duration_minutes: number | null
           external_patient_ref: string | null
+          facility_patient_id: string | null
           id: string
           insurance_plan_id: string | null
           insurance_provider_id: string | null
@@ -6079,6 +6636,7 @@ export type Database = {
           diagnosis_codes?: string[] | null
           estimated_duration_minutes?: number | null
           external_patient_ref?: string | null
+          facility_patient_id?: string | null
           id?: string
           insurance_plan_id?: string | null
           insurance_provider_id?: string | null
@@ -6138,6 +6696,7 @@ export type Database = {
           diagnosis_codes?: string[] | null
           estimated_duration_minutes?: number | null
           external_patient_ref?: string | null
+          facility_patient_id?: string | null
           id?: string
           insurance_plan_id?: string | null
           insurance_provider_id?: string | null
@@ -6187,6 +6746,13 @@ export type Database = {
           valid_until?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "referrals_facility_patient_id_fkey"
+            columns: ["facility_patient_id"]
+            isOneToOne: false
+            referencedRelation: "facility_patients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "referrals_referred_doctor_id_fkey"
             columns: ["referred_doctor_id"]
@@ -6736,6 +7302,7 @@ export type Database = {
           diagnosis_codes: string[] | null
           doctor_id: string | null
           external_patient_ref: string | null
+          facility_patient_id: string | null
           id: string
           insurance_covered: boolean | null
           lab_center_id: string | null
@@ -6769,6 +7336,7 @@ export type Database = {
           diagnosis_codes?: string[] | null
           doctor_id?: string | null
           external_patient_ref?: string | null
+          facility_patient_id?: string | null
           id?: string
           insurance_covered?: boolean | null
           lab_center_id?: string | null
@@ -6802,6 +7370,7 @@ export type Database = {
           diagnosis_codes?: string[] | null
           doctor_id?: string | null
           external_patient_ref?: string | null
+          facility_patient_id?: string | null
           id?: string
           insurance_covered?: boolean | null
           lab_center_id?: string | null
@@ -6854,6 +7423,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_orders_facility_patient_id_fkey"
+            columns: ["facility_patient_id"]
+            isOneToOne: false
+            referencedRelation: "facility_patients"
             referencedColumns: ["id"]
           },
           {
@@ -8542,6 +9118,131 @@ export type Database = {
           procedure_duration?: number
         }
         Returns: Json
+      }
+      finance_entries_export: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_from_date?: string
+          p_to_date?: string
+        }
+        Returns: {
+          amount_cents: number
+          category_name: string
+          currency: string
+          description: string
+          entry_type: string
+          id: string
+          occurred_at: string
+        }[]
+      }
+      finance_recurring_entity_runs_list: {
+        Args: { p_entity_id: string; p_entity_type: string; p_limit?: number }
+        Returns: {
+          entries_created: number
+          id: string
+          rules_run: number
+          run_at: string
+          status: string
+          total_cents: number
+        }[]
+      }
+      finance_recurring_entity_status: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: {
+          active_rules: number
+          last_run_at: string
+          next_run_at: string
+        }[]
+      }
+      finance_recurring_rule_deactivate: {
+        Args: { p_entity_id: string; p_entity_type: string; p_rule_id: string }
+        Returns: undefined
+      }
+      finance_recurring_rule_list: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: {
+          amount_cents: number
+          autopost: boolean
+          category_id: string | null
+          created_at: string
+          currency: string
+          day_of_month: number | null
+          description: string | null
+          entity_id: string
+          entity_type: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_posted_at: string | null
+          month_of_year: number | null
+          next_run_at: string | null
+          notes: string | null
+          updated_at: string
+          weekday: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "finance_recurring_expenses"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      finance_recurring_rule_runs_for_entity_run: {
+        Args: { p_entity_run_id: string; p_limit?: number }
+        Returns: {
+          amount_cents: number
+          description: string
+          entry_id: string
+          id: string
+          rule_id: string
+        }[]
+      }
+      finance_recurring_rule_runs_list: {
+        Args: { p_entity_id: string; p_entity_type: string; p_limit?: number }
+        Returns: {
+          amount_cents: number
+          entry_id: string
+          id: string
+          rule_id: string
+          run_at: string
+          status: string
+        }[]
+      }
+      finance_recurring_rule_upsert: {
+        Args: {
+          p_amount_cents?: number
+          p_autopost?: boolean
+          p_category_id?: string
+          p_category_name?: string
+          p_currency?: string
+          p_day_of_month?: number
+          p_description?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_entry_type?: string
+          p_frequency?: string
+          p_month_of_year?: number
+          p_notes?: string
+          p_rule_id?: string
+          p_weekday?: number
+        }
+        Returns: string
+      }
+      finance_recurring_runs_export: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: string
+          p_from_date?: string
+          p_to_date?: string
+        }
+        Returns: {
+          amount_cents: number
+          currency: string
+          rule_description: string
+          run_date: string
+          status: string
+        }[]
       }
       generate_invoice_number: { Args: never; Returns: string }
       generate_video_room_id: { Args: never; Returns: string }
