@@ -655,17 +655,81 @@ export type Database = {
           },
         ]
       }
+      billing_invoices: {
+        Row: {
+          amount_due_cents: number
+          amount_paid_cents: number
+          amount_remaining_cents: number
+          created_at: string
+          currency: string
+          description: string | null
+          due_at: string | null
+          entity_id: string
+          entity_type: string
+          hosted_invoice_url: string | null
+          id: string
+          invoice_pdf_url: string | null
+          metadata: Json | null
+          paid_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_due_cents?: number
+          amount_paid_cents?: number
+          amount_remaining_cents?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_at?: string | null
+          entity_id: string
+          entity_type: string
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_pdf_url?: string | null
+          metadata?: Json | null
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_due_cents?: number
+          amount_paid_cents?: number
+          amount_remaining_cents?: number
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_pdf_url?: string | null
+          metadata?: Json | null
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       billing_transactions: {
         Row: {
           amount: number
+          amount_cents: number | null
           appointment_id: string | null
           created_at: string
           currency: string
           description: string | null
+          entity_id: string | null
+          entity_type: string | null
           id: string
+          invoice_id: string | null
+          metadata: Json | null
           payment_hold_id: string | null
           practice_id: string | null
+          provider: string | null
           provider_data: Json | null
+          provider_ref: string | null
           provider_transaction_id: string | null
           status: string
           subscription_id: string | null
@@ -675,14 +739,21 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_cents?: number | null
           appointment_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
+          invoice_id?: string | null
+          metadata?: Json | null
           payment_hold_id?: string | null
           practice_id?: string | null
+          provider?: string | null
           provider_data?: Json | null
+          provider_ref?: string | null
           provider_transaction_id?: string | null
           status?: string
           subscription_id?: string | null
@@ -692,14 +763,21 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_cents?: number | null
           appointment_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
           id?: string
+          invoice_id?: string | null
+          metadata?: Json | null
           payment_hold_id?: string | null
           practice_id?: string | null
+          provider?: string | null
           provider_data?: Json | null
+          provider_ref?: string | null
           provider_transaction_id?: string | null
           status?: string
           subscription_id?: string | null
