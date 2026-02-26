@@ -77,7 +77,8 @@ async function authorizeFacilityAccess(params: {
 
   const serviceClient = createClient(params.url, params.service, { auth: { persistSession: false } });
 
-  const { data: scopes, error: scopesErr } = await serviceClient.rpc("get_my_entity_scopes" as any, {});
+  // Use the user-scoped client so auth.uid() is set inside the RPC
+  const { data: scopes, error: scopesErr } = await userClient.rpc("get_my_entity_scopes" as any, {});
   if (scopesErr) return { ok: false as const, error: "Unable to authorize access" };
 
   const wanted = (scopes as ScopeRow[] | null)?.find((s) => s.entity_type === params.entityType && s.entity_id === params.entityId) || null;
