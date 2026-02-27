@@ -59,6 +59,7 @@ export const usePatientDashboard = () => {
             address
           )
         `)
+        .eq('patient_id', user.id)
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true });
 

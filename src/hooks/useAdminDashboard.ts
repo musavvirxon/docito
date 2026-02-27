@@ -51,7 +51,13 @@ export const useAdminDashboard = () => {
   const resolvePracticeForUser = useCallback(async (uid: string) => {
     // 1) Owner/admin practice
     {
-      const { data, error } = await supabase.from("practices").select("*").eq("admin_id", uid).maybeSingle();
+      const { data, error } = await supabase
+        .from("practices")
+        .select("*")
+        .eq("admin_id", uid)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
       if (error) throw error;
       if (data?.id) return data;
     }
