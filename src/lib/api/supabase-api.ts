@@ -489,17 +489,19 @@ export const appointmentApi = {
   async fetchPatientAppointments(patientId: string) {
     try {
       const { data, error } = await (supabase as any)
-        .from('appointments')
+        .from('patient_all_appointments')
         .select(`
           *,
-          doctor:doctor_id (
-            *,
+          doctor:doctors(
+            id,
+            specialty,
+            user_id,
             profiles:user_id (
               full_name,
               avatar_url
             )
           ),
-          practice:practice_id (
+          practice:practices(
             id,
             name,
             city,
