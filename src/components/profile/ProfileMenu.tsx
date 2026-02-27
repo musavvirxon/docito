@@ -17,7 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { roleLabels, DASHBOARD_ROUTES, type AppRole } from "@/lib/rbac";
+import { roleLabels, DASHBOARD_ROUTES, normalizeRole, type AppRole } from "@/lib/rbac";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ const getRoleIcon = (role: AppRole) => {
 
 export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMenuProps) {
   const navigate = useNavigate();
-  const { activeRole, allRoles, switchRole, signOut } = useAuth();
+  const { activeRole, allRoles, switchRole, signOut, user } = useAuth();
   const [openSettings, setOpenSettings] = React.useState(false);
 
   const name = displayName || email || "User";
@@ -79,6 +79,12 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
     await signOut();
     navigate("/");
   };
+
+  const resolvedRoles = React.useMemo<AppRole[]>(() => {
+    const metaRole = normalizeRole((user as any)?.user_metadata?.role);
+    const merged = Array.from(new Set([...(allRoles || []), ...(metaRole ? [metaRole] : []), activeRole || "patient"])) as AppRole[];
+    return merged;
+  }, [allRoles, activeRole, user?.id]);
 
   const handleSwitchRole = (role: AppRole) => {
     switchRole(role);
@@ -111,10 +117,10 @@ export default function ProfileMenu({ displayName, avatarUrl, email }: ProfileMe
           <DropdownMenuSeparator />
 
           {/* Role switching */}
-          {allRoles.length > 1 && (
+          {resolvedRoles.length > 1 && (
             <>
               <DropdownMenuLabel className="text-xs text-muted-foreground">Switch Role</DropdownMenuLabel>
-              {allRoles.map((role) => (
+              {resolvedRoles.map((role) => (
                 <DropdownMenuItem
                   key={role}
                   onClick={() => handleSwitchRole(role)}

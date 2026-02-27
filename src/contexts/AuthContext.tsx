@@ -223,7 +223,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loadProfileAndRoles = async (uid: string, accessToken?: string, sessionUser?: User | null) => {
     const directRead = async () => {
       const [profileRes, rolesRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("user_id", uid).maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", uid)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
         supabase.from("user_roles").select("role, assigned_at").eq("user_id", uid),
       ]);
 
@@ -315,28 +321,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (bootstrapVersionRef.current !== version) return; // stale
 
-      if (result.profile) {
-        setProfile(result.profile);
-        profileRef.current = result.profile;
-      } else {
-        setProfile(null);
-        profileRef.current = null;
-      }
+      const fallbackProfile: Profile = {
+        id: uid,
+        user_id: uid,
+        full_name:
+          String((nextSession.user as any)?.user_metadata?.full_name || "").trim() ||
+          safeLocalNameFromEmail(nextSession.user.email),
+        email: nextSession.user.email || "",
+        role: mapProfileRoleFromAppRole(metaRole),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      setAllRoles(result.roles);
+      const resolvedProfile = result.profile || profileRef.current || fallbackProfile;
+      setProfile(resolvedProfile);
+      profileRef.current = resolvedProfile;
+
+      const resolvedRoles = Array.from(
+        new Set([
+          ...(Array.isArray(result.roles) ? result.roles : []),
+          ...(hasCacheHit ? cachedData!.allRoles : []),
+          metaRole,
+        ].filter(Boolean)),
+      ) as AppRole[];
+
+      setAllRoles(resolvedRoles);
 
       const override = pendingRoleOverrideRef.current;
       let resolvedRole: AppRole;
-      if (override && result.roles.includes(override)) {
+      if (override && resolvedRoles.includes(override)) {
         resolvedRole = override;
         pendingRoleOverrideRef.current = null;
       } else {
-        resolvedRole = getPrimaryRole(result.roles, result.rolesWithTimestamp);
+        resolvedRole = getPrimaryRole(resolvedRoles, result.rolesWithTimestamp);
       }
 
       _setActiveRole(resolvedRole);
       setLoading(false);
-      writeCache(uid, resolvedRole, result.roles);
+      writeCache(uid, resolvedRole, resolvedRoles);
     } catch (e) {
       console.error("[Auth] runBootstrap error:", e);
     } finally {
