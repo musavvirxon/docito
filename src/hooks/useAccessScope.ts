@@ -24,14 +24,25 @@ type AccessScopeResponse = {
 };
 
 export function useAccessScope() {
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [scopes, setScopes] = useState<AccessScope[]>([]);
   const [primary, setPrimary] = useState<AccessScope | null>(null);
 
   const fetchScope = useCallback(async () => {
-    if (!session?.access_token) return;
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
+    if (!session?.access_token) {
+      setScopes([]);
+      setPrimary(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -55,7 +66,7 @@ export function useAccessScope() {
     } finally {
       setLoading(false);
     }
-  }, [session?.access_token]);
+  }, [authLoading, session?.access_token]);
 
   useEffect(() => {
     fetchScope();

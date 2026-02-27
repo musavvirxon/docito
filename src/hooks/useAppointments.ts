@@ -6,7 +6,7 @@ export const useAppointments = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, profile, activeRole } = useAuth();
+  const { user, activeRole } = useAuth();
 
   const fetchAppointments = useCallback(async () => {
     if (!user) {
@@ -15,9 +15,8 @@ export const useAppointments = () => {
       return;
     }
 
-    // Derive role: prefer activeRole, then profile.role, default to 'patient'
-    const role: 'patient' | 'doctor' = activeRole === 'doctor' ? 'doctor'
-      : (profile?.role === 'doctor' ? 'doctor' : 'patient');
+    // Resolve from active role to avoid fetching doctor data while viewing patient dashboard
+    const role: 'patient' | 'doctor' = activeRole === 'doctor' ? 'doctor' : 'patient';
 
     try {
       setLoading(true);
@@ -37,7 +36,7 @@ export const useAppointments = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, profile, activeRole]);
+  }, [user, activeRole]);
 
   const cancelAppointment = async (appointmentId: string) => {
     try {
