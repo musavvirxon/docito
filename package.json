@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -18,10 +17,6 @@
     "supabase:status": "supabase status",
     "supabase:db:push": "supabase db push",
     "supabase:functions:deploy": "supabase functions deploy --no-verify-jwt"
-  },
-  "engines": {
-    "node": "22.16.0",
-    "npm": "10.9.2"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -109,5 +104,10 @@
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.1",
     "vite": "^5.4.19"
+  },
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": "22.16.0",
+    "npm": "10.9.2"
   }
 }
