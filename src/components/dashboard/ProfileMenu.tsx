@@ -22,7 +22,7 @@ import {
   Shield,
   Building2,
 } from "lucide-react";
-import { DASHBOARD_ROUTES, getDashboardRoute, roleLabels, type AppRole } from "@/lib/rbac";
+import { DASHBOARD_ROUTES, getDashboardRoute, roleLabels, normalizeRole, type AppRole } from "@/lib/rbac";
 
 interface ProfileMenuProps {
   compact?: boolean;
@@ -34,9 +34,18 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
   const [practiceName, setPracticeName] = useState<string | null>(null);
 
   const roles: AppRole[] = useMemo(() => {
-    const fromContext = Array.isArray(allRoles) ? allRoles : [];
-    return fromContext.length > 0 ? fromContext : [activeRole || "patient"];
-  }, [allRoles, activeRole]);
+    const metaRole = (normalizeRole((user as any)?.user_metadata?.role) || null) as AppRole | null;
+    const merged = [
+      ...(Array.isArray(allRoles) ? allRoles : []),
+      ...(metaRole ? [metaRole] : []),
+      activeRole || "patient",
+    ]
+      .map((r) => normalizeRole(r))
+      .filter(Boolean) as AppRole[];
+
+    const deduped = Array.from(new Set(merged));
+    return deduped.length > 0 ? deduped : ["patient"];
+  }, [allRoles, activeRole, user?.id]);
 
   // Fetch practice name for admin/staff users
   const isAdminOrStaff = roles.includes("admin") || roles.includes("staff");

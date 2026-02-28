@@ -117,6 +117,11 @@ function getRoleFromMetadata(user: User | null): AppRole {
   return (normalizeRole(meta?.role) || "patient") as AppRole;
 }
 
+function normalizeRolesList(input: unknown[]): AppRole[] {
+  const normalized = input.map((r) => normalizeRole(r)).filter(Boolean) as AppRole[];
+  return Array.from(new Set(normalized));
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bootstrapVersionRef = useRef(0);
   const pendingRoleOverrideRef = useRef<AppRole | null>(null);
@@ -317,7 +322,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setBootstrapped(true);
 
       // Background: load authoritative data from DB
-      const result = await loadProfileAndRoles(uid, nextSession.access_token, nextSession.user);
+      const result = (await Promise.race([
+        loadProfileAndRoles(uid, nextSession.access_token, nextSession.user),
+        new Promise<{ profile: Profile | null; roles: AppRole[]; rolesWithTimestamp: { role: AppRole; assigned_at: string }[] }>((resolve) =>
+          setTimeout(() => {
+            console.warn("[Auth] loadProfileAndRoles timed out after 8s; using fallback role cache/metadata");
+            resolve({ profile: null, roles: [], rolesWithTimestamp: [] });
+          }, 8000),
+        ),
+      ])) as { profile: Profile | null; roles: AppRole[]; rolesWithTimestamp: { role: AppRole; assigned_at: string }[] };
 
       if (bootstrapVersionRef.current !== version) return; // stale
 
@@ -337,13 +350,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(resolvedProfile);
       profileRef.current = resolvedProfile;
 
-      const resolvedRoles = Array.from(
-        new Set([
-          ...(Array.isArray(result.roles) ? result.roles : []),
-          ...(hasCacheHit ? cachedData!.allRoles : []),
-          metaRole,
-        ].filter(Boolean)),
-      ) as AppRole[];
+      const resolvedRoles = normalizeRolesList([
+        ...(Array.isArray(result.roles) ? result.roles : []),
+        ...(hasCacheHit ? cachedData!.allRoles : []),
+        metaRole,
+      ]);
+
+      if (resolvedRoles.length === 0) {
+        resolvedRoles.push("patient");
+      }
 
       setAllRoles(resolvedRoles);
 
@@ -400,7 +415,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(nextSession?.user ?? null);
         // If profile was lost (tab inactive / GC), re-bootstrap
         if (!profileRef.current) {
-          try { await runBootstrap(nextSession); } catch {}
+          try {
+            await runBootstrap(nextSession);
+          } catch {
+            // ignore
+          }
         }
         return;
       }
@@ -414,7 +433,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // Reduced safety timeout from 10s to 5s
+    // Initial session bootstrap (critical on hard refresh)
+    void (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!didUnmount) await runBootstrap(data.session ?? null);
+      } catch (e) {
+        console.error("Initial auth bootstrap failed:", e);
+        if (!didUnmount) {
+          setLoading(false);
+          setBootstrapped(true);
+        }
+      }
+    })();
+
+    // Global safety timeout
     safetyTimer = setTimeout(() => {
       setLoading((current) => {
         if (current) {
