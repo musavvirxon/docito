@@ -37,7 +37,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ zoN2A0M0GNTXcA26LCWFT_BeD2ohFvs2UKAhzUv0 }}
-          accountId: ${{ 760d28e1af09bebb57a5ee6e18279f52 }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           command: pages deploy dist --project-name=docito

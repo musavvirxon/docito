@@ -248,7 +248,7 @@ export default function PharmacyDashboardPage() {
     [stats],
   );
 
-  const isLoading = authLoading || loading || !user;
+  const isLoading = authLoading || loading;
 
   if (isLoading) {
     return (
