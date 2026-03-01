@@ -2,15 +2,38 @@ import BlogCard from "@/components/blog/BlogCard";
 import BlogEmptyState from "@/components/blog/BlogEmptyState";
 import { SEOHead } from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
-import { getFeaturedBlogPosts, getPublishedBlogPosts } from "@/lib/blog/public-loader";
+import { BLOG_LANGUAGES } from "@/config/blog";
+import {
+  buildBlogIndexPath,
+  getFeaturedBlogPosts,
+  getPublishedBlogPosts,
+} from "@/lib/blog/public-loader";
 import { BookOpenText, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import type { BlogLanguage } from "@/types/blog";
 
+const getSiteUrl = () => {
+  const env =
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_SITE_URL ||
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_PUBLIC_SITE_URL ||
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_APP_URL;
+
+  return typeof env === "string" && env.trim()
+    ? env.replace(/\/+$/, "")
+    : "https://www.docito.app";
+};
+
 export default function BlogIndex() {
   const { lang } = useParams<{ lang: string }>();
   const currentLang = (lang || "en") as BlogLanguage;
+  const siteUrl = getSiteUrl();
 
   const posts = useMemo(() => getPublishedBlogPosts(currentLang), [currentLang]);
   const featuredPosts = useMemo(
@@ -18,36 +41,76 @@ export default function BlogIndex() {
     [currentLang],
   );
   const latestPosts = useMemo(
-    () => posts.filter((post) => !featuredPosts.some((featured) => featured.groupId === post.groupId)),
+    () =>
+      posts.filter(
+        (post) => !featuredPosts.some((featured) => featured.groupId === post.groupId),
+      ),
     [featuredPosts, posts],
   );
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Blog",
-    name: "Docito Blog",
-    inLanguage: currentLang,
-    description:
-      "Insights on healthcare automation, clinic management, patient records, and medical platform operations.",
-    url: typeof window !== "undefined" ? window.location.href : "",
-    blogPost: posts.slice(0, 12).map((post) => ({
-      "@type": "BlogPosting",
-      headline: post.seo.metaTitle || post.title,
-      description: post.seo.metaDescription || post.excerpt,
-      url: typeof window !== "undefined" ? `${window.location.origin}/${post.lang}/blog/${post.slug}` : "",
-      datePublished: post.publishedAt || post.updatedAt || post.createdAt,
-      image: post.seo.ogImage || post.coverImage || undefined,
-      keywords: post.seo.keywords.length ? post.seo.keywords.join(", ") : post.tags.join(", "),
-    })),
-  };
+  const canonicalUrl = `${siteUrl}${buildBlogIndexPath(currentLang)}`;
+  const alternates = BLOG_LANGUAGES.map((language) => ({
+    hrefLang: language,
+    href: `${siteUrl}${buildBlogIndexPath(language)}`,
+  })).concat({
+    hrefLang: "x-default",
+    href: `${siteUrl}${buildBlogIndexPath("en" as BlogLanguage)}`,
+  });
+
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Blog",
+      name: "Docito Blog",
+      inLanguage: currentLang,
+      description:
+        "Insights on healthcare automation, clinic management, patient records, and medical platform operations.",
+      url: canonicalUrl,
+      blogPost: posts.slice(0, 12).map((post) => ({
+        "@type": "BlogPosting",
+        headline: post.seo.metaTitle || post.title,
+        description: post.seo.metaDescription || post.excerpt,
+        url: `${siteUrl}/${post.lang}/blog/${post.slug}`,
+        datePublished: post.publishedAt || post.updatedAt || post.createdAt,
+        dateModified: post.updatedAt || post.createdAt,
+        image: post.seo.ogImage || post.coverImage || undefined,
+        keywords: post.seo.keywords.length
+          ? post.seo.keywords.join(", ")
+          : post.tags.join(", "),
+      })),
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Blog",
+          item: canonicalUrl,
+        },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Docito Blog | Healthcare automation, clinic operations, and medical platform insights"
         description="Explore Docito articles on doctor workflows, clinic automation, patient record systems, medical management software, and healthcare operations."
-        keywords="Docito blog, healthcare blog, doctor software, clinic automation, patient record system, medical management software, healthcare operations"
+        keywords={[
+          "Docito blog",
+          "healthcare blog",
+          "doctor software",
+          "clinic automation",
+          "patient record system",
+          "medical management software",
+          "healthcare operations",
+        ]}
+        image="/logos/1200x630 horizontal logo+name.png"
         type="website"
+        canonicalUrl={canonicalUrl}
+        alternates={alternates}
         structuredData={structuredData}
       />
 
