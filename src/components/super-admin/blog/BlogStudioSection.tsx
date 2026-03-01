@@ -7,13 +7,15 @@ import {
   autofillBlogSeoForLanguage,
   stringifyBlogStudioDraftExport,
 } from "@/lib/blog/studio-api";
-import type { BlogDoc, BlogPostStatus } from "@/types/blog";
+import type { BlogDoc, BlogLanguage, BlogPostStatus } from "@/types/blog";
 import BlogDeleteDialog from "@/components/super-admin/blog/BlogDeleteDialog";
 import BlogEditorShell from "@/components/super-admin/blog/BlogEditorShell";
 import BlogFiltersBar from "@/components/super-admin/blog/BlogFiltersBar";
 import BlogJsonDialog from "@/components/super-admin/blog/BlogJsonDialog";
 import BlogPostList from "@/components/super-admin/blog/BlogPostList";
 import BlogPreviewPanel from "@/components/super-admin/blog/BlogPreviewPanel";
+import BlogPublishActions from "@/components/super-admin/blog/BlogPublishActions";
+import BlogPublishChecklist from "@/components/super-admin/blog/BlogPublishChecklist";
 import BlogStatusPanel from "@/components/super-admin/blog/BlogStatusPanel";
 import {
   toStudioAssetUploads,
@@ -56,7 +58,7 @@ export default function BlogStudioSection() {
     } catch {
       // ignore
     }
-  }, [studio.activeDraft?.groupId]);
+  }, [studio.activeDraft?.groupId, toast]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -112,6 +114,24 @@ export default function BlogStudioSection() {
   };
 
   const handlePublish = async () => {
+    if (!studio.checklist.checklist?.passed) {
+      toast({
+        title: "Publish blocked",
+        description:
+          "The publish checklist is not passing yet. Resolve all missing items before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (studio.activeDraft) {
+      studio.drafts.updateDraft(studio.activeDraft.draftId, (draft) => ({
+        ...draft,
+        workflowStatus: "ready_for_review",
+        updatedAt: new Date().toISOString(),
+      }));
+    }
+
     try {
       const result = await studio.publishActiveDraft({
         title: studio.activeDraft
@@ -176,6 +196,17 @@ export default function BlogStudioSection() {
     toast({
       title: "Language SEO autofilled",
       description: `Filled missing SEO fields for ${studio.activeDraft.activeLanguage.toUpperCase()}.`,
+    });
+  };
+
+  const handleAutofillLanguage = (lang: BlogLanguage) => {
+    if (!studio.activeDraft) return;
+    const next = autofillBlogSeoForLanguage(studio.activeDraft, lang);
+    studio.drafts.upsertDraft(next);
+
+    toast({
+      title: "Language autofilled",
+      description: `Filled missing SEO values for ${lang.toUpperCase()}.`,
     });
   };
 
@@ -244,7 +275,8 @@ export default function BlogStudioSection() {
               <p className="mt-1 max-w-4xl text-sm text-muted-foreground">
                 The admin route now includes a stable multilingual editor shell with language tabs,
                 group-wide fields, per-language content fields, per-language SEO fields, rich body
-                editing, local asset staging, preview state, and secure publish/delete actions.
+                editing, local asset staging, a checklist gate, preview state, and secure
+                publish/delete actions.
               </p>
             </div>
           </div>
@@ -396,7 +428,13 @@ export default function BlogStudioSection() {
             <BlogStatusPanel
               draft={studio.activeDraft}
               checklist={studio.checklist.checklist}
+            />
+
+            <BlogPublishActions
+              draft={studio.activeDraft}
+              checklist={studio.checklist.checklist}
               isPublishing={studio.publishMutation.isPending}
+              onAutofillAll={handleAutofillAllSeo}
               onPublish={handlePublish}
             />
 
@@ -427,6 +465,13 @@ export default function BlogStudioSection() {
             ) : null}
           </div>
         </div>
+
+        <BlogPublishChecklist
+          draft={studio.activeDraft}
+          checklist={studio.checklist.checklist}
+          onAutofillAll={handleAutofillAllSeo}
+          onAutofillLanguage={handleAutofillLanguage}
+        />
       </div>
 
       <BlogJsonDialog
