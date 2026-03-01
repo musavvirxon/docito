@@ -1,15 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BlogGroupChecklistResult } from "@/types/blog";
 import type { BlogStudioDraft } from "@/lib/blog/studio-api";
-import { CheckCircle2, Clock3, GitPullRequest, Loader2, Rocket, XCircle } from "lucide-react";
+import { CheckCircle2, Clock3, GitPullRequest, XCircle } from "lucide-react";
 
 interface BlogStatusPanelProps {
   draft: BlogStudioDraft | null;
   checklist: BlogGroupChecklistResult | null;
-  isPublishing: boolean;
-  onPublish: () => void;
 }
 
 const statusToneMap: Record<
@@ -45,8 +42,6 @@ const statusToneMap: Record<
 export default function BlogStatusPanel({
   draft,
   checklist,
-  isPublishing,
-  onPublish,
 }: BlogStatusPanelProps) {
   if (!draft) {
     return (
@@ -55,7 +50,7 @@ export default function BlogStatusPanel({
           <CardTitle className="text-base">Status</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Select or create a draft to see readiness, workflow status, and publish actions.
+          Select or create a draft to see readiness, workflow state, and publish status.
         </CardContent>
       </Card>
     );
@@ -111,67 +106,32 @@ export default function BlogStatusPanel({
         </div>
 
         <div className="space-y-2 rounded-xl border border-border p-4">
-          <div className="text-sm font-semibold text-foreground">Checklist gate</div>
+          <div className="text-sm font-semibold text-foreground">Publish gate</div>
 
           {checklist ? (
-            <div className="space-y-2 text-sm">
-              {checklist.passed ? (
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-300">
-                  <CheckCircle2 className="h-4 w-4" />
-                  All required language and global checks are passing.
+            checklist.passed ? (
+              <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-300">
+                <CheckCircle2 className="h-4 w-4" />
+                All required language and global checks are passing.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <XCircle className="h-4 w-4" />
+                  Publish is blocked until every required language passes validation.
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-destructive">
-                    <XCircle className="h-4 w-4" />
-                    Publish is blocked until every required language passes validation.
-                  </div>
 
-                  {checklist.global.missingKeys.length > 0 ? (
-                    <div className="text-xs text-muted-foreground">
-                      Global blockers: {checklist.global.missingKeys.join(", ")}
-                    </div>
-                  ) : null}
-
-                  <div className="flex flex-wrap gap-2">
-                    {checklist.requiredLanguages.map((lang) => {
-                      const passed = checklist.languages[lang]?.passed;
-                      return (
-                        <Badge
-                          key={lang}
-                          variant="outline"
-                          className={
-                            passed
-                              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                              : "border-destructive/20 bg-destructive/10 text-destructive"
-                          }
-                        >
-                          {passed ? "✓" : "✕"} {lang.toUpperCase()}
-                        </Badge>
-                      );
-                    })}
+                {checklist.global.missingKeys.length > 0 ? (
+                  <div className="text-xs text-muted-foreground">
+                    Global blockers: {checklist.global.missingKeys.join(", ")}
                   </div>
-                </div>
-              )}
-            </div>
+                ) : null}
+              </div>
+            )
           ) : (
             <div className="text-sm text-muted-foreground">No checklist available yet.</div>
           )}
         </div>
-
-        <Button className="w-full" disabled={!checklist?.passed || isPublishing} onClick={onPublish}>
-          {isPublishing ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            <>
-              <Rocket className="mr-2 h-4 w-4" />
-              Submit for publish
-            </>
-          )}
-        </Button>
       </CardContent>
     </Card>
   );
