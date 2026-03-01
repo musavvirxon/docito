@@ -1,0 +1,124 @@
+{
+  "groupId": "welcome-to-docito-blog-studio",
+  "lang": "en",
+  "slug": "welcome-to-docito-blog-studio",
+  "status": "published",
+  "featured": true,
+  "coverImage": "/blog/welcome-to-docito-blog-studio/cover.webp",
+  "tags": [
+    "docito",
+    "blog",
+    "medical platform",
+    "seo",
+    "multilingual"
+  ],
+  "createdAt": "2026-03-01T00:00:00.000Z",
+  "updatedAt": "2026-03-01T00:00:00.000Z",
+  "publishedAt": "2026-03-01T00:00:00.000Z",
+  "title": "Welcome to Docito Blog Studio",
+  "excerpt": "Docito Blog Studio publishes multilingual medical platform content from static repository files for fast SEO-friendly delivery.",
+  "seo": {
+    "metaTitle": "Welcome to Docito Blog Studio | Multilingual Medical Blog",
+    "metaDescription": "Learn how Docito Blog Studio powers a multilingual, SEO-friendly medical blog using static repository files, clean routing, and structured publishing.",
+    "keywords": [
+      "docito",
+      "doctor",
+      "clinic",
+      "medical platform",
+      "medical management software",
+      "patient record",
+      "healthcare automation",
+      "multilingual blog"
+    ],
+    "ogImage": "/blog/welcome-to-docito-blog-studio/cover.webp"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Welcome to Docito Blog Studio"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Docito Blog Studio stores published content as static repository files so the public blog can stay fast, indexable, and language-aware."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Each article group uses one file per language under a shared groupId, which keeps translations aligned without introducing backend content storage."
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Static multilingual post model"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "SEO-friendly language-prefixed routes"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Server-side publish orchestration through reviewed pull requests"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
