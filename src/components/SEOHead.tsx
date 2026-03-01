@@ -599,3 +599,250 @@ export const SEOHead = ({
 };
 
 export default SEOHead;
+import { Helmet } from "react-helmet-async";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
+import { languages } from "@/i18n/config";
+
+interface SEOAlternateLink {
+  hrefLang: string;
+  href: string;
+}
+
+interface SEOHeadProps {
+  title?: string;
+  description?: string;
+  keywords?: string | string[];
+  image?: string;
+  noindex?: boolean;
+  type?: "website" | "article" | "product";
+  structuredData?: object | object[];
+  canonicalUrl?: string;
+  alternates?: SEOAlternateLink[];
+  publishedTime?: string | null;
+  modifiedTime?: string | null;
+  section?: string;
+  author?: string;
+}
+
+const normalizeBaseUrl = (raw: string) => raw.replace(/\/+$/, "");
+
+const normalizeLang = (lng?: string) => {
+  if (!lng) return "en";
+  return lng.split("-")[0];
+};
+
+const getBaseUrl = () => {
+  const env =
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_SITE_URL ||
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_PUBLIC_SITE_URL ||
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_APP_URL;
+
+  const fromEnv = typeof env === "string" ? env.trim() : "";
+  if (fromEnv) return normalizeBaseUrl(fromEnv);
+
+  return "https://www.docito.app";
+};
+
+const toAbsoluteUrl = (baseUrl: string, value?: string) => {
+  if (!value) return "";
+  if (/^https?:\/\//i.test(value)) return value;
+
+  try {
+    return new URL(value, `${baseUrl}/`).toString();
+  } catch {
+    return `${baseUrl}${value.startsWith("/") ? "" : "/"}${value}`;
+  }
+};
+
+const stripLangPrefix = (pathname: string) =>
+  pathname.replace(/^\/(en|ru|uz|ar|tr|es|de|zh|pt|ja|ko)(\/|$)/, "/");
+
+const dedupeAlternates = (items: SEOAlternateLink[]) => {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = `${item.hrefLang}|${item.href}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const generateOrganizationSchema = (baseUrl: string) => ({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Docito",
+  url: baseUrl,
+  logo: `${baseUrl}/logos/512x512 logo.png`,
+});
+
+const generateWebSiteSchema = (baseUrl: string) => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Docito",
+  url: baseUrl,
+  inLanguage: languages.map((language) => language.code),
+});
+
+export const SEOHead = ({
+  title,
+  description,
+  keywords,
+  image = "/logos/1200x630 horizontal logo+name.png",
+  noindex = false,
+  type = "website",
+  structuredData,
+  canonicalUrl,
+  alternates,
+  publishedTime,
+  modifiedTime,
+  section,
+  author = "Docito",
+}: SEOHeadProps) => {
+  const { i18n } = useTranslation();
+  const location = useLocation();
+
+  const currentLang = normalizeLang(i18n.language || "en");
+  const currentDirection =
+    languages.find((language) => language.code === currentLang)?.dir || "ltr";
+
+  const baseUrl = useMemo(() => getBaseUrl(), []);
+  const resolvedCanonicalUrl = useMemo(
+    () => canonicalUrl || `${baseUrl}${location.pathname}`,
+    [baseUrl, canonicalUrl, location.pathname],
+  );
+
+  const resolvedImage = useMemo(
+    () => toAbsoluteUrl(baseUrl, image),
+    [baseUrl, image],
+  );
+
+  const resolvedKeywords = useMemo(
+    () =>
+      Array.isArray(keywords)
+        ? keywords.filter(Boolean).join(", ")
+        : keywords || undefined,
+    [keywords],
+  );
+
+  const resolvedAlternates = useMemo(() => {
+    if (alternates?.length) {
+      const baseAlternates = dedupeAlternates(
+        alternates.map((item) => ({
+          hrefLang: item.hrefLang,
+          href: toAbsoluteUrl(baseUrl, item.href),
+        })),
+      );
+
+      const hasXDefault = baseAlternates.some((item) => item.hrefLang === "x-default");
+      if (hasXDefault) return baseAlternates;
+
+      const englishAlternate =
+        baseAlternates.find((item) => item.hrefLang === "en") || baseAlternates[0];
+
+      return dedupeAlternates([
+        ...baseAlternates,
+        {
+          hrefLang: "x-default",
+          href: englishAlternate.href,
+        },
+      ]);
+    }
+
+    const pathWithoutLang = stripLangPrefix(location.pathname) || "/";
+    const normalizedPath = pathWithoutLang === "/" ? "" : pathWithoutLang;
+
+    return dedupeAlternates([
+      ...languages.map((language) => ({
+        hrefLang: language.code,
+        href: `${baseUrl}/${language.code}${normalizedPath}`,
+      })),
+      {
+        hrefLang: "x-default",
+        href: `${baseUrl}/en${normalizedPath}`,
+      },
+    ]);
+  }, [alternates, baseUrl, location.pathname]);
+
+  const defaultSchemas = useMemo(
+    () => [generateOrganizationSchema(baseUrl), generateWebSiteSchema(baseUrl)],
+    [baseUrl],
+  );
+
+  const extraSchemas = useMemo(() => {
+    if (!structuredData) return [];
+    return Array.isArray(structuredData) ? structuredData : [structuredData];
+  }, [structuredData]);
+
+  const schemas = useMemo(
+    () => [...defaultSchemas, ...extraSchemas],
+    [defaultSchemas, extraSchemas],
+  );
+
+  return (
+    <Helmet prioritizeSeoTags>
+      <html lang={currentLang} dir={currentDirection} />
+      {title ? <title>{title}</title> : null}
+      {description ? <meta name="description" content={description} /> : null}
+      {resolvedKeywords ? <meta name="keywords" content={resolvedKeywords} /> : null}
+
+      <meta name="application-name" content="Docito" />
+      <meta name="apple-mobile-web-app-title" content="Docito" />
+      <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+      <meta name="author" content={author} />
+
+      <link rel="canonical" href={resolvedCanonicalUrl} />
+      {resolvedAlternates.map((alternate) => (
+        <link
+          key={`${alternate.hrefLang}-${alternate.href}`}
+          rel="alternate"
+          hrefLang={alternate.hrefLang}
+          href={alternate.href}
+        />
+      ))}
+
+      <meta property="og:site_name" content="Docito" />
+      <meta property="og:title" content={title || "Docito"} />
+      {description ? <meta property="og:description" content={description} /> : null}
+      <meta property="og:type" content={type} />
+      <meta property="og:url" content={resolvedCanonicalUrl} />
+      {resolvedImage ? <meta property="og:image" content={resolvedImage} /> : null}
+      <meta property="og:locale" content={currentLang} />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title || "Docito"} />
+      {description ? <meta name="twitter:description" content={description} /> : null}
+      {resolvedImage ? <meta name="twitter:image" content={resolvedImage} /> : null}
+      <meta name="twitter:site" content="@docito" />
+
+      {type === "article" && publishedTime ? (
+        <meta property="article:published_time" content={publishedTime} />
+      ) : null}
+      {type === "article" && modifiedTime ? (
+        <meta property="article:modified_time" content={modifiedTime} />
+      ) : null}
+      {type === "article" && section ? (
+        <meta property="article:section" content={section} />
+      ) : null}
+      {type === "article" && resolvedKeywords ? (
+        <meta property="article:tag" content={resolvedKeywords} />
+      ) : null}
+
+      {schemas.map((schema, index) => (
+        <script
+          key={`json-ld-${index}`}
+          type="application/ld+json"
+        >
+          {JSON.stringify(schema)}
+        </script>
+      ))}
+    </Helmet>
+  );
+};
