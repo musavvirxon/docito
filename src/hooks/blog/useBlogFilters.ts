@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { BLOG_DEFAULT_LANGUAGE, type BlogLanguage, type BlogPostStatus } from "@/config/blog";
+import { BLOG_DEFAULT_LANGUAGE } from "@/config/blog";
 import type { BlogStudioListItem } from "@/lib/blog/studio-api";
+import type { BlogLanguage, BlogPostStatus } from "@/types/blog";
 
 export type BlogStudioFeaturedFilter = "all" | "featured" | "not_featured";
 export type BlogStudioSourceFilter = "all" | "published" | "draft" | "mixed";
