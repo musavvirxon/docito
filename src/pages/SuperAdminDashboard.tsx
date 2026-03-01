@@ -1,9 +1,10 @@
 // File: src/pages/SuperAdminDashboard.tsx
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
@@ -26,7 +27,6 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import FeedbackInboxLink from "@/components/super-admin/FeedbackInboxLink";
-
 import KPICards from "@/components/super-admin/KPICards";
 import AnalyticsCharts from "@/components/super-admin/AnalyticsCharts";
 import ManagementTable from "@/components/super-admin/ManagementTable";
@@ -44,7 +44,38 @@ import FacilityVerificationRequestsTable from "@/components/super-admin/Facility
 import SystemLogs from "@/components/super-admin/SystemLogs";
 import DocumentVerificationLookup from "@/components/super-admin/DocumentVerificationLookup";
 import FinanceSourcesMapping from "@/components/super-admin/FinanceSourcesMapping";
-import { useTranslation } from "react-i18next";
+import BlogStudioSection from "@/components/super-admin/blog/BlogStudioSection";
+
+const SUPER_ADMIN_SECTIONS = [
+  "dashboard",
+  "blogStudio",
+  "feedback",
+  "ecosystem",
+  "verifications",
+  "documentVerification",
+  "doctors",
+  "practices",
+  "pharmacies",
+  "laboratories",
+  "imaging",
+  "referrals",
+  "staff",
+  "patients",
+  "appointments",
+  "payments",
+  "analytics",
+  "financeSources",
+  "translations",
+  "help",
+  "settings",
+  "logs",
+] as const;
+
+type SuperAdminSection = (typeof SUPER_ADMIN_SECTIONS)[number];
+const DEFAULT_SECTION: SuperAdminSection = "dashboard";
+
+const isValidSection = (value: string | null): value is SuperAdminSection =>
+  !!value && SUPER_ADMIN_SECTIONS.includes(value as SuperAdminSection);
 
 const SuperAdminLogin = () => {
   const [email, setEmail] = useState("");
@@ -70,7 +101,7 @@ const SuperAdminLogin = () => {
           description: error.message,
         });
       }
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: t("superAdmin.login.error"),
@@ -82,10 +113,10 @@ const SuperAdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <Card className="w-full max-w-md mx-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+      <Card className="mx-4 w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
+          <CardTitle className="text-center text-2xl font-bold">
             {t("superAdmin.login.title")}
           </CardTitle>
           <CardDescription className="text-center">
@@ -139,15 +170,33 @@ const SuperAdminDashboard = () => {
   const { user, bootstrapped, signOut } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation("dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const initialSection = isValidSection(searchParams.get("section"))
+    ? (searchParams.get("section") as SuperAdminSection)
+    : DEFAULT_SECTION;
+
+  const [activeSection, setActiveSection] = useState<SuperAdminSection>(initialSection);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);
   const [checkingRole, setCheckingRole] = useState(true);
 
   const { data: stats } = useDashboardStats();
-  const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } =
-    useAdvancedFinancialMetrics(stats?.totalRevenue || 0, "platform");
+  const { metrics: advancedMetrics } = useAdvancedFinancialMetrics(
+    stats?.totalRevenue || 0,
+    "platform",
+  );
+
+  const dashboardToolbar = useMemo(
+    () => (
+      <div className="flex items-center gap-3">
+        <LanguageSwitcher />
+        <ThemeToggle />
+        <ProfileMenu />
+      </div>
+    ),
+    [],
+  );
 
   const handleInactive = async () => {
     await signOut();
@@ -163,6 +212,31 @@ const SuperAdminDashboard = () => {
     warningTime: 60 * 1000,
     enabled: !!user && isSuperAdmin === true,
   });
+
+  useEffect(() => {
+    const requestedSection = searchParams.get("section");
+    if (isValidSection(requestedSection) && requestedSection !== activeSection) {
+      setActiveSection(requestedSection);
+    }
+    if (!requestedSection && activeSection !== DEFAULT_SECTION) {
+      setActiveSection(DEFAULT_SECTION);
+    }
+  }, [activeSection, searchParams]);
+
+  useEffect(() => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (activeSection === DEFAULT_SECTION) {
+          next.delete("section");
+        } else {
+          next.set("section", activeSection);
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  }, [activeSection, setSearchParams]);
 
   useEffect(() => {
     const checkSuperAdminRole = async () => {
@@ -188,8 +262,8 @@ const SuperAdminDashboard = () => {
         } else {
           setIsSuperAdmin(!!data);
         }
-      } catch (e) {
-        console.error("Error checking super admin role:", e);
+      } catch (error) {
+        console.error("Error checking super admin role:", error);
         setIsSuperAdmin(false);
       } finally {
         setCheckingRole(false);
@@ -201,9 +275,9 @@ const SuperAdminDashboard = () => {
 
   if (!bootstrapped || checkingRole) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex items-center gap-2">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
           <span className="text-muted-foreground">Loading...</span>
         </div>
       </div>
@@ -219,31 +293,46 @@ const SuperAdminDashboard = () => {
         return (
           <div className="space-y-8">
             <div>
-              <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h1 className="text-3xl font-bold text-foreground">{t("superAdmin.title")}</h1>
                   <p className="text-muted-foreground">{t("superAdmin.subtitle")}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <LanguageSwitcher />
-                  <ThemeToggle />
-                  <ProfileMenu />
-                </div>
+                {dashboardToolbar}
               </div>
             </div>
 
             <KPICards />
             <AnalyticsCharts showAll />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="space-y-6 lg:col-span-2">
                 <AdvancedFinancialMetrics metrics={advancedMetrics} revenue={0} onUpdateInputs={() => {}} />
                 <ManagementTable title="Overview" type="doctors" />
               </div>
               <div className="space-y-6">
-                <FeedbackInboxLink onClick={() => {}} />
+                <FeedbackInboxLink onClick={() => setActiveSection("feedback")} />
                 <ActivityFeed />
               </div>
             </div>
+          </div>
+        );
+
+      case "blogStudio":
+        return <BlogStudioSection />;
+
+      case "feedback":
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h1 className="text-3xl font-bold text-foreground">Feedback Inbox</h1>
+                <p className="text-muted-foreground">
+                  Inbox access remains available here while Blog Studio is being built in parallel.
+                </p>
+              </div>
+              {dashboardToolbar}
+            </div>
+            <FeedbackInboxLink onClick={() => {}} />
           </div>
         );
 
@@ -325,17 +414,15 @@ const SuperAdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="flex min-h-screen bg-background">
       <SuperAdminSidebar
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         collapsed={sidebarCollapsed}
-        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+        onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
       />
 
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        {renderContent()}
-      </main>
+      <main className="flex-1 overflow-y-auto p-6 md:p-8">{renderContent()}</main>
 
       <InactivityWarningModal
         open={showWarning}
