@@ -112,9 +112,9 @@ export default function BlogPost() {
     translationEntries[0] ||
     post;
 
-  const alternates = translationEntries.map((translation) => ({
+  const alternates = (translationEntries as { lang: string; slug: string }[]).map((translation) => ({
     hrefLang: translation.lang,
-    href: `${siteUrl}${buildBlogPostPath(translation.lang, translation.slug)}`,
+    href: `${siteUrl}${buildBlogPostPath(translation.lang as BlogLanguage, translation.slug)}`,
   })).concat({
     hrefLang: "x-default",
     href: `${siteUrl}${buildBlogPostPath(xDefaultTarget.lang, xDefaultTarget.slug)}`,
@@ -181,7 +181,7 @@ export default function BlogPost() {
         image={post.seo.ogImage || post.coverImage}
         type="article"
         canonicalUrl={canonicalUrl}
-        alternates={alternates}
+        alternateLanguages={alternates.map(a => ({ lang: a.hrefLang, href: a.href }))}
         publishedTime={post.publishedAt || post.updatedAt || post.createdAt}
         modifiedTime={post.updatedAt || post.createdAt}
         section="Blog"

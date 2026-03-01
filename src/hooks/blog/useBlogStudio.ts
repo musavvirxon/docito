@@ -88,7 +88,7 @@ export const useBlogStudio = () => {
   };
 
   const updateActiveSharedFields = async (
-    patch: Pick<BlogPostRecord, "featured" | "coverImage" | "tags"> & Partial<BlogPostRecord>,
+    patch: Partial<BlogPostRecord>,
   ) => {
     const draft = await ensureActiveDraft();
     drafts.updateSharedFields(draft.draftId, patch);

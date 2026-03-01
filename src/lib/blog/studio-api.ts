@@ -284,7 +284,7 @@ export const updateBlogDraftTranslation = (
 
 export const updateBlogDraftSharedFields = (
   draft: BlogStudioDraft,
-  patch: Pick<BlogPostRecord, "featured" | "coverImage" | "tags"> & Partial<BlogPostRecord>,
+  patch: Partial<BlogPostRecord>,
 ): BlogStudioDraft => {
   const updatedAt = nowIso();
   const nextGroupId = normalizeGroupId(patch.groupId || draft.groupId);
@@ -436,7 +436,7 @@ export const buildBlogStudioListItems = (
         slugs: buildSlugMap(translations),
         hasLocalDraft: !!draft,
         draftId: draft?.draftId || null,
-        source: draft && group ? "mixed" : draft ? "draft" : "published",
+        source: (draft && group ? "mixed" : draft ? "draft" : "published") as BlogStudioListItem["source"],
       };
     })
     .sort((a, b) => {

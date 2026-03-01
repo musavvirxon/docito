@@ -2,10 +2,11 @@ import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES } from "@/config/blog";
 import { normalizeGroupId, normalizeSlug } from "@/lib/blog/slug";
 import type {
   BlogLanguage,
-  BlogLanguageSlugMap,
   BlogPostGroup,
   BlogPostRecord,
 } from "@/types/blog";
+
+export type BlogLanguageSlugMap = Partial<Record<BlogLanguage, string>>;
 
 const postModules = import.meta.glob("/src/content/blog/posts/*/*.json", {
   eager: true,
@@ -71,7 +72,7 @@ const normalizeBlogRecord = (input: unknown): BlogPostRecord | null => {
           ogImage: "",
         },
     doc: isPlainObject(input.doc)
-      ? (input.doc as BlogPostRecord["doc"])
+      ? (input.doc as unknown as BlogPostRecord["doc"])
       : ({
           type: "doc",
           content: [],

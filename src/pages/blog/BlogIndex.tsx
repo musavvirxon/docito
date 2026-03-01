@@ -49,9 +49,9 @@ export default function BlogIndex() {
   );
 
   const canonicalUrl = `${siteUrl}${buildBlogIndexPath(currentLang)}`;
-  const alternates = BLOG_LANGUAGES.map((language) => ({
+  const alternates = (BLOG_LANGUAGES as readonly string[]).map((language) => ({
     hrefLang: language,
-    href: `${siteUrl}${buildBlogIndexPath(language)}`,
+    href: `${siteUrl}${buildBlogIndexPath(language as BlogLanguage)}`,
   })).concat({
     hrefLang: "x-default",
     href: `${siteUrl}${buildBlogIndexPath("en" as BlogLanguage)}`,
@@ -110,7 +110,7 @@ export default function BlogIndex() {
         image="/logos/1200x630 horizontal logo+name.png"
         type="website"
         canonicalUrl={canonicalUrl}
-        alternates={alternates}
+        alternateLanguages={alternates.map(a => ({ lang: a.hrefLang, href: a.href }))}
         structuredData={structuredData}
       />
 
