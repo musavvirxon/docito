@@ -1,41 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { ReturnTypeOfUseBlogPreview } from "./blogPreviewTypes";
+import { estimateBlogReadingMinutes, getBlogDocText } from "@/lib/blog/doc";
+import type { BlogStudioDraft } from "@/lib/blog/studio-api";
 import { Clock3, ExternalLink, ImageIcon, Languages } from "lucide-react";
 
-type PreviewHookValue = {
-  previewLanguage: string;
-  preview: {
-    post: {
-      title: string;
-      excerpt: string;
-      slug: string;
-      coverImage: string;
-      seo: {
-        metaTitle: string;
-        metaDescription: string;
-        keywords: string[];
-        ogImage: string;
-      };
-    };
-    translations: Array<{
-      lang: string;
-      href: string;
-      title: string;
-      slug: string;
-    }>;
-  } | null;
-  readingMinutes: number;
-};
-
 interface BlogPreviewPanelProps {
-  previewState: PreviewHookValue;
+  draft: BlogStudioDraft | null;
 }
 
-export default function BlogPreviewPanel({ previewState }: BlogPreviewPanelProps) {
-  const { preview, previewLanguage, readingMinutes } = previewState;
-
-  if (!preview) {
+export default function BlogPreviewPanel({ draft }: BlogPreviewPanelProps) {
+  if (!draft) {
     return (
       <Card className="rounded-2xl shadow-sm">
         <CardHeader>
@@ -48,7 +22,12 @@ export default function BlogPreviewPanel({ previewState }: BlogPreviewPanelProps
     );
   }
 
-  const { post, translations } = preview;
+  const post = draft.translations[draft.previewLanguage];
+  const readingMinutes = estimateBlogReadingMinutes(post.doc);
+  const bodyText = getBlogDocText(post.doc);
+  const translations = Object.values(draft.translations).filter(
+    (translation) => translation.slug || translation.title,
+  );
 
   return (
     <Card className="rounded-2xl shadow-sm">
@@ -57,7 +36,7 @@ export default function BlogPreviewPanel({ previewState }: BlogPreviewPanelProps
 
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="border-primary/20 bg-primary/10 text-primary">
-            {previewLanguage.toUpperCase()}
+            {draft.previewLanguage.toUpperCase()}
           </Badge>
           <Badge variant="outline">
             <Clock3 className="mr-1 h-3.5 w-3.5" />
@@ -87,7 +66,9 @@ export default function BlogPreviewPanel({ previewState }: BlogPreviewPanelProps
         )}
 
         <div className="space-y-2">
-          <div className="text-lg font-semibold text-foreground">{post.title || "Untitled post"}</div>
+          <div className="text-lg font-semibold text-foreground">
+            {post.title || "Untitled post"}
+          </div>
           <div className="text-sm text-muted-foreground">
             {post.excerpt || "Add an excerpt to improve list views, previews, and metadata."}
           </div>
@@ -105,8 +86,18 @@ export default function BlogPreviewPanel({ previewState }: BlogPreviewPanelProps
               {post.seo.metaDescription || "Missing"}
             </div>
             <div>
-              <span className="font-medium text-foreground">Slug:</span> /blog/{post.slug || "missing-slug"}
+              <span className="font-medium text-foreground">Slug:</span> /blog/
+              {post.slug || "missing-slug"}
             </div>
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-xl border border-border p-4">
+          <div className="text-sm font-semibold text-foreground">Body preview</div>
+          <div className="text-sm text-muted-foreground">
+            {bodyText
+              ? `${bodyText.slice(0, 260)}${bodyText.length > 260 ? "…" : ""}`
+              : "Add body content to preview article text here."}
           </div>
         </div>
 
@@ -119,20 +110,17 @@ export default function BlogPreviewPanel({ previewState }: BlogPreviewPanelProps
                 className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm"
               >
                 <div className="min-w-0">
-                  <div className="font-medium text-foreground">{translation.lang.toUpperCase()}</div>
+                  <div className="font-medium text-foreground">
+                    {translation.lang.toUpperCase()}
+                  </div>
                   <div className="truncate text-muted-foreground">
                     {translation.title || translation.slug}
                   </div>
                 </div>
-                <a
-                  href={translation.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex flex-shrink-0 items-center gap-1 text-primary hover:underline"
-                >
-                  Open
+                <div className="inline-flex flex-shrink-0 items-center gap-1 text-primary">
+                  /{translation.lang}/blog/{translation.slug}
                   <ExternalLink className="h-3.5 w-3.5" />
-                </a>
+                </div>
               </div>
             ))}
           </div>
