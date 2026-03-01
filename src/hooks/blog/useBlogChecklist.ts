@@ -1,11 +1,12 @@
 import { useCallback, useMemo } from "react";
-import { BLOG_LANGUAGES, type BlogLanguage } from "@/config/blog";
+import { BLOG_LANGUAGES } from "@/config/blog";
 import {
   autofillBlogSeoForAllLanguages,
   autofillBlogSeoForLanguage,
   buildBlogStudioChecklist,
   type BlogStudioDraft,
 } from "@/lib/blog/studio-api";
+import type { BlogLanguage } from "@/types/blog";
 
 export const useBlogChecklist = (
   draft: BlogStudioDraft | null,
@@ -17,10 +18,7 @@ export const useBlogChecklist = (
   );
 
   const blockedLanguages = useMemo(
-    () =>
-      checklist
-        ? requiredLanguages.filter((lang) => !checklist.languages[lang]?.passed)
-        : [],
+    () => (checklist ? requiredLanguages.filter((lang) => !checklist.languages[lang]?.passed) : []),
     [checklist, requiredLanguages],
   );
 
