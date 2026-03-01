@@ -4,10 +4,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
-import { supportedLanguageCodes } from "@/i18n/config";
+import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
-
 import PublicLayout from "@/layouts/PublicLayout";
 
 const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
@@ -16,8 +15,6 @@ const Auth = lazy(() => import("@/pages/Auth"));
 const About = lazy(() => import("@/pages/About"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const Features = lazy(() => import("@/pages/Features"));
-const BlogIndexPage = lazy(() => import("@/pages/blog/BlogIndexPage"));
-const BlogPostPage = lazy(() => import("@/pages/blog/BlogPostPage"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
 const HowItWorks = lazy(() => import("@/pages/HowItWorks"));
 const FAQs = lazy(() => import("@/pages/FAQs"));
@@ -28,6 +25,8 @@ const LegalDetail = lazy(() => import("@/pages/LegalDetail"));
 const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
 const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
+const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
@@ -85,21 +84,16 @@ const ImagingRegistration = lazy(() => import("@/pages/imaging/ImagingRegistrati
 const AcceptInvite = lazy(() => import("@/pages/AcceptInvite"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 
-const supportedLangCodes = supportedLanguageCodes;
+const supportedLangCodes = languages.map((l) => l.code);
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-background">
-    <div className="animate-pulse flex flex-col items-center gap-4">
-      <div className="w-12 h-12 rounded-full bg-primary/20" />
+  <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex animate-pulse flex-col items-center gap-4">
+      <div className="h-12 w-12 rounded-full bg-primary/20" />
       <div className="h-2 w-24 rounded bg-muted" />
     </div>
   </div>
 );
-
-function RedirectToEnglishBlogPost() {
-  const { slug } = useParams<{ slug: string }>();
-  return <Navigate to={slug ? `/en/blog/${slug}` : "/en/blog"} replace />;
-}
 
 function LanguageWrapper() {
   const { lang } = useParams<{ lang: string }>();
@@ -111,6 +105,15 @@ function LanguageWrapper() {
   }, [lang]);
 
   return <Outlet />;
+}
+
+function DefaultBlogIndexRedirect() {
+  return <Navigate to="/en/blog" replace />;
+}
+
+function DefaultBlogPostRedirect() {
+  const { slug } = useParams<{ slug: string }>();
+  return <Navigate to={slug ? `/en/blog/${slug}` : "/en/blog"} replace />;
 }
 
 export default function App() {
@@ -154,8 +157,6 @@ export default function App() {
                     <Route path="about" element={<About />} />
                     <Route path="contact" element={<Contact />} />
                     <Route path="features" element={<Features />} />
-                    <Route path="blog" element={<BlogIndexPage />} />
-                    <Route path="blog/:slug" element={<BlogPostPage />} />
                     <Route path="pricing" element={<Pricing />} />
                     <Route path="how-it-works" element={<HowItWorks />} />
                     <Route path="faqs" element={<FAQs />} />
@@ -169,6 +170,8 @@ export default function App() {
                     <Route path="legal/cookies" element={<CookiePolicy />} />
                     <Route path="legal/cookie-policy" element={<CookiePolicy />} />
                     <Route path="feedback" element={<FeedbackCenter />} />
+                    <Route path="blog" element={<BlogIndex />} />
+                    <Route path="blog/:slug" element={<BlogPost />} />
                   </Route>
 
                   <Route path="patient-dashboard" element={<PatientDashboard />} />
@@ -244,12 +247,13 @@ export default function App() {
                   <Route path="category/:category" element={<CategorySearch />} />
                   <Route path="book/:doctorId" element={<AppointmentBooking />} />
                   <Route path="book-appointment/:doctorId" element={<AppointmentBooking />} />
-                  <Route path="booking-confirmation/:appointmentId" element={<BookingConfirmation />} />
+                  <Route
+                    path="booking-confirmation/:appointmentId"
+                    element={<BookingConfirmation />}
+                  />
                   <Route path="about" element={<About />} />
                   <Route path="contact" element={<Contact />} />
                   <Route path="features" element={<Features />} />
-                  <Route path="blog" element={<Navigate to="/en/blog" replace />} />
-                  <Route path="blog/:slug" element={<RedirectToEnglishBlogPost />} />
                   <Route path="pricing" element={<Pricing />} />
                   <Route path="how-it-works" element={<HowItWorks />} />
                   <Route path="faqs" element={<FAQs />} />
@@ -263,6 +267,8 @@ export default function App() {
                   <Route path="legal/cookies" element={<CookiePolicy />} />
                   <Route path="legal/cookie-policy" element={<CookiePolicy />} />
                   <Route path="feedback" element={<FeedbackCenter />} />
+                  <Route path="blog" element={<DefaultBlogIndexRedirect />} />
+                  <Route path="blog/:slug" element={<DefaultBlogPostRedirect />} />
                 </Route>
 
                 <Route path="patient-dashboard" element={<PatientDashboard />} />
