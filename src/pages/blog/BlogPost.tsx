@@ -16,6 +16,23 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { BlogDoc, BlogLanguage } from "@/types/blog";
 
+const getSiteUrl = () => {
+  const env =
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_SITE_URL ||
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_PUBLIC_SITE_URL ||
+    (import.meta as ImportMeta & {
+      env?: Record<string, string | undefined>;
+    })?.env?.VITE_APP_URL;
+
+  return typeof env === "string" && env.trim()
+    ? env.replace(/\/+$/, "")
+    : "https://www.docito.app";
+};
+
 const extractTextFromDoc = (doc: BlogDoc | null | undefined): string => {
   if (!doc || typeof doc !== "object") return "";
 
@@ -50,6 +67,7 @@ export default function BlogPost() {
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
   const currentLang = (lang || "en") as BlogLanguage;
   const currentSlug = slug || "";
+  const siteUrl = getSiteUrl();
 
   const post = useMemo(
     () => getBlogPostBySlug(currentLang, currentSlug),
@@ -87,34 +105,68 @@ export default function BlogPost() {
     );
   }
 
+  const canonicalUrl = `${siteUrl}${buildBlogPostPath(post.lang, post.slug)}`;
+  const translationEntries = Object.values(translations);
+  const xDefaultTarget =
+    translations.en ||
+    translationEntries[0] ||
+    post;
+
+  const alternates = translationEntries.map((translation) => ({
+    hrefLang: translation.lang,
+    href: `${siteUrl}${buildBlogPostPath(translation.lang, translation.slug)}`,
+  })).concat({
+    hrefLang: "x-default",
+    href: `${siteUrl}${buildBlogPostPath(xDefaultTarget.lang, xDefaultTarget.slug)}`,
+  });
+
   const readingMinutes = estimateReadingMinutes(post.doc);
   const publishDate = new Date(
     post.publishedAt || post.updatedAt || post.createdAt,
   ).toLocaleDateString();
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.seo.metaTitle || post.title,
-    description: post.seo.metaDescription || post.excerpt,
-    image: post.seo.ogImage || post.coverImage || undefined,
-    datePublished: post.publishedAt || post.updatedAt || post.createdAt,
-    dateModified: post.updatedAt || post.createdAt,
-    inLanguage: post.lang,
-    keywords: post.seo.keywords.length ? post.seo.keywords.join(", ") : post.tags.join(", "),
-    author: {
-      "@type": "Organization",
-      name: "Docito",
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.seo.metaTitle || post.title,
+      description: post.seo.metaDescription || post.excerpt,
+      image: post.seo.ogImage || post.coverImage || undefined,
+      datePublished: post.publishedAt || post.updatedAt || post.createdAt,
+      dateModified: post.updatedAt || post.createdAt,
+      inLanguage: post.lang,
+      keywords: post.seo.keywords.length
+        ? post.seo.keywords.join(", ")
+        : post.tags.join(", "),
+      author: {
+        "@type": "Organization",
+        name: "Docito",
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Docito",
+      },
+      mainEntityOfPage: canonicalUrl,
     },
-    publisher: {
-      "@type": "Organization",
-      name: "Docito",
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Blog",
+          item: `${siteUrl}${buildBlogIndexPath(post.lang)}`,
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: post.title,
+          item: canonicalUrl,
+        },
+      ],
     },
-    mainEntityOfPage:
-      typeof window !== "undefined"
-        ? `${window.location.origin}${buildBlogPostPath(post.lang, post.slug)}`
-        : buildBlogPostPath(post.lang, post.slug),
-  };
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -123,11 +175,16 @@ export default function BlogPost() {
         description={post.seo.metaDescription || post.excerpt}
         keywords={
           post.seo.keywords.length
-            ? post.seo.keywords.join(", ")
-            : post.tags.join(", ")
+            ? post.seo.keywords
+            : post.tags
         }
         image={post.seo.ogImage || post.coverImage}
         type="article"
+        canonicalUrl={canonicalUrl}
+        alternates={alternates}
+        publishedTime={post.publishedAt || post.updatedAt || post.createdAt}
+        modifiedTime={post.updatedAt || post.createdAt}
+        section="Blog"
         structuredData={structuredData}
       />
 
@@ -199,7 +256,7 @@ export default function BlogPost() {
               Translations
             </Badge>
 
-            {Object.values(translations).map((translation) => (
+            {translationEntries.map((translation) => (
               <Link
                 key={`${translation.lang}-${translation.slug}`}
                 to={buildBlogPostPath(translation.lang, translation.slug)}
