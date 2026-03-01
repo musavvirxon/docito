@@ -1,0 +1,7 @@
+# Blog content and publish infrastructure
+src/content/blog/** @OWNER_USERNAME
+public/blog/** @OWNER_USERNAME
+public/locales/*/blog.json @OWNER_USERNAME
+supabase/functions/blog-studio/** @OWNER_USERNAME
+supabase/functions/_shared/blog-*.ts @OWNER_USERNAME
+.github/workflows/cloudflare-pages-deploy.yml @OWNER_USERNAME
