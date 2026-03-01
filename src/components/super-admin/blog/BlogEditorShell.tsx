@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { BlogStudioDraft } from "@/lib/blog/studio-api";
-import type { BlogLanguage, BlogPostStatus } from "@/types/blog";
+import type { BlogDoc, BlogLanguage, BlogPostStatus } from "@/types/blog";
 import { Copy, FileJson, Sparkles, Trash2 } from "lucide-react";
+import BlogAssetManager, {
+  type BlogAssetItem,
+} from "@/components/super-admin/blog/BlogAssetManager";
 import BlogLanguageTabs from "@/components/super-admin/blog/BlogLanguageTabs";
 import BlogMetaPanel from "@/components/super-admin/blog/BlogMetaPanel";
 import BlogSharedFieldsPanel from "@/components/super-admin/blog/BlogSharedFieldsPanel";
@@ -10,12 +13,16 @@ import BlogTranslationEditor from "@/components/super-admin/blog/BlogTranslation
 
 interface BlogEditorShellProps {
   draft: BlogStudioDraft | null;
+  assets: BlogAssetItem[];
+  onAddAssets: (assets: BlogAssetItem[]) => void;
+  onRemoveAsset: (filename: string) => void;
   onChangeLanguage: (lang: BlogLanguage, mode?: "active" | "preview") => void;
   onChangeGroupId: (value: string) => void;
   onChangeTitle: (value: string) => void;
   onChangeExcerpt: (value: string) => void;
   onChangeSlug: (value: string) => void;
   onChangeStatus: (value: BlogPostStatus) => void;
+  onChangeDoc: (value: BlogDoc) => void;
   onChangeCoverImage: (value: string) => void;
   onChangeTags: (value: string) => void;
   onChangeFeatured: (value: boolean) => void;
@@ -32,12 +39,16 @@ interface BlogEditorShellProps {
 
 export default function BlogEditorShell({
   draft,
+  assets,
+  onAddAssets,
+  onRemoveAsset,
   onChangeLanguage,
   onChangeGroupId,
   onChangeTitle,
   onChangeExcerpt,
   onChangeSlug,
   onChangeStatus,
+  onChangeDoc,
   onChangeCoverImage,
   onChangeTags,
   onChangeFeatured,
@@ -60,12 +71,14 @@ export default function BlogEditorShell({
         <h3 className="text-lg font-semibold text-foreground">Choose or create a blog draft</h3>
         <p className="mt-2 text-sm text-muted-foreground">
           Pick a group from the left panel or create a new draft. This multilingual shell now
-          separates group-wide fields from per-language content and SEO, so the next rich-editor
-          batch can plug in without changing the dashboard structure.
+          includes the body editor, media insertion dialogs, and local asset staging so the publish
+          flow can ship real content and media together.
         </p>
       </div>
     );
   }
+
+  const assetOptions = assets.map((asset) => asset.path);
 
   return (
     <div className="space-y-6">
@@ -75,7 +88,8 @@ export default function BlogEditorShell({
             <div className="space-y-1">
               <CardTitle className="text-xl">Multilingual editor shell</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Shared fields, per-language content, and per-language SEO are separated below.
+                Shared fields, per-language content, rich body editing, media staging, and
+                per-language SEO are separated below.
               </p>
             </div>
 
@@ -124,11 +138,20 @@ export default function BlogEditorShell({
 
           <BlogTranslationEditor
             draft={draft}
+            assetOptions={assetOptions}
             onChangeLanguage={onChangeLanguage}
             onChangeTitle={onChangeTitle}
             onChangeExcerpt={onChangeExcerpt}
             onChangeSlug={onChangeSlug}
             onChangeStatus={onChangeStatus}
+            onChangeDoc={onChangeDoc}
+          />
+
+          <BlogAssetManager
+            groupId={draft.groupId}
+            assets={assets}
+            onAddAssets={onAddAssets}
+            onRemoveAsset={onRemoveAsset}
           />
         </CardContent>
       </Card>
