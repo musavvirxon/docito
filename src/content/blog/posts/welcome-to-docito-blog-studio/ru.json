@@ -1,0 +1,124 @@
+{
+  "groupId": "welcome-to-docito-blog-studio",
+  "lang": "ru",
+  "slug": "dobro-pozhalovat-v-docito-blog-studio",
+  "status": "published",
+  "featured": true,
+  "coverImage": "/blog/welcome-to-docito-blog-studio/cover.webp",
+  "tags": [
+    "docito",
+    "blog",
+    "medical platform",
+    "seo",
+    "multilingual"
+  ],
+  "createdAt": "2026-03-01T00:00:00.000Z",
+  "updatedAt": "2026-03-01T00:00:00.000Z",
+  "publishedAt": "2026-03-01T00:00:00.000Z",
+  "title": "Добро пожаловать в Docito Blog Studio",
+  "excerpt": "Docito Blog Studio публикует многоязычный контент для медицинской платформы из статических файлов репозитория для быстрой SEO-ориентированной выдачи.",
+  "seo": {
+    "metaTitle": "Добро пожаловать в Docito Blog Studio | Многоязычный медицинский блог",
+    "metaDescription": "Узнайте, как Docito Blog Studio поддерживает многоязычный SEO-оптимизированный медицинский блог с помощью статических файлов репозитория и безопасного процесса публикации.",
+    "keywords": [
+      "docito",
+      "doctor",
+      "clinic",
+      "medical platform",
+      "medical management software",
+      "patient record",
+      "healthcare automation",
+      "multilingual blog"
+    ],
+    "ogImage": "/blog/welcome-to-docito-blog-studio/cover.webp"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Добро пожаловать в Docito Blog Studio"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Docito Blog Studio хранит опубликованные статьи как статические файлы репозитория, чтобы публичный блог оставался быстрым, индексируемым и поддерживал разные языки."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Каждая группа статей использует один файл на язык под общим groupId, что позволяет синхронизировать переводы без хранения контента в базе данных."
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Статическая многоязычная модель публикаций"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "SEO-дружественные маршруты с языковым префиксом"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Серверная публикация через проверяемые pull request"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
