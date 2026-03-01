@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES, type BlogLanguage } from "@/config/blog";
+import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES } from "@/config/blog";
 import { createBlogGroupChecklist } from "@/lib/blog/checklist";
 import { createEmptyBlogPostRecord } from "@/lib/blog/defaults";
 import { buildBlogManifest, buildBlogGroups } from "@/lib/blog/manifest";
@@ -14,6 +14,7 @@ import { createUniqueBlogSlug, normalizeGroupId, normalizeSlug } from "@/lib/blo
 import { validateBlogGroupRecords } from "@/lib/blog/validation";
 import type {
   BlogGroupChecklistResult,
+  BlogLanguage,
   BlogLanguageChecklist,
   BlogManifestItem,
   BlogPostGroup,
@@ -114,7 +115,7 @@ export interface BlogStudioDeleteResult {
 
 const nowIso = () => new Date().toISOString();
 
-const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const readFileAsBase64 = (file: File) =>
   new Promise<string>((resolve, reject) => {
@@ -135,12 +136,18 @@ const getDefaultWorkflowStatus = (group: BlogPostGroup | null) =>
 
 const buildTitleMap = (translations: Partial<Record<BlogLanguage, BlogPostRecord>>) =>
   Object.fromEntries(
-    BLOG_LANGUAGES.filter((lang) => !!translations[lang]).map((lang) => [lang, translations[lang]!.title]),
+    BLOG_LANGUAGES.filter((lang) => !!translations[lang]).map((lang) => [
+      lang,
+      translations[lang]!.title,
+    ]),
   ) as Partial<Record<BlogLanguage, string>>;
 
 const buildSlugMap = (translations: Partial<Record<BlogLanguage, BlogPostRecord>>) =>
   Object.fromEntries(
-    BLOG_LANGUAGES.filter((lang) => !!translations[lang]).map((lang) => [lang, translations[lang]!.slug]),
+    BLOG_LANGUAGES.filter((lang) => !!translations[lang]).map((lang) => [
+      lang,
+      translations[lang]!.slug,
+    ]),
   ) as Partial<Record<BlogLanguage, string>>;
 
 export const createBlogStudioDraftFromGroup = (group?: BlogPostGroup | null): BlogStudioDraft => {
@@ -308,34 +315,26 @@ export const autofillBlogSeoForLanguage = (
   lang: BlogLanguage,
 ): BlogStudioDraft => {
   const current = draft.translations[lang];
+  const fallbackKeywords = current.tags.length > 0 ? [...current.tags] : [...current.seo.keywords];
 
   return updateBlogDraftTranslation(draft, lang, {
     seo: {
       ...current.seo,
       metaTitle: current.seo.metaTitle?.trim() || current.title.trim(),
       metaDescription: current.seo.metaDescription?.trim() || current.excerpt.trim(),
-      keywords:
-        current.seo.keywords?.length > 0
-          ? current.seo.keywords
-          : current.tags.length > 0
-            ? [...current.tags]
-            : [...current.seo.keywords],
+      keywords: current.seo.keywords?.length > 0 ? current.seo.keywords : fallbackKeywords,
       ogImage: current.seo.ogImage?.trim() || current.coverImage.trim(),
     },
   });
 };
 
 export const autofillBlogSeoForAllLanguages = (draft: BlogStudioDraft) =>
-  BLOG_LANGUAGES.reduce(
-    (acc, lang) => autofillBlogSeoForLanguage(acc, lang),
-    draft,
-  );
+  BLOG_LANGUAGES.reduce((acc, lang) => autofillBlogSeoForLanguage(acc, lang), draft);
 
 export const buildBlogStudioChecklist = (
   draft: BlogStudioDraft,
   requiredLanguages: BlogLanguage[] = [...BLOG_LANGUAGES],
-): BlogGroupChecklistResult =>
-  createBlogGroupChecklist(draft.translations, requiredLanguages);
+): BlogGroupChecklistResult => createBlogGroupChecklist(draft.translations, requiredLanguages);
 
 export const validateBlogStudioDraft = (
   draft: BlogStudioDraft,
@@ -376,15 +375,17 @@ export const createBlogStudioPreviewPayload = (
   lang: BlogLanguage = draft.previewLanguage,
 ) => {
   const post = draft.translations[lang];
-  const translations = BLOG_LANGUAGES.filter((language) => !!draft.translations[language]?.slug).map((language) => {
-    const translation = draft.translations[language];
-    return {
-      lang: language,
-      slug: translation.slug,
-      title: translation.title,
-      href: getBlogCanonicalUrl(language, translation.slug),
-    };
-  });
+  const translations = BLOG_LANGUAGES.filter((language) => !!draft.translations[language]?.slug).map(
+    (language) => {
+      const translation = draft.translations[language];
+      return {
+        lang: language,
+        slug: translation.slug,
+        title: translation.title,
+        href: getBlogCanonicalUrl(language, translation.slug),
+      };
+    },
+  );
 
   return {
     post,
@@ -415,15 +416,15 @@ export const buildBlogStudioListItems = (
       const group = publishedMap.get(groupId) || null;
       const draft = draftMap.get(groupId) || null;
       const translations = draft?.translations || group?.translations || {};
-      const availableLanguages = BLOG_LANGUAGES.filter((lang) => !!translations[lang]);
+      const availableLanguages = BLOG_LANGUAGES.filter(
+        (lang) => !!translations[lang]?.title || !!translations[lang]?.slug,
+      );
       const anyTranslation = availableLanguages.map((lang) => translations[lang]!).find(Boolean);
 
       return {
         groupId,
         featured: Boolean(
-          draft
-            ? BLOG_LANGUAGES.some((lang) => draft.translations[lang].featured)
-            : group?.featured,
+          draft ? BLOG_LANGUAGES.some((lang) => draft.translations[lang].featured) : group?.featured,
         ),
         coverImage: anyTranslation?.coverImage || group?.coverImage || "",
         tags: anyTranslation?.tags || group?.tags || [],
@@ -435,8 +436,7 @@ export const buildBlogStudioListItems = (
         slugs: buildSlugMap(translations),
         hasLocalDraft: !!draft,
         draftId: draft?.draftId || null,
-        source:
-          draft && group ? "mixed" : draft ? "draft" : "published",
+        source: draft && group ? "mixed" : draft ? "draft" : "published",
       };
     })
     .sort((a, b) => {
@@ -447,7 +447,8 @@ export const buildBlogStudioListItems = (
 
 export const listPublishedBlogStudioGroups = async () => getBlogGroupsForAdmin();
 
-export const listPublishedBlogStudioManifest = async () => buildBlogManifest(getPublishedBlogPosts());
+export const listPublishedBlogStudioManifest = async () =>
+  buildBlogManifest(getPublishedBlogPosts());
 
 export const listPublishedBlogStudioPosts = async () => getAllBlogPosts();
 
@@ -457,10 +458,8 @@ export const getPublishedBlogStudioGroup = async (groupId: string) =>
 export const getPublishedBlogStudioTranslations = async (groupId: string) =>
   getBlogGroupTranslations(groupId);
 
-export const generateBlogStudioGroupId = (
-  seed: string,
-  existingGroupIds: string[] = [],
-) => createUniqueBlogSlug(seed || `blog-post-${Date.now()}`, existingGroupIds);
+export const generateBlogStudioGroupId = (seed: string, existingGroupIds: string[] = []) =>
+  createUniqueBlogSlug(seed || `blog-post-${Date.now()}`, existingGroupIds);
 
 export const submitBlogStudioDraftForPublish = async (
   draft: BlogStudioDraft,
