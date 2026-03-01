@@ -8,27 +8,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import type { BlogStudioDraft } from "@/lib/blog/studio-api";
-import type { BlogLanguage, BlogPostStatus } from "@/types/blog";
+import type { BlogDoc, BlogLanguage, BlogPostStatus } from "@/types/blog";
 import { CalendarClock, FileText, Languages, Link2, Type } from "lucide-react";
+import RichBlogEditor from "@/components/super-admin/blog/RichBlogEditor";
 
 interface BlogTranslationEditorProps {
   draft: BlogStudioDraft;
+  assetOptions?: string[];
   onChangeLanguage: (lang: BlogLanguage, mode?: "active" | "preview") => void;
   onChangeTitle: (value: string) => void;
   onChangeExcerpt: (value: string) => void;
   onChangeSlug: (value: string) => void;
   onChangeStatus: (value: BlogPostStatus) => void;
+  onChangeDoc: (value: BlogDoc) => void;
 }
 
 export default function BlogTranslationEditor({
   draft,
+  assetOptions = [],
   onChangeLanguage,
   onChangeTitle,
   onChangeExcerpt,
   onChangeSlug,
   onChangeStatus,
+  onChangeDoc,
 }: BlogTranslationEditorProps) {
   const active = draft.translations[draft.activeLanguage];
 
@@ -97,7 +101,9 @@ export default function BlogTranslationEditor({
           onChange={(event) => onChangeSlug(event.target.value)}
           placeholder="blog-post-slug"
         />
-        <p className="text-xs text-muted-foreground">Public URL: /{draft.activeLanguage}/blog/{active.slug || "slug"}</p>
+        <p className="text-xs text-muted-foreground">
+          Public URL: /{draft.activeLanguage}/blog/{active.slug || "slug"}
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -105,14 +111,20 @@ export default function BlogTranslationEditor({
           <FileText className="h-4 w-4 text-primary" />
           Excerpt
         </Label>
-        <Textarea
+        <textarea
           id="blog-excerpt"
           value={active.excerpt}
           onChange={(event) => onChangeExcerpt(event.target.value)}
           placeholder="Short article summary"
-          className="min-h-[150px]"
+          className="min-h-[150px] w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
         />
       </div>
+
+      <RichBlogEditor
+        value={active.doc}
+        onChange={onChangeDoc}
+        assetOptions={assetOptions}
+      />
 
       <div className="rounded-xl border border-dashed border-border p-4">
         <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
@@ -131,14 +143,13 @@ export default function BlogTranslationEditor({
           </div>
           <div>
             <div className="font-medium text-foreground">Published</div>
-            <div>{active.publishedAt ? new Date(active.publishedAt).toLocaleString() : "Not published"}</div>
+            <div>
+              {active.publishedAt
+                ? new Date(active.publishedAt).toLocaleString()
+                : "Not published"}
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-        Rich document editing for the article body, media embeds, captions, and inline formatting
-        is intentionally coming in the next batch so the multilingual field model stays stable first.
       </div>
 
       <div className="flex flex-wrap gap-2">
