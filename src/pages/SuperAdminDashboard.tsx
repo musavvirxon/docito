@@ -417,7 +417,7 @@ const SuperAdminDashboard = () => {
     <div className="flex min-h-screen bg-background">
       <SuperAdminSidebar
         activeSection={activeSection}
-        onSectionChange={setActiveSection}
+        onSectionChange={(section) => setActiveSection(section as SuperAdminSection)}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((value) => !value)}
       />

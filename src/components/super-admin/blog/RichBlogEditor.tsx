@@ -154,7 +154,7 @@ export default function RichBlogEditor({
     const current = editor.getJSON() as BlogDoc;
     const incoming = value;
     if (JSON.stringify(current) !== JSON.stringify(incoming)) {
-      editor.commands.setContent(incoming as JSONContent, false);
+      editor.commands.setContent(incoming as JSONContent, { emitUpdate: false });
     }
   }, [editor, value]);
 

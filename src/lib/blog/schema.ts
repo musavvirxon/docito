@@ -57,14 +57,14 @@ export const blogDocSchema: z.ZodType<BlogDoc> = z.object({
   content: z.array(blogDocNodeSchema).default([]),
 });
 
-export const blogPostSeoSchema: z.ZodType<BlogPostSeo> = z.object({
+export const blogPostSeoSchema = z.object({
   metaTitle: z.preprocess(normalizeString, z.string().default("")),
   metaDescription: z.preprocess(normalizeString, z.string().default("")),
   keywords: z.preprocess(normalizeStringArray, z.array(z.string()).default([])),
   ogImage: z.preprocess(normalizeString, z.string().default("")),
 });
 
-export const blogPostSchema: z.ZodType<BlogPostRecord> = z.object({
+export const blogPostSchema = z.object({
   groupId: z.preprocess((value) => normalizeGroupId(normalizeString(value)), z.string().min(1)),
   lang: z.enum(BLOG_LANGUAGES),
   slug: z.preprocess((value) => normalizeSlug(normalizeString(value)), z.string().min(1)),

@@ -194,7 +194,7 @@ export const useBlogDrafts = () => {
   const updateSharedFields = useCallback(
     (
       draftId: string,
-      patch: Pick<BlogPostRecord, "featured" | "coverImage" | "tags"> & Partial<BlogPostRecord>,
+      patch: Partial<BlogPostRecord>,
     ) => updateDraft(draftId, (draft) => updateBlogDraftSharedFields(draft, patch)),
     [updateDraft],
   );

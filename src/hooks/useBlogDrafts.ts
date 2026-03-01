@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES, type BlogLanguage } from "@/config/blog";
+import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES } from "@/config/blog";
+import type { BlogLanguage } from "@/types/blog";
 import {
   autofillBlogSeoForAllLanguages,
   createBlogStudioDraftFromGroup,
@@ -190,7 +191,7 @@ export const useBlogDrafts = () => {
   const updateSharedFields = useCallback(
     (
       draftId: string,
-      patch: Pick<BlogPostRecord, "featured" | "coverImage" | "tags"> & Partial<BlogPostRecord>,
+      patch: Partial<BlogPostRecord>,
     ) => updateDraft(draftId, (draft) => updateBlogDraftSharedFields(draft, patch)),
     [updateDraft],
   );

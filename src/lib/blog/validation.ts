@@ -29,7 +29,7 @@ export const validateBlogPostRecord = (
     };
   }
 
-  const checklist = createBlogLanguageChecklist(parsed.data.lang, parsed.data);
+  const checklist = createBlogLanguageChecklist(parsed.data.lang, parsed.data as BlogPostRecord);
   const checklistIssues: BlogValidationIssue[] = checklist.missingKeys.map((key) => ({
     path: key,
     message: `${key} is required`,
