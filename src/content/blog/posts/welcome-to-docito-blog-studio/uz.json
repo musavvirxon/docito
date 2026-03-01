@@ -1,0 +1,124 @@
+{
+  "groupId": "welcome-to-docito-blog-studio",
+  "lang": "uz",
+  "slug": "docito-blog-studioga-xush-kelibsiz",
+  "status": "published",
+  "featured": true,
+  "coverImage": "/blog/welcome-to-docito-blog-studio/cover.webp",
+  "tags": [
+    "docito",
+    "blog",
+    "medical platform",
+    "seo",
+    "multilingual"
+  ],
+  "createdAt": "2026-03-01T00:00:00.000Z",
+  "updatedAt": "2026-03-01T00:00:00.000Z",
+  "publishedAt": "2026-03-01T00:00:00.000Z",
+  "title": "Docito Blog Studioga xush kelibsiz",
+  "excerpt": "Docito Blog Studio tibbiy platforma uchun ko‘p tilli kontentni statik repo fayllaridan tez va SEO uchun qulay tarzda nashr qiladi.",
+  "seo": {
+    "metaTitle": "Docito Blog Studioga xush kelibsiz | Ko‘p tilli tibbiy blog",
+    "metaDescription": "Docito Blog Studio statik repo fayllari, xavfsiz nashr jarayoni va toza marshrutlash orqali ko‘p tilli SEO-friendly tibbiy blogni qanday ishlatishini bilib oling.",
+    "keywords": [
+      "docito",
+      "doctor",
+      "clinic",
+      "medical platform",
+      "medical management software",
+      "patient record",
+      "healthcare automation",
+      "multilingual blog"
+    ],
+    "ogImage": "/blog/welcome-to-docito-blog-studio/cover.webp"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Docito Blog Studioga xush kelibsiz"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Docito Blog Studio ommaviy blog tez, indekslanadigan va tilga mos bo‘lib qolishi uchun nashr qilingan maqolalarni statik repo fayllari sifatida saqlaydi."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Har bir maqola guruhi umumiy groupId ostida har bir til uchun alohida fayldan foydalanadi, bu esa backendda kontent saqlamasdan tarjimalarni birga boshqarishga yordam beradi."
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Statik ko‘p tilli post modeli"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "SEO uchun qulay til-prefiksli URL lar"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Ko‘rib chiqiladigan pull request orqali server tomondan nashr qilish"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
