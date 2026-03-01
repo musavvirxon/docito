@@ -1,26 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES, type BlogLanguage } from "@/config/blog";
+import { BLOG_DEFAULT_LANGUAGE, BLOG_LANGUAGES } from "@/config/blog";
 import { useBlogChecklist } from "@/hooks/blog/useBlogChecklist";
 import { useBlogDrafts } from "@/hooks/blog/useBlogDrafts";
 import { useBlogFilters } from "@/hooks/blog/useBlogFilters";
 import { useBlogPreview } from "@/hooks/blog/useBlogPreview";
 import {
   buildBlogStudioListItems,
-  createBlogStudioDraftFromGroup,
-  createEmptyBlogStudioDraft,
   getPublishedBlogStudioGroup,
   hydrateBlogStudioRowsFromContent,
   requestBlogStudioGroupDelete,
   submitBlogStudioDraftForPublish,
-  updateBlogDraftSharedFields,
-  updateBlogDraftTranslation,
   type BlogStudioDeleteOptions,
   type BlogStudioDraft,
   type BlogStudioListItem,
   type BlogStudioSubmitOptions,
 } from "@/lib/blog/studio-api";
-import type { BlogPostGroup, BlogPostRecord } from "@/types/blog";
+import type { BlogLanguage, BlogPostRecord } from "@/types/blog";
 
 export const BLOG_STUDIO_QUERY_KEY = ["blog-studio", "content"];
 
@@ -42,14 +38,13 @@ export const useBlogStudio = () => {
   );
 
   const filters = useBlogFilters(baseRows);
+  const activeDraft = drafts.activeDraft || null;
 
-  const selectedDraft = drafts.activeDraft;
   const selectedPublishedGroup = useMemo(
     () => publishedGroups.find((group) => group.groupId === selectedGroupId) || null,
     [publishedGroups, selectedGroupId],
   );
 
-  const activeDraft = selectedDraft || null;
   const checklist = useBlogChecklist(activeDraft);
   const preview = useBlogPreview(activeDraft, activeDraft?.previewLanguage || BLOG_DEFAULT_LANGUAGE);
 
@@ -87,10 +82,7 @@ export const useBlogStudio = () => {
     return createDraft();
   };
 
-  const updateActiveTranslation = async (
-    lang: BlogLanguage,
-    patch: Partial<BlogPostRecord>,
-  ) => {
+  const updateActiveTranslation = async (lang: BlogLanguage, patch: Partial<BlogPostRecord>) => {
     const draft = await ensureActiveDraft();
     drafts.updateTranslation(draft.draftId, lang, patch);
   };
@@ -129,7 +121,10 @@ export const useBlogStudio = () => {
       options?: BlogStudioDeleteOptions;
     }) => requestBlogStudioGroupDelete(input.groupId, input.languages, input.options),
     onSuccess: async (_, input) => {
-      drafts.removeDraft(input.groupId);
+      const draftToRemove = drafts.drafts.find((draft) => draft.groupId === input.groupId);
+      if (draftToRemove) {
+        drafts.removeDraft(draftToRemove.draftId);
+      }
       await queryClient.invalidateQueries({ queryKey: BLOG_STUDIO_QUERY_KEY });
     },
   });
@@ -158,12 +153,6 @@ export const useBlogStudio = () => {
     drafts.setLanguage(draft.draftId, lang, mode);
   };
 
-  const createDraftFromPublishedGroup = (group: BlogPostGroup) => {
-    const draft = drafts.createDraftFromGroup(group);
-    setSelectedGroupId(group.groupId);
-    return draft;
-  };
-
   const duplicateActiveDraft = async () => {
     const draft = await ensureActiveDraft();
     const duplicate = drafts.duplicateDraft(draft.draftId);
@@ -177,12 +166,6 @@ export const useBlogStudio = () => {
   const discardActiveDraft = async () => {
     if (!activeDraft) return;
     drafts.removeDraft(activeDraft.draftId);
-  };
-
-  const loadPublishedGroupIntoDraft = async (groupId: string) => {
-    const group = await getPublishedBlogStudioGroup(groupId);
-    if (!group) return null;
-    return createDraftFromPublishedGroup(group);
   };
 
   return {
@@ -206,7 +189,6 @@ export const useBlogStudio = () => {
     selectLanguage,
     duplicateActiveDraft,
     discardActiveDraft,
-    loadPublishedGroupIntoDraft,
     publishActiveDraft,
     deleteSelectedGroup,
     publishMutation,
