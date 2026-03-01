@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useBlogStudio } from "@/hooks/blog/useBlogStudio";
-import { autofillBlogSeoForLanguage, stringifyBlogStudioDraftExport } from "@/lib/blog/studio-api";
-import type { BlogPostStatus } from "@/types/blog";
+import {
+  autofillBlogSeoForLanguage,
+  stringifyBlogStudioDraftExport,
+} from "@/lib/blog/studio-api";
+import type { BlogDoc, BlogPostStatus } from "@/types/blog";
 import BlogDeleteDialog from "@/components/super-admin/blog/BlogDeleteDialog";
 import BlogEditorShell from "@/components/super-admin/blog/BlogEditorShell";
 import BlogFiltersBar from "@/components/super-admin/blog/BlogFiltersBar";
@@ -12,7 +15,13 @@ import BlogJsonDialog from "@/components/super-admin/blog/BlogJsonDialog";
 import BlogPostList from "@/components/super-admin/blog/BlogPostList";
 import BlogPreviewPanel from "@/components/super-admin/blog/BlogPreviewPanel";
 import BlogStatusPanel from "@/components/super-admin/blog/BlogStatusPanel";
+import {
+  toStudioAssetUploads,
+  type BlogAssetItem,
+} from "@/components/super-admin/blog/BlogAssetManager";
 import { BookOpenText, Github, Languages, ShieldCheck } from "lucide-react";
+
+const createAssetStateKey = (groupId: string) => `docito.blogStudio.assets.${groupId}`;
 
 export default function BlogStudioSection() {
   const { toast } = useToast();
@@ -20,11 +29,53 @@ export default function BlogStudioSection() {
   const [jsonOpen, setJsonOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [assetMap, setAssetMap] = useState<Record<string, BlogAssetItem[]>>({});
+
+  useEffect(() => {
+    if (!studio.activeDraft || typeof window === "undefined") return;
+    const key = createAssetStateKey(studio.activeDraft.groupId);
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as Array<{
+        filename: string;
+        path: string;
+      }>;
+      setAssetMap((current) => ({
+        ...current,
+        [studio.activeDraft!.groupId]: current[studio.activeDraft!.groupId] || [],
+      }));
+      if (parsed.length > 0) {
+        toast({
+          title: "Local asset references restored",
+          description:
+            "Asset filenames were restored for this draft. Re-upload files if you need to submit them again.",
+        });
+      }
+    } catch {
+      // ignore
+    }
+  }, [studio.activeDraft?.groupId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    Object.entries(assetMap).forEach(([groupId, assets]) => {
+      const key = createAssetStateKey(groupId);
+      const serializable = assets.map((asset) => ({
+        filename: asset.filename,
+        path: asset.path,
+      }));
+      window.localStorage.setItem(key, JSON.stringify(serializable));
+    });
+  }, [assetMap]);
 
   const exportJson = useMemo(
     () => (studio.activeDraft ? stringifyBlogStudioDraftExport(studio.activeDraft) : ""),
     [studio.activeDraft],
   );
+
+  const activeAssets = studio.activeDraft ? assetMap[studio.activeDraft.groupId] || [] : [];
 
   const handleCreateDraft = () => {
     const draft = studio.createDraft();
@@ -69,6 +120,7 @@ export default function BlogStudioSection() {
         body: studio.activeDraft
           ? `Automated Blog Studio publish request for \`${studio.activeDraft.groupId}\`.`
           : undefined,
+        assetFiles: toStudioAssetUploads(activeAssets),
       });
 
       toast({
@@ -86,7 +138,9 @@ export default function BlogStudioSection() {
 
   const handleDelete = async () => {
     try {
-      const result = await studio.deleteSelectedGroup();
+      const result = await studio.deleteSelectedGroup({
+        assetFilenames: activeAssets.map((asset) => asset.filename),
+      });
       setDeleteOpen(false);
       toast({
         title: "Delete request submitted",
@@ -125,6 +179,36 @@ export default function BlogStudioSection() {
     });
   };
 
+  const handleAddAssets = (nextAssets: BlogAssetItem[]) => {
+    if (!studio.activeDraft) return;
+    setAssetMap((current) => {
+      const existing = current[studio.activeDraft!.groupId] || [];
+      const merged = [...existing];
+      nextAssets.forEach((asset) => {
+        const existingIndex = merged.findIndex((item) => item.filename === asset.filename);
+        if (existingIndex >= 0) {
+          merged[existingIndex] = asset;
+        } else {
+          merged.push(asset);
+        }
+      });
+      return {
+        ...current,
+        [studio.activeDraft!.groupId]: merged,
+      };
+    });
+  };
+
+  const handleRemoveAsset = (filename: string) => {
+    if (!studio.activeDraft) return;
+    setAssetMap((current) => ({
+      ...current,
+      [studio.activeDraft!.groupId]: (current[studio.activeDraft!.groupId] || []).filter(
+        (asset) => asset.filename !== filename,
+      ),
+    }));
+  };
+
   const activeTranslation = studio.activeDraft
     ? studio.activeDraft.translations[studio.activeDraft.activeLanguage]
     : null;
@@ -159,8 +243,8 @@ export default function BlogStudioSection() {
               </h1>
               <p className="mt-1 max-w-4xl text-sm text-muted-foreground">
                 The admin route now includes a stable multilingual editor shell with language tabs,
-                group-wide fields, per-language content fields, per-language SEO fields, local
-                draft persistence, JSON export, preview state, and secure publish/delete actions.
+                group-wide fields, per-language content fields, per-language SEO fields, rich body
+                editing, local asset staging, preview state, and secure publish/delete actions.
               </p>
             </div>
           </div>
@@ -198,6 +282,9 @@ export default function BlogStudioSection() {
           <div className="xl:col-span-5">
             <BlogEditorShell
               draft={studio.activeDraft}
+              assets={activeAssets}
+              onAddAssets={handleAddAssets}
+              onRemoveAsset={handleRemoveAsset}
               onChangeLanguage={async (lang, mode) => {
                 await studio.selectLanguage(lang, mode);
               }}
@@ -231,6 +318,12 @@ export default function BlogStudioSection() {
                       ? studio.activeDraft.translations[studio.activeDraft.activeLanguage]
                           .publishedAt || new Date().toISOString()
                       : null,
+                });
+              }}
+              onChangeDoc={(value: BlogDoc) => {
+                if (!studio.activeDraft) return;
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  doc: value,
                 });
               }}
               onChangeCoverImage={(value) => {
@@ -307,7 +400,7 @@ export default function BlogStudioSection() {
               onPublish={handlePublish}
             />
 
-            <BlogPreviewPanel previewState={studio.preview} />
+            <BlogPreviewPanel draft={studio.activeDraft} />
 
             {activeTranslation ? (
               <Card className="rounded-2xl shadow-sm">
