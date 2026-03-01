@@ -3,8 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useBlogStudio } from "@/hooks/blog/useBlogStudio";
-import { stringifyBlogStudioDraftExport } from "@/lib/blog/studio-api";
-import type { BlogLanguage } from "@/types/blog";
+import { autofillBlogSeoForLanguage, stringifyBlogStudioDraftExport } from "@/lib/blog/studio-api";
+import type { BlogPostStatus } from "@/types/blog";
 import BlogDeleteDialog from "@/components/super-admin/blog/BlogDeleteDialog";
 import BlogEditorShell from "@/components/super-admin/blog/BlogEditorShell";
 import BlogFiltersBar from "@/components/super-admin/blog/BlogFiltersBar";
@@ -101,11 +101,28 @@ export default function BlogStudioSection() {
     }
   };
 
-  const handleChangeLanguage = async (
-    lang: BlogLanguage,
-    mode: "active" | "preview" = "active",
-  ) => {
-    await studio.selectLanguage(lang, mode);
+  const handleAutofillAllSeo = () => {
+    if (!studio.activeDraft) return;
+    studio.drafts.autofillSeo(studio.activeDraft.draftId);
+    toast({
+      title: "SEO autofilled",
+      description:
+        "Meta title, description, keywords, and OG image were filled where empty across all languages.",
+    });
+  };
+
+  const handleAutofillCurrentLanguageSeo = () => {
+    if (!studio.activeDraft) return;
+    const next = autofillBlogSeoForLanguage(
+      studio.activeDraft,
+      studio.activeDraft.activeLanguage,
+    );
+    studio.drafts.upsertDraft(next);
+
+    toast({
+      title: "Language SEO autofilled",
+      description: `Filled missing SEO fields for ${studio.activeDraft.activeLanguage.toUpperCase()}.`,
+    });
   };
 
   const activeTranslation = studio.activeDraft
@@ -141,9 +158,9 @@ export default function BlogStudioSection() {
                 Docito Blog Studio
               </h1>
               <p className="mt-1 max-w-4xl text-sm text-muted-foreground">
-                The admin route is now wired to a stable Blog Studio shell with list filtering,
-                draft creation, local draft persistence, shared-field editing, JSON export, preview
-                state, and secure publish/delete actions through the Supabase Edge Function.
+                The admin route now includes a stable multilingual editor shell with language tabs,
+                group-wide fields, per-language content fields, per-language SEO fields, local
+                draft persistence, JSON export, preview state, and secure publish/delete actions.
               </p>
             </div>
           </div>
@@ -181,7 +198,9 @@ export default function BlogStudioSection() {
           <div className="xl:col-span-5">
             <BlogEditorShell
               draft={studio.activeDraft}
-              onChangeLanguage={handleChangeLanguage}
+              onChangeLanguage={async (lang, mode) => {
+                await studio.selectLanguage(lang, mode);
+              }}
               onChangeGroupId={(value) => {
                 void studio.updateActiveSharedFields({ groupId: value });
               }}
@@ -197,6 +216,23 @@ export default function BlogStudioSection() {
                   excerpt: value,
                 });
               }}
+              onChangeSlug={(value) => {
+                if (!studio.activeDraft) return;
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  slug: value,
+                });
+              }}
+              onChangeStatus={(value: BlogPostStatus) => {
+                if (!studio.activeDraft) return;
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  status: value,
+                  publishedAt:
+                    value === "published"
+                      ? studio.activeDraft.translations[studio.activeDraft.activeLanguage]
+                          .publishedAt || new Date().toISOString()
+                      : null,
+                });
+              }}
               onChangeCoverImage={(value) => {
                 void studio.updateActiveSharedFields({ coverImage: value });
               }}
@@ -210,17 +246,54 @@ export default function BlogStudioSection() {
               onChangeFeatured={(value) => {
                 void studio.updateActiveSharedFields({ featured: value });
               }}
+              onChangeMetaTitle={(value) => {
+                if (!studio.activeDraft) return;
+                const current = studio.activeDraft.translations[studio.activeDraft.activeLanguage];
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  seo: {
+                    ...current.seo,
+                    metaTitle: value,
+                  },
+                });
+              }}
+              onChangeMetaDescription={(value) => {
+                if (!studio.activeDraft) return;
+                const current = studio.activeDraft.translations[studio.activeDraft.activeLanguage];
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  seo: {
+                    ...current.seo,
+                    metaDescription: value,
+                  },
+                });
+              }}
+              onChangeKeywords={(value) => {
+                if (!studio.activeDraft) return;
+                const current = studio.activeDraft.translations[studio.activeDraft.activeLanguage];
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  seo: {
+                    ...current.seo,
+                    keywords: value
+                      .split(",")
+                      .map((keyword) => keyword.trim())
+                      .filter(Boolean),
+                  },
+                });
+              }}
+              onChangeOgImage={(value) => {
+                if (!studio.activeDraft) return;
+                const current = studio.activeDraft.translations[studio.activeDraft.activeLanguage];
+                void studio.updateActiveTranslation(studio.activeDraft.activeLanguage, {
+                  seo: {
+                    ...current.seo,
+                    ogImage: value,
+                  },
+                });
+              }}
+              onAutofillCurrentLanguageSeo={handleAutofillCurrentLanguageSeo}
               onDuplicate={() => {
                 void studio.duplicateActiveDraft();
               }}
-              onAutofillSeo={() => {
-                if (!studio.activeDraft) return;
-                studio.drafts.autofillSeo(studio.activeDraft.draftId);
-                toast({
-                  title: "SEO autofilled",
-                  description: "Meta title, description, keywords, and OG image were filled where empty.",
-                });
-              }}
+              onAutofillSeo={handleAutofillAllSeo}
               onOpenJson={() => setJsonOpen(true)}
               onOpenDelete={() => setDeleteOpen(true)}
             />
@@ -251,7 +324,9 @@ export default function BlogStudioSection() {
                     </div>
                     <div>
                       <span className="font-medium text-foreground">Tags:</span>{" "}
-                      {activeTranslation.tags.length ? activeTranslation.tags.join(", ") : "None"}
+                      {activeTranslation.tags.length
+                        ? activeTranslation.tags.join(", ")
+                        : "None"}
                     </div>
                   </div>
                 </CardContent>
