@@ -1,63 +1,79 @@
-# Fix Build Errors and Restore Platform
 
-The platform is broken due to duplicate code blocks left in two critical files, plus a few type errors in blog components. Here is the plan to fix everything:
 
-## 1. Fix `src/i18n/config.ts` -- Remove duplicate code block
+# Fix Plan: Dashboard Loading, Calendar, Medications, and PDF Redesign
 
-The file contains the entire module twice (lines 1-401 is the old version, lines 402-818 is the new version with blog namespace support). The new version (lines 402-818) is the better one with `supportedLanguageCodes`, `BLOG_I18N_NAMESPACE`, and `I18N_NAMESPACES` exports.
+## Issue 1: Practice Admin Dashboard -- `practices.updated_at` does not exist
 
-**Action**: Keep only the new version (lines 402-818), removing the `// src/i18n/config.ts` comment at line 402 and fixing the duplicate default export.
+**Root cause**: In `src/hooks/useAdminDashboard.ts` line 58, the query uses `.order("updated_at", { ascending: false })` but the `practices` table has no `updated_at` column. This crashes the entire dashboard.
 
-## 2. Fix `src/components/SEOHead.tsx` -- Remove duplicate code blocks
+**Fix**: Change the order column from `updated_at` to `created_at` in `resolvePracticeForUser()`.
 
-The file has THREE versions of `SEOHead` concatenated:
-
-- Lines 1-334: Old imperative DOM-based version (no Helmet)
-- Lines 336-601: New Helmet-based version with article/blog support (best version)
-- Lines 602-848: Third older Helmet version
-
-**Action**: Keep only the second version (lines 336-601) which has the richest feature set (article metadata, blog SEO support, proper Helmet usage). Merge in the useful schema helpers (`generateDoctorSchema`, `generateFAQSchema`, `generateBreadcrumbSchema`) from the first version and the `generateOrganizationSchema`/`generateMedicalWebsiteSchema` from version 1 (the second version already has its own).
-
-## 3. Fix `src/hooks/useBlogDrafts.ts` -- Fix import
-
-Line 2 imports `BlogLanguage` from `@/config/blog` but that type is exported from `@/types/blog`. Change the import source.
-
-## 4. Fix `src/hooks/blog/useBlogStudio.ts` -- Relax `updateActiveSharedFields` signature
-
-The function requires `Pick<BlogPostRecord, "featured" | "coverImage" | "tags">` (all three fields mandatory), but callers pass partial objects like `{ groupId: value }` or `{ coverImage: value }`. Change the signature to `Partial<BlogPostRecord>`.
-
-## 5. Fix `src/components/super-admin/blog/RichBlogEditor.tsx` -- Fix `setContent` call
-
-Line 157: `editor.commands.setContent(incoming as JSONContent, false)` -- the second argument should be an options object `{ emitUpdate: false }`, not a bare `false`.
+**File**: `src/hooks/useAdminDashboard.ts` (line 58)
 
 ---
 
-## Technical Details
+## Issue 2: Appointments Not Showing in Calendar
 
-### File: `src/i18n/config.ts`
+**Root cause**: After investigating the data, appointments DO exist in the database for today (2026-03-02) with the correct `doctor_id`. The calendar code and ID resolution look correct. The likely issue is that the calendar query at `useCalendarData.ts` line 152 uses `(supabase as any)` with chained `.select()` then separately calls `baseWhere()` -- but the `baseWhere` function returns the query result, not a chainable builder, because it calls the query methods and the result of `baseWhere(q)` is being assigned back but the `await` is already on the outer `from().select()`.
 
-- Delete lines 1-401 (old duplicate)
-- Remove the comment `// src/i18n/config.ts` at line 402
-- The remaining code (new version) already has `supportedLanguageCodes` and `I18N_NAMESPACES`
+Looking more carefully at the code:
+```ts
+let q1 = await (supabase as any).from("appointments").select(selectFull);
+q1 = baseWhere(q1);
+```
 
-### File: `src/components/SEOHead.tsx`
+This is the bug: `await` resolves the promise from `.select()`, so `q1` is already the **result object** (with `.data` and `.error`), not a query builder. Then `baseWhere(q1)` tries to chain `.eq()`, `.gte()`, etc. on a result object, which silently fails or returns no data.
 
-- Keep lines 336-601 as the primary `SEOHead` component (Helmet-based with full article/blog support)
-- Port `generateDoctorSchema`, `generateFAQSchema`, `generateBreadcrumbSchema` from lines 284-334 into the final file
-- Port `generateOrganizationSchema` and `generateMedicalWebsiteSchema` from lines 255-282
-- Delete lines 1-335 and lines 602-848
+**Fix**: Remove the `await` from the initial `.from().select()` call so it remains a chainable query builder, and add `await` after `baseWhere()` applies the filters. Apply this fix to all query attempts in `fetchAppointments`.
 
-### File: `src/hooks/useBlogDrafts.ts`
+**File**: `src/components/doctor/calendar/useCalendarData.ts` (lines 152-215)
 
-- Change `import { ... type BlogLanguage } from "@/config/blog"` to import `BlogLanguage` from `"@/types/blog"`
+---
 
-### File: `src/hooks/blog/useBlogStudio.ts`
+## Issue 3: Prescribed Medications Not Visible in Treatment Plan
 
-- Change `updateActiveSharedFields` parameter type from `Pick<BlogPostRecord, "featured" | "coverImage" | "tags"> & Partial<BlogPostRecord>` to `Partial<BlogPostRecord>`
-- Also update the same signature in `useBlogDrafts.ts` `updateSharedFields`
+**Root cause**: The `TreatmentPlanningSection` fetches plans via `select("*")` from `treatment_plans` but does NOT fetch medication counts. The plan cards in this section don't display medications at all -- they show only title, patient, notes, and total cost. The `EnhancedTreatmentPlanDetailModal` does fetch medications correctly from the `medications` table, so they appear when you click "View" and go to the "Medications" tab.
 
-### File: `src/components/super-admin/blog/RichBlogEditor.tsx`
+The issue is likely that the `PatientTreatmentPlanModal` (patient-facing view) does NOT fetch or display medications at all -- it only shows procedures.
 
-- Change `editor.commands.setContent(incoming as JSONContent, false)` to `editor.commands.setContent(incoming as JSONContent, { emitUpdate: false })`
+**Fix**:
+- Add medication fetching to `PatientTreatmentPlanModal` (fetch from `medications` table by `treatment_plan_id`)
+- Add a "Medications" section in the patient modal UI to display prescribed medications
+- In the doctor's `TreatmentPlanningSection` cards, add a medication count indicator by fetching counts alongside plans
 
-also fix backend if there is any error.
+---
+
+## Issue 4: Treatment Plan PDF Redesign
+
+**Current state**: The PDF already includes the Docito logo and URL ("docito.app"), doctor name/specialty/phone/email, and all medical content. However, it is basic KV-pair layout and does NOT include practice name/info.
+
+**Redesign plan** for `supabase/functions/treatment-plan-generate-pdf/index.ts`:
+
+1. **Add practice information**: Fetch the practice name, address, phone, and email from the `practices` table (via `doctors.practice_id` join) and display it prominently in the header.
+
+2. **Redesign header**: Professional header with Docito logo (left), practice name + address (center), and "docito.app" URL (right). Add a colored accent bar below.
+
+3. **Add "Generated by" section**: Clear section showing doctor name, specialty, and practice name with a line like "Generated by Dr. [Name] at [Practice Name]".
+
+4. **Visual improvements**:
+   - Add colored section headers with accent backgrounds
+   - Use alternating row shading for procedures and medications tables
+   - Add a professional footer with Docito branding, verification QR, and generation timestamp
+   - Better typography hierarchy (larger section titles, clearer separation)
+   - Add horizontal accent lines between sections
+
+5. **Data pipeline change**: Add `practiceName`, `practiceAddress`, `practicePhone` parameters to `generateTreatmentPlanPdf()`. Fetch practice data in the handler alongside doctor data.
+
+**File**: `supabase/functions/treatment-plan-generate-pdf/index.ts`
+
+---
+
+## Technical Summary of Changes
+
+| File | Change |
+|------|--------|
+| `src/hooks/useAdminDashboard.ts` | Change `order("updated_at", ...)` to `order("created_at", ...)` |
+| `src/components/doctor/calendar/useCalendarData.ts` | Fix async/await pattern in `fetchAppointments` so queries are properly chained |
+| `src/components/patient/PatientTreatmentPlanModal.tsx` | Add medications fetching and display section |
+| `supabase/functions/treatment-plan-generate-pdf/index.ts` | Redesign PDF layout with practice info, better styling, and Docito branding |
+
