@@ -149,18 +149,18 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       `;
 
       // Try full select
-      let q1 = await (supabase as any).from("appointments").select(selectFull);
-      q1 = baseWhere(q1);
+      let q1 = baseWhere((supabase as any).from("appointments").select(selectFull));
+      const r1 = await q1;
 
-      if (!q1.error) return { rows: q1.data || [], usedProcedure: true };
+      if (!r1.error) return { rows: r1.data || [], usedProcedure: true };
 
       // If error is about procedure join columns (price/estimated_duration_minutes), retry with slimmer procedure join
       const procedureJoinError =
-        isMissingColumnError(q1.error, "price") ||
-        isMissingColumnError(q1.error, "estimated_duration_minutes") ||
-        isMissingColumnError(q1.error, "default_cost") ||
-        isMissingColumnError(q1.error, "procedure_id") ||
-        String(q1.error?.message || "").toLowerCase().includes("procedures");
+        isMissingColumnError(r1.error, "price") ||
+        isMissingColumnError(r1.error, "estimated_duration_minutes") ||
+        isMissingColumnError(r1.error, "default_cost") ||
+        isMissingColumnError(r1.error, "procedure_id") ||
+        String(r1.error?.message || "").toLowerCase().includes("procedures");
 
       if (procedureJoinError) {
         // retry full but with minimal procedure columns
@@ -186,36 +186,32 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
           procedures:procedure_id(id, name, category)
         `;
 
-        let q1b = await (supabase as any).from("appointments").select(selectFullMinimalProc);
-        q1b = baseWhere(q1b);
+        const r1b = await baseWhere((supabase as any).from("appointments").select(selectFullMinimalProc));
 
-        if (!q1b.error) return { rows: q1b.data || [], usedProcedure: true };
+        if (!r1b.error) return { rows: r1b.data || [], usedProcedure: true };
 
         // Continue to next fallback
       }
 
       // Try without start-request cols (but keep procedure)
-      let q2 = await (supabase as any).from("appointments").select(selectNoStartRequest);
-      q2 = baseWhere(q2);
+      const r2 = await baseWhere((supabase as any).from("appointments").select(selectNoStartRequest));
 
-      if (!q2.error) return { rows: q2.data || [], usedProcedure: true };
+      if (!r2.error) return { rows: r2.data || [], usedProcedure: true };
 
       // If procedure_id column missing, fallback to no procedure select
-      if (isMissingColumnError(q2.error, "procedure_id")) {
-        let q3 = await (supabase as any).from("appointments").select(selectNoProcedure);
-        q3 = baseWhere(q3);
+      if (isMissingColumnError(r2.error, "procedure_id")) {
+        const r3 = await baseWhere((supabase as any).from("appointments").select(selectNoProcedure));
 
-        if (!q3.error) return { rows: q3.data || [], usedProcedure: false };
+        if (!r3.error) return { rows: r3.data || [], usedProcedure: false };
       }
 
       // Last attempt: no procedure
-      let qLast = await (supabase as any).from("appointments").select(selectNoProcedure);
-      qLast = baseWhere(qLast);
+      const rLast = await baseWhere((supabase as any).from("appointments").select(selectNoProcedure));
 
-      if (!qLast.error) return { rows: qLast.data || [], usedProcedure: false };
+      if (!rLast.error) return { rows: rLast.data || [], usedProcedure: false };
 
       // If everything failed, throw last error
-      throw qLast.error || q2.error || q1.error;
+      throw rLast.error || r2.error || r1.error;
     },
     []
   );

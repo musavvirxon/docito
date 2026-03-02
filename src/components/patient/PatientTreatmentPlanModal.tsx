@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, DollarSign, Calendar, CheckCircle, Clock } from "lucide-react";
+import { FileText, DollarSign, Calendar, CheckCircle, Clock, Pill } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +42,17 @@ interface TreatmentPlanProcedure {
   };
 }
 
+interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  instructions?: string;
+  start_date?: string;
+  end_date?: string;
+  status?: string;
+}
+
 interface PatientTreatmentPlanModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -54,30 +65,39 @@ const PatientTreatmentPlanModal = ({
   treatmentPlan
 }: PatientTreatmentPlanModalProps) => {
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
+  const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
-      fetchProcedures();
+      fetchData();
     }
   }, [open, treatmentPlan.id]);
 
-  const fetchProcedures = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("treatment_plan_procedures")
-        .select(`
-          *,
-          procedure:procedures(name, category, type, default_cost, notes)
-        `)
-        .eq("treatment_plan_id", treatmentPlan.id)
-        .order("sequence_order");
+      const [procResult, medResult] = await Promise.all([
+        supabase
+          .from("treatment_plan_procedures")
+          .select(`
+            *,
+            procedure:procedures(name, category, type, default_cost, notes)
+          `)
+          .eq("treatment_plan_id", treatmentPlan.id)
+          .order("sequence_order"),
+        (supabase as any)
+          .from("medications")
+          .select("*")
+          .eq("treatment_plan_id", treatmentPlan.id)
+          .order("created_at", { ascending: true }),
+      ]);
 
-      if (error) throw error;
-      setProcedures(data || []);
+      if (procResult.error) throw procResult.error;
+      setProcedures(procResult.data || []);
+      setMedications(medResult.data || []);
     } catch (error: any) {
-      toast.error("Failed to load procedures: " + error.message);
+      toast.error("Failed to load treatment plan details: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -95,7 +115,8 @@ const PatientTreatmentPlanModal = ({
       planned: "bg-blue-100 text-blue-800",
       in_progress: "bg-orange-100 text-orange-800",
       completed: "bg-green-100 text-green-800",
-      cancelled: "bg-red-100 text-red-800"
+      cancelled: "bg-red-100 text-red-800",
+      active: "bg-green-100 text-green-800",
     };
     return colors[status] || colors.planned;
   };
@@ -257,6 +278,64 @@ const PatientTreatmentPlanModal = ({
               )}
             </CardContent>
           </Card>
+
+          {/* Medications List */}
+          {medications.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Pill className="w-5 h-5" />
+                  Prescribed Medications ({medications.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Medication</TableHead>
+                      <TableHead>Dosage</TableHead>
+                      <TableHead>Frequency</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead>Instructions</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {medications.map((med) => (
+                      <TableRow key={med.id}>
+                        <TableCell className="font-medium">{med.name}</TableCell>
+                        <TableCell>{med.dosage || "—"}</TableCell>
+                        <TableCell>{med.frequency || "—"}</TableCell>
+                        <TableCell>
+                          {med.start_date || med.end_date ? (
+                            <div className="text-sm">
+                              {med.start_date && <span>{new Date(med.start_date).toLocaleDateString()}</span>}
+                              {med.start_date && med.end_date && <span> — </span>}
+                              {med.end_date && <span>{new Date(med.end_date).toLocaleDateString()}</span>}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <p className="text-sm text-muted-foreground max-w-xs">
+                            {med.instructions || "—"}
+                          </p>
+                        </TableCell>
+                        <TableCell>
+                          {med.status && (
+                            <Badge className={getStatusBadgeColor(med.status)}>
+                              {med.status.replace('_', ' ')}
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>

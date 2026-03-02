@@ -55,7 +55,7 @@ export const useAdminDashboard = () => {
         .from("practices")
         .select("*")
         .eq("admin_id", uid)
-        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (error) throw error;
