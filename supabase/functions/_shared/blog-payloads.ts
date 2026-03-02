@@ -1,4 +1,6 @@
-import { BLOG_LANGUAGES } from "../../../src/config/blog.ts";
+const BLOG_LANGUAGES = [
+  "en", "ru", "uz", "ar", "tr", "es", "de", "zh", "pt", "ja", "ko",
+] as const;
 
 export type BlogStudioAction = "submit_for_publish" | "delete_post_group";
 
