@@ -119,7 +119,7 @@ function ProviderCard({
         whileHover={{ y: -8, scale: 1.02 }}
         className={`relative group p-8 bg-background/50 backdrop-blur-xl border ${provider.borderColor} rounded-3xl shadow-xl ${provider.glowColor} hover:shadow-2xl transition-all duration-500 cursor-pointer overflow-hidden h-full flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background`}
         aria-label={t(
-          `home:providers.${provider.id}.cta`,
+          `premium:providers.${provider.id}.cta`,
           `Open ${provider.id} landing page`
         )}
       >
@@ -142,12 +142,12 @@ function ProviderCard({
           </motion.div>
 
           <h3 className="text-xl font-semibold text-foreground mb-3 capitalize">
-            {t(`home:providers.${provider.id}.title`, provider.id)}
+            {t(`premium:providers.${provider.id}.title`, provider.id)}
           </h3>
 
           <p className="text-muted-foreground text-sm mb-6 leading-relaxed flex-grow">
             {t(
-              `home:providers.${provider.id}.description`,
+              `premium:providers.${provider.id}.description`,
               `Find and book ${provider.id}—with profiles, availability, and clear next steps.`
             )}
           </p>
@@ -157,7 +157,7 @@ function ProviderCard({
             className="flex items-center gap-2 text-sm font-medium text-primary mt-auto"
           >
             <span>
-              {t("home:providers.findProviders", "Find Providers")}
+              {t("premium:providers.findProviders", "Find Providers")}
             </span>
             <ArrowRight className="w-4 h-4" />
           </motion.div>
@@ -190,10 +190,12 @@ export default function ProviderCards() {
             {t("premium:providers.networkTitle", "One network, one patient journey")}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t("premium:providers.networkDescription", "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn't get lost between places.")}
+            {t(
+              "premium:providers.networkDescription",
+              "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn't get lost between places."
+            )}
           </p>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto mt-4">
-            {t("premium:providers.networkNote", "Newly launched: provider profiles appear as teams onboard.")}
+            )}
           </p>
         </div>
 
