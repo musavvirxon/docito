@@ -1,1 +1,10 @@
 project_id = "gswwpjdtgsxzcsnrxutu"
+
+[functions.me]
+verify_jwt = false
+
+[functions.get_public_metrics]
+verify_jwt = false
+
+[functions.blog-studio]
+verify_jwt = false

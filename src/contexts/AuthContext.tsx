@@ -163,9 +163,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
+    if (!accessToken) return null;
+
     const { data, error } = await supabase.functions.invoke("me", {
       body: { action: "get" },
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
 
     if (error) throw error;
