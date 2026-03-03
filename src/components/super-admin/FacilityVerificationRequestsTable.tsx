@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, Clock, Eye, XCircle } from "lucide-react";
+import { CheckCircle, Clock, Download, Eye, FileText, Loader2, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
 
 type FacilityType = "practice" | "lab" | "imaging" | "pharmacy";
 type Status = "submitted" | "in_review" | "approved" | "rejected" | "cancelled" | "all";
@@ -24,6 +25,113 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" />Submitted</Badge>;
 }
 
+
+function VerificationDocuments({ facilityId, facilityType }: { facilityId: string; facilityType: string }) {
+  const [docs, setDocs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      setLoading(true);
+      try {
+        // Try verification_files table via edge function
+        const { data: vfData } = await supabase.functions.invoke("verification-files", {
+          body: {
+            action: "list",
+            entityType: facilityType === "practice" ? "clinic" : facilityType,
+            entityId: facilityId,
+          },
+        });
+
+        if (vfData?.ok && vfData.files?.length > 0) {
+          setDocs(vfData.files);
+          setLoading(false);
+          return;
+        }
+
+        // Fallback: list files directly from storage bucket
+        const prefix = facilityType === "practice" ? facilityId : `${facilityType}/${facilityId}`;
+        const { data: storageFiles } = await supabase.storage
+          .from("verification-documents")
+          .list(prefix, { limit: 50 });
+
+        if (storageFiles && storageFiles.length > 0) {
+          setDocs(storageFiles.map(f => ({
+            id: f.id,
+            file_name: f.name,
+            object_path: `${prefix}/${f.name}`,
+            mime_type: f.metadata?.mimetype || null,
+            size_bytes: f.metadata?.size || null,
+            bucket: "verification-documents",
+          })));
+        }
+      } catch (e) {
+        console.error("Failed to fetch verification documents", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDocs();
+  }, [facilityId, facilityType]);
+
+  const handleDownload = async (doc: any) => {
+    setDownloading(doc.id);
+    try {
+      const path = doc.object_path || doc.file_path;
+      const bucket = doc.bucket || "verification-documents";
+      const { data, error } = await supabase.storage.from(bucket).download(path);
+      if (error) throw error;
+
+      const url = URL.createObjectURL(data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.file_name || path.split("/").pop() || "document";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Failed to download file");
+    } finally {
+      setDownloading(null);
+    }
+  };
+
+  if (loading) return <div className="text-sm text-muted-foreground py-2">Loading documents...</div>;
+  if (docs.length === 0) return <div className="text-sm text-muted-foreground py-2">No documents uploaded</div>;
+
+  return (
+    <div className="space-y-2">
+      {docs.map((doc) => (
+        <div key={doc.id} className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/50">
+          <div className="flex items-center gap-2 min-w-0">
+            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+            <div className="min-w-0">
+              <div className="text-sm font-medium truncate">{doc.file_name}</div>
+              {doc.mime_type && (
+                <div className="text-xs text-muted-foreground">{doc.mime_type}</div>
+              )}
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleDownload(doc)}
+            disabled={downloading === doc.id}
+          >
+            {downloading === doc.id ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
+}
 export default function FacilityVerificationRequestsTable() {
   const [facilityType, setFacilityType] = useState<FacilityType | "all">("all");
   const [status, setStatus] = useState<Status>("submitted");
@@ -218,6 +326,15 @@ export default function FacilityVerificationRequestsTable() {
 {JSON.stringify(selected.payload ?? {}, null, 2)}
                 </pre>
               </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium">Verification Documents</div>
+                <VerificationDocuments facilityId={selected.facility_id} facilityType={selected.facility_type} />
+              </div>
+
+              <Separator />
 
               <div className="space-y-2">
                 <div className="text-sm font-medium">Admin comment (optional)</div>
