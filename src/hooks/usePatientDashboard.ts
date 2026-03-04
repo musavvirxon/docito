@@ -48,11 +48,7 @@ export const usePatientDashboard = () => {
           doctor:doctors(
             id,
             specialty,
-            user_id,
-            profiles:user_id (
-              full_name,
-              avatar_url
-            )
+            user_id
           ),
           practice:practices(
             name,
@@ -63,14 +59,43 @@ export const usePatientDashboard = () => {
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true });
 
+      // Hydrate doctor names from doctor_profiles_view
+      const doctorIds = [...new Set((appointments || []).map((a: any) => a.doctor?.id).filter(Boolean))];
+      let doctorNameMap: Record<string, { full_name: string; avatar_url: string | null }> = {};
+      if (doctorIds.length > 0) {
+        const { data: dpvData } = await supabase
+          .from('doctor_profiles_view')
+          .select('id, full_name, avatar_url')
+          .in('id', doctorIds);
+        if (dpvData) {
+          for (const d of dpvData as any[]) {
+            doctorNameMap[d.id] = { full_name: d.full_name, avatar_url: d.avatar_url };
+          }
+        }
+      }
+
+      // Attach doctor names
+      const hydratedAppointments = (appointments || []).map((a: any) => {
+        if (a.doctor?.id && doctorNameMap[a.doctor.id]) {
+          return {
+            ...a,
+            doctor: {
+              ...a.doctor,
+              profiles: doctorNameMap[a.doctor.id],
+            },
+          };
+        }
+        return a;
+      });
+
       // Filter upcoming and past appointments
       const now = new Date();
-      const upcoming = (appointments || []).filter(apt => {
+      const upcoming = hydratedAppointments.filter((apt: any) => {
         const aptDate = new Date(apt.appointment_date);
         return isFuture(aptDate) || isToday(aptDate);
       });
       
-      const past = (appointments || []).filter(apt => {
+      const past = hydratedAppointments.filter((apt: any) => {
         const aptDate = new Date(apt.appointment_date);
         return isPast(aptDate) && !isToday(aptDate);
       });

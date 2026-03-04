@@ -40,17 +40,13 @@ export function useDoctorSearch() {
 
     try {
       let q = supabase
-        .from('doctors')
-        .select(`
-          id, specialty, consultation_fee, accepts_new_patients,
-          average_rating, num_reviews, consultation_types, verified,
-          profiles!fk_doctors_user_id ( full_name, avatar_url )
-        `)
+        .from('doctor_profiles_view')
+        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url')
         .eq('verified', true)
         .limit(50);
 
       if (query) {
-        q = q.or(`specialty.ilike.%${query}%`);
+        q = q.or(`specialty.ilike.%${query}%,full_name.ilike.%${query}%`);
       }
 
       if (filters?.specialty) {
@@ -64,12 +60,12 @@ export function useDoctorSearch() {
       const mapped: DoctorResult[] = (data || []).map((d: any) => ({
         id: d.id,
         type: 'doctor' as const,
-        name: d.profiles?.full_name || 'Doctor',
+        name: d.full_name || 'Doctor',
         specialty: d.specialty,
         rating: d.average_rating,
         reviewCount: d.num_reviews,
         consultationFee: d.consultation_fee,
-        imageUrl: d.profiles?.avatar_url,
+        imageUrl: d.avatar_url,
         acceptsNewPatients: d.accepts_new_patients,
         videoConsultation: (d.consultation_types || []).includes('video'),
         availableToday: false,
