@@ -2,10 +2,10 @@
   "hero": {
     "badge": "Healthcare Network",
     "title": {
-      "line1": "One network, one patient journey",
-      "line2": "Care stays connected end-to-end"
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.",
+    "subtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication."
     "cta": {
       "primary": "Start free 14-day trial",
       "secondary": "Explore platform"
