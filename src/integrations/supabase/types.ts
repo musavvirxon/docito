@@ -3846,6 +3846,42 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_events: {
+        Row: {
+          created_at: string | null
+          event_name: string
+          id: string
+          ip: unknown
+          meta: Json | null
+          page_path: string | null
+          referrer: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_name: string
+          id?: string
+          ip?: unknown
+          meta?: Json | null
+          page_path?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_name?: string
+          id?: string
+          ip?: unknown
+          meta?: Json | null
+          page_path?: string | null
+          referrer?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       medical_records: {
         Row: {
           added_by: string | null
