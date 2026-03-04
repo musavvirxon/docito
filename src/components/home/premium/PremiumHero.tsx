@@ -1,4 +1,4 @@
-// File: src/components/home/premium/PremiumHero.tsx
+// src/components/home/premium/PremiumHero.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -113,16 +113,18 @@ export default function PremiumHero() {
 
             {/* Title (keep unanimated for LCP) */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light tracking-tight text-foreground">
-              <span className="block">{t("hero.title.line1", "Less admin. More care.")}</span>
+              <span className="block">
+                {t("hero.docitoNetworkTitle.line1", "Less admin. More")}
+              </span>
               <span className="block bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent font-normal">
-                {t("hero.title.line2", "One platform for every step of healthcare.")}
+                {t("hero.docitoNetworkTitle.line2", "Care.")}
               </span>
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
               {t(
-                "hero.subtitle",
-                "Doctors, clinics, labs, imaging centers, and pharmacies—connected so care doesn’t get lost between places.",
+                "hero.docitoNetworkSubtitle",
+                "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
               )}
             </p>
 
