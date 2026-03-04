@@ -98,6 +98,22 @@ const DoctorProfile = () => {
 
         if (error) throw error;
 
+        // Hydrate name from doctor_profiles_view if profiles RLS blocked it
+        if (!data.profiles || !data.profiles.full_name) {
+          const { data: dpv } = await supabase
+            .from('doctor_profiles_view')
+            .select('full_name, avatar_url')
+            .eq('id', data.id)
+            .maybeSingle();
+          if (dpv) {
+            data.profiles = {
+              ...(data.profiles || {}),
+              full_name: (dpv as any).full_name || 'Doctor',
+              avatar_url: (dpv as any).avatar_url || null,
+            } as any;
+          }
+        }
+
         // Check if this is the doctor's own profile or if they're verified
         const isOwnProfile = user && data.user_id === user.id;
         

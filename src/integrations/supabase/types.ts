@@ -249,6 +249,7 @@ export type Database = {
           notes: string | null
           patient_id: string | null
           practice_id: string | null
+          procedure_id: string | null
           start_at: string
           status: string
           updated_at: string
@@ -264,6 +265,7 @@ export type Database = {
           notes?: string | null
           patient_id?: string | null
           practice_id?: string | null
+          procedure_id?: string | null
           start_at: string
           status?: string
           updated_at?: string
@@ -279,6 +281,7 @@ export type Database = {
           notes?: string | null
           patient_id?: string | null
           practice_id?: string | null
+          procedure_id?: string | null
           start_at?: string
           status?: string
           updated_at?: string
@@ -310,6 +313,13 @@ export type Database = {
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_holds_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
             referencedColumns: ["id"]
           },
         ]

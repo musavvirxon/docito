@@ -133,39 +133,44 @@ export default function BookingConfirmation() {
   const requestedProcedure = useMemo(() => extractRequestedProcedure(confirmedAppointment?.notes ?? null), [confirmedAppointment?.notes]);
 
   const fetchDoctorInfo = useCallback(async (doctorId: string, practiceId?: string | null) => {
-    const { data: doc, error: docErr } = await supabase
-      .from("doctors")
-      .select(
-        `
-        id,
-        specialty,
-        profiles:user_id(full_name,timezone),
-        practices:practice_id(name,address,city,country)
-      `,
-      )
+    // Use doctor_profiles_view for name (bypasses profiles RLS)
+    const { data: dpv, error: dpvErr } = await supabase
+      .from("doctor_profiles_view")
+      .select("id, specialty, full_name, avatar_url, practice_id")
       .eq("id", doctorId)
       .maybeSingle();
 
-    if (docErr) throw docErr;
+    if (dpvErr) throw dpvErr;
 
-    const d = (doc ?? null) as any;
-    setDoctorInfo(d);
+    const d = dpv as any;
+    const info: any = {
+      id: doctorId,
+      specialty: d?.specialty ?? null,
+      profiles: { full_name: d?.full_name ?? null, timezone: null },
+      practices: null,
+    };
 
-    // If practice join is missing for any reason, best-effort load practice (non-blocking)
-    if (!d?.practices && practiceId) {
-      Promise.resolve(
-        supabase
-          .from("practices")
-          .select("name,address,city,country")
-          .eq("id", practiceId)
-          .maybeSingle()
-          .then(({ data }) => {
-            if (data) {
-              setDoctorInfo((prev) => ({ ...(prev || { id: doctorId }), practices: data } as any));
-            }
-          })
-      ).catch(() => {});
+    // Try to get timezone from profiles (best-effort)
+    if (d?.user_id) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("timezone")
+        .eq("user_id", d.user_id)
+        .maybeSingle();
+      if (prof) info.profiles.timezone = (prof as any).timezone ?? null;
     }
+
+    const effectivePracticeId = practiceId || d?.practice_id;
+    if (effectivePracticeId) {
+      const { data: practice } = await supabase
+        .from("practices")
+        .select("name,address,city,country")
+        .eq("id", effectivePracticeId)
+        .maybeSingle();
+      if (practice) info.practices = practice;
+    }
+
+    setDoctorInfo(info);
   }, []);
 
   const fetchAppointment = useCallback(

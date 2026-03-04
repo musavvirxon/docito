@@ -15,6 +15,7 @@ import {
   Video,
   Stethoscope,
   DollarSign,
+  Info,
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -22,7 +23,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,13 +38,14 @@ type DoctorInfo = {
   consultation_fee: number | null;
   practice_id: string | null;
   profile_full_name: string | null;
+  profile_avatar_url: string | null;
   practice_name: string | null;
   practice_address: string | null;
 };
 
 type AvailabilitySlot = {
-  start_at: string; // local ISO
-  end_at: string; // local ISO
+  start_at: string;
+  end_at: string;
   available: boolean;
   reason?: string | null;
 };
@@ -94,55 +95,31 @@ export default function AppointmentBooking() {
   const [selectedSlotStart, setSelectedSlotStart] = useState<string>("");
   const [appointmentType, setAppointmentType] = useState<AppointmentType>("video");
 
-  // Patient details
-  const [patientPhone, setPatientPhone] = useState<string>("");
-  const [patientName, setPatientName] = useState<string>("");
-  const [patientEmail, setPatientEmail] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
-  // NEW: requested procedure (optional, dentist only)
+  // Procedures (available for all doctors)
   const [procedures, setProcedures] = useState<BookableProcedure[]>([]);
   const [loadingProcedures, setLoadingProcedures] = useState(false);
   const [selectedProcedureId, setSelectedProcedureId] = useState<string>("none");
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
-  const isDentist = useMemo(() => {
-    const s = (doctor?.specialty || "").toLowerCase();
-    return s.includes("dent");
-  }, [doctor?.specialty]);
-
   const selectedProcedure = useMemo(() => {
     if (selectedProcedureId === "none") return null;
     return procedures.find((p) => p.id === selectedProcedureId) || null;
   }, [procedures, selectedProcedureId]);
 
-  // Prefill email/phone
-  useEffect(() => {
-    const prefill = async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      const user = auth?.user;
-      if (!user) return;
-
-      if (user.email) setPatientEmail(user.email);
-
-      const { data: profile } = await supabase.from("profiles").select("phone").eq("user_id", user.id).maybeSingle();
-      if (profile?.phone) setPatientPhone(profile.phone);
-    };
-
-    prefill().catch(console.error);
-  }, []);
-
-  // Load doctor
+  // Load doctor using doctor_profiles_view for name visibility
   useEffect(() => {
     const loadDoctor = async () => {
       if (!doctorId) return;
 
       setLoadingDoctor(true);
       try {
+        // Use doctor_profiles_view to bypass profiles RLS
         const { data: d, error: dErr } = await supabase
-          .from("doctors")
-          .select("id, user_id, specialty, consultation_fee, practice_id")
+          .from("doctor_profiles_view")
+          .select("id, user_id, specialty, consultation_fee, practice_id, full_name, avatar_url")
           .eq("id", doctorId)
           .maybeSingle();
 
@@ -153,16 +130,6 @@ export default function AppointmentBooking() {
         }
 
         const doctorRow = d as any;
-
-        let profile_full_name: string | null = null;
-        if (doctorRow.user_id) {
-          const { data: p } = await supabase
-            .from("profiles")
-            .select("full_name")
-            .eq("user_id", doctorRow.user_id)
-            .maybeSingle();
-          if (p) profile_full_name = (p as any).full_name ?? null;
-        }
 
         let practice_name: string | null = null;
         let practice_address: string | null = null;
@@ -185,7 +152,8 @@ export default function AppointmentBooking() {
           specialty: String(doctorRow.specialty ?? ""),
           consultation_fee: doctorRow.consultation_fee == null ? null : Number(doctorRow.consultation_fee),
           practice_id: doctorRow.practice_id ? String(doctorRow.practice_id) : null,
-          profile_full_name,
+          profile_full_name: doctorRow.full_name ?? null,
+          profile_avatar_url: doctorRow.avatar_url ?? null,
           practice_name,
           practice_address,
         });
@@ -201,30 +169,39 @@ export default function AppointmentBooking() {
     loadDoctor();
   }, [doctorId]);
 
-  // NEW: Load dentist bookable procedures for patient request
+  // Load bookable procedures for ALL doctors (not just dentists)
   useEffect(() => {
     const load = async () => {
       if (!doctorId) return;
 
-      // Only show for dentist-like specialty (per requirement)
-      if (!isDentist) {
-        setProcedures([]);
-        setSelectedProcedureId("none");
-        return;
-      }
-
       setLoadingProcedures(true);
       try {
-        const { data, error } = await supabase
+        // Try doctor_id first, fall back to dentist_id
+        let data: any[] | null = null;
+        const { data: d1, error: e1 } = await (supabase as any)
           .from("procedures")
           .select("id,name,category,price,default_cost,duration_minutes,is_active,is_bookable")
-          .eq("dentist_id", doctorId)
+          .eq("doctor_id", doctorId)
           .eq("is_active", true)
           .eq("is_bookable", true)
           .order("name", { ascending: true })
           .limit(200);
 
-        if (error) throw error;
+        if (!e1 && d1 && d1.length > 0) {
+          data = d1;
+        } else {
+          // Fallback: try dentist_id column
+          const { data: d2, error: e2 } = await (supabase as any)
+            .from("procedures")
+            .select("id,name,category,price,default_cost,duration_minutes,is_active,is_bookable")
+            .eq("dentist_id", doctorId)
+            .eq("is_active", true)
+            .eq("is_bookable", true)
+            .order("name", { ascending: true })
+            .limit(200);
+          if (e2) throw e2;
+          data = d2;
+        }
 
         const rows = (data || []) as any[];
         const normalized: BookableProcedure[] = rows.map((r) => ({
@@ -254,7 +231,7 @@ export default function AppointmentBooking() {
 
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doctorId, isDentist]);
+  }, [doctorId]);
 
   // Load slots
   useEffect(() => {
@@ -305,7 +282,7 @@ export default function AppointmentBooking() {
 
     return slots
       .filter((s) => s.available)
-      .filter((s) => !isSameMinuteOrPast(s.start_at, bufferNow)) // ✅ lock old times
+      .filter((s) => !isSameMinuteOrPast(s.start_at, bufferNow))
       .filter((s) => {
         if (seen.has(s.start_at)) return false;
         seen.add(s.start_at);
@@ -313,16 +290,10 @@ export default function AppointmentBooking() {
       });
   }, [slots]);
 
-  const canBook = Boolean(selectedSlotStart) && Boolean(patientPhone.trim()) && !booking;
+  const canBook = Boolean(selectedSlotStart) && !booking;
 
   const handleBook = async () => {
     if (!doctorId) return;
-
-    const phone = patientPhone.trim();
-    if (!phone) {
-      toast.error("Phone number is required");
-      return;
-    }
 
     if (!selectedSlotStart) {
       toast.error("Please select a time slot");
@@ -347,18 +318,9 @@ export default function AppointmentBooking() {
 
     setBooking(true);
     try {
-      try {
-        await supabase.from("profiles").update({ phone }).eq("user_id", user.id);
-      } catch {
-        // ignore
-      }
-
       const combinedNotes = [
         selectedProcedure ? `Requested Procedure: ${selectedProcedure.name}` : null,
         `Appointment Type: ${appointmentType}`,
-        phone ? `Phone: ${phone}` : null,
-        patientName.trim() ? `Name: ${patientName.trim()}` : null,
-        patientEmail.trim() ? `Email: ${patientEmail.trim()}` : null,
         notes.trim() ? notes.trim() : null,
       ]
         .filter(Boolean)
@@ -373,8 +335,6 @@ export default function AppointmentBooking() {
           duration_minutes: durationMinutes,
           notes: combinedNotes || undefined,
           appointment_type: appointmentType,
-
-          // NEW: requested procedure id (backend will ignore until Phase 2, notes still show it)
           procedure_id: selectedProcedure ? selectedProcedure.id : null,
         },
       });
@@ -382,14 +342,12 @@ export default function AppointmentBooking() {
       if (error) throw error;
       if (!data?.ok) throw new Error(data?.error || "Failed to book appointment");
 
-      // ✅ New flow: hold-based pending confirmation
       if (data?.hold_id) {
         toast.success("Slot held. Please confirm your appointment.");
         navigate(`/booking-confirmation/${data.hold_id}?mode=pending`);
         return;
       }
 
-      // Backwards compatibility (if any older server returns appointment_id / id)
       const appointmentId = data?.appointment_id || data?.id;
       if (appointmentId) {
         toast.success("Appointment booked!");
@@ -438,7 +396,7 @@ export default function AppointmentBooking() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">Book an appointment</h1>
           <p className="text-muted-foreground">
-            Choose a date, a start time, and the appointment duration. Only phone is required.
+            Choose a date, time, and appointment type. Your profile details will be shared with the doctor automatically.
           </p>
         </div>
 
@@ -462,12 +420,28 @@ export default function AppointmentBooking() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="space-y-1">
-                <div className="text-xl font-semibold">{doctorName}</div>
-                <div className="text-sm text-muted-foreground">{doctor.specialty}</div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                  <Badge variant="secondary">Consultation fee</Badge>
-                  <span>{doctor.consultation_fee != null ? `$${doctor.consultation_fee}` : "Not set"}</span>
+              <div className="flex items-start gap-4">
+                {doctor.profile_avatar_url && (
+                  <img
+                    src={doctor.profile_avatar_url}
+                    alt={doctorName}
+                    className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                  />
+                )}
+                <div className="space-y-1">
+                  <div className="text-xl font-semibold">{doctorName}</div>
+                  <div className="text-sm text-muted-foreground">{doctor.specialty}</div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                    <Badge variant="secondary">Estimated fee</Badge>
+                    <span>{doctor.consultation_fee != null ? `$${doctor.consultation_fee}` : "Not set"}</span>
+                  </div>
+                  <Button
+                    variant="link"
+                    className="p-0 h-auto text-sm"
+                    onClick={() => navigate(`/doctor/${doctor.id}`)}
+                  >
+                    View full profile →
+                  </Button>
                 </div>
               </div>
 
@@ -543,81 +517,80 @@ export default function AppointmentBooking() {
           </CardContent>
         </Card>
 
-        {/* NEW: requested procedure (dentist only) */}
-        {isDentist && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Requested procedure (optional)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {loadingProcedures ? (
-                <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading procedures...
-                </div>
-              ) : procedures.length === 0 ? (
-                <div className="text-sm text-muted-foreground">This doctor has no bookable procedures configured yet.</div>
-              ) : (
-                <div className="space-y-2">
-                  <Select
-                    value={selectedProcedureId}
-                    onValueChange={(v) => {
-                      setSelectedProcedureId(v);
+        {/* Requested procedure (available for all doctors) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Request a procedure (optional)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {loadingProcedures ? (
+              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading procedures...
+              </div>
+            ) : procedures.length === 0 ? (
+              <div className="text-sm text-muted-foreground">This doctor has no bookable procedures configured yet.</div>
+            ) : (
+              <div className="space-y-2">
+                <Select
+                  value={selectedProcedureId}
+                  onValueChange={(v) => {
+                    setSelectedProcedureId(v);
+                    if (v === "none") return;
+                    const p = procedures.find((x) => x.id === v);
+                    if (!p?.duration_minutes) return;
+                    if (DURATION_OPTIONS_MINUTES.includes(p.duration_minutes) && p.duration_minutes !== durationMinutes) {
+                      setDurationMinutes(p.duration_minutes);
+                      setSelectedSlotStart("");
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a procedure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No specific procedure</SelectItem>
+                    {procedures.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                      if (v === "none") return;
+                {selectedProcedure && (
+                  <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
+                    <span className="inline-flex items-center gap-1">
+                      <Stethoscope className="h-3.5 w-3.5" />
+                      {selectedProcedure.category || "Procedure"}
+                    </span>
 
-                      const p = procedures.find((x) => x.id === v);
-                      if (!p?.duration_minutes) return;
+                    <span className="inline-flex items-center gap-1">
+                      <DollarSign className="h-3.5 w-3.5" />
+                      Estimated cost (charged after appointment):{" "}
+                      {typeof (selectedProcedure.price ?? selectedProcedure.default_cost) === "number"
+                        ? `$${selectedProcedure.price ?? selectedProcedure.default_cost}`
+                        : "—"}
+                    </span>
 
-                      // Only auto-set duration if it's in the allowed duration list
-                      if (DURATION_OPTIONS_MINUTES.includes(p.duration_minutes) && p.duration_minutes !== durationMinutes) {
-                        setDurationMinutes(p.duration_minutes);
-                        setSelectedSlotStart("");
-                      }
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a procedure" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No specific procedure</SelectItem>
-                      {procedures.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {selectedProcedure && (
-                    <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
+                    {typeof selectedProcedure.duration_minutes === "number" && (
                       <span className="inline-flex items-center gap-1">
-                        <Stethoscope className="h-3.5 w-3.5" />
-                        {selectedProcedure.category || "Procedure"}
+                        <Clock className="h-3.5 w-3.5" />
+                        Suggested: {selectedProcedure.duration_minutes} min
+                        {DURATION_OPTIONS_MINUTES.includes(selectedProcedure.duration_minutes) ? " (auto-applied)" : ""}
                       </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
-                      <span className="inline-flex items-center gap-1">
-                        <DollarSign className="h-3.5 w-3.5" />
-                        Estimate:{" "}
-                        {typeof (selectedProcedure.price ?? selectedProcedure.default_cost) === "number"
-                          ? (selectedProcedure.price ?? selectedProcedure.default_cost)
-                          : "—"}
-                      </span>
-
-                      {typeof selectedProcedure.duration_minutes === "number" && (
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          Suggested: {selectedProcedure.duration_minutes} min
-                          {DURATION_OPTIONS_MINUTES.includes(selectedProcedure.duration_minutes) ? " (auto-applied)" : ""}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+            <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md p-3">
+              <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+              <span>Payment will only be charged after appointment completion and doctor confirmation.</span>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
@@ -707,38 +680,15 @@ export default function AppointmentBooking() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Patient details</CardTitle>
+            <CardTitle>Notes for your doctor</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  value={patientPhone}
-                  onChange={(e) => setPatientPhone(e.target.value)}
-                  placeholder="+1 555 123 4567"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Optional" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)} placeholder="Optional" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Optional: describe your symptoms, history, or questions"
-              />
-            </div>
+            <Textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional: describe your symptoms, history, or questions"
+            />
 
             <div className="flex justify-end">
               <Button onClick={handleBook} disabled={!canBook}>
