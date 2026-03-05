@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, addDays } from 'date-fns';
-import { Calendar as CalendarIcon, Search, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Search, Loader2, CheckCircle2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -466,17 +466,22 @@ export const CreateReferralDialog = ({
                                   <div
                                     key={receiver.id}
                                     className={cn(
-                                      'p-3 cursor-pointer hover:bg-muted/50 transition-colors',
-                                      field.value === receiver.id && 'bg-primary/10',
+                                      'p-3 cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-between',
+                                      field.value === receiver.id && 'bg-primary/10 border-l-2 border-primary',
                                     )}
                                     onClick={() => field.onChange(receiver.id)}
                                   >
-                                    <p className="font-medium text-sm">
-                                      {getReceiverDisplayName(receiver)}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {getReceiverSubtext(receiver)}
-                                    </p>
+                                    <div>
+                                      <p className="font-medium text-sm">
+                                        {getReceiverDisplayName(receiver)}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {getReceiverSubtext(receiver)}
+                                      </p>
+                                    </div>
+                                    {field.value === receiver.id && (
+                                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                                    )}
                                   </div>
                                 ))}
                               </div>

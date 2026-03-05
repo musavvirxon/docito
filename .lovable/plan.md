@@ -1,157 +1,125 @@
+# Fix Plan: Patient Dashboard, Search, Booking, and Appointments
 
+## Issues Identified
 
-# Fix Plan: PDF Build Error, Diagnoses, Freezing, Messages, Verification, and Referrals
+1. `**patient_all_appointments` query fails** -- trying to join `procedure:procedure_id(*)` but the view has no FK to `procedures`. Returns 400 error.
+2. `**appointment_holds.procedure_id` does not exist** -- the `book-appointment` edge function tries to insert `procedure_id` into `appointment_holds`, and `BookingConfirmation.tsx` selects it. The column doesn't exist in the table schema.
+3. **Doctor name missing in search results** -- `useDoctorSearch.ts` queries `profiles!fk_doctors_user_id(full_name, avatar_url)` but network responses show `profiles: null`. The profiles RLS blocks access. Need to use `doctor_profiles_view` instead.
+4. **Doctor name missing in DoctorProfile page** -- Uses `profiles:user_id(...)` which also fails due to RLS. Same fix needed.
+5. **Doctor name missing in BookingModal/DoctorProfileModal** -- These modals receive doctor data from the search hook which already has null profiles.
+6. **Translations not showing** -- `ResultCard.tsx` uses `useTranslation("dashboard")` but translation keys like `patient.resultCard.doctor` exist in `dashboard.json`. The issue is the search results page (`SearchDoctors.tsx`) uses `useTranslation('doctors')` namespace, and the result cards use `dashboard` namespace. Both should work. Need to check if the patient dashboard itself renders untranslated code strings.
+7. **Procedures only visible for dentists** -- The `isDentist` check limits procedure selection. Should be available for all doctors.
+8. **Patient details section in booking** -- Should be removed; patient data from profile is sent automatically.
+9. **Payment/cost should be charged only after doctor confirms** -- Cost display should show "Estimated" and note payment is post-appointment.
+10. While booking appointment doctor profile should be showed when clicked on profile button - all public info should be displayes.
+11. Booking-confirmation page should be fixed
 
-This plan addresses 9 distinct issues across the platform.
+## Changes
 
----
+### 1. Fix `patient_all_appointments` query (supabase-api.ts + usePatientDashboard.ts)
 
-## 1. Fix Build Error in `treatment-plan-generate-pdf` Edge Function
+Remove the `procedure:procedure_id(*)` join from the `patient_all_appointments` query since the view doesn't have this FK relationship.
 
-**Root cause**: `bidi-js` v1.0.2 from esm.sh does not export `getReorderedString` as expected. The `bidiFactory()` call returns an object without that method.
+**Files**: `src/lib/api/supabase-api.ts` (line 510), `src/hooks/usePatientDashboard.ts` (lines 44-64)
 
-**Fix**: Wrap the bidi call in a try-catch with a no-op fallback. If the library method doesn't exist, return the reshaped string as-is (graceful degradation for RTL text).
+Remove `, procedure:procedure_id (*)` from the select string. Keep the doctor and practice joins.
 
-**File**: `supabase/functions/treatment-plan-generate-pdf/index.ts` (lines 794-804)
+### 2. Add `procedure_id` column to `appointment_holds` (SQL migration)
+
+```sql
+ALTER TABLE public.appointment_holds 
+ADD COLUMN IF NOT EXISTS procedure_id uuid REFERENCES procedures(id);
+```
+
+This fixes:
+
+- The `book-appointment` edge function insert
+- The `BookingConfirmation.tsx` select
+
+### 3. Fix doctor name in search results (useDoctorSearch.ts)
+
+Replace `profiles!fk_doctors_user_id(full_name, avatar_url)` with a separate query to `doctor_profiles_view` or use the view directly. The simplest fix: query `doctor_profiles_view` instead of `doctors` table, since the view already includes `full_name` and `avatar_url`.
+
+**File**: `src/hooks/useDoctorSearch.ts`
+
+Change the query to use `doctor_profiles_view` which bypasses profiles RLS:
 
 ```ts
-function formatForLocale(locale: Locale, input: string): string {
-  const s = String(input || "");
-  if (!s) return s;
-  if (!isRtlLocale(locale)) return s;
+let q = supabase
+  .from('doctor_profiles_view')
+  .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url')
+  .eq('verified', true)
+  .limit(50);
+```
 
-  try {
-    const reshaped = reshaper.reshape(s);
-    const bidi = bidiFactory();
-    if (typeof bidi?.getReorderedString === "function") {
-      return bidi.getReorderedString(reshaped);
-    }
-    return reshaped;
-  } catch {
-    return s;
+Update the mapping to use `d.full_name` directly instead of `d.profiles?.full_name`.
+
+### 4. Fix doctor name in DoctorProfile page
+
+**File**: `src/pages/DoctorProfile.tsx`
+
+After fetching from `doctors` table, hydrate the name from `doctor_profiles_view` if `profiles` is null (RLS blocked). Add a fallback fetch:
+
+```ts
+if (!data.profiles || !data.profiles.full_name) {
+  const { data: dpv } = await supabase
+    .from('doctor_profiles_view')
+    .select('full_name, avatar_url')
+    .eq('id', data.id)
+    .maybeSingle();
+  if (dpv) {
+    data.profiles = { ...data.profiles, full_name: dpv.full_name, avatar_url: dpv.avatar_url };
   }
 }
 ```
 
----
+### 5. Fix doctor name in BookingModal and DoctorProfileModal
 
-## 2. Add Diagnoses Tab to Appointment Session
+These receive `doctor` prop from `SearchDoctors.tsx`. The search results already map `name` from `profiles.full_name`. With fix #3, the name will be populated correctly. No additional changes needed for these modals.
 
-**Root cause**: `AppointmentSession.tsx` has no diagnoses section at all. The `DiagnosisTab` component exists at `src/components/visit/tabs/DiagnosisTab.tsx` but is not used.
+### 6. Make procedures available for all doctors (not just dentists)
 
-**Fix**:
-- Add a "Diagnoses" tab to the `TabsList` (between Session and Dental/Prescriptions)
-- Import `DiagnosisTab` from the existing visit component
-- Add state for diagnoses array + fetch from `appointment_diagnoses` table
-- For dentists, show the `EnhancedDentalChart` (imported from existing `@/components/dental`) above the diagnosis form, allowing tooth selection before adding a diagnosis
-- Wire `onAddDiagnosis` to insert into `appointment_diagnoses` and `onRemoveDiagnosis` to delete
-- After adding a diagnosis with tooth selection, reset the dental chart selection
+**File**: `src/pages/AppointmentBooking.tsx`
 
-**File**: `src/pages/AppointmentSession.tsx`
-- Add `'diagnoses'` to `SessionTab` type and `VALID_TABS`
-- Add diagnoses state, fetch, and CRUD handlers
-- Add `TabsTrigger` and `TabsContent` for diagnoses
-- Inside the diagnoses tab content: conditionally render `EnhancedDentalChart` for dentists (with `onToothSelect` callback), then render `DiagnosisTab`
+- Remove the `isDentist` check that gates the procedures section (line 547: `{isDentist && (`)
+- Change it to always show if procedures exist
+- Update procedure loading to use `doctor_id` instead of `dentist_id` for non-dentist doctors (check both columns)
 
----
+### 7. Remove patient details section from booking
 
-## 3. Fix Dental Chart in Treatment Plan Creation
+**File**: `src/pages/AppointmentBooking.tsx`
 
-**Root cause**: The treatment planning section needs the dental chart above the "add procedure" section, and selected teeth should reset after adding a procedure.
+- Remove the "Patient details" Card (lines 708-756) containing name/email/phone inputs
+- Keep only the Notes textarea
+- Remove `patientName`, `patientEmail` state variables
+- Keep `patientPhone` but auto-fill from profile (already done) and don't show input
+- Update `canBook` to not require phone: `const canBook = Boolean(selectedSlotStart) && !booking`
+- Update `handleBook` to pull patient info from auth/profile automatically
+- In `combinedNotes`, remove the manual name/email/phone lines
 
-**Fix**: In the treatment plan creation dialog (inside `TreatmentPlanningSection` or the procedure-adding modal), import `EnhancedDentalChart` from `@/components/dental` and render it above the procedure form. After a procedure is added, call a reset handler to clear `selectedTeeth`.
+### 8. Update cost/payment messaging
 
-**File**: `src/components/doctor/TreatmentPlanningSection.tsx` (or whichever component renders the treatment plan procedure creation modal)
+**File**: `src/pages/AppointmentBooking.tsx`
 
----
+- Change consultation fee display to say "Estimated fee" 
+- Add note: "Payment will only be charged after appointment completion and doctor confirmation"
+- In the procedure cost display, change "Estimate:" label to "Estimated cost (charged after appointment):"
 
-## 4. Fix Platform Freezing on Tab Switch / Minimize
+### 9. Fix patient dashboard translations
 
-**Root cause**: `HeroOrb3D.tsx` uses multiple `useFrame` loops in the Three.js Canvas that keep running even when the tab is hidden. The `useTabVisibility` hook exists but the Canvas doesn't pause when `isVisible` is false -- it just stops calling `invalidate()` via `FrameInvalidator`, but the `useFrame` callbacks in child components (`GlobeWithPoints`, `PulseRings`, `FloatingParticles`, etc.) still execute every frame.
+The `ResultCard.tsx` uses `useTranslation("dashboard")` which loads `public/locales/en/dashboard.json`. The keys like `patient.resultCard.doctor` exist there, so translations should work. The issue may be that the patient dashboard components themselves show raw keys. Need to verify the patient dashboard view uses the correct translation namespace.
 
-**Fix**: Pass `isVisible` (from `useTabVisibility`) down to the `Canvas`'s `frameloop` prop:
-- When `isVisible && !isMobile`: `frameloop="always"`
-- When `!isVisible`: `frameloop="never"` (stops all rendering)
+**File**: `src/components/patient-dashboard/PatientDashboardView.tsx` - verify it uses `useTranslation("dashboard")`
 
-This stops Three.js from ticking when the tab is hidden.
+## Summary of Changes
 
-**File**: `src/components/home/premium/HeroOrb3D.tsx`
 
-```tsx
-<Canvas frameloop={isVisible ? "always" : "never"} ...>
-```
-
----
-
-## 5. Fix Diagnoses Not Visible in UI
-
-**Root cause**: The `DiagnosisTab` component receives `diagnoses` as a prop but the appointment session page doesn't fetch them from the database. The component itself just renders what it receives.
-
-**Fix**: Covered by item #2 above -- fetch from `appointment_diagnoses` table on load and pass to `DiagnosisTab`.
-
----
-
-## 6. Fix Verification Button Not Visible After Sign-Up
-
-**Root cause**: The `DoctorVerificationStatusCard` shows "Complete Verification in Profile" only when `verificationStatus` is null. For new patient sign-ups, the card is only shown on the Doctor Dashboard. For patients, there's no verification concept. If the user means doctor sign-up: after `DoctorSignUp.tsx` completes, it navigates to `/doctor-dashboard` where `DoctorVerificationStatusCard` should appear. The issue may be that `useDoctorVerificationStatus` can't find the doctor record yet (race condition).
-
-**Fix**: In `DoctorVerificationStatusCard`, when `!verificationStatus && !loading`, ensure the "Complete Verification in Profile" card renders with a visible button. Currently it navigates to `/profile` -- verify this path is correct for doctors (should be `/doctor/verification` or `/profile`). Also ensure the hook doesn't fail silently when the doctor record hasn't been created yet.
-
-**File**: `src/components/doctor/DoctorVerificationStatusCard.tsx` -- the component already handles this case (lines 39-57). Need to check `useDoctorVerificationStatus` hook for silent failures.
-
----
-
-## 7. Fix "Failed to Load Messages" and Patients Not Visible in New Chat
-
-**Root cause**: The `search_chat_users` RPC queries `profiles` table, but profiles RLS may block reading other users' profiles. The function is `security definer` so it should bypass RLS. The issue is likely that the `messages_with_attachments` view grants (from our previous migration) haven't been applied yet, or the messaging component's direct message query fails.
-
-**Fix**:
-- Verify the migration from earlier was applied (messages_with_attachments view with security_invoker + grants)
-- In `NewChatDialog.tsx`, add a fallback: if `search_chat_users` returns no results or errors, try a direct query to `doctor_profiles_view` for doctors and `profiles` for accessible users
-- For "patients of doctor not visible": the RPC searches all profiles, but doctor's patients may not have profiles with `full_name` set. Add a secondary lookup to `doctor_patients` table for the current doctor.
-
-**File**: `src/components/messaging/NewChatDialog.tsx` -- add patient tab/filter using doctor's patient list
-
----
-
-## 8. Fix Referral Selection Tick Mark
-
-**Root cause**: In `CreateReferralDialog.tsx` (line 468-480), when a receiver is selected, the row gets `bg-primary/10` but there's no checkmark icon.
-
-**Fix**: Add a `CheckCircle2` icon when `field.value === receiver.id`.
-
-**File**: `src/components/referrals/CreateReferralDialog.tsx` (lines 466-480)
-
-```tsx
-<div
-  key={receiver.id}
-  className={cn(
-    'p-3 cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-between',
-    field.value === receiver.id && 'bg-primary/10 border-l-2 border-primary',
-  )}
-  onClick={() => field.onChange(receiver.id)}
->
-  <div>
-    <p className="font-medium text-sm">{getReceiverDisplayName(receiver)}</p>
-    <p className="text-xs text-muted-foreground">{getReceiverSubtext(receiver)}</p>
-  </div>
-  {field.value === receiver.id && (
-    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-  )}
-</div>
-```
-
----
-
-## Summary of File Changes
-
-| File | Change |
-|------|--------|
-| `supabase/functions/treatment-plan-generate-pdf/index.ts` | Fix bidi call with try-catch fallback |
-| `src/pages/AppointmentSession.tsx` | Add Diagnoses tab with dental chart for dentists, fetch/save diagnoses |
-| `src/components/doctor/TreatmentPlanningSection.tsx` | Add dental chart above procedure form, reset teeth after add |
-| `src/components/home/premium/HeroOrb3D.tsx` | Set `frameloop="never"` when tab hidden |
-| `src/components/doctor/DoctorVerificationStatusCard.tsx` | Ensure verification button visibility |
-| `src/components/messaging/NewChatDialog.tsx` | Add doctor's patients fallback lookup |
-| `src/components/referrals/CreateReferralDialog.tsx` | Add checkmark icon on selected receiver |
-
+| File                                | Change                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| SQL migration                       | Add `procedure_id` column to `appointment_holds`                                          |
+| `src/lib/api/supabase-api.ts`       | Remove `procedure:procedure_id(*)` from `patient_all_appointments` query                  |
+| `src/hooks/usePatientDashboard.ts`  | Remove procedure join from query                                                          |
+| `src/hooks/useDoctorSearch.ts`      | Use `doctor_profiles_view` instead of `doctors` table for search                          |
+| `src/pages/DoctorProfile.tsx`       | Add fallback name hydration from `doctor_profiles_view`                                   |
+| `src/pages/AppointmentBooking.tsx`  | Remove patient details section, show procedures for all doctors, update payment messaging |
+| `src/pages/BookingConfirmation.tsx` | No change needed (procedure_id column fix handles it)                                     |

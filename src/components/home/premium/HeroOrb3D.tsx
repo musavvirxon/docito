@@ -1109,7 +1109,7 @@ export default function HeroOrb3D() {
         dpr={isMobile ? 1 : [1, 1.6]}
         camera={{ position: CAMERA_POS, fov: CAMERA_FOV }}
         gl={{ antialias: !isMobile, alpha: true, powerPreference: "high-performance" }}
-        frameloop="demand"
+        frameloop={isVisible ? "demand" : "never"}
       >
         <FrameInvalidator shouldAnimate={shouldAnimate} />
         <Scene opacity={opacity} setSelectedNode={setSelectedNode} isMobile={isMobile} />

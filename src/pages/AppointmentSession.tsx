@@ -35,6 +35,8 @@ import { useVideoConsultation, type VideoConsultation } from '@/hooks/useVideoCo
 import { EnhancedDentalChart } from '@/components/dental/EnhancedDentalChart';
 import { PatientProfileView } from '@/components/appointments/PatientProfileView';
 import { VideoRoom } from '@/components/video';
+import { DiagnosisTab } from '@/components/visit/tabs/DiagnosisTab';
+import type { Diagnosis } from '@/components/visit/types';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -82,9 +84,9 @@ interface AppointmentDentalProcedureRow {
   doctor?: { full_name: string | null } | null;
 }
 
-type SessionTab = 'session' | 'video' | 'dental' | 'prescriptions' | 'notes';
+type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'prescriptions' | 'notes';
 
-const VALID_TABS: SessionTab[] = ['session', 'video', 'dental', 'prescriptions', 'notes'];
+const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'prescriptions', 'notes'];
 
 const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: AppointmentSessionPageProps) => {
   const { appointmentId: paramAppointmentId } = useParams();
@@ -107,6 +109,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -369,6 +372,81 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     fetchAppointmentDentalProcedures();
   }, [isDentist, fetchAppointmentDentalProcedures]);
 
+  // Fetch diagnoses for this appointment
+  const fetchDiagnoses = useCallback(async () => {
+    if (!appointmentId) return;
+    try {
+      const { data, error } = await supabase
+        .from('appointment_diagnoses')
+        .select('*')
+        .eq('appointment_id', appointmentId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setDiagnoses(
+        (data || []).map((d: any) => ({
+          id: d.id,
+          code: d.icd10_code || '',
+          name: d.diagnosis_title || '',
+          type: 'primary' as const,
+          notes: d.notes || undefined,
+          createdAt: d.created_at,
+        }))
+      );
+    } catch (err) {
+      console.error('Error loading diagnoses:', err);
+    }
+  }, [appointmentId]);
+
+  useEffect(() => {
+    fetchDiagnoses();
+  }, [fetchDiagnoses]);
+
+  const handleAddDiagnosis = useCallback(
+    async (diag: Omit<Diagnosis, 'id' | 'createdAt'>) => {
+      if (!appointmentId || !appointment?.doctor_id) return;
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id;
+
+        const { error } = await supabase.from('appointment_diagnoses').insert({
+          appointment_id: appointmentId,
+          doctor_id: appointment.doctor_id,
+          created_by: userId || appointment.doctor_id,
+          diagnosis_title: diag.name,
+          icd10_code: diag.code || null,
+          notes: diag.notes || null,
+          patient_id: appointment.patient_id || null,
+          doctor_patient_id: appointment.doctor_patient_id || null,
+        });
+
+        if (error) throw error;
+        toast.success('Diagnosis added');
+        fetchDiagnoses();
+      } catch (err: any) {
+        console.error('Error adding diagnosis:', err);
+        toast.error('Failed to add diagnosis');
+      }
+    },
+    [appointmentId, appointment, fetchDiagnoses]
+  );
+
+  const handleRemoveDiagnosis = useCallback(
+    async (id: string) => {
+      try {
+        const { error } = await supabase.from('appointment_diagnoses').delete().eq('id', id);
+        if (error) throw error;
+        toast.success('Diagnosis removed');
+        fetchDiagnoses();
+      } catch (err: any) {
+        console.error('Error removing diagnosis:', err);
+        toast.error('Failed to remove diagnosis');
+      }
+    },
+    [fetchDiagnoses]
+  );
+
   const appointmentDentalSummary = useMemo(() => {
     const counts = new Map<string, number>();
     let totalCost = 0;
@@ -612,7 +690,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           <ResizablePanel defaultSize={65} minSize={50}>
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-4">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
                     Session
@@ -624,6 +702,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       Video
                     </TabsTrigger>
                   )}
+
+                  <TabsTrigger value="diagnoses" className="gap-2">
+                    <Stethoscope className="h-4 w-4" />
+                    Diagnoses
+                  </TabsTrigger>
 
                   {isDentist && (
                     <TabsTrigger value="dental" className="gap-2">
@@ -734,6 +817,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         />
                       </CardContent>
                     </Card>
+                  </TabsContent>
+
+                  <TabsContent value="diagnoses" className="mt-0 space-y-4">
+                    {isDentist && (
+                      <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={false} />
+                    )}
+                    <DiagnosisTab
+                      diagnoses={diagnoses}
+                      mode="current"
+                      onAddDiagnosis={handleAddDiagnosis}
+                      onRemoveDiagnosis={handleRemoveDiagnosis}
+                    />
                   </TabsContent>
 
                   {isDentist && (

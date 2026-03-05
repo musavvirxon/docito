@@ -797,10 +797,16 @@ function formatForLocale(locale: Locale, input: string): string {
 
   if (!isRtlLocale(locale)) return s;
 
-  // Arabic shaping + bidi
-  const reshaped = reshaper.reshape(s);
-  const bidi = bidiFactory();
-  return bidi.getReorderedString(reshaped);
+  try {
+    const reshaped = reshaper.reshape(s);
+    const bidi = bidiFactory();
+    if (typeof bidi?.getReorderedString === "function") {
+      return bidi.getReorderedString(reshaped);
+    }
+    return reshaped;
+  } catch {
+    return s;
+  }
 }
 
 async function getActorLocale(serviceClient: any, userId: string): Promise<Locale> {
