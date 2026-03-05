@@ -372,6 +372,81 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     fetchAppointmentDentalProcedures();
   }, [isDentist, fetchAppointmentDentalProcedures]);
 
+  // Fetch diagnoses for this appointment
+  const fetchDiagnoses = useCallback(async () => {
+    if (!appointmentId) return;
+    try {
+      const { data, error } = await supabase
+        .from('appointment_diagnoses')
+        .select('*')
+        .eq('appointment_id', appointmentId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setDiagnoses(
+        (data || []).map((d: any) => ({
+          id: d.id,
+          code: d.icd10_code || '',
+          name: d.diagnosis_title || '',
+          type: 'primary' as const,
+          notes: d.notes || undefined,
+          createdAt: d.created_at,
+        }))
+      );
+    } catch (err) {
+      console.error('Error loading diagnoses:', err);
+    }
+  }, [appointmentId]);
+
+  useEffect(() => {
+    fetchDiagnoses();
+  }, [fetchDiagnoses]);
+
+  const handleAddDiagnosis = useCallback(
+    async (diag: Omit<Diagnosis, 'id' | 'createdAt'>) => {
+      if (!appointmentId || !appointment?.doctor_id) return;
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id;
+
+        const { error } = await supabase.from('appointment_diagnoses').insert({
+          appointment_id: appointmentId,
+          doctor_id: appointment.doctor_id,
+          created_by: userId || appointment.doctor_id,
+          diagnosis_title: diag.name,
+          icd10_code: diag.code || null,
+          notes: diag.notes || null,
+          patient_id: appointment.patient_id || null,
+          doctor_patient_id: appointment.doctor_patient_id || null,
+        });
+
+        if (error) throw error;
+        toast.success('Diagnosis added');
+        fetchDiagnoses();
+      } catch (err: any) {
+        console.error('Error adding diagnosis:', err);
+        toast.error('Failed to add diagnosis');
+      }
+    },
+    [appointmentId, appointment, fetchDiagnoses]
+  );
+
+  const handleRemoveDiagnosis = useCallback(
+    async (id: string) => {
+      try {
+        const { error } = await supabase.from('appointment_diagnoses').delete().eq('id', id);
+        if (error) throw error;
+        toast.success('Diagnosis removed');
+        fetchDiagnoses();
+      } catch (err: any) {
+        console.error('Error removing diagnosis:', err);
+        toast.error('Failed to remove diagnosis');
+      }
+    },
+    [fetchDiagnoses]
+  );
+
   const appointmentDentalSummary = useMemo(() => {
     const counts = new Map<string, number>();
     let totalCost = 0;
