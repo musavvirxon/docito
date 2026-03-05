@@ -80,7 +80,10 @@ export const useDoctorVerificationStatus = () => {
       if (doctorError) throw doctorError;
 
       if (!doctorData) {
+        // Doctor record not created yet (race condition after sign-up)
+        // Return null status so the card shows "Verification Not Started"
         setVerificationStatus(null);
+        setLoading(false);
         return;
       }
 
