@@ -819,6 +819,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </Card>
                   </TabsContent>
 
+                  <TabsContent value="diagnoses" className="mt-0 space-y-4">
+                    {isDentist && (
+                      <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={false} />
+                    )}
+                    <DiagnosisTab
+                      diagnoses={diagnoses}
+                      mode="current"
+                      onAddDiagnosis={handleAddDiagnosis}
+                      onRemoveDiagnosis={handleRemoveDiagnosis}
+                    />
+                  </TabsContent>
+
                   {isDentist && (
                     <TabsContent value="dental" className="mt-0 space-y-4">
                       <Card>
