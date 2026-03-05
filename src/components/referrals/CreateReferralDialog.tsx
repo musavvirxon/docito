@@ -482,7 +482,6 @@ export const CreateReferralDialog = ({
                                     {field.value === receiver.id && (
                                       <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
                                     )}
-                                    </p>
                                   </div>
                                 ))}
                               </div>
