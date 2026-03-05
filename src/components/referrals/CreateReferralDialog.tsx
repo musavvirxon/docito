@@ -466,16 +466,22 @@ export const CreateReferralDialog = ({
                                   <div
                                     key={receiver.id}
                                     className={cn(
-                                      'p-3 cursor-pointer hover:bg-muted/50 transition-colors',
-                                      field.value === receiver.id && 'bg-primary/10',
+                                      'p-3 cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-between',
+                                      field.value === receiver.id && 'bg-primary/10 border-l-2 border-primary',
                                     )}
                                     onClick={() => field.onChange(receiver.id)}
                                   >
-                                    <p className="font-medium text-sm">
-                                      {getReceiverDisplayName(receiver)}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {getReceiverSubtext(receiver)}
+                                    <div>
+                                      <p className="font-medium text-sm">
+                                        {getReceiverDisplayName(receiver)}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {getReceiverSubtext(receiver)}
+                                      </p>
+                                    </div>
+                                    {field.value === receiver.id && (
+                                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                                    )}
                                     </p>
                                   </div>
                                 ))}
