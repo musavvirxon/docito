@@ -82,9 +82,9 @@ interface AppointmentDentalProcedureRow {
   doctor?: { full_name: string | null } | null;
 }
 
-type SessionTab = 'session' | 'video' | 'dental' | 'prescriptions' | 'notes';
+type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'prescriptions' | 'notes';
 
-const VALID_TABS: SessionTab[] = ['session', 'video', 'dental', 'prescriptions', 'notes'];
+const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'prescriptions', 'notes'];
 
 const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: AppointmentSessionPageProps) => {
   const { appointmentId: paramAppointmentId } = useParams();
