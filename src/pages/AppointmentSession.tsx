@@ -109,6 +109,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
+  const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
