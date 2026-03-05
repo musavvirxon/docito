@@ -703,6 +703,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsTrigger>
                   )}
 
+                  <TabsTrigger value="diagnoses" className="gap-2">
+                    <Stethoscope className="h-4 w-4" />
+                    Diagnoses
+                  </TabsTrigger>
+
                   {isDentist && (
                     <TabsTrigger value="dental" className="gap-2">
                       <Stethoscope className="h-4 w-4" />
