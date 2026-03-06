@@ -239,11 +239,11 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
       if (blockErr) console.error("Failed to fetch blocked times:", blockErr);
 
       // Collect patient_ids that have null profiles (RLS blocked)
-      const missingProfilePatientIds = (appts || [])
+      const missingProfilePatientIds: string[] = (appts || [])
         .filter((apt: any) => apt.patient_id && !apt.profiles?.full_name && !apt.doctor_patients?.full_name)
-        .map((apt: any) => apt.patient_id);
+        .map((apt: any) => apt.patient_id as string);
 
-      // Fallback: hydrate missing patient names from doctor_profiles_view or profiles via a separate query
+      // Fallback: hydrate missing patient names
       const fallbackProfileMap = new Map<string, any>();
       if (missingProfilePatientIds.length > 0) {
         const uniqueIds = Array.from(new Set(missingProfilePatientIds));
