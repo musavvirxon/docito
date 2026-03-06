@@ -68,21 +68,42 @@ export const useMessaging = () => {
     try {
       setLoading(true);
 
+      // Fetch conversations where current user is a participant
       const { data: conversationData, error: conversationError } = await supabase
         .from('conversations')
         .select(`
           *,
           conversation_participants!inner (
-            *,
-            profiles:user_id (
-              full_name,
-              avatar_url
-            )
+            id, conversation_id, user_id, role, joined_at, last_read_at
           )
         `)
         .order('last_message_at', { ascending: false });
 
       if (conversationError) throw conversationError;
+
+      // Hydrate participant profiles separately to avoid RLS issues
+      const allParticipantIds = Array.from(
+        new Set((conversationData || []).flatMap((c: any) => 
+          (c.conversation_participants || []).map((p: any) => p.user_id)
+        ))
+      );
+
+      const { data: participantProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', allParticipantIds);
+
+      const pProfileMap = new Map((participantProfiles || []).map(p => [p.user_id, p]));
+
+      // Fallback: hydrate missing from doctor_profiles_view
+      const missingParticipantIds = allParticipantIds.filter(id => !pProfileMap.has(id));
+      if (missingParticipantIds.length > 0) {
+        const { data: dpv } = await supabase
+          .from('doctor_profiles_view' as any)
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', missingParticipantIds);
+        (dpv || []).forEach((p: any) => pProfileMap.set(p.user_id, p));
+      }
 
       const { data: lastMessages, error: lastMessageError } = await supabase
         .from('messages')
