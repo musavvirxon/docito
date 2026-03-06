@@ -225,6 +225,7 @@ export const CreateReferralDialog = ({
   const form = useForm<FormData>({
     resolver: zodResolver(referralSchema),
     defaultValues,
+    mode: 'onChange',
   });
 
   const referralScope = form.watch('referral_scope');

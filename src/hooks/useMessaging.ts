@@ -120,7 +120,7 @@ export const useMessaging = () => {
         .select('user_id, full_name, avatar_url')
         .in('user_id', senderIds);
 
-      const profileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
+      const lastMsgProfileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
 
       const conversationsWithLastMessage = conversationData?.map(conv => {
         const convLastMessage = lastMessages?.find(m => m.conversation_id === conv.id);

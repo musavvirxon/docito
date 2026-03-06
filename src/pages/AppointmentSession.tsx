@@ -419,7 +419,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           notes: diag.notes || null,
           patient_id: appointment.patient_id || null,
           doctor_patient_id: appointment.doctor_patient_id || null,
-        });
+          diagnosis_type: diag.type || 'primary',
+        } as any);
 
         if (error) throw error;
         toast.success('Diagnosis added');

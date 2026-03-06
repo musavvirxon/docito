@@ -1676,7 +1676,7 @@ async function generateTreatmentPlanPdf(params: {
       // Date range below if present
       if (m.startDate || m.endDate) {
         ensureSpace(14);
-        const dateStr = `${m.startDate || "?"} → ${m.endDate || "?"}`;
+        const dateStr = `${m.startDate || "?"} -> ${m.endDate || "?"}`;
         page.drawText(dateStr, { x: tableX + 8, y, size: 7, font, color: textMuted });
         y -= 12;
       }

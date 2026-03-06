@@ -1223,7 +1223,21 @@ Please review and confirm the treatment plan in your dashboard.
                   {currentIsToothBased && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Select Teeth *</label>
-                      <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
+                      {isDentist ? (
+                        <EnhancedDentalChart
+                          selectedTeeth={selectedTeeth}
+                          onToothSelect={(toothNumber) => {
+                            setSelectedTeeth((prev) =>
+                              prev.includes(toothNumber)
+                                ? prev.filter((t) => t !== toothNumber)
+                                : [...prev, toothNumber]
+                            );
+                          }}
+                          isEditable={true}
+                        />
+                      ) : (
+                        <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
+                      )}
                     </div>
                   )}
 
