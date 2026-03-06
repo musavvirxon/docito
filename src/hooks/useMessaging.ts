@@ -126,15 +126,15 @@ export const useMessaging = () => {
         const convLastMessage = lastMessages?.find(m => m.conversation_id === conv.id);
         const lastMessageWithSender = convLastMessage ? {
           ...convLastMessage,
-          sender: profileMap.get(convLastMessage.sender_id)
+          sender: lastMsgProfileMap.get(convLastMessage.sender_id)
         } : null;
 
         return {
           ...conv,
-          participants: conv.conversation_participants?.map((p: any) => ({
+          participants: (conv.conversation_participants || []).map((p: any) => ({
             ...p,
-            user: p.profiles
-          })) || [],
+            user: pProfileMap.get(p.user_id) || { full_name: 'Unknown', avatar_url: null },
+          })),
           last_message: lastMessageWithSender,
         } as Conversation;
       }) || [];
