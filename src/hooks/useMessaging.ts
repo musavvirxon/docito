@@ -268,14 +268,26 @@ export const useMessages = (conversationId: string | null) => {
 
       const senderIds = Array.from(new Set((messageData || []).map((m: any) => m.sender_id)));
 
-      const { data: senderProfiles, error: senderError } = await supabase
+      // Try profiles first
+      const { data: senderProfiles } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url')
         .in('user_id', senderIds);
 
-      if (senderError) throw senderError;
+      const allProfiles = [...(senderProfiles || [])];
 
-      const profileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
+      // Hydrate missing profiles from doctor_profiles_view
+      const foundIds = new Set(allProfiles.map(p => p.user_id));
+      const missingIds = senderIds.filter(id => !foundIds.has(id));
+      if (missingIds.length > 0) {
+        const { data: doctorProfiles } = await supabase
+          .from('doctor_profiles_view' as any)
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', missingIds);
+        if (doctorProfiles) allProfiles.push(...(doctorProfiles as any[]));
+      }
+
+      const profileMap = new Map(allProfiles.map(p => [p.user_id, p]));
 
       const messagesWithSenders = (messageData || []).map((msg: any) => {
         const senderProfile = profileMap.get(msg.sender_id);
