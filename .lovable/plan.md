@@ -1,155 +1,125 @@
-
-
-# Fix Plan: Diagnoses UI, PDF, Dental Chart, Calendar, Messages, and Referrals
+# Fix Plan: Patient Dashboard, Search, Booking, and Appointments
 
 ## Issues Identified
 
-1. **Diagnoses not visible after adding** — `fetchDiagnoses` maps all diagnoses with hardcoded `type: 'primary'`. The `appointment_diagnoses` table has no `diagnosis_type` column, so the user-selected type (primary/secondary) is lost on re-fetch. Also, the `ALL` RLS policy for doctors has no `WITH CHECK`, which should default to `USING` but may cause INSERT to succeed while SELECT fails in some edge cases.
-
-2. **PDF download fails** — Edge function logs show `WinAnsi cannot encode "→" (0x2192)`. The `→` character is used in medication date ranges (`startDate → endDate`). Standard PDF fonts (Helvetica) can't encode Unicode arrows.
-
-3. **No dental chart in treatment plan modal** — `EnhancedCreateTreatmentPlanModal` uses a simple `ToothSelector` grid component, not the `EnhancedDentalChart`. User wants the richer dental chart.
-
-4. **Patient-booked appointments not in doctor calendar** — The calendar query joins `profiles:patient_id(full_name, avatar_url, phone, email)`. The `profiles` RLS only allows viewing own profile, doctor-patient pairs, or staff-patient pairs. If the patient booked but hasn't had a recent appointment with this doctor (checked by `doctor_can_view_patient_profile`), the join fails and may cause the entire row to be excluded or return null patient data. The `!inner`-style join isn't used, so it should still return rows with null profiles. However, the issue might be that the query error cascades. Need to add a fallback using `doctor_profiles_view` pattern or fix the profiles RLS to allow doctors to see profiles of patients who have appointments with them.
-
-5. **"Failed to load messages"** — The `useMessaging` hook joins `conversation_participants!inner` with `profiles:user_id`. The `conversation_participants` SELECT policy only allows `user_id = auth.uid()`, so the inner join only returns the current user's participant row, hiding other participants. The subsequent `profiles` lookup for sender IDs may also fail if RLS blocks viewing other users' profiles.
-
-6. **Referral "Create Referral" button fails on first click** — The runtime error shows an unhandled `ZodError` from the form resolver for `reason` (min 10 chars). With Zod v4 (`^4.1.5`), `@hookform/resolvers` may have compatibility issues. The `superRefine` combined with standard validations may cause the resolver to throw instead of returning errors gracefully on the first submission attempt.
-
-7. **Create Referral button not working** — Same root cause as #6. The Zod validation error is unhandled.
-
----
+1. `**patient_all_appointments` query fails** -- trying to join `procedure:procedure_id(*)` but the view has no FK to `procedures`. Returns 400 error.
+2. `**appointment_holds.procedure_id` does not exist** -- the `book-appointment` edge function tries to insert `procedure_id` into `appointment_holds`, and `BookingConfirmation.tsx` selects it. The column doesn't exist in the table schema.
+3. **Doctor name missing in search results** -- `useDoctorSearch.ts` queries `profiles!fk_doctors_user_id(full_name, avatar_url)` but network responses show `profiles: null`. The profiles RLS blocks access. Need to use `doctor_profiles_view` instead.
+4. **Doctor name missing in DoctorProfile page** -- Uses `profiles:user_id(...)` which also fails due to RLS. Same fix needed.
+5. **Doctor name missing in BookingModal/DoctorProfileModal** -- These modals receive doctor data from the search hook which already has null profiles.
+6. **Translations not showing** -- `ResultCard.tsx` uses `useTranslation("dashboard")` but translation keys like `patient.resultCard.doctor` exist in `dashboard.json`. The issue is the search results page (`SearchDoctors.tsx`) uses `useTranslation('doctors')` namespace, and the result cards use `dashboard` namespace. Both should work. Need to check if the patient dashboard itself renders untranslated code strings.
+7. **Procedures only visible for dentists** -- The `isDentist` check limits procedure selection. Should be available for all doctors.
+8. **Patient details section in booking** -- Should be removed; patient data from profile is sent automatically.
+9. **Payment/cost should be charged only after doctor confirms** -- Cost display should show "Estimated" and note payment is post-appointment.
+10. While booking appointment doctor profile should be showed when clicked on profile button - all public info should be displayes.
+11. Booking-confirmation page should be fixed
 
 ## Changes
 
-### 1. Fix diagnoses visibility
+### 1. Fix `patient_all_appointments` query (supabase-api.ts + usePatientDashboard.ts)
 
-**File**: `src/pages/AppointmentSession.tsx`
+Remove the `procedure:procedure_id(*)` join from the `patient_all_appointments` query since the view doesn't have this FK relationship.
 
-- Add `diagnosis_type` to the insert payload in `handleAddDiagnosis` (store `diag.type` as a text field)
-- In `fetchDiagnoses` mapping, read the type from the DB record instead of hardcoding `'primary'`
+**Files**: `src/lib/api/supabase-api.ts` (line 510), `src/hooks/usePatientDashboard.ts` (lines 44-64)
 
-**SQL Migration**: Add `diagnosis_type` column to `appointment_diagnoses`:
+Remove `, procedure:procedure_id (*)` from the select string. Keep the doctor and practice joins.
+
+### 2. Add `procedure_id` column to `appointment_holds` (SQL migration)
+
 ```sql
-ALTER TABLE public.appointment_diagnoses 
-ADD COLUMN IF NOT EXISTS diagnosis_type text DEFAULT 'primary';
+ALTER TABLE public.appointment_holds 
+ADD COLUMN IF NOT EXISTS procedure_id uuid REFERENCES procedures(id);
 ```
 
-### 2. Fix PDF `→` character encoding
+This fixes:
 
-**File**: `supabase/functions/treatment-plan-generate-pdf/index.ts` (line 1679)
+- The `book-appointment` edge function insert
+- The `BookingConfirmation.tsx` select
 
-Replace `→` with `->` (ASCII-safe) in the date range string:
+### 3. Fix doctor name in search results (useDoctorSearch.ts)
+
+Replace `profiles!fk_doctors_user_id(full_name, avatar_url)` with a separate query to `doctor_profiles_view` or use the view directly. The simplest fix: query `doctor_profiles_view` instead of `doctors` table, since the view already includes `full_name` and `avatar_url`.
+
+**File**: `src/hooks/useDoctorSearch.ts`
+
+Change the query to use `doctor_profiles_view` which bypasses profiles RLS:
+
 ```ts
-const dateStr = `${m.startDate || "?"} -> ${m.endDate || "?"}`;
+let q = supabase
+  .from('doctor_profiles_view')
+  .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url')
+  .eq('verified', true)
+  .limit(50);
 ```
 
-Also add a global text sanitizer function that strips/replaces non-WinAnsi characters before any `drawText` call, to prevent similar crashes with other Unicode characters.
+Update the mapping to use `d.full_name` directly instead of `d.profiles?.full_name`.
 
-### 3. Add EnhancedDentalChart to treatment plan modal
+### 4. Fix doctor name in DoctorProfile page
 
-**File**: `src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx`
+**File**: `src/pages/DoctorProfile.tsx`
 
-- Import `EnhancedDentalChart` from `@/components/dental/EnhancedDentalChart`
-- Above the "Add Procedures" section (before line 963), render the dental chart when `isDentist` is true
-- Wire `onToothSelect` to update `selectedTeeth` state
-- Keep the existing `ToothSelector` as a compact alternative below, or replace it entirely with the dental chart
+After fetching from `doctors` table, hydrate the name from `doctor_profiles_view` if `profiles` is null (RLS blocked). Add a fallback fetch:
 
-### 4. Fix calendar not showing patient-booked appointments
-
-The calendar query joins `profiles:patient_id(...)` which fails due to profiles RLS. The doctor can't read the patient's profile if `doctor_can_view_patient_profile` returns false (e.g., the function checks for existing appointments but the appointment is the one being fetched — circular dependency).
-
-**Fix**: In `useCalendarData.ts`, after fetching appointments, hydrate patient names from `doctor_profiles_view` or use a separate query that bypasses profiles RLS. Alternatively, add an RLS-safe function.
-
-**Simpler approach**: Add a profiles SELECT policy that allows doctors to view profiles of patients who have appointments with them:
-
-**SQL Migration**:
-```sql
-CREATE OR REPLACE FUNCTION public.doctor_can_view_patient_profile(p_user_id uuid)
-RETURNS boolean
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM doctors d
-    JOIN appointments a ON a.doctor_id = d.id
-    WHERE d.user_id = auth.uid()
-      AND a.patient_id = p_user_id
-  )
-$$;
-```
-
-If this function already exists, verify it includes all appointment statuses (not just completed ones).
-
-### 5. Fix messaging — "Failed to load messages"
-
-**File**: `src/hooks/useMessaging.ts`
-
-The `conversation_participants` RLS only allows `user_id = auth.uid()`. The `!inner` join means conversations are only returned if the current user is a participant (correct behavior), but other participants' profile data is hidden.
-
-**Fix**: 
-- Change the conversation fetch to not join profiles through `conversation_participants`. Instead, fetch participant user_ids separately, then hydrate names from `doctor_profiles_view` (which bypasses profiles RLS for doctors) and a separate profiles query for the current user.
-- For sender profiles in `useMessages`, use `doctor_profiles_view` as a fallback when `profiles` query returns no results.
-
-**File**: `src/hooks/useMessaging.ts` (lines 271-276)
-
-Replace the sender profiles query:
 ```ts
-// Try profiles first, fallback to doctor_profiles_view
-const { data: senderProfiles } = await supabase
-  .from('profiles')
-  .select('user_id, full_name, avatar_url')
-  .in('user_id', senderIds);
-
-// Hydrate missing profiles from doctor_profiles_view
-const foundIds = new Set((senderProfiles || []).map(p => p.user_id));
-const missingIds = senderIds.filter(id => !foundIds.has(id));
-if (missingIds.length > 0) {
-  const { data: doctorProfiles } = await supabase
+if (!data.profiles || !data.profiles.full_name) {
+  const { data: dpv } = await supabase
     .from('doctor_profiles_view')
-    .select('user_id, full_name, avatar_url')
-    .in('user_id', missingIds);
-  senderProfiles?.push(...(doctorProfiles || []));
+    .select('full_name, avatar_url')
+    .eq('id', data.id)
+    .maybeSingle();
+  if (dpv) {
+    data.profiles = { ...data.profiles, full_name: dpv.full_name, avatar_url: dpv.avatar_url };
+  }
 }
 ```
 
-Also need to fix `fetchConversations` similarly — the join through `conversation_participants` with `profiles:user_id` will fail for other participants.
+### 5. Fix doctor name in BookingModal and DoctorProfileModal
 
-### 6. Fix referral form — Create Referral button fails on first click
+These receive `doctor` prop from `SearchDoctors.tsx`. The search results already map `name` from `profiles.full_name`. With fix #3, the name will be populated correctly. No additional changes needed for these modals.
 
-**Root cause**: Zod v4 + `@hookform/resolvers` compatibility issue. The `superRefine` throws an unhandled ZodError.
+### 6. Make procedures available for all doctors (not just dentists)
 
-**File**: `src/components/referrals/CreateReferralDialog.tsx`
+**File**: `src/pages/AppointmentBooking.tsx`
 
-Wrap the form submit handler to catch validation errors gracefully:
-```ts
-const onFormSubmit = form.handleSubmit(handleSubmit, (errors) => {
-  // Validation errors are handled by react-hook-form
-  console.log('Validation errors:', errors);
-});
-```
+- Remove the `isDentist` check that gates the procedures section (line 547: `{isDentist && (`)
+- Change it to always show if procedures exist
+- Update procedure loading to use `doctor_id` instead of `dentist_id` for non-dentist doctors (check both columns)
 
-And use `onFormSubmit` in the form's `onSubmit` prop. Also ensure the `reason` field has a proper `FormMessage` component to display the validation error.
+### 7. Remove patient details section from booking
 
-Additionally, check if `form.handleSubmit` properly catches the ZodError. The unhandled promise rejection suggests the resolver throws instead of returning structured errors. Fix by wrapping the zodResolver call or using `mode: 'onBlur'` to validate fields as the user types.
+**File**: `src/pages/AppointmentBooking.tsx`
 
-### 7. Redeploy PDF edge function
+- Remove the "Patient details" Card (lines 708-756) containing name/email/phone inputs
+- Keep only the Notes textarea
+- Remove `patientName`, `patientEmail` state variables
+- Keep `patientPhone` but auto-fill from profile (already done) and don't show input
+- Update `canBook` to not require phone: `const canBook = Boolean(selectedSlotStart) && !booking`
+- Update `handleBook` to pull patient info from auth/profile automatically
+- In `combinedNotes`, remove the manual name/email/phone lines
 
-After fixing the `→` character, redeploy `treatment-plan-generate-pdf`.
+### 8. Update cost/payment messaging
 
----
+**File**: `src/pages/AppointmentBooking.tsx`
 
-## Summary
+- Change consultation fee display to say "Estimated fee" 
+- Add note: "Payment will only be charged after appointment completion and doctor confirmation"
+- In the procedure cost display, change "Estimate:" label to "Estimated cost (charged after appointment):"
 
-| File | Change |
-|------|--------|
-| SQL migration | Add `diagnosis_type` to `appointment_diagnoses`; fix `doctor_can_view_patient_profile` function |
-| `supabase/functions/treatment-plan-generate-pdf/index.ts` | Replace `→` with `->`, add text sanitizer |
-| `src/pages/AppointmentSession.tsx` | Store/read `diagnosis_type` in diagnoses |
-| `src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx` | Add `EnhancedDentalChart` above procedure section for dentists |
-| `src/hooks/useMessaging.ts` | Fix sender profile hydration with fallback to `doctor_profiles_view` |
-| `src/components/referrals/CreateReferralDialog.tsx` | Fix form validation error handling, add `mode: 'onChange'` |
-| `src/components/doctor/calendar/useCalendarData.ts` | Add fallback patient name hydration |
+### 9. Fix patient dashboard translations
 
+The `ResultCard.tsx` uses `useTranslation("dashboard")` which loads `public/locales/en/dashboard.json`. The keys like `patient.resultCard.doctor` exist there, so translations should work. The issue may be that the patient dashboard components themselves show raw keys. Need to verify the patient dashboard view uses the correct translation namespace.
+
+**File**: `src/components/patient-dashboard/PatientDashboardView.tsx` - verify it uses `useTranslation("dashboard")`
+
+## Summary of Changes
+
+
+| File                                | Change                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| SQL migration                       | Add `procedure_id` column to `appointment_holds`                                          |
+| `src/lib/api/supabase-api.ts`       | Remove `procedure:procedure_id(*)` from `patient_all_appointments` query                  |
+| `src/hooks/usePatientDashboard.ts`  | Remove procedure join from query                                                          |
+| `src/hooks/useDoctorSearch.ts`      | Use `doctor_profiles_view` instead of `doctors` table for search                          |
+| `src/pages/DoctorProfile.tsx`       | Add fallback name hydration from `doctor_profiles_view`                                   |
+| `src/pages/AppointmentBooking.tsx`  | Remove patient details section, show procedures for all doctors, update payment messaging |
+| `src/pages/BookingConfirmation.tsx` | No change needed (procedure_id column fix handles it)                                     |

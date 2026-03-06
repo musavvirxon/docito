@@ -24,6 +24,7 @@ import { useProcedures } from "@/hooks/useProcedures";
 import { useDoctorProfile } from "@/hooks/useDoctorProfile";
 import PatientSelector from "@/components/patient/PatientSelector";
 import ToothSelector from "@/components/procedure/ToothSelector";
+import { EnhancedDentalChart } from "@/components/dental/EnhancedDentalChart";
 import { cn } from "@/lib/utils";
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
@@ -1222,7 +1223,21 @@ Please review and confirm the treatment plan in your dashboard.
                   {currentIsToothBased && (
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Select Teeth *</label>
-                      <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
+                      {isDentist ? (
+                        <EnhancedDentalChart
+                          selectedTeeth={selectedTeeth}
+                          onToothSelect={(toothNumber) => {
+                            setSelectedTeeth((prev) =>
+                              prev.includes(toothNumber)
+                                ? prev.filter((t) => t !== toothNumber)
+                                : [...prev, toothNumber]
+                            );
+                          }}
+                          isEditable={true}
+                        />
+                      ) : (
+                        <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
+                      )}
                     </div>
                   )}
 

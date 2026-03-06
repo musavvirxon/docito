@@ -68,21 +68,42 @@ export const useMessaging = () => {
     try {
       setLoading(true);
 
+      // Fetch conversations where current user is a participant
       const { data: conversationData, error: conversationError } = await supabase
         .from('conversations')
         .select(`
           *,
           conversation_participants!inner (
-            *,
-            profiles:user_id (
-              full_name,
-              avatar_url
-            )
+            id, conversation_id, user_id, role, joined_at, last_read_at
           )
         `)
         .order('last_message_at', { ascending: false });
 
       if (conversationError) throw conversationError;
+
+      // Hydrate participant profiles separately to avoid RLS issues
+      const allParticipantIds = Array.from(
+        new Set((conversationData || []).flatMap((c: any) => 
+          (c.conversation_participants || []).map((p: any) => p.user_id)
+        ))
+      );
+
+      const { data: participantProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', allParticipantIds);
+
+      const pProfileMap = new Map((participantProfiles || []).map(p => [p.user_id, p]));
+
+      // Fallback: hydrate missing from doctor_profiles_view
+      const missingParticipantIds = allParticipantIds.filter(id => !pProfileMap.has(id));
+      if (missingParticipantIds.length > 0) {
+        const { data: dpv } = await supabase
+          .from('doctor_profiles_view' as any)
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', missingParticipantIds);
+        (dpv || []).forEach((p: any) => pProfileMap.set(p.user_id, p));
+      }
 
       const { data: lastMessages, error: lastMessageError } = await supabase
         .from('messages')
@@ -99,21 +120,21 @@ export const useMessaging = () => {
         .select('user_id, full_name, avatar_url')
         .in('user_id', senderIds);
 
-      const profileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
+      const lastMsgProfileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
 
       const conversationsWithLastMessage = conversationData?.map(conv => {
         const convLastMessage = lastMessages?.find(m => m.conversation_id === conv.id);
         const lastMessageWithSender = convLastMessage ? {
           ...convLastMessage,
-          sender: profileMap.get(convLastMessage.sender_id)
+          sender: lastMsgProfileMap.get(convLastMessage.sender_id)
         } : null;
 
         return {
           ...conv,
-          participants: conv.conversation_participants?.map((p: any) => ({
+          participants: (conv.conversation_participants || []).map((p: any) => ({
             ...p,
-            user: p.profiles
-          })) || [],
+            user: pProfileMap.get(p.user_id) || { full_name: 'Unknown', avatar_url: null },
+          })),
           last_message: lastMessageWithSender,
         } as Conversation;
       }) || [];
@@ -268,14 +289,26 @@ export const useMessages = (conversationId: string | null) => {
 
       const senderIds = Array.from(new Set((messageData || []).map((m: any) => m.sender_id)));
 
-      const { data: senderProfiles, error: senderError } = await supabase
+      // Try profiles first
+      const { data: senderProfiles } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url')
         .in('user_id', senderIds);
 
-      if (senderError) throw senderError;
+      const allProfiles = [...(senderProfiles || [])];
 
-      const profileMap = new Map(senderProfiles?.map(p => [p.user_id, p]) || []);
+      // Hydrate missing profiles from doctor_profiles_view
+      const foundIds = new Set(allProfiles.map(p => p.user_id));
+      const missingIds = senderIds.filter(id => !foundIds.has(id));
+      if (missingIds.length > 0) {
+        const { data: doctorProfiles } = await supabase
+          .from('doctor_profiles_view' as any)
+          .select('user_id, full_name, avatar_url')
+          .in('user_id', missingIds);
+        if (doctorProfiles) allProfiles.push(...(doctorProfiles as any[]));
+      }
+
+      const profileMap = new Map(allProfiles.map(p => [p.user_id, p]));
 
       const messagesWithSenders = (messageData || []).map((msg: any) => {
         const senderProfile = profileMap.get(msg.sender_id);

@@ -238,9 +238,26 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
 
       if (blockErr) console.error("Failed to fetch blocked times:", blockErr);
 
+      // Collect patient_ids that have null profiles (RLS blocked)
+      const missingProfilePatientIds: string[] = (appts || [])
+        .filter((apt: any) => apt.patient_id && !apt.profiles?.full_name && !apt.doctor_patients?.full_name)
+        .map((apt: any) => apt.patient_id as string);
+
+      // Fallback: hydrate missing patient names
+      const fallbackProfileMap = new Map<string, any>();
+      if (missingProfilePatientIds.length > 0) {
+        const uniqueIds = Array.from(new Set(missingProfilePatientIds));
+        const { data: fallbackProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, avatar_url, phone, email')
+          .in('user_id', uniqueIds);
+        (fallbackProfiles || []).forEach((p: any) => fallbackProfileMap.set(p.user_id, p));
+      }
+
       const transformedAppts: CalendarAppointment[] = (appts || []).map((apt: any) => {
         const reg = apt.profiles;
         const dp = apt.doctor_patients;
+        const fallback = apt.patient_id ? fallbackProfileMap.get(apt.patient_id) : null;
 
         const procRow = normalizeProcedureRow(apt.procedures);
         const procCost =
@@ -265,10 +282,10 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
           procedure_category: procRow?.category ?? null,
           procedure_cost: procCost == null ? null : Number(procCost),
 
-          patient_name: reg?.full_name || dp?.full_name || "Patient",
-          patient_avatar: reg?.avatar_url ?? null,
-          patient_phone: reg?.phone || dp?.phone || null,
-          patient_email: reg?.email || dp?.email || null,
+          patient_name: reg?.full_name || dp?.full_name || fallback?.full_name || "Patient",
+          patient_avatar: reg?.avatar_url ?? fallback?.avatar_url ?? null,
+          patient_phone: reg?.phone || dp?.phone || fallback?.phone || null,
+          patient_email: reg?.email || dp?.email || fallback?.email || null,
 
           appointment_type: normalizeAppointmentType(apt.appointment_type),
           patient_confirmation_status: apt.patient_confirmation_status ?? null,

@@ -389,7 +389,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           id: d.id,
           code: d.icd10_code || '',
           name: d.diagnosis_title || '',
-          type: 'primary' as const,
+          type: (d.diagnosis_type === 'secondary' ? 'secondary' : 'primary') as 'primary' | 'secondary',
           notes: d.notes || undefined,
           createdAt: d.created_at,
         }))
@@ -419,7 +419,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           notes: diag.notes || null,
           patient_id: appointment.patient_id || null,
           doctor_patient_id: appointment.doctor_patient_id || null,
-        });
+          diagnosis_type: diag.type || 'primary',
+        } as any);
 
         if (error) throw error;
         toast.success('Diagnosis added');
