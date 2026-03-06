@@ -24,6 +24,7 @@ import { useProcedures } from "@/hooks/useProcedures";
 import { useDoctorProfile } from "@/hooks/useDoctorProfile";
 import PatientSelector from "@/components/patient/PatientSelector";
 import ToothSelector from "@/components/procedure/ToothSelector";
+import { EnhancedDentalChart } from "@/components/dental/EnhancedDentalChart";
 import { cn } from "@/lib/utils";
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
