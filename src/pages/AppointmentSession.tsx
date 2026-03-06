@@ -389,7 +389,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           id: d.id,
           code: d.icd10_code || '',
           name: d.diagnosis_title || '',
-          type: 'primary' as const,
+          type: (d.diagnosis_type === 'secondary' ? 'secondary' : 'primary') as 'primary' | 'secondary',
           notes: d.notes || undefined,
           createdAt: d.created_at,
         }))
