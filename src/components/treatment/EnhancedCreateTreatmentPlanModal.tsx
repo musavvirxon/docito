@@ -1046,7 +1046,7 @@ Please review and confirm the treatment plan in your dashboard.
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
                         Unit Cost (USD)
-                        {currentIsToothBased ? (
+                        {isDentist && selectedTeeth.length > 0 ? (
                           <span className="ml-2 text-xs text-muted-foreground">(per tooth)</span>
                         ) : null}
                       </label>
