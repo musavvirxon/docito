@@ -402,13 +402,6 @@ export const EnhancedDentalChart = ({
                         <RotateCcw className="w-4 h-4 mr-1" />
                         Clear
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => setProcedureModalOpen(true)}
-                      >
-                        <Plus className="w-4 h-4 mr-1" />
-                        Add Procedure
-                      </Button>
                     </div>
                   )}
                 </div>
