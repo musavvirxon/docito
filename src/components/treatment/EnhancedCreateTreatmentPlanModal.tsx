@@ -954,6 +954,32 @@ Please review and confirm the treatment plan in your dashboard.
 
             <Separator />
 
+            {/* Dental Chart for tooth selection — always visible for dentists */}
+            {isDentist && (
+              <div className="space-y-2">
+                <h3 className="font-semibold">Select Teeth</h3>
+                <p className="text-xs text-muted-foreground">
+                  Select teeth the procedure applies to. Cost = unit cost × number of teeth selected.
+                </p>
+                <EnhancedDentalChart
+                  selectedTeeth={selectedTeeth}
+                  onToothSelect={(toothNumber) => {
+                    setSelectedTeeth((prev) =>
+                      prev.includes(toothNumber)
+                        ? prev.filter((t) => t !== toothNumber)
+                        : [...prev, toothNumber]
+                    );
+                  }}
+                  isEditable={true}
+                />
+                {selectedTeeth.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedTeeth.length} {selectedTeeth.length === 1 ? "tooth" : "teeth"} selected: {selectedTeeth.sort((a, b) => a - b).join(", ")}
+                  </Badge>
+                )}
+              </div>
+            )}
+
             <div className="space-y-4">
               <h3 className="font-semibold">Add Procedures *</h3>
 
