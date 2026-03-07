@@ -189,20 +189,22 @@ const EnhancedCreateTreatmentPlanModal = ({
     return Number.isFinite(fallback) ? fallback : 0;
   }, [currentProcedure.cost, currentSelectedProc?.default_cost, currentSelectedProc?.price]);
 
-  const currentQty = currentIsToothBased ? selectedTeeth.length : 1;
-  const currentLineTotal = currentIsToothBased ? currentUnitCost * Math.max(currentQty, 0) : currentUnitCost;
+  // For dentists: cost = unit × teeth (if teeth selected), otherwise unit cost
+  const currentHasTeeth = isDentist && selectedTeeth.length > 0;
+  const currentQty = currentHasTeeth ? selectedTeeth.length : 1;
+  const currentLineTotal = currentHasTeeth ? currentUnitCost * selectedTeeth.length : currentUnitCost;
 
   const getItemPricing = (item: ProcedureItem) => {
     const proc = getProcById(item.procedure_id);
-    const toothBased = isDentist && String(proc?.type || "").toLowerCase() === "tooth_based";
+    const hasTeeth = isDentist && (item.tooth_numbers?.length || 0) > 0;
 
     const unit = Number(item.cost ?? proc?.default_cost ?? proc?.price ?? 0);
     const unitSafe = Number.isFinite(unit) ? unit : 0;
 
-    const qty = toothBased ? Math.max(item.tooth_numbers?.length || 0, 1) : 1;
-    const lineTotal = toothBased ? unitSafe * qty : unitSafe;
+    const qty = hasTeeth ? item.tooth_numbers!.length : 1;
+    const lineTotal = hasTeeth ? unitSafe * qty : unitSafe;
 
-    return { proc, toothBased, unit: unitSafe, qty, lineTotal };
+    return { proc, toothBased: hasTeeth, unit: unitSafe, qty, lineTotal };
   };
 
   useEffect(() => {
@@ -399,19 +401,10 @@ const EnhancedCreateTreatmentPlanModal = ({
       return;
     }
 
-    const selectedProc = getProcById(currentProcedure.procedure_id);
-    const isToothBased =
-      isDentist && String(selectedProc?.type || "").toLowerCase() === "tooth_based";
-
-    if (isToothBased && selectedTeeth.length === 0) {
-      toast.error("Please select at least one tooth for this procedure.");
-      return;
-    }
-
     const unit = Number(
       currentProcedure.cost ??
-        selectedProc?.default_cost ??
-        selectedProc?.price ??
+        getProcById(currentProcedure.procedure_id)?.default_cost ??
+        getProcById(currentProcedure.procedure_id)?.price ??
         0
     );
     const unitSafe = Number.isFinite(unit) ? unit : 0;
@@ -419,8 +412,8 @@ const EnhancedCreateTreatmentPlanModal = ({
     const procedureToAdd: ProcedureItem = {
       ...currentProcedure,
       duration_minutes: Number(currentProcedure.duration_minutes || 30),
-      cost: unitSafe, // ✅ store as UNIT
-      tooth_numbers: isToothBased ? (selectedTeeth.length ? selectedTeeth : []) : undefined,
+      cost: unitSafe,
+      tooth_numbers: isDentist && selectedTeeth.length > 0 ? [...selectedTeeth] : undefined,
     };
 
     let nextItems: ProcedureItem[];
@@ -961,6 +954,32 @@ Please review and confirm the treatment plan in your dashboard.
 
             <Separator />
 
+            {/* Dental Chart for tooth selection — always visible for dentists */}
+            {isDentist && (
+              <div className="space-y-2">
+                <h3 className="font-semibold">Select Teeth</h3>
+                <p className="text-xs text-muted-foreground">
+                  Select teeth the procedure applies to. Cost = unit cost × number of teeth selected.
+                </p>
+                <EnhancedDentalChart
+                  selectedTeeth={selectedTeeth}
+                  onToothSelect={(toothNumber) => {
+                    setSelectedTeeth((prev) =>
+                      prev.includes(toothNumber)
+                        ? prev.filter((t) => t !== toothNumber)
+                        : [...prev, toothNumber]
+                    );
+                  }}
+                  isEditable={true}
+                />
+                {selectedTeeth.length > 0 && (
+                  <Badge variant="secondary" className="text-xs">
+                    {selectedTeeth.length} {selectedTeeth.length === 1 ? "tooth" : "teeth"} selected: {selectedTeeth.sort((a, b) => a - b).join(", ")}
+                  </Badge>
+                )}
+              </div>
+            )}
+
             <div className="space-y-4">
               <h3 className="font-semibold">Add Procedures *</h3>
 
@@ -1027,7 +1046,7 @@ Please review and confirm the treatment plan in your dashboard.
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
                         Unit Cost (USD)
-                        {currentIsToothBased ? (
+                        {isDentist && selectedTeeth.length > 0 ? (
                           <span className="ml-2 text-xs text-muted-foreground">(per tooth)</span>
                         ) : null}
                       </label>
@@ -1047,7 +1066,7 @@ Please review and confirm the treatment plan in your dashboard.
                         placeholder="0.00"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Stored as <b>unit cost</b>. For tooth-based procedures, total = unit × number of teeth.
+                        Stored as <b>unit cost</b>. When teeth are selected, total = unit × number of teeth.
                       </p>
                     </div>
 
@@ -1219,51 +1238,24 @@ Please review and confirm the treatment plan in your dashboard.
                     />
                   </div>
 
-                  {/* ✅ Teeth selection ONLY for tooth_based procedures */}
-                  {currentIsToothBased && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Select Teeth *</label>
-                      {isDentist ? (
-                        <EnhancedDentalChart
-                          selectedTeeth={selectedTeeth}
-                          onToothSelect={(toothNumber) => {
-                            setSelectedTeeth((prev) =>
-                              prev.includes(toothNumber)
-                                ? prev.filter((t) => t !== toothNumber)
-                                : [...prev, toothNumber]
-                            );
-                          }}
-                          isEditable={true}
-                        />
-                      ) : (
-                        <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
-                      )}
-                    </div>
-                  )}
-
-                  {/* ✅ Pricing preview */}
+                  {/* Pricing preview */}
                   {currentProcedure.procedure_id && (
                     <Card className="bg-primary/5 border-primary/20">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-muted-foreground">
-                            {currentIsToothBased ? (
+                            {currentHasTeeth ? (
                               <>
-                                Unit {formatCurrency(currentUnitCost)} × Teeth {selectedTeeth.length}
+                                Unit {formatCurrency(currentUnitCost)} × {selectedTeeth.length} {selectedTeeth.length === 1 ? "tooth" : "teeth"}
                               </>
                             ) : (
                               <>Unit {formatCurrency(currentUnitCost)}</>
                             )}
                           </div>
                           <div className="font-bold text-primary">
-                            {currentIsToothBased ? formatCurrency(currentUnitCost * (selectedTeeth.length || 0)) : formatCurrency(currentUnitCost)}
+                            {formatCurrency(currentLineTotal)}
                           </div>
                         </div>
-                        {currentIsToothBased && selectedTeeth.length === 0 && (
-                          <div className="text-xs text-amber-700 mt-2">
-                            Select at least one tooth to calculate total.
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
                   )}
