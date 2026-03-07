@@ -189,8 +189,10 @@ const EnhancedCreateTreatmentPlanModal = ({
     return Number.isFinite(fallback) ? fallback : 0;
   }, [currentProcedure.cost, currentSelectedProc?.default_cost, currentSelectedProc?.price]);
 
-  const currentQty = currentIsToothBased ? selectedTeeth.length : 1;
-  const currentLineTotal = currentIsToothBased ? currentUnitCost * Math.max(currentQty, 0) : currentUnitCost;
+  // For dentists: cost = unit × teeth (if teeth selected), otherwise unit cost
+  const currentHasTeeth = isDentist && selectedTeeth.length > 0;
+  const currentQty = currentHasTeeth ? selectedTeeth.length : 1;
+  const currentLineTotal = currentHasTeeth ? currentUnitCost * selectedTeeth.length : currentUnitCost;
 
   const getItemPricing = (item: ProcedureItem) => {
     const proc = getProcById(item.procedure_id);
