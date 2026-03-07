@@ -401,19 +401,10 @@ const EnhancedCreateTreatmentPlanModal = ({
       return;
     }
 
-    const selectedProc = getProcById(currentProcedure.procedure_id);
-    const isToothBased =
-      isDentist && String(selectedProc?.type || "").toLowerCase() === "tooth_based";
-
-    if (isToothBased && selectedTeeth.length === 0) {
-      toast.error("Please select at least one tooth for this procedure.");
-      return;
-    }
-
     const unit = Number(
       currentProcedure.cost ??
-        selectedProc?.default_cost ??
-        selectedProc?.price ??
+        getProcById(currentProcedure.procedure_id)?.default_cost ??
+        getProcById(currentProcedure.procedure_id)?.price ??
         0
     );
     const unitSafe = Number.isFinite(unit) ? unit : 0;
@@ -421,8 +412,8 @@ const EnhancedCreateTreatmentPlanModal = ({
     const procedureToAdd: ProcedureItem = {
       ...currentProcedure,
       duration_minutes: Number(currentProcedure.duration_minutes || 30),
-      cost: unitSafe, // ✅ store as UNIT
-      tooth_numbers: isToothBased ? (selectedTeeth.length ? selectedTeeth : []) : undefined,
+      cost: unitSafe,
+      tooth_numbers: isDentist && selectedTeeth.length > 0 ? [...selectedTeeth] : undefined,
     };
 
     let nextItems: ProcedureItem[];
