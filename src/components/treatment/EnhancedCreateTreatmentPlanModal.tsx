@@ -1068,7 +1068,6 @@ Please review and confirm the treatment plan in your dashboard.
                       <p className="text-xs text-muted-foreground">
                         Stored as <b>unit cost</b>. When teeth are selected, total = unit × number of teeth.
                       </p>
-                      </p>
                     </div>
 
                     <div className="space-y-2">
