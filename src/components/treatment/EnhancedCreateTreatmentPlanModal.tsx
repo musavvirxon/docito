@@ -1238,51 +1238,24 @@ Please review and confirm the treatment plan in your dashboard.
                     />
                   </div>
 
-                  {/* ✅ Teeth selection ONLY for tooth_based procedures */}
-                  {currentIsToothBased && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Select Teeth *</label>
-                      {isDentist ? (
-                        <EnhancedDentalChart
-                          selectedTeeth={selectedTeeth}
-                          onToothSelect={(toothNumber) => {
-                            setSelectedTeeth((prev) =>
-                              prev.includes(toothNumber)
-                                ? prev.filter((t) => t !== toothNumber)
-                                : [...prev, toothNumber]
-                            );
-                          }}
-                          isEditable={true}
-                        />
-                      ) : (
-                        <ToothSelector selectedTeeth={selectedTeeth} onSelectionChange={setSelectedTeeth} />
-                      )}
-                    </div>
-                  )}
-
-                  {/* ✅ Pricing preview */}
+                  {/* Pricing preview */}
                   {currentProcedure.procedure_id && (
                     <Card className="bg-primary/5 border-primary/20">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-muted-foreground">
-                            {currentIsToothBased ? (
+                            {currentHasTeeth ? (
                               <>
-                                Unit {formatCurrency(currentUnitCost)} × Teeth {selectedTeeth.length}
+                                Unit {formatCurrency(currentUnitCost)} × {selectedTeeth.length} {selectedTeeth.length === 1 ? "tooth" : "teeth"}
                               </>
                             ) : (
                               <>Unit {formatCurrency(currentUnitCost)}</>
                             )}
                           </div>
                           <div className="font-bold text-primary">
-                            {currentIsToothBased ? formatCurrency(currentUnitCost * (selectedTeeth.length || 0)) : formatCurrency(currentUnitCost)}
+                            {formatCurrency(currentLineTotal)}
                           </div>
                         </div>
-                        {currentIsToothBased && selectedTeeth.length === 0 && (
-                          <div className="text-xs text-amber-700 mt-2">
-                            Select at least one tooth to calculate total.
-                          </div>
-                        )}
                       </CardContent>
                     </Card>
                   )}
