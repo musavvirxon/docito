@@ -196,15 +196,15 @@ const EnhancedCreateTreatmentPlanModal = ({
 
   const getItemPricing = (item: ProcedureItem) => {
     const proc = getProcById(item.procedure_id);
-    const toothBased = isDentist && String(proc?.type || "").toLowerCase() === "tooth_based";
+    const hasTeeth = isDentist && (item.tooth_numbers?.length || 0) > 0;
 
     const unit = Number(item.cost ?? proc?.default_cost ?? proc?.price ?? 0);
     const unitSafe = Number.isFinite(unit) ? unit : 0;
 
-    const qty = toothBased ? Math.max(item.tooth_numbers?.length || 0, 1) : 1;
-    const lineTotal = toothBased ? unitSafe * qty : unitSafe;
+    const qty = hasTeeth ? item.tooth_numbers!.length : 1;
+    const lineTotal = hasTeeth ? unitSafe * qty : unitSafe;
 
-    return { proc, toothBased, unit: unitSafe, qty, lineTotal };
+    return { proc, toothBased: hasTeeth, unit: unitSafe, qty, lineTotal };
   };
 
   useEffect(() => {
