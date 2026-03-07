@@ -954,37 +954,37 @@ Please review and confirm the treatment plan in your dashboard.
 
             <Separator />
 
-            {/* Dental Chart for tooth selection — always visible for dentists */}
-            {isDentist && (
-              <div className="space-y-2">
-                <h3 className="font-semibold">Select Teeth</h3>
-                <p className="text-xs text-muted-foreground">
-                  Select teeth the procedure applies to. Cost = unit cost × number of teeth selected.
-                </p>
-                <EnhancedDentalChart
-                  selectedTeeth={selectedTeeth}
-                  onToothSelect={(toothNumber) => {
-                    setSelectedTeeth((prev) =>
-                      prev.includes(toothNumber)
-                        ? prev.filter((t) => t !== toothNumber)
-                        : [...prev, toothNumber]
-                    );
-                  }}
-                  isEditable={true}
-                />
-                {selectedTeeth.length > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {selectedTeeth.length} {selectedTeeth.length === 1 ? "tooth" : "teeth"} selected: {selectedTeeth.sort((a, b) => a - b).join(", ")}
-                  </Badge>
-                )}
-              </div>
-            )}
-
             <div className="space-y-4">
               <h3 className="font-semibold">Add Procedures *</h3>
 
               <Card>
                 <CardContent className="pt-6 space-y-4">
+                  {/* Dental Chart inside procedure section for dentists */}
+                  {isDentist && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select Teeth</label>
+                      <p className="text-xs text-muted-foreground">
+                        Select teeth the procedure applies to. Cost = unit cost × number of teeth selected.
+                      </p>
+                      <EnhancedDentalChart
+                        selectedTeeth={selectedTeeth}
+                        onToothSelect={(toothNumber) => {
+                          setSelectedTeeth((prev) =>
+                            prev.includes(toothNumber)
+                              ? prev.filter((t) => t !== toothNumber)
+                              : [...prev, toothNumber]
+                          );
+                        }}
+                        isEditable={true}
+                      />
+                      {selectedTeeth.length > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {selectedTeeth.length} {selectedTeeth.length === 1 ? "tooth" : "teeth"} selected: {selectedTeeth.sort((a, b) => a - b).join(", ")}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Procedure/Service *</label>
@@ -999,7 +999,7 @@ Please review and confirm the treatment plan in your dashboard.
                             ...prev,
                             procedure_id: value,
                             duration_minutes: Number(prev.duration_minutes ?? (proc as any)?.duration_minutes ?? 30),
-                            cost: unitSafe, // ✅ default unit cost
+                            cost: unitSafe,
                           }));
 
                           // Reset tooth selection when switching procedure
@@ -1010,12 +1010,17 @@ Please review and confirm the treatment plan in your dashboard.
                           <SelectValue placeholder="Select procedure" />
                         </SelectTrigger>
                         <SelectContent>
-                          {procedures.map((proc) => (
-                            <SelectItem key={proc.id} value={proc.id}>
-                              {proc.name} - {formatCurrency(Number(proc.default_cost ?? proc.price ?? 0))} •{" "}
-                              {formatDuration(Number((proc as any).duration_minutes || 30))}
-                            </SelectItem>
-                          ))}
+                          {procedures
+                            .filter((proc) => {
+                              const cost = Number(proc.default_cost ?? proc.price ?? 0);
+                              return cost > 0;
+                            })
+                            .map((proc) => (
+                              <SelectItem key={proc.id} value={proc.id}>
+                                {proc.name} - {formatCurrency(Number(proc.default_cost ?? proc.price ?? 0))} •{" "}
+                                {formatDuration(Number((proc as any).duration_minutes || 30))}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
