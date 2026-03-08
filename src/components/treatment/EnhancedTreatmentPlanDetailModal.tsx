@@ -194,6 +194,7 @@ const EnhancedTreatmentPlanDetailModal = ({
     }
 
     try {
+      // Update plan status
       const { error } = await supabase
         .from("treatment_plans")
         .update({
@@ -204,7 +205,69 @@ const EnhancedTreatmentPlanDetailModal = ({
 
       if (error) throw error;
 
-      toast.success("Treatment plan published successfully!");
+      // Auto-create appointments for procedures with scheduled dates that don't have appointment_id yet
+      const scheduledProcs = procedures.filter(
+        (p) => p.scheduled_date && !(p as any).appointment_id
+      );
+
+      if (scheduledProcs.length > 0) {
+        let appointmentsCreated = 0;
+
+        for (const proc of scheduledProcs) {
+          try {
+            const duration = (proc as any).duration_minutes || 30;
+            // Default to 09:00 if no specific time
+            const startTime = (proc as any).appointment_time || "09:00";
+            const [hh, mm] = startTime.split(":").map(Number);
+            const endTotal = hh * 60 + mm + duration;
+            const endHH = Math.floor(endTotal / 60);
+            const endMM = endTotal % 60;
+            const endTime = `${String(endHH).padStart(2, "0")}:${String(endMM).padStart(2, "0")}`;
+
+            const appointmentPayload: any = {
+              doctor_id: treatmentPlan.doctor_id,
+              appointment_date: proc.scheduled_date,
+              start_time: startTime,
+              end_time: endTime,
+              status: "confirmed",
+              notes: `From Treatment Plan: "${treatmentPlan.title}"\nProcedure: ${proc.procedure?.name || "Procedure"}${
+                proc.tooth_numbers?.length ? `\nTeeth: ${proc.tooth_numbers.join(", ")}` : ""
+              }`,
+              procedure_id: proc.procedure_id || null,
+            };
+
+            if (treatmentPlan.patient_id) {
+              appointmentPayload.patient_id = treatmentPlan.patient_id;
+            }
+
+            const { data: apptData, error: apptError } = await supabase
+              .from("appointments")
+              .insert(appointmentPayload)
+              .select("id")
+              .single();
+
+            if (!apptError && apptData) {
+              // Link appointment back to procedure
+              await supabase
+                .from("treatment_plan_procedures")
+                .update({ appointment_id: apptData.id })
+                .eq("id", proc.id);
+              appointmentsCreated++;
+            }
+          } catch (e) {
+            console.error("Failed to create appointment for procedure:", proc.id, e);
+          }
+        }
+
+        if (appointmentsCreated > 0) {
+          toast.success(`Treatment plan published! ${appointmentsCreated} appointment${appointmentsCreated > 1 ? "s" : ""} added to calendar.`);
+        } else {
+          toast.success("Treatment plan published successfully!");
+        }
+      } else {
+        toast.success("Treatment plan published successfully!");
+      }
+
       onUpdate();
     } catch (error: any) {
       toast.error("Failed to publish plan: " + error.message);
