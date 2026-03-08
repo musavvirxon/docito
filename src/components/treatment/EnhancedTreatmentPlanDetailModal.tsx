@@ -539,7 +539,7 @@ const EnhancedTreatmentPlanDetailModal = ({
 
                       <TableBody>
                         {procedures.map((proc, index) => {
-                          const toothBased = isToothBased(proc);
+                          const toothBased = hasTeethSelected(proc);
                           const unit = getUnitCost(proc);
                           const qty = getQty(proc);
                           const lineTotal = getLineTotal(proc);
