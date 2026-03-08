@@ -561,19 +561,15 @@ const EnhancedTreatmentPlanDetailModal = ({
                               </TableCell>
 
                               <TableCell>
-                                {toothBased ? (
-                                  proc.tooth_numbers && proc.tooth_numbers.length > 0 ? (
+                                {proc.tooth_numbers && proc.tooth_numbers.length > 0 ? (
                                     <div className="text-sm">
-                                      {proc.tooth_numbers.join(", ")}{" "}
+                                      🦷 {proc.tooth_numbers.join(", ")}{" "}
                                       <span className="text-xs text-muted-foreground">
-                                        (× {proc.tooth_numbers.length})
+                                        ({proc.tooth_numbers.length} {proc.tooth_numbers.length === 1 ? "tooth" : "teeth"})
                                       </span>
                                     </div>
-                                  ) : (
-                                    <span className="text-muted-foreground text-sm">—</span>
-                                  )
                                 ) : (
-                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                  <span className="text-muted-foreground text-sm">—</span>
                                 )}
                               </TableCell>
 
