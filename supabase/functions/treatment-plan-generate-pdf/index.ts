@@ -813,7 +813,7 @@ function isRtlLocale(locale: Locale) {
 }
 
 function formatForLocale(locale: Locale, input: string): string {
-  const s = String(input || "");
+  const s = sanitizeForPdf(String(input || ""));
   if (!s) return s;
 
   if (!isRtlLocale(locale)) return s;
