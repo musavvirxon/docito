@@ -202,7 +202,7 @@ const EnhancedCreateTreatmentPlanModal = ({
     const unitSafe = Number.isFinite(unit) ? unit : 0;
 
     const qty = hasTeeth ? item.tooth_numbers!.length : 1;
-    const lineTotal = hasTeeth ? unitSafe * qty : unitSafe;
+    const lineTotal = unitSafe * qty;
 
     return { proc, toothBased: hasTeeth, unit: unitSafe, qty, lineTotal };
   };
