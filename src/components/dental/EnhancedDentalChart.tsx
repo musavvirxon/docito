@@ -209,8 +209,8 @@ export const EnhancedDentalChart = ({
       exit={{ opacity: 0 }}
     >
       <div className="space-y-2">
-        <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "Q1 (UR)", true)}
+      <div className="flex justify-center gap-4">
+          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "Q1 (UR)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PERMANENT_TEETH.upperLeft, "permanent", "Q2 (UL)")}
         </div>
