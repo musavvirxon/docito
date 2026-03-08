@@ -219,8 +219,8 @@ export const EnhancedDentalChart = ({
         <div className="w-4/5 h-px bg-border" />
       </div>
       <div className="space-y-2">
-        <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "Q4 (LR)", true)}
+      <div className="flex justify-center gap-4">
+          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "Q4 (LR)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PERMANENT_TEETH.lowerLeft, "permanent", "Q3 (LL)")}
         </div>
