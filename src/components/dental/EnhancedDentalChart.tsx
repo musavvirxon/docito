@@ -209,8 +209,8 @@ export const EnhancedDentalChart = ({
       exit={{ opacity: 0 }}
     >
       <div className="space-y-2">
-        <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "Q1 (UR)", true)}
+      <div className="flex justify-center gap-4">
+          {renderQuadrant(PERMANENT_TEETH.upperRight, "permanent", "Q1 (UR)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PERMANENT_TEETH.upperLeft, "permanent", "Q2 (UL)")}
         </div>
@@ -219,8 +219,8 @@ export const EnhancedDentalChart = ({
         <div className="w-4/5 h-px bg-border" />
       </div>
       <div className="space-y-2">
-        <div className="flex justify-center gap-4">
-          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "Q4 (LR)", true)}
+      <div className="flex justify-center gap-4">
+          {renderQuadrant(PERMANENT_TEETH.lowerRight, "permanent", "Q4 (LR)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PERMANENT_TEETH.lowerLeft, "permanent", "Q3 (LL)")}
         </div>
@@ -237,7 +237,7 @@ export const EnhancedDentalChart = ({
     >
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PRIMARY_TEETH.upperRight, "primary", "UR (55-51)", true)}
+          {renderQuadrant(PRIMARY_TEETH.upperRight, "primary", "UR (55-51)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PRIMARY_TEETH.upperLeft, "primary", "UL (61-65)")}
         </div>
@@ -247,7 +247,7 @@ export const EnhancedDentalChart = ({
       </div>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PRIMARY_TEETH.lowerRight, "primary", "LR (85-81)", true)}
+          {renderQuadrant(PRIMARY_TEETH.lowerRight, "primary", "LR (85-81)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PRIMARY_TEETH.lowerLeft, "primary", "LL (71-75)")}
         </div>

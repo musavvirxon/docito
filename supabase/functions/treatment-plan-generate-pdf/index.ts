@@ -739,9 +739,30 @@ function asNumber(v: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function safeText(v: unknown, fallback = "—"): string {
+/**
+ * Sanitize text for PDF rendering – replace characters that cannot be encoded
+ * in WinAnsi (Helvetica fallback) or may cause pdf-lib to throw.
+ */
+function sanitizeForPdf(s: string): string {
+  return String(s || "")
+    .replace(/\u2192/g, "->")   // →
+    .replace(/\u2190/g, "<-")   // ←
+    .replace(/\u2194/g, "<->")  // ↔
+    .replace(/\u2013/g, "-")    // en dash
+    .replace(/\u2014/g, "--")   // em dash —
+    .replace(/\u2018/g, "'")    // left single quote
+    .replace(/\u2019/g, "'")    // right single quote
+    .replace(/\u201C/g, '"')    // left double quote
+    .replace(/\u201D/g, '"')    // right double quote
+    .replace(/\u2026/g, "...")  // ellipsis
+    .replace(/\u00B7/g, ".")    // middle dot
+    .replace(/\u2022/g, "-")    // bullet
+    .replace(/\u00A0/g, " ");   // non-breaking space
+}
+
+function safeText(v: unknown, fallback = "-"): string {
   const s = asString(v);
-  return s || fallback;
+  return sanitizeForPdf(s || fallback);
 }
 
 function isoDate(v: unknown): string | null {
@@ -792,7 +813,7 @@ function isRtlLocale(locale: Locale) {
 }
 
 function formatForLocale(locale: Locale, input: string): string {
-  const s = String(input || "");
+  const s = sanitizeForPdf(String(input || ""));
   if (!s) return s;
 
   if (!isRtlLocale(locale)) return s;
@@ -2037,13 +2058,16 @@ serve(async (req: Request) => {
 
     const toothNumbers = doctorIsDentist ? uniqNumbers((row as any)?.tooth_numbers) : [];
 
-    // cost fields differ across migrations
-    const cost =
+    // cost fields differ across migrations — this is the UNIT cost
+    const unitCost =
       asNumber((row as any)?.custom_cost) ??
       asNumber((row as any)?.cost) ??
-      asNumber((row as any)?.custom_cost) ??
       asNumber(proc?.default_cost) ??
       0;
+
+    // Total cost = unit cost × number of teeth (if teeth selected), otherwise unit cost
+    const teethCount = toothNumbers.length > 0 ? toothNumbers.length : 1;
+    const totalCost = Number.isFinite(unitCost) ? unitCost * teethCount : 0;
 
     const notes =
       asString((row as any)?.custom_notes) ??
@@ -2055,7 +2079,7 @@ serve(async (req: Request) => {
     return {
       name,
       status,
-      cost: Number.isFinite(cost) ? `${cost}` : null,
+      cost: Number.isFinite(totalCost) ? `${totalCost}` : null,
       toothNumbers,
       notes,
     };
