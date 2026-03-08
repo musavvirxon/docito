@@ -247,7 +247,7 @@ export const EnhancedDentalChart = ({
       </div>
       <div className="space-y-2">
         <div className="flex justify-center gap-4">
-          {renderQuadrant(PRIMARY_TEETH.lowerRight, "primary", "LR (85-81)", true)}
+          {renderQuadrant(PRIMARY_TEETH.lowerRight, "primary", "LR (85-81)")}
           <div className="w-px bg-border self-stretch" />
           {renderQuadrant(PRIMARY_TEETH.lowerLeft, "primary", "LL (71-75)")}
         </div>
