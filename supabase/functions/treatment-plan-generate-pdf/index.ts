@@ -2037,13 +2037,16 @@ serve(async (req: Request) => {
 
     const toothNumbers = doctorIsDentist ? uniqNumbers((row as any)?.tooth_numbers) : [];
 
-    // cost fields differ across migrations
-    const cost =
+    // cost fields differ across migrations — this is the UNIT cost
+    const unitCost =
       asNumber((row as any)?.custom_cost) ??
       asNumber((row as any)?.cost) ??
-      asNumber((row as any)?.custom_cost) ??
       asNumber(proc?.default_cost) ??
       0;
+
+    // Total cost = unit cost × number of teeth (if teeth selected), otherwise unit cost
+    const teethCount = toothNumbers.length > 0 ? toothNumbers.length : 1;
+    const totalCost = Number.isFinite(unitCost) ? unitCost * teethCount : 0;
 
     const notes =
       asString((row as any)?.custom_notes) ??
@@ -2055,7 +2058,7 @@ serve(async (req: Request) => {
     return {
       name,
       status,
-      cost: Number.isFinite(cost) ? `${cost}` : null,
+      cost: Number.isFinite(totalCost) ? `${totalCost}` : null,
       toothNumbers,
       notes,
     };
