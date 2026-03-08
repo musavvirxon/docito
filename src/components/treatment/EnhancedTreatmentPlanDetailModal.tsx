@@ -295,20 +295,18 @@ const EnhancedTreatmentPlanDetailModal = ({
     return toNumber(proc.cost ?? proc.procedure?.default_cost ?? proc.procedure?.price ?? 0);
   };
 
-  const isToothBased = (proc: TreatmentPlanProcedure) =>
-    String(proc.procedure?.type || "").toLowerCase() === "tooth_based";
+  const hasTeethSelected = (proc: TreatmentPlanProcedure) =>
+    Array.isArray(proc.tooth_numbers) && proc.tooth_numbers.length > 0;
 
   const getQty = (proc: TreatmentPlanProcedure) => {
-    if (!isToothBased(proc)) return 1;
-    const len = Array.isArray(proc.tooth_numbers) ? proc.tooth_numbers.length : 0;
-    // For tooth_based, qty should be #teeth; if somehow missing, treat as 1 to avoid 0 totals
-    return Math.max(len, 1);
+    if (!hasTeethSelected(proc)) return 1;
+    return proc.tooth_numbers!.length;
   };
 
   const getLineTotal = (proc: TreatmentPlanProcedure) => {
     const unit = getUnitCost(proc);
     const qty = getQty(proc);
-    return isToothBased(proc) ? unit * qty : unit;
+    return unit * qty;
   };
 
   // ✅ total cost uses tooth multiplier logic
