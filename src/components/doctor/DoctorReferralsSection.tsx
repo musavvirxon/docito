@@ -344,6 +344,7 @@ export function DoctorReferralsSection() {
             if (result.success && result.data) {
               await sendReferral(result.data.id);
               toast.success("Referral created and sent");
+              setReferralRefreshKey(prev => prev + 1);
             } else {
               toast.error(result.error || "Failed to create referral");
             }
