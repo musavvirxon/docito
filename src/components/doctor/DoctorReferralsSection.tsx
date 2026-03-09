@@ -49,6 +49,7 @@ export function DoctorReferralsSection() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"registered" | "doctor_made">("registered");
+  const [referralRefreshKey, setReferralRefreshKey] = useState(0);
 
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
