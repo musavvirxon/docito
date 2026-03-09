@@ -27,12 +27,14 @@ const HealthcareConversationList: React.FC<HealthcareConversationListProps> = me
   const [search, setSearch] = React.useState('');
 
   const getConversationName = (conv: HealthcareConversation) => {
-    if (conv.name) return conv.name;
+    // For direct conversations, always prefer the other participant's name
     if (conv.type === 'direct' && conv.participants) {
       const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-      return otherParticipant?.profile?.full_name || 'Unknown User';
+      const participantName = otherParticipant?.profile?.full_name;
+      if (participantName) return participantName;
     }
-    return 'Group Chat';
+    if (conv.name) return conv.name;
+    return conv.type === 'group' ? 'Group Chat' : 'Unknown User';
   };
 
   const getConversationAvatar = (conv: HealthcareConversation) => {

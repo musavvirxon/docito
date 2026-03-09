@@ -29,12 +29,14 @@ const ConversationList: React.FC<ConversationListProps> = ({
   const [search, setSearch] = React.useState('');
 
   const getConversationName = (conv: Conversation) => {
-    if (conv.name) return conv.name;
+    // For direct conversations, always prefer the other participant's name
     if (conv.type === 'direct' && conv.participants) {
       const otherParticipant = conv.participants.find(p => p.user_id !== user?.id);
-      return otherParticipant?.user?.full_name || 'Unknown User';
+      const participantName = otherParticipant?.user?.full_name;
+      if (participantName) return participantName;
     }
-    return 'Group Chat';
+    if (conv.name) return conv.name;
+    return conv.type === 'group' ? 'Group Chat' : 'Unknown User';
   };
 
   const getConversationAvatar = (conv: Conversation) => {
