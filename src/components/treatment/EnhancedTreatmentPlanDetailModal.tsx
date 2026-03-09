@@ -235,7 +235,7 @@ const EnhancedTreatmentPlanDetailModal = ({
                 .eq("id", existingAppointmentId)
                 .maybeSingle();
 
-              if (existingAppt && (existingAppt.status === "cancelled" || existingAppt.status === "no_show")) {
+              if (existingAppt && (existingAppt.status === "canceled" || existingAppt.status === "no_show")) {
                 // Slot was cancelled/occupied, create a new appointment
                 const appointmentPayload: any = {
                   doctor_id: treatmentPlan.doctor_id,
