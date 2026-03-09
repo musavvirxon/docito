@@ -192,6 +192,7 @@ export function DoctorReferralsSection() {
         entityId={doctorProfile.id}
         showCreateButton={false}
         title=""
+        key={referralRefreshKey}
       />
 
       <Dialog
