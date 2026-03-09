@@ -206,17 +206,18 @@ const EnhancedTreatmentPlanDetailModal = ({
       if (error) throw error;
 
       // Auto-create appointments for procedures with scheduled dates that don't have appointment_id yet
+      // Also re-check existing appointments if their slots got occupied
       const scheduledProcs = procedures.filter(
-        (p) => p.scheduled_date && !(p as any).appointment_id
+        (p) => p.scheduled_date
       );
 
       if (scheduledProcs.length > 0) {
         let appointmentsCreated = 0;
+        let appointmentsUpdated = 0;
 
         for (const proc of scheduledProcs) {
           try {
             const duration = (proc as any).duration_minutes || 30;
-            // Default to 09:00 if no specific time
             const startTime = (proc as any).appointment_time || "09:00";
             const [hh, mm] = startTime.split(":").map(Number);
             const endTotal = hh * 60 + mm + duration;
@@ -224,6 +225,53 @@ const EnhancedTreatmentPlanDetailModal = ({
             const endMM = endTotal % 60;
             const endTime = `${String(endHH).padStart(2, "0")}:${String(endMM).padStart(2, "0")}`;
 
+            const existingAppointmentId = (proc as any).appointment_id;
+
+            if (existingAppointmentId) {
+              // Check if the existing appointment's slot is still valid
+              const { data: existingAppt } = await supabase
+                .from("appointments")
+                .select("id, status, appointment_date, start_time")
+                .eq("id", existingAppointmentId)
+                .maybeSingle();
+
+              if (existingAppt && (existingAppt.status === "cancelled" || existingAppt.status === "no_show")) {
+                // Slot was cancelled/occupied, create a new appointment
+                const appointmentPayload: any = {
+                  doctor_id: treatmentPlan.doctor_id,
+                  appointment_date: proc.scheduled_date,
+                  start_time: startTime,
+                  end_time: endTime,
+                  status: "confirmed",
+                  notes: `From Treatment Plan: "${treatmentPlan.title}"\nProcedure: ${proc.procedure?.name || "Procedure"}${
+                    proc.tooth_numbers?.length ? `\nTeeth: ${proc.tooth_numbers.join(", ")}` : ""
+                  }`,
+                  procedure_id: proc.procedure_id || null,
+                };
+
+                if (treatmentPlan.patient_id) {
+                  appointmentPayload.patient_id = treatmentPlan.patient_id;
+                }
+
+                const { data: apptData, error: apptError } = await supabase
+                  .from("appointments")
+                  .insert(appointmentPayload)
+                  .select("id")
+                  .single();
+
+                if (!apptError && apptData) {
+                  await supabase
+                    .from("treatment_plan_procedures")
+                    .update({ appointment_id: apptData.id })
+                    .eq("id", proc.id);
+                  appointmentsUpdated++;
+                }
+              }
+              // If still valid, no action needed
+              continue;
+            }
+
+            // No existing appointment - create new one
             const appointmentPayload: any = {
               doctor_id: treatmentPlan.doctor_id,
               appointment_date: proc.scheduled_date,
@@ -247,7 +295,6 @@ const EnhancedTreatmentPlanDetailModal = ({
               .single();
 
             if (!apptError && apptData) {
-              // Link appointment back to procedure
               await supabase
                 .from("treatment_plan_procedures")
                 .update({ appointment_id: apptData.id })
