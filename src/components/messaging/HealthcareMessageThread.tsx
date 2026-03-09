@@ -31,14 +31,15 @@ const HealthcareMessageThread: React.FC<HealthcareMessageThreadProps> = memo(
     const inputRef = useRef<HTMLInputElement>(null);
 
     const getConversationName = useCallback(() => {
-      if (conversation.name) return conversation.name;
       if (conversation.type === 'direct' && conversation.participants) {
         const otherParticipant = conversation.participants.find(
           (p: any) => p.user_id !== user?.id
         );
-        return otherParticipant?.profile?.full_name || 'Unknown User';
+        const participantName = otherParticipant?.profile?.full_name;
+        if (participantName) return participantName;
       }
-      return 'Group Chat';
+      if (conversation.name) return conversation.name;
+      return conversation.type === 'group' ? 'Group Chat' : 'Unknown User';
     }, [conversation, user?.id]);
 
     const getOtherParticipant = useCallback(() => {

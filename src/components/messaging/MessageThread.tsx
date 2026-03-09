@@ -43,12 +43,13 @@ const MessageThread: React.FC<MessageThreadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getConversationName = () => {
-    if (conversation.name) return conversation.name;
     if (conversation.type === 'direct' && conversation.participants) {
       const otherParticipant = conversation.participants.find((p: any) => p.user_id !== user?.id);
-      return otherParticipant?.user?.full_name || 'Unknown User';
+      const participantName = otherParticipant?.user?.full_name;
+      if (participantName) return participantName;
     }
-    return 'Group Chat';
+    if (conversation.name) return conversation.name;
+    return conversation.type === 'group' ? 'Group Chat' : 'Unknown User';
   };
 
   const getOtherParticipant = () => {

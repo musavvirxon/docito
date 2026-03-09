@@ -49,6 +49,7 @@ export function DoctorReferralsSection() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"registered" | "doctor_made">("registered");
+  const [referralRefreshKey, setReferralRefreshKey] = useState(0);
 
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
@@ -192,6 +193,7 @@ export function DoctorReferralsSection() {
         entityId={doctorProfile.id}
         showCreateButton={false}
         title=""
+        key={referralRefreshKey}
       />
 
       <Dialog
@@ -342,6 +344,7 @@ export function DoctorReferralsSection() {
             if (result.success && result.data) {
               await sendReferral(result.data.id);
               toast.success("Referral created and sent");
+              setReferralRefreshKey(prev => prev + 1);
             } else {
               toast.error(result.error || "Failed to create referral");
             }

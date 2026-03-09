@@ -2148,7 +2148,13 @@ serve(async (req: Request) => {
   const verifyUrl = `https://docito.app`;
 
   const status = safeText((plan as any)?.status, "—");
-  const totalCostNum = asNumber((plan as any)?.total_cost) ?? asNumber((plan as any)?.totalCost) ?? 0;
+  
+  // Compute total cost from procedures (unit * teeth count) instead of relying on DB value
+  const computedTotalCost = procedures.reduce((sum, p) => {
+    const costVal = asNumber(p.cost);
+    return sum + (costVal ?? 0);
+  }, 0);
+  const totalCostNum = computedTotalCost > 0 ? computedTotalCost : (asNumber((plan as any)?.total_cost) ?? asNumber((plan as any)?.totalCost) ?? 0);
 
   const title = safeText((plan as any)?.title, t(locale, "title"));
   const description = asString((plan as any)?.description) || null;
