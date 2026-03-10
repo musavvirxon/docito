@@ -134,7 +134,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                 </Badge>
               ) : null}
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{t("matrix.title")}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t("matrix.title")}</h2>
             <p className="text-muted-foreground max-w-2xl">{t("matrix.subtitle")}</p>
           </motion.div>
 
@@ -230,7 +230,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <div className="text-lg font-semibold">{t(`plans.${p.key}.name`)}</div>
+                            <div className="text-lg font-semibold text-foreground">{t(`plans.${p.key}.name`)}</div>
                             {isPopular ? (
                               <Badge className="bg-primary text-primary-foreground">{t("labels.mostPopular")}</Badge>
                             ) : null}
@@ -258,7 +258,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
 
                       <div className="mt-5">
                         <div className="flex items-end gap-2">
-                          <div className="text-4xl font-bold tracking-tight">{money(price)}</div>
+                        <div className="text-4xl font-bold tracking-tight text-foreground">{money(price)}</div>
                           <div className="pb-1 text-sm text-muted-foreground">
                             {price === 0 ? "" : periodSuffix(period)}
                           </div>

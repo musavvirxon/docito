@@ -17,15 +17,20 @@ import {
   ArrowRight,
   Stethoscope,
   Activity,
+  Plus,
+  Loader2,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import type { CalendarAppointment } from "./types";
 
 interface AppointmentQuickPreviewProps {
@@ -91,8 +96,14 @@ const AppointmentQuickPreview = memo(
     doctorSpecialty = "",
   }: AppointmentQuickPreviewProps) => {
     const { i18n } = useTranslation("dashboard");
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [isStarting, setIsStarting] = useState(false);
+    const [showDiagnosisForm, setShowDiagnosisForm] = useState(false);
+    const [diagnosisTitle, setDiagnosisTitle] = useState("");
+    const [icdCode, setIcdCode] = useState("");
+    const [diagnosisNotes, setDiagnosisNotes] = useState("");
+    const [savingDiagnosis, setSavingDiagnosis] = useState(false);
     const isRTL = i18n.language === "ar";
 
     const patientId = useMemo(() => {
@@ -264,6 +275,37 @@ const AppointmentQuickPreview = memo(
       }
     }, [appointment, navigate, onClose]);
 
+    const handleSaveDiagnosis = useCallback(async () => {
+      if (!appointment || !diagnosisTitle.trim()) {
+        toast.error("Diagnosis title is required");
+        return;
+      }
+      setSavingDiagnosis(true);
+      try {
+        const { error } = await supabase.from("appointment_diagnoses").insert({
+          appointment_id: appointment.id,
+          doctor_id: appointment.doctor_id || "",
+          created_by: user?.id || "",
+          diagnosis_title: diagnosisTitle.trim(),
+          icd10_code: icdCode.trim() || null,
+          notes: diagnosisNotes.trim() || null,
+          patient_id: appointment.patient_id || null,
+          doctor_patient_id: (appointment as any).doctor_patient_id || null,
+        });
+        if (error) throw error;
+        toast.success("Diagnosis added");
+        setDiagnosisTitle("");
+        setIcdCode("");
+        setDiagnosisNotes("");
+        setShowDiagnosisForm(false);
+      } catch (err: any) {
+        console.error("Save diagnosis error:", err);
+        toast.error(err?.message || "Failed to save diagnosis");
+      } finally {
+        setSavingDiagnosis(false);
+      }
+    }, [appointment, diagnosisTitle, icdCode, diagnosisNotes, user?.id]);
+
     if (!appointment) return null;
 
     const initials =
@@ -368,6 +410,61 @@ const AppointmentQuickPreview = memo(
               </div>
               <div className="mt-1">{startButtonHint}</div>
             </div>
+          </div>
+
+          {/* Diagnosis Section */}
+          <div className="space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setShowDiagnosisForm(!showDiagnosisForm)}
+            >
+              <Plus className="h-4 w-4" />
+              Add Diagnosis
+            </Button>
+
+            {showDiagnosisForm && (
+              <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
+                <Input
+                  placeholder="Diagnosis title *"
+                  value={diagnosisTitle}
+                  onChange={(e) => setDiagnosisTitle(e.target.value)}
+                  className="text-sm"
+                />
+                <Input
+                  placeholder="ICD-10 code (optional)"
+                  value={icdCode}
+                  onChange={(e) => setIcdCode(e.target.value)}
+                  className="text-sm"
+                />
+                <Textarea
+                  placeholder="Notes (optional)"
+                  value={diagnosisNotes}
+                  onChange={(e) => setDiagnosisNotes(e.target.value)}
+                  rows={2}
+                  className="text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveDiagnosis}
+                    disabled={savingDiagnosis || !diagnosisTitle.trim()}
+                    className="flex-1 gap-1"
+                  >
+                    {savingDiagnosis && <Loader2 className="h-3 w-3 animate-spin" />}
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowDiagnosisForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <Separator />

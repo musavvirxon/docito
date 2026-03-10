@@ -99,10 +99,38 @@ export const useInactivityTimer = ({
       }
     };
 
+    // Handle tab visibility change — sign out after extended hidden period
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Store timestamp when tab was hidden
+        try {
+          localStorage.setItem('docito_tab_hidden_at', Date.now().toString());
+        } catch { /* ignore */ }
+      } else if (document.visibilityState === 'visible') {
+        // Check how long tab was hidden
+        try {
+          const hiddenAt = localStorage.getItem('docito_tab_hidden_at');
+          if (hiddenAt) {
+            const elapsed = Date.now() - parseInt(hiddenAt, 10);
+            localStorage.removeItem('docito_tab_hidden_at');
+            // If tab was hidden longer than inactivity threshold, trigger logout
+            if (elapsed >= inactivityTime && !hasLoggedOutRef.current) {
+              hasLoggedOutRef.current = true;
+              onInactive();
+              return;
+            }
+          }
+        } catch { /* ignore */ }
+        // Otherwise reset timer
+        handleActivity();
+      }
+    };
+
     // Add event listeners
     events.forEach((event) => {
       document.addEventListener(event, handleActivity, { passive: true });
     });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Start initial timer only if enabled
     if (enabled) {
@@ -115,6 +143,7 @@ export const useInactivityTimer = ({
       events.forEach((event) => {
         document.removeEventListener(event, handleActivity);
       });
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, showWarning, inactivityTime, warningTime]);

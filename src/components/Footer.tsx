@@ -25,6 +25,7 @@ const footerLinks = {
     { key: "terms", href: "/legal/terms-of-service" },
     { key: "privacy", href: "/legal/privacy-policy" },
     { key: "cookies", href: "/legal/cookies" },
+    { key: "refundPolicy", href: "/legal/refund-policy" },
     { key: "hipaa", href: "/legal/hipaa" },
   ],
 } as const;
@@ -56,6 +57,7 @@ const fallbackLabels: Record<string, string> = {
   terms: "Terms",
   privacy: "Privacy",
   cookies: "Cookies",
+  refundPolicy: "Refund Policy",
   hipaa: "HIPAA",
 };
 

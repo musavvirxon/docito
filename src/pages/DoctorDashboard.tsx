@@ -432,65 +432,6 @@ const DoctorDashboardContent = () => {
 
             {/* Verification Status */}
             <DoctorVerificationStatusCard />
-
-            {/* Quick Actions */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-4 border-b">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                    <Sparkles className="h-5 w-5 text-white" />
-                  </div>
-                  <CardTitle className="text-lg">{t("doctor.quickActions.title")}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button 
-                    variant="outline" 
-                    className="h-24 flex flex-col items-center justify-center gap-3 hover:bg-primary/5 hover:border-primary/30 transition-all group" 
-                    onClick={() => setQuickActionModal({ isOpen: true, action: "schedule" })}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium">{t("doctor.quickActions.updateSettings", "Update Schedule")}</span>
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="h-24 flex flex-col items-center justify-center gap-3 hover:bg-emerald-500/5 hover:border-emerald-500/30 transition-all group" 
-                    onClick={() => setQuickActionModal({ isOpen: true, action: "procedures" })}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <FileText className="h-5 w-5 text-emerald-500" />
-                    </div>
-                    <span className="text-sm font-medium">{t("doctor.quickActions.addService", "Manage Procedures")}</span>
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="h-24 flex flex-col items-center justify-center gap-3 hover:bg-blue-500/5 hover:border-blue-500/30 transition-all group" 
-                    onClick={() => setQuickActionModal({ isOpen: true, action: "block-time" })}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Calendar className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <span className="text-sm font-medium">{t("doctor.quickActions.blockTime")}</span>
-                  </Button>
-                  
-                  <Button 
-                    variant="outline" 
-                    className="h-24 flex flex-col items-center justify-center gap-3 hover:bg-amber-500/5 hover:border-amber-500/30 transition-all group" 
-                    onClick={() => setQuickActionModal({ isOpen: true, action: "settings" })}
-                  >
-                    <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Settings className="h-5 w-5 text-amber-500" />
-                    </div>
-                    <span className="text-sm font-medium">{t("doctor.quickActions.updateSettings", "Update Settings")}</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         );
     }

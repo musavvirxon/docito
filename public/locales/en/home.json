@@ -222,6 +222,7 @@
       "privacy": "Privacy",
       "cookies": "Cookies",
       "about": "About",
+      "features": "Features",
       "findDoctors": "Find Doctors",
       "searchDoctors": "Search Doctors",
       "specialties": "Specialties",
@@ -230,7 +231,8 @@
       "contact": "Contact",
       "faqs": "FAQs",
       "support": "Support",
-      "hipaa": "HIPAA"
+      "hipaa": "HIPAA",
+      "refundPolicy": "Refund Policy"
     }
   },
   "visuals": {
