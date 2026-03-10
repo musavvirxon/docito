@@ -96,8 +96,14 @@ const AppointmentQuickPreview = memo(
     doctorSpecialty = "",
   }: AppointmentQuickPreviewProps) => {
     const { i18n } = useTranslation("dashboard");
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [isStarting, setIsStarting] = useState(false);
+    const [showDiagnosisForm, setShowDiagnosisForm] = useState(false);
+    const [diagnosisTitle, setDiagnosisTitle] = useState("");
+    const [icdCode, setIcdCode] = useState("");
+    const [diagnosisNotes, setDiagnosisNotes] = useState("");
+    const [savingDiagnosis, setSavingDiagnosis] = useState(false);
     const isRTL = i18n.language === "ar";
 
     const patientId = useMemo(() => {
