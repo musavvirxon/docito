@@ -275,6 +275,37 @@ const AppointmentQuickPreview = memo(
       }
     }, [appointment, navigate, onClose]);
 
+    const handleSaveDiagnosis = useCallback(async () => {
+      if (!appointment || !diagnosisTitle.trim()) {
+        toast.error("Diagnosis title is required");
+        return;
+      }
+      setSavingDiagnosis(true);
+      try {
+        const { error } = await supabase.from("appointment_diagnoses").insert({
+          appointment_id: appointment.id,
+          doctor_id: appointment.doctor_id || "",
+          created_by: user?.id || "",
+          diagnosis_title: diagnosisTitle.trim(),
+          icd10_code: icdCode.trim() || null,
+          notes: diagnosisNotes.trim() || null,
+          patient_id: appointment.patient_id || null,
+          doctor_patient_id: (appointment as any).doctor_patient_id || null,
+        });
+        if (error) throw error;
+        toast.success("Diagnosis added");
+        setDiagnosisTitle("");
+        setIcdCode("");
+        setDiagnosisNotes("");
+        setShowDiagnosisForm(false);
+      } catch (err: any) {
+        console.error("Save diagnosis error:", err);
+        toast.error(err?.message || "Failed to save diagnosis");
+      } finally {
+        setSavingDiagnosis(false);
+      }
+    }, [appointment, diagnosisTitle, icdCode, diagnosisNotes, user?.id]);
+
     if (!appointment) return null;
 
     const initials =
