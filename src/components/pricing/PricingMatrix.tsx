@@ -230,7 +230,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                       <div className="flex items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <div className="text-lg font-semibold">{t(`plans.${p.key}.name`)}</div>
+                            <div className="text-lg font-semibold text-foreground">{t(`plans.${p.key}.name`)}</div>
                             {isPopular ? (
                               <Badge className="bg-primary text-primary-foreground">{t("labels.mostPopular")}</Badge>
                             ) : null}
