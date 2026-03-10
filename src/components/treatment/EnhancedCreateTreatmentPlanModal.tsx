@@ -1302,22 +1302,31 @@ Please review and confirm the treatment plan in your dashboard.
                               <span className="font-medium">{getProcedureName(item.procedure_id)}</span>
 
                               <Badge variant="outline">
-                                {toothBased ? `${formatCurrency(unit)} × ${qty} = ${formatCurrency(lineTotal)}` : `${formatCurrency(lineTotal)}`}
+                                {toothBased
+                                  ? `${formatCurrency(unit)} × ${qty} teeth = ${formatCurrency(lineTotal)}`
+                                  : `${formatCurrency(lineTotal)}`}
                               </Badge>
 
                               <Badge variant="secondary">{formatDuration(Number(item.duration_minutes || 30))}</Badge>
                               {item.priority && <Badge className={priorityColors[item.priority]}>{item.priority}</Badge>}
                             </div>
 
+                            {item.tooth_numbers && item.tooth_numbers.length > 0 && (
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="text-sm text-muted-foreground">🦷 FDI:</span>
+                                {item.tooth_numbers.map((t) => (
+                                  <Badge key={t} variant="secondary" className="text-xs px-1.5 py-0.5">
+                                    {t}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+
                             {item.appointment_date && (
                               <p className="text-sm text-muted-foreground">
                                 📅 {format(item.appointment_date, "PPP")}
                                 {item.appointment_time && ` at ${item.appointment_time}`}
                               </p>
-                            )}
-
-                            {item.tooth_numbers && item.tooth_numbers.length > 0 && (
-                              <p className="text-sm text-muted-foreground">🦷 Teeth: {item.tooth_numbers.join(", ")}</p>
                             )}
 
                             {item.notes && <p className="text-sm text-muted-foreground mt-1">{item.notes}</p>}
