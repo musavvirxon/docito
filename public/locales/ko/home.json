@@ -209,7 +209,9 @@
       "terms": "약관",
       "privacy": "개인정보",
       "cookies": "쿠키",
-      "about": "소개"
+      "about": "소개",
+      "features": "기능",
+      "refundPolicy": "환불 정책"
     }
   },
   "visuals": {
