@@ -258,7 +258,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
 
                       <div className="mt-5">
                         <div className="flex items-end gap-2">
-                          <div className="text-4xl font-bold tracking-tight">{money(price)}</div>
+                        <div className="text-4xl font-bold tracking-tight text-foreground">{money(price)}</div>
                           <div className="pb-1 text-sm text-muted-foreground">
                             {price === 0 ? "" : periodSuffix(period)}
                           </div>
