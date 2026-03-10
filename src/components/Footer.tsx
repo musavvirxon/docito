@@ -57,6 +57,7 @@ const fallbackLabels: Record<string, string> = {
   terms: "Terms",
   privacy: "Privacy",
   cookies: "Cookies",
+  refundPolicy: "Refund Policy",
   hipaa: "HIPAA",
 };
 
