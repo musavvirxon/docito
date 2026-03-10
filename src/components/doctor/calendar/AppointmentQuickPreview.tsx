@@ -412,6 +412,61 @@ const AppointmentQuickPreview = memo(
             </div>
           </div>
 
+          {/* Diagnosis Section */}
+          <div className="space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setShowDiagnosisForm(!showDiagnosisForm)}
+            >
+              <Plus className="h-4 w-4" />
+              Add Diagnosis
+            </Button>
+
+            {showDiagnosisForm && (
+              <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
+                <Input
+                  placeholder="Diagnosis title *"
+                  value={diagnosisTitle}
+                  onChange={(e) => setDiagnosisTitle(e.target.value)}
+                  className="text-sm"
+                />
+                <Input
+                  placeholder="ICD-10 code (optional)"
+                  value={icdCode}
+                  onChange={(e) => setIcdCode(e.target.value)}
+                  className="text-sm"
+                />
+                <Textarea
+                  placeholder="Notes (optional)"
+                  value={diagnosisNotes}
+                  onChange={(e) => setDiagnosisNotes(e.target.value)}
+                  rows={2}
+                  className="text-sm"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleSaveDiagnosis}
+                    disabled={savingDiagnosis || !diagnosisTitle.trim()}
+                    className="flex-1 gap-1"
+                  >
+                    {savingDiagnosis && <Loader2 className="h-3 w-3 animate-spin" />}
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowDiagnosisForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
           <Separator />
 
           <div className="space-y-3">
