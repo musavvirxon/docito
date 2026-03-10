@@ -7,12 +7,12 @@
   "header": {
     "title": "Mükemmel Planınızı Seçin",
     "subtitle": "Hastalar, doktorlar ve klinikler için esnek fiyatlandırma. Büyüdükçe ölçeklendirin.",
-    "savingsBadge": "Yıllık faturalandırma ile %10 tasarruf edin"
+    "savingsBadge": "Yıllık faturalandırma ile %16 tasarruf edin"
   },
   "billing": {
     "monthly": "Aylık",
     "yearly": "Yıllık",
-    "save": "%10 Tasarruf"
+    "save": "%16 Tasarruf"
   },
   "navigation": {
     "forPatients": "Hastalar İçin",
@@ -73,7 +73,7 @@
       },
       "yearlyDiscount": {
         "q": "Yıllık indirim nasıl çalışır?",
-        "a": "Yıllık faturalandırmayı seçtiğinizde, aylık faturalandırmaya kıyasla %10 tasarruf edersiniz. Her ay yerine yılda bir kez ücretlendirilirsiniz."
+        "a": "Yıllık faturalandırmayı seçtiğinizde, aylık faturalandırmaya kıyasla %16 tasarruf edersiniz. Her ay yerine yılda bir kez ücretlendirilirsiniz."
       },
       "separatePlans": {
         "q": "Doktorlar ve klinikler farklı planlara sahip olabilir mi?",

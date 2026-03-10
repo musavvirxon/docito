@@ -7,12 +7,12 @@
   "header": {
     "title": "Elige Tu Plan Perfecto",
     "subtitle": "Precios flexibles para pacientes, médicos y clínicas. Escala a medida que creces.",
-    "savingsBadge": "Ahorra 10% con facturación anual"
+    "savingsBadge": "Ahorra 16% con facturación anual"
   },
   "billing": {
     "monthly": "Mensual",
     "yearly": "Anual",
-    "save": "Ahorra 10%"
+    "save": "Ahorra 16%"
   },
   "navigation": {
     "forPatients": "Para Pacientes",
@@ -73,7 +73,7 @@
       },
       "yearlyDiscount": {
         "q": "¿Cómo funciona el descuento anual?",
-        "a": "Cuando eliges facturación anual, ahorras un 10% en comparación con la facturación mensual. Se te cobrará una vez al año en lugar de cada mes."
+        "a": "Cuando eliges facturación anual, ahorras un 16% en comparación con la facturación mensual. Se te cobrará una vez al año en lugar de cada mes."
       },
       "separatePlans": {
         "q": "¿Pueden los médicos y clínicas tener planes diferentes?",

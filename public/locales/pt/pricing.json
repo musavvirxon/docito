@@ -7,12 +7,12 @@
   "header": {
     "title": "Escolha Seu Plano Perfeito",
     "subtitle": "Preços flexíveis para pacientes, médicos e clínicas. Escale conforme você cresce.",
-    "savingsBadge": "Economize 10% com cobrança anual"
+    "savingsBadge": "Economize 16% com cobrança anual"
   },
   "billing": {
     "monthly": "Mensal",
     "yearly": "Anual",
-    "save": "Economize 10%"
+    "save": "Economize 16%"
   },
   "navigation": {
     "forPatients": "Para Pacientes",
@@ -73,7 +73,7 @@
       },
       "yearlyDiscount": {
         "q": "Como funciona o desconto anual?",
-        "a": "Quando você escolhe cobrança anual, economiza 10% em comparação com a cobrança mensal. Você será cobrado uma vez por ano em vez de todo mês."
+        "a": "Quando você escolhe cobrança anual, economiza 16% em comparação com a cobrança mensal. Você será cobrado uma vez por ano em vez de todo mês."
       },
       "separatePlans": {
         "q": "Médicos e clínicas podem ter planos diferentes?",

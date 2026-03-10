@@ -7,12 +7,12 @@
   "header": {
     "title": "Wählen Sie Ihren Perfekten Plan",
     "subtitle": "Flexible Preise für Patienten, Ärzte und Kliniken. Skalieren Sie mit Ihrem Wachstum.",
-    "savingsBadge": "Sparen Sie 10% bei jährlicher Abrechnung"
+    "savingsBadge": "Sparen Sie 16% bei jährlicher Abrechnung"
   },
   "billing": {
     "monthly": "Monatlich",
     "yearly": "Jährlich",
-    "save": "10% Sparen"
+    "save": "16% Sparen"
   },
   "navigation": {
     "forPatients": "Für Patienten",
@@ -73,7 +73,7 @@
       },
       "yearlyDiscount": {
         "q": "Wie funktioniert der Jahresrabatt?",
-        "a": "Wenn Sie jährliche Abrechnung wählen, sparen Sie 10% im Vergleich zur monatlichen Abrechnung. Sie werden einmal pro Jahr statt jeden Monat belastet."
+        "a": "Wenn Sie jährliche Abrechnung wählen, sparen Sie 16% im Vergleich zur monatlichen Abrechnung. Sie werden einmal pro Jahr statt jeden Monat belastet."
       },
       "separatePlans": {
         "q": "Können Ärzte und Kliniken unterschiedliche Pläne haben?",

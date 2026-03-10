@@ -7,12 +7,12 @@
   "header": {
     "title": "Mukammal Rejangizni Tanlang",
     "subtitle": "Bemorlar, shifokorlar va klinikalar uchun moslashuvchan narxlar. O'sish bilan birga kengaytirib boring.",
-    "savingsBadge": "Yillik hisob-kitob bilan 10% tejaymiz"
+    "savingsBadge": "Yillik obuna bilan 16% tejaymiz"
   },
   "billing": {
     "monthly": "Oylik",
     "yearly": "Yillik",
-    "save": "10% Tejash"
+    "save": "16% Diskount"
   },
   "navigation": {
     "forPatients": "Bemorlar Uchun",
@@ -73,7 +73,7 @@
       },
       "yearlyDiscount": {
         "q": "Yillik chegirma qanday ishlaydi?",
-        "a": "Yillik hisob-kitobni tanlaganingizda, oylik hisob-kitobga nisbatan 10% tejaysiz. Har oyda emas, yiliga bir marta to'lanadi."
+        "a": "Yillik obunani tanlaganingizda, oylik obunaga nisbatan 16% tejaysiz. Har oyda emas, yiliga bir marta to'lanadi."
       },
       "separatePlans": {
         "q": "Shifokorlar va klinikalar turli rejalarga ega bo'lishlari mumkinmi?",

@@ -7,12 +7,12 @@
   "header": {
     "title": "Choose Your Perfect Plan",
     "subtitle": "Flexible pricing for patients, doctors, and clinics. Scale as you grow.",
-    "savingsBadge": "Save 10% with yearly billing"
+    "savingsBadge": "Save 16% with yearly billing"
   },
   "billing": {
     "monthly": "Monthly",
     "yearly": "Yearly",
-    "save": "Save 10%"
+    "save": "Save 16%"
   },
   "navigation": {
     "forPatients": "For Patients",
@@ -73,7 +73,7 @@
       },
       "yearlyDiscount": {
         "q": "How does the yearly discount work?",
-        "a": "When you choose yearly billing, you save 10% compared to monthly billing. You'll be charged once per year instead of every month."
+        "a": "When you choose yearly billing, you save 16% compared to monthly billing. You'll be charged once per year instead of every month."
       },
       "separatePlans": {
         "q": "Can doctors and clinics have different plans?",
