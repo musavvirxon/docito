@@ -134,7 +134,7 @@ export const PricingMatrix = ({ period, onChangePeriod }: Props) => {
                 </Badge>
               ) : null}
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{t("matrix.title")}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">{t("matrix.title")}</h2>
             <p className="text-muted-foreground max-w-2xl">{t("matrix.subtitle")}</p>
           </motion.div>
 

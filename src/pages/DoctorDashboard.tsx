@@ -430,8 +430,12 @@ const DoctorDashboardContent = () => {
               </Card>
             </div>
 
-            {/* Verification Status */}
-            <DoctorVerificationStatusCard />
+          </div>
+        );
+    }
+  };
+
+  /* ---- The rest of the component continues below ---- */
 
             {/* Verification Status */}
             <DoctorVerificationStatusCard />
