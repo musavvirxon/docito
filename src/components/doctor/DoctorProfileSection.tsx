@@ -1,5 +1,5 @@
 // File: src/components/doctor/DoctorProfileSection.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, ExternalLink, Shield, UserRound } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Loader2, ExternalLink, Shield, UserRound, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -22,9 +24,12 @@ const normalizeUsername = (v: string) => v.trim().toLowerCase();
 export default function DoctorProfileSection() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { profile } = useAuth();
   const { doctorProfile, refreshAllData } = useDoctorData();
 
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Profile fields
   const [specialty, setSpecialty] = useState("");
@@ -37,6 +42,9 @@ export default function DoctorProfileSection() {
   // Public profile
   const [isPublic, setIsPublic] = useState(false);
   const [username, setUsername] = useState("");
+
+  // Avatar
+  const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
     if (!doctorProfile) return;
@@ -59,7 +67,8 @@ export default function DoctorProfileSection() {
     const vis = doctorProfile.profiles?.profile_visibility;
     setIsPublic(vis === "public");
     setUsername(doctorProfile.profiles?.username || "");
-  }, [doctorProfile]);
+    setAvatarUrl(doctorProfile.profiles?.avatar_url || profile?.avatar_url || "");
+  }, [doctorProfile, profile?.avatar_url]);
 
   const publicSlug = useMemo(() => {
     const vis = isPublic;
@@ -83,6 +92,53 @@ export default function DoctorProfileSection() {
     if (!USERNAME_RE.test(un)) return "Username must be 3–30 chars and use lowercase letters, numbers, _ or -.";
     return "";
   }, [isPublic, username]);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !doctorProfile) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload a JPG, PNG or WebP image.", variant: "destructive" });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Max file size is 5MB.", variant: "destructive" });
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const filePath = `avatars/${doctorProfile.user_id}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("attachments")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("attachments").getPublicUrl(filePath);
+      const newUrl = urlData?.publicUrl || "";
+
+      const { error: profErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: newUrl })
+        .eq("user_id", doctorProfile.user_id);
+
+      if (profErr) throw profErr;
+
+      setAvatarUrl(newUrl);
+      toast({ title: "Photo updated", description: "Your profile photo has been updated." });
+      await refreshAllData();
+    } catch (err: any) {
+      console.error("Photo upload error:", err);
+      toast({ title: "Upload failed", description: err?.message || "Failed to upload photo", variant: "destructive" });
+    } finally {
+      setUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleSave = async () => {
     if (!doctorProfile) return;
@@ -159,6 +215,12 @@ export default function DoctorProfileSection() {
     );
   }
 
+  const initials = (profile?.full_name || doctorProfile.profiles?.full_name || "D")
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase();
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-4">
@@ -205,6 +267,53 @@ export default function DoctorProfileSection() {
       </CardHeader>
 
       <CardContent className="space-y-6">
+        {/* Profile Photo */}
+        <div className="flex items-center gap-6">
+          <div className="relative group">
+            <Avatar className="h-24 w-24 ring-2 ring-primary/20">
+              <AvatarImage src={avatarUrl} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              {uploadingPhoto ? (
+                <Loader2 className="h-6 w-6 text-background animate-spin" />
+              ) : (
+                <Camera className="h-6 w-6 text-background" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handlePhotoUpload}
+            />
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">{profile?.full_name || "Doctor"}</p>
+            <p className="text-sm text-muted-foreground">{profile?.email || ""}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingPhoto}
+              className="mt-2 gap-2"
+            >
+              {uploadingPhoto ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
+              Change Photo
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="specialty">Specialty</Label>
