@@ -369,7 +369,7 @@ serve(async (req) => {
       const { data, error } = await service
         .from("staff_invitations")
         .select(
-          "id, email, full_name, phone, role, status, invite_type, invite_token, expires_at, created_at, permissions",
+          "id, email, full_name, phone, role, status, invite_type, invite_token, expires_at, created_at",
         )
         .eq("entity_type", entityType)
         .eq("entity_id", entityId)
