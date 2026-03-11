@@ -239,6 +239,26 @@ const drawFooter = (
   });
 };
 
+/**
+ * Loads the Docito full horizontal logo from the public folder as a data URL.
+ * Returns null if the fetch fails (fallback text will be used instead).
+ */
+const loadDocitoLogoDataUrl = async (): Promise<string | null> => {
+  try {
+    const response = await fetch("/logos/logo-full-light.png");
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
 // Main PDF generator function
 export const generatePatientSummaryPDF = async (
   patient: PatientPDFData,
@@ -256,20 +276,30 @@ export const generatePatientSummaryPDF = async (
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     let currentY = 15;
+
+    // Pre-load Docito logo
+    const logoDataUrl = await loadDocitoLogoDataUrl();
     
     // ========== HEADER ==========
     doc.setFillColor(37, 99, 235); // Primary blue
     doc.rect(0, 0, pageWidth, 35, "F");
     
-    // Docito branding
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
-    doc.text("DOCITO", 14, 15);
-    
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text("docito.app", 14, 22);
+    // Left side: Docito logo image or text fallback
+    if (logoDataUrl) {
+      // Logo is 300x90 — scale to header height ~24px tall
+      const logoH = 24;
+      const logoW = (300 / 90) * logoH; // ≈ 80px wide
+      doc.addImage(logoDataUrl, "PNG", 14, 6, logoW, logoH);
+    } else {
+      // Fallback: "DOCITO" text
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text("DOCITO", 14, 15);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("docito.app", 14, 22);
+    }
     
     // Practice info (right side)
     if (practiceInfo?.name) {
