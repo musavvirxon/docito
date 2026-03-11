@@ -22,6 +22,7 @@ import PharmacyInsuranceClaims from "@/components/pharmacy/PharmacyInsuranceClai
 import PharmacyStaffManager from "@/components/pharmacy/PharmacyStaffManager";
 import PharmacySettings from "@/components/pharmacy/PharmacySettings";
 import { PharmacyReferralsSection } from "@/components/pharmacy/PharmacyReferralsSection";
+import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 
 import {
@@ -40,6 +41,7 @@ import {
   CheckCircle,
   ShieldCheck,
   DollarSign,
+  ScanLine,
 } from "lucide-react";
 
 type PharmacyRow = {
@@ -138,6 +140,7 @@ export default function PharmacyDashboardPage() {
       { id: "claims", label: "Billing / Claims", icon: <CreditCard className="h-5 w-5" /> },
       { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -227,6 +230,7 @@ export default function PharmacyDashboardPage() {
       "claims",
       "finances",
       "staff",
+      "verify",
       "settings",
     ];
     if (!allowed.includes(desired)) return;
@@ -367,6 +371,7 @@ export default function PharmacyDashboardPage() {
       {activeTab === "claims" && <PharmacyInsuranceClaims pharmacyId={pharmacyId} />}
       {activeTab === "finances" && <FinanceManagementSection entityType="pharmacy" entityId={pharmacyId} />}
       {activeTab === "staff" && <PharmacyStaffManager pharmacyId={pharmacyId} />}
+      {activeTab === "verify" && <DocumentVerifySection />}
       {activeTab === "settings" && <PharmacySettings pharmacyId={pharmacyId} />}
     </DashboardShell>
   );
