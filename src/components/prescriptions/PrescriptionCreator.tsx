@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Plus, Trash2, Pill, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
 
 interface Props {
   patientId: string;
@@ -108,6 +109,15 @@ export default function PrescriptionCreator({ patientId, doctorId, onSuccess }: 
       
       if (prescriptionId && onSuccess) {
         onSuccess(prescriptionId);
+      }
+
+      // Auto-download the prescription PDF
+      if (prescriptionId) {
+        try {
+          await downloadPrescriptionPdf(prescriptionId);
+        } catch {
+          // non-critical — PDF failure should not block the success flow
+        }
       }
       
       // Reset form
