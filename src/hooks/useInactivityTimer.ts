@@ -14,9 +14,9 @@ export const useInactivityTimer = ({
 }: UseInactivityTimerProps & { enabled?: boolean }) => {
   const [showWarning, setShowWarning] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasLoggedOutRef = useRef(false);
 
   const clearTimers = () => {
