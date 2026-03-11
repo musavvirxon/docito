@@ -42,6 +42,7 @@ import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
+import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
 
