@@ -25,7 +25,6 @@ const LegalDetail = lazy(() => import("@/pages/LegalDetail"));
 const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
 const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
-const VerifyDocument = lazy(() => import("@/pages/VerifyDocument"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 
@@ -220,7 +219,6 @@ export default function App() {
                     element={<AppointmentSession />}
                   />
                   <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="verify" element={<VerifyDocument />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
 
