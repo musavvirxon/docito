@@ -264,7 +264,7 @@ serve(async (req) => {
       const { data, error } = await service
         .from("staff_invitations")
         .select(
-          "id, entity_type, entity_id, email, phone, full_name, role, status, invite_type, invite_token, expires_at, created_at, permissions",
+          "id, entity_type, entity_id, email, phone, full_name, role, status, invite_type, invite_token, expires_at, created_at",
         )
         .eq("invite_token", token)
         .maybeSingle();
