@@ -15,7 +15,7 @@ import {
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
 
-import { DOCITO_FONT_TTF_BASE64, DOCITO_LOGO_PNG_BASE64 } from "./assets.ts";
+import { DOCITO_FONT_TTF_BASE64, DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
 
 type Locale =
   | "en"
@@ -1140,6 +1140,7 @@ async function generateTreatmentPlanPdf(params: {
   const pdf = await PDFDocument.create();
   const font = await embedLocaleFont(pdf, params.locale);
 
+  // Embed Docito icon (stamp) — used in footer
   const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
   let docitoLogo: Awaited<ReturnType<typeof pdf.embedPng>> | null = null;
   let docitoLogoW = 22;
@@ -1153,7 +1154,23 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
-  // Optional practice logo (preferred). Falls back to monogram.
+  // Embed Docito full horizontal logo — used in the blue header bar
+  const fullLogoBytes = b64ToBytes(DOCITO_LOGO_FULL_PNG_BASE64);
+  let docitoFullLogo: Awaited<ReturnType<typeof pdf.embedPng>> | null = null;
+  let docitoFullLogoW = 0;
+  let docitoFullLogoH = 0;
+  if (fullLogoBytes.length > 0) {
+    try {
+      docitoFullLogo = await pdf.embedPng(fullLogoBytes);
+      // scale to fit header (target height 24px)
+      docitoFullLogoH = 24;
+      docitoFullLogoW = (docitoFullLogo.width / docitoFullLogo.height) * docitoFullLogoH;
+    } catch {
+      docitoFullLogo = null;
+    }
+  }
+
+  // Optional practice logo (preferred for brand area below header).
   let brandLogo: any | null = null;
   let brandLogoW = 40;
   let brandLogoH = 40;
@@ -1175,10 +1192,8 @@ async function generateTreatmentPlanPdf(params: {
       }
     }
     if (brandLogo) {
-      // keep aspect ratio
       const ratio = brandLogo.height / brandLogo.width;
       brandLogoH = brandLogoW * ratio;
-      // cap height
       if (brandLogoH > 44) {
         brandLogoH = 44;
         brandLogoW = brandLogoH / ratio;
@@ -1203,130 +1218,94 @@ async function generateTreatmentPlanPdf(params: {
   let page = pdf.addPage([W, H]);
   let y = H - margin;
 
+  // ─── header() ────────────────────────────────────────────────────────────
+  // Matches the patient-profile PDF design: full-width blue bar with the
+  // Docito logo on the left and practice/document info on the right.
+  const HEADER_H = 38; // height of the blue bar
   const header = () => {
     y = H - margin;
 
-    // Accent bar
-    page.drawRectangle({ x: 0, y: H - 4, width: W, height: 4, color: accentColor });
+    // ── Blue background bar (full width) ──────────────────────────────────
+    page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: accentColor });
 
-    const headerTopY = H - margin + 6;
-    const logoX = margin;
-    const logoBoxSize = 40;
-
-    // Brand logo (practice) or monogram
-    if (brandLogo) {
-      page.drawImage(brandLogo, {
-        x: logoX,
-        y: headerTopY - brandLogoH,
-        width: brandLogoW,
-        height: brandLogoH,
+    // ── Left side: Docito full logo or "DOCITO" text fallback ─────────────
+    const logoTopY = H - HEADER_H + (HEADER_H - docitoFullLogoH) / 2;
+    if (docitoFullLogo && docitoFullLogoW > 0) {
+      page.drawImage(docitoFullLogo, {
+        x: margin,
+        y: logoTopY,
+        width: docitoFullLogoW,
+        height: docitoFullLogoH,
       });
     } else {
-      page.drawRectangle({
-        x: logoX,
-        y: headerTopY - logoBoxSize,
-        width: logoBoxSize,
-        height: logoBoxSize,
-        color: accentLight,
-        borderColor: borderLight,
-        borderWidth: 1,
-      });
-
-      const initials = initialsFromName(params.practiceName || params.doctorName);
-      const initSize = 14;
-      const initW = font.widthOfTextAtSize(initials, initSize);
-      page.drawText(initials, {
-        x: logoX + (logoBoxSize - initW) / 2,
-        y: headerTopY - logoBoxSize + (logoBoxSize - initSize) / 2 + 4,
-        size: initSize,
+      // Text fallback
+      const brandSize = 16;
+      page.drawText("DOCITO", {
+        x: margin,
+        y: H - HEADER_H + (HEADER_H + brandSize) / 2 - 4,
+        size: brandSize,
         font,
-        color: accentColor,
+        color: rgb(1, 1, 1),
+      });
+      const subSize = 8;
+      page.drawText("docito.app", {
+        x: margin,
+        y: H - HEADER_H + 7,
+        size: subSize,
+        font,
+        color: rgb(0.85, 0.90, 1.0),
       });
     }
 
+    // ── Right side (white text): practice name + document type ────────────
     const practiceLabel = params.practiceName || t(params.locale, "independentPractitioner");
-    const doctorLine = [params.doctorName, params.doctorSpecialty].filter(Boolean).join(" · ");
+    const docTitle = params.isDentist ? t(params.locale, "dentalTitle") : t(params.locale, "title");
 
-    const leftTextX = logoX + 52;
-    const practiceSize = 12;
-    const doctorSize = 9;
-
-    page.drawText(formatForLocale(params.locale, practiceLabel), {
-      x: leftTextX,
-      y: headerTopY - 16,
-      size: practiceSize,
+    const pNameSize = 11;
+    const pNameText = formatForLocale(params.locale, practiceLabel);
+    const pNameW = font.widthOfTextAtSize(pNameText, pNameSize);
+    page.drawText(pNameText, {
+      x: W - margin - pNameW,
+      y: H - HEADER_H + HEADER_H - 15,
+      size: pNameSize,
       font,
-      color: textDark,
+      color: rgb(1, 1, 1),
     });
 
-    if (doctorLine) {
-      page.drawText(formatForLocale(params.locale, doctorLine), {
-        x: leftTextX,
-        y: headerTopY - 32,
-        size: doctorSize,
-        font,
-        color: textMuted,
-      });
-    }
-
-    // Right side: Docito mark + document meta
-    const docTitle = params.isDentist ? t(params.locale, "dentalTitle") : t(params.locale, "title");
+    const docTitleSize = 9;
     const docTitleText = formatForLocale(params.locale, docTitle);
-    const docTitleSize = 11;
     const docTitleW = font.widthOfTextAtSize(docTitleText, docTitleSize);
-
     page.drawText(docTitleText, {
       x: W - margin - docTitleW,
-      y: headerTopY - 16,
+      y: H - HEADER_H + HEADER_H - 27,
       size: docTitleSize,
       font,
-      color: accentColor,
+      color: rgb(0.85, 0.90, 1.0),
     });
 
-    const metaSize = 8.5;
-    const metaLine = `${t(params.locale, "planId")}: ${params.planId}`;
-    const metaLine2 = params.createdAt ? `${t(params.locale, "createdAt")}: ${params.createdAt}` : "";
-    const metaText = formatForLocale(params.locale, metaLine);
-    const metaW = font.widthOfTextAtSize(metaText, metaSize);
-    page.drawText(metaText, {
-      x: W - margin - metaW,
-      y: headerTopY - 30,
-      size: metaSize,
-      font,
-      color: textMuted,
-    });
-
-    if (metaLine2) {
-      const metaText2 = formatForLocale(params.locale, metaLine2);
-      const metaW2 = font.widthOfTextAtSize(metaText2, metaSize);
-      page.drawText(metaText2, {
-        x: W - margin - metaW2,
-        y: headerTopY - 42,
+    const metaSize = 8;
+    const createdLine = params.createdAt ? `${t(params.locale, "createdAt")}: ${params.createdAt}` : "";
+    if (createdLine) {
+      const createdText = formatForLocale(params.locale, createdLine);
+      const createdW = font.widthOfTextAtSize(createdText, metaSize);
+      page.drawText(createdText, {
+        x: W - margin - createdW,
+        y: H - HEADER_H + 8,
         size: metaSize,
         font,
-        color: textMuted,
+        color: rgb(0.75, 0.82, 0.97),
       });
     }
 
-    if (docitoLogo) {
-      page.drawImage(docitoLogo, {
-        x: W - margin - docitoLogoW,
-        y: headerTopY - docitoLogoH,
-        width: docitoLogoW,
-        height: docitoLogoH,
-      });
-    }
+    // ── Thin white divider below header (optional accent) ─────────────────
+    page.drawRectangle({ x: 0, y: H - HEADER_H - 2, width: W, height: 2, color: accentLight });
 
-    // Divider line
-    y = H - margin - 58;
-    page.drawRectangle({ x: margin, y, width: W - margin * 2, height: 2, color: accentColor });
-    y -= 18;
+    // ── Plan title (below header) ─────────────────────────────────────────
+    y = H - HEADER_H - 20;
 
-    // Plan title (the plan's name)
     const titleText = formatForLocale(params.locale, params.title || t(params.locale, "title"));
     const titleSize = 18;
     const titleW = font.widthOfTextAtSize(titleText, titleSize);
-
     page.drawText(titleText, {
       x: rtl ? (W - margin - titleW) : margin,
       y,
@@ -1334,31 +1313,33 @@ async function generateTreatmentPlanPdf(params: {
       font,
       color: accentColor,
     });
+    y -= 14;
 
-    y -= 16;
-
-    // Subtitle: doctor + practice
+    // Doctor + practice subtitle line
     let generatedLine = "";
     if (params.doctorName && params.doctorName !== "—") {
-      generatedLine = `${params.doctorName}`;
+      generatedLine = params.doctorName;
       if (params.doctorSpecialty) generatedLine += ` · ${params.doctorSpecialty}`;
       if (params.practiceName) generatedLine += ` — ${params.practiceName}`;
     }
     if (generatedLine) {
-      const genLineText = formatForLocale(params.locale, generatedLine);
+      const genText = formatForLocale(params.locale, generatedLine);
       const genSize = 9;
-      const genW = font.widthOfTextAtSize(genLineText, genSize);
-      page.drawText(genLineText, {
+      const genW = font.widthOfTextAtSize(genText, genSize);
+      page.drawText(genText, {
         x: rtl ? (W - margin - genW) : margin,
         y,
         size: genSize,
         font,
         color: textMuted,
       });
-      y -= 14;
+      y -= 12;
     }
 
-    y -= 6;
+    // ── Accent divider line under the title block ─────────────────────────
+    y -= 4;
+    page.drawRectangle({ x: margin, y, width: W - margin * 2, height: 2, color: accentColor });
+    y -= 14;
   };
 
   const newPage = () => {
@@ -1406,41 +1387,31 @@ async function generateTreatmentPlanPdf(params: {
   };
 
   const drawSection = (titleKey: string) => {
-    ensureSpace(40);
+    ensureSpace(32);
     y -= 6;
 
     const sectionTitle = formatForLocale(params.locale, t(params.locale, titleKey));
     const sectionSize = 12;
     const sectionW = font.widthOfTextAtSize(sectionTitle, sectionSize);
-    const sectionPadding = 6;
 
-    // Section header background
-    page.drawRectangle({
-      x: margin,
-      y: y - sectionPadding,
-      width: W - margin * 2,
-      height: sectionSize + sectionPadding * 2,
-      color: sectionBg,
-    });
-
-    // Accent left border
-    page.drawRectangle({
-      x: margin,
-      y: y - sectionPadding,
-      width: 3,
-      height: sectionSize + sectionPadding * 2,
-      color: accentColor,
-    });
-
+    // Blue bold section title — patient-PDF style
     page.drawText(sectionTitle, {
-      x: rtl ? (W - margin - sectionW - 8) : margin + 10,
-      y: y,
+      x: rtl ? (W - margin - sectionW) : margin,
+      y,
       size: sectionSize,
       font,
       color: accentColor,
     });
 
-    y -= (sectionSize + sectionPadding * 2 + 8);
+    // Gray underline beneath the title
+    page.drawLine({
+      start: { x: margin, y: y - 3 },
+      end: { x: W - margin, y: y - 3 },
+      thickness: 0.8,
+      color: borderLight,
+    });
+
+    y -= (sectionSize + 10);
   };
 
   // Plan header fields
@@ -1810,39 +1781,46 @@ async function generateTreatmentPlanPdf(params: {
   page.drawText(providerSigLabel, { x: sx2, y: sigY + 6, size: 8.5, font, color: textMuted });
   page.drawText(`${dateLabel}: ____________`, { x: sx2, y: sigY - 6, size: 8, font, color: textMuted });
 
-  // Footer accent bar
-  page.drawRectangle({
-    x: margin,
-    y: footerY + 28,
-    width: W - margin * 2,
-    height: 2,
-    color: accentColor,
+  // ── Footer: patient-PDF style gray divider + confidentiality text ─────────
+  page.drawLine({
+    start: { x: margin, y: footerY + 28 },
+    end: { x: W - margin, y: footerY + 28 },
+    thickness: 0.8,
+    color: borderLight,
   });
 
-  const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-  const genSize = 9;
-  const genW = font.widthOfTextAtSize(genText, genSize);
-  page.drawText(genText, {
-    x: rtl ? (W - margin - genW) : margin,
-    y: footerY + 10,
-    size: genSize,
+  // Left: confidential label
+  const confLabel = formatForLocale(params.locale, `Confidential — ${params.practiceName || t(params.locale, "generatedBy")}`);
+  const confSize = 8.5;
+  const confW = font.widthOfTextAtSize(confLabel, confSize);
+  page.drawText(confLabel, {
+    x: rtl ? (W - margin - confW) : margin,
+    y: footerY + 18,
+    size: confSize,
     font,
-    color: accentColor,
+    color: textDark,
   });
 
-  // Practice + Doctor footer line
-  if (params.practiceName || params.doctorName) {
-    const footerInfo = [params.doctorName, params.practiceName].filter(Boolean).join(" · ");
-    const fiSize = 8;
-    const fiW = font.widthOfTextAtSize(footerInfo, fiSize);
-    page.drawText(footerInfo, {
-      x: rtl ? (W - margin - fiW) : margin,
-      y: footerY,
-      size: fiSize,
-      font,
-      color: textMuted,
+  // Docito icon stamp bottom-left (below confidential text)
+  if (docitoLogo) {
+    page.drawImage(docitoLogo, {
+      x: margin,
+      y: footerY + 2,
+      width: docitoLogoW,
+      height: docitoLogoH,
     });
   }
+
+  const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+  const genSize = 7.5;
+  const genW = font.widthOfTextAtSize(genText, genSize);
+  page.drawText(genText, {
+    x: rtl ? (W - margin - genW) : (docitoLogo ? margin + docitoLogoW + 4 : margin),
+    y: footerY + 8,
+    size: genSize,
+    font,
+    color: textMuted,
+  });
 
   const verificationLabel = formatForLocale(params.locale, t(params.locale, "verification") + ":");
   const verificationLabelSize = 10;
@@ -1898,6 +1876,23 @@ async function generateTreatmentPlanPdf(params: {
     }
   } catch {
     // ignore QR failures
+  }
+
+  // ── Page numbers on every page (patient-PDF style) ────────────────────────
+  const pageCount = pdf.getPageCount();
+  for (let i = 0; i < pageCount; i++) {
+    const pg = pdf.getPage(i);
+    const pageNum = i + 1;
+    const pageLabel = `Page ${pageNum} of ${pageCount}`;
+    const pageLabelSize = 8;
+    const pageLabelW = font.widthOfTextAtSize(pageLabel, pageLabelSize);
+    pg.drawText(pageLabel, {
+      x: W - margin - pageLabelW,
+      y: margin + 8,
+      size: pageLabelSize,
+      font,
+      color: textMuted,
+    });
   }
 
   const bytes = await pdf.save();
