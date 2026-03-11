@@ -64,14 +64,36 @@ export const generatePatientSummaryPDF = async ({
   const textColor: [number, number, number] = [31, 41, 55];
   const mutedColor: [number, number, number] = [107, 114, 128];
 
+  // ── Try to load the Docito full logo for the header ──────────────────────
+  let logoDataUrl: string | null = null;
+  try {
+    const res = await fetch("/logos/logo-full-light.png");
+    if (res.ok) {
+      const blob = await res.blob();
+      logoDataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(blob);
+      });
+    }
+  } catch { /* ignore – fallback text used */ }
+
   // Header
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, pageWidth, 40, "F");
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
-  doc.setFont("helvetica", "bold");
-  doc.text(clinicName, 14, 20);
+  // Logo or text branding in header
+  if (logoDataUrl) {
+    const logoH = 26;
+    const logoW = (300 / 90) * logoH; // keep aspect ratio (300x90 image)
+    doc.addImage(logoDataUrl, "PNG", 14, 7, logoW, logoH);
+  } else {
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text(clinicName, 14, 20);
+  }
 
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
