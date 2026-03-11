@@ -1,5 +1,5 @@
-// File: src/components/pharmacy/PharmacyStaffManager.tsx
-// Direct-query staff management (same pattern as LabStaffManager)
+// File: src/components/clinic/ClinicStaffManager.tsx
+// Direct-query staff management for clinic/practice admins (same pattern as LabStaffManager)
 
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -22,8 +22,8 @@ import {
   UserCog,
 } from "lucide-react";
 
-type PharmacyStaffManagerProps = {
-  pharmacyId: string;
+type ClinicStaffManagerProps = {
+  practiceId: string;
 };
 
 type StaffRow = Record<string, any>;
@@ -37,29 +37,29 @@ type AuditItem = {
 };
 
 type PermissionKey =
-  | "prescriptions.view"
-  | "prescriptions.manage"
-  | "dispense.manage"
-  | "inventory.view"
-  | "inventory.manage"
+  | "appointments.view"
+  | "appointments.manage"
+  | "patients.view"
+  | "patients.manage"
   | "billing.view"
   | "billing.manage"
-  | "referrals.manage"
+  | "records.view"
+  | "records.manage"
   | "staff.manage";
 
 const PERMISSION_KEYS: PermissionKey[] = [
-  "prescriptions.view",
-  "prescriptions.manage",
-  "dispense.manage",
-  "inventory.view",
-  "inventory.manage",
+  "appointments.view",
+  "appointments.manage",
+  "patients.view",
+  "patients.manage",
   "billing.view",
   "billing.manage",
-  "referrals.manage",
+  "records.view",
+  "records.manage",
   "staff.manage",
 ];
 
-const ROLE_OPTIONS = ["admin", "pharmacist", "technician", "cashier", "frontdesk", "viewer"] as const;
+const ROLE_OPTIONS = ["admin", "manager", "doctor", "nurse", "receptionist", "billing", "viewer"] as const;
 type StaffRole = (typeof ROLE_OPTIONS)[number];
 
 function cn(...parts: Array<string | false | null | undefined>) {
@@ -82,19 +82,14 @@ function toIsoNow() {
 
 function defaultPermissionsForRole(role: StaffRole): PermissionKey[] {
   switch (role) {
-    case "admin":
-      return [...PERMISSION_KEYS];
-    case "pharmacist":
-      return ["prescriptions.view", "prescriptions.manage", "dispense.manage", "inventory.view", "inventory.manage", "referrals.manage"];
-    case "technician":
-      return ["prescriptions.view", "prescriptions.manage", "inventory.view"];
-    case "cashier":
-      return ["prescriptions.view", "billing.view", "billing.manage"];
-    case "frontdesk":
-      return ["prescriptions.view", "referrals.manage"];
+    case "admin": return [...PERMISSION_KEYS];
+    case "manager": return ["appointments.view", "appointments.manage", "patients.view", "patients.manage", "billing.view", "billing.manage", "records.view", "staff.manage"];
+    case "doctor": return ["appointments.view", "appointments.manage", "patients.view", "patients.manage", "records.view", "records.manage"];
+    case "nurse": return ["appointments.view", "patients.view", "patients.manage", "records.view", "records.manage"];
+    case "receptionist": return ["appointments.view", "appointments.manage", "patients.view"];
+    case "billing": return ["appointments.view", "billing.view", "billing.manage"];
     case "viewer":
-    default:
-      return ["prescriptions.view"];
+    default: return ["appointments.view", "patients.view"];
   }
 }
 
@@ -103,10 +98,6 @@ function normalizePermissions(raw: any): PermissionKey[] {
   if (Array.isArray(raw)) return raw.map(String).filter((k): k is PermissionKey => (PERMISSION_KEYS as string[]).includes(k));
   if (typeof raw === "object") return Object.entries(raw).filter(([, v]) => Boolean(v)).map(([k]) => k).filter((k): k is PermissionKey => (PERMISSION_KEYS as string[]).includes(k));
   return [];
-}
-
-function permissionsToStorage(perms: PermissionKey[]) {
-  return perms.reduce<Record<string, boolean>>((acc, key) => { acc[key] = true; return acc; }, {});
 }
 
 function relativeTimeLabel(value?: string | null) {
@@ -133,11 +124,11 @@ function getStaffRole(row: StaffRow): string {
 }
 
 function getStaffEmail(row: StaffRow): string {
-  return row.email || row.invited_email || row.contact_email || row.staff_email || row.user_email || "";
+  return row.email || row.invited_email || row.contact_email || "";
 }
 
 function getStaffUserId(row: StaffRow): string {
-  return String(row.user_id || row.staff_user_id || "");
+  return String(row.user_id || "");
 }
 
 function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, ProfileRow>): AuditItem[] {
@@ -150,12 +141,12 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
     const status = normalizeStatus(row.status);
     if (row.created_at) items.push({ id: `${row.id}-created`, title: "Staff record created", subtitle: `${who} • ${role}`, at: row.created_at, severity: "success" });
     if (row.updated_at && row.updated_at !== row.created_at) items.push({ id: `${row.id}-updated`, title: "Staff record updated", subtitle: `${who} • ${humanize(status || "updated")}`, at: row.updated_at, severity: status === "inactive" ? "warning" : "info" });
-    if (status === "invited" || status === "pending") items.push({ id: `${row.id}-invited`, title: "Invitation pending", subtitle: `${email || who} • ${role}`, at: row.invitation_sent_at || row.updated_at || row.created_at, severity: "warning" });
+    if (status === "invited" || status === "pending") items.push({ id: `${row.id}-invited`, title: "Invitation pending", subtitle: `${email || who} • ${role}`, at: row.updated_at || row.created_at, severity: "warning" });
   }
   return items.sort((a, b) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime()).slice(0, 20);
 }
 
-export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManagerProps) {
+export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerProps) {
   const sb: any = supabase as any;
 
   const [loading, setLoading] = useState(true);
@@ -167,8 +158,8 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
   const [savingRowId, setSavingRowId] = useState<string | null>(null);
   const [actingRowId, setActingRowId] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<StaffRole>("technician");
-  const [invitePermissions, setInvitePermissions] = useState<PermissionKey[]>(defaultPermissionsForRole("technician"));
+  const [inviteRole, setInviteRole] = useState<StaffRole>("receptionist");
+  const [invitePermissions, setInvitePermissions] = useState<PermissionKey[]>(defaultPermissionsForRole("receptionist"));
   const [inviteLoading, setInviteLoading] = useState(false);
   const [draftRoles, setDraftRoles] = useState<Record<string, string>>({});
   const [draftPermissions, setDraftPermissions] = useState<Record<string, PermissionKey[]>>({});
@@ -190,27 +181,28 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
   }, [activeRows, profilesById, search]);
 
   async function loadData(showSpinner = true) {
-    if (!pharmacyId) return;
+    if (!practiceId) return;
     if (showSpinner) setLoading(true);
     else setRefreshing(true);
 
     try {
+      // Load from clinic_staff table
       const { data: staffData, error: staffErr } = await sb
-        .from("pharmacy_staff")
+        .from("clinic_staff")
         .select("*")
-        .eq("pharmacy_id", pharmacyId)
+        .eq("practice_id", practiceId)
         .order("created_at", { ascending: false });
 
       if (staffErr) throw staffErr;
       let mergedRows: StaffRow[] = Array.isArray(staffData) ? staffData : [];
 
-      // Try to also load from staff_invitations (unified)
+      // Also load from staff_invitations (unified)
       try {
         const { data: inviteRows, error: inviteErr } = await sb
           .from("staff_invitations")
           .select("*")
-          .eq("entity_id", pharmacyId)
-          .eq("entity_type", "pharmacy")
+          .eq("entity_id", practiceId)
+          .eq("entity_type", "clinic")
           .in("status", ["pending", "invited"])
           .order("created_at", { ascending: false });
 
@@ -227,6 +219,24 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
           const deduped = mapped.filter((r) => {
             const email = getStaffEmail(r);
             return !email || !existingEmails.has(email);
+          });
+          mergedRows = [...mergedRows, ...deduped];
+        }
+      } catch { /* optional table */ }
+
+      // Also check staff_members table
+      try {
+        const { data: memberRows, error: memberErr } = await sb
+          .from("staff_members")
+          .select("*")
+          .eq("practice_id", practiceId)
+          .order("created_at", { ascending: false });
+
+        if (!memberErr && Array.isArray(memberRows)) {
+          const existingUserIds = new Set(mergedRows.map((r) => getStaffUserId(r)).filter(Boolean));
+          const deduped = memberRows.filter((r: any) => {
+            const uid = String(r.user_id || "");
+            return !uid || !existingUserIds.has(uid);
           });
           mergedRows = [...mergedRows, ...deduped];
         }
@@ -251,14 +261,14 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
         const { data: logs } = await sb
           .from("audit_logs")
           .select("*")
-          .or(`entity_id.eq.${pharmacyId},resource_id.eq.${pharmacyId}`)
+          .or(`entity_id.eq.${practiceId},resource_id.eq.${practiceId}`)
           .order("created_at", { ascending: false })
           .limit(30);
         if (Array.isArray(logs) && logs.length) {
           auditItems = logs.map((log: any) => ({
             id: String(log.id),
             title: log.action || "Audit Event",
-            subtitle: [log.actor_name || log.actor_id, log.entity_type].filter(Boolean).join(" • ") || "Staff-related activity",
+            subtitle: [log.actor_name || log.actor_id, log.entity_type].filter(Boolean).join(" • ") || "Staff activity",
             at: log.created_at || null,
             severity: normalizeStatus(log.level) === "error" ? "danger" as const : "info" as const,
           }));
@@ -276,7 +286,7 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     }
   }
 
-  useEffect(() => { loadData(true); }, [pharmacyId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadData(true); }, [practiceId]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setInvitePermissions(defaultPermissionsForRole(inviteRole)); }, [inviteRole]);
   useEffect(() => {
     const nextRoles: Record<string, string> = {};
@@ -310,18 +320,18 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     try {
       // Try unified staff_invitations first
       const { error } = await sb.from("staff_invitations").insert({
-        entity_id: pharmacyId,
-        entity_type: "pharmacy",
+        entity_id: practiceId,
+        entity_type: "clinic",
         email,
         role: inviteRole,
         status: "pending",
         invite_type: "email",
       });
       if (error) {
-        // Fallback: insert directly to pharmacy_staff
-        const { error: fallbackErr } = await sb.from("pharmacy_staff").insert({
-          pharmacy_id: pharmacyId,
-          user_id: "00000000-0000-0000-0000-000000000000", // placeholder
+        // Fallback: insert to clinic_staff
+        const { error: fallbackErr } = await sb.from("clinic_staff").insert({
+          practice_id: practiceId,
+          user_id: "00000000-0000-0000-0000-000000000000",
           staff_role: inviteRole,
           status: "invited",
         });
@@ -329,8 +339,8 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
       }
       toast.success("Invitation created");
       setInviteEmail("");
-      setInviteRole("technician");
-      setInvitePermissions(defaultPermissionsForRole("technician"));
+      setInviteRole("receptionist");
+      setInvitePermissions(defaultPermissionsForRole("receptionist"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
@@ -345,16 +355,12 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     setSavingRowId(rowId);
     try {
       const nextRole = draftRoles[rowId] || getStaffRole(row);
-      const nextPerms = draftPermissions[rowId] || normalizePermissions(row.permissions);
-      const { error } = await sb.from("pharmacy_staff").update({
+      const { error } = await sb.from("clinic_staff").update({
         staff_role: nextRole,
-        can_process_prescriptions: nextPerms.includes("prescriptions.manage"),
-        can_dispense: nextPerms.includes("dispense.manage"),
-        can_manage_inventory: nextPerms.includes("inventory.manage"),
         updated_at: toIsoNow(),
       }).eq("id", rowId);
       if (error) throw error;
-      toast.success("Staff permissions updated");
+      toast.success("Staff updated");
       await loadData(false);
     } catch (e: any) {
       console.error(e);
@@ -368,7 +374,7 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     const rowId = String(row.id);
     setActingRowId(rowId);
     try {
-      const { error } = await sb.from("pharmacy_staff").update({ status, updated_at: toIsoNow() }).eq("id", rowId);
+      const { error } = await sb.from("clinic_staff").update({ status, updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
       toast.success(`Staff status updated to ${humanize(status)}`);
       await loadData(false);
@@ -384,9 +390,9 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     const rowId = String(row.id);
     setActingRowId(rowId);
     try {
-      const soft = await sb.from("pharmacy_staff").update({ status: "removed", updated_at: toIsoNow() }).eq("id", rowId);
+      const soft = await sb.from("clinic_staff").update({ status: "removed", updated_at: toIsoNow() }).eq("id", rowId);
       if (!soft.error) { toast.success("Staff removed"); await loadData(false); setActingRowId(null); return; }
-      const hard = await sb.from("pharmacy_staff").delete().eq("id", rowId);
+      const hard = await sb.from("clinic_staff").delete().eq("id", rowId);
       if (hard.error) throw hard.error;
       toast.success("Staff removed");
       await loadData(false);
@@ -406,7 +412,7 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
         const { error } = await sb.from("staff_invitations").update({ status: "cancelled", updated_at: toIsoNow() }).eq("id", rowId);
         if (error) throw error;
       } else {
-        const { error } = await sb.from("pharmacy_staff").update({ status: "cancelled", updated_at: toIsoNow() }).eq("id", rowId);
+        const { error } = await sb.from("clinic_staff").update({ status: "cancelled", updated_at: toIsoNow() }).eq("id", rowId);
         if (error) throw error;
       }
       toast.success("Invitation cancelled");
@@ -423,7 +429,7 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     const rowId = String(row.id);
     setActingRowId(rowId);
     try {
-      const table = row._source === "staff_invitations" ? "staff_invitations" : "pharmacy_staff";
+      const table = row._source === "staff_invitations" ? "staff_invitations" : "clinic_staff";
       const { error } = await sb.from(table).update({ status: "pending", updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
       toast.success("Invitation resent");
@@ -436,12 +442,12 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     }
   }
 
-  if (!pharmacyId) {
+  if (!practiceId) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Staff Management</CardTitle>
-          <CardDescription>Select a pharmacy first.</CardDescription>
+          <CardDescription>Select a practice first.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -454,14 +460,14 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
         <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Active Staff</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
         <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Pending Invitations</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
         <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Inactive / Disabled</div><div className="text-2xl font-semibold">{inactiveRows.length}</div></div><Power className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Admin / Pharmacists</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "pharmacist"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Admin / Managers</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "manager"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
       </div>
 
       {/* Invite Staff */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" /> Invite Staff</CardTitle>
-          <CardDescription>Create staff invitations, assign role, and pre-configure permissions before they join.</CardDescription>
+          <CardDescription>Create staff invitations, assign role, and pre-configure permissions.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleInviteSubmit} className="space-y-4">
@@ -470,12 +476,12 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
                 <label className="text-sm font-medium">Email</label>
                 <div className="relative">
                   <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="staff@pharmacy.com" className="w-full h-10 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="staff@clinic.com" className="w-full h-10 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Role</label>
-                <select value={inviteRole} onChange={(e) => setInviteRole((e.target.value as StaffRole) || "technician")} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                <select value={inviteRole} onChange={(e) => setInviteRole((e.target.value as StaffRole) || "receptionist")} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
                   {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{humanize(role)}</option>))}
                 </select>
               </div>
@@ -488,7 +494,7 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
             </div>
             <div className="rounded-lg border p-4">
               <div className="text-sm font-medium mb-3">Permission Preset</div>
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {PERMISSION_KEYS.map((key) => {
                   const checked = invitePermissions.includes(key);
                   return (
@@ -604,7 +610,7 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-sm font-medium">Permissions</label>
-                          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                             {PERMISSION_KEYS.map((key) => {
                               const checked = currentPerms.includes(key);
                               return (
