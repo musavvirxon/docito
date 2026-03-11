@@ -1,6 +1,6 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck } from "lucide-react";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -25,6 +25,7 @@ import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSet
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
+import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection";
 import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -159,6 +160,7 @@ const DoctorDashboardContent = () => {
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
+    { id: "verify-documents", label: "Verify Documents", icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
     { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
@@ -174,6 +176,7 @@ const DoctorDashboardContent = () => {
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
+    { id: "verify-documents", label: "Verify Documents", icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
   ];
@@ -219,6 +222,8 @@ const DoctorDashboardContent = () => {
         return <DoctorProcedureLibrarySection />;
       case "referrals":
         return <DoctorReferralsSection />;
+      case "verify-documents":
+        return <DocumentVerifySection />;
       default:
         return (
           <div className="space-y-8">
