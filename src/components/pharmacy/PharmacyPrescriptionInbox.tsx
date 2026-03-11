@@ -152,7 +152,7 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
 
       if (error) throw error;
 
-      setPrescriptions((data || []) as any);
+      setPrescriptions(enriched as any);
     } catch (error: any) {
       console.error('Error fetching prescriptions:', error);
       toast.error('Failed to load prescriptions');
