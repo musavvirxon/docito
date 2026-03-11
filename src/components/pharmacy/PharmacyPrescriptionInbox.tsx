@@ -114,15 +114,41 @@ export default function PharmacyPrescriptionInbox({ pharmacyId }: Props) {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
+      // Query prescriptions without doctor join (doctors table lacks full_name)
+      const { data, error } = await (supabase as any)
         .from('prescriptions')
         .select(`
           *,
-          prescription_items(*),
-          doctor:doctor_id(full_name, specialty)
+          prescription_items(*)
         `)
         .or(`pharmacy_id.eq.${pharmacyId},status.eq.pending`)
         .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const rxRows = (data || []) as any[];
+
+      // Hydrate doctor names from doctor_profiles_view
+      const doctorIds = [...new Set(rxRows.map((r: any) => r.doctor_id).filter(Boolean))];
+      let doctorsMap: Record<string, { full_name: string | null; specialty: string | null }> = {};
+
+      if (doctorIds.length > 0) {
+        const { data: docProfiles } = await (supabase as any)
+          .from('doctor_profiles_view')
+          .select('id, full_name, specialty')
+          .in('id', doctorIds);
+
+        if (docProfiles) {
+          for (const dp of docProfiles) {
+            doctorsMap[dp.id] = { full_name: dp.full_name, specialty: dp.specialty };
+          }
+        }
+      }
+
+      const enriched = rxRows.map((rx: any) => ({
+        ...rx,
+        doctor: rx.doctor_id ? doctorsMap[rx.doctor_id] || null : null,
+      }));
 
       if (error) throw error;
 
