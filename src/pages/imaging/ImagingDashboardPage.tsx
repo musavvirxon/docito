@@ -21,6 +21,7 @@ import ImagingBillingSection from "@/components/imaging/ImagingBillingSection";
 import { ImagingReferralsSection } from "@/components/imaging/ImagingReferralsSection";
 import ImagingStaffManager from "@/components/imaging/ImagingStaffManager";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
+import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection";
 
 import {
   LayoutDashboard,
@@ -53,7 +54,8 @@ type ImagingTab =
   | "billing"
   | "finances"
   | "referrals"
-  | "staff";
+  | "staff"
+  | "verify";
 
 const ALLOWED_TABS: ImagingTab[] = [
   "overview",
@@ -65,6 +67,7 @@ const ALLOWED_TABS: ImagingTab[] = [
   "finances",
   "referrals",
   "staff",
+  "verify",
 ];
 
 function isImagingTab(value: string): value is ImagingTab {
@@ -160,6 +163,7 @@ export default function ImagingDashboardPage() {
       { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
       { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -265,6 +269,8 @@ export default function ImagingDashboardPage() {
       {activeTab === "referrals" && <ImagingReferralsSection centerId={centerId} />}
 
       {activeTab === "staff" && <ImagingStaffManager imagingCenterId={centerId} />}
+
+      {activeTab === "verify" && <DocumentVerifySection />}
     </DashboardShell>
   );
 }
