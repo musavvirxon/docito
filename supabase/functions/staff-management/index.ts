@@ -304,8 +304,6 @@ serve(async (req) => {
       const inviteType = existingProfile?.user_id ? "existing_user" : "new_user";
       const status = existingProfile?.user_id ? "pending" : "awaiting_signup";
 
-      const permissions = body.permissions && typeof body.permissions === "object" ? body.permissions : {};
-
       const { data: invite, error: inviteError } = await service
         .from("staff_invitations")
         .insert({
@@ -320,10 +318,9 @@ serve(async (req) => {
           status,
           invite_type: inviteType,
           invited_by: user.id,
-          permissions,
         })
         .select(
-          "id, invite_token, status, expires_at, email, role, entity_type, entity_id, created_at, permissions",
+          "id, invite_token, status, expires_at, email, role, entity_type, entity_id, created_at",
         )
         .single();
 
