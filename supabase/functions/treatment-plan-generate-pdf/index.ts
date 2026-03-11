@@ -2140,7 +2140,8 @@ serve(async (req: Request) => {
     asString((plan as any)?.public_code) ||
     planId;
 
-  const verifyUrl = `https://docito.app`;
+  const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");
+  const verifyUrl = `${siteBase}/verify?type=treatment-plan&code=${encodeURIComponent(verificationCode)}`;
 
   const status = safeText((plan as any)?.status, "—");
   
