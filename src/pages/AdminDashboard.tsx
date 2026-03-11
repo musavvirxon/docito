@@ -42,6 +42,7 @@ import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
+import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
 
@@ -767,67 +768,14 @@ const AdminDashboard = () => {
       case "staff":
         return (
           <SectionWrapper locked={!isVerified}>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("admin.staff.title")}</h2>
-              <Button onClick={() => guard(() => setInviteStaffOpen(true))} disabled={!allowModals}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                {t("admin.staff.invite")}
-              </Button>
-            </div>
-
-            <Card className="rounded-xl mt-6">
-              <CardHeader>
-                <CardTitle>{t("admin.staff.listTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {staff.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground">
-                    <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-medium">{t("admin.staff.emptyTitle")}</p>
-                    <p className="text-sm mt-1">{t("admin.staff.emptyDescription")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setInviteStaffOpen(true))} disabled={!allowModals}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      {t("admin.staff.invite")}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {staff.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
-                      >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{member.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {member.role} • {member.email}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{member.status}</Badge>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => guard(() => toast.info("Manage permissions (coming soon)"))}
-                            disabled={!allowModals}
-                          >
-                            <Settings className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => guard(() => toast.info("Remove staff (coming soon)"))}
-                            disabled={!allowModals}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {practice?.id ? (
+              <ClinicStaffManager practiceId={practice.id} />
+            ) : (
+              <div className="text-center py-10 text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">No practice linked</p>
+              </div>
+            )}
           </SectionWrapper>
         );
 

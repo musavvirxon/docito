@@ -45,14 +45,13 @@ import { supabase } from '@/integrations/supabase/client';
 interface HomeCollection {
   id: string;
   lab_center_id: string;
-  order_id: string;
-  patient_name: string;
+  test_order_id: string | null;
+  patient_name: string | null;
   patient_phone: string | null;
   address: string;
-  scheduled_date: string;
-  scheduled_time: string | null;
-  collector_id: string | null;
-  collector_name: string | null;
+  preferred_date: string | null;
+  preferred_time: string | null;
+  assigned_collector: string | null;
   status: string;
   notes: string | null;
   created_at: string;
@@ -83,7 +82,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
         .from('lab_home_collections')
         .select('*')
         .eq('lab_center_id', labCenterId)
-        .order('scheduled_date', { ascending: false })
+        .order('preferred_date', { ascending: false })
         .limit(250);
 
       if (error) throw error;
@@ -138,15 +137,16 @@ export default function LabHomeCollection({ labCenterId }: Props) {
 
   const filteredCollections = collections.filter((collection) => {
     const matchesSearch =
-      collection.patient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (collection.patient_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       collection.address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || collection.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const todayCollections = collections.filter((c) => {
+    if (!c.preferred_date) return false;
     const today = new Date().toDateString();
-    return new Date(c.scheduled_date).toDateString() === today;
+    return new Date(c.preferred_date).toDateString() === today;
   });
 
   if (loading) {
@@ -289,7 +289,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                       <TableRow key={collection.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{collection.patient_name}</p>
+                            <p className="font-medium">{collection.patient_name || 'Unknown'}</p>
                             <p className="text-sm text-muted-foreground flex items-center gap-1">
                               <Phone className="h-3 w-3" />
                               {collection.patient_phone || '—'}
@@ -304,15 +304,15 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <p>{format(new Date(collection.scheduled_date), 'MMM d, yyyy')}</p>
-                            <p className="text-muted-foreground">{collection.scheduled_time || '—'}</p>
+                            <p>{collection.preferred_date ? format(new Date(collection.preferred_date), 'MMM d, yyyy') : '—'}</p>
+                            <p className="text-muted-foreground">{collection.preferred_time || '—'}</p>
                           </div>
                         </TableCell>
                         <TableCell>
-                          {collection.collector_name ? (
+                          {collection.assigned_collector ? (
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4 text-muted-foreground" />
-                              {collection.collector_name}
+                              {collection.assigned_collector}
                             </div>
                           ) : (
                             <span className="text-muted-foreground">Unassigned</span>
@@ -368,7 +368,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Patient Name</p>
-                  <p className="font-medium">{selectedCollection.patient_name}</p>
+                  <p className="font-medium">{selectedCollection.patient_name || 'Unknown'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Phone</p>
@@ -380,7 +380,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">Collector</p>
-                  <p className="font-medium">{selectedCollection.collector_name || 'Unassigned'}</p>
+                  <p className="font-medium">{selectedCollection.assigned_collector || 'Unassigned'}</p>
                 </div>
               </div>
 
@@ -398,12 +398,14 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Scheduled Date</p>
                   <p className="font-medium">
-                    {format(new Date(selectedCollection.scheduled_date), 'MMMM d, yyyy')}
+                    {selectedCollection.preferred_date
+                      ? format(new Date(selectedCollection.preferred_date), 'MMMM d, yyyy')
+                      : '—'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Time Slot</p>
-                  <p className="font-medium">{selectedCollection.scheduled_time || '—'}</p>
+                  <p className="font-medium">{selectedCollection.preferred_time || '—'}</p>
                 </div>
               </div>
 
