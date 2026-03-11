@@ -21,6 +21,7 @@ import LabBillingInsurance from "@/components/lab/LabBillingInsurance";
 import { LabReferralsSection } from "@/components/lab/LabReferralsSection";
 import { LabStaffManager } from "@/components/lab/LabStaffManager";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
+import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection";
 
 import {
   LayoutDashboard,
@@ -35,6 +36,7 @@ import {
   Loader2,
   FlaskConical,
   DollarSign,
+  ScanLine,
 } from "lucide-react";
 
 type LabCenterRow = {
@@ -53,7 +55,8 @@ type LabTab =
   | "billing"
   | "finances"
   | "referrals"
-  | "staff";
+  | "staff"
+  | "verify";
 
 const ALLOWED_TABS: LabTab[] = [
   "overview",
@@ -65,6 +68,7 @@ const ALLOWED_TABS: LabTab[] = [
   "finances",
   "referrals",
   "staff",
+  "verify",
 ];
 
 function isLabTab(value: string): value is LabTab {
@@ -203,6 +207,7 @@ export default function LabDashboardPage() {
       { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
       { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
       { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
         label: "Settings",
@@ -323,6 +328,8 @@ export default function LabDashboardPage() {
       {activeTab === "referrals" && <LabReferralsSection labCenterId={labCenterId} />}
 
       {activeTab === "staff" && <LabStaffManager labCenterId={labCenterId} />}
+
+      {activeTab === "verify" && <DocumentVerifySection />}
     </DashboardShell>
   );
 }
