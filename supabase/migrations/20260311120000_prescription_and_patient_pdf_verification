@@ -1,0 +1,154 @@
+-- Migration: prescription verification codes + patient PDF tokens
+-- Part of the Docito document authenticity system
+
+-- ── 1. Ensure pgcrypto is available ──────────────────────────────────────────
+create extension if not exists pgcrypto;
+
+-- ── 2. Reuse / confirm the verification code generator ───────────────────────
+create or replace function public.docito_make_verification_code(prefix text)
+returns text
+language plpgsql
+as $$
+declare
+  p text := upper(coalesce(nullif(trim(prefix), ''), 'XX'));
+  s text := upper(substring(replace(gen_random_uuid()::text, '-', '') from 1 for 12));
+begin
+  return p || '-' || s;
+end;
+$$;
+
+-- ── 3. Add verification_code to prescriptions ─────────────────────────────────
+do $$
+begin
+  if to_regclass('public.prescriptions') is not null then
+    -- Add column
+    execute 'alter table public.prescriptions
+             add column if not exists verification_code text';
+
+    -- Unique index
+    execute 'create unique index if not exists prescriptions_verification_code_uq
+             on public.prescriptions (verification_code)
+             where verification_code is not null';
+
+    -- Backfill existing rows
+    execute $$
+      update public.prescriptions
+      set    verification_code = public.docito_make_verification_code('RX')
+      where  verification_code is null
+         or  btrim(verification_code) = ''
+    $$;
+  end if;
+end $$;
+
+-- ── 4. Trigger: auto-assign verification_code on insert ───────────────────────
+create or replace function public.docito_set_verification_code_prescriptions()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.verification_code is null or btrim(new.verification_code) = '' then
+    new.verification_code := public.docito_make_verification_code('RX');
+  end if;
+  return new;
+end;
+$$;
+
+do $$
+begin
+  if to_regclass('public.prescriptions') is not null then
+    execute 'drop trigger if exists trg_prescriptions_set_verification_code
+             on public.prescriptions';
+    execute 'create trigger trg_prescriptions_set_verification_code
+             before insert on public.prescriptions
+             for each row
+             execute function public.docito_set_verification_code_prescriptions()';
+  end if;
+end $$;
+
+-- ── 5. patient_pdf_tokens — ephemeral tokens for patient profile PDF QR ───────
+create table if not exists public.patient_pdf_tokens (
+  id            uuid        primary key default gen_random_uuid(),
+  patient_id    uuid        not null references auth.users (id) on delete cascade,
+  doctor_id     uuid        references public.doctors (id) on delete set null,
+  token         text        not null unique default public.docito_make_verification_code('PT'),
+  generated_at  timestamptz not null default now(),
+  expires_at    timestamptz not null default now() + interval '1 year'
+);
+
+create index if not exists patient_pdf_tokens_patient_idx
+  on public.patient_pdf_tokens (patient_id);
+
+-- Clean up old tokens automatically (tokens older than 2 years)
+create or replace function public.patient_pdf_tokens_cleanup()
+returns void
+language sql
+as $$
+  delete from public.patient_pdf_tokens
+  where expires_at < now() - interval '1 year';
+$$;
+
+-- RLS
+alter table public.patient_pdf_tokens enable row level security;
+
+-- Doctors can read tokens for their patients
+create policy "doctors_can_read_patient_pdf_tokens"
+  on public.patient_pdf_tokens
+  for select
+  using (
+    doctor_id in (
+      select id from public.doctors where user_id = auth.uid()
+    )
+  );
+
+-- Service role can do everything (used by edge functions)
+create policy "service_role_full_access_patient_pdf_tokens"
+  on public.patient_pdf_tokens
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
+-- ── 6. Archive prescription on delete (matching treatment_plan pattern) ────────
+create or replace function public.docito_archive_prescription_before_delete()
+returns trigger
+language plpgsql
+as $$
+declare
+  vcode text;
+  snap  jsonb;
+begin
+  vcode := coalesce(nullif(btrim(old.verification_code), ''), public.docito_make_verification_code('RX'));
+
+  -- Build snapshot with items
+  select to_jsonb(p) || jsonb_build_object(
+    'items', coalesce((
+      select jsonb_agg(to_jsonb(pi) order by pi.created_at)
+      from public.prescription_items pi
+      where pi.prescription_id = old.id
+    ), '[]'::jsonb)
+  ) into snap
+  from public.prescriptions p
+  where p.id = old.id;
+
+  insert into public.docito_document_archives
+    (entity_type, entity_id, verification_code, snapshot, deleted_at)
+  values
+    ('prescription', old.id, vcode, coalesce(snap, to_jsonb(old)), now())
+  on conflict (verification_code) do update
+    set snapshot   = excluded.snapshot,
+        deleted_at = excluded.deleted_at;
+
+  return old;
+end;
+$$;
+
+do $$
+begin
+  if to_regclass('public.prescriptions') is not null then
+    execute 'drop trigger if exists trg_prescriptions_archive_before_delete
+             on public.prescriptions';
+    execute 'create trigger trg_prescriptions_archive_before_delete
+             before delete on public.prescriptions
+             for each row
+             execute function public.docito_archive_prescription_before_delete()';
+  end if;
+end $$;
