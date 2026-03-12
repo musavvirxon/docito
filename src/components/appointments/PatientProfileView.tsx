@@ -374,6 +374,10 @@ export const PatientProfileView = ({
           </TabsTrigger>
           {patientType === 'registered' && (
             <>
+              <TabsTrigger value="prescriptions" className="gap-2">
+                <Pill className="h-4 w-4" />
+                Prescriptions
+              </TabsTrigger>
               <TabsTrigger value="labs" className="gap-2">
                 <TestTube className="h-4 w-4" />
                 Lab Results
