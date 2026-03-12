@@ -1425,40 +1425,7 @@ async function generateTreatmentPlanPdf(params: {
   if (params.publishedAt) drawKV("publishedAt", params.publishedAt);
   if (params.completedAt) drawKV("completedAt", params.completedAt);
 
-  // Dental chart (only if dentist)
-  const highlightedFdi = new Set<number>();
-  for (const p of params.procedures) {
-    for (const tn of p.toothNumbers || []) {
-      const fdi = normalizeToothNumberToFdi(tn);
-      if (fdi != null) highlightedFdi.add(fdi);
-    }
-  }
-
-  const hasDentalContext = params.isDentist && highlightedFdi.size > 0;
-
-  if (hasDentalContext) {
-    y -= 6;
-    drawSection("dentalChart");
-
-    const chartW = W - margin * 2;
-    const chartH = 150;
-
-    ensureSpace(chartH + 12);
-
-    const chartTop = y + 6;
-    drawDentalChart({
-      page,
-      font,
-      locale: params.locale,
-      x: margin,
-      yTop: chartTop,
-      width: chartW,
-      height: chartH,
-      highlightedFdi,
-    });
-
-    y -= (chartH + 18);
-  }
+  // Dental chart removed — tooth numbers are shown inline in the procedures table
 
   // Patient section
   y -= 6;
