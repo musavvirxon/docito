@@ -91,6 +91,8 @@ export const PatientProfileView = ({
   const [appointments, setAppointments] = useState<AppointmentHistoryItem[]>([]);
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [imagingResults, setImagingResults] = useState<ImagingResult[]>([]);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
+  const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
   const fetchPatientData = useCallback(async () => {
