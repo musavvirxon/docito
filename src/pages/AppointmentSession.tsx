@@ -36,6 +36,7 @@ import { EnhancedDentalChart } from '@/components/dental/EnhancedDentalChart';
 import { PatientProfileView } from '@/components/appointments/PatientProfileView';
 import { VideoRoom } from '@/components/video';
 import { DiagnosisTab } from '@/components/visit/tabs/DiagnosisTab';
+import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator';
 import type { Diagnosis } from '@/components/visit/types';
 
 interface AppointmentSessionPageProps {
@@ -934,14 +935,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   <TabsContent value="prescriptions" className="mt-0">
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-center py-8 text-muted-foreground">
-                          <Pill className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p>Prescription management coming soon</p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <PrescriptionCreator
+                      patientId={patientId}
+                      doctorId={appointment.doctor_id}
+                      onSuccess={() => toast.success('Prescription created & PDF downloaded')}
+                    />
                   </TabsContent>
 
                   <TabsContent value="notes" className="mt-0">

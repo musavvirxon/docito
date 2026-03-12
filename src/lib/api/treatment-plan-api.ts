@@ -17,17 +17,31 @@ const sanitizeFileName = (name: string): string => {
 export async function downloadTreatmentPlanPdf(params: Params) {
   const { treatmentPlanId, locale, fileName } = params;
 
-  const { data, error } = await supabase.functions.invoke("treatment-plan-generate-pdf", {
-    body: { treatment_plan_id: treatmentPlanId, locale },
+  // Use raw fetch to get binary PDF — supabase.functions.invoke doesn't support blob responses reliably
+  const session = await supabase.auth.getSession();
+  const token = session.data.session?.access_token;
+  if (!token) throw new Error("Not authenticated");
+
+  const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || "https://gswwpjdtgsxzcsnrxutu.supabase.co";
+  const anonKey = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd3dwamR0Z3N4emNzbnJ4dXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTI4MTUsImV4cCI6MjA3MzM2ODgxNX0.YEjg25_0LlzWQoh-SIk-kq_mxcvUoyhODSQ__4DJfSw";
+
+  const res = await fetch(`${supabaseUrl}/functions/v1/treatment-plan-generate-pdf`, {
     method: "POST",
-    headers: { Accept: "application/pdf" },
-    // @ts-expect-error - supported by supabase-js v2; keeps TS happy for older typings
-    responseType: "blob",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+      "apikey": anonKey,
+      "Accept": "application/pdf",
+    },
+    body: JSON.stringify({ treatment_plan_id: treatmentPlanId, locale }),
   });
 
-  if (error) throw error;
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "Unknown error");
+    throw new Error(`PDF generation failed (${res.status}): ${errText}`);
+  }
 
-  const blob = data as Blob;
+  const blob = await res.blob();
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");

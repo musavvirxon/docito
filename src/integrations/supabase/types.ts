@@ -2157,6 +2157,7 @@ export type Database = {
           id: string
           languages: string[] | null
           license_number: string | null
+          logo_url: string | null
           num_reviews: number | null
           practice_id: string | null
           specialty: string
@@ -2185,6 +2186,7 @@ export type Database = {
           id?: string
           languages?: string[] | null
           license_number?: string | null
+          logo_url?: string | null
           num_reviews?: number | null
           practice_id?: string | null
           specialty: string
@@ -2213,6 +2215,7 @@ export type Database = {
           id?: string
           languages?: string[] | null
           license_number?: string | null
+          logo_url?: string | null
           num_reviews?: number | null
           practice_id?: string | null
           specialty?: string
@@ -3059,6 +3062,7 @@ export type Database = {
           id: string
           is_verified: boolean | null
           license_number: string | null
+          logo_url: string | null
           modalities: string[] | null
           name: string
           num_reviews: number | null
@@ -3081,6 +3085,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           license_number?: string | null
+          logo_url?: string | null
           modalities?: string[] | null
           name: string
           num_reviews?: number | null
@@ -3103,6 +3108,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           license_number?: string | null
+          logo_url?: string | null
           modalities?: string[] | null
           name?: string
           num_reviews?: number | null
@@ -3407,6 +3413,7 @@ export type Database = {
           id: string
           is_verified: boolean | null
           license_number: string | null
+          logo_url: string | null
           name: string
           operating_hours: Json | null
           phone: string
@@ -3431,6 +3438,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           license_number?: string | null
+          logo_url?: string | null
           name: string
           operating_hours?: Json | null
           phone: string
@@ -3455,6 +3463,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           license_number?: string | null
+          logo_url?: string | null
           name?: string
           operating_hours?: Json | null
           phone?: string

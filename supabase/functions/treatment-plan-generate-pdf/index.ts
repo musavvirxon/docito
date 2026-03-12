@@ -1140,11 +1140,11 @@ async function generateTreatmentPlanPdf(params: {
   const pdf = await PDFDocument.create();
   const font = await embedLocaleFont(pdf, params.locale);
 
-  // Embed Docito icon (stamp) — used in footer
+  // Embed Docito icon (stamp) — used in footer (smaller 16px)
   const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
   let docitoLogo: Awaited<ReturnType<typeof pdf.embedPng>> | null = null;
-  let docitoLogoW = 22;
-  let docitoLogoH = 22;
+  let docitoLogoW = 16;
+  let docitoLogoH = 16;
   if (logoBytes.length > 0) {
     try {
       docitoLogo = await pdf.embedPng(logoBytes);
@@ -1162,8 +1162,8 @@ async function generateTreatmentPlanPdf(params: {
   if (fullLogoBytes.length > 0) {
     try {
       docitoFullLogo = await pdf.embedPng(fullLogoBytes);
-      // scale to fit header (target height 24px)
-      docitoFullLogoH = 24;
+      // scale to fit header (target height 16px — smaller logo)
+      docitoFullLogoH = 16;
       docitoFullLogoW = (docitoFullLogo.width / docitoFullLogo.height) * docitoFullLogoH;
     } catch {
       docitoFullLogo = null;
@@ -2240,73 +2240,3 @@ serve(async (req: Request) => {
     },
   });
 });
-
-// supabase/functions/treatment-plan-generate-pdf/index.ts
-// CHANGE SUMMARY: This file is unchanged except for the section that resolves
-// the logo URL. Replace the existing "Fetch practice info" block inside the
-// main serve() handler with the following expanded version that also checks
-// the doctor's own logo_url as a fallback.
-//
-// ── FIND this block (around line 1850 in the original) ────────────────────
-//    // Fetch practice info
-//    if (practiceId) {
-//      const { data: practiceRow } = await serviceClient
-//        .from("practices")
-//        .select("name, address, phone, email, logo_url")
-//        .eq("id", practiceId)
-//        .maybeSingle();
-//      ...
-//    }
-//
-// ── REPLACE with the block below ─────────────────────────────────────────
-
-// (Full file replacement is given below — only the logo-resolution section
-//  differs from the original. All other code is preserved verbatim.)
-
-// Because treatment-plan-generate-pdf is 2,242 lines and only one logical
-// section changes, we show the EXACT replacement for that section so it can
-// be applied as a targeted edit.
-//
-// In the serve() handler, locate:
-//
-//    if (practiceId) {
-//      const { data: practiceRow } = await serviceClient
-//        .from("practices")
-//        .select("name, address, phone, email, logo_url")
-//        .eq("id", practiceId)
-//        .maybeSingle();
-//
-//      practiceName = asString((practiceRow as any)?.name);
-//      practiceAddress = asString((practiceRow as any)?.address);
-//      practicePhone = asString((practiceRow as any)?.phone);
-//      practiceEmail = asString((practiceRow as any)?.email);
-//      practiceLogoUrl = asString((practiceRow as any)?.logo_url);
-//    }
-//  }
-//
-// Replace with:
-
-    if (practiceId) {
-      const { data: practiceRow } = await serviceClient
-        .from("practices")
-        .select("name, address, phone, email, logo_url")
-        .eq("id", practiceId)
-        .maybeSingle();
-
-      practiceName = asString((practiceRow as any)?.name);
-      practiceAddress = asString((practiceRow as any)?.address);
-      practicePhone = asString((practiceRow as any)?.phone);
-      practiceEmail = asString((practiceRow as any)?.email);
-      practiceLogoUrl = asString((practiceRow as any)?.logo_url);
-    }
-
-    // If the practice has no logo, fall back to the doctor's own logo_url.
-    // This means independent practitioners can always brand their PDFs.
-    if (!practiceLogoUrl) {
-      const { data: doctorFull } = await serviceClient
-        .from("doctors")
-        .select("logo_url")
-        .eq("id", providerId)
-        .maybeSingle();
-      practiceLogoUrl = asString((doctorFull as any)?.logo_url);
-    }

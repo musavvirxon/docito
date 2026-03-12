@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   User, Phone, Mail, MapPin, Calendar, Clock, Pill, FileText,
   AlertTriangle, Activity, Stethoscope, Image, TestTube, Heart,
-  ChevronRight, ArrowLeft, Loader2
+  ChevronRight, ArrowLeft, Loader2, Download
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
 
 interface PatientProfileViewProps {
   patientId: string;
@@ -69,6 +71,13 @@ interface ImagingResult {
   findings?: string;
   created_at: string;
 }
+interface PrescriptionItem {
+  id: string;
+  prescription_number?: string;
+  status: string;
+  created_at: string;
+  items_count?: number;
+}
 
 export const PatientProfileView = ({
   patientId,
@@ -82,6 +91,8 @@ export const PatientProfileView = ({
   const [appointments, setAppointments] = useState<AppointmentHistoryItem[]>([]);
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [imagingResults, setImagingResults] = useState<ImagingResult[]>([]);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
+  const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
 
   const fetchPatientData = useCallback(async () => {
@@ -194,6 +205,23 @@ export const PatientProfileView = ({
           status: i.status,
           findings: i.findings,
           created_at: i.created_at,
+        })));
+      }
+
+      // Fetch prescriptions for the patient
+      if (patientType === 'registered') {
+        const { data: rxData } = await supabase
+          .from('prescriptions')
+          .select('id, prescription_number, status, created_at')
+          .eq('patient_id', patientId)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        setPrescriptions((rxData || []).map((rx: any) => ({
+          id: rx.id,
+          prescription_number: rx.prescription_number,
+          status: rx.status || 'active',
+          created_at: rx.created_at,
         })));
       }
     } catch (error) {
@@ -346,6 +374,10 @@ export const PatientProfileView = ({
           </TabsTrigger>
           {patientType === 'registered' && (
             <>
+              <TabsTrigger value="prescriptions" className="gap-2">
+                <Pill className="h-4 w-4" />
+                Prescriptions
+              </TabsTrigger>
               <TabsTrigger value="labs" className="gap-2">
                 <TestTube className="h-4 w-4" />
                 Lab Results
@@ -527,7 +559,63 @@ export const PatientProfileView = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="labs" className="mt-4">
+        <TabsContent value="prescriptions" className="mt-4">
+          <Card>
+            <CardContent className="pt-4">
+              <ScrollArea className="h-[400px]">
+                {prescriptions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Pill className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>No prescriptions found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {prescriptions.map((rx) => (
+                      <div key={rx.id} className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium">
+                              Rx #{rx.prescription_number || rx.id.slice(0, 8).toUpperCase()}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(rx.created_at), 'MMM d, yyyy')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="capitalize">{rx.status}</Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={downloadingPdf === rx.id}
+                              onClick={async () => {
+                                setDownloadingPdf(rx.id);
+                                try {
+                                  await downloadPrescriptionPdf(rx.id, rx.prescription_number);
+                                  toast.success('Prescription PDF downloaded');
+                                } catch (err: any) {
+                                  toast.error(err.message || 'Failed to download PDF');
+                                } finally {
+                                  setDownloadingPdf(null);
+                                }
+                              }}
+                            >
+                              {downloadingPdf === rx.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
           <Card>
             <CardContent className="pt-4">
               <ScrollArea className="h-[400px]">
