@@ -209,27 +209,21 @@ export const PatientProfileView = ({
       }
 
       // Fetch prescriptions for the patient
-      const rxQuery = patientType === 'registered'
-        ? supabase
-            .from('prescriptions')
-            .select('id, prescription_number, status, created_at')
-            .eq('patient_id', patientId)
-            .order('created_at', { ascending: false })
-            .limit(20)
-        : supabase
-            .from('prescriptions')
-            .select('id, prescription_number, status, created_at')
-            .eq('doctor_patient_id', patientId)
-            .order('created_at', { ascending: false })
-            .limit(20);
+      if (patientType === 'registered') {
+        const { data: rxData } = await supabase
+          .from('prescriptions')
+          .select('id, prescription_number, status, created_at')
+          .eq('patient_id', patientId)
+          .order('created_at', { ascending: false })
+          .limit(20);
 
-      const { data: rxData } = await rxQuery;
-      setPrescriptions((rxData || []).map((rx: any) => ({
-        id: rx.id,
-        prescription_number: rx.prescription_number,
-        status: rx.status || 'active',
-        created_at: rx.created_at,
-      })));
+        setPrescriptions((rxData || []).map((rx: any) => ({
+          id: rx.id,
+          prescription_number: rx.prescription_number,
+          status: rx.status || 'active',
+          created_at: rx.created_at,
+        })));
+      }
     } catch (error) {
       console.error('Error fetching patient data:', error);
     } finally {
