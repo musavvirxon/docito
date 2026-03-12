@@ -1212,7 +1212,6 @@ async function generateTreatmentPlanPdf(params: {
   const borderLight = rgb(0.88, 0.88, 0.88);
   const rowAlt = rgb(0.97, 0.97, 0.98);
 
-  const footerY = margin + 26;
   const bottomReserve = 220;
 
   let page = pdf.addPage([W, H]);
