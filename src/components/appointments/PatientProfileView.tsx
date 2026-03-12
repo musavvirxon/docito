@@ -616,6 +616,7 @@ export const PatientProfileView = ({
           </Card>
         </TabsContent>
 
+        <TabsContent value="labs" className="mt-4">
           <Card>
             <CardContent className="pt-4">
               <ScrollArea className="h-[400px]">
