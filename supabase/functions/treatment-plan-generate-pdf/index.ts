@@ -1140,11 +1140,11 @@ async function generateTreatmentPlanPdf(params: {
   const pdf = await PDFDocument.create();
   const font = await embedLocaleFont(pdf, params.locale);
 
-  // Embed Docito icon (stamp) — used in footer (smaller 16px)
+  // Embed Docito icon (stamp) — used in footer (smaller 12px for quality)
   const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
   let docitoLogo: Awaited<ReturnType<typeof pdf.embedPng>> | null = null;
-  let docitoLogoW = 16;
-  let docitoLogoH = 16;
+  let docitoLogoW = 12;
+  let docitoLogoH = 12;
   if (logoBytes.length > 0) {
     try {
       docitoLogo = await pdf.embedPng(logoBytes);
