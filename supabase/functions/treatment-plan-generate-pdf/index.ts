@@ -1162,8 +1162,8 @@ async function generateTreatmentPlanPdf(params: {
   if (fullLogoBytes.length > 0) {
     try {
       docitoFullLogo = await pdf.embedPng(fullLogoBytes);
-      // scale to fit header (target height 24px)
-      docitoFullLogoH = 24;
+      // scale to fit header (target height 16px — smaller logo)
+      docitoFullLogoH = 16;
       docitoFullLogoW = (docitoFullLogo.width / docitoFullLogo.height) * docitoFullLogoH;
     } catch {
       docitoFullLogo = null;
