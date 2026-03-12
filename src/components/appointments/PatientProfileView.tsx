@@ -559,7 +559,63 @@ export const PatientProfileView = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="labs" className="mt-4">
+        <TabsContent value="prescriptions" className="mt-4">
+          <Card>
+            <CardContent className="pt-4">
+              <ScrollArea className="h-[400px]">
+                {prescriptions.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Pill className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p>No prescriptions found</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {prescriptions.map((rx) => (
+                      <div key={rx.id} className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium">
+                              Rx #{rx.prescription_number || rx.id.slice(0, 8).toUpperCase()}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(rx.created_at), 'MMM d, yyyy')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="capitalize">{rx.status}</Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={downloadingPdf === rx.id}
+                              onClick={async () => {
+                                setDownloadingPdf(rx.id);
+                                try {
+                                  await downloadPrescriptionPdf(rx.id, rx.prescription_number);
+                                  toast.success('Prescription PDF downloaded');
+                                } catch (err: any) {
+                                  toast.error(err.message || 'Failed to download PDF');
+                                } finally {
+                                  setDownloadingPdf(null);
+                                }
+                              }}
+                            >
+                              {downloadingPdf === rx.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
           <Card>
             <CardContent className="pt-4">
               <ScrollArea className="h-[400px]">
