@@ -2,13 +2,12 @@
 /**
  * Prescription PDF generator — Docito
  *
- * Matches brand style of treatment-plan and referral PDFs:
- *  - Blue header bar + Docito horizontal logo
- *  - Blue section headings + gray underline
- *  - QR code + verification block on every PDF (scannable authenticity check)
- *  - Docito icon stamp in footer + page X of Y
+ * Logo hierarchy:
+ *   1. Pharmacy logo  (shown top-right of header if available)
+ *   2. Doctor / practice logo (shown below header if no pharmacy logo)
  *
- * Auth: doctor who wrote it | patient it belongs to | pharmacy staff | super_admin
+ * All logos are fetched as raw bytes at PDF generation time so the
+ * function never leaks signed URLs into the PDF file itself.
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
@@ -40,7 +39,7 @@ const schema = {
 const RTL_LOCALES = new Set<Locale>(["ar"]);
 const CJK_LOCALES = new Set<Locale>(["ja", "ko", "zh"]);
 
-// ─── i18n ─────────────────────────────────────────────────────────────────────
+// ─── i18n (unchanged) ─────────────────────────────────────────────────────────
 
 const I18N: Record<Locale, Record<string, string>> = {
   en: {
@@ -58,6 +57,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Substitutions Allowed",
     yes:"Yes",no:"No",na:"—",
     confidential:"Confidential Medical Prescription",
+    phone:"Phone",address:"Address",specialty:"Specialty",
   },
   ru: {
     prescription:"Рецепт",prescriptionNumber:"Номер рецепта",
@@ -74,6 +74,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Замена разрешена",
     yes:"Да",no:"Нет",na:"—",
     confidential:"Конфиденциальный медицинский рецепт",
+    phone:"Телефон",address:"Адрес",specialty:"Специальность",
   },
   uz: {
     prescription:"Retsept",prescriptionNumber:"Retsept raqami",
@@ -90,6 +91,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Almashtirish ruxsat etilgan",
     yes:"Ha",no:"Yo'q",na:"—",
     confidential:"Maxfiy tibbiy retsept",
+    phone:"Telefon",address:"Manzil",specialty:"Mutaxassislik",
   },
   tr: {
     prescription:"Recete",prescriptionNumber:"Recete No.",
@@ -106,6 +108,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Muadil Kabul",
     yes:"Evet",no:"Hayir",na:"—",
     confidential:"Gizli Tip Recetesi",
+    phone:"Telefon",address:"Adres",specialty:"Uzmanlik",
   },
   ar: {
     prescription:"وصفة طبية",prescriptionNumber:"رقم الوصفة",
@@ -122,6 +125,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"الابدال مسموح",
     yes:"نعم",no:"لا",na:"—",
     confidential:"وصفة طبية سرية",
+    phone:"الهاتف",address:"العنوان",specialty:"التخصص",
   },
   ja: {
     prescription:"処方箋",prescriptionNumber:"処方番号",
@@ -138,6 +142,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"代替品可",
     yes:"はい",no:"いいえ",na:"—",
     confidential:"機密医療処方箋",
+    phone:"電話",address:"住所",specialty:"専門",
   },
   ko: {
     prescription:"처방전",prescriptionNumber:"처방 번호",
@@ -154,6 +159,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"대체 허용",
     yes:"예",no:"아니오",na:"—",
     confidential:"기밀 의료 처방전",
+    phone:"전화",address:"주소",specialty:"전문과",
   },
   zh: {
     prescription:"处方",prescriptionNumber:"处方编号",
@@ -170,6 +176,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"允许替代",
     yes:"是",no:"否",na:"—",
     confidential:"机密医疗处方",
+    phone:"电话",address:"地址",specialty:"专科",
   },
   es: {
     prescription:"Receta",prescriptionNumber:"N. de receta",
@@ -186,6 +193,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Sustituciones permitidas",
     yes:"Si",no:"No",na:"—",
     confidential:"Receta medica confidencial",
+    phone:"Telefono",address:"Direccion",specialty:"Especialidad",
   },
   pt: {
     prescription:"Receita",prescriptionNumber:"N. da receita",
@@ -202,6 +210,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Substituicoes permitidas",
     yes:"Sim",no:"Nao",na:"—",
     confidential:"Receita medica confidencial",
+    phone:"Telefone",address:"Endereco",specialty:"Especialidade",
   },
   de: {
     prescription:"Rezept",prescriptionNumber:"Rezept-Nr.",
@@ -218,6 +227,7 @@ const I18N: Record<Locale, Record<string, string>> = {
     substitutionsAllowed:"Substitution erlaubt",
     yes:"Ja",no:"Nein",na:"—",
     confidential:"Vertrauliches medizinisches Rezept",
+    phone:"Telefon",address:"Adresse",specialty:"Fachgebiet",
   },
 };
 
@@ -303,6 +313,59 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number, locale: L
   return lines;
 }
 
+// ─── Logo helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Fetches an image from a URL and returns its bytes + detected type.
+ * Returns null bytes on any failure — the PDF simply skips the logo.
+ */
+async function fetchLogoBytes(
+  url: string | null | undefined,
+  maxBytes = 2_000_000
+): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  if (!url || !/^https?:\/\//i.test(url.trim())) {
+    return { bytes: new Uint8Array(0), type: null };
+  }
+  try {
+    const res = await fetch(url.trim(), { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const bytes = new Uint8Array(ab);
+    const ul = url.toLowerCase();
+    const isPng = ct.includes("png") || ul.endsWith(".png") || ul.endsWith(".webp");
+    const isJpg = ct.includes("jpeg") || ct.includes("jpg") || ul.endsWith(".jpg") || ul.endsWith(".jpeg");
+    return { bytes, type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch {
+    return { bytes: new Uint8Array(0), type: null };
+  }
+}
+
+/**
+ * Embeds an entity logo into the PDF document.
+ * Returns the embedded image + scaled dimensions, or null if the fetch/embed failed.
+ */
+async function embedEntityLogo(
+  pdf: PDFDocument,
+  url: string | null | undefined,
+  targetH = 40,
+  maxW = 100
+): Promise<{ img: any; w: number; h: number } | null> {
+  const { bytes, type } = await fetchLogoBytes(url);
+  if (!bytes.length || !type) return null;
+  try {
+    const img = type === "png" ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes);
+    const ratio = img.width / img.height;
+    let h = targetH;
+    let w = h * ratio;
+    if (w > maxW) { w = maxW; h = w / ratio; }
+    return { img, w, h };
+  } catch {
+    return null;
+  }
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -337,8 +400,8 @@ serve(async (req) => {
         prescribed_at, expires_at,
         refills_remaining, refills_total, notes, diagnosis_code,
         patient:patient_id(full_name, email, phone),
-        doctor:doctor_id(specialty, user_id),
-        pharmacy:pharmacy_id(name, address, phone),
+        doctor:doctor_id(id, specialty, user_id, practice_id, logo_url),
+        pharmacy:pharmacy_id(id, name, address, phone, logo_url),
         prescription_items(
           id, medication_name, medication_code, dosage, frequency,
           quantity, unit, instructions, substitutions_allowed
@@ -372,14 +435,28 @@ serve(async (req) => {
 
     if (!allowed) return errorResponse("Forbidden", 403);
 
-    // ── Resolve doctor name ──────────────────────────────────────────────────
+    // ── Resolve doctor name + practice logo ──────────────────────────────────
     let doctorName = "";
+    let practiceLogoUrl: string | null = null;
+
     if (r.doctor?.user_id) {
       try {
         const { data: dp } = await svc.from("profiles").select("full_name").eq("user_id", r.doctor.user_id).maybeSingle();
         doctorName = safe((dp as any)?.full_name, 120);
       } catch { /* ignore */ }
     }
+
+    // If the doctor belongs to a practice, get the practice logo.
+    if (r.doctor?.practice_id) {
+      try {
+        const { data: prac } = await svc.from("practices").select("logo_url").eq("id", r.doctor.practice_id).maybeSingle();
+        practiceLogoUrl = (prac as any)?.logo_url || null;
+      } catch { /* ignore */ }
+    }
+
+    // Logo priority: pharmacy logo → practice logo → doctor's own logo
+    const pharmacyLogoUrl: string | null = r.pharmacy?.logo_url || null;
+    const doctorLogoUrl: string | null = r.doctor?.logo_url || null;
 
     const verificationCode = safe(r.verification_code || r.prescription_number, 80);
     const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");
@@ -389,7 +466,7 @@ serve(async (req) => {
     const W = 595.28, H = 841.89;
     const margin = 44;
     const HEADER_H = 38;
-    const FOOTER_H = 100; // enough room for verify block + QR
+    const FOOTER_H = 100;
 
     const pdf = await PDFDocument.create();
     const font = await loadFont(pdf, locale);
@@ -401,7 +478,7 @@ serve(async (req) => {
     const textMuted = rgb(0.35, 0.35, 0.35);
     const borderLight = rgb(0.88, 0.88, 0.88);
 
-    // ── Embed logos ───────────────────────────────────────────────────────────
+    // ── Embed Docito logos ────────────────────────────────────────────────────
     const fullLogoBytes = b64(DOCITO_LOGO_FULL_PNG_BASE64);
     let fullLogo: any = null; let fullLogoW = 0; const fullLogoH = 24;
     if (fullLogoBytes.length) { try { fullLogo = await pdf.embedPng(fullLogoBytes); fullLogoW = (fullLogo.width / fullLogo.height) * fullLogoH; } catch { /* ignore */ } }
@@ -410,7 +487,18 @@ serve(async (req) => {
     let iconLogo: any = null; const iconLogoW = 16; let iconLogoH = 16;
     if (iconBytes.length) { try { iconLogo = await pdf.embedPng(iconBytes); iconLogoH = (iconLogo.height / iconLogo.width) * iconLogoW; } catch { /* ignore */ } }
 
-    // ── QR code (embed once, reuse image across pages) ────────────────────────
+    // ── Embed entity logos (pharmacy > practice > doctor) ─────────────────────
+    // We try each URL in priority order and use the first that succeeds.
+    // The pharmacy logo appears in the header (top-right); the practice/doctor
+    // logo appears in a branded sub-bar below the blue header bar.
+    const pharmacyLogo = await embedEntityLogo(pdf, pharmacyLogoUrl, 28, 80);
+    const practiceLogo = await embedEntityLogo(pdf, practiceLogoUrl, 40, 100);
+    const doctorLogo = await embedEntityLogo(pdf, doctorLogoUrl, 40, 100);
+
+    // The "issuer" logo is what we show prominently in the brand sub-bar
+    const issuerLogo = practiceLogo ?? doctorLogo;
+
+    // ── QR code ───────────────────────────────────────────────────────────────
     let qrImg: any = null;
     const QR_SIZE = 80;
     try {
@@ -423,7 +511,7 @@ serve(async (req) => {
     let page = pdf.addPage([W, H]);
     let y = H - margin;
 
-    const txt = (text: string, x: number, yy: number, size: number, color = textDark) => {
+    const txtAt = (text: string, x: number, yy: number, size: number, color = textDark) => {
       const v = sanitizePdf(String(text || ""));
       try { const w = font.widthOfTextAtSize(v, size); page.drawText(v, { x: rtl ? x - w : x, y: yy, size, font, color }); } catch { /* ignore */ }
     };
@@ -433,33 +521,46 @@ serve(async (req) => {
     };
     const wrappedLines = (text: string, maxW: number, size = 9.5) => wrap(sanitizePdf(text), font, size, maxW, locale);
 
-    const drawHeader = () => {
-      page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: blue });
+    // HEADER_SUB_H: extra height for the entity logo sub-bar (only if issuerLogo present)
+    const HEADER_SUB_H = issuerLogo ? Math.ceil(issuerLogo.h + 12) : 0;
+
+    const drawHeader = (pg: typeof page) => {
+      // Blue top bar
+      pg.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: blue });
+
+      // Docito logo (left of blue bar)
       if (fullLogo && fullLogoW > 0) {
-        page.drawImage(fullLogo, { x: margin, y: H - HEADER_H + (HEADER_H - fullLogoH) / 2, width: fullLogoW, height: fullLogoH });
+        pg.drawImage(fullLogo, { x: margin, y: H - HEADER_H + (HEADER_H - fullLogoH) / 2, width: fullLogoW, height: fullLogoH });
       } else {
-        txt("DOCITO", margin, H - HEADER_H + 14, 14, rgb(1, 1, 1));
+        try { pg.drawText("DOCITO", { x: margin, y: H - HEADER_H + 14, size: 14, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
       }
-      const label = sanitizePdf(i(locale, "prescription"));
-      try { const lw = font.widthOfTextAtSize(label, 11); page.drawText(label, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+
+      // Pharmacy logo (right of blue bar) — shown inside the bar itself
+      if (pharmacyLogo) {
+        const logoY = H - HEADER_H + (HEADER_H - pharmacyLogo.h) / 2;
+        pg.drawImage(pharmacyLogo.img, { x: W - margin - pharmacyLogo.w, y: logoY, width: pharmacyLogo.w, height: pharmacyLogo.h });
+      } else {
+        // Fallback: prescription label text on the right
+        const label = sanitizePdf(i(locale, "prescription"));
+        try { const lw = font.widthOfTextAtSize(label, 11); pg.drawText(label, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      }
+
+      // Entity sub-bar (light blue, below the blue bar) — shows issuer/practice logo
+      if (issuerLogo && HEADER_SUB_H > 0) {
+        pg.drawRectangle({ x: 0, y: H - HEADER_H - HEADER_SUB_H, width: W, height: HEADER_SUB_H, color: blueLight });
+        const logoX = margin;
+        const logoY = H - HEADER_H - HEADER_SUB_H + (HEADER_SUB_H - issuerLogo.h) / 2;
+        pg.drawImage(issuerLogo.img, { x: logoX, y: logoY, width: issuerLogo.w, height: issuerLogo.h });
+      }
     };
 
-    // ── Verification + QR footer block (drawn on EVERY page at end) ───────────
     const drawVerifyFooter = (pg: typeof page, pageNum: number, pageCount: number) => {
       const fY = margin;
-
-      // Gray divider
       pg.drawLine({ start: { x: margin, y: fY + FOOTER_H }, end: { x: W - margin, y: fY + FOOTER_H }, thickness: 0.8, color: borderLight });
-
-      // QR on right side
       const qrX = W - margin - QR_SIZE;
       const qrY = fY + (FOOTER_H - QR_SIZE) / 2;
       if (qrImg) pg.drawImage(qrImg, { x: qrX, y: qrY, width: QR_SIZE, height: QR_SIZE });
-
-      // Left: confidential + verification info
       const textAreaW = W - margin * 2 - QR_SIZE - 16;
-
-      // Icon + confidential label
       let leftX = margin;
       if (iconLogo) {
         pg.drawImage(iconLogo, { x: leftX, y: fY + FOOTER_H - iconLogoH - 4, width: iconLogoW, height: iconLogoH });
@@ -468,8 +569,6 @@ serve(async (req) => {
       const confText = sanitizePdf(i(locale, "confidential"));
       try { pg.drawText(confText, { x: leftX, y: fY + FOOTER_H - 12, size: 8, font, color: textDark }); } catch { /* ignore */ }
       try { pg.drawText(sanitizePdf(i(locale, "generatedBy")), { x: leftX, y: fY + FOOTER_H - 22, size: 7.5, font, color: textMuted }); } catch { /* ignore */ }
-
-      // Verification code + URL
       const vcLine = sanitizePdf(`${i(locale, "verificationCode")}: ${verificationCode}`);
       const vuLine = sanitizePdf(`${i(locale, "verifyAt")}: ${verifyUrl}`);
       try { pg.drawText(vcLine, { x: margin, y: fY + FOOTER_H - 42, size: 8.5, font, color: textDark }); } catch { /* ignore */ }
@@ -478,19 +577,17 @@ serve(async (req) => {
         let yy = fY + FOOTER_H - 54;
         for (const line of vuLines) { try { pg.drawText(line, { x: margin, y: yy, size: 7.5, font, color: textMuted }); } catch { /* ignore */ } yy -= 9; }
       } catch { /* ignore */ }
-
-      // Page number
       const pgLabel = `Page ${pageNum} of ${pageCount}`;
       try { const lw = font.widthOfTextAtSize(pgLabel, 8); pg.drawText(pgLabel, { x: W - margin - lw, y: fY + 6, size: 8, font, color: textMuted }); } catch { /* ignore */ }
     };
 
+    const contentTop = H - HEADER_H - HEADER_SUB_H;
     const bodyBottom = margin + FOOTER_H + 8;
 
     const newPage = () => {
       page = pdf.addPage([W, H]);
-      y = H - margin;
-      drawHeader();
-      y = H - HEADER_H - 18;
+      drawHeader(page);
+      y = contentTop - 18;
     };
 
     const ensure = (needed: number) => { if (y - needed < bodyBottom) newPage(); };
@@ -521,12 +618,11 @@ serve(async (req) => {
     };
 
     // ══════════════════════════════════════════════════════════════════════════
-    //  PAGE 1: Header + verification box + content
+    // Page 1: draw header + content
     // ══════════════════════════════════════════════════════════════════════════
-    drawHeader();
-    y = H - HEADER_H - 20;
+    drawHeader(page);
+    y = contentTop - 20;
 
-    // Title
     const titleTxt = sanitizePdf(i(locale, "prescription"));
     try { const tw = font.widthOfTextAtSize(titleTxt, 20); page.drawText(titleTxt, { x: rtl ? W - margin - tw : margin, y, size: 20, font, color: blue }); } catch { /* ignore */ }
     y -= 24;
@@ -536,19 +632,16 @@ serve(async (req) => {
     page.drawRectangle({ x: margin, y, width: W - margin * 2, height: 2, color: blue });
     y -= 16;
 
-    // ── Inline verify block (first page only) ─────────────────────────────────
+    // Inline verify box
     ensure(88);
     const boxH = 80;
     const boxY = y - boxH;
     page.drawRectangle({ x: margin, y: boxY, width: W - margin * 2, height: boxH, color: blueLight, borderColor: borderLight, borderWidth: 0.8 });
-
-    const qrX = rtl ? margin + 8 : W - margin - QR_SIZE - 8;
-    if (qrImg) page.drawImage(qrImg, { x: qrX, y: boxY + (boxH - QR_SIZE + 8) / 2, width: QR_SIZE - 8, height: QR_SIZE - 8 });
-
+    const qrXbox = rtl ? margin + 8 : W - margin - QR_SIZE - 8;
+    if (qrImg) page.drawImage(qrImg, { x: qrXbox, y: boxY + (boxH - QR_SIZE + 8) / 2, width: QR_SIZE - 8, height: QR_SIZE - 8 });
     let mY = y - 14;
     const mX = rtl ? W - margin - 10 : margin + 10;
     const mW = W - margin * 2 - QR_SIZE - 20;
-
     const mLine = (lk: string, v: string) => {
       const lbl = sanitizePdf(`${i(locale, lk)}: `);
       try { page.drawText(lbl, { x: rtl ? mX - font.widthOfTextAtSize(lbl, 8) : mX, y: mY, size: 8, font, color: textMuted }); } catch { /* ignore */ }
@@ -563,10 +656,9 @@ serve(async (req) => {
     mLine("prescriptionNumber", safe(r.prescription_number, 80) || "—");
     mLine("verificationCode", verificationCode || "—");
     mLine("verifyAt", verifyUrl);
-
     y = boxY - 16;
 
-    // ── Prescription details section ──────────────────────────────────────────
+    // Prescription details
     section("details");
     kv("status", safe(r.status, 60));
     kv("prescribedAt", fmtDate(r.prescribed_at, locale));
@@ -574,18 +666,18 @@ serve(async (req) => {
     kv("refills", r.refills_total > 0 ? `${r.refills_remaining} / ${r.refills_total}` : "—");
     if (r.diagnosis_code) kv("diagnosisCode", safe(r.diagnosis_code, 40));
 
-    // ── Patient section ───────────────────────────────────────────────────────
+    // Patient
     section("patient");
     kv("patient", safe(r.patient?.full_name, 120) || "—");
     if (r.patient?.phone) kv("phone", safe(r.patient.phone, 40));
     if (r.patient?.email) kv("email", safe(r.patient.email, 200));
 
-    // ── Prescribed by ─────────────────────────────────────────────────────────
+    // Prescribed by
     section("prescribedBy");
     kv("prescribedBy", doctorName || "—");
     if (r.doctor?.specialty) kv("specialty", safe(r.doctor.specialty, 100));
 
-    // ── Pharmacy ──────────────────────────────────────────────────────────────
+    // Pharmacy (with logo context note)
     if (r.pharmacy) {
       section("pharmacy");
       kv("pharmacy", safe(r.pharmacy.name, 120) || "—");
@@ -593,7 +685,7 @@ serve(async (req) => {
       if (r.pharmacy.phone) kv("phone", safe(r.pharmacy.phone, 40));
     }
 
-    // ── Notes ─────────────────────────────────────────────────────────────────
+    // Notes
     if (r.notes) {
       section("notes");
       ensure(20);
@@ -605,29 +697,18 @@ serve(async (req) => {
       }
     }
 
-    // ── Medications ───────────────────────────────────────────────────────────
+    // Medications
     const items: any[] = Array.isArray(r.prescription_items) ? r.prescription_items : [];
     if (items.length > 0) {
       section("medications");
-
       for (let idx = 0; idx < items.length; idx++) {
         const item = items[idx];
         ensure(60);
-
-        // Numbered drug box
-        const boxTop = y + 4;
         const numLabel = sanitizePdf(`${idx + 1}.`);
-        const numLabelSize = 11;
-        try { page.drawText(numLabel, { x: margin, y: y, size: numLabelSize, font, color: blue }); } catch { /* ignore */ }
-
+        try { page.drawText(numLabel, { x: margin, y, size: 11, font, color: blue }); } catch { /* ignore */ }
         const medName = sanitizePdf(safe(item.medication_name, 150));
-        try {
-          const mw = font.widthOfTextAtSize(medName, 10.5);
-          page.drawText(medName, { x: rtl ? W - margin - 20 - mw : margin + 20, y, size: 10.5, font, color: textDark });
-        } catch { /* ignore */ }
+        try { const mw = font.widthOfTextAtSize(medName, 10.5); page.drawText(medName, { x: rtl ? W - margin - 20 - mw : margin + 20, y, size: 10.5, font, color: textDark }); } catch { /* ignore */ }
         y -= 14;
-
-        // Sub-details in pairs
         const subKV = (lk: string, v: string) => {
           ensure(12);
           const lbl = sanitizePdf(`${i(locale, lk)}: `);
@@ -636,17 +717,14 @@ serve(async (req) => {
           try { const lw = font.widthOfTextAtSize(lbl, 8.5); page.drawText(val, { x: margin + 20 + lw, y, size: 8.5, font, color: textDark }); } catch { /* ignore */ }
           y -= 12;
         };
-
         subKV("dosage", safe(item.dosage, 80));
         subKV("frequency", safe(item.frequency, 80));
         subKV("quantity", item.quantity != null ? `${item.quantity}${item.unit ? ` ${safe(item.unit, 30)}` : ""}` : "—");
         if (item.instructions) subKV("instructions", safe(item.instructions, 300));
         subKV("substitutionsAllowed", item.substitutions_allowed ? i(locale, "yes") : i(locale, "no"));
-
-        // Light separator between drugs
         if (idx < items.length - 1) {
           ensure(8);
-          page.drawLine({ start: { x: margin + 20, y: y }, end: { x: W - margin, y: y }, thickness: 0.5, color: borderLight });
+          page.drawLine({ start: { x: margin + 20, y }, end: { x: W - margin, y }, thickness: 0.5, color: borderLight });
           y -= 10;
         } else {
           y -= 6;
@@ -654,7 +732,7 @@ serve(async (req) => {
       }
     }
 
-    // ── Draw verify footer on ALL pages ───────────────────────────────────────
+    // Draw verify footer on ALL pages
     const pageCount = pdf.getPageCount();
     for (let p = 0; p < pageCount; p++) {
       drawVerifyFooter(pdf.getPage(p), p + 1, pageCount);
