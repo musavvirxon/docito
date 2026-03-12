@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   User, Phone, Mail, MapPin, Calendar, Clock, Pill, FileText,
   AlertTriangle, Activity, Stethoscope, Image, TestTube, Heart,
-  ChevronRight, ArrowLeft, Loader2
+  ChevronRight, ArrowLeft, Loader2, Download
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
 
 interface PatientProfileViewProps {
   patientId: string;
