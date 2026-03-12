@@ -71,6 +71,13 @@ interface ImagingResult {
   findings?: string;
   created_at: string;
 }
+interface PrescriptionItem {
+  id: string;
+  prescription_number?: string;
+  status: string;
+  created_at: string;
+  items_count?: number;
+}
 
 export const PatientProfileView = ({
   patientId,
