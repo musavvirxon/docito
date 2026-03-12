@@ -286,9 +286,9 @@ export const generatePatientSummaryPDF = async (
     
     // Left side: Docito logo image or text fallback
     if (logoDataUrl) {
-      // Logo is 300x90 — scale to a smaller header size ~16px tall
-      const logoH = 16;
-      const logoW = (300 / 90) * logoH; // ≈ 53px wide
+      // Logo is 300x90 — use higher ratio but smaller rendered size for quality
+      const logoH = 10;
+      const logoW = (300 / 90) * logoH; // ≈ 33px wide
       doc.addImage(logoDataUrl, "PNG", 14, 10, logoW, logoH);
     } else {
       // Fallback: "DOCITO" text

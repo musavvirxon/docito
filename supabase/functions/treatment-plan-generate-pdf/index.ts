@@ -1140,11 +1140,11 @@ async function generateTreatmentPlanPdf(params: {
   const pdf = await PDFDocument.create();
   const font = await embedLocaleFont(pdf, params.locale);
 
-  // Embed Docito icon (stamp) — used in footer (smaller 16px)
+  // Embed Docito icon (stamp) — used in footer (smaller 12px for quality)
   const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
   let docitoLogo: Awaited<ReturnType<typeof pdf.embedPng>> | null = null;
-  let docitoLogoW = 16;
-  let docitoLogoH = 16;
+  let docitoLogoW = 12;
+  let docitoLogoH = 12;
   if (logoBytes.length > 0) {
     try {
       docitoLogo = await pdf.embedPng(logoBytes);
@@ -1162,8 +1162,8 @@ async function generateTreatmentPlanPdf(params: {
   if (fullLogoBytes.length > 0) {
     try {
       docitoFullLogo = await pdf.embedPng(fullLogoBytes);
-      // scale to fit header (target height 16px — smaller logo)
-      docitoFullLogoH = 16;
+      // scale to fit header (target height 12px — smaller but higher quality)
+      docitoFullLogoH = 12;
       docitoFullLogoW = (docitoFullLogo.width / docitoFullLogo.height) * docitoFullLogoH;
     } catch {
       docitoFullLogo = null;
@@ -1212,7 +1212,6 @@ async function generateTreatmentPlanPdf(params: {
   const borderLight = rgb(0.88, 0.88, 0.88);
   const rowAlt = rgb(0.97, 0.97, 0.98);
 
-  const footerY = margin + 26;
   const bottomReserve = 220;
 
   let page = pdf.addPage([W, H]);
@@ -1425,40 +1424,7 @@ async function generateTreatmentPlanPdf(params: {
   if (params.publishedAt) drawKV("publishedAt", params.publishedAt);
   if (params.completedAt) drawKV("completedAt", params.completedAt);
 
-  // Dental chart (only if dentist)
-  const highlightedFdi = new Set<number>();
-  for (const p of params.procedures) {
-    for (const tn of p.toothNumbers || []) {
-      const fdi = normalizeToothNumberToFdi(tn);
-      if (fdi != null) highlightedFdi.add(fdi);
-    }
-  }
-
-  const hasDentalContext = params.isDentist && highlightedFdi.size > 0;
-
-  if (hasDentalContext) {
-    y -= 6;
-    drawSection("dentalChart");
-
-    const chartW = W - margin * 2;
-    const chartH = 150;
-
-    ensureSpace(chartH + 12);
-
-    const chartTop = y + 6;
-    drawDentalChart({
-      page,
-      font,
-      locale: params.locale,
-      x: margin,
-      yTop: chartTop,
-      width: chartW,
-      height: chartH,
-      highlightedFdi,
-    });
-
-    y -= (chartH + 18);
-  }
+  // Dental chart removed — tooth numbers are shown inline in the procedures table
 
   // Patient section
   y -= 6;
@@ -1748,13 +1714,15 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
-  // Footer on last page
-  if (y < margin + bottomReserve) newPage();
+  // Footer on last page — ensure enough space for signature + verification + QR
+  const footerBlockH = 200;
+  if (y < margin + footerBlockH + 20) newPage();
 
-  // Signature section (print-ready)
-  const sigY = footerY + 150; // safely above verification + QR area
+  // ── Signature section (print-ready) ─────────────────────────────────────
   const sigGap = 24;
   const sigW = (W - margin * 2 - sigGap) / 2;
+  // Position signatures well above verification block
+  let sigY = y - 10;
 
   const patientSigLabel = formatForLocale(params.locale, t(params.locale, "patientSignature"));
   const providerSigLabel = formatForLocale(params.locale, t(params.locale, "providerSignature"));
@@ -1762,73 +1730,40 @@ async function generateTreatmentPlanPdf(params: {
 
   // Patient signature box (left)
   page.drawLine({
-    start: { x: margin, y: sigY + 18 },
-    end: { x: margin + sigW, y: sigY + 18 },
+    start: { x: margin, y: sigY },
+    end: { x: margin + sigW, y: sigY },
     thickness: 0.8,
     color: borderLight,
   });
-  page.drawText(patientSigLabel, { x: margin, y: sigY + 6, size: 8.5, font, color: textMuted });
-  page.drawText(`${dateLabel}: ____________`, { x: margin, y: sigY - 6, size: 8, font, color: textMuted });
+  page.drawText(patientSigLabel, { x: margin, y: sigY - 12, size: 8.5, font, color: textMuted });
+  page.drawText(`${dateLabel}: ____________`, { x: margin, y: sigY - 24, size: 8, font, color: textMuted });
 
   // Provider signature box (right)
   const sx2 = margin + sigW + sigGap;
   page.drawLine({
-    start: { x: sx2, y: sigY + 18 },
-    end: { x: sx2 + sigW, y: sigY + 18 },
+    start: { x: sx2, y: sigY },
+    end: { x: sx2 + sigW, y: sigY },
     thickness: 0.8,
     color: borderLight,
   });
-  page.drawText(providerSigLabel, { x: sx2, y: sigY + 6, size: 8.5, font, color: textMuted });
-  page.drawText(`${dateLabel}: ____________`, { x: sx2, y: sigY - 6, size: 8, font, color: textMuted });
+  page.drawText(providerSigLabel, { x: sx2, y: sigY - 12, size: 8.5, font, color: textMuted });
+  page.drawText(`${dateLabel}: ____________`, { x: sx2, y: sigY - 24, size: 8, font, color: textMuted });
 
-  // ── Footer: patient-PDF style gray divider + confidentiality text ─────────
+  // ── Verification section ────────────────────────────────────────────────
+  const verSectionY = sigY - 50;
+
   page.drawLine({
-    start: { x: margin, y: footerY + 28 },
-    end: { x: W - margin, y: footerY + 28 },
+    start: { x: margin, y: verSectionY },
+    end: { x: W - margin, y: verSectionY },
     thickness: 0.8,
     color: borderLight,
-  });
-
-  // Left: confidential label
-  const confLabel = formatForLocale(params.locale, `Confidential — ${params.practiceName || t(params.locale, "generatedBy")}`);
-  const confSize = 8.5;
-  const confW = font.widthOfTextAtSize(confLabel, confSize);
-  page.drawText(confLabel, {
-    x: rtl ? (W - margin - confW) : margin,
-    y: footerY + 18,
-    size: confSize,
-    font,
-    color: textDark,
-  });
-
-  // Docito icon stamp bottom-left (below confidential text)
-  if (docitoLogo) {
-    page.drawImage(docitoLogo, {
-      x: margin,
-      y: footerY + 2,
-      width: docitoLogoW,
-      height: docitoLogoH,
-    });
-  }
-
-  const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-  const genSize = 7.5;
-  const genW = font.widthOfTextAtSize(genText, genSize);
-  page.drawText(genText, {
-    x: rtl ? (W - margin - genW) : (docitoLogo ? margin + docitoLogoW + 4 : margin),
-    y: footerY + 8,
-    size: genSize,
-    font,
-    color: textMuted,
   });
 
   const verificationLabel = formatForLocale(params.locale, t(params.locale, "verification") + ":");
-  const verificationLabelSize = 10;
-  const verificationLabelW = font.widthOfTextAtSize(verificationLabel, verificationLabelSize);
-
+  const verificationLabelSize = 9;
   page.drawText(verificationLabel, {
-    x: rtl ? (W - margin - verificationLabelW) : margin,
-    y: footerY + 44,
+    x: margin,
+    y: verSectionY - 14,
     size: verificationLabelSize,
     font,
     color: textMuted,
@@ -1836,40 +1771,37 @@ async function generateTreatmentPlanPdf(params: {
 
   const vCodeLine = formatForLocale(params.locale, `${t(params.locale, "verificationCode")}: ${params.verificationCode}`);
   const vUrlLine = formatForLocale(params.locale, `${t(params.locale, "verifyAt")}: ${params.verifyUrl}`);
-
-  const vSize = 9;
-  const v1W = font.widthOfTextAtSize(vCodeLine, vSize);
-  const v2W = font.widthOfTextAtSize(vUrlLine, vSize);
+  const vSize = 8;
 
   page.drawText(vCodeLine, {
-    x: rtl ? (W - margin - v1W) : margin,
-    y: footerY + 30,
+    x: margin,
+    y: verSectionY - 28,
     size: vSize,
     font,
     color: textDark,
   });
 
   page.drawText(vUrlLine, {
-    x: rtl ? (W - margin - v2W) : margin,
-    y: footerY + 18,
+    x: margin,
+    y: verSectionY - 40,
     size: vSize,
     font,
     color: textDark,
   });
 
-  // QR code
+  // QR code (right-aligned next to verification text)
   try {
     const dataUrl = await QRCode.toDataURL(params.verifyUrl, { margin: 1, width: 140 });
     const b64 = dataUrl.split(",")[1] || "";
     if (b64) {
       const qrBytes = b64ToBytes(b64);
       const qr = await pdf.embedPng(qrBytes);
-      const qrW = 92;
-      const qrH = 92;
+      const qrW = 70;
+      const qrH = 70;
 
       page.drawImage(qr, {
         x: W - margin - qrW,
-        y: footerY + 8,
+        y: verSectionY - qrH + 10,
         width: qrW,
         height: qrH,
       });
@@ -1877,6 +1809,37 @@ async function generateTreatmentPlanPdf(params: {
   } catch {
     // ignore QR failures
   }
+
+  // ── Confidential + Docito branding (bottom) ─────────────────────────────
+  const brandY = verSectionY - 56;
+
+  // Docito icon stamp
+  if (docitoLogo) {
+    page.drawImage(docitoLogo, {
+      x: margin,
+      y: brandY - 2,
+      width: docitoLogoW,
+      height: docitoLogoH,
+    });
+  }
+
+  const confLabel = formatForLocale(params.locale, `Confidential -- ${params.practiceName || t(params.locale, "generatedBy")}`);
+  page.drawText(confLabel, {
+    x: docitoLogo ? margin + docitoLogoW + 4 : margin,
+    y: brandY + 2,
+    size: 7.5,
+    font,
+    color: textMuted,
+  });
+
+  const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+  page.drawText(genText, {
+    x: docitoLogo ? margin + docitoLogoW + 4 : margin,
+    y: brandY - 8,
+    size: 7,
+    font,
+    color: textMuted,
+  });
 
   // ── Page numbers on every page (patient-PDF style) ────────────────────────
   const pageCount = pdf.getPageCount();
