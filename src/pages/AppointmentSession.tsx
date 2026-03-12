@@ -36,6 +36,7 @@ import { EnhancedDentalChart } from '@/components/dental/EnhancedDentalChart';
 import { PatientProfileView } from '@/components/appointments/PatientProfileView';
 import { VideoRoom } from '@/components/video';
 import { DiagnosisTab } from '@/components/visit/tabs/DiagnosisTab';
+import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator';
 import type { Diagnosis } from '@/components/visit/types';
 
 interface AppointmentSessionPageProps {
