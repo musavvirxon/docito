@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Search,
   Settings,
+  Stethoscope,
   TestTube2,
   User,
   X,
