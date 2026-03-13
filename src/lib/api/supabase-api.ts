@@ -506,8 +506,7 @@ export const appointmentApi = {
             name,
             city,
             country
-          ),
-          
+          )
         `)
         .eq('patient_id', patientId)
         .order('appointment_date', { ascending: true })
