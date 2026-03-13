@@ -41,6 +41,7 @@ import { PatientReferralsSection } from "@/components/patient/PatientReferralsSe
 import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlans";
 import { PatientDiagnoses } from "@/components/patient/PatientDiagnoses";
 import { PatientMedicalRecords } from "@/components/patient/PatientMedicalRecords";
+import { TimezoneNotice } from "@/components/time/TimezoneNotice";
 import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
 import { getEffectiveTimeZone } from "@/lib/timezone";
