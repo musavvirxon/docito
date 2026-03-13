@@ -172,9 +172,24 @@ serve(async (req) => {
 
   // ── Treatment Plans ──────────────────────────────────────────────────────
   if (!hint || hint === "treatment_plan") {
-    const { data: tp } = await svc.from("treatment_plans")
-      .select("id,verification_code,doctor_id,patient_id,title,status,total_cost,notes,created_at,updated_at,published_at")
-      .in("verification_code", variants).maybeSingle();
+    const tpCols = "id,verification_code,doctor_id,patient_id,title,status,total_cost,notes,created_at,updated_at,published_at";
+
+    let tp: any = null;
+    const { data: tpByCode } = await svc.from("treatment_plans")
+      .select(tpCols)
+      .in("verification_code", variants)
+      .maybeSingle();
+    tp = tpByCode;
+
+    // Backward compatibility: older PDFs may contain the treatment plan UUID itself
+    if (!tp && isUuid(code)) {
+      const { data: tpById } = await svc.from("treatment_plans")
+        .select(tpCols)
+        .eq("id", code)
+        .maybeSingle();
+      tp = tpById;
+    }
+
     if (tp?.id) {
       if (!allowed(ctx, "treatment_plan", tp)) return errorResponse("Forbidden", 403);
       const { data: snap } = await svc.rpc("docito_snapshot_treatment_plan", { plan_id: tp.id });
