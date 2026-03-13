@@ -9314,6 +9314,19 @@ export type Database = {
           revenue: number
         }[]
       }
+      get_doctor_referral_stats: {
+        Args: { p_doctor_id: string }
+        Returns: {
+          completed: number
+          pending_received: number
+          pending_sent: number
+          rejected: number
+          this_month_received: number
+          this_month_sent: number
+          total_received: number
+          total_sent: number
+        }[]
+      }
       get_doctors_by_insurance: {
         Args: { p_plan_id?: string; p_provider_id: string }
         Returns: {
