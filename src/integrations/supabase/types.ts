@@ -8306,6 +8306,7 @@ export type Database = {
           title: string
           total_cost: number | null
           updated_at: string | null
+          verification_code: string | null
         }
         Insert: {
           created_at?: string | null
@@ -8323,6 +8324,7 @@ export type Database = {
           title: string
           total_cost?: number | null
           updated_at?: string | null
+          verification_code?: string | null
         }
         Update: {
           created_at?: string | null
@@ -8340,6 +8342,7 @@ export type Database = {
           title?: string
           total_cost?: number | null
           updated_at?: string | null
+          verification_code?: string | null
         }
         Relationships: [
           {
