@@ -492,46 +492,7 @@ export default function PatientDashboard() {
     }
 
     if (activeSection === "records") {
-      return (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("patient.records.title", { defaultValue: "Medical Records" })}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="mt-2">
-              <TimezoneNotice timezone={viewerTimeZone} />
-            </div>
-
-            {recordsLoading ? (
-              <div className="text-sm text-muted-foreground">{t("patient.loading", { defaultValue: "Loading..." })}</div>
-            ) : records && records.length > 0 ? (
-              <div className="space-y-3">
-                {records.map((record: any) => (
-                  <div key={record.id} className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="font-medium">{record.title || "Record"}</div>
-                      <div className="text-xs text-muted-foreground">{record.created_at ? new Date(record.created_at).toLocaleDateString() : ""}</div>
-                    </div>
-                    {record.description ? (
-                      <p className="text-sm mt-3 text-muted-foreground">{record.description}</p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">
-                  {t("patient.records.emptyTitle", { defaultValue: "No medical records" })}
-                </p>
-                <p className="text-muted-foreground">
-                  {t("patient.records.emptyDesc", { defaultValue: "No medical records are available at the moment." })}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      );
+      return <PatientRecordsUnified />;
     }
 
     if (activeSection === "treatment-plans") {
