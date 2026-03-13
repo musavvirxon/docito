@@ -9055,6 +9055,10 @@ export type Database = {
         Args: { p_invite_token: string }
         Returns: Json
       }
+      account_analytics: {
+        Args: { p_days?: number; p_user_id: string }
+        Returns: Json
+      }
       add_medication_to_treatment_plan: {
         Args: {
           dosage: string
