@@ -282,6 +282,38 @@
       "q7": { "question": "¿Puedo usar seguro?", "answer": "Depende del proveedor y la región; puede mostrarse durante la reserva." },
       "q8": { "question": "¿Hay app móvil?", "answer": "La experiencia móvil ya está optimizada; apps nativas pronto." }
     },
+    "rolesIntro": {
+  "subtitle": "Una plataforma que conecta cada rol en el recorrido de atención.",
+  "cards": {
+    "platform": { "title": "Una plataforma", "desc": "Pacientes, médicos, clínicas, laboratorios, centros de imagen y farmacias — todos conectados en un solo flujo." },
+    "dashboards": { "title": "Paneles por rol", "desc": "Cada rol obtiene una vista personalizada: solo lo que necesita, nada más." },
+    "trust": { "title": "Confianza por diseño", "desc": "Proveedores verificados, acceso basado en roles, almacenamiento cifrado y registros de auditoría completos." }
+  }
+},
+"automation": {
+  "tag": "Operaciones listas para el equipo",
+  "title": "Automatización que reduce el trabajo manual",
+  "items": {
+    "scheduling": { "title": "Programación inteligente y recordatorios", "desc": "Reduce las ausencias con confirmaciones, recordatorios y reprogramación inteligente." },
+    "checkin": { "title": "Check-in y gestión de colas", "desc": "Mueve pacientes por los flujos de trabajo con estados claros y responsabilidades." },
+    "documentation": { "title": "Plantillas de visita y documentación", "desc": "Flujos estructurados desde el diagnóstico hasta recetas, archivos y notas clínicas." },
+    "referrals": { "title": "Derivaciones y coordinación de atención", "desc": "Dirige derivaciones y pedidos al establecimiento adecuado con seguimiento." },
+    "results": { "title": "Entrega de resultados diagnósticos", "desc": "Entrega resultados de laboratorio e imagen de forma segura a los roles correctos." },
+    "fulfillment": { "title": "Flujo de dispensación de recetas", "desc": "Rastrea preparación, recogida, entrega y confirmaciones." }
+  }
+},
+"faq": {
+  "title": "Preguntas frecuentes",
+  "subtitle": "Preguntas comunes sobre cómo funciona Docito",
+  "q1": { "question": "¿Cómo obtienen acceso los empleados?", "answer": "Los administradores invitan al personal y asignan roles con acceso de mínimos privilegios." },
+  "q2": { "question": "¿Qué ven empleados vs médicos vs pacientes?", "answer": "RBAC limita los datos por rol; el acceso puede auditarse." },
+  "q3": { "question": "¿Cómo se vinculan las derivaciones con la programación?", "answer": "Las derivaciones pueden generar solicitudes que fluyen a las colas de instalaciones." },
+  "q4": { "question": "¿Cómo se entregan los resultados?", "answer": "Los resultados se comparten con roles autorizados y aparecen en dashboards con notificaciones." },
+  "q5": { "question": "¿Cómo confirman las farmacias la dispensación?", "answer": "Las farmacias actualizan el estado de dispensación y confirman la finalización." },
+  "q6": { "question": "¿Son seguros los datos?", "answer": "Docito usa almacenamiento cifrado, RBAC y registros de auditoría para proteger los datos." },
+  "q7": { "question": "¿Puedo usar seguro?", "answer": "El soporte de seguro depende de los proveedores y la región." },
+  "q8": { "question": "¿Hay app móvil?", "answer": "Las experiencias móviles están disponibles hoy; las apps nativas llegan pronto." }
+}
     "cta": {
       "title": "¿Listo para usar Docito?",
       "subtitle": "Empieza con la búsqueda — o únete como proveedor verificado y potencia tus flujos clínicos.",
