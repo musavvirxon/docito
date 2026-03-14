@@ -72,6 +72,7 @@
     }
   },
   "specialties": {
+    "specialtiesSubtitle": "Encuentra especialistas en todas las disciplinas médicas",
     "title": "Especialidades médicas",
     "subtitle": "Conecta con especialistas certificados",
     "cardiology": "Cardiología",
