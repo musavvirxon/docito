@@ -301,9 +301,9 @@
       "q8": { "question": "Mobil ilova bormi?", "answer": "Mobil tajriba bor; native ilovalar tez orada." }
     },
     "cta": {
-      "title": "Docito’ni ishlatishga tayyormisiz?",
-      "subtitle": "Qidiruvdan boshlang — yoki tasdiqlangan provayder bo‘lib qo‘shiling va klinika jarayonlarini avtomatlashtiring.",
-      "findCare": "Xizmat topish",
+      "title": "Docito’dan foydalanishga tayyormisiz?",
+      "subtitle": "Qidiruvdan boshlang — yoki dotor sifatida qo‘shiling va klinikangizni avtomatlashtiring.",
+      "findCare": "Shifo topish",
       "joinProvider": "Provayder bo‘lish",
       "registerPractice": "Klinikani ro‘yxatdan o‘tkazish"
     }
