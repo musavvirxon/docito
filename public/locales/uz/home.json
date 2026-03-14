@@ -72,6 +72,7 @@
     }
   },
   "specialties": {
+    "specialtiesSubtitle": "Barcha tibbiy yo'nalishlarda mutaxassislarni toping",
     "title": "Tibbiy mutaxassisliklar",
     "subtitle": "Sertifikatlangan mutaxassislar bilan bog‘laning",
     "cardiology": "Kardiologiya",
