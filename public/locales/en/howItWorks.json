@@ -19,6 +19,66 @@
         "appointments_7d": "5400"
       }
     },
+    // ADD inside howItWorks.json → "howItWorks" object, alongside existing keys like "hero", "flow", etc.
+"rolesIntro": {
+  "subtitle": "One platform connecting every role in the care journey.",
+  "cards": {
+    "platform": {
+      "title": "One platform",
+      "desc": "Patients, doctors, clinics, labs, imaging centers, and pharmacies — all connected in a single workflow."
+    },
+    "dashboards": {
+      "title": "Role dashboards",
+      "desc": "Every role gets a purpose-built view: only what they need, nothing they don't."
+    },
+    "trust": {
+      "title": "Trust by design",
+      "desc": "Verified providers, role-based access, encrypted storage, and full audit trails."
+    }
+  }
+},
+"automation": {
+  "tag": "Staff-ready operations",
+  "title": "Automation that reduces manual work",
+  "items": {
+    "scheduling": {
+      "title": "Smart scheduling & reminders",
+      "desc": "Reduce no-shows with confirmations, reminders, and smart rescheduling."
+    },
+    "checkin": {
+      "title": "Check-in & queue management",
+      "desc": "Move patients through workflows with clear statuses and ownership."
+    },
+    "documentation": {
+      "title": "Visit templates & documentation",
+      "desc": "Structured flows from diagnosis to prescriptions, files, and clinical notes."
+    },
+    "referrals": {
+      "title": "Referrals & care coordination",
+      "desc": "Route referrals and orders to the right facility with tracking."
+    },
+    "results": {
+      "title": "Diagnostics results delivery",
+      "desc": "Deliver lab and imaging results securely to the right roles."
+    },
+    "fulfillment": {
+      "title": "Prescription fulfillment workflow",
+      "desc": "Track preparation, pickup, delivery, and confirmations."
+    }
+  }
+},
+"faq": {
+  "title": "FAQ",
+  "subtitle": "Common questions about how Docito works",
+  "q1": { "question": "How do staff get access?", "answer": "Admins invite staff and assign roles with least-privilege access." },
+  "q2": { "question": "What can staff see vs doctors vs patients?", "answer": "RBAC limits data per role; access can be audited." },
+  "q3": { "question": "How do referrals link to scheduling?", "answer": "Referrals can generate orders/requests that flow into facility queues and scheduling." },
+  "q4": { "question": "How are results delivered?", "answer": "Results are shared to authorized roles and surfaced in dashboards with notifications." },
+  "q5": { "question": "How do pharmacies confirm fulfillment?", "answer": "Pharmacies update fulfillment status (prepared/ready/delivered) and confirm completion." },
+  "q6": { "question": "Is data secure?", "answer": "Docito uses encrypted storage, RBAC, and audit trails to protect patient data." },
+  "q7": { "question": "Can I use insurance?", "answer": "Insurance support depends on providers and region; coverage options may appear during booking." },
+  "q8": { "question": "Is mobile app available?", "answer": "Mobile experiences are available today; native apps are coming soon." }
+},
     "flow": {
       "title": "A universal flow, for every role",
       "step1Title": "Search",
