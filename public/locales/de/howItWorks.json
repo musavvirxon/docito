@@ -282,6 +282,38 @@
       "q7": { "question": "Kann ich Versicherung nutzen?", "answer": "Das hängt von Anbieter und Region ab; Optionen können beim Buchen erscheinen." },
       "q8": { "question": "Gibt es eine mobile App?", "answer": "Mobile Nutzung ist optimiert; native Apps kommen bald." }
     },
+    "rolesIntro": {
+  "subtitle": "Eine Plattform verbindet jede Rolle in der Versorgungskette.",
+  "cards": {
+    "platform": { "title": "Eine Plattform", "desc": "Patienten, Ärzte, Kliniken, Labore, Bildgebungszentren und Apotheken — alle in einem Workflow verbunden." },
+    "dashboards": { "title": "Rollenspezifische Dashboards", "desc": "Jede Rolle erhält eine maßgeschneiderte Ansicht: nur was benötigt wird." },
+    "trust": { "title": "Vertrauen durch Design", "desc": "Verifizierte Anbieter, rollenbasierter Zugriff, verschlüsselte Speicherung und vollständige Prüfprotokolle." }
+  }
+},
+"automation": {
+  "tag": "Praxisbereite Abläufe",
+  "title": "Automatisierung reduziert manuelle Arbeit",
+  "items": {
+    "scheduling": { "title": "Intelligente Terminplanung & Erinnerungen", "desc": "Reduzieren Sie Ausfälle durch Bestätigungen, Erinnerungen und intelligente Umplanung." },
+    "checkin": { "title": "Check-in & Warteschlangenmanagement", "desc": "Patienten durch Arbeitsabläufe mit klaren Status leiten." },
+    "documentation": { "title": "Besuchsvorlagen & Dokumentation", "desc": "Strukturierte Abläufe von Diagnose bis Rezept, Dateien und klinische Notizen." },
+    "referrals": { "title": "Überweisungen & Versorgungskoordination", "desc": "Überweisungen und Aufträge mit Verfolgung an die richtige Einrichtung weiterleiten." },
+    "results": { "title": "Zustellung von Diagnoseergebnissen", "desc": "Labor- und Bildgebungsergebnisse sicher an die richtigen Rollen liefern." },
+    "fulfillment": { "title": "Rezeptabwicklungs-Workflow", "desc": "Vorbereitung, Abholung, Lieferung und Bestätigungen verfolgen." }
+  }
+},
+"faq": {
+  "title": "FAQ",
+  "subtitle": "Häufige Fragen zur Funktionsweise von Docito",
+  "q1": { "question": "Wie erhalten Mitarbeiter Zugang?", "answer": "Administratoren laden Mitarbeiter ein und weisen Rollen mit minimalen Rechten zu." },
+  "q2": { "question": "Was sehen Mitarbeiter vs. Ärzte vs. Patienten?", "answer": "RBAC begrenzt Daten pro Rolle; Zugriff kann geprüft werden." },
+  "q3": { "question": "Wie sind Überweisungen mit der Terminplanung verknüpft?", "answer": "Überweisungen können Anfragen generieren, die in Einrichtungswarteschlangen fließen." },
+  "q4": { "question": "Wie werden Ergebnisse zugestellt?", "answer": "Ergebnisse werden an autorisierte Rollen geteilt und in Dashboards angezeigt." },
+  "q5": { "question": "Wie bestätigen Apotheken die Erfüllung?", "answer": "Apotheken aktualisieren den Erfüllungsstatus und bestätigen den Abschluss." },
+  "q6": { "question": "Sind die Daten sicher?", "answer": "Docito verwendet verschlüsselte Speicherung, RBAC und Prüfprotokolle." },
+  "q7": { "question": "Kann ich eine Versicherung nutzen?", "answer": "Die Versicherungsunterstützung hängt von Anbietern und Region ab." },
+  "q8": { "question": "Ist eine mobile App verfügbar?", "answer": "Mobile Erlebnisse sind heute verfügbar; native Apps kommen bald." }
+},
     "cta": {
       "title": "Bereit für Docito?",
       "subtitle": "Starte mit der Suche — oder tritt als verifizierter Anbieter bei und stärke deine Klinik-Workflows.",
