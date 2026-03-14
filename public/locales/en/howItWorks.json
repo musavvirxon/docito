@@ -19,7 +19,6 @@
         "appointments_7d": "5400"
       }
     },
-    // ADD inside howItWorks.json → "howItWorks" object, alongside existing keys like "hero", "flow", etc.
 "rolesIntro": {
   "subtitle": "One platform connecting every role in the care journey.",
   "cards": {
@@ -77,7 +76,6 @@
   "q5": { "question": "How do pharmacies confirm fulfillment?", "answer": "Pharmacies update fulfillment status (prepared/ready/delivered) and confirm completion." },
   "q6": { "question": "Is data secure?", "answer": "Docito uses encrypted storage, RBAC, and audit trails to protect patient data." },
   "q7": { "question": "Can I use insurance?", "answer": "Insurance support depends on providers and region; coverage options may appear during booking." },
-  "q8": { "question": "Is mobile app available?", "answer": "Mobile experiences are available today; native apps are coming soon." }
 },
     "flow": {
       "title": "A universal flow, for every role",
