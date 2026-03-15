@@ -1220,41 +1220,43 @@ async function generateTreatmentPlanPdf(params: {
   let y = H - margin;
 
   // ─── header() ────────────────────────────────────────────────────────────
-  // Matches the patient-profile PDF design: full-width blue bar with the
-  // Docito logo on the left and practice/document info on the right.
-  const HEADER_H = 38; // height of the blue bar
+  // Entity logo (doctor/clinic) on the left, practice name + doc type on the right.
+  const HEADER_H = 52; // increased to prevent text overlapping
   const header = () => {
     y = H - margin;
 
     // ── Blue background bar (full width) ──────────────────────────────────
     page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: accentColor });
 
-    // ── Left side: Docito full logo or "DOCITO" text fallback ─────────────
-    const logoTopY = H - HEADER_H + (HEADER_H - docitoFullLogoH) / 2;
-    if (docitoFullLogo && docitoFullLogoW > 0) {
-      page.drawImage(docitoFullLogo, {
-        x: margin,
+    // ── Left side: Entity logo (doctor/clinic) or fallback initials ───────
+    const logoLeftX = margin;
+    const logoAreaH = HEADER_H - 12;
+    if (entityLogo) {
+      // Scale entity logo to fit header
+      let elW = entityLogoW;
+      let elH = entityLogoH;
+      if (elH > logoAreaH) {
+        elH = logoAreaH;
+        elW = elH / (entityLogo.height / entityLogo.width);
+      }
+      const logoTopY = H - HEADER_H + (HEADER_H - elH) / 2;
+      page.drawImage(entityLogo, {
+        x: logoLeftX,
         y: logoTopY,
-        width: docitoFullLogoW,
-        height: docitoFullLogoH,
+        width: elW,
+        height: elH,
       });
     } else {
-      // Text fallback
-      const brandSize = 16;
-      page.drawText("DOCITO", {
-        x: margin,
-        y: H - HEADER_H + (HEADER_H + brandSize) / 2 - 4,
-        size: brandSize,
+      // Fallback: show practice/doctor name text on the left
+      const leftLabel = params.practiceName || params.doctorName || "—";
+      const leftSize = 12;
+      const leftText = formatForLocale(params.locale, leftLabel);
+      page.drawText(leftText.slice(0, 30), {
+        x: logoLeftX,
+        y: H - HEADER_H + (HEADER_H + leftSize) / 2 - 3,
+        size: leftSize,
         font,
         color: rgb(1, 1, 1),
-      });
-      const subSize = 8;
-      page.drawText("docito.app", {
-        x: margin,
-        y: H - HEADER_H + 7,
-        size: subSize,
-        font,
-        color: rgb(0.85, 0.90, 1.0),
       });
     }
 
@@ -1263,11 +1265,11 @@ async function generateTreatmentPlanPdf(params: {
     const docTitle = params.isDentist ? t(params.locale, "dentalTitle") : t(params.locale, "title");
 
     const pNameSize = 11;
-    const pNameText = formatForLocale(params.locale, practiceLabel);
+    const pNameText = formatForLocale(params.locale, practiceLabel).slice(0, 40);
     const pNameW = font.widthOfTextAtSize(pNameText, pNameSize);
     page.drawText(pNameText, {
       x: W - margin - pNameW,
-      y: H - HEADER_H + HEADER_H - 15,
+      y: H - HEADER_H + HEADER_H - 16,
       size: pNameSize,
       font,
       color: rgb(1, 1, 1),
@@ -1278,7 +1280,7 @@ async function generateTreatmentPlanPdf(params: {
     const docTitleW = font.widthOfTextAtSize(docTitleText, docTitleSize);
     page.drawText(docTitleText, {
       x: W - margin - docTitleW,
-      y: H - HEADER_H + HEADER_H - 27,
+      y: H - HEADER_H + HEADER_H - 30,
       size: docTitleSize,
       font,
       color: rgb(0.85, 0.90, 1.0),
@@ -1302,7 +1304,7 @@ async function generateTreatmentPlanPdf(params: {
     page.drawRectangle({ x: 0, y: H - HEADER_H - 2, width: W, height: 2, color: accentLight });
 
     // ── Plan title (below header) ─────────────────────────────────────────
-    y = H - HEADER_H - 20;
+    y = H - HEADER_H - 22;
 
     const titleText = formatForLocale(params.locale, params.title || t(params.locale, "title"));
     const titleSize = 18;
@@ -1314,7 +1316,7 @@ async function generateTreatmentPlanPdf(params: {
       font,
       color: accentColor,
     });
-    y -= 14;
+    y -= 16;
 
     // Doctor + practice subtitle line
     let generatedLine = "";
@@ -1334,7 +1336,7 @@ async function generateTreatmentPlanPdf(params: {
         font,
         color: textMuted,
       });
-      y -= 12;
+      y -= 14;
     }
 
     // ── Accent divider line under the title block ─────────────────────────
