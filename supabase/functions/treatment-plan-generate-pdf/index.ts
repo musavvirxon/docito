@@ -1985,7 +1985,7 @@ serve(async (req: Request) => {
   const { data: patientProfile } = patientId
     ? await serviceClient
       .from("profiles")
-      .select("full_name, phone, email, date_of_birth, gender, address")
+      .select("full_name, phone, email, date_of_birth, gender, address, id_number")
       .eq("user_id", patientId)
       .maybeSingle()
     : { data: null };
