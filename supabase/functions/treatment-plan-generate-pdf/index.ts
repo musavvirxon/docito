@@ -1070,6 +1070,7 @@ async function generateTreatmentPlanPdf(params: {
   locale: Locale;
   isDentist: boolean;
   practiceLogoUrl?: string | null;
+  doctorLogoUrl?: string | null;
   planId: string;
   title: string;
   status: string;
@@ -1087,6 +1088,7 @@ async function generateTreatmentPlanPdf(params: {
   patientPhone?: string | null;
   patientEmail?: string | null;
   patientAddress?: string | null;
+  patientIdNumber?: string | null;
 
   doctorName: string;
   doctorSpecialty?: string | null;
