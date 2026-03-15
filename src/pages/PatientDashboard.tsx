@@ -177,7 +177,9 @@ export default function PatientDashboard() {
   const renderSectionContent = () => {
     if (activeSection === "dashboard") {
       const today = startOfDay(new Date());
+      const excludedStatuses = new Set(["canceled", "cancelled", "no_show", "completed"]);
       const upcoming = (appointments || []).filter((a: any) => {
+        if (excludedStatuses.has((a.status || "").toLowerCase())) return false;
         const d = startOfDay(new Date(a.appointment_date));
         return isAfter(d, today) || isEqual(d, today);
       });
