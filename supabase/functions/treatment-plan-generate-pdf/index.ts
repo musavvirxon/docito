@@ -2059,6 +2059,7 @@ serve(async (req: Request) => {
   const patientPhone = asString((patientProfile as any)?.phone);
   const patientEmail = asString((patientProfile as any)?.email);
   const patientAddress = asString((patientProfile as any)?.address);
+  const patientIdNumber = asString((patientProfile as any)?.id_number);
 
   // Procedures
   let proceduresRaw: any[] = [];
