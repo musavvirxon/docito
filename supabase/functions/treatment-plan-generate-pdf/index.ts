@@ -1434,6 +1434,7 @@ async function generateTreatmentPlanPdf(params: {
   y -= 6;
   drawSection("patient");
   drawKV("patient", params.patientName);
+  if (params.patientIdNumber) drawKV("planId", params.patientIdNumber); // reuse planId label as ID label
   if (params.patientDob) drawKV("dob", params.patientDob);
   if (params.patientGender) drawKV("gender", params.patientGender);
   if (params.patientPhone) drawKV("phone", params.patientPhone);
