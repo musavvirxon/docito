@@ -1172,33 +1172,33 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
-  // Optional practice logo (preferred for brand area below header).
-  let brandLogo: any | null = null;
-  let brandLogoW = 40;
-  let brandLogoH = 40;
+  // Optional entity logo (doctor logo for independent, practice logo for clinic).
+  let entityLogo: any | null = null;
+  let entityLogoW = 40;
+  let entityLogoH = 40;
 
-  const logoUrl = safeUrl(params.practiceLogoUrl || null);
-  if (logoUrl) {
-    const img = await fetchImageBytes(logoUrl);
+  const entityLogoUrl = safeUrl(params.practiceLogoUrl || params.doctorLogoUrl || null);
+  if (entityLogoUrl) {
+    const img = await fetchImageBytes(entityLogoUrl);
     if (img.type === "png" && img.bytes.length) {
       try {
-        brandLogo = await pdf.embedPng(img.bytes);
+        entityLogo = await pdf.embedPng(img.bytes);
       } catch {
-        brandLogo = null;
+        entityLogo = null;
       }
     } else if (img.type === "jpg" && img.bytes.length) {
       try {
-        brandLogo = await pdf.embedJpg(img.bytes);
+        entityLogo = await pdf.embedJpg(img.bytes);
       } catch {
-        brandLogo = null;
+        entityLogo = null;
       }
     }
-    if (brandLogo) {
-      const ratio = brandLogo.height / brandLogo.width;
-      brandLogoH = brandLogoW * ratio;
-      if (brandLogoH > 44) {
-        brandLogoH = 44;
-        brandLogoW = brandLogoH / ratio;
+    if (entityLogo) {
+      const ratio = entityLogo.height / entityLogo.width;
+      entityLogoH = entityLogoW * ratio;
+      if (entityLogoH > 44) {
+        entityLogoH = 44;
+        entityLogoW = entityLogoH / ratio;
       }
     }
   }
