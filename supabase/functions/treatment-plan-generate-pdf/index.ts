@@ -2000,13 +2000,16 @@ serve(async (req: Request) => {
   let practicePhone: string | null = null;
   let practiceEmail: string | null = null;
   let practiceLogoUrl: string | null = null;
+  let doctorLogoUrl: string | null = null;
 
   if (providerId) {
     const { data: doctorRow } = await serviceClient
       .from("doctors")
-      .select("id, user_id, specialty, specialty_en, specialty_ru, specialty_uz, specialty_ar, practice_id")
+      .select("id, user_id, specialty, specialty_en, specialty_ru, specialty_uz, specialty_ar, practice_id, logo_url")
       .eq("id", providerId)
       .maybeSingle();
+
+    doctorLogoUrl = asString((doctorRow as any)?.logo_url);
 
     const doctorUserId = asString((doctorRow as any)?.user_id);
     const practiceId = asString((doctorRow as any)?.practice_id);
