@@ -1544,7 +1544,9 @@ async function generateTreatmentPlanPdf(params: {
 
       for (let ci = 0; ci < rowData.length; ci++) {
         const raw = rowData[ci] ?? "";
-        const txt = formatForLocale(params.locale, String(raw)).slice(0, 90);
+        // Allow longer text for notes column (last column)
+        const maxLen = ci === rowData.length - 1 ? 200 : 90;
+        const txt = formatForLocale(params.locale, String(raw)).slice(0, maxLen);
 
         // Tooth cell highlight (premium scan anchor)
         if (showTeeth && ci === 0) {
@@ -1557,6 +1559,14 @@ async function generateTreatmentPlanPdf(params: {
             color: sectionBg,
           });
           page.drawText(txt, { x: rx, y, size: rowSize, font, color: accentColor });
+        } else if (ci === rowData.length - 1 && txt.length > 40) {
+          // Wrap notes text
+          const res = drawWrappedText(txt, {
+            page, font, x: rx, y, size: 7.5, maxWidth: colWidths[ci] - 8,
+            rtl, color: { r: 0.35, g: 0.35, b: 0.35 },
+          });
+          // If wrapped text extends below, adjust y
+          if (res.yAfter < y - 18) y = res.yAfter + 16;
         } else {
           page.drawText(txt, { x: rx, y, size: rowSize, font, color: textDark });
         }
