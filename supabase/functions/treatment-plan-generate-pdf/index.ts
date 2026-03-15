@@ -2211,6 +2211,7 @@ serve(async (req: Request) => {
     locale,
     isDentist: doctorIsDentist,
     practiceLogoUrl: practiceLogoUrl,
+    doctorLogoUrl: doctorLogoUrl,
     planId,
     title,
     status,
@@ -2228,6 +2229,7 @@ serve(async (req: Request) => {
     patientPhone,
     patientEmail,
     patientAddress,
+    patientIdNumber,
 
     doctorName: formatForLocale(locale, doctorName),
     doctorSpecialty: doctorSpecialty ? formatForLocale(locale, doctorSpecialty) : null,
