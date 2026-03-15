@@ -1728,6 +1728,41 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
+  // ── Total Conclusion Section ─────────────────────────────────────────────
+  y -= 8;
+  ensureSpace(80);
+  drawSection("totalCost");
+
+  // Total cost
+  const conclusionTotalCost = params.totalCost || "0";
+  drawKV("totalCost", conclusionTotalCost);
+
+  // Total visits (count procedures)
+  const totalVisits = params.procedures.length || 0;
+  drawKV("estimatedVisits", `${totalVisits}`);
+
+  // Total teeth involved (dental only)
+  if (params.isDentist) {
+    const allTeeth = new Set<number>();
+    for (const p of params.procedures) {
+      for (const tn of (p.toothNumbers || [])) {
+        const fdi = normalizeToothNumberToFdi(tn) ?? tn;
+        if (Number.isFinite(fdi)) allTeeth.add(fdi);
+      }
+    }
+    const teethList = Array.from(allTeeth).sort((a, b) => a - b);
+    drawKV("tooth", teethList.length > 0 ? teethList.join(", ") : t(params.locale, "na"));
+  }
+
+  y -= 8;
+  page.drawLine({
+    start: { x: margin, y },
+    end: { x: W - margin, y },
+    thickness: 1,
+    color: accentColor,
+  });
+  y -= 8;
+
   // Footer on last page — ensure enough space for signature + verification + QR
   const footerBlockH = 200;
   if (y < margin + footerBlockH + 20) newPage();
@@ -1824,32 +1859,62 @@ async function generateTreatmentPlanPdf(params: {
     // ignore QR failures
   }
 
-  // ── Confidential + Docito branding (bottom) ─────────────────────────────
-  const brandY = verSectionY - 56;
+  // ── Docito branding (bottom) — HQ logo + name ──────────────────────────
+  const brandY = verSectionY - 70;
 
-  // Docito icon stamp
-  if (docitoLogo) {
+  // Divider above Docito branding
+  page.drawLine({
+    start: { x: margin, y: brandY + 10 },
+    end: { x: W - margin, y: brandY + 10 },
+    thickness: 0.5,
+    color: borderLight,
+  });
+
+  // Docito full logo (HQ) at bottom
+  if (docitoFullLogo && docitoFullLogoW > 0) {
+    const footerLogoH = 14;
+    const footerLogoW = (docitoFullLogo.width / docitoFullLogo.height) * footerLogoH;
+    page.drawImage(docitoFullLogo, {
+      x: margin,
+      y: brandY - 6,
+      width: footerLogoW,
+      height: footerLogoH,
+    });
+
+    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+    page.drawText(genText, {
+      x: margin + footerLogoW + 6,
+      y: brandY,
+      size: 7.5,
+      font,
+      color: textMuted,
+    });
+  } else if (docitoLogo) {
+    // Fallback to icon
     page.drawImage(docitoLogo, {
       x: margin,
       y: brandY - 2,
       width: docitoLogoW,
       height: docitoLogoH,
     });
+
+    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+    page.drawText(genText, {
+      x: margin + docitoLogoW + 4,
+      y: brandY + 2,
+      size: 7.5,
+      font,
+      color: textMuted,
+    });
+  } else {
+    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+    page.drawText(genText, { x: margin, y: brandY, size: 7.5, font, color: textMuted });
   }
 
   const confLabel = formatForLocale(params.locale, `Confidential -- ${params.practiceName || t(params.locale, "generatedBy")}`);
   page.drawText(confLabel, {
-    x: docitoLogo ? margin + docitoLogoW + 4 : margin,
-    y: brandY + 2,
-    size: 7.5,
-    font,
-    color: textMuted,
-  });
-
-  const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-  page.drawText(genText, {
-    x: docitoLogo ? margin + docitoLogoW + 4 : margin,
-    y: brandY - 8,
+    x: margin,
+    y: brandY - 18,
     size: 7,
     font,
     color: textMuted,
