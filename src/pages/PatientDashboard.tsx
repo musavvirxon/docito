@@ -69,7 +69,7 @@ export default function PatientDashboard() {
   const doctorFallbackLabel = t("patient.appointments.doctor", { defaultValue: "Doctor" });
 
   const { appointments, loading: appointmentsLoading, error: appointmentsError, refetch: refetchAppointments } =
-    useAppointments();
+    useAppointments('patient');
   const { prescriptions, loading: prescriptionsLoading } = usePrescriptions();
   const { records, loading: recordsLoading } = useMedicalRecords();
 
@@ -177,7 +177,9 @@ export default function PatientDashboard() {
   const renderSectionContent = () => {
     if (activeSection === "dashboard") {
       const today = startOfDay(new Date());
+      const excludedStatuses = new Set(["canceled", "cancelled", "no_show", "completed"]);
       const upcoming = (appointments || []).filter((a: any) => {
+        if (excludedStatuses.has((a.status || "").toLowerCase())) return false;
         const d = startOfDay(new Date(a.appointment_date));
         return isAfter(d, today) || isEqual(d, today);
       });
@@ -297,13 +299,15 @@ export default function PatientDashboard() {
 
     if (activeSection === "appointments") {
       const today = startOfDay(new Date());
+      const excludedStatusesApt = new Set(["canceled", "cancelled", "no_show"]);
       const upcoming = (appointments || []).filter((a: any) => {
+        if (excludedStatusesApt.has((a.status || "").toLowerCase())) return false;
         const d = startOfDay(new Date(a.appointment_date));
         return isAfter(d, today) || isEqual(d, today);
       });
       const past = (appointments || []).filter((a: any) => {
         const d = startOfDay(new Date(a.appointment_date));
-        return isAfter(today, d);
+        return isAfter(today, d) || (a.status || "").toLowerCase() === "completed";
       });
 
       return (

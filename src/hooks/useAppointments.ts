@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { appointmentApi, type Appointment } from '@/lib/api/supabase-api';
 
-export const useAppointments = () => {
+export const useAppointments = (forceRole?: 'patient' | 'doctor') => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,8 +15,8 @@ export const useAppointments = () => {
       return;
     }
 
-    // Resolve from active role to avoid fetching doctor data while viewing patient dashboard
-    const role: 'patient' | 'doctor' = activeRole === 'doctor' ? 'doctor' : 'patient';
+    // Allow callers to force a role (e.g. patient dashboard always fetches patient data)
+    const role: 'patient' | 'doctor' = forceRole || (activeRole === 'doctor' ? 'doctor' : 'patient');
 
     try {
       setLoading(true);
@@ -36,7 +36,7 @@ export const useAppointments = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, activeRole]);
+  }, [user, activeRole, forceRole]);
 
   const cancelAppointment = async (appointmentId: string) => {
     try {

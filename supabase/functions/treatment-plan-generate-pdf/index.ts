@@ -1070,6 +1070,7 @@ async function generateTreatmentPlanPdf(params: {
   locale: Locale;
   isDentist: boolean;
   practiceLogoUrl?: string | null;
+  doctorLogoUrl?: string | null;
   planId: string;
   title: string;
   status: string;
@@ -1087,6 +1088,7 @@ async function generateTreatmentPlanPdf(params: {
   patientPhone?: string | null;
   patientEmail?: string | null;
   patientAddress?: string | null;
+  patientIdNumber?: string | null;
 
   doctorName: string;
   doctorSpecialty?: string | null;
@@ -1170,33 +1172,33 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
-  // Optional practice logo (preferred for brand area below header).
-  let brandLogo: any | null = null;
-  let brandLogoW = 40;
-  let brandLogoH = 40;
+  // Optional entity logo (doctor logo for independent, practice logo for clinic).
+  let entityLogo: any | null = null;
+  let entityLogoW = 40;
+  let entityLogoH = 40;
 
-  const logoUrl = safeUrl(params.practiceLogoUrl || null);
-  if (logoUrl) {
-    const img = await fetchImageBytes(logoUrl);
+  const entityLogoUrl = safeUrl(params.practiceLogoUrl || params.doctorLogoUrl || null);
+  if (entityLogoUrl) {
+    const img = await fetchImageBytes(entityLogoUrl);
     if (img.type === "png" && img.bytes.length) {
       try {
-        brandLogo = await pdf.embedPng(img.bytes);
+        entityLogo = await pdf.embedPng(img.bytes);
       } catch {
-        brandLogo = null;
+        entityLogo = null;
       }
     } else if (img.type === "jpg" && img.bytes.length) {
       try {
-        brandLogo = await pdf.embedJpg(img.bytes);
+        entityLogo = await pdf.embedJpg(img.bytes);
       } catch {
-        brandLogo = null;
+        entityLogo = null;
       }
     }
-    if (brandLogo) {
-      const ratio = brandLogo.height / brandLogo.width;
-      brandLogoH = brandLogoW * ratio;
-      if (brandLogoH > 44) {
-        brandLogoH = 44;
-        brandLogoW = brandLogoH / ratio;
+    if (entityLogo) {
+      const ratio = entityLogo.height / entityLogo.width;
+      entityLogoH = entityLogoW * ratio;
+      if (entityLogoH > 44) {
+        entityLogoH = 44;
+        entityLogoW = entityLogoH / ratio;
       }
     }
   }
@@ -1218,41 +1220,43 @@ async function generateTreatmentPlanPdf(params: {
   let y = H - margin;
 
   // ─── header() ────────────────────────────────────────────────────────────
-  // Matches the patient-profile PDF design: full-width blue bar with the
-  // Docito logo on the left and practice/document info on the right.
-  const HEADER_H = 38; // height of the blue bar
+  // Entity logo (doctor/clinic) on the left, practice name + doc type on the right.
+  const HEADER_H = 52; // increased to prevent text overlapping
   const header = () => {
     y = H - margin;
 
     // ── Blue background bar (full width) ──────────────────────────────────
     page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: accentColor });
 
-    // ── Left side: Docito full logo or "DOCITO" text fallback ─────────────
-    const logoTopY = H - HEADER_H + (HEADER_H - docitoFullLogoH) / 2;
-    if (docitoFullLogo && docitoFullLogoW > 0) {
-      page.drawImage(docitoFullLogo, {
-        x: margin,
+    // ── Left side: Entity logo (doctor/clinic) or fallback initials ───────
+    const logoLeftX = margin;
+    const logoAreaH = HEADER_H - 12;
+    if (entityLogo) {
+      // Scale entity logo to fit header
+      let elW = entityLogoW;
+      let elH = entityLogoH;
+      if (elH > logoAreaH) {
+        elH = logoAreaH;
+        elW = elH / (entityLogo.height / entityLogo.width);
+      }
+      const logoTopY = H - HEADER_H + (HEADER_H - elH) / 2;
+      page.drawImage(entityLogo, {
+        x: logoLeftX,
         y: logoTopY,
-        width: docitoFullLogoW,
-        height: docitoFullLogoH,
+        width: elW,
+        height: elH,
       });
     } else {
-      // Text fallback
-      const brandSize = 16;
-      page.drawText("DOCITO", {
-        x: margin,
-        y: H - HEADER_H + (HEADER_H + brandSize) / 2 - 4,
-        size: brandSize,
+      // Fallback: show practice/doctor name text on the left
+      const leftLabel = params.practiceName || params.doctorName || "—";
+      const leftSize = 12;
+      const leftText = formatForLocale(params.locale, leftLabel);
+      page.drawText(leftText.slice(0, 30), {
+        x: logoLeftX,
+        y: H - HEADER_H + (HEADER_H + leftSize) / 2 - 3,
+        size: leftSize,
         font,
         color: rgb(1, 1, 1),
-      });
-      const subSize = 8;
-      page.drawText("docito.app", {
-        x: margin,
-        y: H - HEADER_H + 7,
-        size: subSize,
-        font,
-        color: rgb(0.85, 0.90, 1.0),
       });
     }
 
@@ -1261,11 +1265,11 @@ async function generateTreatmentPlanPdf(params: {
     const docTitle = params.isDentist ? t(params.locale, "dentalTitle") : t(params.locale, "title");
 
     const pNameSize = 11;
-    const pNameText = formatForLocale(params.locale, practiceLabel);
+    const pNameText = formatForLocale(params.locale, practiceLabel).slice(0, 40);
     const pNameW = font.widthOfTextAtSize(pNameText, pNameSize);
     page.drawText(pNameText, {
       x: W - margin - pNameW,
-      y: H - HEADER_H + HEADER_H - 15,
+      y: H - HEADER_H + HEADER_H - 16,
       size: pNameSize,
       font,
       color: rgb(1, 1, 1),
@@ -1276,7 +1280,7 @@ async function generateTreatmentPlanPdf(params: {
     const docTitleW = font.widthOfTextAtSize(docTitleText, docTitleSize);
     page.drawText(docTitleText, {
       x: W - margin - docTitleW,
-      y: H - HEADER_H + HEADER_H - 27,
+      y: H - HEADER_H + HEADER_H - 30,
       size: docTitleSize,
       font,
       color: rgb(0.85, 0.90, 1.0),
@@ -1300,7 +1304,7 @@ async function generateTreatmentPlanPdf(params: {
     page.drawRectangle({ x: 0, y: H - HEADER_H - 2, width: W, height: 2, color: accentLight });
 
     // ── Plan title (below header) ─────────────────────────────────────────
-    y = H - HEADER_H - 20;
+    y = H - HEADER_H - 22;
 
     const titleText = formatForLocale(params.locale, params.title || t(params.locale, "title"));
     const titleSize = 18;
@@ -1312,7 +1316,7 @@ async function generateTreatmentPlanPdf(params: {
       font,
       color: accentColor,
     });
-    y -= 14;
+    y -= 16;
 
     // Doctor + practice subtitle line
     let generatedLine = "";
@@ -1332,7 +1336,7 @@ async function generateTreatmentPlanPdf(params: {
         font,
         color: textMuted,
       });
-      y -= 12;
+      y -= 14;
     }
 
     // ── Accent divider line under the title block ─────────────────────────
@@ -1430,6 +1434,7 @@ async function generateTreatmentPlanPdf(params: {
   y -= 6;
   drawSection("patient");
   drawKV("patient", params.patientName);
+  if (params.patientIdNumber) drawKV("planId", params.patientIdNumber); // reuse planId label as ID label
   if (params.patientDob) drawKV("dob", params.patientDob);
   if (params.patientGender) drawKV("gender", params.patientGender);
   if (params.patientPhone) drawKV("phone", params.patientPhone);
@@ -1540,7 +1545,9 @@ async function generateTreatmentPlanPdf(params: {
 
       for (let ci = 0; ci < rowData.length; ci++) {
         const raw = rowData[ci] ?? "";
-        const txt = formatForLocale(params.locale, String(raw)).slice(0, 90);
+        // Allow longer text for notes column (last column)
+        const maxLen = ci === rowData.length - 1 ? 200 : 90;
+        const txt = formatForLocale(params.locale, String(raw)).slice(0, maxLen);
 
         // Tooth cell highlight (premium scan anchor)
         if (showTeeth && ci === 0) {
@@ -1553,6 +1560,14 @@ async function generateTreatmentPlanPdf(params: {
             color: sectionBg,
           });
           page.drawText(txt, { x: rx, y, size: rowSize, font, color: accentColor });
+        } else if (ci === rowData.length - 1 && txt.length > 40) {
+          // Wrap notes text
+          const res = drawWrappedText(txt, {
+            page, font, x: rx, y, size: 7.5, maxWidth: colWidths[ci] - 8,
+            rtl, color: { r: 0.35, g: 0.35, b: 0.35 },
+          });
+          // If wrapped text extends below, adjust y
+          if (res.yAfter < y - 18) y = res.yAfter + 16;
         } else {
           page.drawText(txt, { x: rx, y, size: rowSize, font, color: textDark });
         }
@@ -1714,6 +1729,41 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
+  // ── Total Conclusion Section ─────────────────────────────────────────────
+  y -= 8;
+  ensureSpace(80);
+  drawSection("totalCost");
+
+  // Total cost
+  const conclusionTotalCost = params.totalCost || "0";
+  drawKV("totalCost", conclusionTotalCost);
+
+  // Total visits (count procedures)
+  const totalVisits = params.procedures.length || 0;
+  drawKV("estimatedVisits", `${totalVisits}`);
+
+  // Total teeth involved (dental only)
+  if (params.isDentist) {
+    const allTeeth = new Set<number>();
+    for (const p of params.procedures) {
+      for (const tn of (p.toothNumbers || [])) {
+        const fdi = normalizeToothNumberToFdi(tn) ?? tn;
+        if (Number.isFinite(fdi)) allTeeth.add(fdi);
+      }
+    }
+    const teethList = Array.from(allTeeth).sort((a, b) => a - b);
+    drawKV("tooth", teethList.length > 0 ? teethList.join(", ") : t(params.locale, "na"));
+  }
+
+  y -= 8;
+  page.drawLine({
+    start: { x: margin, y },
+    end: { x: W - margin, y },
+    thickness: 1,
+    color: accentColor,
+  });
+  y -= 8;
+
   // Footer on last page — ensure enough space for signature + verification + QR
   const footerBlockH = 200;
   if (y < margin + footerBlockH + 20) newPage();
@@ -1810,32 +1860,62 @@ async function generateTreatmentPlanPdf(params: {
     // ignore QR failures
   }
 
-  // ── Confidential + Docito branding (bottom) ─────────────────────────────
-  const brandY = verSectionY - 56;
+  // ── Docito branding (bottom) — HQ logo + name ──────────────────────────
+  const brandY = verSectionY - 70;
 
-  // Docito icon stamp
-  if (docitoLogo) {
+  // Divider above Docito branding
+  page.drawLine({
+    start: { x: margin, y: brandY + 10 },
+    end: { x: W - margin, y: brandY + 10 },
+    thickness: 0.5,
+    color: borderLight,
+  });
+
+  // Docito full logo (HQ) at bottom
+  if (docitoFullLogo && docitoFullLogoW > 0) {
+    const footerLogoH = 14;
+    const footerLogoW = (docitoFullLogo.width / docitoFullLogo.height) * footerLogoH;
+    page.drawImage(docitoFullLogo, {
+      x: margin,
+      y: brandY - 6,
+      width: footerLogoW,
+      height: footerLogoH,
+    });
+
+    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+    page.drawText(genText, {
+      x: margin + footerLogoW + 6,
+      y: brandY,
+      size: 7.5,
+      font,
+      color: textMuted,
+    });
+  } else if (docitoLogo) {
+    // Fallback to icon
     page.drawImage(docitoLogo, {
       x: margin,
       y: brandY - 2,
       width: docitoLogoW,
       height: docitoLogoH,
     });
+
+    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+    page.drawText(genText, {
+      x: margin + docitoLogoW + 4,
+      y: brandY + 2,
+      size: 7.5,
+      font,
+      color: textMuted,
+    });
+  } else {
+    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
+    page.drawText(genText, { x: margin, y: brandY, size: 7.5, font, color: textMuted });
   }
 
   const confLabel = formatForLocale(params.locale, `Confidential -- ${params.practiceName || t(params.locale, "generatedBy")}`);
   page.drawText(confLabel, {
-    x: docitoLogo ? margin + docitoLogoW + 4 : margin,
-    y: brandY + 2,
-    size: 7.5,
-    font,
-    color: textMuted,
-  });
-
-  const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-  page.drawText(genText, {
-    x: docitoLogo ? margin + docitoLogoW + 4 : margin,
-    y: brandY - 8,
+    x: margin,
+    y: brandY - 18,
     size: 7,
     font,
     color: textMuted,
@@ -1906,7 +1986,7 @@ serve(async (req: Request) => {
   const { data: patientProfile } = patientId
     ? await serviceClient
       .from("profiles")
-      .select("full_name, phone, email, date_of_birth, gender, address")
+      .select("full_name, phone, email, date_of_birth, gender, address, id_number")
       .eq("user_id", patientId)
       .maybeSingle()
     : { data: null };
@@ -1921,13 +2001,16 @@ serve(async (req: Request) => {
   let practicePhone: string | null = null;
   let practiceEmail: string | null = null;
   let practiceLogoUrl: string | null = null;
+  let doctorLogoUrl: string | null = null;
 
   if (providerId) {
     const { data: doctorRow } = await serviceClient
       .from("doctors")
-      .select("id, user_id, specialty, specialty_en, specialty_ru, specialty_uz, specialty_ar, practice_id")
+      .select("id, user_id, specialty, specialty_en, specialty_ru, specialty_uz, specialty_ar, practice_id, logo_url")
       .eq("id", providerId)
       .maybeSingle();
+
+    doctorLogoUrl = asString((doctorRow as any)?.logo_url);
 
     const doctorUserId = asString((doctorRow as any)?.user_id);
     const practiceId = asString((doctorRow as any)?.practice_id);
@@ -1977,6 +2060,7 @@ serve(async (req: Request) => {
   const patientPhone = asString((patientProfile as any)?.phone);
   const patientEmail = asString((patientProfile as any)?.email);
   const patientAddress = asString((patientProfile as any)?.address);
+  const patientIdNumber = asString((patientProfile as any)?.id_number);
 
   // Procedures
   let proceduresRaw: any[] = [];
@@ -2128,6 +2212,7 @@ serve(async (req: Request) => {
     locale,
     isDentist: doctorIsDentist,
     practiceLogoUrl: practiceLogoUrl,
+    doctorLogoUrl: doctorLogoUrl,
     planId,
     title,
     status,
@@ -2145,6 +2230,7 @@ serve(async (req: Request) => {
     patientPhone,
     patientEmail,
     patientAddress,
+    patientIdNumber,
 
     doctorName: formatForLocale(locale, doctorName),
     doctorSpecialty: doctorSpecialty ? formatForLocale(locale, doctorSpecialty) : null,
