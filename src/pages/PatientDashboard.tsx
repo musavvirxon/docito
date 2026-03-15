@@ -69,7 +69,7 @@ export default function PatientDashboard() {
   const doctorFallbackLabel = t("patient.appointments.doctor", { defaultValue: "Doctor" });
 
   const { appointments, loading: appointmentsLoading, error: appointmentsError, refetch: refetchAppointments } =
-    useAppointments();
+    useAppointments('patient');
   const { prescriptions, loading: prescriptionsLoading } = usePrescriptions();
   const { records, loading: recordsLoading } = useMedicalRecords();
 
