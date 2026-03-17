@@ -2,6 +2,7 @@
 // Path: src/pages/pharmacy/PharmacyDashboardPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthContext";
