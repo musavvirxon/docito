@@ -109,6 +109,7 @@ async function fetchMyLabCenter(userId: string): Promise<LabCenterRow | null> {
 export default function LabDashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("labAdminDashboard");
   const { user, loading: authLoading, activeRole } = useAuth();
 
   const [activeTab, setActiveTab] = useState<LabTab>("overview");
