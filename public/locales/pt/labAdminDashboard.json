@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Visão Geral",
+      "orders": "Pedidos",
+      "homeCollection": "Coleta Domiciliar",
+      "samples": "Amostras",
+      "analytics": "Análise",
+      "billingInsurance": "Faturamento / Seguro",
+      "finances": "Finanças",
+      "referrals": "Encaminhamentos",
+      "staff": "Equipe",
+      "verifyDocuments": "Verificar Documentos",
+      "settings": "Configurações"
+    },
+    "header": {
+      "title": "Painel do Laboratório",
+      "subtitle": "Pedidos, fluxo de trabalho e análises via Supabase",
+      "refresh": "Atualizar"
+    },
+    "overview": {
+      "title": "Visão Geral",
+      "analytics": "Análise",
+      "totalOrders": "Total de Pedidos",
+      "pending": "Pendente",
+      "inProgress": "Em Andamento",
+      "completed": "Concluído",
+      "pendingQueue": "Fila Pendente",
+      "inProgressQueue": "Em Andamento",
+      "completedRecent": "Concluído (recente)",
+      "urgent": "Urgente / STAT",
+      "overdue": "Atrasado (>48h)",
+      "recentOrders": {
+        "title": "Pedidos Recentes",
+        "subtitle": "Últimos pedidos e estado do fluxo",
+        "empty": "Nenhum pedido encontrado."
+      },
+      "activity": {
+        "title": "Feed de Atividade",
+        "subtitle": "Atualizações recentes do fluxo",
+        "empty": "Nenhuma atividade recente."
+      },
+      "queueHealth": {
+        "title": "Saúde da Fila",
+        "subtitle": "Instantâneo operacional dos pedidos recentes",
+        "pending": "Pendente",
+        "inProgress": "Em Andamento",
+        "completed": "Concluído",
+        "urgent": "Urgente / STAT",
+        "overdue": "Atrasado (>48h)",
+        "footer": "Análises completas e métricas de SLA na aba de Análise."
+      }
+    },
+    "orders": {
+      "search": "Buscar por pedido #, paciente ou telefone...",
+      "statuses": "Todos os Status",
+      "newOrder": "Novo pedido manual",
+      "testOrders": "Pedidos de Teste",
+      "empty": "Nenhum pedido encontrado",
+      "details": {
+        "title": "Detalhes do Pedido",
+        "select": "Selecione um pedido para ver detalhes"
+      },
+      "statusList": {
+        "completed": "concluído",
+        "cancelled": "cancelado",
+        "pending": "pendente",
+        "scheduled": "agendado",
+        "processing": "processando",
+        "sampleCollected": "amostra coletada"
+      }
+    },
+    "collections": {
+      "today": "Coletas de Hoje",
+      "pendingAssignment": "Aguardando Atribuição",
+      "inTransit": "Em Trânsito",
+      "completedToday": "Concluído Hoje",
+      "title": "Coleta Domiciliar de Amostras",
+      "subtitle": "Gerencie agendas de coleta e atribuição de equipe",
+      "search": "Buscar por paciente ou endereço...",
+      "allStatus": "Todos os Status",
+      "table": {
+        "patient": "Paciente",
+        "address": "Endereço",
+        "scheduled": "Agendado",
+        "collector": "Coletor",
+        "status": "Status",
+        "actions": "Ações",
+        "empty": "Nenhuma coleta encontrada"
+      },
+      "stats": {
+        "pending": "Pendente",
+        "collected": "Coletado",
+        "processing": "Processando",
+        "completed": "Concluído"
+      }
+    },
+    "samples": {
+      "title": "Gestão de Amostras",
+      "subtitle": "Rastreie amostras da coleta aos resultados",
+      "search": "Buscar por ID, código de barras ou paciente...",
+      "allStatus": "Todos os Status",
+      "table": {
+        "sample": "Amostra",
+        "patient": "Paciente",
+        "type": "Tipo",
+        "barcode": "Código",
+        "status": "Status",
+        "actions": "Ações",
+        "empty": "Nenhuma amostra encontrada"
+      }
+    },
+    "analytics": {
+      "title": "Painel de Análise",
+      "subtitle": "Análises operacionais sobre pedidos, testes e catálogo",
+      "last30days": "Últimos 30 dias",
+      "refresh": "Atualizar",
+      "metrics": {
+        "orders": "Pedidos (30d)",
+        "vsPrevious": "+0.0% vs período anterior",
+        "completionRate": "Taxa de Conclusão",
+        "completionDetails": "0 concluídos • 0 pendentes",
+        "testVolume": "Volume de Testes",
+        "testsPerOrder": "0.0 testes / pedido",
+        "revenue": "Receita (30d)",
+        "turnaround": "Tempo (médio / P90)",
+        "turnaroundDesc": "Criação → Conclusão",
+        "resultVerification": "Verificação de Resultados",
+        "verificationDetails": "0 verificados • 0 pendentes",
+        "abnormalResults": "Resultados Anormais",
+        "abnormalDetails": "0 de 0 resultados",
+        "incomingReferrals": "Encaminhamentos Recebidos"
+      },
+      "charts": {
+        "ordersTrend": "Tendência de Pedidos e Resultados",
+        "throughput": "Produtividade diária no período",
+        "orderStatusMix": "Mix de Status",
+        "statusDistribution": "Distribuição de status",
+        "noOrders": "Sem pedidos no período.",
+        "topTests": "Principais Testes",
+        "noTests": "Sem testes no período.",
+        "operationalMix": "Mix Operacional",
+        "priorityMix": "Mix de Prioridade",
+        "noPriority": "Sem dados de prioridade",
+        "paymentStatus": "Status de Pagamento",
+        "testCategories": "Categorias de Teste"
+      },
+      "quality": {
+        "title": "Tempo & Qualidade",
+        "sla": "SLA e indicadores de qualidade",
+        "orderTat": "TAT Pedido (médio/P90)",
+        "resultTat": "TAT Resultado (médio/P90)",
+        "sampleTat": "Coleta (médio/P90)",
+        "slaBreaches": "Violações de SLA",
+        "performed": "Resultados realizados",
+        "verified": "Resultados verificados",
+        "pending": "Pendente de verificação",
+        "abnormal": "Resultados anormais"
+      },
+      "referrals": {
+        "title": "Funil de Encaminhamento",
+        "subtitle": "Pipeline de encaminhamentos recebidos",
+        "received": "Recebidos",
+        "active": "Aceitos / Ativos",
+        "completed": "Concluídos",
+        "completionRate": "Taxa de Conclusão",
+        "status": "Status"
+      },
+      "catalog": {
+        "title": "Cobertura do Catálogo",
+        "subtitle": "Prontidão e amplitude do catálogo",
+        "total": "Total Catálogo",
+        "active": "Testes Ativos",
+        "local": "Testes Locais",
+        "categories": "Categorias"
+      },
+      "snapshot": {
+        "title": "Resumo do Período",
+        "avgOrderValue": "Valor médio pedido",
+        "inProgress": "Pedidos em andamento",
+        "cancelled": "Pedidos cancelados",
+        "overdue": "Pedidos atrasados (>48h)"
+      },
+      "alerts": {
+        "title": "Alertas Operacionais",
+        "subtitle": "Itens que requerem atenção",
+        "empty": "Sem alertas ativos."
+      }
+    },
+    "billing": {
+      "title": "Faturamento & Seguro",
+      "subtitle": "Transações ao vivo e pedidos de convênio.",
+      "refresh": "Atualizar",
+      "grossRevenue": "Receita Bruta",
+      "refunds": "Reembolsos",
+      "netRevenue": "Receita Líquida",
+      "completedTransactions": "0 transações concluídas",
+      "tabs": {
+        "transactions": "Transações",
+        "insurance": "Pedidos Convênio"
+      },
+      "search": "Buscar por status, tipo...",
+      "table": {
+        "date": "Data",
+        "type": "Tipo",
+        "status": "Status",
+        "description": "Descrição",
+        "amount": "Valor",
+        "empty": "Nenhuma transação encontrada"
+      }
+    },
+    "finances": {
+      "title": "Finanças",
+      "subtitle": "Gerencie renda, despesas, folha e exportações.",
+      "staffCompensation": {
+        "title": "Compensação da Equipe",
+        "addProfile": "Adicionar Perfil",
+        "empty": "Nenhum perfil de compensação."
+      },
+      "export": {
+        "title": "Exportar lançamentos",
+        "description": "Baixe em CSV para contabilidade.",
+        "from": "De",
+        "to": "Até",
+        "type": "Tipo",
+        "category": "Categoria",
+        "all": "Todos",
+        "export": "Exportar CSV",
+        "tip": "Dica: exporte mensalmente para seu contador."
+      },
+      "recurring": {
+        "title": "Recorrente",
+        "subtitle": "Automatize contas fixas (aluguel, taxas).",
+        "addRule": "Nova regra",
+        "status": "Status",
+        "noRuns": "Sem execuções",
+        "runDue": "Executar pendentes",
+        "asOf": "Em",
+        "runNow": "Executar agora",
+        "description": "Cria lançamentos para todas as regras com vencimento até a data.",
+        "noRules": "Sem regras recorrentes."
+      },
+      "categories": {
+        "title": "Categorias",
+        "subtitle": "Suprimentos, Impostos, Salários.",
+        "name": "Nome",
+        "color": "Cor",
+        "add": "Adicionar",
+        "empty": "Sem categorias.",
+        "tip": "Dica: use nomes consistentes."
+      },
+      "ledger": {
+        "title": "Livro Caixa",
+        "subtitle": "Gere renda, despesas e folha.",
+        "entries": "Lançamentos",
+        "income": "Renda",
+        "expenses": "Despesas",
+        "net": "Líquido",
+        "addEntry": "Novo lançamento",
+        "manual": "Manual",
+        "date": "Data",
+        "type": "Tipo",
+        "currency": "Moeda",
+        "amount": "Valor",
+        "reference": "Referência",
+        "description": "Descrição",
+        "empty": "Nenhum lançamento.",
+        "note": "Mostra até 200 lançamentos."
+      },
+      "compensationModal": {
+        "title": "Perfil de Compensação",
+        "staff": "Membro",
+        "select": "Selecionar...",
+        "type": "Tipo",
+        "salary": "Salário Fixo",
+        "amount": "Valor ($)",
+        "period": "Período",
+        "monthly": "Mensal",
+        "frequency": "Frequência",
+        "notes": "Notas",
+        "cancel": "Cancelar",
+        "save": "Salvar"
+      }
+    },
+    "referrals": {
+      "title": "Encaminhamentos",
+      "new": "Novo Encaminhamento",
+      "incoming": {
+        "title": "Entrada",
+        "subtitle": "Recebidos por seu laboratório",
+        "timezone": "Horário:",
+        "empty": "Nenhum encaminhamento."
+      },
+      "outgoing": {
+        "title": "Saída",
+        "subtitle": "Enviados por seu laboratório",
+        "timezone": "Horário:",
+        "empty": "Nenhum encaminhamento."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "Ativos",
+        "pending": "Convites",
+        "inactive": "Inativos",
+        "admins": "Admins"
+      },
+      "invite": {
+        "title": "Convidar Equipe",
+        "subtitle": "Crie convites e atribua papéis.",
+        "email": "E-mail",
+        "role": "Papel",
+        "technician": "Técnico",
+        "send": "Enviar Convite",
+        "preset": "Permissões"
+      },
+      "pending": {
+        "title": "Convites Pendentes",
+        "subtitle": "Gerencie ou revogue convites.",
+        "empty": "Sem convites pendentes."
+      },
+      "active": {
+        "title": "Gestão de Equipe",
+        "subtitle": "Edite papéis ou remova acesso.",
+        "search": "Buscar...",
+        "refresh": "Atualizar",
+        "empty": "Equipe ativa não encontrada."
+      },
+      "audit": {
+        "title": "Auditoria",
+        "subtitle": "Atividade recente da equipe.",
+        "empty": "Sem auditoria recente."
+      }
+    },
+    "verify": {
+      "title": "Verificar Documentos",
+      "description": "Verifique a autenticidade de documentos Tokito — planos, encaminhamentos, receitas e perfis.",
+      "input": "Código de Verificação",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verificar",
+      "types": {
+        "tp": "TP - Plano de Tratamento",
+        "rf": "RF - Encaminhamento",
+        "rx": "RX - Receita",
+        "pt": "PT - Perfil de Paciente"
+      },
+      "scan": "Escanear QR Code"
+    }
+  }
+}
