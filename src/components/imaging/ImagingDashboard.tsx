@@ -230,23 +230,23 @@ export default function ImagingDashboard() {
     fetchMyImagingCenter();
   }, [fetchMyImagingCenter]);
 
-  const sidebarItems: SidebarItem[] = [
-    { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
-    { id: "workflow", label: "Scan Workflow", icon: <ClipboardList className="h-5 w-5" /> },
-    { id: "reports", label: "Reports", icon: <FileImage className="h-5 w-5" /> },
-    { id: "equipment", label: "Equipment", icon: <Wrench className="h-5 w-5" /> },
-    { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
-    { id: "billing", label: "Billing", icon: <CreditCard className="h-5 w-5" /> },
-    { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
-    { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-    { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
+  const sidebarItems: SidebarItem[] = useMemo(() => [
+    { id: "overview", label: t("imagingDashboard.menu.overview", "Overview"), icon: <LayoutDashboard className="h-5 w-5" /> },
+    { id: "workflow", label: t("imagingDashboard.menu.scanWorkflow", "Scan Workflow"), icon: <ClipboardList className="h-5 w-5" /> },
+    { id: "reports", label: t("imagingDashboard.menu.reports", "Reports"), icon: <FileImage className="h-5 w-5" /> },
+    { id: "equipment", label: t("imagingDashboard.menu.equipment", "Equipment"), icon: <Wrench className="h-5 w-5" /> },
+    { id: "analytics", label: t("imagingDashboard.menu.analytics", "Analytics"), icon: <BarChart3 className="h-5 w-5" /> },
+    { id: "billing", label: t("imagingDashboard.menu.billing", "Billing"), icon: <CreditCard className="h-5 w-5" /> },
+    { id: "finances", label: t("imagingDashboard.menu.finances", "Finances"), icon: <DollarSign className="h-5 w-5" /> },
+    { id: "staff", label: t("imagingDashboard.menu.staff", "Staff"), icon: <Users className="h-5 w-5" /> },
+    { id: "referrals", label: t("imagingDashboard.menu.referrals", "Referrals"), icon: <ArrowRightLeft className="h-5 w-5" /> },
     {
       id: "settings",
-      label: "Settings",
+      label: t("imagingDashboard.menu.settings", "Settings"),
       icon: <Settings className="h-5 w-5" />,
       onClick: () => navigate("/imaging/settings"),
     },
-  ];
+  ], [t, navigate]);
 
   const centerId = myImagingCenter?.id || "";
 
