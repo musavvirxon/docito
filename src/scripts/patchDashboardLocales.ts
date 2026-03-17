@@ -334,7 +334,7 @@ const patientByLang: Record<string, PatientPatch> = {
     dashboard: { upcomingTitle: "即将到来的预约", upcomingEmpty: "暂无即将到来的预约。", viewAll: "查看全部预约" },
     appointments: { refresh: "刷新", book: "预约", upcoming: "即将到来", upcomingEmpty: "暂无即将到来的预约。", past: "历史", pastEmpty: "暂无历史预约。", open: "查看" },
     prescriptions: { title: "处方", emptyTitle: "暂无处方", emptyDesc: "您目前还没有任何处方。" },
-    records: { emptyTitle: "未找到病历", emptyDesc: "使用"添加"按钮添加您的第一条记录。" },
+    records: { emptyTitle: "未找到病历", emptyDesc: "使用\u201C添加\u201D按钮添加您的第一条记录。" },
     loading: "加载中...",
     settings: { profile: "编辑个人资料", preferences: "偏好设置", signOut: "退出登录", account: { timezone: "时区", timezoneHint: "所有预约时间将以您选择的时区显示。", language: "语言", selectLanguage: "选择语言" } }
   },

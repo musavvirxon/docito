@@ -9243,12 +9243,15 @@ export type Database = {
       finance_recurring_entity_runs_list: {
         Args: { p_entity_id: string; p_entity_type: string; p_limit?: number }
         Returns: {
-          entries_created: number
+          as_of: string
+          created_count: number
+          error_count: number
+          finished_at: string
           id: string
-          rules_run: number
-          run_at: string
-          status: string
-          total_cents: number
+          notes: string
+          skipped_count: number
+          source: string
+          started_at: string
         }[]
       }
       finance_recurring_entity_status: {
