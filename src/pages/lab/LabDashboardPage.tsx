@@ -260,11 +260,11 @@ export default function LabDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<FlaskConical className="h-12 w-12" />}
-            title="No Lab Center Found"
-            description="You don't have a lab center associated with your account."
+            title={t("dashboard.header.noCenter", "No Lab Center Found")}
+            description={t("dashboard.header.noCenterDescription", "You don't have a lab center associated with your account.")}
             action={
               <button onClick={() => navigate("/lab/register")} className="text-primary underline">
-                Register Lab
+                {t("dashboard.header.registerLab", "Register Lab")}
               </button>
             }
           />
