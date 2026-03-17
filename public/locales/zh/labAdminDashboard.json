@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "概览",
+      "orders": "订单",
+      "homeCollection": "居家采样",
+      "samples": "样本",
+      "analytics": "分析",
+      "billingInsurance": "账单 / 保险",
+      "finances": "财务",
+      "referrals": "转诊",
+      "staff": "员工",
+      "verifyDocuments": "验证文档",
+      "settings": "设置"
+    },
+    "header": {
+      "title": "实验室员工仪表板",
+      "subtitle": "从 Supabase 获取的订单、工作流、结果和分析",
+      "refresh": "刷新"
+    },
+    "overview": {
+      "title": "概览",
+      "analytics": "分析",
+      "totalOrders": "总订单数",
+      "pending": "待处理",
+      "inProgress": "进行中",
+      "completed": "已完成",
+      "pendingQueue": "待处理队列",
+      "inProgressQueue": "进行中",
+      "completedRecent": "最近完成",
+      "urgent": "加急 / STAT",
+      "overdue": "逾期 (>48小时)",
+      "recentOrders": {
+        "title": "最近实验室订单",
+        "subtitle": "最新订单和工作流状态",
+        "empty": "暂无实验室订单。"
+      },
+      "activity": {
+        "title": "动态信息",
+        "subtitle": "最近工作流更新",
+        "empty": "暂无动态。"
+      },
+      "queueHealth": {
+        "title": "队列状态",
+        "subtitle": "最近订单的运营快照",
+        "pending": "待处理",
+        "inProgress": "进行中",
+        "completed": "已完成",
+        "urgent": "加急 / STAT",
+        "overdue": "逾期 (>48小时)",
+        "footer": "完整运营分析和 SLA 指标请见“分析”标签页。"
+      }
+    },
+    "orders": {
+      "search": "按订单号、姓名或电话搜索...",
+      "statuses": "所有状态",
+      "newOrder": "新建手动订单",
+      "testOrders": "测试订单",
+      "empty": "未找到订单",
+      "details": {
+        "title": "订单详情",
+        "select": "选择订单以查看详情"
+      },
+      "statusList": {
+        "completed": "已完成",
+        "cancelled": "已取消",
+        "pending": "待处理",
+        "scheduled": "已预约",
+        "processing": "处理中",
+        "sampleCollected": "已采样"
+      }
+    },
+    "collections": {
+      "today": "今日采样",
+      "pendingAssignment": "待分配",
+      "inTransit": "运输中",
+      "completedToday": "今日完成",
+      "title": "居家样本采集",
+      "subtitle": "管理上门采集预约和人员分配",
+      "search": "按患者或地址搜索...",
+      "allStatus": "所有状态",
+      "table": {
+        "patient": "患者",
+        "address": "地址",
+        "scheduled": "已预约",
+        "collector": "采样员",
+        "status": "状态",
+        "actions": "操作",
+        "empty": "未找到采集记录"
+      },
+      "stats": {
+        "pending": "待处理",
+        "collected": "已采集",
+        "processing": "处理中",
+        "completed": "已完成"
+      }
+    },
+    "samples": {
+      "title": "样本管理",
+      "subtitle": "追踪从采集到结果的样本",
+      "search": "按样本ID、条码或患者搜索...",
+      "allStatus": "所有状态",
+      "table": {
+        "sample": "样本",
+        "patient": "患者",
+        "type": "类型",
+        "barcode": "条码",
+        "status": "状态",
+        "actions": "操作",
+        "empty": "未找到样本"
+      }
+    },
+    "analytics": {
+      "title": "分析仪表板",
+      "subtitle": "涵盖订单、测试、转诊和目录表现的分析",
+      "last30days": "过去30天",
+      "refresh": "刷新",
+      "metrics": {
+        "orders": "订单 (30天)",
+        "vsPrevious": "较上期 +0.0%",
+        "completionRate": "完成率",
+        "completionDetails": "0 已完成 • 0 待处理",
+        "testVolume": "测试量",
+        "testsPerOrder": "0.0 测试 / 订单",
+        "revenue": "收入 (30天)",
+        "turnaround": "周转时间 (均值 / P90)",
+        "turnaroundDesc": "创建 → 完成",
+        "resultVerification": "结果验证",
+        "verificationDetails": "0 已验证 • 0 待验证",
+        "abnormalResults": "异常结果",
+        "abnormalDetails": "0 / 0 项结果",
+        "incomingReferrals": "转入订单"
+      },
+      "charts": {
+        "ordersTrend": "订单、测试与结果趋势",
+        "throughput": "周期内每日实验室吞吐量",
+        "orderStatusMix": "订单状态分布",
+        "statusDistribution": "实验室测试状态分布",
+        "noOrders": "该周期内暂无订单。",
+        "topTests": "热门测试",
+        "noTests": "该周期内未找到测试项。",
+        "operationalMix": "运营分布",
+        "priorityMix": "优先级分布",
+        "noPriority": "暂无优先级数据",
+        "paymentStatus": "支付状态",
+        "testCategories": "测试类别"
+      },
+      "quality": {
+        "title": "周转与质量",
+        "sla": "SLA 与质量指标",
+        "orderTat": "订单 TAT (均值 / P90)",
+        "resultTat": "结果 TAT (均值 / P90)",
+        "sampleTat": "采样 TAT (均值 / P90)",
+        "slaBreaches": "SLA 违规",
+        "performed": "已执行结果",
+        "verified": "已验证结果",
+        "pending": "待验证",
+        "abnormal": "异常结果"
+      },
+      "referrals": {
+        "title": "转诊转化漏斗",
+        "subtitle": "该实验室的转诊订单流",
+        "received": "已收到",
+        "active": "已接受 / 进行中",
+        "completed": "已完成",
+        "completionRate": "完成率",
+        "status": "转诊状态"
+      },
+      "catalog": {
+        "title": "目录覆盖",
+        "subtitle": "测试目录广度与准备状态",
+        "total": "目录总量",
+        "active": "有效测试",
+        "local": "本地测试",
+        "categories": "分类"
+      },
+      "snapshot": {
+        "title": "当前周期快照",
+        "avgOrderValue": "订单均价",
+        "inProgress": "进行中订单",
+        "cancelled": "已取消订单",
+        "overdue": "逾期订单 (>48小时)"
+      },
+      "alerts": {
+        "title": "运营预警",
+        "subtitle": "工作流中需关注的项目",
+        "empty": "目前无活跃预警。"
+      }
+    },
+    "billing": {
+      "title": "账单与保险",
+      "subtitle": "实时交易与保险覆盖订单。",
+      "refresh": "刷新",
+      "grossRevenue": "总收入",
+      "refunds": "退款",
+      "netRevenue": "净收入",
+      "completedTransactions": "0 笔已完成交易",
+      "tabs": {
+        "transactions": "交易记录",
+        "insurance": "保险订单"
+      },
+      "search": "按状态、类型、描述搜索...",
+      "table": {
+        "date": "日期",
+        "type": "类型",
+        "status": "状态",
+        "description": "描述",
+        "amount": "金额",
+        "empty": "未找到交易记录"
+      }
+    },
+    "finances": {
+      "title": "财务",
+      "subtitle": "管理收支、薪资、报酬方案及导出。",
+      "staffCompensation": {
+        "title": "员工报酬",
+        "addProfile": "添加方案",
+        "empty": "暂无报酬方案。请为员工添加固定薪资、时薪或提成。"
+      },
+      "export": {
+        "title": "导出财务分录",
+        "description": "下载 CSV 账簿用于会计或审计。",
+        "from": "开始",
+        "to": "结束",
+        "type": "类型",
+        "category": "类别",
+        "all": "全部",
+        "export": "导出 CSV",
+        "tip": "提示：按月导出并分享给您的会计。"
+      },
+      "recurring": {
+        "title": "定期项目",
+        "subtitle": "自动化重复收支项目（房租、税费、订阅）。",
+        "addRule": "添加规则",
+        "status": "状态",
+        "noRuns": "无历史记录",
+        "runDue": "运行到期规则",
+        "asOf": "截止至",
+        "runNow": "立即运行",
+        "description": "将为所有符合到期日期的规则创建分录。",
+        "noRules": "暂无定期规则。"
+      },
+      "categories": {
+        "title": "分类",
+        "subtitle": "创建如耗材、税收、水电、工资等类别。",
+        "name": "名称",
+        "color": "颜色（可选）",
+        "add": "添加",
+        "empty": "暂无分类。",
+        "tip": "提示：统一命名规范以保证报告整洁。"
+      },
+      "ledger": {
+        "title": "总账",
+        "subtitle": "添加并管理收入、支出和薪资分录。",
+        "entries": "分录",
+        "income": "收入",
+        "expenses": "支出",
+        "net": "净额",
+        "addEntry": "添加分录",
+        "manual": "手动",
+        "date": "日期",
+        "type": "类型",
+        "currency": "货币",
+        "amount": "金额",
+        "reference": "引用（可选）",
+        "description": "描述（可选）",
+        "empty": "未找到符合条件的分录。",
+        "note": "注：每个过滤器最多显示 200 条分录。"
+      },
+      "compensationModal": {
+        "title": "添加报酬方案",
+        "staff": "员工",
+        "select": "选择员工...",
+        "type": "报酬类型",
+        "salary": "固定薪资",
+        "amount": "金额 ($)",
+        "period": "周期",
+        "monthly": "按月",
+        "frequency": "发放频率",
+        "notes": "备注（可选）",
+        "cancel": "取消",
+        "save": "保存"
+      }
+    },
+    "referrals": {
+      "title": "转诊",
+      "new": "新建转诊",
+      "incoming": {
+        "title": "转入订单",
+        "subtitle": "实验室收到的转诊单",
+        "timezone": "显示时区：",
+        "empty": "暂无转诊。"
+      },
+      "outgoing": {
+        "title": "转出订单",
+        "subtitle": "实验室送出的转诊单",
+        "timezone": "显示时区：",
+        "empty": "暂无转诊。"
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "活跃员工",
+        "pending": "待处理邀请",
+        "inactive": "不活跃 / 已禁用",
+        "admins": "管理员 / 经理"
+      },
+      "invite": {
+        "title": "邀请员工",
+        "subtitle": "创建邀请、分配角色并预设权限。",
+        "email": "电子邮箱",
+        "role": "角色",
+        "technician": "技术员",
+        "send": "发送邀请",
+        "preset": "权限预设"
+      },
+      "pending": {
+        "title": "待处理邀请",
+        "subtitle": "管理待处理邀请，重发或撤销。",
+        "empty": "暂无待处理邀请。"
+      },
+      "active": {
+        "title": "活跃员工管理",
+        "subtitle": "编辑角色、权限或移除访问权限。",
+        "search": "搜索员工...",
+        "refresh": "刷新",
+        "empty": "未找到活跃员工。"
+      },
+      "audit": {
+        "title": "员工审计日志",
+        "subtitle": "用于追溯的最近员工和邀请活动。",
+        "empty": "未找到审计记录。"
+      }
+    },
+    "verify": {
+      "title": "验证文档",
+      "description": "验证 Tokito 文档的真实性 — 治疗方案、转诊、处方及患者档案。",
+      "input": "输入或扫描验证码",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "验证",
+      "types": {
+        "tp": "TP - 治疗方案",
+        "rf": "RF - 转诊单",
+        "rx": "RX - 处方",
+        "pt": "PT - 患者档案"
+      },
+      "scan": "使用二维码扫描"
+    }
+  }
+}
