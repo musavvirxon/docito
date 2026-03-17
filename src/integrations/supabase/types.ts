@@ -9291,12 +9291,8 @@ export type Database = {
         }[]
       }
       finance_recurring_entity_status: {
-        Args: { p_entity_id: string; p_entity_type: string }
-        Returns: {
-          active_rules: number
-          last_run_at: string
-          next_run_at: string
-        }[]
+        Args: { p_as_of?: string; p_entity_id: string; p_entity_type: string }
+        Returns: Json
       }
       finance_recurring_rule_deactivate: {
         Args: { p_entity_id: string; p_entity_type: string; p_rule_id: string }
@@ -9305,31 +9301,23 @@ export type Database = {
       finance_recurring_rule_list: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: {
+          active: boolean
           amount_cents: number
-          autopost: boolean
-          category_id: string | null
-          created_at: string
+          category_id: string
+          category_name: string
           currency: string
-          day_of_month: number | null
-          description: string | null
-          entity_id: string
-          entity_type: string
-          frequency: string
+          day_of_month: number
+          day_of_week: number
+          description: string
+          end_date: string
+          entry_type: string
           id: string
-          is_active: boolean
-          last_posted_at: string | null
-          month_of_year: number | null
-          next_run_at: string | null
-          notes: string | null
+          interval_n: number
+          next_run_date: string
+          schedule: string
+          start_date: string
           updated_at: string
-          weekday: number | null
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "finance_recurring_expenses"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       finance_recurring_rule_runs_for_entity_run: {
         Args: { p_entity_run_id: string; p_limit?: number }
