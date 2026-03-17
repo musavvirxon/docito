@@ -1,4 +1,13 @@
 {
+  "account": "Account",
+  "dashboard": "Dashboard",
+  "superAdmin": "Super Admin",
+  "settings": "Settings",
+  "bugFeatureRequest": "Bug / Feature Request",
+  "switchRole": "Switch Role",
+  "current": "Current",
+  "signOut": "Sign out",
+
   "profile": {
     "account": "Account",
     "back": "Back",
