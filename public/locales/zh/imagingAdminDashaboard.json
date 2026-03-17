@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "概览",
+      "scanWorkflow": "扫描工作流",
+      "reports": "报告",
+      "equipment": "设备",
+      "analytics": "分析",
+      "billing": "账单",
+      "finances": "财务",
+      "referrals": "转诊",
+      "staff": "员工",
+      "verifyDocuments": "文档验证",
+      "settings": "设置"
+    },
+
+    "header": {
+      "title": "影像科员工控制台",
+      "subtitle": "从 Supabase 获取的订单、扫描工作流和分析数据",
+      "refresh": "刷新"
+    },
+
+    "common": {
+      "refresh": "刷新",
+      "export": "导出",
+      "exportCSV": "导出为 CSV",
+      "search": "搜索",
+      "all": "全部",
+      "allStatuses": "所有状态",
+      "noData": "暂无数据。",
+      "empty": "无可用数据。",
+      "cancel": "取消",
+      "save": "保存",
+      "add": "添加",
+      "actions": "操作"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "¥0.00",
+      "zeroHours": "0小时"
+    },
+
+    "statuses": {
+      "pending": "待处理",
+      "scheduled": "已预约",
+      "inProgress": "进行中",
+      "completed": "已完成",
+      "draft": "草稿",
+      "finalized": "已定稿",
+      "critical": "危急",
+      "cancelled": "已取消",
+      "processing": "处理中"
+    },
+
+    "time": {
+      "last30Days": "最近 30 天",
+      "last90Days": "最近 90 天",
+      "today": "今天",
+      "dateLabels": [
+        "2026-02-19",
+        "2026-02-25",
+        "2026-03-03",
+        "2026-03-09",
+        "2026-03-17"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "概览",
+      "analytics": "分析",
+
+      "stats": {
+        "totalOrders": "订单总数",
+        "pendingScheduled": "待处理 / 已预约",
+        "inProgress": "进行中",
+        "completed": "已完成"
+      },
+
+      "queue": {
+        "pendingQueue": "待处理队列",
+        "scheduled": "已预约",
+        "inProgress": "进行中",
+        "completed": "已完成",
+        "urgent": "紧急 / STAT",
+        "overdue": "逾期 (>48小时)"
+      },
+
+      "recentOrders": {
+        "title": "近期影像订单",
+        "subtitle": "最新的影像转诊和工作流状态",
+        "empty": "暂无影像订单。"
+      },
+
+      "activity": {
+        "title": "活动动态",
+        "subtitle": "近期工作流更新",
+        "empty": "近期无活动。"
+      },
+
+      "queueHealth": {
+        "title": "队列健康度",
+        "subtitle": "近期影像订单概览",
+        "topModality": "热门检查类别",
+        "footer": "完整趋势、周转时间、人口统计、转诊来源和收入指标可在“分析”选项卡中查看。"
+      }
+    },
+
+    "analytics": {
+      "title": "分析",
+      "refresh": "刷新",
+      "export": "导出",
+
+      "metrics": {
+        "totalScans": "扫描总数",
+        "completed": "0 已完成",
+        "pending": "0 待处理",
+        "vsPrev": "较上期 0%",
+
+        "netRevenue": "净收入",
+        "revenueDetail": "¥0.00 收入 • ¥0.00 退款",
+
+        "avgReportTime": "平均报告时间",
+        "avgAcceptTime": "平均接单时间: 0小时",
+
+        "opsHealth": "运营健康度",
+        "util": "0% 利用率",
+        "backlog": "0 积压",
+        "open": "0 开启"
+      },
+
+      "charts": {
+        "dailyTrend": "每日趋势",
+        "trendDesc": "扫描量和收入随时间的变化",
+
+        "modalityMix": "检查类别占比",
+        "workflow": "工作流",
+        "referralStatus": "转诊状态",
+        "topReferrers": "主要转诊来源",
+        "peakHours": "高峰时段",
+        "patientDemographics": "患者人口统计",
+        "gender": "性别",
+        "ageBuckets": "年龄段",
+        "turnaround": "各类别周转时间",
+        "revenueByModality": "各类别收入",
+
+        "empty": "暂无数据。",
+        "noRevenue": "暂无各类别收入数据。"
+      }
+    },
+
+    "workflow": {
+      "title": "扫描工作流",
+      "subtitle": "在此创建现场订单，管理从预约到报告交付的扫描流程。",
+      "newWalkIn": "新建现场订单",
+      "searchPlaceholder": "按患者、订单号或检查项搜索...",
+      "empty": "未找到扫描记录"
+    },
+
+    "orderForm": {
+      "title": "新建手动影像订单",
+
+      "fields": {
+        "fullName": "姓名 *",
+        "phone": "电话 *",
+        "email": "电子邮件（可选）",
+        "dob": "出生日期（可选）",
+        "modality": "检查类别",
+        "studyName": "检查名称 *",
+        "bodyPart": "检查部位（可选）",
+        "contrast": "造影剂",
+        "priority": "优先级",
+        "preferredDate": "首选日期（可选）",
+        "preferredTime": "首选时段（可选）",
+        "reason": "原因（可选）",
+        "clinicalNotes": "临床说明（可选）"
+      },
+
+      "placeholders": {
+        "phone": "+86 138 0000 0000",
+        "email": "email@example.com",
+        "dob": "年/月/日",
+        "study": "胸部 X 光、脑部 MRI...",
+        "bodyPart": "胸部、脑部、膝盖...",
+        "time": "例如：09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "关于此条目的备注..."
+      },
+
+      "actions": {
+        "cancel": "取消",
+        "submit": "创建影像订单"
+      }
+    },
+
+    "reports": {
+      "search": "搜索报告...",
+      "allReports": "所有报告",
+      "empty": "未找到报告",
+
+      "columns": {
+        "order": "订单",
+        "patient": "患者",
+        "exam": "检查",
+        "modality": "类别",
+        "status": "状态",
+        "radiologist": "放射科医生",
+        "actions": "操作"
+      }
+    },
+
+    "equipment": {
+      "title": "设备",
+      "subtitle": "管理扫描仪及容量（存储同步中...）",
+      "search": "搜索设备...",
+      "empty": "未找到设备",
+
+      "columns": {
+        "name": "名称",
+        "modality": "类别",
+        "status": "状态",
+        "capacity": "每日容量"
+      },
+
+      "form": {
+        "title": "添加设备",
+        "name": "名称",
+        "modality": "类别",
+        "status": "状态",
+        "manufacturer": "制造商",
+        "model": "型号",
+        "serial": "序列号",
+        "capacity": "每日容量",
+        "scanTypes": "扫描类型（用逗号分隔）"
+      }
+    },
+
+    "billing": {
+      "partial": "账单视图部分加载",
+      "warning": "由于架构或当前权限限制，部分表格可能不可用。",
+
+      "metrics": {
+        "processedRevenue": "已处理收入",
+        "transactions": "交易笔数",
+        "averageTicket": "客单价",
+        "collectionRate": "回收率",
+        "outstanding": "待付发票",
+        "holds": "付款保留",
+        "subscriptions": "有效订阅",
+        "risk": "风险 / 流失"
+      },
+
+      "charts": {
+        "revenueTrend": "收入趋势",
+        "statusMix": "交易状态占比",
+        "types": "交易类型",
+        "invoiceStatus": "发票状态",
+        "plans": "订阅计划",
+        "methods": "支付方式",
+        "providers": "服务商 / 网关",
+        "recent": "近期交易",
+        "success": "每日交易成功率",
+        "revenueType": "收入类型占比"
+      }
+    },
+
+    "verify": {
+      "title": "文档验证",
+      "input": "输入或扫描验证码",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "验证",
+      "scan": "改为扫描二维码"
+    }
+  }
+}
