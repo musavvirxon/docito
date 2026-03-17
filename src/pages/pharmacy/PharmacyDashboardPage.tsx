@@ -351,13 +351,13 @@ export default function PharmacyDashboardPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Prescription Inbox</h3>
-              <p className="text-sm text-muted-foreground mb-4">New and pending prescriptions for your pharmacy.</p>
+              <h3 className="font-semibold mb-2">{t("pharmacyDashboard.prescriptions.inbox", "Prescription Inbox")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t("pharmacyDashboard.prescriptions.subtitle", "New and pending prescriptions for your pharmacy.")}</p>
               <PharmacyPrescriptionInbox pharmacyId={pharmacyId} />
             </div>
             <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Fulfillment Queue</h3>
-              <p className="text-sm text-muted-foreground mb-4">Process and dispatch orders efficiently.</p>
+              <h3 className="font-semibold mb-2">{t("pharmacyDashboard.fulfillment.title", "Fulfillment Queue")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t("pharmacyDashboard.fulfillment.subtitle", "Process and dispatch orders efficiently.")}</p>
               <FulfillmentQueue pharmacyId={pharmacyId} />
             </div>
           </div>
