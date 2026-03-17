@@ -240,11 +240,11 @@ export default function LabDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<FlaskConical className="h-12 w-12" />}
-            title="Sign in required"
-            description="Please sign in to access the lab dashboard."
+            title={t("dashboard.header.signInRequired", "Sign in required")}
+            description={t("dashboard.header.signInDescription", "Please sign in to access the lab dashboard.")}
             action={
               <button onClick={() => navigate("/auth")} className="text-primary underline">
-                Sign In
+                {t("dashboard.header.signIn", "Sign In")}
               </button>
             }
           />
