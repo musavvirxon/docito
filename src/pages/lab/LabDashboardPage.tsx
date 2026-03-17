@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -108,6 +109,7 @@ async function fetchMyLabCenter(userId: string): Promise<LabCenterRow | null> {
 export default function LabDashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("labAdminDashboard");
   const { user, loading: authLoading, activeRole } = useAuth();
 
   const [activeTab, setActiveTab] = useState<LabTab>("overview");
@@ -198,24 +200,24 @@ export default function LabDashboardPage() {
 
   const sidebarItems: SidebarItem[] = useMemo(
     () => [
-      { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
-      { id: "orders", label: "Orders", icon: <ClipboardList className="h-5 w-5" /> },
-      { id: "home", label: "Home Collection", icon: <Home className="h-5 w-5" /> },
-      { id: "samples", label: "Samples", icon: <TestTube2 className="h-5 w-5" /> },
-      { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
-      { id: "billing", label: "Billing / Insurance", icon: <CreditCard className="h-5 w-5" /> },
-      { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
-      { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
-      { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
+      { id: "overview", label: t("dashboard.menu.overview", "Overview"), icon: <LayoutDashboard className="h-5 w-5" /> },
+      { id: "orders", label: t("dashboard.menu.orders", "Orders"), icon: <ClipboardList className="h-5 w-5" /> },
+      { id: "home", label: t("dashboard.menu.homeCollection", "Home Collection"), icon: <Home className="h-5 w-5" /> },
+      { id: "samples", label: t("dashboard.menu.samples", "Samples"), icon: <TestTube2 className="h-5 w-5" /> },
+      { id: "analytics", label: t("dashboard.menu.analytics", "Analytics"), icon: <BarChart3 className="h-5 w-5" /> },
+      { id: "billing", label: t("dashboard.menu.billingInsurance", "Billing / Insurance"), icon: <CreditCard className="h-5 w-5" /> },
+      { id: "finances", label: t("dashboard.menu.finances", "Finances"), icon: <DollarSign className="h-5 w-5" /> },
+      { id: "referrals", label: t("dashboard.menu.referrals", "Referrals"), icon: <ArrowRightLeft className="h-5 w-5" /> },
+      { id: "staff", label: t("dashboard.menu.staff", "Staff"), icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: t("dashboard.menu.verifyDocuments", "Verify Documents"), icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
-        label: "Settings",
+        label: t("dashboard.menu.settings", "Settings"),
         icon: <Settings className="h-5 w-5" />,
         onClick: () => navigate("/lab/settings"),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   const isLoading = authLoading || loadingCenter;
@@ -225,7 +227,7 @@ export default function LabDashboardPage() {
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">{t("dashboard.header.loading", "Loading...")}</p>
         </div>
       </div>
     );
@@ -238,11 +240,11 @@ export default function LabDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<FlaskConical className="h-12 w-12" />}
-            title="Sign in required"
-            description="Please sign in to access the lab dashboard."
+            title={t("dashboard.header.signInRequired", "Sign in required")}
+            description={t("dashboard.header.signInDescription", "Please sign in to access the lab dashboard.")}
             action={
               <button onClick={() => navigate("/auth")} className="text-primary underline">
-                Sign In
+                {t("dashboard.header.signIn", "Sign In")}
               </button>
             }
           />
@@ -258,11 +260,11 @@ export default function LabDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<FlaskConical className="h-12 w-12" />}
-            title="No Lab Center Found"
-            description="You don't have a lab center associated with your account."
+            title={t("dashboard.header.noCenter", "No Lab Center Found")}
+            description={t("dashboard.header.noCenterDescription", "You don't have a lab center associated with your account.")}
             action={
               <button onClick={() => navigate("/lab/register")} className="text-primary underline">
-                Register Lab
+                {t("dashboard.header.registerLab", "Register Lab")}
               </button>
             }
           />
@@ -307,7 +309,7 @@ export default function LabDashboardPage() {
           {ordersLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Loading orders…</span>
+              <span>{t("dashboard.orders.loading", "Loading orders…")}</span>
             </div>
           ) : (
             <LabOrderQueue orders={orders as any} labCenterId={labCenterId} onRefresh={fetchOrders} />

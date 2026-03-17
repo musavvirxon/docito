@@ -2,6 +2,7 @@
 // Path: src/pages/pharmacy/PharmacyDashboardPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -91,6 +92,7 @@ async function fetchMyPharmacy(userId: string): Promise<PharmacyRow | null> {
 export default function PharmacyDashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const { user, loading: authLoading, activeRole } = useAuth();
 
   const [activeTab, setActiveTab] = useState("overview");
@@ -130,25 +132,25 @@ export default function PharmacyDashboardPage() {
 
   const sidebarItems: SidebarItem[] = useMemo(
     () => [
-      { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
-      { id: "prescriptions", label: "Prescriptions", icon: <ClipboardList className="h-5 w-5" /> },
-      { id: "fulfillment", label: "Fulfillment", icon: <Pill className="h-5 w-5" /> },
-      { id: "inventory", label: "Inventory", icon: <Package className="h-5 w-5" /> },
-      { id: "deliveries", label: "Deliveries", icon: <Truck className="h-5 w-5" /> },
-      { id: "referrals", label: "Referrals", icon: <ShieldCheck className="h-5 w-5" /> },
-      { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
-      { id: "claims", label: "Billing / Claims", icon: <CreditCard className="h-5 w-5" /> },
-      { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
-      { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
+      { id: "overview", label: t("pharmacyDashboard.menu.overview", "Overview"), icon: <LayoutDashboard className="h-5 w-5" /> },
+      { id: "prescriptions", label: t("pharmacyDashboard.menu.prescriptions", "Prescriptions"), icon: <ClipboardList className="h-5 w-5" /> },
+      { id: "fulfillment", label: t("pharmacyDashboard.menu.fulfillment", "Fulfillment"), icon: <Pill className="h-5 w-5" /> },
+      { id: "inventory", label: t("pharmacyDashboard.menu.inventory", "Inventory"), icon: <Package className="h-5 w-5" /> },
+      { id: "deliveries", label: t("pharmacyDashboard.menu.deliveries", "Deliveries"), icon: <Truck className="h-5 w-5" /> },
+      { id: "referrals", label: t("pharmacyDashboard.menu.referrals", "Referrals"), icon: <ShieldCheck className="h-5 w-5" /> },
+      { id: "analytics", label: t("pharmacyDashboard.menu.analytics", "Analytics"), icon: <BarChart3 className="h-5 w-5" /> },
+      { id: "claims", label: t("pharmacyDashboard.menu.billingClaims", "Billing / Claims"), icon: <CreditCard className="h-5 w-5" /> },
+      { id: "finances", label: t("pharmacyDashboard.menu.finances", "Finances"), icon: <DollarSign className="h-5 w-5" /> },
+      { id: "staff", label: t("pharmacyDashboard.menu.staff", "Staff"), icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: t("pharmacyDashboard.menu.verifyDocuments", "Verify Documents"), icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
-        label: "Settings",
+        label: t("pharmacyDashboard.menu.settings", "Settings"),
         icon: <Settings className="h-5 w-5" />,
         onClick: () => navigate("/pharmacy/settings"),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   const fetchOverview = async () => {
@@ -244,12 +246,12 @@ export default function PharmacyDashboardPage() {
 
   const statCards: StatCardProps[] = useMemo(
     () => [
-      { label: "Prescriptions Today", value: stats.prescriptionsToday, icon: <Calendar className="h-6 w-6" /> },
-      { label: "Pending Fulfillment", value: stats.pendingFulfillment, icon: <Pill className="h-6 w-6" /> },
-      { label: "Deliveries In Progress", value: stats.deliveriesInProgress, icon: <Activity className="h-6 w-6" /> },
-      { label: "Completed Today", value: stats.completedToday, icon: <CheckCircle className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.prescriptionsToday", "Prescriptions Today"), value: stats.prescriptionsToday, icon: <Calendar className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.pendingFulfillment", "Pending Fulfillment"), value: stats.pendingFulfillment, icon: <Pill className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.deliveriesInProgress", "Deliveries In Progress"), value: stats.deliveriesInProgress, icon: <Activity className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.completedToday", "Completed Today"), value: stats.completedToday, icon: <CheckCircle className="h-6 w-6" /> },
     ],
-    [stats],
+    [stats, t],
   );
 
   const isLoading = authLoading || loading;
@@ -259,7 +261,7 @@ export default function PharmacyDashboardPage() {
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">{t("pharmacyDashboard.header.loading", "Loading...")}</p>
         </div>
       </div>
     );
@@ -272,11 +274,11 @@ export default function PharmacyDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<Pill className="h-12 w-12" />}
-            title="Sign in required"
-            description="Please sign in to access the pharmacy dashboard."
+            title={t("pharmacyDashboard.header.signInRequired", "Sign in required")}
+            description={t("pharmacyDashboard.header.signInDescription", "Please sign in to access the pharmacy dashboard.")}
             action={
               <button onClick={() => navigate("/auth")} className="text-primary underline">
-                Sign In
+                {t("pharmacyDashboard.header.signIn", "Sign In")}
               </button>
             }
           />
@@ -292,11 +294,11 @@ export default function PharmacyDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<Pill className="h-12 w-12" />}
-            title="No Pharmacy Found"
-            description="You don't have a pharmacy associated with your account."
+            title={t("pharmacyDashboard.header.noCenter", "No Pharmacy Found")}
+            description={t("pharmacyDashboard.header.noCenterDescription", "You don't have a pharmacy associated with your account.")}
             action={
               <button onClick={() => navigate("/pharmacy/register")} className="text-primary underline">
-                Register Pharmacy
+                {t("pharmacyDashboard.header.registerPharmacy", "Register Pharmacy")}
               </button>
             }
           />
@@ -331,8 +333,8 @@ export default function PharmacyDashboardPage() {
       {activeTab === "overview" && (
         <>
           <PageHeader
-            title="Pharmacy Dashboard"
-            description="Prescriptions, fulfillment, analytics, and billing pulled from Supabase"
+            title={t("pharmacyDashboard.header.title", "Pharmacy Dashboard")}
+            description={t("pharmacyDashboard.header.subtitle", "Prescriptions, fulfillment, analytics, and billing pulled from Supabase")}
             actions={
               <button
                 className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
@@ -340,7 +342,7 @@ export default function PharmacyDashboardPage() {
                 disabled={overviewLoading}
               >
                 {overviewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Refresh
+                {t("pharmacyDashboard.header.refresh", "Refresh")}
               </button>
             }
           />
@@ -349,13 +351,13 @@ export default function PharmacyDashboardPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Prescription Inbox</h3>
-              <p className="text-sm text-muted-foreground mb-4">New and pending prescriptions for your pharmacy.</p>
+              <h3 className="font-semibold mb-2">{t("pharmacyDashboard.prescriptions.inbox", "Prescription Inbox")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t("pharmacyDashboard.prescriptions.subtitle", "New and pending prescriptions for your pharmacy.")}</p>
               <PharmacyPrescriptionInbox pharmacyId={pharmacyId} />
             </div>
             <div className="rounded-lg border bg-card text-card-foreground p-4">
-              <h3 className="font-semibold mb-2">Fulfillment Queue</h3>
-              <p className="text-sm text-muted-foreground mb-4">Process and dispatch orders efficiently.</p>
+              <h3 className="font-semibold mb-2">{t("pharmacyDashboard.fulfillment.title", "Fulfillment Queue")}</h3>
+              <p className="text-sm text-muted-foreground mb-4">{t("pharmacyDashboard.fulfillment.subtitle", "Process and dispatch orders efficiently.")}</p>
               <FulfillmentQueue pharmacyId={pharmacyId} />
             </div>
           </div>

@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -216,6 +217,7 @@ function priorityBadge(priority: string) {
 export default function ImagingDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("imagingAdminDashboard");
   const { user, loading: authLoading, activeRole } = useAuth();
   const { myImagingCenter, fetchMyImagingCenter, loading: centerLoading } = useImagingCenter();
 
@@ -227,23 +229,23 @@ export default function ImagingDashboard() {
     fetchMyImagingCenter();
   }, [fetchMyImagingCenter]);
 
-  const sidebarItems: SidebarItem[] = [
-    { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
-    { id: "workflow", label: "Scan Workflow", icon: <ClipboardList className="h-5 w-5" /> },
-    { id: "reports", label: "Reports", icon: <FileImage className="h-5 w-5" /> },
-    { id: "equipment", label: "Equipment", icon: <Wrench className="h-5 w-5" /> },
-    { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
-    { id: "billing", label: "Billing", icon: <CreditCard className="h-5 w-5" /> },
-    { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
-    { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-    { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
+  const sidebarItems: SidebarItem[] = useMemo(() => [
+    { id: "overview", label: t("imagingDashboard.menu.overview", "Overview"), icon: <LayoutDashboard className="h-5 w-5" /> },
+    { id: "workflow", label: t("imagingDashboard.menu.scanWorkflow", "Scan Workflow"), icon: <ClipboardList className="h-5 w-5" /> },
+    { id: "reports", label: t("imagingDashboard.menu.reports", "Reports"), icon: <FileImage className="h-5 w-5" /> },
+    { id: "equipment", label: t("imagingDashboard.menu.equipment", "Equipment"), icon: <Wrench className="h-5 w-5" /> },
+    { id: "analytics", label: t("imagingDashboard.menu.analytics", "Analytics"), icon: <BarChart3 className="h-5 w-5" /> },
+    { id: "billing", label: t("imagingDashboard.menu.billing", "Billing"), icon: <CreditCard className="h-5 w-5" /> },
+    { id: "finances", label: t("imagingDashboard.menu.finances", "Finances"), icon: <DollarSign className="h-5 w-5" /> },
+    { id: "staff", label: t("imagingDashboard.menu.staff", "Staff"), icon: <Users className="h-5 w-5" /> },
+    { id: "referrals", label: t("imagingDashboard.menu.referrals", "Referrals"), icon: <ArrowRightLeft className="h-5 w-5" /> },
     {
       id: "settings",
-      label: "Settings",
+      label: t("imagingDashboard.menu.settings", "Settings"),
       icon: <Settings className="h-5 w-5" />,
       onClick: () => navigate("/imaging/settings"),
     },
-  ];
+  ], [t, navigate]);
 
   const centerId = myImagingCenter?.id || "";
 
@@ -527,73 +529,73 @@ export default function ImagingDashboard() {
 
     return [
       {
-        label: "Scheduled Today",
+        label: t("imagingDashboard.overview.stats.scheduledToday", "Scheduled Today"),
         value: s.scheduledToday,
         icon: <Calendar className="h-6 w-6" />,
-        description: "Scans scheduled for today",
+        description: t("imagingDashboard.overview.stats.scheduledTodayDesc", "Scans scheduled for today"),
         color: "info",
       },
       {
-        label: "In Progress Queue",
+        label: t("imagingDashboard.overview.stats.inProgress", "In Progress Queue"),
         value: s.inProgress,
         icon: <Activity className="h-6 w-6" />,
-        description: "Checked-in + active workflow",
+        description: t("imagingDashboard.overview.stats.inProgressDesc", "Checked-in + active workflow"),
         color: "warning",
       },
       {
-        label: "Pending Reports",
+        label: t("imagingDashboard.overview.stats.pendingReports", "Pending Reports"),
         value: s.pendingReports,
         icon: <FileText className="h-6 w-6" />,
-        description: "Images ready / awaiting report",
+        description: t("imagingDashboard.overview.stats.pendingReportsDesc", "Images ready / awaiting report"),
         color: "danger",
       },
       {
-        label: "Completed Today",
+        label: t("imagingDashboard.overview.stats.completed", "Completed Today"),
         value: s.completedToday,
         icon: <CheckCircle className="h-6 w-6" />,
-        description: "Reports completed today",
+        description: t("imagingDashboard.overview.stats.completedDesc", "Reports completed today"),
         color: "success",
       },
       {
-        label: "Delivered Today",
+        label: t("imagingDashboard.overview.stats.deliveredToday", "Delivered Today"),
         value: s.deliveredToday,
         icon: <Radio className="h-6 w-6" />,
-        description: "Results delivered today",
+        description: t("imagingDashboard.overview.stats.deliveredTodayDesc", "Results delivered today"),
         color: "primary",
       },
       {
-        label: "Incoming (7d)",
+        label: t("imagingDashboard.overview.stats.incoming7d", "Incoming (7d)"),
         value: s.incoming7d,
         icon: <ClipboardList className="h-6 w-6" />,
-        description: "New imaging referrals (7 days)",
+        description: t("imagingDashboard.overview.stats.incoming7dDesc", "New imaging referrals (7 days)"),
         color: "info",
       },
       {
-        label: "Completion Rate (7d)",
+        label: t("imagingDashboard.overview.stats.completionRate7d", "Completion Rate (7d)"),
         value: `${s.completionRate7d}%`,
         icon: <BarChart3 className="h-6 w-6" />,
-        description: "Completed/delivered vs incoming",
+        description: t("imagingDashboard.overview.stats.completionRate7dDesc", "Completed/delivered vs incoming"),
         color: "success",
       },
       {
-        label: "Avg Queue Age",
+        label: t("imagingDashboard.overview.stats.avgQueueAge", "Avg Queue Age"),
         value: `${s.avgQueueAgeHours}h`,
         icon: <Clock3 className="h-6 w-6" />,
-        description: "Open order age average",
+        description: t("imagingDashboard.overview.stats.avgQueueAgeDesc", "Open order age average"),
         color: "warning",
       },
       {
-        label: "Active Staff",
+        label: t("imagingDashboard.overview.stats.activeStaff", "Active Staff"),
         value: s.activeStaff,
         icon: <UserCheck className="h-6 w-6" />,
-        description: "Active imaging staff members",
+        description: t("imagingDashboard.overview.stats.activeStaffDesc", "Active imaging staff members"),
         color: "primary",
       },
       {
-        label: "Active Equipment",
+        label: t("imagingDashboard.overview.stats.activeEquipment", "Active Equipment"),
         value: s.activeEquipment,
         icon: <Wrench className="h-6 w-6" />,
-        description: "Operational modalities/devices",
+        description: t("imagingDashboard.overview.stats.activeEquipmentDesc", "Operational modalities/devices"),
         color: "success",
       },
     ];
@@ -606,7 +608,7 @@ export default function ImagingDashboard() {
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">{t("imagingDashboard.common.loading", "Loading...")}</p>
         </div>
       </div>
     );
@@ -620,11 +622,11 @@ export default function ImagingDashboard() {
           <Card className="max-w-md">
             <CardContent className="pt-6 text-center">
               <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <CardTitle className="mb-2">Sign In Required</CardTitle>
+              <CardTitle className="mb-2">{t("imagingDashboard.common.signInRequired", "Sign In Required")}</CardTitle>
               <CardDescription className="mb-4">
-                Please sign in to access the imaging center dashboard.
+                {t("imagingDashboard.common.signInDescription", "Please sign in to access the imaging center dashboard.")}
               </CardDescription>
-              <Button onClick={() => navigate("/auth")}>Sign In</Button>
+              <Button onClick={() => navigate("/auth")}>{t("imagingDashboard.common.signIn", "Sign In")}</Button>
             </CardContent>
           </Card>
         </div>
@@ -640,11 +642,11 @@ export default function ImagingDashboard() {
           <Card className="max-w-md">
             <CardContent className="pt-6 text-center">
               <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <CardTitle className="mb-2">No Imaging Center Found</CardTitle>
+              <CardTitle className="mb-2">{t("imagingDashboard.common.noCenter", "No Imaging Center Found")}</CardTitle>
               <CardDescription className="mb-4">
-                You don't have an imaging center associated with your account.
+                {t("imagingDashboard.common.noCenterDescription", "You don't have an imaging center associated with your account.")}
               </CardDescription>
-              <Button onClick={() => navigate("/imaging/register")}>Register Imaging Center</Button>
+              <Button onClick={() => navigate("/imaging/register")}>{t("imagingDashboard.common.registerCenter", "Register Imaging Center")}</Button>
             </CardContent>
           </Card>
         </div>
