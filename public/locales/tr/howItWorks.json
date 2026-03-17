@@ -282,6 +282,38 @@
       "q7": { "question": "Sigorta kullanabilir miyim?", "answer": "Sigorta desteği sağlayıcıya ve bölgeye bağlıdır; seçenekler randevuda görünebilir." },
       "q8": { "question": "Mobil uygulama var mı?", "answer": "Mobil web deneyimi hazır; yerel uygulamalar yakında." }
     },
+    "rolesIntro": {
+  "subtitle": "Tek platform, bakım yolculuğundaki her rolü birbirine bağlar.",
+  "cards": {
+    "platform": { "title": "Tek platform", "desc": "Hastalar, doktorlar, klinikler, laboratuvarlar, görüntüleme merkezleri ve eczaneler — hepsi tek bir iş akışında." },
+    "dashboards": { "title": "Rol panelleri", "desc": "Her rol, yalnızca ihtiyacı olanı gören özel bir arayüz alır." },
+    "trust": { "title": "Tasarımla güven", "desc": "Doğrulanmış sağlayıcılar, rol tabanlı erişim, şifreli depolama ve tam denetim izleri." }
+  }
+},
+"automation": {
+  "tag": "Personele hazır operasyonlar",
+  "title": "Manuel işi azaltan otomasyon",
+  "items": {
+    "scheduling": { "title": "Akıllı zamanlama ve hatırlatıcılar", "desc": "Onaylar, hatırlatıcılar ve akıllı yeniden zamanlama ile randevu kaçırmayı azaltın." },
+    "checkin": { "title": "Check-in ve kuyruk yönetimi", "desc": "Hastaları net durum ve sahiplik ile iş akışlarından geçirin." },
+    "documentation": { "title": "Ziyaret şablonları ve belgeleme", "desc": "Tanıdan reçete, dosya ve klinik notlara kadar yapılandırılmış akışlar." },
+    "referrals": { "title": "Sevkler ve bakım koordinasyonu", "desc": "Sevkleri ve siparişleri takiple doğru tesise yönlendirin." },
+    "results": { "title": "Tanı sonuçları teslimi", "desc": "Laboratuvar ve görüntüleme sonuçlarını doğru rollere güvenli iletini." },
+    "fulfillment": { "title": "Reçete karşılama iş akışı", "desc": "Hazırlama, teslim alma, teslimat ve onayları takip edin." }
+  }
+},
+"faq": {
+  "title": "Sıkça Sorulan Sorular",
+  "subtitle": "Docito'nun nasıl çalıştığına dair yaygın sorular",
+  "q1": { "question": "Personel nasıl erişim kazanır?", "answer": "Yöneticiler personeli davet eder ve en az ayrıcalıklı rollerle atar." },
+  "q2": { "question": "Personel, doktor ve hastalar ne görür?", "answer": "RBAC verileri role göre sınırlandırır; erişim denetlenebilir." },
+  "q3": { "question": "Sevkler zamanlamayla nasıl bağlantılıdır?", "answer": "Sevkler, tesis kuyruklarına ve zamanlamaya akan talepler oluşturabilir." },
+  "q4": { "question": "Sonuçlar nasıl iletilir?", "answer": "Sonuçlar yetkili rollerle paylaşılır ve bildirimlerle panolarda görünür." },
+  "q5": { "question": "Eczaneler karşılamayı nasıl onaylar?", "answer": "Eczaneler karşılama durumunu günceller ve tamamlamayı onaylar." },
+  "q6": { "question": "Veriler güvenli mi?", "answer": "Docito, hasta verilerini korumak için şifreli depolama, RBAC ve denetim izleri kullanır." },
+  "q7": { "question": "Sigorta kullanabilir miyim?", "answer": "Sigorta desteği sağlayıcılara ve bölgeye göre değişir." },
+  "q8": { "question": "Mobil uygulama var mı?", "answer": "Mobil deneyimler bugün mevcut; yerel uygulamalar yakında geliyor." }
+},
     "cta": {
       "title": "Docito’ya hazır mısınız?",
       "subtitle": "Aramayla başlayın — ya da doğrulanmış sağlayıcı olarak katılın ve klinik iş akışlarını güçlendirin.",
