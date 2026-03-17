@@ -564,6 +564,8 @@
     },
 
     "staff": {
+      "active": "active",
+      "total": "total",
       "stats": {
         "active": "Active Staff",
         "pending": "Pending Invitations",
