@@ -2524,6 +2524,7 @@ export type Database = {
           occurred_at: string
           reference: string | null
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           amount_cents?: number
@@ -2540,6 +2541,7 @@ export type Database = {
           occurred_at?: string
           reference?: string | null
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           amount_cents?: number
@@ -2556,6 +2558,7 @@ export type Database = {
           occurred_at?: string
           reference?: string | null
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -9100,6 +9103,11 @@ export type Database = {
         Args: { p_doctor_id: string }
         Returns: number
       }
+      can_access_entity: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: boolean
+      }
+      can_access_practice: { Args: { p_practice_id: string }; Returns: boolean }
       can_send_message: { Args: { conv_id: string }; Returns: boolean }
       cancel_or_update_appointment: {
         Args: {
@@ -9223,6 +9231,16 @@ export type Database = {
         }
         Returns: Json
       }
+      finance_category_get_or_create: {
+        Args: {
+          p_category_id: string
+          p_category_name: string
+          p_entity_id: string
+          p_entity_type: string
+          p_kind: string
+        }
+        Returns: string
+      }
       finance_entries_export: {
         Args: {
           p_entity_id: string
@@ -9238,6 +9256,24 @@ export type Database = {
           entry_type: string
           id: string
           occurred_at: string
+        }[]
+      }
+      finance_entry_upsert_manual: {
+        Args: {
+          p_amount_cents: number
+          p_category_id?: string
+          p_category_name?: string
+          p_currency: string
+          p_description?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_entry_id: string
+          p_entry_type: string
+          p_occurred_at: string
+          p_reference?: string
+        }
+        Returns: {
+          entry_id: string
         }[]
       }
       finance_recurring_entity_runs_list: {
