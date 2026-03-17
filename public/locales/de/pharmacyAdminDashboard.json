@@ -1,0 +1,263 @@
+{
+  "pharmacyDashboard": {
+    "menu": {
+      "overview": "Übersicht",
+      "prescriptions": "Rezepte",
+      "fulfillment": "Auftragsabwicklung",
+      "inventory": "Lagerbestand",
+      "deliveries": "Lieferungen",
+      "referrals": "Überweisungen",
+      "analytics": "Analysen",
+      "billingClaims": "Abrechnung / Anträge",
+      "finances": "Finanzen",
+      "staff": "Personal",
+      "verifyDocuments": "Dokumente prüfen",
+      "settings": "Einstellungen"
+    },
+
+    "header": {
+      "title": "Apotheken-Dashboard",
+      "subtitle": "Rezepte, Abwicklung, Analysen und Abrechnung aus Supabase",
+      "refresh": "Aktualisieren"
+    },
+
+    "overview": {
+      "prescriptionsToday": "Rezepte heute",
+      "pendingFulfillment": "Ausstehende Abwicklung",
+      "deliveriesInProgress": "Lieferungen in Zustellung",
+      "completedToday": "Heute abgeschlossen"
+    },
+
+    "prescriptions": {
+      "title": "Rezepteingang",
+      "subtitle": "Neue und ausstehende Rezepte für Ihre Apotheke.",
+      "inbox": "Rezepte Posteingang",
+      "manage": "Eingehende Rezepte + manuelle Rezepte für Laufkundschaft verwalten",
+      "new": "0 Neu",
+      "inReview": "0 In Prüfung",
+      "newManual": "Neues manuelles Rezept",
+      "search": "Suche nach ID, Rezept-Nr., Patientenname/-telefon...",
+      "table": {
+        "rx": "Rx-Nr.",
+        "patient": "Patient",
+        "doctor": "Arzt",
+        "items": "Artikel",
+        "status": "Status",
+        "refills": "Nachfüllungen",
+        "date": "Datum",
+        "actions": "Aktionen"
+      },
+      "empty": "Keine Rezepte gefunden"
+    },
+
+    "manualPrescription": {
+      "title": "Neues manuelles Rezept",
+      "patient": "Patient (Laufkundschaft)",
+      "fields": {
+        "name": "Name (Laufkunde) *",
+        "fullName": "Vollständiger Name",
+        "phone": "Telefon *",
+        "email": "E-Mail (optional)",
+        "doctorId": "Arzt-ID (optional)",
+        "refills": "Nachfüllungen gesamt",
+        "notes": "Notizen (optional)"
+      },
+      "placeholders": {
+        "phone": "+49 123 4567890",
+        "email": "email@beispiel.de",
+        "doctorId": "Arzt-UUID (optional)"
+      },
+      "medications": {
+        "title": "Medikamente",
+        "addItem": "Artikel hinzufügen",
+        "item": "Artikel #1",
+        "name": "Medikamentenname *",
+        "code": "Medikamenten-Code (optional)",
+        "dosage": "Dosierung *",
+        "frequency": "Häufigkeit *",
+        "quantity": "Menge *",
+        "unit": "Einheit (optional)",
+        "instructions": "Anweisungen (optional)"
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "create": "Rezept erstellen"
+      }
+    },
+
+    "fulfillment": {
+      "title": "Abwicklungsschlange",
+      "subtitle": "End-to-End-Warteschlange für die Bearbeitung von Rezeptbestellungen",
+      "refresh": "Bestellungen aktualisieren",
+
+      "stats": {
+        "activeQueue": "Aktive Warteschlange",
+        "pendingProcessingReady": "0 ausstehend • 0 in Bearbeitung • 0 bereit",
+        "overdue": "Überfällig / Gefährdet",
+        "urgentHigh": "0 dringend • 0 hohe Priorität",
+        "queueValue": "Wert der Warteschlange",
+        "avgOrder": "Ø Bestellung 0,00 €",
+        "insuranceCopay": "Versicherung / Zuzahlung",
+        "copay": "Zuzahlung 0,00 €",
+        "avgCycle": "Ø Abwicklungszyklus",
+        "readyPickup": "Bereit zur Abholung",
+        "deliveryQueue": "Lieferwarteschlange",
+        "completedOrders": "Abgeschlossene Bestellungen"
+      },
+
+      "charts": {
+        "throughput": "Durchsatz-Trend",
+        "throughputDesc": "Eingegangene und abgeschlossene Bestellungen (letzte 14 Aktivitätstage)",
+        "statusMix": "Status-Verteilung",
+        "priority": "Prioritätsverteilung",
+        "pickupPayment": "Abholungs- & Zahlungsmix",
+        "emptyThroughput": "Noch keine Durchsatzdaten vorhanden.",
+        "emptyOrders": "Keine Bestellungen verfügbar.",
+        "noPickup": "Keine Abholdaten.",
+        "noPayment": "Keine Zahlungsdaten."
+      },
+
+      "table": {
+        "title": "Warteschlangen-Bestellungen",
+        "search": "Suche nach Bestell-Nr., Status, Med., Rezept...",
+        "filters": {
+          "status": "Alle Status",
+          "priority": "Alle Prioritäten",
+          "pickup": "Alle Abholungen"
+        },
+        "columns": {
+          "order": "Bestellung",
+          "priority": "Priorität",
+          "route": "Route",
+          "status": "Status",
+          "payment": "Zahlung",
+          "amounts": "Beträge",
+          "eta": "ETA / Alter",
+          "prescription": "Rezept",
+          "actions": "Aktionen"
+        },
+        "empty": "Keine Bestellungen entsprechen den Filtern",
+        "footer": "Zeige 0 von 0 Bestellung(en) in der Warteschlange."
+      }
+    },
+
+    "inventory": {
+      "title": "Lagerverwaltung",
+      "subtitle": "Bestandskontrolle, Bestandsüberwachung und Analysen des Apothekenbedarfs",
+
+      "stats": {
+        "skus": "SKUs",
+        "stockRisk": "Bestandsrisiko",
+        "retailValue": "Verkaufswert des Bestands",
+        "costBasis": "Kostenbasis 0,00 €",
+        "expiryRisk": "Verfallsrisiko",
+        "grossMargin": "Potenzielle Bruttomarge",
+        "availableReserved": "Verfügbar / Reserviert",
+        "controlled": "Betäubungsmittel (BtM)",
+        "refrigerated": "Kühlpflichtige Artikel"
+      },
+
+      "charts": {
+        "health": "Bestandszustand",
+        "topValue": "Top-Bestand nach Verkaufswert",
+        "expiry": "Verfallsverteilung",
+        "manufacturer": "Herstellerabdeckung",
+        "empty": "Noch keine Bestandsdaten vorhanden."
+      },
+
+      "table": {
+        "title": "Bestandsbuch",
+        "search": "Suche Medikament, Code, PZN, Charge...",
+        "filters": {
+          "inventory": "Gesamter Bestand",
+          "manufacturer": "Alle Hersteller",
+          "sort": "Sortierung: Risiko"
+        },
+        "columns": {
+          "medication": "Medikament",
+          "manufacturer": "Hersteller",
+          "stock": "Bestand",
+          "pricing": "Preise",
+          "value": "Wert",
+          "expiry": "Verfall",
+          "flags": "Markierungen",
+          "actions": "Aktionen"
+        },
+        "empty": "Noch keine Bestandsartikel vorhanden",
+        "footer": "Bestandssummen: 0 SKU(s), 0 verfügbare Einheiten, 0,00 € geschätzter Verkaufswert."
+      }
+    },
+
+    "deliveries": {
+      "title": "Lieferaufträge",
+      "search": "Suche nach Bestell-Nr. oder Adresse...",
+      "columns": {
+        "order": "Bestellung #",
+        "address": "Lieferadresse",
+        "status": "Status",
+        "amount": "Betrag",
+        "ready": "Vorauss. bereit",
+        "created": "Erstellt",
+        "actions": "Aktionen"
+      },
+      "empty": "Keine Lieferaufträge gefunden"
+    },
+
+    "analytics": {
+      "title": "Analyse-Dashboard",
+      "subtitle": "End-to-End Apothekenanalysen über Abwicklung, Rezepte, Zahlungen und Lagerbestand",
+
+      "metrics": {
+        "revenue": "Umsatz (30 T.)",
+        "orders": "Abgewickelte Bestellungen",
+        "fillRate": "Lieferquote",
+        "avgOrder": "Ø Bestellwert",
+        "prepTime": "Vorbereitungszeit (Ø / P90)",
+        "pickupTime": "Abholzeit (Ø / P90)",
+        "inventoryRisk": "Bestandsrisiko",
+        "inventoryValue": "Aktueller Bestandswert"
+      },
+
+      "charts": {
+        "trend": "Umsatz- & Bestelltrend",
+        "statusMix": "Abwicklungsstatus-Mix",
+        "topMeds": "Top-Medikamente",
+        "payments": "Zahlungs- & Abholmethoden",
+        "inventory": "Bestandszustand",
+        "expiry": "Verfallsverteilung",
+        "value": "Top Bestandswerte & Hersteller",
+        "alerts": "Betriebliche Warnungen",
+        "snapshot": "Schnappschuss"
+      }
+    },
+
+    "billing": {
+      "title": "Abrechnung & Kassenansprüche",
+      "subtitle": "Abrechnungsübersicht aus Apothekenaufträgen mit Versicherungs-/Zuzahlungsbeträgen.",
+
+      "metrics": {
+        "claimable": "Abrechenbare Bestellungen",
+        "pipeline": "In Bearbeitung",
+        "approved": "Genehmigt / Bezahlt",
+        "approvalRate": "Genehmigungsquote",
+        "totalClaimed": "Gesamt abgerechnet",
+        "copay": "Patientenzuzahlung",
+        "outstanding": "Ausstehender Betrag",
+        "rejected": "Abgelehnter Betrag"
+      },
+
+      "charts": {
+        "trend": "Abrechnungstrend",
+        "statusMix": "Status-Verteilung",
+        "amounts": "Aufschlüsselung der Beträge",
+        "largest": "Größte Abrechnungsposten"
+      },
+
+      "table": {
+        "title": "Abrechnungsbuch",
+        "search": "Suche Bestellung, Antrag, Police, Status...",
+        "empty": "Keine Abrechnungen für die aktuellen Filter gefunden."
+      }
+    }
+  }
+}
