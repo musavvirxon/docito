@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "概要",
+      "orders": "注文",
+      "homeCollection": "訪問採血",
+      "samples": "検体",
+      "analytics": "分析",
+      "billingInsurance": "請求 / 保険",
+      "finances": "財務",
+      "referrals": "紹介",
+      "staff": "スタッフ",
+      "verifyDocuments": "文書確認",
+      "settings": "設定"
+    },
+    "header": {
+      "title": "ラボスタッフダッシュボード",
+      "subtitle": "注文、ワークフロー、結果パイプライン、分析（Supabase）",
+      "refresh": "更新"
+    },
+    "overview": {
+      "title": "概要",
+      "analytics": "分析",
+      "totalOrders": "総注文数",
+      "pending": "保留中",
+      "inProgress": "進行中",
+      "completed": "完了",
+      "pendingQueue": "保留中キュー",
+      "inProgressQueue": "進行中",
+      "completedRecent": "完了（最近）",
+      "urgent": "至急 / STAT",
+      "overdue": "期限切れ (>48h)",
+      "recentOrders": {
+        "title": "最近の検査注文",
+        "subtitle": "最新の注文とワークフロー状態",
+        "empty": "検査注文はまだありません。"
+      },
+      "activity": {
+        "title": "アクティビティフィード",
+        "subtitle": "最近のワークフロー更新",
+        "empty": "最近のアクティビティはありません。"
+      },
+      "queueHealth": {
+        "title": "キューの状態",
+        "subtitle": "最近の注文に基づく運用スナップショット",
+        "pending": "保留中",
+        "inProgress": "進行中",
+        "completed": "完了",
+        "urgent": "至急 / STAT",
+        "overdue": "期限切れ (>48h)",
+        "footer": "詳細な分析、トレンド、SLAメトリクスは「分析」タブで確認できます。"
+      }
+    },
+    "orders": {
+      "search": "注文番号、患者名、電話番号で検索...",
+      "statuses": "すべてのステータス",
+      "newOrder": "手動注文作成",
+      "testOrders": "テスト注文",
+      "empty": "注文が見つかりません",
+      "details": {
+        "title": "注文詳細",
+        "select": "詳細を表示する注文を選択してください"
+      },
+      "statusList": {
+        "completed": "完了",
+        "cancelled": "キャンセル済み",
+        "pending": "保留中",
+        "scheduled": "予約済み",
+        "processing": "処理中",
+        "sampleCollected": "検体採取済み"
+      }
+    },
+    "collections": {
+      "today": "本日の採血",
+      "pendingAssignment": "担当未割り当て",
+      "inTransit": "搬送中",
+      "completedToday": "本日完了",
+      "title": "訪問検体採取",
+      "subtitle": "集荷スケジュールとスタッフ割り当ての管理",
+      "search": "患者または住所で検索...",
+      "allStatus": "すべてのステータス",
+      "table": {
+        "patient": "患者",
+        "address": "住所",
+        "scheduled": "予約日時",
+        "collector": "担当者",
+        "status": "ステータス",
+        "actions": "操作",
+        "empty": "採血予定が見つかりません"
+      },
+      "stats": {
+        "pending": "保留中",
+        "collected": "採取済み",
+        "processing": "処理中",
+        "completed": "完了"
+      }
+    },
+    "samples": {
+      "title": "検体管理",
+      "subtitle": "採取から結果までの検体追跡",
+      "search": "検体ID、バーコード、患者名で検索...",
+      "allStatus": "すべてのステータス",
+      "table": {
+        "sample": "検体",
+        "patient": "患者",
+        "type": "タイプ",
+        "barcode": "バーコード",
+        "status": "ステータス",
+        "actions": "操作",
+        "empty": "検体が見つかりません"
+      }
+    },
+    "analytics": {
+      "title": "分析ダッシュボード",
+      "subtitle": "注文、テスト、結果、紹介、カタログの運用分析",
+      "last30days": "過去30日間",
+      "refresh": "更新",
+      "metrics": {
+        "orders": "注文数 (30日)",
+        "vsPrevious": "前期間比 +0.0%",
+        "completionRate": "完了率",
+        "completionDetails": "完了 0 • 保留 0",
+        "testVolume": "テストボリューム",
+        "testsPerOrder": "0.0 テスト / 注文",
+        "revenue": "収益 (30日)",
+        "turnaround": "ターンアラウンドタイム (平均 / P90)",
+        "turnaroundDesc": "注文作成 → 完了",
+        "resultVerification": "結果確認",
+        "verificationDetails": "確認済み 0 • 未確認 0",
+        "abnormalResults": "異常値結果",
+        "abnormalDetails": "0 / 0 件の結果",
+        "incomingReferrals": "受け入れ紹介件数"
+      },
+      "charts": {
+        "ordersTrend": "注文・テスト・結果のトレンド",
+        "throughput": "選択期間内の1日あたりの処理能力",
+        "orderStatusMix": "注文ステータス構成",
+        "statusDistribution": "検査注文のステータス分布",
+        "noOrders": "この期間の注文はありません。",
+        "topTests": "主要テスト",
+        "noTests": "この期間のテスト項目はありません。",
+        "operationalMix": "運用構成",
+        "priorityMix": "優先度構成",
+        "noPriority": "優先度データなし",
+        "paymentStatus": "支払いステータス",
+        "testCategories": "テストカテゴリ"
+      },
+      "quality": {
+        "title": "納期と品質",
+        "sla": "SLAおよび品質指標",
+        "orderTat": "注文TAT 平均 / P90",
+        "resultTat": "結果TAT 平均 / P90",
+        "sampleTat": "検体採取 平均 / P90",
+        "slaBreaches": "SLA違反",
+        "performed": "実施済み結果",
+        "verified": "確認済み結果",
+        "pending": "確認待ち",
+        "abnormal": "異常値結果"
+      },
+      "referrals": {
+        "title": "紹介ファネル",
+        "subtitle": "ラボへの紹介受入パイプライン",
+        "received": "受信済み",
+        "active": "承認 / 進行中",
+        "completed": "完了",
+        "completionRate": "完了率",
+        "status": "紹介ステータス"
+      },
+      "catalog": {
+        "title": "カタログ網羅率",
+        "subtitle": "テストカタログの幅広さと準備状況",
+        "total": "カタログ総数",
+        "active": "有効なテスト",
+        "local": "ローカルテスト",
+        "categories": "カテゴリ"
+      },
+      "snapshot": {
+        "title": "現在期間のスナップショット",
+        "avgOrderValue": "平均注文単価",
+        "inProgress": "進行中の注文",
+        "cancelled": "キャンセルされた注文",
+        "overdue": "期限切れ注文 (>48h)"
+      },
+      "alerts": {
+        "title": "運用アラート",
+        "subtitle": "対応が必要なワークフロー項目",
+        "empty": "現在のアラートはありません。"
+      }
+    },
+    "billing": {
+      "title": "請求と保険",
+      "subtitle": "リアルタイムの取引および保険適用注文の管理",
+      "refresh": "更新",
+      "grossRevenue": "総収益",
+      "refunds": "返金",
+      "netRevenue": "純収益",
+      "completedTransactions": "完了した取引 0件",
+      "tabs": {
+        "transactions": "取引履歴",
+        "insurance": "保険注文"
+      },
+      "search": "ステータス、タイプ、説明で検索...",
+      "table": {
+        "date": "日付",
+        "type": "タイプ",
+        "status": "ステータス",
+        "description": "説明",
+        "amount": "金額",
+        "empty": "取引が見つかりません"
+      }
+    },
+    "finances": {
+      "title": "財務",
+      "subtitle": "収支、給与、報酬プロファイル、エクスポートの管理",
+      "staffCompensation": {
+        "title": "スタッフ報酬",
+        "addProfile": "プロファイル追加",
+        "empty": "報酬プロファイルがありません。スタッフの月給、時給、歩合給を設定してください。"
+      },
+      "export": {
+        "title": "財務データのエクスポート",
+        "description": "会計・監査用に元帳データをCSVでダウンロードします。",
+        "from": "開始日",
+        "to": "終了日",
+        "type": "タイプ",
+        "category": "カテゴリ",
+        "all": "すべて",
+        "export": "CSVエクスポート",
+        "tip": "ヒント：月次でエクスポートして会計士と共有してください。"
+      },
+      "recurring": {
+        "title": "定期項目",
+        "subtitle": "定期的な収支（家賃、税金、サブスク）を自動化します。",
+        "addRule": "ルール追加",
+        "status": "ステータス",
+        "noRuns": "実行履歴なし",
+        "runDue": "期限のルールを実行",
+        "asOf": "基準日",
+        "runNow": "今すぐ実行",
+        "description": "基準日以前のすべてのルールに対して財務エントリを作成します。",
+        "noRules": "定期ルールはまだありません。"
+      },
+      "categories": {
+        "title": "カテゴリ",
+        "subtitle": "消耗品、税金、光熱費、給与などのカテゴリを作成します。",
+        "name": "名称",
+        "color": "色（任意）",
+        "add": "追加",
+        "empty": "カテゴリがありません。上から追加してください。",
+        "tip": "ヒント：命名規則を統一するとレポートが整理されます。"
+      },
+      "ledger": {
+        "title": "元帳",
+        "subtitle": "収入、支出、給与エントリの追加と管理",
+        "entries": "エントリ",
+        "income": "収入",
+        "expenses": "支出",
+        "net": "純利益",
+        "addEntry": "エントリ追加",
+        "manual": "手動",
+        "date": "日付",
+        "type": "タイプ",
+        "currency": "通貨",
+        "amount": "金額",
+        "reference": "リファレンス（任意）",
+        "description": "説明（任意）",
+        "empty": "フィルタに一致するエントリはありません。",
+        "note": "注：フィルタごとに最大200件表示されます。"
+      },
+      "compensationModal": {
+        "title": "報酬プロファイルの追加",
+        "staff": "スタッフメンバー",
+        "select": "スタッフを選択...",
+        "type": "報酬タイプ",
+        "salary": "固定給",
+        "amount": "金額 ($)",
+        "period": "期間",
+        "monthly": "月次",
+        "frequency": "支払頻度",
+        "notes": "メモ（任意）",
+        "cancel": "キャンセル",
+        "save": "保存"
+      }
+    },
+    "referrals": {
+      "title": "紹介管理",
+      "new": "新規紹介作成",
+      "incoming": {
+        "title": "受信紹介",
+        "subtitle": "ラボが受け取った紹介",
+        "timezone": "表示時刻：",
+        "empty": "紹介はまだありません。"
+      },
+      "outgoing": {
+        "title": "送信紹介",
+        "subtitle": "ラボから送った紹介",
+        "timezone": "表示時刻：",
+        "empty": "紹介はまだありません。"
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "有効なスタッフ",
+        "pending": "招待中",
+        "inactive": "無効 / 停止中",
+        "admins": "管理者 / マネージャー"
+      },
+      "invite": {
+        "title": "スタッフ招待",
+        "subtitle": "招待を作成し、参加前にロールと権限を割り当てます。",
+        "email": "メールアドレス",
+        "role": "ロール",
+        "technician": "技術者",
+        "send": "招待送信",
+        "preset": "権限プリセット"
+      },
+      "pending": {
+        "title": "招待中のユーザー",
+        "subtitle": "保留中の招待の管理、再送、取消",
+        "empty": "保留中の招待はありません。"
+      },
+      "active": {
+        "title": "スタッフ管理",
+        "subtitle": "ロール・権限の編集、またはアクセスの無効化",
+        "search": "スタッフを検索...",
+        "refresh": "更新",
+        "empty": "有効なスタッフは見つかりません。"
+      },
+      "audit": {
+        "title": "スタッフ監査ログ",
+        "subtitle": "責任明確化のための最近のスタッフ・招待アクティビティ",
+        "empty": "監査ログは見つかりません。"
+      }
+    },
+    "verify": {
+      "title": "文書確認",
+      "description": "Tokito の文書（治療計画、紹介状、処方箋、患者プロファイル）の真正性を確認します。",
+      "input": "確認コードを入力またはスキャン",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "確認する",
+      "types": {
+        "tp": "TP - 治療計画",
+        "rf": "RF - 紹介状",
+        "rx": "RX - 処方箋",
+        "pt": "PT - 患者プロファイル"
+      },
+      "scan": "QRコードをスキャンする"
+    }
+  }
+}
