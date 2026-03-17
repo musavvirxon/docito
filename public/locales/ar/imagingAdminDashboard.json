@@ -32,7 +32,15 @@
       "cancel": "إلغاء",
       "save": "حفظ",
       "add": "إضافة",
-      "actions": "الإجراءات"
+      "actions": "الإجراءات",
+      "loading": "جاري التحميل...",
+      "imagingCenter": "مركز التصوير",
+      "signInRequired": "تسجيل الدخول مطلوب",
+      "signInDescription": "يرجى تسجيل الدخول للوصول إلى لوحة تحكم مركز التصوير.",
+      "signIn": "تسجيل الدخول",
+      "noCenter": "لم يتم العثور على مركز تصوير",
+      "noCenterDescription": "ليس لديك مركز تصوير مرتبط بحسابك.",
+      "registerCenter": "تسجيل مركز تصوير"
     },
 
     "numbers": {
