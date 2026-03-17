@@ -1,721 +1,631 @@
 {
-  "imagingDashboard": {
-    "menu": {
-      "overview": "Overview",
-      "scanWorkflow": "Scan Workflow",
-      "reports": "Reports",
-      "equipment": "Equipment",
-      "analytics": "Analytics",
-      "billing": "Billing",
-      "finances": "Finances",
-      "referrals": "Referrals",
-      "staff": "Staff",
-      "verifyDocuments": "Verify Documents",
-      "settings": "Settings"
-    },
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Overview",
+      "scanWorkflow": "Scan Workflow",
+      "reports": "Reports",
+      "equipment": "Equipment",
+      "analytics": "Analytics",
+      "billing": "Billing",
+      "finances": "Finances",
+      "referrals": "Referrals",
+      "staff": "Staff",
+      "verifyDocuments": "Verify Documents",
+      "settings": "Settings"
+    },
 
-    "header": {
-      "title": "Imaging Staff Dashboard",
-      "subtitle": "Orders, scan workflow, and analytics pulled from Supabase",
-      "refresh": "Refresh"
-    },
+    "header": {
+      "title": "Imaging Staff Dashboard",
+      "subtitle": "Orders, scan workflow, and analytics pulled from Supabase",
+      "refresh": "Refresh"
+    },
 
-    "overview": {
-      "title": "Overview",
-      "analytics": "Analytics",
+    "common": {
+      "refresh": "Refresh",
+      "export": "Export",
+      "exportCSV": "Export CSV",
+      "search": "Search",
+      "all": "All",
+      "allStatuses": "All Statuses",
+      "noData": "No data yet.",
+      "empty": "No data available.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "add": "Add",
+      "actions": "Actions",
+      "loading": "Loading...",
+      "signInRequired": "Sign In Required",
+      "signInDescription": "Please sign in to access the imaging center dashboard.",
+      "signIn": "Sign In",
+      "noCenter": "No Imaging Center Found",
+      "noCenterDescription": "You don't have an imaging center associated with your account.",
+      "registerCenter": "Register Imaging Center"
+    },
 
-      "stats": {
-        "totalOrders": "Total Orders",
-        "pendingScheduled": "Pending / Scheduled",
-        "inProgress": "In Progress",
-        "completed": "Completed"
-      },
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "$0.00",
+      "zeroHours": "0h"
+    },
 
-      "queue": {
-        "pending": "Pending Queue",
-        "scheduled": "Scheduled",
-        "inProgress": "In Progress",
-        "completed": "Completed",
-        "urgent": "Urgent / STAT",
-        "overdue": "Overdue (>48h)"
-      },
+    "statuses": {
+      "pending": "Pending",
+      "scheduled": "Scheduled",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "draft": "Drafts",
+      "finalized": "Finalized",
+      "critical": "Critical",
+      "cancelled": "Cancelled",
+      "processing": "Processing",
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification"
+    },
 
-      "recentOrders": {
-        "title": "Recent Imaging Orders",
-        "subtitle": "Latest imaging referrals and workflow state",
-        "empty": "No imaging orders yet."
-      },
+    "time": {
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "today": "Today"
+    },
 
-      "activity": {
-        "title": "Activity Feed",
-        "subtitle": "Recent workflow updates",
-        "empty": "No recent activity."
-      },
+    "overview": {
+      "title": "Dashboard Overview",
+      "description": "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.",
+      "analytics": "Analytics",
 
-      "queueHealth": {
-        "title": "Queue Health",
-        "subtitle": "Quick snapshot from recent imaging orders",
-        "pending": "Pending",
-        "scheduled": "Scheduled",
-        "inProgress": "In Progress",
-        "completed": "Completed",
-        "topModality": "Top Modality",
-        "overdue": "Overdue (>48h)",
-        "footer": "Full trends, turnaround, demographics, referrers, and revenue metrics are available in the Analytics tab."
-      }
-    },
+      "stats": {
+        "totalOrders": "Total Orders",
+        "pendingScheduled": "Pending / Scheduled",
+        "scheduledToday": "Scheduled Today",
+        "scheduledTodayDesc": "Scans scheduled for today",
+        "inProgress": "In Progress Queue",
+        "inProgressDesc": "Checked-in + active workflow",
+        "pendingReports": "Pending Reports",
+        "pendingReportsDesc": "Images ready / awaiting report",
+        "completed": "Completed Today",
+        "completedDesc": "Reports completed today",
+        "deliveredToday": "Delivered Today",
+        "deliveredTodayDesc": "Results delivered today",
+        "incoming7d": "Incoming (7d)",
+        "incoming7dDesc": "New imaging referrals (7 days)",
+        "completionRate7d": "Completion Rate (7d)",
+        "completionRate7dDesc": "Completed/delivered vs incoming",
+        "avgQueueAge": "Avg Queue Age",
+        "avgQueueAgeDesc": "Open order age average",
+        "activeStaff": "Active Staff",
+        "activeStaffDesc": "Active imaging staff members",
+        "activeEquipment": "Active Equipment",
+        "activeEquipmentDesc": "Operational modalities/devices"
+      },
 
-    "footer": {
-      "copyright": "© 2025 Docito®",
-      "feedback": "Feedback",
-      "help": "Help",
-      "privacy": "Privacy",
-      "terms": "Terms"
-    },
+      "queue": {
+        "pendingQueue": "Pending Queue",
+        "scheduled": "Scheduled",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "urgent": "Urgent / STAT",
+        "overdue": "Overdue (>48h)"
+      },
 
-    "analytics": {
-      "title": "Analytics",
-      "last30Days": "Last 30 days",
-      "last90Days": "Last 90 days",
-      "refresh": "Refresh",
-      "export": "Export",
-      "exportCSV": "Export CSV",
-      "partialData": "Partial data",
+      "todaysQueue": {
+        "title": "Today's Queue",
+        "description": "Scheduled scans and same-day referrals",
+        "empty": "No scans queued today",
+        "emptyDescription": "Today's scheduled scans and same-day imaging referrals will appear here."
+      },
 
-      "metrics": {
-        "totalScans": "Total Scans",
-        "completed": "completed",
-        "pending": "pending",
-        "vsPrev": "0% vs prev",
+      "workflowBreakdown": {
+        "title": "Workflow Breakdown",
+        "description": "Current imaging order status distribution",
+        "empty": "No workflow data",
+        "emptyDescription": "Orders will appear here once referrals are received."
+      },
 
-        "netRevenue": "Net Revenue",
-        "revenueBreakdown": "$0.00 revenue • $0.00 refunds",
+      "equipmentStatus": {
+        "title": "Equipment Status",
+        "description": "Scanner availability and utilization",
+        "empty": "No equipment registered",
+        "emptyDescription": "Register your imaging equipment to track availability and utilization."
+      },
 
-        "avgReportTime": "Avg Report Time",
-        "avgAcceptTime": "Avg accept time: 0h",
+      "recentCompleted": {
+        "title": "Recently Completed",
+        "description": "Latest completed scans and delivered reports",
+        "empty": "No completed orders yet",
+        "emptyDescription": "Completed imaging orders will appear here."
+      },
 
-        "opsHealth": "Ops Health",
-        "utilization": "0% util",
-        "backlog": "0 backlog",
-        "open": "0 open"
-      },
+      "modalityBacklog": {
+        "title": "Modality Backlog",
+        "description": "Open orders by modality type",
+        "empty": "No backlog data",
+        "emptyDescription": "Open orders by modality will appear here."
+      },
 
-      "charts": {
-        "dailyTrend": "Daily Trend",
-        "trendDesc": "Scans and revenue over time",
+      "staffSnapshot": {
+        "title": "Staff Snapshot",
+        "description": "Active team members by role",
+        "empty": "No staff data",
+        "emptyDescription": "Your team overview will appear here."
+      },
 
-        "modalityMix": "Modality Mix",
-        "modalityDesc": "Scan distribution by modality",
+      "recentOrders": {
+        "title": "Recent Imaging Orders",
+        "subtitle": "Latest imaging referrals and workflow state",
+        "empty": "No imaging orders yet."
+      },
 
-        "workflow": "Workflow",
-        "workflowDesc": "Internal workflow breakdown",
+      "activity": {
+        "title": "Activity Feed",
+        "subtitle": "Recent workflow updates",
+        "empty": "No recent activity."
+      },
 
-        "referralStatus": "Referral Status",
-        "referralDesc": "Receiver-side status",
+      "queueHealth": {
+        "title": "Queue Health",
+        "subtitle": "Quick snapshot from recent imaging orders",
+        "topModality": "Top Modality",
+        "footer": "Full trends, turnaround, demographics, referrers, and revenue metrics are available in the Analytics tab."
+      }
+    },
 
-        "topReferrers": "Top Referrers",
-        "topReferrersDesc": "Who sends you the most",
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Feedback",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
 
-        "peakHours": "Peak Hours",
-        "peakDesc": "Scan volume by hour of day",
+    "analytics": {
+      "title": "Analytics",
+      "refresh": "Refresh",
+      "export": "Export",
 
-        "patientDemographics": "Patient Demographics",
-        "patientDesc": "Based on referred patients",
+      "metrics": {
+        "totalScans": "Total Scans",
+        "completed": "0 completed",
+        "pending": "0 pending",
+        "vsPrev": "0% vs prev",
 
-        "gender": "Gender",
-        "ageBuckets": "Age Buckets",
+        "netRevenue": "Net Revenue",
+        "revenueDetail": "$0.00 revenue • $0.00 refunds",
 
-        "turnaround": "Turnaround by Modality",
-        "turnaroundDesc": "Average report completion time",
+        "avgReportTime": "Avg Report Time",
+        "avgAcceptTime": "Avg accept time: 0h",
 
-        "revenueByModality": "Revenue by Modality",
-        "revenueByModalityDesc": "Based on recorded billing transactions (if modality metadata is available)",
+        "opsHealth": "Ops Health",
+        "util": "0% util",
+        "backlog": "0 backlog",
+        "open": "0 open"
+      },
 
-        "empty": "No data yet.",
-        "noModalityRevenue": "No modality revenue data available yet."
-      },
+      "charts": {
+        "dailyTrend": "Daily Trend",
+        "trendDesc": "Scans and revenue over time",
 
-      "billingAdvanced": {
-        "title": "Billing view is partially populated",
-        "description": "Some tables may be unavailable in your schema or current permissions. Core transaction analytics still loads.",
+        "modalityMix": "Modality Mix",
+        "modalityDesc": "Scan distribution by modality",
 
-        "processedRevenue": "Processed Revenue",
-        "transactions": "Transactions",
-        "averageTicket": "Average Ticket",
-        "collectionRate": "Collection Rate",
-        "outstandingInvoices": "Outstanding Invoices",
-        "paymentHolds": "Payment Holds",
-        "subscriptions": "Active Subscriptions",
-        "risk": "Risk / Leakage",
+        "workflow": "Workflow",
+        "workflowDesc": "Internal workflow breakdown",
 
-        "sections": {
-          "revenueTrend": "Revenue Trend",
-          "transactionStatus": "Transaction Status Mix",
-          "transactionTypes": "Transaction Types",
-          "invoiceStatus": "Invoice Status",
-          "plans": "Subscription Plans",
-          "paymentMethods": "Payment Methods",
-          "providers": "Providers / Gateways",
-          "recentTransactions": "Recent Transactions",
-          "dailySuccess": "Daily Transaction Success",
-          "revenueTypeMix": "Revenue Type Mix"
-        },
+        "referralStatus": "Referral Status",
+        "referralDesc": "Receiver-side status",
 
-        "empty": "No data"
-      }
-    },
+        "topReferrers": "Top Referrers",
+        "topReferrersDesc": "Who sends you the most",
 
-    "workflow": {
-      "title": "Scan Workflow",
-      "subtitle": "Create walk-in orders here and manage scans from scheduling to report delivery.",
-      "newOrder": "New Walk-in Order",
-      "refresh": "Refresh",
-      "search": "Search by patient, order number, or exam...",
-      "statuses": "All Statuses",
-      "empty": "No scans found"
-    },
+        "peakHours": "Peak Hours",
+        "peakDesc": "Scan volume by hour of day",
 
-    "newOrder": {
-      "title": "New Manual Imaging Order",
+        "patientDemographics": "Patient Demographics",
+        "patientDesc": "Based on referred patients",
 
-      "patient": {
-        "title": "Patient (Walk-in)",
-        "fullName": "Full name *",
-        "phone": "Phone *",
-        "phoneHint": "Enter with country code. US example: +1 415 555 2671",
-        "email": "Email (optional)",
-        "dob": "Date of birth (optional)"
-      },
+        "gender": "Gender",
+        "ageBuckets": "Age Buckets",
 
-      "study": {
-        "title": "Study",
-        "modality": "Modality",
-        "xray": "X-Ray",
-        "studyName": "Study name *",
-        "bodyPart": "Body part (optional)",
-        "contrast": "Contrast",
-        "no": "No"
-      },
+        "turnaround": "Turnaround by Modality",
+        "turnaroundDesc": "Average report completion time",
 
-      "schedule": {
-        "title": "Scheduling & Notes",
-        "priority": "Priority",
-        "routine": "Routine",
-        "preferredDate": "Preferred date (optional)",
-        "preferredTime": "Preferred time slot (optional)",
-        "reason": "Reason (optional)",
-        "clinicalNotes": "Clinical notes (optional)"
-      },
+        "revenueByModality": "Revenue by Modality",
+        "revenueByModalityDesc": "Based on recorded billing transactions (if modality metadata is available)",
 
-      "actions": {
-        "cancel": "Cancel",
-        "create": "Create Imaging Order"
-      }
-    },
+        "empty": "No data yet.",
+        "noRevenue": "No modality revenue data available yet."
+      },
 
-    "reports": {
-      "search": "Search reports...",
-      "all": "All Reports",
-      "refresh": "Refresh",
-      "export": "Export",
+      "billingAdvanced": {
+        "title": "Billing view is partially populated",
+        "description": "Some tables may be unavailable in your schema or current permissions. Core transaction analytics still loads.",
 
-      "table": {
-        "order": "Order",
-        "patient": "Patient",
-        "exam": "Exam",
-        "modality": "Modality",
-        "status": "Status",
-        "radiologist": "Radiologist",
-        "actions": "Actions",
-        "empty": "No reports found"
-      },
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstandingInvoices": "Outstanding Invoices",
+        "paymentHolds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage",
 
-      "stats": {
-        "pending": "Pending",
-        "drafts": "Drafts",
-        "finalized": "Finalized",
-        "critical": "Critical"
-      }
-    },
+        "sections": {
+          "revenueTrend": "Revenue Trend",
+          "transactionStatus": "Transaction Status Mix",
+          "transactionTypes": "Transaction Types",
+          "invoiceStatus": "Invoice Status",
+          "plans": "Subscription Plans",
+          "paymentMethods": "Payment Methods",
+          "providers": "Providers / Gateways",
+          "recentTransactions": "Recent Transactions",
+          "dailySuccess": "Daily Transaction Success",
+          "revenueTypeMix": "Revenue Type Mix"
+        },
 
-    "equipment": {
-      "title": "Equipment",
-      "subtitle": "Manage scanners and capacity (storage syncing…)",
+        "empty": "No data"
+      }
+    },
 
-      "search": "Search equipment...",
-      "refresh": "Refresh",
-      "add": "Add",
+    "workflow": {
+      "title": "Scan Workflow",
+      "subtitle": "Create walk-in orders here and manage scans from scheduling to report delivery.",
+      "newWalkIn": "New Walk-in Order",
+      "newOrder": "New Walk-in Order",
+      "refresh": "Refresh",
+      "search": "Search by patient, order number, or exam...",
+      "statuses": "All Statuses",
+      "empty": "No scans found"
+    },
 
-      "table": {
-        "name": "Name",
-        "modality": "Modality",
-        "status": "Status",
-        "capacity": "Capacity/day",
-        "actions": "Actions",
-        "empty": "No equipment found"
-      },
+    "newOrder": {
+      "title": "New Manual Imaging Order",
 
-      "modal": {
-        "title": "Add Equipment",
-        "name": "Name",
-        "modality": "Modality",
-        "status": "Status",
-        "manufacturer": "Manufacturer",
-        "model": "Model",
-        "serial": "Serial Number",
-        "capacity": "Capacity per day",
-        "scanTypes": "Scan types (comma-separated)",
-        "cancel": "Cancel",
-        "save": "Save"
-      }
-    },
+      "patient": {
+        "title": "Patient (Walk-in)",
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "phoneHint": "Enter with country code. US example: +1 415 555 2671",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)"
+      },
 
-    "finances": {
-      "title": "Finances",
-      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports.",
+      "study": {
+        "title": "Study",
+        "modality": "Modality",
+        "xray": "X-Ray",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "no": "No"
+      },
 
-      "common": {
-        "from": "From",
-        "to": "To",
-        "type": "Type",
-        "category": "Category",
-        "all": "All",
-        "refresh": "Refresh",
-        "search": "Search",
-        "export": "Export CSV"
-      },
+      "schedule": {
+        "title": "Scheduling & Notes",
+        "priority": "Priority",
+        "routine": "Routine",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
 
-      "staffCompensation": {
-        "title": "Staff Compensation",
-        "add": "Add Profile",
-        "empty": "No compensation profiles yet. Add salary, hourly, or percentage-based pay for your staff."
-      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Imaging Order"
+      }
+    },
 
-      "recurring": {
-        "title": "Recurring",
-        "addRule": "Add rule",
-        "status": "Status",
-        "noDue": "no due rules",
-        "noRuns": "No previous runs",
-        "runDue": "Run due rules",
-        "runNow": "Run due now",
-        "description": "Running creates finance entries for all rules with next_run_date ≤ selected date (catch-up supported).",
-        "empty": "No recurring rules yet."
-      },
+    "orderForm": {
+      "title": "New Manual Imaging Order",
 
-      "ledger": {
-        "title": "Ledger",
-        "entries": "Entries",
-        "income": "Income",
-        "expenses": "Expenses",
-        "net": "Net",
-        "addEntry": "Add entry",
-        "manual": "Manual",
-        "date": "Date",
-        "currency": "Currency",
-        "amount": "Amount",
-        "reference": "Reference (optional)",
-        "description": "Description (optional)",
-        "empty": "No entries found for this filter.",
-        "note": "Note: this list shows up to 200 entries per filter."
-      },
+      "fields": {
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)",
+        "modality": "Modality",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "priority": "Priority",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
 
-      "compensationModal": {
-        "title": "Add Compensation Profile",
-        "staff": "Staff Member",
-        "select": "Select staff member…",
-        "type": "Compensation Type",
-        "salary": "Fixed Salary",
-        "amount": "Amount ($)",
-        "period": "Period",
-        "monthly": "Monthly",
-        "frequency": "Payout Frequency",
-        "notes": "Notes (optional)",
-        "cancel": "Cancel",
-        "save": "Save"
-      }
-    },
+      "placeholders": {
+        "phone": "+1 415 555 2671",
+        "email": "email@example.com",
+        "dob": "mm/dd/yyyy",
+        "study": "Chest X-Ray, Brain MRI...",
+        "bodyPart": "Chest, Brain, Knee...",
+        "time": "e.g. 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Notes about this entry…"
+      },
 
-    "referrals": {
-      "title": "Referrals",
-      "new": "New Referral",
+      "actions": {
+        "cancel": "Cancel",
+        "submit": "Create Imaging Order"
+      }
+    },
 
-      "incoming": {
-        "title": "Incoming Referrals",
-        "subtitle": "Referrals received by your imaging center",
-        "timezone": "Times shown in:",
-        "empty": "No referrals yet."
-      },
+    "reports": {
+      "search": "Search reports...",
+      "all": "All Reports",
+      "allReports": "All Reports",
+      "refresh": "Refresh",
+      "export": "Export",
+      "empty": "No reports found",
 
-      "outgoing": {
-        "title": "Outgoing Referrals",
-        "subtitle": "Referrals sent by your imaging center",
-        "timezone": "Times shown in:",
-        "empty": "No referrals yet."
-      }
-    },
+      "table": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions",
+        "empty": "No reports found"
+      },
 
-    "staff": {
-      "stats": {
-        "active": "Active Staff",
-        "pending": "Pending Invitations",
-        "inactive": "Inactive / Disabled",
-        "admins": "Admins / Managers"
-      },
+      "columns": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions"
+      },
 
-      "invite": {
-        "title": "Invite Imaging Staff",
-        "subtitle": "Invite radiologists, technologists, billing, and front-desk team members with pre-configured permissions.",
-        "email": "Email",
-        "role": "Role",
-        "technologist": "Technologist",
-        "send": "Send Invite",
-        "preset": "Permission Preset"
-      },
+      "stats": {
+        "pending": "Pending",
+        "drafts": "Drafts",
+        "finalized": "Finalized",
+        "critical": "Critical"
+      }
+    },
 
-      "pending": {
-        "title": "Pending Invitations",
-        "subtitle": "Resend or cancel pending staff invitations before activation.",
-        "empty": "No pending invitations."
-      },
+    "equipment": {
+      "title": "Equipment",
+      "subtitle": "Manage scanners and capacity (storage syncing…)",
+      "search": "Search equipment...",
+      "refresh": "Refresh",
+      "add": "Add",
+      "empty": "No equipment found",
 
-      "active": {
-        "title": "Active Staff Management",
-        "subtitle": "Edit roles and permissions, deactivate staff, or remove access.",
-        "search": "Search staff...",
-        "refresh": "Refresh",
-        "empty": "No active staff found."
-      },
+      "table": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day",
+        "actions": "Actions",
+        "empty": "No equipment found"
+      },
 
-      "audit": {
-        "title": "Staff Audit Trail",
-        "subtitle": "Recent staff and invitation activity for accountability.",
-        "empty": "No staff audit activity found."
-      },
+      "columns": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day"
+      },
 
-      "roles": {
-        "frontDesk": {
-          "title": "Front Desk / Reception",
-          "desc": "Intake, scheduling, check-in, referral verification, and queue balancing."
-        },
-        "technologist": {
-          "title": "Technologist",
-          "desc": "Scan execution, protocol adherence, patient preparation, and image quality capture."
-        },
-        "radiologist": {
-          "title": "Radiologist",
-          "desc": "Reporting, clinical review, critical findings workflows, and final sign-off."
-        },
-        "billing": {
-          "title": "Billing / Admin",
-          "desc": "Claims, invoices, payment reconciliation, and operational performance follow-up."
-        }
-      }
-    },
+      "modal": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
 
-    "verify": {
-      "title": "Document Verification",
-      "description": "Verify the authenticity of any Docito document — treatment plans, referrals, prescriptions, and patient profiles.",
-      "input": "Enter or Scan Verification Code",
-      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
-      "verify": "Verify",
+      "form": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)"
+      }
+    },
 
-      "types": {
-        "tp": "TP - Treatment Plan",
-        "rf": "RF - Referral",
-        "rx": "RX - Prescription",
-        "pt": "PT - Patient Profile"
-      },
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports.",
 
-      "scan": "Scan QR Code Instead"
-    }
-  }
+      "common": {
+        "from": "From",
+        "to": "To",
+        "type": "Type",
+        "category": "Category",
+        "all": "All",
+        "refresh": "Refresh",
+        "search": "Search",
+        "export": "Export CSV"
+      },
+
+      "staffCompensation": {
+        "title": "Staff Compensation",
+        "add": "Add Profile",
+        "empty": "No compensation profiles yet. Add salary, hourly, or percentage-based pay for your staff."
+      },
+
+      "recurring": {
+        "title": "Recurring",
+        "addRule": "Add rule",
+        "status": "Status",
+        "noDue": "no due rules",
+        "noRuns": "No previous runs",
+        "runDue": "Run due rules",
+        "runNow": "Run due now",
+        "description": "Running creates finance entries for all rules with next_run_date ≤ selected date (catch-up supported).",
+        "empty": "No recurring rules yet."
+      },
+
+      "ledger": {
+        "title": "Ledger",
+        "entries": "Entries",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "addEntry": "Add entry",
+        "manual": "Manual",
+        "date": "Date",
+        "currency": "Currency",
+        "amount": "Amount",
+        "reference": "Reference (optional)",
+        "description": "Description (optional)",
+        "empty": "No entries found for this filter.",
+        "note": "Note: this list shows up to 200 entries per filter."
+      },
+
+      "compensationModal": {
+        "title": "Add Compensation Profile",
+        "staff": "Staff Member",
+        "select": "Select staff member…",
+        "type": "Compensation Type",
+        "salary": "Fixed Salary",
+        "amount": "Amount ($)",
+        "period": "Period",
+        "monthly": "Monthly",
+        "frequency": "Payout Frequency",
+        "notes": "Notes (optional)",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
+
+    "billing": {
+      "partial": "Billing view is partially populated",
+      "warning": "Some tables may be unavailable in your schema or current permissions.",
+
+      "metrics": {
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstanding": "Outstanding Invoices",
+        "holds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage"
+      },
+
+      "charts": {
+        "revenueTrend": "Revenue Trend",
+        "statusMix": "Transaction Status Mix",
+        "types": "Transaction Types",
+        "invoiceStatus": "Invoice Status",
+        "plans": "Subscription Plans",
+        "methods": "Payment Methods",
+        "providers": "Providers / Gateways",
+        "recent": "Recent Transactions",
+        "success": "Daily Transaction Success",
+        "revenueType": "Revenue Type Mix"
+      }
+    },
+
+    "referrals": {
+      "title": "Referrals",
+      "new": "New Referral",
+
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      },
+
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      }
+    },
+
+    "staff": {
+      "stats": {
+        "active": "Active Staff",
+        "pending": "Pending Invitations",
+        "inactive": "Inactive / Disabled",
+        "admins": "Admins / Managers"
+      },
+
+      "invite": {
+        "title": "Invite Imaging Staff",
+        "subtitle": "Invite radiologists, technologists, billing, and front-desk team members with pre-configured permissions.",
+        "email": "Email",
+        "role": "Role",
+        "technologist": "Technologist",
+        "send": "Send Invite",
+        "preset": "Permission Preset"
+      },
+
+      "pending": {
+        "title": "Pending Invitations",
+        "subtitle": "Resend or cancel pending staff invitations before activation.",
+        "empty": "No pending invitations."
+      },
+
+      "active": {
+        "title": "Active Staff Management",
+        "subtitle": "Edit roles and permissions, deactivate staff, or remove access.",
+        "search": "Search staff...",
+        "refresh": "Refresh",
+        "empty": "No active staff found."
+      },
+
+      "audit": {
+        "title": "Staff Audit Trail",
+        "subtitle": "Recent staff and invitation activity for accountability.",
+        "empty": "No staff audit activity found."
+      },
+
+      "roles": {
+        "frontDesk": {
+          "title": "Front Desk / Reception",
+          "desc": "Intake, scheduling, check-in, referral verification, and queue balancing."
+        },
+        "technologist": {
+          "title": "Technologist",
+          "desc": "Scan execution, protocol adherence, patient preparation, and image quality capture."
+        },
+        "radiologist": {
+          "title": "Radiologist",
+          "desc": "Reporting, clinical review, critical findings workflows, and final sign-off."
+        },
+        "billing": {
+          "title": "Billing / Admin",
+          "desc": "Claims, invoices, payment reconciliation, and operational performance follow-up."
+        }
+      }
+    },
+
+    "verify": {
+      "title": "Document Verification",
+      "description": "Verify the authenticity of any Docito document — treatment plans, referrals, prescriptions, and patient profiles.",
+      "input": "Enter or Scan Verification Code",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verify",
+
+      "types": {
+        "tp": "TP - Treatment Plan",
+        "rf": "RF - Referral",
+        "rx": "RX - Prescription",
+        "pt": "PT - Patient Profile"
+      },
+
+      "scan": "Scan QR Code Instead"
+    }
+  }
 }
-{
-  "imagingDashboard": {
-    "menu": {
-      "overview": "Overview",
-      "scanWorkflow": "Scan Workflow",
-      "reports": "Reports",
-      "equipment": "Equipment",
-      "analytics": "Analytics",
-      "billing": "Billing",
-      "finances": "Finances",
-      "referrals": "Referrals",
-      "staff": "Staff",
-      "verifyDocuments": "Verify Documents",
-      "settings": "Settings"
-    },
-
-    "header": {
-      "title": "Imaging Staff Dashboard",
-      "subtitle": "Orders, scan workflow, and analytics pulled from Supabase",
-      "refresh": "Refresh"
-    },
-
-    "common": {
-      "refresh": "Refresh",
-      "export": "Export",
-      "exportCSV": "Export CSV",
-      "search": "Search",
-      "all": "All",
-      "allStatuses": "All Statuses",
-      "noData": "No data yet.",
-      "empty": "No data available.",
-      "cancel": "Cancel",
-      "save": "Save",
-      "add": "Add",
-      "actions": "Actions"
-    },
-
-    "numbers": {
-      "zero": "0",
-      "zeroPercent": "0%",
-      "zeroCurrency": "$0.00",
-      "zeroHours": "0h"
-    },
-
-    "statuses": {
-      "pending": "Pending",
-      "scheduled": "Scheduled",
-      "inProgress": "In Progress",
-      "completed": "Completed",
-      "draft": "Drafts",
-      "finalized": "Finalized",
-      "critical": "Critical",
-      "cancelled": "Cancelled",
-      "processing": "Processing"
-    },
-
-    "time": {
-      "last30Days": "Last 30 days",
-      "last90Days": "Last 90 days",
-      "today": "Today",
-      "dateLabels": [
-        "2026-02-19",
-        "2026-02-25",
-        "2026-03-03",
-        "2026-03-09",
-        "2026-03-17"
-      ],
-      "hourLabels": [
-        "02:00",
-        "05:00",
-        "08:00",
-        "11:00",
-        "14:00",
-        "17:00",
-        "20:00",
-        "23:00"
-      ]
-    },
-
-    "overview": {
-      "title": "Overview",
-      "analytics": "Analytics",
-
-      "stats": {
-        "totalOrders": "Total Orders",
-        "pendingScheduled": "Pending / Scheduled",
-        "inProgress": "In Progress",
-        "completed": "Completed"
-      },
-
-      "queue": {
-        "pendingQueue": "Pending Queue",
-        "scheduled": "Scheduled",
-        "inProgress": "In Progress",
-        "completed": "Completed",
-        "urgent": "Urgent / STAT",
-        "overdue": "Overdue (>48h)"
-      },
-
-      "recentOrders": {
-        "title": "Recent Imaging Orders",
-        "subtitle": "Latest imaging referrals and workflow state",
-        "empty": "No imaging orders yet."
-      },
-
-      "activity": {
-        "title": "Activity Feed",
-        "subtitle": "Recent workflow updates",
-        "empty": "No recent activity."
-      },
-
-      "queueHealth": {
-        "title": "Queue Health",
-        "subtitle": "Quick snapshot from recent imaging orders",
-        "topModality": "Top Modality",
-        "footer": "Full trends, turnaround, demographics, referrers, and revenue metrics are available in the Analytics tab."
-      }
-    },
-
-    "analytics": {
-      "title": "Analytics",
-      "refresh": "Refresh",
-      "export": "Export",
-
-      "metrics": {
-        "totalScans": "Total Scans",
-        "completed": "0 completed",
-        "pending": "0 pending",
-        "vsPrev": "0% vs prev",
-
-        "netRevenue": "Net Revenue",
-        "revenueDetail": "$0.00 revenue • $0.00 refunds",
-
-        "avgReportTime": "Avg Report Time",
-        "avgAcceptTime": "Avg accept time: 0h",
-
-        "opsHealth": "Ops Health",
-        "util": "0% util",
-        "backlog": "0 backlog",
-        "open": "0 open"
-      },
-
-      "charts": {
-        "dailyTrend": "Daily Trend",
-        "trendDesc": "Scans and revenue over time",
-
-        "modalityMix": "Modality Mix",
-        "workflow": "Workflow",
-        "referralStatus": "Referral Status",
-        "topReferrers": "Top Referrers",
-        "peakHours": "Peak Hours",
-        "patientDemographics": "Patient Demographics",
-        "gender": "Gender",
-        "ageBuckets": "Age Buckets",
-        "turnaround": "Turnaround by Modality",
-        "revenueByModality": "Revenue by Modality",
-
-        "empty": "No data yet.",
-        "noRevenue": "No modality revenue data available yet."
-      }
-    },
-
-    "workflow": {
-      "title": "Scan Workflow",
-      "subtitle": "Create walk-in orders here and manage scans from scheduling to report delivery.",
-      "newWalkIn": "New Walk-in Order",
-      "searchPlaceholder": "Search by patient, order number, or exam...",
-      "empty": "No scans found"
-    },
-
-    "orderForm": {
-      "title": "New Manual Imaging Order",
-
-      "fields": {
-        "fullName": "Full name *",
-        "phone": "Phone *",
-        "email": "Email (optional)",
-        "dob": "Date of birth (optional)",
-        "modality": "Modality",
-        "studyName": "Study name *",
-        "bodyPart": "Body part (optional)",
-        "contrast": "Contrast",
-        "priority": "Priority",
-        "preferredDate": "Preferred date (optional)",
-        "preferredTime": "Preferred time slot (optional)",
-        "reason": "Reason (optional)",
-        "clinicalNotes": "Clinical notes (optional)"
-      },
-
-      "placeholders": {
-        "phone": "+1 415 555 2671",
-        "email": "email@example.com",
-        "dob": "mm/dd/yyyy",
-        "study": "Chest X-Ray, Brain MRI...",
-        "bodyPart": "Chest, Brain, Knee...",
-        "time": "e.g. 09:00-11:00",
-        "reference": "INV-1029",
-        "notes": "Notes about this entry…"
-      },
-
-      "actions": {
-        "cancel": "Cancel",
-        "submit": "Create Imaging Order"
-      }
-    },
-
-    "reports": {
-      "search": "Search reports...",
-      "allReports": "All Reports",
-      "empty": "No reports found",
-
-      "columns": {
-        "order": "Order",
-        "patient": "Patient",
-        "exam": "Exam",
-        "modality": "Modality",
-        "status": "Status",
-        "radiologist": "Radiologist",
-        "actions": "Actions"
-      }
-    },
-
-    "equipment": {
-      "title": "Equipment",
-      "subtitle": "Manage scanners and capacity (storage syncing…)",
-      "search": "Search equipment...",
-      "empty": "No equipment found",
-
-      "columns": {
-        "name": "Name",
-        "modality": "Modality",
-        "status": "Status",
-        "capacity": "Capacity/day"
-      },
-
-      "form": {
-        "title": "Add Equipment",
-        "name": "Name",
-        "modality": "Modality",
-        "status": "Status",
-        "manufacturer": "Manufacturer",
-        "model": "Model",
-        "serial": "Serial Number",
-        "capacity": "Capacity per day",
-        "scanTypes": "Scan types (comma-separated)"
-      }
-    },
-
-    "billing": {
-      "partial": "Billing view is partially populated",
-      "warning": "Some tables may be unavailable in your schema or current permissions.",
-
-      "metrics": {
-        "processedRevenue": "Processed Revenue",
-        "transactions": "Transactions",
-        "averageTicket": "Average Ticket",
-        "collectionRate": "Collection Rate",
-        "outstanding": "Outstanding Invoices",
-        "holds": "Payment Holds",
-        "subscriptions": "Active Subscriptions",
-        "risk": "Risk / Leakage"
-      },
-
-      "charts": {
-        "revenueTrend": "Revenue Trend",
-        "statusMix": "Transaction Status Mix",
-        "types": "Transaction Types",
-        "invoiceStatus": "Invoice Status",
-        "plans": "Subscription Plans",
-        "methods": "Payment Methods",
-        "providers": "Providers / Gateways",
-        "recent": "Recent Transactions",
-        "success": "Daily Transaction Success",
-        "revenueType": "Revenue Type Mix"
-      }
-    },
-
-    "verify": {
-      "title": "Document Verification",
-      "input": "Enter or Scan Verification Code",
-      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
-      "verify": "Verify",
-      "scan": "Scan QR Code Instead"
-    }
-  }
-}
-
-correct this json file
