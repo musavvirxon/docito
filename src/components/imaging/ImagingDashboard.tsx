@@ -622,11 +622,11 @@ export default function ImagingDashboard() {
           <Card className="max-w-md">
             <CardContent className="pt-6 text-center">
               <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <CardTitle className="mb-2">Sign In Required</CardTitle>
+              <CardTitle className="mb-2">{t("imagingDashboard.common.signInRequired", "Sign In Required")}</CardTitle>
               <CardDescription className="mb-4">
-                Please sign in to access the imaging center dashboard.
+                {t("imagingDashboard.common.signInDescription", "Please sign in to access the imaging center dashboard.")}
               </CardDescription>
-              <Button onClick={() => navigate("/auth")}>Sign In</Button>
+              <Button onClick={() => navigate("/auth")}>{t("imagingDashboard.common.signIn", "Sign In")}</Button>
             </CardContent>
           </Card>
         </div>
