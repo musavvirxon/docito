@@ -333,8 +333,8 @@ export default function PharmacyDashboardPage() {
       {activeTab === "overview" && (
         <>
           <PageHeader
-            title="Pharmacy Dashboard"
-            description="Prescriptions, fulfillment, analytics, and billing pulled from Supabase"
+            title={t("pharmacyDashboard.header.title", "Pharmacy Dashboard")}
+            description={t("pharmacyDashboard.header.subtitle", "Prescriptions, fulfillment, analytics, and billing pulled from Supabase")}
             actions={
               <button
                 className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground"
@@ -342,7 +342,7 @@ export default function PharmacyDashboardPage() {
                 disabled={overviewLoading}
               >
                 {overviewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                Refresh
+                {t("pharmacyDashboard.header.refresh", "Refresh")}
               </button>
             }
           />
