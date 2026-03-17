@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "개요",
+      "scanWorkflow": "스캔 워크플로우",
+      "reports": "리포트",
+      "equipment": "장비",
+      "analytics": "분석",
+      "billing": "청구",
+      "finances": "재무",
+      "referrals": "의뢰",
+      "staff": "직원",
+      "verifyDocuments": "문서 검증",
+      "settings": "설정"
+    },
+
+    "header": {
+      "title": "영상진단 직원 대시보드",
+      "subtitle": "Supabase에서 가져온 주문, 스캔 워크플로우 및 분석 데이터",
+      "refresh": "새로고침"
+    },
+
+    "common": {
+      "refresh": "새로고침",
+      "export": "내보내기",
+      "exportCSV": "CSV로 내보내기",
+      "search": "검색",
+      "all": "전체",
+      "allStatuses": "모든 상태",
+      "noData": "데이터가 없습니다.",
+      "empty": "사용 가능한 데이터가 없습니다.",
+      "cancel": "취소",
+      "save": "저장",
+      "add": "추가",
+      "actions": "작업"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "₩0",
+      "zeroHours": "0시간"
+    },
+
+    "statuses": {
+      "pending": "대기 중",
+      "scheduled": "예약됨",
+      "inProgress": "진행 중",
+      "completed": "완료",
+      "draft": "초안",
+      "finalized": "최종 확정",
+      "critical": "위험/긴급",
+      "cancelled": "취소됨",
+      "processing": "처리 중"
+    },
+
+    "time": {
+      "last30Days": "최근 30일",
+      "last90Days": "최근 90일",
+      "today": "오늘",
+      "dateLabels": [
+        "2026-02-19",
+        "2026-02-25",
+        "2026-03-03",
+        "2026-03-09",
+        "2026-03-17"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "개요",
+      "analytics": "분석",
+
+      "stats": {
+        "totalOrders": "총 주문 수",
+        "pendingScheduled": "대기 / 예약됨",
+        "inProgress": "진행 중",
+        "completed": "완료"
+      },
+
+      "queue": {
+        "pendingQueue": "대기 큐",
+        "scheduled": "예약됨",
+        "inProgress": "진행 중",
+        "completed": "완료",
+        "urgent": "긴급 / STAT",
+        "overdue": "기한 경과 (>48시간)"
+      },
+
+      "recentOrders": {
+        "title": "최근 영상진단 주문",
+        "subtitle": "최신 영상 의뢰 및 워크플로우 상태",
+        "empty": "아직 영상진단 주문이 없습니다."
+      },
+
+      "activity": {
+        "title": "활동 피드",
+        "subtitle": "최근 워크플로우 업데이트",
+        "empty": "최근 활동이 없습니다."
+      },
+
+      "queueHealth": {
+        "title": "큐 상태",
+        "subtitle": "최근 영상진단 주문 요약",
+        "topModality": "최다 촬영 방식",
+        "footer": "분석 탭에서 전체 트렌드, 처리 시간, 인구 통계, 의뢰처 및 매출 지표를 확인할 수 있습니다."
+      }
+    },
+
+    "analytics": {
+      "title": "분석",
+      "refresh": "새로고침",
+      "export": "내보내기",
+
+      "metrics": {
+        "totalScans": "총 스캔 수",
+        "completed": "0건 완료",
+        "pending": "0건 대기 중",
+        "vsPrev": "이전 대비 0%",
+
+        "netRevenue": "순매출",
+        "revenueDetail": "매출 ₩0 • 환불 ₩0",
+
+        "avgReportTime": "평균 리포트 작성 시간",
+        "avgAcceptTime": "평균 접수 시간: 0시간",
+
+        "opsHealth": "운영 상태",
+        "util": "가동률 0%",
+        "backlog": "미처리분 0건",
+        "open": "진행 가능 0건"
+      },
+
+      "charts": {
+        "dailyTrend": "일별 트렌드",
+        "trendDesc": "시간 경과에 따른 스캔 수 및 매출",
+
+        "modalityMix": "촬영 방식 구성",
+        "workflow": "워크플로우",
+        "referralStatus": "의뢰 상태",
+        "topReferrers": "주요 의뢰처",
+        "peakHours": "피크 시간대",
+        "patientDemographics": "환자 인구 통계",
+        "gender": "성별",
+        "ageBuckets": "연령대",
+        "turnaround": "방식별 처리 시간",
+        "revenueByModality": "촬영 방식별 매출",
+
+        "empty": "아직 데이터가 없습니다.",
+        "noRevenue": "사용 가능한 촬영 방식별 매출 데이터가 없습니다."
+      }
+    },
+
+    "workflow": {
+      "title": "스캔 워크플로우",
+      "subtitle": "방문 주문을 생성하고 예약부터 리포트 전달까지의 스캔 과정을 관리합니다.",
+      "newWalkIn": "새 방문 주문",
+      "searchPlaceholder": "환자명, 주문 번호 또는 검사명으로 검색...",
+      "empty": "스캔 내역을 찾을 수 없습니다."
+    },
+
+    "orderForm": {
+      "title": "새 수동 영상진단 주문",
+
+      "fields": {
+        "fullName": "성명 *",
+        "phone": "전화번호 *",
+        "email": "이메일 (선택 사항)",
+        "dob": "생년월일 (선택 사항)",
+        "modality": "촬영 방식(Modality)",
+        "studyName": "검사명 *",
+        "bodyPart": "검사 부위 (선택 사항)",
+        "contrast": "조영제 사용",
+        "priority": "우선순위",
+        "preferredDate": "희망 날짜 (선택 사항)",
+        "preferredTime": "희망 시간대 (선택 사항)",
+        "reason": "사유 (선택 사항)",
+        "clinicalNotes": "임상 소견 (선택 사항)"
+      },
+
+      "placeholders": {
+        "phone": "+82 10 1234 5678",
+        "email": "email@example.com",
+        "dob": "yyyy/mm/dd",
+        "study": "흉부 엑스레이, 뇌 MRI 등...",
+        "bodyPart": "흉부, 뇌, 무릎 등...",
+        "time": "예: 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "항목에 대한 메모..."
+      },
+
+      "actions": {
+        "cancel": "취소",
+        "submit": "영상진단 주문 생성"
+      }
+    },
+
+    "reports": {
+      "search": "리포트 검색...",
+      "allReports": "모든 리포트",
+      "empty": "리포트를 찾을 수 없습니다.",
+
+      "columns": {
+        "order": "주문",
+        "patient": "환자",
+        "exam": "검사",
+        "modality": "방식",
+        "status": "상태",
+        "radiologist": "영상의학 전문의",
+        "actions": "작업"
+      }
+    },
+
+    "equipment": {
+      "title": "장비",
+      "subtitle": "스캐너 관리 및 가동 능력 (저장소 동기화 중...)",
+      "search": "장비 검색...",
+      "empty": "장비를 찾을 수 없습니다.",
+
+      "columns": {
+        "name": "장비명",
+        "modality": "방식",
+        "status": "상태",
+        "capacity": "일일 처리 용량"
+      },
+
+      "form": {
+        "title": "장비 추가",
+        "name": "장비명",
+        "modality": "방식",
+        "status": "상태",
+        "manufacturer": "제조사",
+        "model": "모델명",
+        "serial": "시리얼 번호",
+        "capacity": "일일 처리 용량",
+        "scanTypes": "스캔 유형 (쉼표로 구분)"
+      }
+    },
+
+    "billing": {
+      "partial": "청구 보기가 부분적으로 로드되었습니다.",
+      "warning": "스키마나 현재 권한으로 인해 일부 테이블을 사용할 수 없을 수 있습니다.",
+
+      "metrics": {
+        "processedRevenue": "처리된 매출",
+        "transactions": "거래 건수",
+        "averageTicket": "평균 단가",
+        "collectionRate": "수금률",
+        "outstanding": "미결제 인보이스",
+        "holds": "지불 보류",
+        "subscriptions": "활성 구독",
+        "risk": "리스크 / 매출 손실"
+      },
+
+      "charts": {
+        "revenueTrend": "매출 트렌드",
+        "statusMix": "거래 상태 구성",
+        "types": "거래 유형",
+        "invoiceStatus": "인보이스 상태",
+        "plans": "구독 플랜",
+        "methods": "결제 수단",
+        "providers": "제공업체 / 게이트웨이",
+        "recent": "최근 거래",
+        "success": "일별 거래 성공률",
+        "revenueType": "매출 유형 구성"
+      }
+    },
+
+    "verify": {
+      "title": "문서 검증",
+      "input": "검증 코드 입력 또는 스캔",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "확인",
+      "scan": "대신 QR 코드 스캔"
+    }
+  }
+}
