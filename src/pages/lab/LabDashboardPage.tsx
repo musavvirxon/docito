@@ -200,24 +200,24 @@ export default function LabDashboardPage() {
 
   const sidebarItems: SidebarItem[] = useMemo(
     () => [
-      { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
-      { id: "orders", label: "Orders", icon: <ClipboardList className="h-5 w-5" /> },
-      { id: "home", label: "Home Collection", icon: <Home className="h-5 w-5" /> },
-      { id: "samples", label: "Samples", icon: <TestTube2 className="h-5 w-5" /> },
-      { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
-      { id: "billing", label: "Billing / Insurance", icon: <CreditCard className="h-5 w-5" /> },
-      { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
-      { id: "referrals", label: "Referrals", icon: <ArrowRightLeft className="h-5 w-5" /> },
-      { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
+      { id: "overview", label: t("dashboard.menu.overview", "Overview"), icon: <LayoutDashboard className="h-5 w-5" /> },
+      { id: "orders", label: t("dashboard.menu.orders", "Orders"), icon: <ClipboardList className="h-5 w-5" /> },
+      { id: "home", label: t("dashboard.menu.homeCollection", "Home Collection"), icon: <Home className="h-5 w-5" /> },
+      { id: "samples", label: t("dashboard.menu.samples", "Samples"), icon: <TestTube2 className="h-5 w-5" /> },
+      { id: "analytics", label: t("dashboard.menu.analytics", "Analytics"), icon: <BarChart3 className="h-5 w-5" /> },
+      { id: "billing", label: t("dashboard.menu.billingInsurance", "Billing / Insurance"), icon: <CreditCard className="h-5 w-5" /> },
+      { id: "finances", label: t("dashboard.menu.finances", "Finances"), icon: <DollarSign className="h-5 w-5" /> },
+      { id: "referrals", label: t("dashboard.menu.referrals", "Referrals"), icon: <ArrowRightLeft className="h-5 w-5" /> },
+      { id: "staff", label: t("dashboard.menu.staff", "Staff"), icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: t("dashboard.menu.verifyDocuments", "Verify Documents"), icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
-        label: "Settings",
+        label: t("dashboard.menu.settings", "Settings"),
         icon: <Settings className="h-5 w-5" />,
         onClick: () => navigate("/lab/settings"),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   const isLoading = authLoading || loadingCenter;
