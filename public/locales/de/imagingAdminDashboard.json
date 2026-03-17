@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Übersicht",
+      "scanWorkflow": "Scan-Workflow",
+      "reports": "Berichte",
+      "equipment": "Geräte",
+      "analytics": "Analysen",
+      "billing": "Abrechnung",
+      "finances": "Finanzen",
+      "referrals": "Überweisungen",
+      "staff": "Personal",
+      "verifyDocuments": "Dokumente verifizieren",
+      "settings": "Einstellungen"
+    },
+
+    "header": {
+      "title": "Dashboard für Bildgebungspersonal",
+      "subtitle": "Aufträge, Scan-Workflow und Analysen aus Supabase",
+      "refresh": "Aktualisieren"
+    },
+
+    "common": {
+      "refresh": "Aktualisieren",
+      "export": "Exportieren",
+      "exportCSV": "CSV exportieren",
+      "search": "Suchen",
+      "all": "Alle",
+      "allStatuses": "Alle Status",
+      "noData": "Noch keine Daten.",
+      "empty": "Keine Daten verfügbar.",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "add": "Hinzufügen",
+      "actions": "Aktionen"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0 %",
+      "zeroCurrency": "0,00 €",
+      "zeroHours": "0h"
+    },
+
+    "statuses": {
+      "pending": "Ausstehend",
+      "scheduled": "Geplant",
+      "inProgress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "draft": "Entwürfe",
+      "finalized": "Finalisiert",
+      "critical": "Kritisch",
+      "cancelled": "Storniert",
+      "processing": "Wird bearbeitet"
+    },
+
+    "time": {
+      "last30Days": "Letzte 30 Tage",
+      "last90Days": "Letzte 90 Tage",
+      "today": "Heute",
+      "dateLabels": [
+        "19.02.2026",
+        "25.02.2026",
+        "03.03.2026",
+        "09.03.2026",
+        "17.03.2026"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "Übersicht",
+      "analytics": "Analysen",
+
+      "stats": {
+        "totalOrders": "Gesamtanzahl Aufträge",
+        "pendingScheduled": "Ausstehend / Geplant",
+        "inProgress": "In Bearbeitung",
+        "completed": "Abgeschlossen"
+      },
+
+      "queue": {
+        "pendingQueue": "Warteschlange (ausstehend)",
+        "scheduled": "Geplant",
+        "inProgress": "In Bearbeitung",
+        "completed": "Abgeschlossen",
+        "urgent": "Dringend / STAT",
+        "overdue": "Überfällig (>48h)"
+      },
+
+      "recentOrders": {
+        "title": "Aktuelle Bildgebungsaufträge",
+        "subtitle": "Neueste Bildgebungsüberweisungen und Workflow-Status",
+        "empty": "Noch keine Bildgebungsaufträge."
+      },
+
+      "activity": {
+        "title": "Aktivitäts-Feed",
+        "subtitle": "Aktuelle Workflow-Updates",
+        "empty": "Keine aktuellen Aktivitäten."
+      },
+
+      "queueHealth": {
+        "title": "Status der Warteschlange",
+        "subtitle": "Kurzer Überblick über aktuelle Bildgebungsaufträge",
+        "topModality": "Top-Modalität",
+        "footer": "Vollständige Trends, Durchlaufzeiten, Demografien, Zuweiser und Umsatzkennzahlen finden Sie im Reiter Analysen."
+      }
+    },
+
+    "analytics": {
+      "title": "Analysen",
+      "refresh": "Aktualisieren",
+      "export": "Exportieren",
+
+      "metrics": {
+        "totalScans": "Gesamtanzahl Scans",
+        "completed": "0 abgeschlossen",
+        "pending": "0 ausstehend",
+        "vsPrev": "0 % vs. Vorzeitraum",
+
+        "netRevenue": "Nettoumsatz",
+        "revenueDetail": "0,00 € Umsatz • 0,00 € Rückerstattungen",
+
+        "avgReportTime": "Ø Berichtszeit",
+        "avgAcceptTime": "Ø Annahmezeit: 0h",
+
+        "opsHealth": "Betriebsstatus",
+        "util": "0 % Auslastung",
+        "backlog": "0 Rückstand",
+        "open": "0 offen"
+      },
+
+      "charts": {
+        "dailyTrend": "Täglicher Trend",
+        "trendDesc": "Scans und Umsatz im Zeitverlauf",
+
+        "modalityMix": "Modalitäten-Mix",
+        "workflow": "Workflow",
+        "referralStatus": "Überweisungsstatus",
+        "topReferrers": "Top-Zuweiser",
+        "peakHours": "Spitzenzeiten",
+        "patientDemographics": "Patientendemografie",
+        "gender": "Geschlecht",
+        "ageBuckets": "Altersgruppen",
+        "turnaround": "Durchlaufzeit nach Modalität",
+        "revenueByModality": "Umsatz nach Modalität",
+
+        "empty": "Noch keine Daten.",
+        "noRevenue": "Noch keine Umsatzdaten für Modalitäten verfügbar."
+      }
+    },
+
+    "workflow": {
+      "title": "Scan-Workflow",
+      "subtitle": "Erstellen Sie hier Walk-in-Aufträge und verwalten Sie Scans von der Terminplanung bis zur Bereitstellung der Berichte.",
+      "newWalkIn": "Neuer Walk-in-Auftrag",
+      "searchPlaceholder": "Suche nach Patient, Auftragsnummer oder Untersuchung...",
+      "empty": "Keine Scans gefunden"
+    },
+
+    "orderForm": {
+      "title": "Neuer manueller Bildgebungsauftrag",
+
+      "fields": {
+        "fullName": "Vollständiger Name *",
+        "phone": "Telefon *",
+        "email": "E-Mail (optional)",
+        "dob": "Geburtsdatum (optional)",
+        "modality": "Modalität",
+        "studyName": "Name der Untersuchung *",
+        "bodyPart": "Körperteil (optional)",
+        "contrast": "Kontrastmittel",
+        "priority": "Priorität",
+        "preferredDate": "Bevorzugtes Datum (optional)",
+        "preferredTime": "Bevorzugtes Zeitfenster (optional)",
+        "reason": "Grund (optional)",
+        "clinicalNotes": "Klinische Notizen (optional)"
+      },
+
+      "placeholders": {
+        "phone": "+49 151 12345678",
+        "email": "email@beispiel.de",
+        "dob": "tt.mm.jjjj",
+        "study": "Röntgen-Thorax, MRT-Kopf...",
+        "bodyPart": "Brustkorb, Kopf, Knie...",
+        "time": "z. B. 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Notizen zu diesem Eintrag…"
+      },
+
+      "actions": {
+        "cancel": "Abbrechen",
+        "submit": "Bildgebungsauftrag erstellen"
+      }
+    },
+
+    "reports": {
+      "search": "Berichte suchen...",
+      "allReports": "Alle Berichte",
+      "empty": "Keine Berichte gefunden",
+
+      "columns": {
+        "order": "Auftrag",
+        "patient": "Patient",
+        "exam": "Untersuchung",
+        "modality": "Modalität",
+        "status": "Status",
+        "radiologist": "Radiologe",
+        "actions": "Aktionen"
+      }
+    },
+
+    "equipment": {
+      "title": "Geräte",
+      "subtitle": "Verwalten Sie Scanner und Kapazitäten (Speichersynchronisierung läuft…)",
+      "search": "Geräte suchen...",
+      "empty": "Keine Geräte gefunden",
+
+      "columns": {
+        "name": "Name",
+        "modality": "Modalität",
+        "status": "Status",
+        "capacity": "Kapazität/Tag"
+      },
+
+      "form": {
+        "title": "Gerät hinzufügen",
+        "name": "Name",
+        "modality": "Modalität",
+        "status": "Status",
+        "manufacturer": "Hersteller",
+        "model": "Modell",
+        "serial": "Seriennummer",
+        "capacity": "Kapazität pro Tag",
+        "scanTypes": "Scantypen (kommagetrennt)"
+      }
+    },
+
+    "billing": {
+      "partial": "Die Abrechnungsansicht ist teilweise gefüllt",
+      "warning": "Einige Tabellen sind in Ihrem Schema oder aufgrund aktueller Berechtigungen möglicherweise nicht verfügbar.",
+
+      "metrics": {
+        "processedRevenue": "Verarbeiteter Umsatz",
+        "transactions": "Transaktionen",
+        "averageTicket": "Durchschnittsbon",
+        "collectionRate": "Einziehungsquote",
+        "outstanding": "Ausstehende Rechnungen",
+        "holds": "Einbehaltene Zahlungen",
+        "subscriptions": "Aktive Abonnements",
+        "risk": "Risiko / Verlust"
+      },
+
+      "charts": {
+        "revenueTrend": "Umsatztrend",
+        "statusMix": "Mix aus Transaktionsstatus",
+        "types": "Transaktionsarten",
+        "invoiceStatus": "Rechnungsstatus",
+        "plans": "Abonnementpläne",
+        "methods": "Zahlungsmethoden",
+        "providers": "Anbieter / Gateways",
+        "recent": "Kürzliche Transaktionen",
+        "success": "Täglicher Transaktionserfolg",
+        "revenueType": "Umsatzarten-Mix"
+      }
+    },
+
+    "verify": {
+      "title": "Dokumentenprüfung",
+      "input": "Verifizierungscode eingeben oder scannen",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Überprüfen",
+      "scan": "Stattdessen QR-Code scannen"
+    }
+  }
+}
