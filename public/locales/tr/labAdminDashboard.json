@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Genel Bakış",
+      "orders": "Siparişler",
+      "homeCollection": "Evde Numune Alımı",
+      "samples": "Numuneler",
+      "analytics": "Analizler",
+      "billingInsurance": "Faturalandırma / Sigorta",
+      "finances": "Finans",
+      "referrals": "Sevkler",
+      "staff": "Personel",
+      "verifyDocuments": "Belge Doğrulama",
+      "settings": "Ayarlar"
+    },
+    "header": {
+      "title": "Laboratuvar Personel Paneli",
+      "subtitle": "Supabase üzerinden çekilen siparişler, iş akışı ve analizler",
+      "refresh": "Yenile"
+    },
+    "overview": {
+      "title": "Genel Bakış",
+      "analytics": "Analizler",
+      "totalOrders": "Toplam Sipariş",
+      "pending": "Beklemede",
+      "inProgress": "Devam Ediyor",
+      "completed": "Tamamlandı",
+      "pendingQueue": "Bekleme Kuyruğu",
+      "inProgressQueue": "Devam Ediyor",
+      "completedRecent": "Tamamlanan (son)",
+      "urgent": "Acil / STAT",
+      "overdue": "Gecikmiş (>48s)",
+      "recentOrders": {
+        "title": "Son Laboratuvar Siparişleri",
+        "subtitle": "En son siparişler ve iş akışı durumu",
+        "empty": "Henüz sipariş yok."
+      },
+      "activity": {
+        "title": "Etkinlik Akışı",
+        "subtitle": "Son iş akışı güncellemeleri",
+        "empty": "Son etkinlik yok."
+      },
+      "queueHealth": {
+        "title": "Kuyruk Sağlığı",
+        "subtitle": "Son siparişlerden hızlı operasyonel özet",
+        "pending": "Beklemede",
+        "inProgress": "Devam Ediyor",
+        "completed": "Tamamlandı",
+        "urgent": "Acil / STAT",
+        "overdue": "Gecikmiş (>48s)",
+        "footer": "Tüm operasyonel analizler ve SLA metrikleri Analiz sekmesinde mevcuttur."
+      }
+    },
+    "orders": {
+      "search": "Sipariş #, hasta adı veya telefon ile ara...",
+      "statuses": "Tüm Durumlar",
+      "newOrder": "Yeni manuel sipariş",
+      "testOrders": "Test Siparişleri",
+      "empty": "Sipariş bulunamadı",
+      "details": {
+        "title": "Sipariş Detayları",
+        "select": "Detayları görmek için bir sipariş seçin"
+      },
+      "statusList": {
+        "completed": "tamamlandı",
+        "cancelled": "iptal edildi",
+        "pending": "beklemede",
+        "scheduled": "planlandı",
+        "processing": "işleniyor",
+        "sampleCollected": "numune alındı"
+      }
+    },
+    "collections": {
+      "today": "Bugünkü Toplamalar",
+      "pendingAssignment": "Atama Bekleyen",
+      "inTransit": "Yolda",
+      "completedToday": "Bugün Tamamlanan",
+      "title": "Evde Numune Toplama",
+      "subtitle": "Toplama takvimlerini ve personel atamalarını yönetin",
+      "search": "Hasta veya adrese göre ara...",
+      "allStatus": "Tüm Durumlar",
+      "table": {
+        "patient": "Hasta",
+        "address": "Adres",
+        "scheduled": "Planlanan",
+        "collector": "Toplayıcı",
+        "status": "Durum",
+        "actions": "İşlemler",
+        "empty": "Toplama bulunamadı"
+      },
+      "stats": {
+        "pending": "Beklemede",
+        "collected": "Toplandı",
+        "processing": "İşleniyor",
+        "completed": "Tamamlandı"
+      }
+    },
+    "samples": {
+      "title": "Numune Yönetimi",
+      "subtitle": "Numuneleri toplamadan sonuçlara kadar takip edin",
+      "search": "Numune ID, barkod veya hastaya göre ara...",
+      "allStatus": "Tüm Durumlar",
+      "table": {
+        "sample": "Numune",
+        "patient": "Hasta",
+        "type": "Tür",
+        "barcode": "Barkod",
+        "status": "Durum",
+        "actions": "İşlemler",
+        "empty": "Numune bulunamadı"
+      }
+    },
+    "analytics": {
+      "title": "Analiz Paneli",
+      "subtitle": "Siparişler, testler, sonuçlar ve sevkler üzerinden operasyonel analizler",
+      "last30days": "Son 30 gün",
+      "refresh": "Yenile",
+      "metrics": {
+        "orders": "Siparişler (30g)",
+        "vsPrevious": "Önceki döneme göre +0.0%",
+        "completionRate": "Tamamlanma Oranı",
+        "completionDetails": "0 tamamlandı • 0 beklemede",
+        "testVolume": "Test Hacmi",
+        "testsPerOrder": "Sipariş başına 0.0 test",
+        "revenue": "Gelir (30g)",
+        "turnaround": "Geri Dönüş Süresi (ort / P90)",
+        "turnaroundDesc": "Sipariş oluşturma → tamamlanma",
+        "resultVerification": "Sonuç Doğrulama",
+        "verificationDetails": "0 doğrulandı • 0 beklemede",
+        "abnormalResults": "Anormal Sonuçlar",
+        "abnormalDetails": "0 / 0 sonuç",
+        "incomingReferrals": "Gelen Sevkler"
+      },
+      "charts": {
+        "ordersTrend": "Sipariş, Test ve Sonuç Trendi",
+        "throughput": "Seçilen dönemdeki günlük laboratuvar verimliliği",
+        "orderStatusMix": "Sipariş Durum Dağılımı",
+        "statusDistribution": "Laboratuvar siparişleri için durum dağılımı",
+        "noOrders": "Bu dönemde sipariş yok.",
+        "topTests": "En Çok Yapılan Testler",
+        "noTests": "Bu dönemde test bulunamadı.",
+        "operationalMix": "Operasyonel Karışım",
+        "priorityMix": "Öncelik Dağılımı",
+        "noPriority": "Öncelik verisi yok",
+        "paymentStatus": "Ödeme Durumu",
+        "testCategories": "Test Kategorileri"
+      },
+      "quality": {
+        "title": "Geri Dönüş ve Kalite",
+        "sla": "SLA ve kalite göstergeleri",
+        "orderTat": "Sipariş TAT ort / P90",
+        "resultTat": "Sonuç TAT ort / P90",
+        "sampleTat": "Numune toplama ort / P90",
+        "slaBreaches": "SLA İhlalleri",
+        "performed": "Gerçekleşen sonuçlar",
+        "verified": "Doğrulanan sonuçlar",
+        "pending": "Doğrulama bekleyen",
+        "abnormal": "Anormal sonuçlar"
+      },
+      "referrals": {
+        "title": "Sevk Hunisi",
+        "subtitle": "Bu laboratuvar için gelen sevk hattı",
+        "received": "Alındı",
+        "active": "Kabul Edildi / Aktif",
+        "completed": "Tamamlandı",
+        "completionRate": "Tamamlanma Oranı",
+        "status": "Sevk Durumu"
+      },
+      "catalog": {
+        "title": "Katalog Kapsamı",
+        "subtitle": "Test kataloğu genişliği ve hazırlığı",
+        "total": "Katalog Toplamı",
+        "active": "Aktif Testler",
+        "local": "Yerel Testler",
+        "categories": "Kategoriler"
+      },
+      "snapshot": {
+        "title": "Güncel Dönem Özeti",
+        "avgOrderValue": "Ort. sipariş değeri",
+        "inProgress": "Devam eden siparişler",
+        "cancelled": "İptal edilen siparişler",
+        "overdue": "Gecikmiş siparişler (>48s)"
+      },
+      "alerts": {
+        "title": "Operasyonel Uyarılar",
+        "subtitle": "Laboratuvar iş akışında dikkat gerektiren öğeler",
+        "empty": "Aktif uyarı yok."
+      }
+    },
+    "billing": {
+      "title": "Faturalandırma ve Sigorta",
+      "subtitle": "Canlı fatura işlemleri ve sigorta kapsamındaki siparişler.",
+      "refresh": "Yenile",
+      "grossRevenue": "Brüt Gelir",
+      "refunds": "İadeler",
+      "netRevenue": "Net Gelir",
+      "completedTransactions": "0 tamamlanmış işlem",
+      "tabs": {
+        "transactions": "İşlemler",
+        "insurance": "Sigorta Siparişleri"
+      },
+      "search": "Durum, tür veya açıklama ile ara...",
+      "table": {
+        "date": "Tarih",
+        "type": "Tür",
+        "status": "Durum",
+        "description": "Açıklama",
+        "amount": "Tutar",
+        "empty": "İşlem bulunamadı"
+      }
+    },
+    "finances": {
+      "title": "Finans",
+      "subtitle": "Gelir, gider, maaş, tazminat profilleri ve dışa aktarmaları yönetin.",
+      "staffCompensation": {
+        "title": "Personel Tazminatı",
+        "addProfile": "Profil Ekle",
+        "empty": "Henüz tazminat profili yok. Maaş, saatlik veya yüzdelik ödeme ekleyin."
+      },
+      "export": {
+        "title": "Finansal verileri dışa aktar",
+        "description": "Muhasebe veya denetim için kayıtlarınızı CSV olarak indirin.",
+        "from": "Başlangıç",
+        "to": "Bitiş",
+        "type": "Tür",
+        "category": "Kategori",
+        "all": "Tümü",
+        "export": "CSV Aktar",
+        "tip": "İpucu: Aylık raporlar alarak muhasebecinizle paylaşın."
+      },
+      "recurring": {
+        "title": "Tekrarlayan",
+        "subtitle": "Tekrarlayan finansal girişleri otomatikleştirin (fatura, kira).",
+        "addRule": "Kural ekle",
+        "status": "Durum",
+        "noRuns": "Önceki çalışma yok",
+        "runDue": "Bekleyenleri çalıştır",
+        "asOf": "İtibariyle",
+        "runNow": "Şimdi çalıştır",
+        "description": "Çalıştırma, seçilen tarihe kadar olan tüm kurallar için kayıtlar oluşturur.",
+        "noRules": "Henüz tekrarlayan kural yok."
+      },
+      "categories": {
+        "title": "Kategoriler",
+        "subtitle": "Malzeme, Vergi, Maaş gibi kategoriler oluşturun.",
+        "name": "Ad",
+        "color": "Renk (isteğe bağlı)",
+        "add": "Ekle",
+        "empty": "Henüz kategori yok.",
+        "tip": "İpucu: Raporların temiz olması için tutarlı isimler kullanın."
+      },
+      "ledger": {
+        "title": "Defter",
+        "subtitle": "Gelir, gider ve maaş girişlerini yönetin.",
+        "entries": "Girişler",
+        "income": "Gelir",
+        "expenses": "Gider",
+        "net": "Net",
+        "addEntry": "Giriş ekle",
+        "manual": "Manuel",
+        "date": "Tarih",
+        "type": "Tür",
+        "currency": "Para Birimi",
+        "amount": "Tutar",
+        "reference": "Referans (isteğe bağlı)",
+        "description": "Açıklama (isteğe bağlı)",
+        "empty": "Bu filtre için kayıt bulunamadı.",
+        "note": "Not: Liste her filtre için en fazla 200 giriş gösterir."
+      },
+      "compensationModal": {
+        "title": "Tazminat Profili Ekle",
+        "staff": "Personel",
+        "select": "Personel seçin…",
+        "type": "Tazminat Türü",
+        "salary": "Sabit Maaş",
+        "amount": "Tutar ($)",
+        "period": "Dönem",
+        "monthly": "Aylık",
+        "frequency": "Ödeme Sıklığı",
+        "notes": "Notlar (isteğe bağlı)",
+        "cancel": "İptal",
+        "save": "Kaydet"
+      }
+    },
+    "referrals": {
+      "title": "Sevkler",
+      "new": "Yeni Sevk",
+      "incoming": {
+        "title": "Gelen Sevkler",
+        "subtitle": "Laboratuvarınız tarafından alınan sevkler",
+        "timezone": "Gösterilen saat dilimi:",
+        "empty": "Henüz sevk yok."
+      },
+      "outgoing": {
+        "title": "Giden Sevkler",
+        "subtitle": "Laboratuvarınız tarafından gönderilen sevkler",
+        "timezone": "Gösterilen saat dilimi:",
+        "empty": "Henüz sevk yok."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "Aktif Personel",
+        "pending": "Bekleyen Davetler",
+        "inactive": "Pasif / Devre Dışı",
+        "admins": "Yönetici / Müdür"
+      },
+      "invite": {
+        "title": "Personel Davet Et",
+        "subtitle": "Davetler oluşturun, rol atayın ve izinleri belirleyin.",
+        "email": "E-posta",
+        "role": "Rol",
+        "technician": "Teknisyen",
+        "send": "Davet Gönder",
+        "preset": "İzin Şablonu"
+      },
+      "pending": {
+        "title": "Bekleyen Davetler",
+        "subtitle": "Bekleyen davetleri yönetin veya iptal edin.",
+        "empty": "Bekleyen davet yok."
+      },
+      "active": {
+        "title": "Aktif Personel Yönetimi",
+        "subtitle": "Rolleri düzenleyin veya erişimi kaldırın.",
+        "search": "Personel ara...",
+        "refresh": "Yenile",
+        "empty": "Aktif personel bulunamadı."
+      },
+      "audit": {
+        "title": "Personel Denetim Kaydı",
+        "subtitle": "Hesap verebilirlik için son personel etkinlikleri.",
+        "empty": "Denetim kaydı bulunamadı."
+      }
+    },
+    "verify": {
+      "title": "Belge Doğrulama",
+      "description": "Herhangi bir Tokito belgesinin (tedavi planları, sevkler, reçeteler ve hasta profilleri) orijinalliğini doğrulayın.",
+      "input": "Doğrulama Kodunu Girin veya Taratın",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Doğrula",
+      "types": {
+        "tp": "TP - Tedavi Planı",
+        "rf": "RF - Sevk",
+        "rx": "RX - Reçete",
+        "pt": "PT - Hasta Profili"
+      },
+      "scan": "QR Kodu Tara"
+    }
+  }
+}
