@@ -1,0 +1,263 @@
+{
+  "pharmacyDashboard": {
+    "menu": {
+      "overview": "Overview",
+      "prescriptions": "Prescriptions",
+      "fulfillment": "Fulfillment",
+      "inventory": "Inventory",
+      "deliveries": "Deliveries",
+      "referrals": "Referrals",
+      "analytics": "Analytics",
+      "billingClaims": "Billing / Claims",
+      "finances": "Finances",
+      "staff": "Staff",
+      "verifyDocuments": "Verify Documents",
+      "settings": "Settings"
+    },
+
+    "header": {
+      "title": "Pharmacy Dashboard",
+      "subtitle": "Prescriptions, fulfillment, analytics, and billing pulled from Supabase",
+      "refresh": "Refresh"
+    },
+
+    "overview": {
+      "prescriptionsToday": "Prescriptions Today",
+      "pendingFulfillment": "Pending Fulfillment",
+      "deliveriesInProgress": "Deliveries In Progress",
+      "completedToday": "Completed Today"
+    },
+
+    "prescriptions": {
+      "title": "Prescription Inbox",
+      "subtitle": "New and pending prescriptions for your pharmacy.",
+      "inbox": "Prescriptions Inbox",
+      "manage": "Manage incoming prescriptions + manual walk-in prescriptions",
+      "new": "0 New",
+      "inReview": "0 In Review",
+      "newManual": "New manual Rx",
+      "search": "Search by ID, prescription #, patient name/phone...",
+      "table": {
+        "rx": "Rx",
+        "patient": "Patient",
+        "doctor": "Doctor",
+        "items": "Items",
+        "status": "Status",
+        "refills": "Refills",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "empty": "No prescriptions found"
+    },
+
+    "manualPrescription": {
+      "title": "New Manual Prescription",
+      "patient": "Patient (Walk-in)",
+      "fields": {
+        "name": "Walk-in Name *",
+        "fullName": "Full name",
+        "phone": "Phone *",
+        "email": "Email (optional)",
+        "doctorId": "Doctor ID (optional)",
+        "refills": "Refills total",
+        "notes": "Notes (optional)"
+      },
+      "placeholders": {
+        "phone": "+1 415 555 2671",
+        "email": "email@example.com",
+        "doctorId": "doctor UUID (optional)"
+      },
+      "medications": {
+        "title": "Medications",
+        "addItem": "Add item",
+        "item": "Item #1",
+        "name": "Medication name *",
+        "code": "Medication code (optional)",
+        "dosage": "Dosage *",
+        "frequency": "Frequency *",
+        "quantity": "Quantity *",
+        "unit": "Unit (optional)",
+        "instructions": "Instructions (optional)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Prescription"
+      }
+    },
+
+    "fulfillment": {
+      "title": "Fulfillment Queue",
+      "subtitle": "End-to-end processing queue for prescription fulfillment orders",
+      "refresh": "Refresh Orders",
+
+      "stats": {
+        "activeQueue": "Active Queue",
+        "pendingProcessingReady": "0 pending • 0 processing • 0 ready",
+        "overdue": "Overdue / At Risk",
+        "urgentHigh": "0 urgent • 0 high priority",
+        "queueValue": "Queue Value",
+        "avgOrder": "Avg order $0.00",
+        "insuranceCopay": "Insurance / Copay",
+        "copay": "Copay $0.00",
+        "avgCycle": "Avg Fulfillment Cycle",
+        "readyPickup": "Ready Awaiting Pickup",
+        "deliveryQueue": "Delivery Queue",
+        "completedOrders": "Completed Orders"
+      },
+
+      "charts": {
+        "throughput": "Queue Throughput Trend",
+        "throughputDesc": "Incoming and completed orders (last 14 activity days)",
+        "statusMix": "Status Mix",
+        "priority": "Priority Distribution",
+        "pickupPayment": "Pickup & Payment Mix",
+        "emptyThroughput": "No throughput data yet.",
+        "emptyOrders": "No orders available.",
+        "noPickup": "No pickup data.",
+        "noPayment": "No payment data."
+      },
+
+      "table": {
+        "title": "Queue Orders",
+        "search": "Search order #, status, meds, prescription...",
+        "filters": {
+          "status": "All status",
+          "priority": "All priority",
+          "pickup": "All pickup"
+        },
+        "columns": {
+          "order": "Order",
+          "priority": "Priority",
+          "route": "Route",
+          "status": "Status",
+          "payment": "Payment",
+          "amounts": "Amounts",
+          "eta": "ETA / Age",
+          "prescription": "Prescription",
+          "actions": "Actions"
+        },
+        "empty": "No orders match the current filters",
+        "footer": "Showing 0 of 0 order(s) in fulfillment queue."
+      }
+    },
+
+    "inventory": {
+      "title": "Inventory Management",
+      "subtitle": "Inventory control, stock health monitoring, and pharmacy supply analytics",
+
+      "stats": {
+        "skus": "SKUs",
+        "stockRisk": "Stock Risk",
+        "retailValue": "Inventory Retail Value",
+        "costBasis": "Cost basis $0.00",
+        "expiryRisk": "Expiry Risk",
+        "grossMargin": "Potential Gross Margin",
+        "availableReserved": "Available / Reserved",
+        "controlled": "Controlled Substances",
+        "refrigerated": "Refrigerated Items"
+      },
+
+      "charts": {
+        "health": "Stock Health",
+        "topValue": "Top Inventory by Retail Value",
+        "expiry": "Expiry Distribution",
+        "manufacturer": "Manufacturer Coverage",
+        "empty": "No inventory data yet."
+      },
+
+      "table": {
+        "title": "Inventory Ledger",
+        "search": "Search medication, code, NDC, batch...",
+        "filters": {
+          "inventory": "All inventory",
+          "manufacturer": "All manufacturers",
+          "sort": "Sort: Risk"
+        },
+        "columns": {
+          "medication": "Medication",
+          "manufacturer": "Manufacturer",
+          "stock": "Stock",
+          "pricing": "Pricing",
+          "value": "Value",
+          "expiry": "Expiry",
+          "flags": "Flags",
+          "actions": "Actions"
+        },
+        "empty": "No inventory items yet",
+        "footer": "Inventory totals: 0 SKU(s), 0 on-hand units, $0.00 estimated retail value."
+      }
+    },
+
+    "deliveries": {
+      "title": "Delivery Orders",
+      "search": "Search by order # or address...",
+      "columns": {
+        "order": "Order #",
+        "address": "Delivery Address",
+        "status": "Status",
+        "amount": "Amount",
+        "ready": "Est. Ready",
+        "created": "Created",
+        "actions": "Actions"
+      },
+      "empty": "No delivery orders found"
+    },
+
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "subtitle": "End-to-end pharmacy analytics across fulfillment, prescriptions, payments, and inventory",
+
+      "metrics": {
+        "revenue": "Revenue (30d)",
+        "orders": "Fulfillment Orders",
+        "fillRate": "Fill Rate",
+        "avgOrder": "Avg Order Value",
+        "prepTime": "Prep Time (avg / P90)",
+        "pickupTime": "Pickup Time (avg / P90)",
+        "inventoryRisk": "Inventory Risk",
+        "inventoryValue": "Current Inventory Value"
+      },
+
+      "charts": {
+        "trend": "Revenue & Order Trend",
+        "statusMix": "Fulfillment Status Mix",
+        "topMeds": "Top Medications",
+        "payments": "Payments & Pickup Methods",
+        "inventory": "Inventory Health",
+        "expiry": "Expiry Distribution",
+        "value": "Top Inventory Value & Manufacturers",
+        "alerts": "Operational Alerts",
+        "snapshot": "Quick Snapshot"
+      }
+    },
+
+    "billing": {
+      "title": "Billing & Insurance Claims",
+      "subtitle": "Claims proxy from pharmacy fulfillment orders with insurance/coplay amounts.",
+
+      "metrics": {
+        "claimable": "Claimable Orders",
+        "pipeline": "In Pipeline",
+        "approved": "Approved / Paid",
+        "approvalRate": "Approval Rate",
+        "totalClaimed": "Total Claimed",
+        "copay": "Patient Copay",
+        "outstanding": "Outstanding Amount",
+        "rejected": "Rejected Amount"
+      },
+
+      "charts": {
+        "trend": "Claims Trend",
+        "statusMix": "Status Mix",
+        "amounts": "Amounts Breakdown",
+        "largest": "Largest Claims"
+      },
+
+      "table": {
+        "title": "Claims Ledger",
+        "search": "Search order, claim, policy, status...",
+        "empty": "No claims found for the current filters."
+      }
+    }
+  }
+}
