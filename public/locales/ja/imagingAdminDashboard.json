@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "概要",
+      "scanWorkflow": "スキャンワークフロー",
+      "reports": "レポート",
+      "equipment": "設備",
+      "analytics": "分析",
+      "billing": "請求",
+      "finances": "財務",
+      "referrals": "紹介",
+      "staff": "スタッフ",
+      "verifyDocuments": "書類照会",
+      "settings": "設定"
+    },
+
+    "header": {
+      "title": "画像診断スタッフダッシュボード",
+      "subtitle": "Supabaseから取得したオーダー、スキャンワークフロー、分析データ",
+      "refresh": "更新"
+    },
+
+    "common": {
+      "refresh": "更新",
+      "export": "エクスポート",
+      "exportCSV": "CSVエクスポート",
+      "search": "検索",
+      "all": "すべて",
+      "allStatuses": "すべてのステータス",
+      "noData": "データがありません。",
+      "empty": "表示可能なデータがありません。",
+      "cancel": "キャンセル",
+      "save": "保存",
+      "add": "追加",
+      "actions": "操作"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "¥0",
+      "zeroHours": "0時間"
+    },
+
+    "statuses": {
+      "pending": "保留中",
+      "scheduled": "予約済み",
+      "inProgress": "進行中",
+      "completed": "完了",
+      "draft": "下書き",
+      "finalized": "確定",
+      "critical": "緊急（パニック値）",
+      "cancelled": "キャンセル済み",
+      "processing": "処理中"
+    },
+
+    "time": {
+      "last30Days": "過去30日間",
+      "last90Days": "過去90日間",
+      "today": "本日",
+      "dateLabels": [
+        "2026-02-19",
+        "2026-02-25",
+        "2026-03-03",
+        "2026-03-09",
+        "2026-03-17"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "概要",
+      "analytics": "分析",
+
+      "stats": {
+        "totalOrders": "総オーダー数",
+        "pendingScheduled": "保留中 / 予約済み",
+        "inProgress": "進行中",
+        "completed": "完了"
+      },
+
+      "queue": {
+        "pendingQueue": "保留中キュー",
+        "scheduled": "予約済み",
+        "inProgress": "進行中",
+        "completed": "完了",
+        "urgent": "至急 / STAT",
+        "overdue": "期限切れ (>48h)"
+      },
+
+      "recentOrders": {
+        "title": "最近の画像診断オーダー",
+        "subtitle": "最新の紹介状とワークフロー状況",
+        "empty": "画像診断オーダーはまだありません。"
+      },
+
+      "activity": {
+        "title": "アクティビティフィード",
+        "subtitle": "最近のワークフロー更新",
+        "empty": "最近のアクティビティはありません。"
+      },
+
+      "queueHealth": {
+        "title": "キューの稼働状況",
+        "subtitle": "最近のオーダーのスナップショット",
+        "topModality": "最多モダリティ",
+        "footer": "トレンド、ターンアラウンドタイム、患者属性、紹介元、収益メトリクスの詳細は「分析」タブで確認できます。"
+      }
+    },
+
+    "analytics": {
+      "title": "分析",
+      "refresh": "更新",
+      "export": "エクスポート",
+
+      "metrics": {
+        "totalScans": "総スキャン数",
+        "completed": "完了 0件",
+        "pending": "保留 0件",
+        "vsPrev": "前期比 0%",
+
+        "netRevenue": "純収益",
+        "revenueDetail": "収益 ¥0 • 返金 ¥0",
+
+        "avgReportTime": "平均レポート作成時間",
+        "avgAcceptTime": "平均受付時間: 0時間",
+
+        "opsHealth": "運営状況",
+        "util": "稼働率 0%",
+        "backlog": "バックログ 0件",
+        "open": "未処理 0件"
+      },
+
+      "charts": {
+        "dailyTrend": "日次トレンド",
+        "trendDesc": "スキャン数と収益の推移",
+
+        "modalityMix": "モダリティ構成比",
+        "workflow": "ワークフロー",
+        "referralStatus": "紹介ステータス",
+        "topReferrers": "主要な紹介元",
+        "peakHours": "ピーク時間帯",
+        "patientDemographics": "患者属性",
+        "gender": "性別",
+        "ageBuckets": "年齢層",
+        "turnaround": "モダリティ別ターンアラウンドタイム",
+        "revenueByModality": "モダリティ別収益",
+
+        "empty": "データがまだありません。",
+        "noRevenue": "モダリティ別の収益データはまだありません。"
+      }
+    },
+
+    "workflow": {
+      "title": "スキャンワークフロー",
+      "subtitle": "ウォークイン（直接来院）オーダーの作成や、予約からレポート送付までのスキャン管理を行います。",
+      "newWalkIn": "新規ウォークインオーダー",
+      "searchPlaceholder": "患者名、オーダー番号、検査内容で検索...",
+      "empty": "スキャンが見つかりません"
+    },
+
+    "orderForm": {
+      "title": "新規マニュアル画像診断オーダー",
+
+      "fields": {
+        "fullName": "氏名 *",
+        "phone": "電話番号 *",
+        "email": "メールアドレス（任意）",
+        "dob": "生年月日（任意）",
+        "modality": "モダリティ",
+        "studyName": "検査名 *",
+        "bodyPart": "部位（任意）",
+        "contrast": "造影剤",
+        "priority": "優先度",
+        "preferredDate": "希望日（任意）",
+        "preferredTime": "希望時間枠（任意）",
+        "reason": "理由（任意）",
+        "clinicalNotes": "臨床所見・備考（任意）"
+      },
+
+      "placeholders": {
+        "phone": "+81 90 1234 5678",
+        "email": "email@example.com",
+        "dob": "yyyy/mm/dd",
+        "study": "胸部レントゲン、頭部MRIなど",
+        "bodyPart": "胸部、頭部、膝など",
+        "time": "例: 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "この入力に関するメモ..."
+      },
+
+      "actions": {
+        "cancel": "キャンセル",
+        "submit": "画像診断オーダーを作成"
+      }
+    },
+
+    "reports": {
+      "search": "レポートを検索...",
+      "allReports": "すべてのレポート",
+      "empty": "レポートが見つかりません",
+
+      "columns": {
+        "order": "オーダー",
+        "patient": "患者",
+        "exam": "検査",
+        "modality": "モダリティ",
+        "status": "ステータス",
+        "radiologist": "読影医",
+        "actions": "操作"
+      }
+    },
+
+    "equipment": {
+      "title": "設備",
+      "subtitle": "スキャナーの管理とキャパシティ（ストレージ同期中...）",
+      "search": "設備を検索...",
+      "empty": "設備が見つかりません",
+
+      "columns": {
+        "name": "名称",
+        "modality": "モダリティ",
+        "status": "ステータス",
+        "capacity": "1日あたりのキャパシティ"
+      },
+
+      "form": {
+        "title": "設備を追加",
+        "name": "名称",
+        "modality": "モダリティ",
+        "status": "ステータス",
+        "manufacturer": "メーカー",
+        "model": "モデル",
+        "serial": "シリアル番号",
+        "capacity": "1日あたりのキャパシティ",
+        "scanTypes": "スキャンタイプ（カンマ区切り）"
+      }
+    },
+
+    "billing": {
+      "partial": "請求ビューは一部のみ表示されています",
+      "warning": "スキーマまたは現在の権限により、一部のテーブルが利用できない場合があります。",
+
+      "metrics": {
+        "processedRevenue": "処理済み収益",
+        "transactions": "取引数",
+        "averageTicket": "平均単価",
+        "collectionRate": "回収率",
+        "outstanding": "未払請求書",
+        "holds": "支払い保留",
+        "subscriptions": "有効なサブスクリプション",
+        "risk": "リスク / 収益漏れ"
+      },
+
+      "charts": {
+        "revenueTrend": "収益トレンド",
+        "statusMix": "取引ステータス構成",
+        "types": "取引タイプ",
+        "invoiceStatus": "請求書ステータス",
+        "plans": "サブスクリプションプラン",
+        "methods": "支払い方法",
+        "providers": "プロバイダー / ゲートウェイ",
+        "recent": "最近の取引",
+        "success": "日次取引成功率",
+        "revenueType": "収益タイプ構成"
+      }
+    },
+
+    "verify": {
+      "title": "書類照会",
+      "input": "照会コードを入力またはスキャン",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "照会する",
+      "scan": "QRコードスキャンに切り替え"
+    }
+  }
+}
