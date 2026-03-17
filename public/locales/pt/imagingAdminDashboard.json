@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Visão Geral",
+      "scanWorkflow": "Fluxo de Exames",
+      "reports": "Laudos",
+      "equipment": "Equipamentos",
+      "analytics": "Análises",
+      "billing": "Faturamento",
+      "finances": "Finanças",
+      "referrals": "Encaminhamentos",
+      "staff": "Equipe",
+      "verifyDocuments": "Verificar Documentos",
+      "settings": "Configurações"
+    },
+
+    "header": {
+      "title": "Painel da Equipe de Imagem",
+      "subtitle": "Pedidos, fluxo de exames e análises extraídos do Supabase",
+      "refresh": "Atualizar"
+    },
+
+    "common": {
+      "refresh": "Atualizar",
+      "export": "Exportar",
+      "exportCSV": "Exportar CSV",
+      "search": "Buscar",
+      "all": "Todos",
+      "allStatuses": "Todos os Status",
+      "noData": "Nenhum dado ainda.",
+      "empty": "Nenhum dado disponível.",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "add": "Adicionar",
+      "actions": "Ações"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "R$ 0,00",
+      "zeroHours": "0h"
+    },
+
+    "statuses": {
+      "pending": "Pendente",
+      "scheduled": "Agendado",
+      "inProgress": "Em Andamento",
+      "completed": "Concluído",
+      "draft": "Rascunhos",
+      "finalized": "Finalizados",
+      "critical": "Crítico",
+      "cancelled": "Cancelado",
+      "processing": "Processando"
+    },
+
+    "time": {
+      "last30Days": "Últimos 30 dias",
+      "last90Days": "Últimos 90 dias",
+      "today": "Hoje",
+      "dateLabels": [
+        "19/02/2026",
+        "25/02/2026",
+        "03/03/2026",
+        "09/03/2026",
+        "17/03/2026"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "Visão Geral",
+      "analytics": "Análises",
+
+      "stats": {
+        "totalOrders": "Total de Pedidos",
+        "pendingScheduled": "Pendentes / Agendados",
+        "inProgress": "Em Andamento",
+        "completed": "Concluídos"
+      },
+
+      "queue": {
+        "pendingQueue": "Fila de Pendentes",
+        "scheduled": "Agendados",
+        "inProgress": "Em Andamento",
+        "completed": "Concluídos",
+        "urgent": "Urgente / Emergência",
+        "overdue": "Atrasados (>48h)"
+      },
+
+      "recentOrders": {
+        "title": "Pedidos de Imagem Recentes",
+        "subtitle": "Últimos encaminhamentos e estados do fluxo",
+        "empty": "Nenhum pedido de imagem ainda."
+      },
+
+      "activity": {
+        "title": "Fluxo de Atividade",
+        "subtitle": "Atualizações recentes do fluxo de trabalho",
+        "empty": "Nenhuma atividade recente."
+      },
+
+      "queueHealth": {
+        "title": "Saúde da Fila",
+        "subtitle": "Resumo rápido dos pedidos de imagem recentes",
+        "topModality": "Principal Modalidade",
+        "footer": "Tendências completas, tempo de resposta, demografia, solicitantes e métricas de receita estão disponíveis na aba de Análises."
+      }
+    },
+
+    "analytics": {
+      "title": "Análises",
+      "refresh": "Atualizar",
+      "export": "Exportar",
+
+      "metrics": {
+        "totalScans": "Total de Exames",
+        "completed": "0 concluídos",
+        "pending": "0 pendentes",
+        "vsPrev": "0% vs anterior",
+
+        "netRevenue": "Receita Líquida",
+        "revenueDetail": "R$ 0,00 receita • R$ 0,00 reembolsos",
+
+        "avgReportTime": "Tempo Médio de Laudo",
+        "avgAcceptTime": "Tempo médio de aceite: 0h",
+
+        "opsHealth": "Saúde Operacional",
+        "util": "0% utiliz.",
+        "backlog": "0 acumulados",
+        "open": "0 abertos"
+      },
+
+      "charts": {
+        "dailyTrend": "Tendência Diária",
+        "trendDesc": "Exames e receita ao longo do tempo",
+
+        "modalityMix": "Mix de Modalidades",
+        "workflow": "Fluxo de Trabalho",
+        "referralStatus": "Status de Encaminhamento",
+        "topReferrers": "Principais Solicitantes",
+        "peakHours": "Horários de Pico",
+        "patientDemographics": "Demografia dos Pacientes",
+        "gender": "Gênero",
+        "ageBuckets": "Faixas Etárias",
+        "turnaround": "Tempo de Resposta por Modalidade",
+        "revenueByModality": "Receita por Modalidade",
+
+        "empty": "Nenhum dado ainda.",
+        "noRevenue": "Nenhum dado de receita por modalidade disponível ainda."
+      }
+    },
+
+    "workflow": {
+      "title": "Fluxo de Exames",
+      "subtitle": "Crie pedidos para pacientes sem agendamento prévio e gerencie exames desde o agendamento até a entrega do laudo.",
+      "newWalkIn": "Novo Pedido (Sem Agendamento)",
+      "searchPlaceholder": "Buscar por paciente, número do pedido ou exame...",
+      "empty": "Nenhum exame encontrado"
+    },
+
+    "orderForm": {
+      "title": "Novo Pedido de Imagem Manual",
+
+      "fields": {
+        "fullName": "Nome completo *",
+        "phone": "Telefone *",
+        "email": "E-mail (opcional)",
+        "dob": "Data de nascimento (opcional)",
+        "modality": "Modalidade",
+        "studyName": "Nome do exame *",
+        "bodyPart": "Parte do corpo (opcional)",
+        "contrast": "Contraste",
+        "priority": "Prioridade",
+        "preferredDate": "Data de preferência (opcional)",
+        "preferredTime": "Horário de preferência (opcional)",
+        "reason": "Motivo (opcional)",
+        "clinicalNotes": "Notas clínicas (opcional)"
+      },
+
+      "placeholders": {
+        "phone": "+55 11 99999-9999",
+        "email": "email@exemplo.com",
+        "dob": "dd/mm/aaaa",
+        "study": "Raio-X de Tórax, Ressonância de Crânio...",
+        "bodyPart": "Tórax, Crânio, Joelho...",
+        "time": "ex: 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Notas sobre esta entrada..."
+      },
+
+      "actions": {
+        "cancel": "Cancelar",
+        "submit": "Criar Pedido de Imagem"
+      }
+    },
+
+    "reports": {
+      "search": "Buscar laudos...",
+      "allReports": "Todos os Laudos",
+      "empty": "Nenhum laudo encontrado",
+
+      "columns": {
+        "order": "Pedido",
+        "patient": "Paciente",
+        "exam": "Exame",
+        "modality": "Modalidade",
+        "status": "Status",
+        "radiologist": "Radiologista",
+        "actions": "Ações"
+      }
+    },
+
+    "equipment": {
+      "title": "Equipamentos",
+      "subtitle": "Gerencie scanners e capacidade (sincronizando armazenamento...)",
+      "search": "Buscar equipamentos...",
+      "empty": "Nenhum equipamento encontrado",
+
+      "columns": {
+        "name": "Nome",
+        "modality": "Modalidade",
+        "status": "Status",
+        "capacity": "Capacidade/dia"
+      },
+
+      "form": {
+        "title": "Adicionar Equipamento",
+        "name": "Nome",
+        "modality": "Modalidade",
+        "status": "Status",
+        "manufacturer": "Fabricante",
+        "model": "Modelo",
+        "serial": "Número de Série",
+        "capacity": "Capacidade por dia",
+        "scanTypes": "Tipos de exame (separados por vírgula)"
+      }
+    },
+
+    "billing": {
+      "partial": "A visualização de faturamento está parcialmente preenchida",
+      "warning": "Algumas tabelas podem estar indisponíveis no seu esquema ou permissões atuais.",
+
+      "metrics": {
+        "processedRevenue": "Receita Processada",
+        "transactions": "Transações",
+        "averageTicket": "Ticket Médio",
+        "collectionRate": "Taxa de Recebimento",
+        "outstanding": "Faturas Pendentes",
+        "holds": "Pagamentos Retidos",
+        "subscriptions": "Assinaturas Ativas",
+        "risk": "Risco / Perda"
+      },
+
+      "charts": {
+        "revenueTrend": "Tendência de Receita",
+        "statusMix": "Mix de Status de Transação",
+        "types": "Tipos de Transação",
+        "invoiceStatus": "Status da Fatura",
+        "plans": "Planos de Assinatura",
+        "methods": "Métodos de Pagamento",
+        "providers": "Provedores / Gateways",
+        "recent": "Transações Recentes",
+        "success": "Sucesso Diário de Transações",
+        "revenueType": "Mix de Tipo de Receita"
+      }
+    },
+
+    "verify": {
+      "title": "Verificação de Documentos",
+      "input": "Insira ou Escaneie o Código de Verificação",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verificar",
+      "scan": "Escanear QR Code"
+    }
+  }
+}
