@@ -480,6 +480,725 @@
       },
 
       "scan": "QR-kodni skanerlash"
+    },
+    {
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Umumiy ko'rinish",
+      "scanWorkflow": "Ish jarayoni",
+      "reports": "Hisobotlar",
+      "equipment": "Uskunalar",
+      "analytics": "Analitika",
+      "billing": "Billing",
+      "finances": "Moliya",
+      "referrals": "Yo'llanmalar",
+      "staff": "Xodimlar",
+      "verifyDocuments": "Hujjatlarni tekshirish",
+      "settings": "Sozlamalar"
+    },
+
+    "header": {
+      "title": "Vizualizatsiya xodimlari paneli",
+      "subtitle": "Buyurtmalar, skanerlash jarayoni va Supabase'dan olingan tahlillar",
+      "refresh": "Yangilash"
+    },
+
+    "overview": {
+      "title": "Umumiy ko'rinish",
+      "analytics": "Analitika",
+
+      "stats": {
+        "totalOrders": "Jami buyurtmalar",
+        "pendingScheduled": "Kutilmoqda / Rejalashtirilgan",
+        "inProgress": "Jarayonda",
+        "completed": "Yakunlandi"
+      },
+
+      "queue": {
+        "pending": "Kutilayotganlar navbati",
+        "scheduled": "Rejalashtirilgan",
+        "inProgress": "Jarayonda",
+        "completed": "Yakunlandi",
+        "urgent": "Shoshilinch / STAT",
+        "overdue": "Muddati o'tgan (>48s)"
+      },
+
+      "recentOrders": {
+        "title": "Oxirgi buyurtmalar",
+        "subtitle": "So'nggi yo'llanmalar va ish jarayoni holati",
+        "empty": "Hozircha buyurtmalar yo'q."
+      },
+
+      "activity": {
+        "title": "Faoliyat tasmasi",
+        "subtitle": "Ish jarayonidagi so'nggi yangilanishlar",
+        "empty": "So'nggi faoliyat mavjud emas."
+      },
+
+      "queueHealth": {
+        "title": "Navbat holati",
+        "subtitle": "Oxirgi buyurtmalarning qisqacha ko'rinishi",
+        "pending": "Kutilmoqda",
+        "scheduled": "Rejalashtirilgan",
+        "inProgress": "Jarayonda",
+        "completed": "Yakunlandi",
+        "topModality": "Asosiy yo'nalish",
+        "overdue": "Muddati o'tgan (>48s)",
+        "footer": "To'liq tendensiyalar, bajarilish vaqti, demografiya, yo'llovchilar va daromad ko'rsatkichlari Analitika bo'limida mavjud."
+      }
+    },
+
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Fikr-mulohaza",
+      "help": "Yordam",
+      "privacy": "Maxfiylik",
+      "terms": "Shartlar"
+    },
+
+    "analytics": {
+      "title": "Analitika",
+      "last30Days": "Oxirgi 30 kun",
+      "last90Days": "Oxirgi 90 kun",
+      "refresh": "Yangilash",
+      "export": "Eksport",
+      "exportCSV": "CSV eksport qilish",
+      "partialData": "Qisman ma'lumot",
+
+      "metrics": {
+        "totalScans": "Jami skanerlashlar",
+        "completed": "yakunlandi",
+        "pending": "kutilmoqda",
+        "vsPrev": "oldingiga nisbatan 0%",
+
+        "netRevenue": "Sof foyda",
+        "revenueBreakdown": "$0.00 daromad • $0.00 qaytarish",
+
+        "avgReportTime": "O'rtacha hisobot vaqti",
+        "avgAcceptTime": "Qabul qilish vaqti: 0s",
+
+        "opsHealth": "Operatsion holat",
+        "utilization": "0% yuklama",
+        "backlog": "0 to'planib qolgan",
+        "open": "0 ochiq"
+      },
+
+      "charts": {
+        "dailyTrend": "Kunlik tendensiya",
+        "trendDesc": "Vaqt bo'yicha tadqiqotlar va daromad",
+
+        "modalityMix": "Yo'nalishlar tarkibi",
+        "modalityDesc": "Yo'nalishlar bo'yicha taqsimot",
+
+        "workflow": "Ish jarayoni",
+        "workflowDesc": "Ichki ish jarayoni tahlili",
+
+        "referralStatus": "Yo'llanma holati",
+        "referralDesc": "Qabul qiluvchi tomon holati",
+
+        "topReferrers": "Top yo'llovchilar",
+        "topReferrersDesc": "Kim eng ko'p yubormoqda",
+
+        "peakHours": "Tig'iz vaqtlar",
+        "peakDesc": "Kun soatlari bo'yicha hajm",
+
+        "patientDemographics": "Bemorlar demografiyasi",
+        "patientDesc": "Yo'llangan bemorlar asosida",
+
+        "gender": "Jins",
+        "ageBuckets": "Yosh toifalari",
+
+        "turnaround": "Yo'nalish bo'yicha bajarilish vaqti",
+        "turnaroundDesc": "Hisobotni yakunlashning o'rtacha vaqti",
+
+        "revenueByModality": "Yo'nalish bo'yicha daromad",
+        "revenueByModalityDesc": "Qayd etilgan billing tranzaksiyalari asosida",
+
+        "empty": "Hozircha ma'lumot yo'q.",
+        "noModalityRevenue": "Yo'nalish bo'yicha daromad ma'lumotlari hali mavjud emas."
+      },
+
+      "billingAdvanced": {
+        "title": "Billing ko'rinishi qisman to'ldirilgan",
+        "description": "Ba'zi jadvallar sxemangizda yoki joriy ruxsatnomalaringizda mavjud bo'lmasligi mumkin. Asosiy tranzaksiya tahlillari yuklanmoqda.",
+
+        "processedRevenue": "Ishlov berilgan daromad",
+        "transactions": "Tranzaksiyalar",
+        "averageTicket": "O'rtacha chek",
+        "collectionRate": "Yig'ish ko'rsatkichi",
+        "outstandingInvoices": "To'lanmagan hisob-fakturalar",
+        "paymentHolds": "To'lov ushlanmalari",
+        "subscriptions": "Faol obunalar",
+        "risk": "Xavf / Yo'qotish",
+
+        "sections": {
+          "revenueTrend": "Daromad tendensiyasi",
+          "transactionStatus": "Tranzaksiya holatlari tarkibi",
+          "transactionTypes": "Tranzaksiya turlari",
+          "invoiceStatus": "Hisob-faktura holati",
+          "plans": "Obuna rejalari",
+          "paymentMethods": "To'lov usullari",
+          "providers": "Provayderlar / Shlyuzlar",
+          "recentTransactions": "So'nggi tranzaksiyalar",
+          "dailySuccess": "Kunlik muvaffaqiyatli tranzaksiyalar",
+          "revenueTypeMix": "Daromad turi tarkibi"
+        },
+
+        "empty": "Ma'lumot yo'q"
+      }
+    },
+
+    "workflow": {
+      "title": "Ish jarayoni",
+      "subtitle": "Navbatsiz buyurtmalar yarating va rejalashtirishdan hisobotgacha boshqaring.",
+      "newOrder": "Yangi navbatsiz buyurtma",
+      "refresh": "Yangilash",
+      "search": "Bemor, buyurtma raqami yoki tadqiqot bo'yicha qidirish...",
+      "statuses": "Barcha statuslar",
+      "empty": "Skanerlashlar topilmadi"
+    },
+
+    "newOrder": {
+      "title": "Yangi qo'lda buyurtma",
+
+      "patient": {
+        "title": "Bemor (Navbatsiz)",
+        "fullName": "To'liq ism *",
+        "phone": "Telefon *",
+        "phoneHint": "Mamlakat kodi bilan kiriting. Misol: +998 90 123 45 67",
+        "email": "Email (ixtiyoriy)",
+        "dob": "Tug'ilgan sana (ixtiyoriy)"
+      },
+
+      "study": {
+        "title": "Tadqiqot",
+        "modality": "Yo'nalish",
+        "xray": "Rentgen",
+        "studyName": "Tadqiqot nomi *",
+        "bodyPart": "Tana a'zosi (ixtiyoriy)",
+        "contrast": "Kontrast",
+        "no": "Yo'q"
+      },
+
+      "schedule": {
+        "title": "Rejalashtirish va Eslatmalar",
+        "priority": "Prioritet",
+        "routine": "Odatiy",
+        "preferredDate": "Afzal sana (ixtiyoriy)",
+        "preferredTime": "Afzal vaqt (ixtiyoriy)",
+        "reason": "Sabab (ixtiyoriy)",
+        "clinicalNotes": "Klinik eslatmalar (ixtiyoriy)"
+      },
+
+      "actions": {
+        "cancel": "Bekor qilish",
+        "create": "Buyurtma yaratish"
+      }
+    },
+
+    "reports": {
+      "search": "Hisobotlarni qidirish...",
+      "all": "Barcha hisobotlar",
+      "refresh": "Yangilash",
+      "export": "Eksport",
+
+      "table": {
+        "order": "Buyurtma",
+        "patient": "Bemor",
+        "exam": "Tekshiruv",
+        "modality": "Yo'nalish",
+        "status": "Holati",
+        "radiologist": "Radiolog",
+        "actions": "Harakatlar",
+        "empty": "Hisobotlar topilmadi"
+      },
+
+      "stats": {
+        "pending": "Kutilmoqda",
+        "drafts": "Qoralamalar",
+        "finalized": "Tasdiqlandi",
+        "critical": "Kritik"
+      }
+    },
+
+    "equipment": {
+      "title": "Uskunalar",
+      "subtitle": "Skanerlar va quvvatni boshqarish",
+
+      "search": "Uskunalarni qidirish...",
+      "refresh": "Yangilash",
+      "add": "Qo'shish",
+
+      "table": {
+        "name": "Nomi",
+        "modality": "Yo'nalish",
+        "status": "Holati",
+        "capacity": "Quvvat/kun",
+        "actions": "Harakatlar",
+        "empty": "Uskunalar topilmadi"
+      },
+
+      "modal": {
+        "title": "Uskuna qo'shish",
+        "name": "Nomi",
+        "modality": "Yo'nalish",
+        "status": "Holati",
+        "manufacturer": "Ishlab chiqaruvchi",
+        "model": "Model",
+        "serial": "Seriya raqami",
+        "capacity": "Kunlik quvvati",
+        "scanTypes": "Skanerlash turlari (vergul bilan ajrating)",
+        "cancel": "Bekor qilish",
+        "save": "Saqlash"
+      }
+    },
+
+    "finances": {
+      "title": "Moliya",
+      "subtitle": "Daromad, xarajat, ish haqi va eksportlarni boshqarish.",
+
+      "common": {
+        "from": "Dan",
+        "to": "Gacha",
+        "type": "Turi",
+        "category": "Toifa",
+        "all": "Barchasi",
+        "refresh": "Yangilash",
+        "search": "Qidirish",
+        "export": "CSV eksport qilish"
+      },
+
+      "staffCompensation": {
+        "title": "Xodimlar kompensatsiyasi",
+        "add": "Profil qo'shish",
+        "empty": "Hozircha kompensatsiya profillari yo'q. Oylik, soatbay yoki foizli to'lovlarni qo'shing."
+      },
+
+      "recurring": {
+        "title": "Davriy to'lovlar",
+        "addRule": "Qoida qo'shish",
+        "status": "Holati",
+        "noDue": "muddati kelgan qoidalar yo'q",
+        "noRuns": "Oldingi jarayonlar yo'q",
+        "runDue": "Muddati kelganlarni yuritish",
+        "runNow": "Hozir yuritish",
+        "description": "Yuritish tanlangan sanagacha bo'lgan barcha qoidalar uchun moliya yozuvlarini yaratadi.",
+        "empty": "Hozircha davriy qoidalar yo'q."
+      },
+
+      "ledger": {
+        "title": "Buxgalteriya daftari",
+        "entries": "Yozuvlar",
+        "income": "Daromad",
+        "expenses": "Xarajatlar",
+        "net": "Sof",
+        "addEntry": "Yozuv qo'shish",
+        "manual": "Qo'lda",
+        "date": "Sana",
+        "currency": "Valyuta",
+        "amount": "Miqdor",
+        "reference": "Havola (ixtiyoriy)",
+        "description": "Tavsif (ixtiyoriy)",
+        "empty": "Ushbu filtr bo'yicha yozuvlar topilmadi.",
+        "note": "Eslatma: har bir filtr uchun 200 tagacha yozuv ko'rsatiladi."
+      },
+
+      "compensationModal": {
+        "title": "Kompensatsiya profilini qo'shish",
+        "staff": "Xodim",
+        "select": "Xodimni tanlang…",
+        "type": "Kompensatsiya turi",
+        "salary": "Ruxsat etilgan oylik",
+        "amount": "Miqdor ($)",
+        "period": "Davr",
+        "monthly": "Oylik",
+        "frequency": "To'lov chastotasi",
+        "notes": "Eslatmalar (ixtiyoriy)",
+        "cancel": "Bekor qilish",
+        "save": "Saqlash"
+      }
+    },
+
+    "referrals": {
+      "title": "Yo'llanmalar",
+      "new": "Yangi yo'llanma",
+
+      "incoming": {
+        "title": "Kiruvchi yo'llanmalar",
+        "subtitle": "Markazingiz qabul qilgan yo'llanmalar",
+        "timezone": "Vaqt mintaqasi:",
+        "empty": "Hozircha yo'llanmalar yo'q."
+      },
+
+      "outgoing": {
+        "title": "Chiquvchi yo'llanmalar",
+        "subtitle": "Markazingiz yuborgan yo'llanmalar",
+        "timezone": "Vaqt mintaqasi:",
+        "empty": "Hozircha yo'llanmalar yo'q."
+      }
+    },
+
+    "staff": {
+      "stats": {
+        "active": "Faol xodimlar",
+        "pending": "Kutilayotgan taklifnomalar",
+        "inactive": "Nofaol / O'chirilgan",
+        "admins": "Adminlar / Menejerlar"
+      },
+
+      "invite": {
+        "title": "Xodimlarni taklif qilish",
+        "subtitle": "Radiologlar, texnologlar va ma'murlarni maxsus ruxsatnomalar bilan taklif qiling.",
+        "email": "Email",
+        "role": "Rol",
+        "technologist": "Texnolog",
+        "send": "Taklifnoma yuborish",
+        "preset": "Ruxsatnomalar to'plami"
+      },
+
+      "pending": {
+        "title": "Kutilayotgan taklifnomalar",
+        "subtitle": "Faollashtirishdan oldin taklifnomalarni qayta yuboring yoki bekor qiling.",
+        "empty": "Kutilayotgan taklifnomalar yo'q."
+      },
+
+      "active": {
+        "title": "Faol xodimlarni boshqarish",
+        "subtitle": "Rollarni tahrirlash, o'chirish yoki ruxsatni cheklash.",
+        "search": "Xodimlarni qidirish...",
+        "refresh": "Yangilash",
+        "empty": "Faol xodimlar topilmadi."
+      },
+
+      "audit": {
+        "title": "Audit jurnali",
+        "subtitle": "Xodimlar va taklifnomalar faoliyati tarixi.",
+        "empty": "Audit faoliyati topilmadi."
+      },
+
+      "roles": {
+        "frontDesk": {
+          "title": "Registratura / Qabulxona",
+          "desc": "Qabul, rejalashtirish, ro'yxatdan o'tkazish va navbatni nazorat qilish."
+        },
+        "technologist": {
+          "title": "Texnolog",
+          "desc": "Skanerlashni bajarish, protokollarga rioya qilish va tasvir sifatini nazorat qilish."
+        },
+        "radiologist": {
+          "title": "Radiolog",
+          "desc": "Hisobot berish, klinik ko'rik va yakuniy tasdiqlash."
+        },
+        "billing": {
+          "title": "Billing / Admin",
+          "desc": "Hisob-fakturalar, to'lovlarni solishtirish va operatsion natijalar tahlili."
+        }
+      }
+    },
+
+    "verify": {
+      "title": "Hujjatni tekshirish",
+      "description": "Docito hujjatlarining haqiqiyligini tekshiring — davolash rejalari, yo'llanmalar, retseptlar va bemor profillari.",
+      "input": "Tekshiruv kodini kiriting yoki skanerlang",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Tekshirish",
+
+      "types": {
+        "tp": "TP - Davolash rejasi",
+        "rf": "RF - Yo'llanma",
+        "rx": "RX - Retsept",
+        "pt": "PT - Bemor profili"
+      },
+
+      "scan": "QR-kodni skanerlash"
     }
+  }
+}
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Umumiy ko'rinish",
+      "scanWorkflow": "Ish jarayoni",
+      "reports": "Hisobotlar",
+      "equipment": "Uskunalar",
+      "analytics": "Analitika",
+      "billing": "Billing",
+      "finances": "Moliya",
+      "referrals": "Yo'llanmalar",
+      "staff": "Xodimlar",
+      "verifyDocuments": "Hujjatlarni tekshirish",
+      "settings": "Sozlamalar"
+    },
+
+    "header": {
+      "title": "Vizualizatsiya xodimlari paneli",
+      "subtitle": "Buyurtmalar, skanerlash jarayoni va Supabase'dan olingan tahlillar",
+      "refresh": "Yangilash"
+    },
+
+    "common": {
+      "refresh": "Yangilash",
+      "export": "Eksport",
+      "exportCSV": "CSV eksport qilish",
+      "search": "Qidirish",
+      "all": "Barchasi",
+      "allStatuses": "Barcha statuslar",
+      "noData": "Hozircha ma'lumot yo'q.",
+      "empty": "Ma'lumot mavjud emas.",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "add": "Qo'shish",
+      "actions": "Harakatlar"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "0.00 so'm",
+      "zeroHours": "0s"
+    },
+
+    "statuses": {
+      "pending": "Kutilmoqda",
+      "scheduled": "Rejalashtirilgan",
+      "inProgress": "Jarayonda",
+      "completed": "Yakunlandi",
+      "draft": "Qoralamalar",
+      "finalized": "Tasdiqlandi",
+      "critical": "Kritik",
+      "cancelled": "Bekor qilindi",
+      "processing": "Ishlov berilmoqda"
+    },
+
+    "time": {
+      "last30Days": "Oxirgi 30 kun",
+      "last90Days": "Oxirgi 90 kun",
+      "today": "Bugun",
+      "dateLabels": [
+        "2026-02-19",
+        "2026-02-25",
+        "2026-03-03",
+        "2026-03-09",
+        "2026-03-17"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "Umumiy ko'rinish",
+      "analytics": "Analitika",
+
+      "stats": {
+        "totalOrders": "Jami buyurtmalar",
+        "pendingScheduled": "Kutilmoqda / Rejalashtirilgan",
+        "inProgress": "Jarayonda",
+        "completed": "Yakunlandi"
+      },
+
+      "queue": {
+        "pendingQueue": "Kutilayotganlar navbati",
+        "scheduled": "Rejalashtirilgan",
+        "inProgress": "Jarayonda",
+        "completed": "Yakunlandi",
+        "urgent": "Shoshilinch / STAT",
+        "overdue": "Muddati o'tgan (>48s)"
+      },
+
+      "recentOrders": {
+        "title": "Oxirgi buyurtmalar",
+        "subtitle": "So'nggi yo'llanmalar va ish jarayoni holati",
+        "empty": "Hozircha buyurtmalar yo'q."
+      },
+
+      "activity": {
+        "title": "Faoliyat tasmasi",
+        "subtitle": "Ish jarayonidagi so'nggi yangilanishlar",
+        "empty": "So'nggi faoliyat mavjud emas."
+      },
+
+      "queueHealth": {
+        "title": "Navbat holati",
+        "subtitle": "So'nggi buyurtmalarning qisqacha ko'rinishi",
+        "topModality": "Asosiy yo'nalish",
+        "footer": "To'liq tendensiyalar, bajarilish vaqti, demografiya, yo'llovchilar va daromad ko'rsatkichlari Analitika bo'limida mavjud."
+      }
+    },
+
+    "analytics": {
+      "title": "Analitika",
+      "refresh": "Yangilash",
+      "export": "Eksport",
+
+      "metrics": {
+        "totalScans": "Jami skanerlashlar",
+        "completed": "0 yakunlandi",
+        "pending": "0 kutilmoqda",
+        "vsPrev": "oldingiga nisbatan 0%",
+
+        "netRevenue": "Sof foyda",
+        "revenueDetail": "0.00 so'm daromad • 0.00 so'm qaytarish",
+
+        "avgReportTime": "O'rtacha hisobot vaqti",
+        "avgAcceptTime": "Qabul qilish vaqti: 0s",
+
+        "opsHealth": "Operatsion holat",
+        "util": "0% yuklama",
+        "backlog": "0 to'planib qolgan",
+        "open": "0 ochiq"
+      },
+
+      "charts": {
+        "dailyTrend": "Kunlik tendensiya",
+        "trendDesc": "Vaqt bo'yicha tadqiqotlar va daromad",
+
+        "modalityMix": "Yo'nalishlar tarkibi",
+        "workflow": "Ish jarayoni",
+        "referralStatus": "Yo'llanma holati",
+        "topReferrers": "Top yo'llovchilar",
+        "peakHours": "Tig'iz vaqtlar",
+        "patientDemographics": "Bemorlar demografiyasi",
+        "gender": "Jins",
+        "ageBuckets": "Yosh toifalari",
+        "turnaround": "Yo'nalish bo'yicha bajarilish vaqti",
+        "revenueByModality": "Yo'nalish bo'yicha daromad",
+
+        "empty": "Hozircha ma'lumot yo'q.",
+        "noRevenue": "Yo'nalish bo'yicha daromad ma'lumotlari hali mavjud emas."
+      }
+    },
+
+    "workflow": {
+      "title": "Ish jarayoni",
+      "subtitle": "Navbatsiz buyurtmalar yarating va rejalashtirishdan hisobotgacha boshqaring.",
+      "newWalkIn": "Yangi navbatsiz buyurtma",
+      "searchPlaceholder": "Bemor, buyurtma raqami yoki tadqiqot bo'yicha qidirish...",
+      "empty": "Skanerlashlar topilmadi"
+    },
+
+    "orderForm": {
+      "title": "Yangi qo'lda buyurtma",
+
+      "fields": {
+        "fullName": "To'liq ism *",
+        "phone": "Telefon *",
+        "email": "Email (ixtiyoriy)",
+        "dob": "Tug'ilgan sana (ixtiyoriy)",
+        "modality": "Yo'nalish",
+        "studyName": "Tadqiqot nomi *",
+        "bodyPart": "Tana a'zosi (ixtiyoriy)",
+        "contrast": "Kontrast",
+        "priority": "Prioritet",
+        "preferredDate": "Afzal sana (ixtiyoriy)",
+        "preferredTime": "Afzal vaqt (ixtiyoriy)",
+        "reason": "Sabab (ixtiyoriy)",
+        "clinicalNotes": "Klinik eslatmalar (ixtiyoriy)"
+      },
+
+      "placeholders": {
+        "phone": "+998 90 123 45 67",
+        "email": "email@misol.uz",
+        "dob": "kk/oo/yyyy",
+        "study": "Rentgen, MRT...",
+        "bodyPart": "Ko'krak qafasi, Bosh, Tizza...",
+        "time": "masalan: 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Ushbu yozuv haqida eslatmalar…"
+      },
+
+      "actions": {
+        "cancel": "Bekor qilish",
+        "submit": "Buyurtma yaratish"
+      }
+    },
+
+    "reports": {
+      "search": "Hisobotlarni qidirish...",
+      "allReports": "Barcha hisobotlar",
+      "empty": "Hisobotlar topilmadi",
+
+      "columns": {
+        "order": "Buyurtma",
+        "patient": "Bemor",
+        "exam": "Tekshiruv",
+        "modality": "Yo'nalish",
+        "status": "Holati",
+        "radiologist": "Radiolog",
+        "actions": "Harakatlar"
+      }
+    },
+
+    "equipment": {
+      "title": "Uskunalar",
+      "subtitle": "Skanerlar va quvvatni boshqarish",
+      "search": "Uskunalarni qidirish...",
+      "empty": "Uskunalar topilmadi",
+
+      "columns": {
+        "name": "Nomi",
+        "modality": "Yo'nalish",
+        "status": "Holati",
+        "capacity": "Quvvat/kun"
+      },
+
+      "form": {
+        "title": "Uskuna qo'shish",
+        "name": "Nomi",
+        "modality": "Yo'nalish",
+        "status": "Holati",
+        "manufacturer": "Ishlab chiqaruvchi",
+        "model": "Model",
+        "serial": "Seriya raqami",
+        "capacity": "Kunlik quvvati",
+        "scanTypes": "Skanerlash turlari (vergul bilan ajrating)"
+      }
+    },
+
+    "billing": {
+      "partial": "Billing ko'rinishi qisman to'ldirilgan",
+      "warning": "Ba'zi jadvallar sxemangizda yoki joriy ruxsatnomalaringizda mavjud bo'lmasligi mumkin.",
+
+      "metrics": {
+        "processedRevenue": "Ishlov berilgan daromad",
+        "transactions": "Tranzaksiyalar",
+        "averageTicket": "O'rtacha chek",
+        "collectionRate": "Yig'ish ko'rsatkichi",
+        "outstanding": "To'lanmagan hisob-fakturalar",
+        "holds": "To'lov ushlanmalari",
+        "subscriptions": "Faol obunalar",
+        "risk": "Xavf / Yo'qotish"
+      },
+
+      "charts": {
+        "revenueTrend": "Daromad tendensiyasi",
+        "statusMix": "Tranzaksiya holatlari tarkibi",
+        "types": "Tranzaksiya turlari",
+        "invoiceStatus": "Hisob-faktura holati",
+        "plans": "Obuna rejalari",
+        "methods": "To'lov usullari",
+        "providers": "Provayderlar / Shlyuzlar",
+        "recent": "So'nggi tranzaksiyalar",
+        "success": "Kunlik muvaffaqiyatli tranzaksiyalar",
+        "revenueType": "Daromad turi tarkibi"
+      }
+    },
+
+    "verify": {
+      "title": "Hujjatni tekshirish",
+      "input": "Tekshiruv kodini kiriting yoki skanerlang",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Tekshirish",
+      "scan": "QR-kodni skanerlash"
+    }
+  }
+}
   }
 }
