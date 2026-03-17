@@ -72,6 +72,7 @@
     }
   },
   "specialties": {
+    "specialtiesSubtitle": "在所有医学专科中寻找专科医生",
     "title": "医疗专科",
     "subtitle": "连接认证专家",
     "cardiology": "心内科",
