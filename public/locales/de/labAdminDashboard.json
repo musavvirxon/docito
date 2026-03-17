@@ -1,0 +1,80 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Übersicht",
+      "orders": "Aufträge",
+      "homeCollection": "Heimentnahme",
+      "samples": "Proben",
+      "analytics": "Analysen",
+      "billingInsurance": "Abrechnung / Versicherung",
+      "finances": "Finanzen",
+      "referrals": "Überweisungen",
+      "staff": "Personal",
+      "verifyDocuments": "Dokumentenprüfung",
+      "settings": "Einstellungen"
+    },
+    "header": {
+      "title": "Labor-Dashboard",
+      "subtitle": "Aufträge, Workflow und Analysen aus Supabase",
+      "refresh": "Aktualisieren"
+    },
+    "overview": {
+      "title": "Übersicht",
+      "analytics": "Analysen",
+      "totalOrders": "Gesamtanzahl Aufträge",
+      "pending": "Ausstehend",
+      "inProgress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "urgent": "Dringend / STAT",
+      "overdue": "Überfällig (>48h)",
+      "recentOrders": {
+        "title": "Aktuelle Laboraufträge",
+        "subtitle": "Neueste Aufträge und Status",
+        "empty": "Noch keine Aufträge vorhanden."
+      },
+      "queueHealth": {
+        "title": "Status der Warteschlange",
+        "footer": "Vollständige SLA-Metriken finden Sie im Reiter Analysen."
+      }
+    },
+    "orders": {
+      "search": "Suche nach Auftrags-Nr, Patient oder Telefon...",
+      "statuses": "Alle Status",
+      "newOrder": "Neuer manueller Auftrag",
+      "statusList": {
+        "completed": "abgeschlossen",
+        "cancelled": "storniert",
+        "pending": "ausstehend",
+        "processing": "in bearbeitung",
+        "sampleCollected": "probe entnommen"
+      }
+    },
+    "collections": {
+      "title": "Heim-Probenentnahme",
+      "subtitle": "Termine und Personalzuweisung verwalten",
+      "table": {
+        "patient": "Patient",
+        "address": "Adresse",
+        "collector": "Entnahme-Mitarbeiter",
+        "status": "Status"
+      }
+    },
+    "analytics": {
+      "title": "Analyse-Dashboard",
+      "metrics": {
+        "turnaround": "Durchlaufzeit (ø / P90)",
+        "abnormalResults": "Auffällige Ergebnisse"
+      }
+    },
+    "verify": {
+      "title": "Dokumente verifizieren",
+      "description": "Überprüfen Sie die Echtheit von Tokito-Dokumenten – Behandlungspläne, Überweisungen, Rezepte und Patientenprofile.",
+      "types": {
+        "tp": "TP - Behandlungsplan",
+        "rf": "RF - Überweisung",
+        "rx": "RX - Rezept",
+        "pt": "PT - Patientenprofil"
+      }
+    }
+  }
+}
