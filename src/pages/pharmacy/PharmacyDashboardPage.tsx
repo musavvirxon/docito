@@ -294,11 +294,11 @@ export default function PharmacyDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<Pill className="h-12 w-12" />}
-            title="No Pharmacy Found"
-            description="You don't have a pharmacy associated with your account."
+            title={t("pharmacyDashboard.header.noCenter", "No Pharmacy Found")}
+            description={t("pharmacyDashboard.header.noCenterDescription", "You don't have a pharmacy associated with your account.")}
             action={
               <button onClick={() => navigate("/pharmacy/register")} className="text-primary underline">
-                Register Pharmacy
+                {t("pharmacyDashboard.header.registerPharmacy", "Register Pharmacy")}
               </button>
             }
           />
