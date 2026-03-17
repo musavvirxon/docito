@@ -34,6 +34,7 @@
       "add": "Add",
       "actions": "Actions",
       "loading": "Loading...",
+      "imagingCenter": "Imaging Center",
       "signInRequired": "Sign In Required",
       "signInDescription": "Please sign in to access the imaging center dashboard.",
       "signIn": "Sign In",
@@ -395,6 +396,16 @@
       "refresh": "Refresh",
       "add": "Add",
       "empty": "No equipment found",
+      "capacity": "Capacity",
+      "day": "day",
+      "util": "util",
+
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "offline": "Offline",
+        "retired": "Retired"
+      },
 
       "table": {
         "name": "Name",
@@ -554,6 +565,8 @@
     },
 
     "staff": {
+      "active": "active",
+      "total": "total",
       "stats": {
         "active": "Active Staff",
         "pending": "Pending Invitations",

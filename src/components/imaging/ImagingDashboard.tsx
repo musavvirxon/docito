@@ -680,22 +680,24 @@ export default function ImagingDashboard() {
       {activeTab === "overview" && (
         <>
           <PageHeader
-            title="Dashboard Overview"
-            description="Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization."
+            title={t("imagingDashboard.overview.title", "Dashboard Overview")}
+            description={t("imagingDashboard.overview.description", "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.")}
             badges={[
               {
-                label: myImagingCenter.is_verified ? "Verified" : "Pending Verification",
+                label: myImagingCenter.is_verified
+                  ? t("imagingDashboard.statuses.verified", "Verified")
+                  : t("imagingDashboard.statuses.pendingVerification", "Pending Verification"),
                 variant: myImagingCenter.is_verified ? "default" : "secondary",
               },
               {
-                label: myImagingCenter.city ? `${myImagingCenter.city}${myImagingCenter.country ? `, ${myImagingCenter.country}` : ""}` : "Imaging Center",
+                label: myImagingCenter.city ? `${myImagingCenter.city}${myImagingCenter.country ? `, ${myImagingCenter.country}` : ""}` : t("imagingDashboard.common.imagingCenter", "Imaging Center"),
                 variant: "outline",
               },
             ]}
             actions={
               <Button variant="outline" onClick={() => void fetchOverview()} disabled={overviewLoading}>
                 {overviewLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                Refresh
+                {t("imagingDashboard.common.refresh", "Refresh")}
               </Button>
             }
           />
@@ -704,8 +706,8 @@ export default function ImagingDashboard() {
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <ContentCard
-              title="Today's Queue"
-              description="Scheduled scans and same-day referrals"
+              title={t("imagingDashboard.overview.todaysQueue.title", "Today's Queue")}
+              description={t("imagingDashboard.overview.todaysQueue.description", "Scheduled scans and same-day referrals")}
               icon={<Calendar className="h-5 w-5" />}
               className="xl:col-span-2"
               loading={overviewLoading}
@@ -713,8 +715,8 @@ export default function ImagingDashboard() {
               {(overview?.queue?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<Calendar className="h-12 w-12" />}
-                  title="No scans queued today"
-                  description="Today's scheduled scans and same-day imaging referrals will appear here."
+                  title={t("imagingDashboard.overview.todaysQueue.empty", "No scans queued today")}
+                  description={t("imagingDashboard.overview.todaysQueue.emptyDescription", "Today's scheduled scans and same-day imaging referrals will appear here.")}
                 />
               ) : (
                 <div className="space-y-3">
@@ -733,7 +735,7 @@ export default function ImagingDashboard() {
                           {item.examName} • {item.modality} • {item.orderNumber}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {item.preferredDate || "Today"} {item.preferredTimeSlot ? `• ${item.preferredTimeSlot}` : ""}
+                          {item.preferredDate || t("imagingDashboard.time.today", "Today")} {item.preferredTimeSlot ? `• ${item.preferredTimeSlot}` : ""}
                         </p>
                       </div>
                     </div>
@@ -743,16 +745,16 @@ export default function ImagingDashboard() {
             </ContentCard>
 
             <ContentCard
-              title="Workflow Breakdown"
-              description="Current imaging order status distribution"
+              title={t("imagingDashboard.overview.workflowBreakdown.title", "Workflow Breakdown")}
+              description={t("imagingDashboard.overview.workflowBreakdown.description", "Current imaging order status distribution")}
               icon={<Activity className="h-5 w-5" />}
               loading={overviewLoading}
             >
               {(overview?.workflowBreakdown?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<Activity className="h-12 w-12" />}
-                  title="No workflow data"
-                  description="Orders will appear here once referrals are received."
+                  title={t("imagingDashboard.overview.workflowBreakdown.empty", "No workflow data")}
+                  description={t("imagingDashboard.overview.workflowBreakdown.emptyDescription", "Orders will appear here once referrals are received.")}
                 />
               ) : (
                 <div className="space-y-3">
@@ -769,8 +771,8 @@ export default function ImagingDashboard() {
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
             <ContentCard
-              title="Equipment Status"
-              description="Operational state and estimated today utilization"
+              title={t("imagingDashboard.overview.equipmentStatus.title", "Equipment Status")}
+              description={t("imagingDashboard.overview.equipmentStatus.description", "Operational state and estimated today utilization")}
               icon={<Wrench className="h-5 w-5" />}
               className="xl:col-span-2"
               loading={overviewLoading}
@@ -778,11 +780,11 @@ export default function ImagingDashboard() {
               {(overview?.equipment?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<Wrench className="h-12 w-12" />}
-                  title="No equipment registered"
-                  description="Add modalities and devices in the Equipment tab to track availability and utilization."
+                  title={t("imagingDashboard.overview.equipmentStatus.empty", "No equipment registered")}
+                  description={t("imagingDashboard.overview.equipmentStatus.emptyDescription", "Add modalities and devices in the Equipment tab to track availability and utilization.")}
                   action={
                     <Button variant="outline" onClick={() => setActiveTab("equipment")}>
-                      Open Equipment
+                      {t("imagingDashboard.menu.equipment", "Open Equipment")}
                     </Button>
                   }
                 />
@@ -795,18 +797,18 @@ export default function ImagingDashboard() {
                           <p className="font-medium truncate">{eq.name}</p>
                           <p className="text-sm text-muted-foreground">
                             {eq.modality}
-                            {eq.capacityPerDay > 0 ? ` • Capacity ${eq.capacityPerDay}/day` : ""}
+                            {eq.capacityPerDay > 0 ? ` • ${t("imagingDashboard.equipment.capacity", "Capacity")} ${eq.capacityPerDay}/${t("imagingDashboard.equipment.day", "day")}` : ""}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          {eq.status === "active" && <Badge>Active</Badge>}
-                          {eq.status === "maintenance" && <Badge variant="secondary">Maintenance</Badge>}
-                          {eq.status === "offline" && <Badge variant="destructive">Offline</Badge>}
-                          {eq.status === "retired" && <Badge variant="outline">Retired</Badge>}
+                          {eq.status === "active" && <Badge>{t("imagingDashboard.equipment.statuses.active", "Active")}</Badge>}
+                          {eq.status === "maintenance" && <Badge variant="secondary">{t("imagingDashboard.equipment.statuses.maintenance", "Maintenance")}</Badge>}
+                          {eq.status === "offline" && <Badge variant="destructive">{t("imagingDashboard.equipment.statuses.offline", "Offline")}</Badge>}
+                          {eq.status === "retired" && <Badge variant="outline">{t("imagingDashboard.equipment.statuses.retired", "Retired")}</Badge>}
                           {!["active", "maintenance", "offline", "retired"].includes(eq.status) && (
                             <Badge variant="outline">{statusLabel(eq.status)}</Badge>
                           )}
-                          <Badge variant="outline">{eq.utilization}% util</Badge>
+                          <Badge variant="outline">{eq.utilization}% {t("imagingDashboard.equipment.util", "util")}</Badge>
                         </div>
                       </div>
                       <div className="mt-3 h-2 rounded-full bg-muted overflow-hidden">
@@ -822,16 +824,16 @@ export default function ImagingDashboard() {
             </ContentCard>
 
             <ContentCard
-              title="Team Snapshot"
-              description="Staff coverage by role"
+              title={t("imagingDashboard.overview.staffSnapshot.title", "Team Snapshot")}
+              description={t("imagingDashboard.overview.staffSnapshot.description", "Staff coverage by role")}
               icon={<Users className="h-5 w-5" />}
               loading={overviewLoading}
             >
               {(overview?.staffSnapshot?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<Users className="h-12 w-12" />}
-                  title="No staff data yet"
-                  description="Invite radiologists and technologists to manage imaging workflows collaboratively."
+                  title={t("imagingDashboard.overview.staffSnapshot.empty", "No staff data yet")}
+                  description={t("imagingDashboard.overview.staffSnapshot.emptyDescription", "Invite radiologists and technologists to manage imaging workflows collaboratively.")}
                 />
               ) : (
                 <div className="space-y-3">
@@ -840,7 +842,7 @@ export default function ImagingDashboard() {
                       <div>
                         <p className="text-sm font-medium">{row.role}</p>
                         <p className="text-xs text-muted-foreground">
-                          {row.active} active / {row.total} total
+                          {row.active} {t("imagingDashboard.staff.active", "active")} / {row.total} {t("imagingDashboard.staff.total", "total")}
                         </p>
                       </div>
                       <Badge variant="secondary">{row.total}</Badge>
@@ -853,16 +855,16 @@ export default function ImagingDashboard() {
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
             <ContentCard
-              title="Backlog by Modality"
-              description="Open orders not yet completed/delivered"
+              title={t("imagingDashboard.overview.modalityBacklog.title", "Backlog by Modality")}
+              description={t("imagingDashboard.overview.modalityBacklog.description", "Open orders not yet completed/delivered")}
               icon={<ScanLine className="h-5 w-5" />}
               loading={overviewLoading}
             >
               {(overview?.modalityBacklog?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<ScanLine className="h-12 w-12" />}
-                  title="No active backlog"
-                  description="Great job — there are no open imaging orders in backlog."
+                  title={t("imagingDashboard.overview.modalityBacklog.empty", "No active backlog")}
+                  description={t("imagingDashboard.overview.modalityBacklog.emptyDescription", "Great job — there are no open imaging orders in backlog.")}
                 />
               ) : (
                 <div className="space-y-3">
@@ -877,16 +879,16 @@ export default function ImagingDashboard() {
             </ContentCard>
 
             <ContentCard
-              title="Recent Completed / Delivered"
-              description="Most recently finalized imaging cases"
+              title={t("imagingDashboard.overview.recentCompleted.title", "Recent Completed / Delivered")}
+              description={t("imagingDashboard.overview.recentCompleted.description", "Most recently finalized imaging cases")}
               icon={<CheckCircle className="h-5 w-5" />}
               loading={overviewLoading}
             >
               {(overview?.recentCompleted?.length || 0) === 0 ? (
                 <EmptyState
                   icon={<CheckCircle className="h-12 w-12" />}
-                  title="No completed scans yet"
-                  description="Completed imaging cases will appear here as your team progresses workflow."
+                  title={t("imagingDashboard.overview.recentCompleted.empty", "No completed scans yet")}
+                  description={t("imagingDashboard.overview.recentCompleted.emptyDescription", "Completed imaging cases will appear here as your team progresses workflow.")}
                 />
               ) : (
                 <div className="space-y-3">

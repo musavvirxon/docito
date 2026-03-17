@@ -12,6 +12,27 @@
     "account": "Account",
     "back": "Back",
     "signOut": "Sign out",
+    "loading": "Loading…",
+
+    "nameLabels": {
+      "clinicName": "Clinic name",
+      "labName": "Lab name",
+      "pharmacyName": "Pharmacy name",
+      "imagingName": "Imaging center name",
+      "fullName": "Full name"
+    },
+
+    "placeholders": {
+      "clinicName": "Enter clinic name",
+      "labName": "Enter lab name",
+      "pharmacyName": "Enter pharmacy name",
+      "imagingName": "Enter imaging center name",
+      "fullName": "Enter your full name"
+    },
+
+    "tabs": {
+      "healthProfile": "Health Profile"
+    },
 
     "menu": {
       "settings": "Settings",
@@ -33,24 +54,45 @@
       "description": "Change your password.",
       "newPassword": "New password",
       "confirmPassword": "Confirm password",
+      "passwordPlaceholder": "At least 6 characters",
       "update": "Update password",
       "tip": "Tip: use a password manager and avoid reusing passwords."
     },
 
+    "toasts": {
+      "profileUpdated": "Profile updated",
+      "profileFailed": "Failed to update profile",
+      "passwordUpdated": "Password updated",
+      "passwordFailed": "Failed to update password",
+      "passwordMinLength": "Password must be at least 6 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "settingsSaved": "Settings saved",
+      "settingsFailed": "Failed to save settings",
+      "settingsLoadFailed": "Failed to load settings"
+    },
+
     "settings": {
       "title": "Settings",
+      "appPreferences": "App preferences synced to your account.",
+      "loadingSettings": "Loading settings…",
       "refresh": "Refresh",
       "appearance": "Appearance & accessibility",
       "performance": "High-performance preferences stored in Supabase.",
       "theme": "Theme",
+      "selectTheme": "Select theme",
       "system": "System",
+      "light": "Light",
+      "dark": "Dark",
       "reduceMotion": "Reduce motion",
       "reduceMotionDesc": "Minimize animations and transitions",
       "timezone": "Timezone",
+      "selectTimezone": "Select timezone",
       "calendar": "Calendar times will display in this timezone.",
       "browser": "Browser",
       "useBrowser": "Use browser",
-      "language": "Language"
+      "language": "Language",
+      "selectLanguage": "Select language",
+      "save": "Save"
     },
 
     "billing": {
