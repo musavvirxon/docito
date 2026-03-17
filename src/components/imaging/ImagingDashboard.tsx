@@ -642,11 +642,11 @@ export default function ImagingDashboard() {
           <Card className="max-w-md">
             <CardContent className="pt-6 text-center">
               <ScanLine className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <CardTitle className="mb-2">No Imaging Center Found</CardTitle>
+              <CardTitle className="mb-2">{t("imagingDashboard.common.noCenter", "No Imaging Center Found")}</CardTitle>
               <CardDescription className="mb-4">
-                You don't have an imaging center associated with your account.
+                {t("imagingDashboard.common.noCenterDescription", "You don't have an imaging center associated with your account.")}
               </CardDescription>
-              <Button onClick={() => navigate("/imaging/register")}>Register Imaging Center</Button>
+              <Button onClick={() => navigate("/imaging/register")}>{t("imagingDashboard.common.registerCenter", "Register Imaging Center")}</Button>
             </CardContent>
           </Card>
         </div>
