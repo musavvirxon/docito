@@ -12,6 +12,27 @@
     "account": "الحساب",
     "back": "رجوع",
     "signOut": "تسجيل خروج",
+    "loading": "جاري التحميل…",
+
+    "nameLabels": {
+      "clinicName": "اسم العيادة",
+      "labName": "اسم المختبر",
+      "pharmacyName": "اسم الصيدلية",
+      "imagingName": "اسم مركز التصوير",
+      "fullName": "الاسم الكامل"
+    },
+
+    "placeholders": {
+      "clinicName": "أدخل اسم العيادة",
+      "labName": "أدخل اسم المختبر",
+      "pharmacyName": "أدخل اسم الصيدلية",
+      "imagingName": "أدخل اسم مركز التصوير",
+      "fullName": "أدخل اسمك الكامل"
+    },
+
+    "tabs": {
+      "healthProfile": "الملف الصحي"
+    },
 
     "menu": {
       "settings": "الإعدادات",
@@ -33,24 +54,45 @@
       "description": "تغيير كلمة المرور الخاصة بك.",
       "newPassword": "كلمة مرور جديدة",
       "confirmPassword": "تأكيد كلمة المرور",
+      "passwordPlaceholder": "6 أحرف على الأقل",
       "update": "تحديث كلمة المرور",
       "tip": "نصيحة: استخدم مدير كلمات المرور وتجنب إعادة استخدام كلمات المرور."
     },
 
+    "toasts": {
+      "profileUpdated": "تم تحديث الملف الشخصي",
+      "profileFailed": "فشل تحديث الملف الشخصي",
+      "passwordUpdated": "تم تحديث كلمة المرور",
+      "passwordFailed": "فشل تحديث كلمة المرور",
+      "passwordMinLength": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
+      "passwordMismatch": "كلمات المرور غير متطابقة.",
+      "settingsSaved": "تم حفظ الإعدادات",
+      "settingsFailed": "فشل حفظ الإعدادات",
+      "settingsLoadFailed": "فشل تحميل الإعدادات"
+    },
+
     "settings": {
       "title": "الإعدادات",
+      "appPreferences": "تمت مزامنة تفضيلات التطبيق مع حسابك.",
+      "loadingSettings": "جاري تحميل الإعدادات…",
       "refresh": "تحديث",
       "appearance": "المظهر وسهولة الوصول",
       "performance": "تفضيلات الأداء العالي مخزنة في Supabase.",
       "theme": "المظهر",
+      "selectTheme": "اختر المظهر",
       "system": "النظام",
+      "light": "فاتح",
+      "dark": "داكن",
       "reduceMotion": "تقليل الحركة",
       "reduceMotionDesc": "تقليل الرسوم المتحركة والانتقالات",
       "timezone": "المنطقة الزمنية",
+      "selectTimezone": "اختر المنطقة الزمنية",
       "calendar": "ستُعرض أوقات التقويم في هذه المنطقة الزمنية.",
       "browser": "المتصفح",
       "useBrowser": "استخدام المتصفح",
-      "language": "اللغة"
+      "language": "اللغة",
+      "selectLanguage": "اختر اللغة",
+      "save": "حفظ"
     },
 
     "billing": {
