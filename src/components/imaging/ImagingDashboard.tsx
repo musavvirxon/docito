@@ -218,6 +218,7 @@ function priorityBadge(priority: string) {
 export default function ImagingDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("imagingAdminDashboard");
   const { user, loading: authLoading, activeRole } = useAuth();
   const { myImagingCenter, fetchMyImagingCenter, loading: centerLoading } = useImagingCenter();
 
