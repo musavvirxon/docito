@@ -282,6 +282,38 @@
       "q7": { "question": "Posso usar seguro?", "answer": "Depende do provedor e região; opções podem aparecer durante o agendamento." },
       "q8": { "question": "Há app móvel?", "answer": "A experiência móvel já é otimizada; apps nativos em breve." }
     },
+    "rolesIntro": {
+  "subtitle": "Uma plataforma que conecta todos os papéis na jornada de cuidados.",
+  "cards": {
+    "platform": { "title": "Uma plataforma", "desc": "Pacientes, médicos, clínicas, laboratórios, centros de imagem e farmácias — todos conectados num único fluxo." },
+    "dashboards": { "title": "Painéis por papel", "desc": "Cada papel tem uma vista personalizada: apenas o necessário, nada a mais." },
+    "trust": { "title": "Confiança pelo design", "desc": "Provedores verificados, acesso baseado em papéis, armazenamento encriptado e trilhas de auditoria completas." }
+  }
+},
+"automation": {
+  "tag": "Operações prontas para a equipa",
+  "title": "Automação que reduz o trabalho manual",
+  "items": {
+    "scheduling": { "title": "Agendamento inteligente e lembretes", "desc": "Reduza faltas com confirmações, lembretes e reagendamento inteligente." },
+    "checkin": { "title": "Check-in e gestão de filas", "desc": "Mova pacientes pelos fluxos com estados claros e responsabilidades definidas." },
+    "documentation": { "title": "Modelos de consulta e documentação", "desc": "Fluxos estruturados do diagnóstico às receitas, ficheiros e notas clínicas." },
+    "referrals": { "title": "Referências e coordenação de cuidados", "desc": "Encaminhe referências e pedidos para a unidade certa com rastreamento." },
+    "results": { "title": "Entrega de resultados de diagnóstico", "desc": "Entregue resultados de laboratório e imagem com segurança aos papéis certos." },
+    "fulfillment": { "title": "Fluxo de dispensa de receitas", "desc": "Rastreie preparação, levantamento, entrega e confirmações." }
+  }
+},
+"faq": {
+  "title": "Perguntas Frequentes",
+  "subtitle": "Perguntas comuns sobre como o Docito funciona",
+  "q1": { "question": "Como os funcionários obtêm acesso?", "answer": "Os administradores convidam o pessoal e atribuem papéis com mínimos privilégios." },
+  "q2": { "question": "O que veem funcionários, médicos e pacientes?", "answer": "O RBAC limita dados por papel; o acesso pode ser auditado." },
+  "q3": { "question": "Como as referências se ligam ao agendamento?", "answer": "As referências podem gerar pedidos que fluem para filas e agendamentos." },
+  "q4": { "question": "Como são entregues os resultados?", "answer": "Os resultados são partilhados com papéis autorizados e aparecem nos dashboards com notificações." },
+  "q5": { "question": "Como as farmácias confirmam a dispensa?", "answer": "As farmácias atualizam o estado de dispensa e confirmam a conclusão." },
+  "q6": { "question": "Os dados são seguros?", "answer": "O Docito usa armazenamento encriptado, RBAC e trilhas de auditoria." },
+  "q7": { "question": "Posso usar seguro?", "answer": "O suporte a seguros depende dos provedores e da região." },
+  "q8": { "question": "Existe app móvel?", "answer": "As experiências móveis estão disponíveis hoje; as apps nativas chegam em breve." }
+},
     "cta": {
       "title": "Pronto para usar o Docito?",
       "subtitle": "Comece pela busca — ou entre como provedor verificado e fortaleça seus fluxos clínicos.",
