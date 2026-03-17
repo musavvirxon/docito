@@ -132,25 +132,25 @@ export default function PharmacyDashboardPage() {
 
   const sidebarItems: SidebarItem[] = useMemo(
     () => [
-      { id: "overview", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
-      { id: "prescriptions", label: "Prescriptions", icon: <ClipboardList className="h-5 w-5" /> },
-      { id: "fulfillment", label: "Fulfillment", icon: <Pill className="h-5 w-5" /> },
-      { id: "inventory", label: "Inventory", icon: <Package className="h-5 w-5" /> },
-      { id: "deliveries", label: "Deliveries", icon: <Truck className="h-5 w-5" /> },
-      { id: "referrals", label: "Referrals", icon: <ShieldCheck className="h-5 w-5" /> },
-      { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
-      { id: "claims", label: "Billing / Claims", icon: <CreditCard className="h-5 w-5" /> },
-      { id: "finances", label: "Finances", icon: <DollarSign className="h-5 w-5" /> },
-      { id: "staff", label: "Staff", icon: <Users className="h-5 w-5" /> },
-      { id: "verify", label: "Verify Documents", icon: <ScanLine className="h-5 w-5" /> },
+      { id: "overview", label: t("pharmacyDashboard.menu.overview", "Overview"), icon: <LayoutDashboard className="h-5 w-5" /> },
+      { id: "prescriptions", label: t("pharmacyDashboard.menu.prescriptions", "Prescriptions"), icon: <ClipboardList className="h-5 w-5" /> },
+      { id: "fulfillment", label: t("pharmacyDashboard.menu.fulfillment", "Fulfillment"), icon: <Pill className="h-5 w-5" /> },
+      { id: "inventory", label: t("pharmacyDashboard.menu.inventory", "Inventory"), icon: <Package className="h-5 w-5" /> },
+      { id: "deliveries", label: t("pharmacyDashboard.menu.deliveries", "Deliveries"), icon: <Truck className="h-5 w-5" /> },
+      { id: "referrals", label: t("pharmacyDashboard.menu.referrals", "Referrals"), icon: <ShieldCheck className="h-5 w-5" /> },
+      { id: "analytics", label: t("pharmacyDashboard.menu.analytics", "Analytics"), icon: <BarChart3 className="h-5 w-5" /> },
+      { id: "claims", label: t("pharmacyDashboard.menu.billingClaims", "Billing / Claims"), icon: <CreditCard className="h-5 w-5" /> },
+      { id: "finances", label: t("pharmacyDashboard.menu.finances", "Finances"), icon: <DollarSign className="h-5 w-5" /> },
+      { id: "staff", label: t("pharmacyDashboard.menu.staff", "Staff"), icon: <Users className="h-5 w-5" /> },
+      { id: "verify", label: t("pharmacyDashboard.menu.verifyDocuments", "Verify Documents"), icon: <ScanLine className="h-5 w-5" /> },
       {
         id: "settings",
-        label: "Settings",
+        label: t("pharmacyDashboard.menu.settings", "Settings"),
         icon: <Settings className="h-5 w-5" />,
         onClick: () => navigate("/pharmacy/settings"),
       },
     ],
-    [navigate],
+    [navigate, t],
   );
 
   const fetchOverview = async () => {
