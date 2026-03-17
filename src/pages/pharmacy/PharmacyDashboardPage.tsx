@@ -92,6 +92,7 @@ async function fetchMyPharmacy(userId: string): Promise<PharmacyRow | null> {
 export default function PharmacyDashboardPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const { user, loading: authLoading, activeRole } = useAuth();
 
   const [activeTab, setActiveTab] = useState("overview");
