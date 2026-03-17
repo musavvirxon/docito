@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "개요",
+      "orders": "주문",
+      "homeCollection": "방문 채혈",
+      "samples": "검체",
+      "analytics": "분석",
+      "billingInsurance": "청구 / 보험",
+      "finances": "재무",
+      "referrals": "의뢰",
+      "staff": "직원",
+      "verifyDocuments": "문서 확인",
+      "settings": "설정"
+    },
+    "header": {
+      "title": "검사실 직원 대시보드",
+      "subtitle": "Supabase에서 실시간으로 가져온 주문, 워크플로, 결과 및 분석",
+      "refresh": "새로고침"
+    },
+    "overview": {
+      "title": "개요",
+      "analytics": "분석",
+      "totalOrders": "총 주문",
+      "pending": "대기 중",
+      "inProgress": "진행 중",
+      "completed": "완료됨",
+      "pendingQueue": "대기 대열",
+      "inProgressQueue": "진행 중",
+      "completedRecent": "최근 완료",
+      "urgent": "긴급 / STAT",
+      "overdue": "지연 (>48시간)",
+      "recentOrders": {
+        "title": "최근 검사 주문",
+        "subtitle": "최신 주문 및 워크플로 상태",
+        "empty": "검사 주문이 없습니다."
+      },
+      "activity": {
+        "title": "활동 피드",
+        "subtitle": "최근 워크플로 업데이트",
+        "empty": "최근 활동이 없습니다."
+      },
+      "queueHealth": {
+        "title": "대기 대열 상태",
+        "subtitle": "최근 주문 기반 운영 요약",
+        "pending": "대기 중",
+        "inProgress": "진행 중",
+        "completed": "완료됨",
+        "urgent": "긴급 / STAT",
+        "overdue": "지연 (>48시간)",
+        "footer": "전체 분석 및 SLA 지표는 분석 탭에서 확인할 수 있습니다."
+      }
+    },
+    "orders": {
+      "search": "주문 번호, 환자명 또는 전화번호 검색...",
+      "statuses": "모든 상태",
+      "newOrder": "새 수동 주문",
+      "testOrders": "테스트 주문",
+      "empty": "주문을 찾을 수 없습니다",
+      "details": {
+        "title": "주문 상세",
+        "select": "상세 정보를 보려면 주문을 선택하세요"
+      },
+      "statusList": {
+        "completed": "완료됨",
+        "cancelled": "취소됨",
+        "pending": "대기 중",
+        "scheduled": "예약됨",
+        "processing": "처리 중",
+        "sampleCollected": "검체 채취 완료"
+      }
+    },
+    "collections": {
+      "today": "오늘의 채혈",
+      "pendingAssignment": "배정 대기",
+      "inTransit": "이동 중",
+      "completedToday": "오늘 완료",
+      "title": "방문 검체 채취",
+      "subtitle": "픽업 일정 및 직원 배정 관리",
+      "search": "환자 또는 주소로 검색...",
+      "allStatus": "모든 상태",
+      "table": {
+        "patient": "환자",
+        "address": "주소",
+        "scheduled": "예정 시간",
+        "collector": "채혈자",
+        "status": "상태",
+        "actions": "작업",
+        "empty": "채혈 일정을 찾을 수 없습니다"
+      },
+      "stats": {
+        "pending": "대기 중",
+        "collected": "채취 완료",
+        "processing": "처리 중",
+        "completed": "완료됨"
+      }
+    },
+    "samples": {
+      "title": "검체 관리",
+      "subtitle": "채취부터 결과까지 검체 추적",
+      "search": "검체 ID, 바코드 또는 환자로 검색...",
+      "allStatus": "모든 상태",
+      "table": {
+        "sample": "검체",
+        "patient": "환자",
+        "type": "유형",
+        "barcode": "바코드",
+        "status": "상태",
+        "actions": "작업",
+        "empty": "검체를 찾을 수 없습니다"
+      }
+    },
+    "analytics": {
+      "title": "분석 대시보드",
+      "subtitle": "주문, 테스트, 결과 및 의뢰 전반의 운영 분석",
+      "last30days": "최근 30일",
+      "refresh": "새로고침",
+      "metrics": {
+        "orders": "주문 (30일)",
+        "vsPrevious": "이전 기간 대비 +0.0%",
+        "completionRate": "완료율",
+        "completionDetails": "0 완료 • 0 대기",
+        "testVolume": "테스트량",
+        "testsPerOrder": "주문당 0.0 테스트",
+        "revenue": "수익 (30일)",
+        "turnaround": "소요 시간 (평균 / P90)",
+        "turnaroundDesc": "주문 생성 → 완료",
+        "resultVerification": "결과 확인",
+        "verificationDetails": "0 확인됨 • 0 대기",
+        "abnormalResults": "비정상 결과",
+        "abnormalDetails": "0 / 0 결과",
+        "incomingReferrals": "유입 의뢰"
+      },
+      "charts": {
+        "ordersTrend": "주문, 테스트 및 결과 추세",
+        "throughput": "기간 내 일일 검사실 처리량",
+        "orderStatusMix": "주문 상태 구성",
+        "statusDistribution": "검사 주문 상태 분포",
+        "noOrders": "해당 기간에 주문이 없습니다.",
+        "topTests": "최다 테스트",
+        "noTests": "해당 기간에 테스트 항목이 없습니다.",
+        "operationalMix": "운영 구성",
+        "priorityMix": "우선순위 구성",
+        "noPriority": "우선순위 데이터 없음",
+        "paymentStatus": "결제 상태",
+        "testCategories": "테스트 카테고리"
+      },
+      "quality": {
+        "title": "소요 시간 및 품질",
+        "sla": "SLA 및 품질 지표",
+        "orderTat": "주문 TAT 평균 / P90",
+        "resultTat": "결과 TAT 평균 / P90",
+        "sampleTat": "검체 채취 평균 / P90",
+        "slaBreaches": "SLA 위반",
+        "performed": "실행된 결과",
+        "verified": "확인된 결과",
+        "pending": "확인 대기 중",
+        "abnormal": "비정상 결과"
+      },
+      "referrals": {
+        "title": "의뢰 깔때기",
+        "subtitle": "검사소로 유입되는 의뢰 파이프라인",
+        "received": "접수됨",
+        "active": "수락됨 / 활성",
+        "completed": "완료됨",
+        "completionRate": "완료율",
+        "status": "의뢰 상태"
+      },
+      "catalog": {
+        "title": "카탈로그 범위",
+        "subtitle": "테스트 카탈로그 폭 및 준비성",
+        "total": "카탈로그 합계",
+        "active": "활성 테스트",
+        "local": "자체 테스트",
+        "categories": "카테고리"
+      },
+      "snapshot": {
+        "title": "현재 기간 스냅샷",
+        "avgOrderValue": "평균 주문 가치",
+        "inProgress": "진행 중인 주문",
+        "cancelled": "취소된 주문",
+        "overdue": "지연된 주문 (>48시간)"
+      },
+      "alerts": {
+        "title": "운영 알림",
+        "subtitle": "워크플로 전반의 주의 필요 항목",
+        "empty": "활성 알림이 없습니다."
+      }
+    },
+    "billing": {
+      "title": "청구 및 보험",
+      "subtitle": "실시간 청구 거래 및 보험 적용 주문",
+      "refresh": "새로고침",
+      "grossRevenue": "총 수익",
+      "refunds": "환불",
+      "netRevenue": "순 수익",
+      "completedTransactions": "0건의 완료된 거래",
+      "tabs": {
+        "transactions": "거래 내역",
+        "insurance": "보험 주문"
+      },
+      "search": "상태, 유형, 설명으로 검색...",
+      "table": {
+        "date": "날짜",
+        "type": "유형",
+        "status": "상태",
+        "description": "설명",
+        "amount": "금액",
+        "empty": "거래 내역이 없습니다"
+      }
+    },
+    "finances": {
+      "title": "재무",
+      "subtitle": "수입, 지출, 급여 및 보상 프로필 관리",
+      "staffCompensation": {
+        "title": "직원 보상",
+        "addProfile": "프로필 추가",
+        "empty": "보상 프로필이 없습니다. 급여 또는 시간당 수당을 추가하세요."
+      },
+      "export": {
+        "title": "재무 데이터 내보내기",
+        "description": "회계 및 감사를 위해 원장을 CSV로 다운로드하세요.",
+        "from": "시작일",
+        "to": "종료일",
+        "type": "유형",
+        "category": "카테고리",
+        "all": "전체",
+        "export": "CSV 내보내기",
+        "tip": "팁: 월별로 내보내어 회계사에게 공유하세요."
+      },
+      "recurring": {
+        "title": "정기 거래",
+        "subtitle": "공공요금, 임대료 등 반복되는 항목을 자동화하세요.",
+        "addRule": "규칙 추가",
+        "status": "상태",
+        "noRuns": "기록 없음",
+        "runDue": "기한 항목 실행",
+        "asOf": "기준일",
+        "runNow": "지금 실행",
+        "description": "선택한 날짜 이전의 모든 규칙에 대해 항목을 생성합니다.",
+        "noRules": "정기 규칙이 없습니다."
+      },
+      "categories": {
+        "title": "카테고리",
+        "subtitle": "소모품, 세금, 공공요금, 급여 등의 카테고리를 만드세요.",
+        "name": "이름",
+        "color": "색상 (선택 사항)",
+        "add": "추가",
+        "empty": "카테고리가 없습니다.",
+        "tip": "팁: 일관된 이름을 사용하여 보고서를 깔끔하게 유지하세요."
+      },
+      "ledger": {
+        "title": "원장",
+        "subtitle": "수입, 지출 및 급여 항목을 관리하세요.",
+        "entries": "항목",
+        "income": "수입",
+        "expenses": "지출",
+        "net": "순이익",
+        "addEntry": "항목 추가",
+        "manual": "수동",
+        "date": "날짜",
+        "type": "유형",
+        "currency": "통화",
+        "amount": "금액",
+        "reference": "참조 (선택 사항)",
+        "description": "설명 (선택 사항)",
+        "empty": "해당 필터에 대한 항목이 없습니다.",
+        "note": "참고: 필터당 최대 200개의 항목이 표시됩니다."
+      },
+      "compensationModal": {
+        "title": "보상 프로필 추가",
+        "staff": "직원명",
+        "select": "직원 선택…",
+        "type": "보상 유형",
+        "salary": "고정 급여",
+        "amount": "금액 ($)",
+        "period": "기간",
+        "monthly": "월급",
+        "frequency": "지급 빈도",
+        "notes": "메모 (선택 사항)",
+        "cancel": "취소",
+        "save": "저장"
+      }
+    },
+    "referrals": {
+      "title": "의뢰",
+      "new": "새 의뢰",
+      "incoming": {
+        "title": "유입 의뢰",
+        "subtitle": "검사소에서 접수한 의뢰",
+        "timezone": "표시 시간대:",
+        "empty": "의뢰가 없습니다."
+      },
+      "outgoing": {
+        "title": "유출 의뢰",
+        "subtitle": "검사소에서 보낸 의뢰",
+        "timezone": "표시 시간대:",
+        "empty": "의뢰가 없습니다."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "활성 직원",
+        "pending": "대기 중인 초대",
+        "inactive": "비활성 / 정지",
+        "admins": "관리자 / 매니저"
+      },
+      "invite": {
+        "title": "직원 초대",
+        "subtitle": "초대를 생성하고 역할을 지정하며 권한을 설정하세요.",
+        "email": "이메일",
+        "role": "역할",
+        "technician": "테크니션",
+        "send": "초대 보내기",
+        "preset": "권한 프리셋"
+      },
+      "pending": {
+        "title": "대기 중인 초대",
+        "subtitle": "초대를 재전송하거나 취소할 수 있습니다.",
+        "empty": "대기 중인 초대가 없습니다."
+      },
+      "active": {
+        "title": "활성 직원 관리",
+        "subtitle": "역할 및 권한 수정, 또는 직원 계정 비활성화.",
+        "search": "직원 검색...",
+        "refresh": "새로고침",
+        "empty": "활성 직원을 찾을 수 없습니다."
+      },
+      "audit": {
+        "title": "직원 활동 감사",
+        "subtitle": "책임 추적을 위한 최근 활동 기록.",
+        "empty": "감사 기록이 없습니다."
+      }
+    },
+    "verify": {
+      "title": "문서 확인",
+      "description": "Tokito에서 발행된 모든 문서(치료 계획, 의뢰서, 처방전, 환자 프로필)의 진위 여부를 확인하십시오.",
+      "input": "확인 코드 입력 또는 스캔",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "확인",
+      "types": {
+        "tp": "TP - 치료 계획",
+        "rf": "RF - 의뢰서",
+        "rx": "RX - 처방전",
+        "pt": "PT - 환자 프로필"
+      },
+      "scan": "대신 QR 코드 스캔"
+    }
+  }
+}
