@@ -261,7 +261,7 @@ export default function PharmacyDashboardPage() {
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+          <p className="mt-4 text-muted-foreground">{t("pharmacyDashboard.header.loading", "Loading...")}</p>
         </div>
       </div>
     );
