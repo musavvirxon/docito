@@ -10,71 +10,341 @@
       "finances": "Finanzen",
       "referrals": "Überweisungen",
       "staff": "Personal",
-      "verifyDocuments": "Dokumentenprüfung",
+      "verifyDocuments": "Dokumente verifizieren",
       "settings": "Einstellungen"
     },
     "header": {
       "title": "Labor-Dashboard",
-      "subtitle": "Aufträge, Workflow und Analysen aus Supabase",
+      "subtitle": "Aufträge, Workflow, Ergebnisse und Analysen aus Supabase",
       "refresh": "Aktualisieren"
     },
     "overview": {
       "title": "Übersicht",
       "analytics": "Analysen",
-      "totalOrders": "Gesamtanzahl Aufträge",
+      "totalOrders": "Aufträge Gesamt",
       "pending": "Ausstehend",
       "inProgress": "In Bearbeitung",
       "completed": "Abgeschlossen",
+      "pendingQueue": "Warteschlange (Ausstehend)",
+      "inProgressQueue": "In Bearbeitung",
+      "completedRecent": "Abgeschlossen (aktuell)",
       "urgent": "Dringend / STAT",
       "overdue": "Überfällig (>48h)",
       "recentOrders": {
         "title": "Aktuelle Laboraufträge",
-        "subtitle": "Neueste Aufträge und Status",
-        "empty": "Noch keine Aufträge vorhanden."
+        "subtitle": "Neueste Aufträge und Workflow-Status",
+        "empty": "Noch keine Laboraufträge vorhanden."
+      },
+      "activity": {
+        "title": "Aktivitäts-Feed",
+        "subtitle": "Aktuelle Workflow-Updates",
+        "empty": "Keine aktuellen Aktivitäten."
       },
       "queueHealth": {
         "title": "Status der Warteschlange",
-        "footer": "Vollständige SLA-Metriken finden Sie im Reiter Analysen."
+        "subtitle": "Schnappschuss des Betriebs aus aktuellen Aufträgen",
+        "pending": "Ausstehend",
+        "inProgress": "In Bearbeitung",
+        "completed": "Abgeschlossen",
+        "urgent": "Dringend / STAT",
+        "overdue": "Überfällig (>48h)",
+        "footer": "Vollständige Analysen, Trends und SLA-Metriken finden Sie im Reiter Analysen."
       }
     },
     "orders": {
       "search": "Suche nach Auftrags-Nr, Patient oder Telefon...",
       "statuses": "Alle Status",
-      "newOrder": "Neuer manueller Auftrag",
+      "newOrder": "Manueller Auftrag",
+      "testOrders": "Testaufträge",
+      "empty": "Keine Aufträge gefunden",
+      "details": {
+        "title": "Auftragsdetails",
+        "select": "Wählen Sie einen Auftrag aus, um Details anzuzeigen"
+      },
       "statusList": {
         "completed": "abgeschlossen",
         "cancelled": "storniert",
         "pending": "ausstehend",
+        "scheduled": "geplant",
         "processing": "in bearbeitung",
         "sampleCollected": "probe entnommen"
       }
     },
     "collections": {
-      "title": "Heim-Probenentnahme",
-      "subtitle": "Termine und Personalzuweisung verwalten",
+      "today": "Heutige Entnahmen",
+      "pendingAssignment": "Ausstehende Zuweisung",
+      "inTransit": "Unterwegs",
+      "completedToday": "Heute abgeschlossen",
+      "title": "Heimentnahme von Proben",
+      "subtitle": "Abholtermine und Personalzuweisungen verwalten",
+      "search": "Suche nach Patient oder Adresse...",
+      "allStatus": "Alle Status",
       "table": {
         "patient": "Patient",
         "address": "Adresse",
-        "collector": "Entnahme-Mitarbeiter",
-        "status": "Status"
+        "scheduled": "Geplant",
+        "collector": "Mitarbeiter",
+        "status": "Status",
+        "actions": "Aktionen",
+        "empty": "Keine Entnahmen gefunden"
+      },
+      "stats": {
+        "pending": "Ausstehend",
+        "collected": "Entnommen",
+        "processing": "In Bearbeitung",
+        "completed": "Abgeschlossen"
+      }
+    },
+    "samples": {
+      "title": "Probenmanagement",
+      "subtitle": "Proben von der Entnahme bis zum Ergebnis verfolgen",
+      "search": "Suche nach Proben-ID, Barcode oder Patient...",
+      "allStatus": "Alle Status",
+      "table": {
+        "sample": "Probe",
+        "patient": "Patient",
+        "type": "Typ",
+        "barcode": "Barcode",
+        "status": "Status",
+        "actions": "Aktionen",
+        "empty": "Keine Proben gefunden"
       }
     },
     "analytics": {
       "title": "Analyse-Dashboard",
+      "subtitle": "Betriebsanalysen über Aufträge, Tests, Ergebnisse und Katalogperformance",
+      "last30days": "Letzte 30 Tage",
+      "refresh": "Aktualisieren",
       "metrics": {
+        "orders": "Aufträge (30t)",
+        "vsPrevious": "+0.0% zum Vorzeitraum",
+        "completionRate": "Abschlussquote",
+        "completionDetails": "0 abgeschlossen • 0 ausstehend",
+        "testVolume": "Testvolumen",
+        "testsPerOrder": "0.0 Tests / Auftrag",
+        "revenue": "Umsatz (30t)",
         "turnaround": "Durchlaufzeit (ø / P90)",
-        "abnormalResults": "Auffällige Ergebnisse"
+        "turnaroundDesc": "Erstellung → Abschluss",
+        "resultVerification": "Ergebnisprüfung",
+        "verificationDetails": "0 verifiziert • 0 ausstehend",
+        "abnormalResults": "Abnormale Ergebnisse",
+        "abnormalDetails": "0 von 0 Ergebnissen",
+        "incomingReferrals": "Eingehende Überweisungen"
+      },
+      "charts": {
+        "ordersTrend": "Trend: Aufträge, Tests & Ergebnisse",
+        "throughput": "Täglicher Labordurchsatz im Zeitraum",
+        "orderStatusMix": "Verteilung Auftragsstatus",
+        "statusDistribution": "Statusverteilung für Labortests",
+        "noOrders": "Keine Aufträge in diesem Zeitraum.",
+        "topTests": "Top Tests",
+        "noTests": "Keine Tests in diesem Zeitraum gefunden.",
+        "operationalMix": "Operativer Mix",
+        "priorityMix": "Prioritäts-Mix",
+        "noPriority": "Keine Prioritätsdaten",
+        "paymentStatus": "Zahlungsstatus",
+        "testCategories": "Testkategorien"
+      },
+      "quality": {
+        "title": "Durchlaufzeit & Qualität",
+        "sla": "SLA und Qualitätsindikatoren",
+        "orderTat": "Auftrag TAT ø / P90",
+        "resultTat": "Ergebnis TAT ø / P90",
+        "sampleTat": "Probenentnahme ø / P90",
+        "slaBreaches": "SLA-Verstöße",
+        "performed": "Durchgeführte Ergebnisse",
+        "verified": "Verifizierte Ergebnisse",
+        "pending": "Ausstehende Verifizierung",
+        "abnormal": "Abnormale Ergebnisse"
+      },
+      "referrals": {
+        "title": "Überweisungstrichter",
+        "subtitle": "Pipeline eingehender Überweisungen",
+        "received": "Erhalten",
+        "active": "Akzeptiert / Aktiv",
+        "completed": "Abgeschlossen",
+        "completionRate": "Abschlussquote",
+        "status": "Überweisungsstatus"
+      },
+      "catalog": {
+        "title": "Katalogabdeckung",
+        "subtitle": "Breite und Bereitschaft des Testkatalogs",
+        "total": "Katalog Gesamt",
+        "active": "Aktive Tests",
+        "local": "Lokale Tests",
+        "categories": "Kategorien"
+      },
+      "snapshot": {
+        "title": "Aktueller Zeitraum-Schnappschuss",
+        "avgOrderValue": "Durchschn. Auftragswert",
+        "inProgress": "Aufträge in Bearbeitung",
+        "cancelled": "Stornierte Aufträge",
+        "overdue": "Überfällige Aufträge (>48h)"
+      },
+      "alerts": {
+        "title": "Operative Warnmeldungen",
+        "subtitle": "Elemente, die Aufmerksamkeit im Workflow erfordern",
+        "empty": "Keine aktiven Warnmeldungen."
+      }
+    },
+    "billing": {
+      "title": "Abrechnung & Versicherung",
+      "subtitle": "Transaktionen und versicherungsgedeckte Aufträge.",
+      "refresh": "Aktualisieren",
+      "grossRevenue": "Bruttoumsatz",
+      "refunds": "Rückerstattungen",
+      "netRevenue": "Nettoumsatz",
+      "completedTransactions": "0 abgeschlossene Transaktionen",
+      "tabs": {
+        "transactions": "Transaktionen",
+        "insurance": "Versicherungsaufträge"
+      },
+      "search": "Suche nach Status, Typ, Beschreibung...",
+      "table": {
+        "date": "Datum",
+        "type": "Typ",
+        "status": "Status",
+        "description": "Beschreibung",
+        "amount": "Betrag",
+        "empty": "Keine Transaktionen gefunden"
+      }
+    },
+    "finances": {
+      "title": "Finanzen",
+      "subtitle": "Einnahmen, Ausgaben, Lohnabrechnung und Exporte verwalten.",
+      "staffCompensation": {
+        "title": "Mitarbeitervergütung",
+        "addProfile": "Profil hinzufügen",
+        "empty": "Noch keine Vergütungsprofile vorhanden."
+      },
+      "export": {
+        "title": "Finanzeinträge exportieren",
+        "description": "Laden Sie Ihr Hauptbuch als CSV für die Buchhaltung oder Prüfung herunter.",
+        "from": "Von",
+        "to": "Bis",
+        "type": "Typ",
+        "category": "Kategorie",
+        "all": "Alle",
+        "export": "CSV exportieren",
+        "tip": "Tipp: Exportieren Sie monatliche Bereiche für Ihren Steuerberater."
+      },
+      "recurring": {
+        "title": "Wiederkehrend",
+        "subtitle": "Automatisieren Sie regelmäßige Einträge (Miete, Steuern, Abos).",
+        "addRule": "Regel hinzufügen",
+        "status": "Status",
+        "noRuns": "Keine bisherigen Ausführungen",
+        "runDue": "Fällige Regeln ausführen",
+        "asOf": "Stand vom",
+        "runNow": "Jetzt ausführen",
+        "description": "Erstellt Einträge für alle fälligen Regeln bis zum gewählten Datum.",
+        "noRules": "Keine wiederkehrenden Regeln vorhanden."
+      },
+      "categories": {
+        "title": "Kategorien",
+        "subtitle": "Kategorien wie Bedarf, Steuern, Gehälter erstellen.",
+        "name": "Name",
+        "color": "Farbe (optional)",
+        "add": "Hinzufügen",
+        "empty": "Noch keine Kategorien vorhanden.",
+        "tip": "Tipp: Nutzen Sie konsistente Namen für saubere Berichte."
+      },
+      "ledger": {
+        "title": "Hauptbuch",
+        "subtitle": "Verwalten Sie Einnahmen, Ausgaben und Lohnbuchungen.",
+        "entries": "Einträge",
+        "income": "Einnahmen",
+        "expenses": "Ausgaben",
+        "net": "Netto",
+        "addEntry": "Eintrag hinzufügen",
+        "manual": "Manuell",
+        "date": "Datum",
+        "type": "Typ",
+        "currency": "Währung",
+        "amount": "Betrag",
+        "reference": "Referenz (optional)",
+        "description": "Beschreibung (optional)",
+        "empty": "Keine Einträge für diesen Filter gefunden.",
+        "note": "Hinweis: Liste zeigt bis zu 200 Einträge pro Filter."
+      },
+      "compensationModal": {
+        "title": "Vergütungsprofil hinzufügen",
+        "staff": "Mitarbeiter",
+        "select": "Mitarbeiter wählen...",
+        "type": "Vergütungsart",
+        "salary": "Festgehalt",
+        "amount": "Betrag ($)",
+        "period": "Zeitraum",
+        "monthly": "Monatlich",
+        "frequency": "Auszahlungsintervall",
+        "notes": "Notizen (optional)",
+        "cancel": "Abbrechen",
+        "save": "Speichern"
+      }
+    },
+    "referrals": {
+      "title": "Überweisungen",
+      "new": "Neue Überweisung",
+      "incoming": {
+        "title": "Eingehende Überweisungen",
+        "subtitle": "Überweisungen an Ihr Labor",
+        "timezone": "Zeiten in:",
+        "empty": "Noch keine Überweisungen vorhanden."
+      },
+      "outgoing": {
+        "title": "Ausgehende Überweisungen",
+        "subtitle": "Überweisungen von Ihrem Labor",
+        "timezone": "Zeiten in:",
+        "empty": "Noch keine Überweisungen vorhanden."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "Aktives Personal",
+        "pending": "Offene Einladungen",
+        "inactive": "Inaktiv / Deaktiviert",
+        "admins": "Admin / Manager"
+      },
+      "invite": {
+        "title": "Personal einladen",
+        "subtitle": "Einladungen erstellen und Rollen vorab zuweisen.",
+        "email": "E-Mail",
+        "role": "Rolle",
+        "technician": "Techniker",
+        "send": "Einladung senden",
+        "preset": "Berechtigungsvorlage"
+      },
+      "pending": {
+        "title": "Offene Einladungen",
+        "subtitle": "Einladungen verwalten, erneut senden oder widerrufen.",
+        "empty": "Keine offenen Einladungen."
+      },
+      "active": {
+        "title": "Personalverwaltung",
+        "subtitle": "Rollen bearbeiten oder Zugriff entfernen.",
+        "search": "Personal suchen...",
+        "refresh": "Aktualisieren",
+        "empty": "Kein aktives Personal gefunden."
+      },
+      "audit": {
+        "title": "Personal-Audit-Trail",
+        "subtitle": "Aktivitätsprotokoll zur Rechenschaftspflicht.",
+        "empty": "Keine Audit-Aktivitäten gefunden."
       }
     },
     "verify": {
       "title": "Dokumente verifizieren",
-      "description": "Überprüfen Sie die Echtheit von Tokito-Dokumenten – Behandlungspläne, Überweisungen, Rezepte und Patientenprofile.",
+      "description": "Überprüfen Sie die Echtheit von Tokito-Dokumenten — Behandlungspläne, Überweisungen, Rezepte und Patientenprofile.",
+      "input": "Verifizierungscode eingeben oder scannen",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verifizieren",
       "types": {
         "tp": "TP - Behandlungsplan",
         "rf": "RF - Überweisung",
         "rx": "RX - Rezept",
         "pt": "PT - Patientenprofil"
-      }
+      },
+      "scan": "Stattdessen QR-Code scannen"
     }
   }
 }
