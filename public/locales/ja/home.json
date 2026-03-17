@@ -72,6 +72,7 @@
     }
   },
   "specialties": {
+    "specialtiesSubtitle": "すべての医療分野の専門医を見つける",
     "title": "医療 تخصص",
     "subtitle": "認定スペシャリストとつながる",
     "cardiology": "循環器内科",
