@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,7 @@ const languages = [
 
 export default function AccountSettingsSection() {
   const { user, profile, updateProfile } = useAuth();
+  const { t } = useTranslation("profileMenu");
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -82,7 +84,7 @@ export default function AccountSettingsSection() {
       }));
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to load settings");
+      toast.error(e?.message || t("profile.toasts.settingsLoadFailed", "Failed to load settings"));
     } finally {
       setRefreshing(false);
       setLoading(false);
@@ -93,7 +95,6 @@ export default function AccountSettingsSection() {
     if (!user) return;
     setSaving(true);
     try {
-      // 1) Persist user_settings (theme, reduce motion, etc.)
       const payload: Settings = {
         theme: settings.theme || "system",
         reduce_motion: Boolean(settings.reduce_motion),
@@ -107,7 +108,6 @@ export default function AccountSettingsSection() {
       if (error) throw error;
       if (data?.ok === false) throw new Error(data?.error || "Failed to save settings");
 
-      // 2) Persist profile timezone via Edge Function so we can track timezone_source + audit.
       if ((profile?.timezone || "UTC") !== effectiveTimezone) {
         const { data: tzRes, error: tzErr } = await supabase.functions.invoke("user-timezone", {
           body: { timezone: effectiveTimezone, source: "manual", allow_overwrite: true },
@@ -117,16 +117,15 @@ export default function AccountSettingsSection() {
         if (tzRes?.ok === false) throw new Error(tzRes?.error || "Failed to set timezone");
       }
 
-      // Keep profiles table in sync for existing app reads
       await updateProfile({
         timezone: effectiveTimezone,
         language: effectiveLanguage,
       });
 
-      toast.success("Settings saved");
+      toast.success(t("profile.toasts.settingsSaved", "Settings saved"));
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to save settings");
+      toast.error(e?.message || t("profile.toasts.settingsFailed", "Failed to save settings"));
     } finally {
       setSaving(false);
     }
@@ -142,7 +141,7 @@ export default function AccountSettingsSection() {
       <Card className="rounded-2xl">
         <CardContent className="p-6 flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Loading settings…
+          {t("profile.settings.loadingSettings", "Loading settings…")}
         </CardContent>
       </Card>
     );
@@ -152,49 +151,49 @@ export default function AccountSettingsSection() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-lg font-semibold">Settings</h3>
-          <p className="text-sm text-muted-foreground">App preferences synced to your account.</p>
+          <h3 className="text-lg font-semibold">{t("profile.settings.title", "Settings")}</h3>
+          <p className="text-sm text-muted-foreground">{t("profile.settings.appPreferences", "App preferences synced to your account.")}</p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={refreshing}>
           <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-          Refresh
+          {t("profile.settings.refresh", "Refresh")}
         </Button>
       </div>
 
       <Card className="rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-base">Appearance & accessibility</CardTitle>
-          <CardDescription>High-performance preferences stored in Supabase.</CardDescription>
+          <CardTitle className="text-base">{t("profile.settings.appearance", "Appearance & accessibility")}</CardTitle>
+          <CardDescription>{t("profile.settings.performance", "High-performance preferences stored in Supabase.")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <Label>Theme</Label>
+            <Label>{t("profile.settings.theme", "Theme")}</Label>
             <Select value={settings.theme || "system"} onValueChange={(v) => setSettings((p) => ({ ...p, theme: v as any }))}>
               <SelectTrigger className="rounded-xl">
-                <SelectValue placeholder="Select theme" />
+                <SelectValue placeholder={t("profile.settings.selectTheme", "Select theme")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="system">System</SelectItem>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
+                <SelectItem value="system">{t("profile.settings.system", "System")}</SelectItem>
+                <SelectItem value="light">{t("profile.settings.light", "Light")}</SelectItem>
+                <SelectItem value="dark">{t("profile.settings.dark", "Dark")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex items-center justify-between gap-4 rounded-xl border p-4">
             <div className="space-y-1">
-              <div className="font-medium">Reduce motion</div>
-              <div className="text-sm text-muted-foreground">Minimize animations and transitions</div>
+              <div className="font-medium">{t("profile.settings.reduceMotion", "Reduce motion")}</div>
+              <div className="text-sm text-muted-foreground">{t("profile.settings.reduceMotionDesc", "Minimize animations and transitions")}</div>
             </div>
             <Switch checked={Boolean(settings.reduce_motion)} onCheckedChange={(v) => setSettings((p) => ({ ...p, reduce_motion: v }))} />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Timezone</Label>
+              <Label>{t("profile.settings.timezone", "Timezone")}</Label>
               <Select value={effectiveTimezone} onValueChange={(v) => setSettings((p) => ({ ...p, timezone: v }))}>
                 <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select timezone" />
+                  <SelectValue placeholder={t("profile.settings.selectTimezone", "Select timezone")} />
                 </SelectTrigger>
                 <SelectContent>
                   {timezones.map((tz) => (
@@ -206,7 +205,7 @@ export default function AccountSettingsSection() {
               </Select>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs text-muted-foreground">
-                  Calendar times will display in this timezone. Browser: <span className="font-medium">{browserTz}</span>
+                  {t("profile.settings.calendar", "Calendar times will display in this timezone.")} {t("profile.settings.browser", "Browser")}: <span className="font-medium">{browserTz}</span>
                 </p>
                 <Button
                   type="button"
@@ -215,16 +214,16 @@ export default function AccountSettingsSection() {
                   className="h-8 rounded-lg"
                   onClick={() => setSettings((p) => ({ ...p, timezone: browserTz }))}
                 >
-                  Use browser
+                  {t("profile.settings.useBrowser", "Use browser")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Language</Label>
+              <Label>{t("profile.settings.language", "Language")}</Label>
               <Select value={effectiveLanguage} onValueChange={(v) => setSettings((p) => ({ ...p, language: v }))}>
                 <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder={t("profile.settings.selectLanguage", "Select language")} />
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map((l) => (
@@ -240,7 +239,7 @@ export default function AccountSettingsSection() {
           <div className="flex justify-end">
             <Button onClick={save} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-              Save
+              {t("profile.settings.save", "Save")}
             </Button>
           </div>
         </CardContent>

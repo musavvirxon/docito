@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -29,41 +30,10 @@ import AccountSettingsSection from "@/components/profile/AccountSettingsSection"
 import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
 import { getPrimaryRole, type AppRole } from "@/lib/rbac";
 
-const getNameLabel = (role: AppRole): string => {
-  switch (role) {
-    case "clinic_admin":
-    case "admin":
-      return "Clinic name";
-    case "lab_admin":
-      return "Lab name";
-    case "pharmacy_admin":
-      return "Pharmacy name";
-    case "imaging_admin":
-      return "Imaging center name";
-    default:
-      return "Full name";
-  }
-};
-
-const getNamePlaceholder = (role: AppRole): string => {
-  switch (role) {
-    case "clinic_admin":
-    case "admin":
-      return "Enter clinic name";
-    case "lab_admin":
-      return "Enter lab name";
-    case "pharmacy_admin":
-      return "Enter pharmacy name";
-    case "imaging_admin":
-      return "Enter imaging center name";
-    default:
-      return "Enter your full name";
-  }
-};
-
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation("profileMenu");
   const { user, profile, loading, updateProfile, signOut, activeRole, allRoles } = useAuth();
 
   const initialTab = (searchParams.get("tab") as "settings" | "workspace" | "billing" | "analytics") || "settings";
@@ -85,15 +55,47 @@ export default function ProfilePage() {
     return activeRole || "patient";
   }, [allRoles, activeRole]);
 
-  const nameLabel = useMemo(() => getNameLabel(primaryRole), [primaryRole]);
-  const namePlaceholder = useMemo(() => getNamePlaceholder(primaryRole), [primaryRole]);
+  const getNameLabel = (role: AppRole): string => {
+    switch (role) {
+      case "clinic_admin":
+      case "admin":
+        return t("profile.nameLabels.clinicName", "Clinic name");
+      case "lab_admin":
+        return t("profile.nameLabels.labName", "Lab name");
+      case "pharmacy_admin":
+        return t("profile.nameLabels.pharmacyName", "Pharmacy name");
+      case "imaging_admin":
+        return t("profile.nameLabels.imagingName", "Imaging center name");
+      default:
+        return t("profile.nameLabels.fullName", "Full name");
+    }
+  };
+
+  const getNamePlaceholder = (role: AppRole): string => {
+    switch (role) {
+      case "clinic_admin":
+      case "admin":
+        return t("profile.placeholders.clinicName", "Enter clinic name");
+      case "lab_admin":
+        return t("profile.placeholders.labName", "Enter lab name");
+      case "pharmacy_admin":
+        return t("profile.placeholders.pharmacyName", "Enter pharmacy name");
+      case "imaging_admin":
+        return t("profile.placeholders.imagingName", "Enter imaging center name");
+      default:
+        return t("profile.placeholders.fullName", "Enter your full name");
+    }
+  };
+
+  const nameLabel = useMemo(() => getNameLabel(primaryRole), [primaryRole, t]);
+  const namePlaceholder = useMemo(() => getNamePlaceholder(primaryRole), [primaryRole, t]);
 
   if (loading) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Loading…
+          {t("profile.loading", "Loading…")}
         </div>
       </div>
     );
@@ -105,16 +107,14 @@ export default function ProfilePage() {
     setSavingProfile(true);
     try {
       const { error } = await updateProfile({
-        // This field is used across the app as the display name.
-        // For practice/facility admins, it represents the facility name.
         full_name: fullName.trim(),
         phone: phone.trim() || null,
       } as any);
       if (error) throw error;
-      toast.success("Profile updated");
+      toast.success(t("profile.toasts.profileUpdated", "Profile updated"));
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update profile");
+      toast.error(e?.message || t("profile.toasts.profileFailed", "Failed to update profile"));
     } finally {
       setSavingProfile(false);
     }
@@ -122,11 +122,11 @@ export default function ProfilePage() {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters.");
+      toast.error(t("profile.toasts.passwordMinLength", "Password must be at least 6 characters."));
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match.");
+      toast.error(t("profile.toasts.passwordMismatch", "Passwords do not match."));
       return;
     }
 
@@ -136,10 +136,10 @@ export default function ProfilePage() {
       if (error) throw error;
       setNewPassword("");
       setConfirmPassword("");
-      toast.success("Password updated");
+      toast.success(t("profile.toasts.passwordUpdated", "Password updated"));
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update password");
+      toast.error(e?.message || t("profile.toasts.passwordFailed", "Failed to update password"));
     } finally {
       setSavingPassword(false);
     }
@@ -149,18 +149,18 @@ export default function ProfilePage() {
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1 min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight truncate">Account</h1>
+          <h1 className="text-2xl font-semibold tracking-tight truncate">{t("profile.account", "Account")}</h1>
           <p className="text-sm text-muted-foreground truncate">{email}</p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {t("profile.back", "Back")}
           </Button>
           <Button variant="destructive" onClick={() => signOut()}>
             <LogOut className="h-4 w-4 mr-2" />
-            Sign out
+            {t("profile.signOut", "Sign out")}
           </Button>
         </div>
       </div>
@@ -169,21 +169,21 @@ export default function ProfilePage() {
         <TabsList className="rounded-2xl flex-wrap">
           <TabsTrigger value="settings" className="rounded-xl">
             <SettingsIcon className="h-4 w-4 mr-2" />
-            Settings
+            {t("profile.menu.settings", "Settings")}
           </TabsTrigger>
           {primaryRole === "patient" && (
             <TabsTrigger value="workspace" className="rounded-xl">
               <Heart className="h-4 w-4 mr-2" />
-              Health Profile
+              {t("profile.tabs.healthProfile", "Health Profile")}
             </TabsTrigger>
           )}
           <TabsTrigger value="billing" className="rounded-xl">
             <CreditCard className="h-4 w-4 mr-2" />
-            Billing
+            {t("profile.menu.billing", "Billing")}
           </TabsTrigger>
           <TabsTrigger value="analytics" className="rounded-xl">
             <BarChart3 className="h-4 w-4 mr-2" />
-            Analytics
+            {t("profile.menu.analytics", "Analytics")}
           </TabsTrigger>
         </TabsList>
 
@@ -193,9 +193,9 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <UserIcon className="h-5 w-5" />
-                  Profile
+                  {t("profile.profileSection.title", "Profile")}
                 </CardTitle>
-                <CardDescription>Update your personal information.</CardDescription>
+                <CardDescription>{t("profile.profileSection.description", "Update your personal information.")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -209,19 +209,19 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label>{t("profile.profileSection.email", "Email")}</Label>
                   <Input className="rounded-xl" value={email} disabled />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Phone</Label>
+                  <Label>{t("profile.profileSection.phone", "Phone")}</Label>
                   <Input className="rounded-xl" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
 
                 <div className="flex justify-end">
                   <Button onClick={handleSaveProfile} disabled={savingProfile}>
                     {savingProfile && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Save profile
+                    {t("profile.profileSection.save", "Save profile")}
                   </Button>
                 </div>
               </CardContent>
@@ -231,24 +231,24 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Security
+                  {t("profile.security.title", "Security")}
                 </CardTitle>
-                <CardDescription>Change your password.</CardDescription>
+                <CardDescription>{t("profile.security.description", "Change your password.")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label>New password</Label>
+                  <Label>{t("profile.security.newPassword", "New password")}</Label>
                   <Input
                     className="rounded-xl"
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="At least 6 characters"
+                    placeholder={t("profile.security.passwordPlaceholder", "At least 6 characters")}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Confirm password</Label>
+                  <Label>{t("profile.security.confirmPassword", "Confirm password")}</Label>
                   <Input
                     className="rounded-xl"
                     type="password"
@@ -260,12 +260,12 @@ export default function ProfilePage() {
                 <div className="flex justify-end">
                   <Button onClick={handleChangePassword} disabled={savingPassword}>
                     {savingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Update password
+                    {t("profile.security.update", "Update password")}
                   </Button>
                 </div>
 
                 <Separator />
-                <div className="text-xs text-muted-foreground">Tip: use a password manager and avoid reusing passwords.</div>
+                <div className="text-xs text-muted-foreground">{t("profile.security.tip", "Tip: use a password manager and avoid reusing passwords.")}</div>
               </CardContent>
             </Card>
           </div>
@@ -273,7 +273,6 @@ export default function ProfilePage() {
           <AccountSettingsSection />
         </TabsContent>
 
-        {/* Role-specific workspace */}
         <TabsContent value="workspace" className="space-y-6">
           {primaryRole === "patient" && <PatientWorkspaceSettings />}
         </TabsContent>
