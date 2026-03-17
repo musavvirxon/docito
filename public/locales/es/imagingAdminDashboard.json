@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Resumen",
+      "scanWorkflow": "Flujo de Escaneo",
+      "reports": "Informes",
+      "equipment": "Equipos",
+      "analytics": "Analíticas",
+      "billing": "Facturación",
+      "finances": "Finanzas",
+      "referrals": "Derivaciones",
+      "staff": "Personal",
+      "verifyDocuments": "Verificar Documentos",
+      "settings": "Configuración"
+    },
+
+    "header": {
+      "title": "Panel del Personal de Imagenología",
+      "subtitle": "Órdenes, flujo de escaneo y analíticas extraídas de Supabase",
+      "refresh": "Actualizar"
+    },
+
+    "common": {
+      "refresh": "Actualizar",
+      "export": "Exportar",
+      "exportCSV": "Exportar CSV",
+      "search": "Buscar",
+      "all": "Todos",
+      "allStatuses": "Todos los Estados",
+      "noData": "Aún no hay datos.",
+      "empty": "No hay datos disponibles.",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "add": "Agregar",
+      "actions": "Acciones"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "0%",
+      "zeroCurrency": "$0.00",
+      "zeroHours": "0h"
+    },
+
+    "statuses": {
+      "pending": "Pendiente",
+      "scheduled": "Programado",
+      "inProgress": "En Progreso",
+      "completed": "Completado",
+      "draft": "Borradores",
+      "finalized": "Finalizado",
+      "critical": "Crítico",
+      "cancelled": "Cancelado",
+      "processing": "Procesando"
+    },
+
+    "time": {
+      "last30Days": "Últimos 30 días",
+      "last90Days": "Últimos 90 días",
+      "today": "Hoy",
+      "dateLabels": [
+        "2026-02-19",
+        "2026-02-25",
+        "2026-03-03",
+        "2026-03-09",
+        "2026-03-17"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "Resumen",
+      "analytics": "Analíticas",
+
+      "stats": {
+        "totalOrders": "Órdenes Totales",
+        "pendingScheduled": "Pendientes / Programadas",
+        "inProgress": "En Progreso",
+        "completed": "Completadas"
+      },
+
+      "queue": {
+        "pendingQueue": "Cola de Pendientes",
+        "scheduled": "Programado",
+        "inProgress": "En Progreso",
+        "completed": "Completado",
+        "urgent": "Urgente / STAT",
+        "overdue": "Atrasado (>48h)"
+      },
+
+      "recentOrders": {
+        "title": "Órdenes de Imagenología Recientes",
+        "subtitle": "Últimas derivaciones de imagenología y estado del flujo",
+        "empty": "Aún no hay órdenes de imagenología."
+      },
+
+      "activity": {
+        "title": "Registro de Actividad",
+        "subtitle": "Actualizaciones recientes del flujo",
+        "empty": "No hay actividad reciente."
+      },
+
+      "queueHealth": {
+        "title": "Salud de la Cola",
+        "subtitle": "Instantánea rápida de órdenes recientes",
+        "topModality": "Modalidad Principal",
+        "footer": "Las tendencias completas, tiempos de respuesta, demografía, derivantes y métricas de ingresos están en la pestaña Analíticas."
+      }
+    },
+
+    "analytics": {
+      "title": "Analíticas",
+      "refresh": "Actualizar",
+      "export": "Exportar",
+
+      "metrics": {
+        "totalScans": "Escaneos Totales",
+        "completed": "0 completados",
+        "pending": "0 pendientes",
+        "vsPrev": "0% vs ant",
+
+        "netRevenue": "Ingreso Neto",
+        "revenueDetail": "$0.00 ingresos • $0.00 reembolsos",
+
+        "avgReportTime": "Tiempo Prom. Informe",
+        "avgAcceptTime": "Tiempo prom. aceptación: 0h",
+
+        "opsHealth": "Salud Operativa",
+        "util": "0% util",
+        "backlog": "0 acumulados",
+        "open": "0 abiertos"
+      },
+
+      "charts": {
+        "dailyTrend": "Tendencia Diaria",
+        "trendDesc": "Escaneos e ingresos en el tiempo",
+
+        "modalityMix": "Mezcla de Modalidades",
+        "workflow": "Flujo de Trabajo",
+        "referralStatus": "Estado de Derivación",
+        "topReferrers": "Principales Derivantes",
+        "peakHours": "Horas Pico",
+        "patientDemographics": "Demografía del Paciente",
+        "gender": "Género",
+        "ageBuckets": "Grupos de Edad",
+        "turnaround": "Tiempo de Respuesta por Modalidad",
+        "revenueByModality": "Ingresos por Modalidad",
+
+        "empty": "Aún no hay datos.",
+        "noRevenue": "Aún no hay datos de ingresos por modalidad disponibles."
+      }
+    },
+
+    "workflow": {
+      "title": "Flujo de Escaneo",
+      "subtitle": "Cree órdenes de visita sin cita aquí y gestione escaneos desde la programación hasta la entrega del informe.",
+      "newWalkIn": "Nueva Órden sin Cita",
+      "searchPlaceholder": "Buscar por paciente, número de orden o examen...",
+      "empty": "No se encontraron escaneos"
+    },
+
+    "orderForm": {
+      "title": "Nueva Órden Manual de Imagenología",
+
+      "fields": {
+        "fullName": "Nombre completo *",
+        "phone": "Teléfono *",
+        "email": "Correo electrónico (opcional)",
+        "dob": "Fecha de nacimiento (opcional)",
+        "modality": "Modalidad",
+        "studyName": "Nombre del estudio *",
+        "bodyPart": "Parte del cuerpo (opcional)",
+        "contrast": "Contraste",
+        "priority": "Prioridad",
+        "preferredDate": "Fecha preferida (opcional)",
+        "preferredTime": "Horario preferido (opcional)",
+        "reason": "Motivo (opcional)",
+        "clinicalNotes": "Notas clínicas (opcional)"
+      },
+
+      "placeholders": {
+        "phone": "+1 415 555 2671",
+        "email": "email@ejemplo.com",
+        "dob": "dd/mm/aaaa",
+        "study": "Rayos X de Tórax, RM Cerebral...",
+        "bodyPart": "Tórax, Cerebro, Rodilla...",
+        "time": "ej. 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Notas sobre esta entrada..."
+      },
+
+      "actions": {
+        "cancel": "Cancelar",
+        "submit": "Crear Órden de Imagenología"
+      }
+    },
+
+    "reports": {
+      "search": "Buscar informes...",
+      "allReports": "Todos los Informes",
+      "empty": "No se encontraron informes",
+
+      "columns": {
+        "order": "Órden",
+        "patient": "Paciente",
+        "exam": "Examen",
+        "modality": "Modalidad",
+        "status": "Estado",
+        "radiologist": "Radiólogo",
+        "actions": "Acciones"
+      }
+    },
+
+    "equipment": {
+      "title": "Equipos",
+      "subtitle": "Gestione escáneres y capacidad (sincronizando almacenamiento…)",
+      "search": "Buscar equipos...",
+      "empty": "No se encontraron equipos",
+
+      "columns": {
+        "name": "Nombre",
+        "modality": "Modalidad",
+        "status": "Estado",
+        "capacity": "Capacidad/día"
+      },
+
+      "form": {
+        "title": "Agregar Equipo",
+        "name": "Nombre",
+        "modality": "Modalidad",
+        "status": "Estado",
+        "manufacturer": "Fabricante",
+        "model": "Modelo",
+        "serial": "Número de Serie",
+        "capacity": "Capacidad por día",
+        "scanTypes": "Tipos de escaneo (separados por comas)"
+      }
+    },
+
+    "billing": {
+      "partial": "La vista de facturación está parcialmente poblada",
+      "warning": "Algunas tablas pueden no estar disponibles en su esquema o permisos actuales.",
+
+      "metrics": {
+        "processedRevenue": "Ingresos Procesados",
+        "transactions": "Transacciones",
+        "averageTicket": "Ticket Promedio",
+        "collectionRate": "Tasa de Recaudación",
+        "outstanding": "Facturas Pendientes",
+        "holds": "Retenciones de Pago",
+        "subscriptions": "Suscripciones Activas",
+        "risk": "Riesgo / Fugas"
+      },
+
+      "charts": {
+        "revenueTrend": "Tendencia de Ingresos",
+        "statusMix": "Mezcla de Estados de Transacción",
+        "types": "Tipos de Transacción",
+        "invoiceStatus": "Estado de Facturas",
+        "plans": "Planes de Suscripción",
+        "methods": "Métodos de Pago",
+        "providers": "Proveedores / Pasarelas",
+        "recent": "Transacciones Recientes",
+        "success": "Éxito Diario de Transacciones",
+        "revenueType": "Mezcla de Tipos de Ingresos"
+      }
+    },
+
+    "verify": {
+      "title": "Verificación de Documentos",
+      "input": "Ingrese o Escanee el Código de Verificación",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verificar",
+      "scan": "Escanear Código QR en su lugar"
+    }
+  }
+}
