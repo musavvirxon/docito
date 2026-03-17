@@ -1,0 +1,263 @@
+{
+  "pharmacyDashboard": {
+    "menu": {
+      "overview": "概览",
+      "prescriptions": "处方管理",
+      "fulfillment": "订单履约",
+      "inventory": "库存管理",
+      "deliveries": "配送管理",
+      "referrals": "转诊建议",
+      "analytics": "数据分析",
+      "billingClaims": "账单 / 理赔",
+      "finances": "财务报表",
+      "staff": "员工管理",
+      "verifyDocuments": "文件审核",
+      "settings": "系统设置"
+    },
+
+    "header": {
+      "title": "药房管理控制台",
+      "subtitle": "处方、履约、分析及账单数据同步自 Supabase",
+      "refresh": "刷新数据"
+    },
+
+    "overview": {
+      "prescriptionsToday": "今日处方数",
+      "pendingFulfillment": "待履约订单",
+      "deliveriesInProgress": "配送中订单",
+      "completedToday": "今日已完成"
+    },
+
+    "prescriptions": {
+      "title": "处方收件箱",
+      "subtitle": "药房的新处方及待处理处方。",
+      "inbox": "处方收件箱",
+      "manage": "管理收到的处方及手工录入的处方",
+      "new": "0 条新记录",
+      "inReview": "0 条审核中",
+      "newManual": "新增手工处方",
+      "search": "按 ID、处方号、患者姓名/电话搜索...",
+      "table": {
+        "rx": "处方号",
+        "patient": "患者",
+        "doctor": "医生",
+        "items": "药品项",
+        "status": "状态",
+        "refills": "重配次数",
+        "date": "日期",
+        "actions": "操作"
+      },
+      "empty": "未查找到处方记录"
+    },
+
+    "manualPrescription": {
+      "title": "新建手工处方",
+      "patient": "患者 (线下/散客)",
+      "fields": {
+        "name": "患者姓名 *",
+        "fullName": "全名",
+        "phone": "电话 *",
+        "email": "邮箱 (选填)",
+        "doctorId": "医生 ID (选填)",
+        "refills": "总重配次数",
+        "notes": "备注 (选填)"
+      },
+      "placeholders": {
+        "phone": "+86 138 0000 0000",
+        "email": "email@example.com",
+        "doctorId": "医生 UUID (选填)"
+      },
+      "medications": {
+        "title": "药品信息",
+        "addItem": "添加药品",
+        "item": "项目 #1",
+        "name": "药品名称 *",
+        "code": "药品代码 (选填)",
+        "dosage": "剂量 *",
+        "frequency": "频次 *",
+        "quantity": "数量 *",
+        "unit": "单位 (选填)",
+        "instructions": "用法说明 (选填)"
+      },
+      "actions": {
+        "cancel": "取消",
+        "create": "创建处方"
+      }
+    },
+
+    "fulfillment": {
+      "title": "履约队列",
+      "subtitle": "处方履约订单的全流程处理队列",
+      "refresh": "刷新订单",
+
+      "stats": {
+        "activeQueue": "活跃队列",
+        "pendingProcessingReady": "0 待处理 • 0 处理中 • 0 已就绪",
+        "overdue": "逾期 / 高风险",
+        "urgentHigh": "0 紧急 • 0 高优先级",
+        "queueValue": "队列总价值",
+        "avgOrder": "平均客单价 ¥0.00",
+        "insuranceCopay": "保险 / 自付额",
+        "copay": "自付部分 ¥0.00",
+        "avgCycle": "平均履约周期",
+        "readyPickup": "待取药",
+        "deliveryQueue": "配送队列",
+        "completedOrders": "已完成订单"
+      },
+
+      "charts": {
+        "throughput": "队列吞吐趋势",
+        "throughputDesc": "订单流入与完成情况 (过去 14 个活动日)",
+        "statusMix": "状态占比",
+        "priority": "优先级分布",
+        "pickupPayment": "取药与支付方式占比",
+        "emptyThroughput": "暂无吞吐数据。",
+        "emptyOrders": "暂无订单。",
+        "noPickup": "暂无取药数据。",
+        "noPayment": "暂无支付数据。"
+      },
+
+      "table": {
+        "title": "队列订单",
+        "search": "搜索订单号、状态、药品、处方...",
+        "filters": {
+          "status": "所有状态",
+          "priority": "所有优先级",
+          "pickup": "所有取药方式"
+        },
+        "columns": {
+          "order": "订单",
+          "priority": "优先级",
+          "route": "路径",
+          "status": "状态",
+          "payment": "支付",
+          "amounts": "金额",
+          "eta": "预计时长 / 耗时",
+          "prescription": "对应处方",
+          "actions": "操作"
+        },
+        "empty": "没有匹配当前筛选条件的订单",
+        "footer": "履约队列中显示 0 / 0 个订单。"
+      }
+    },
+
+    "inventory": {
+      "title": "库存管理",
+      "subtitle": "库存控制、效期监控及药房供应数据分析",
+
+      "stats": {
+        "skus": "SKU 种类",
+        "stockRisk": "缺货风险",
+        "retailValue": "库存零售总值",
+        "costBasis": "成本底价 ¥0.00",
+        "expiryRisk": "效期风险",
+        "grossMargin": "潜在毛利",
+        "availableReserved": "可用 / 已锁定",
+        "controlled": "受管制药物",
+        "refrigerated": "冷链药品"
+      },
+
+      "charts": {
+        "health": "库存健康度",
+        "topValue": "高价值库存排行",
+        "expiry": "效期分布",
+        "manufacturer": "生产厂商分布",
+        "empty": "暂无库存数据。"
+      },
+
+      "table": {
+        "title": "库存台账",
+        "search": "搜索药品、代码、NDC、批次...",
+        "filters": {
+          "inventory": "所有库存",
+          "manufacturer": "所有厂商",
+          "sort": "排序: 风险"
+        },
+        "columns": {
+          "medication": "药品",
+          "manufacturer": "厂商",
+          "stock": "库存量",
+          "pricing": "价格",
+          "value": "总值",
+          "expiry": "有效期",
+          "flags": "标记",
+          "actions": "操作"
+        },
+        "empty": "暂无库存记录",
+        "footer": "库存统计: 0 个 SKU，0 个在库单位，预计零售总值 ¥0.00。"
+      }
+    },
+
+    "deliveries": {
+      "title": "配送订单",
+      "search": "按订单号或地址搜索...",
+      "columns": {
+        "order": "订单号 #",
+        "address": "配送地址",
+        "status": "状态",
+        "amount": "金额",
+        "ready": "预计就绪",
+        "created": "创建时间",
+        "actions": "操作"
+      },
+      "empty": "未找到配送订单"
+    },
+
+    "analytics": {
+      "title": "分析仪表盘",
+      "subtitle": "涵盖履约、处方、支付及库存的全流程药房数据分析",
+
+      "metrics": {
+        "revenue": "营收 (30天)",
+        "orders": "履约订单数",
+        "fillRate": "缺货填补率",
+        "avgOrder": "平均订单价值",
+        "prepTime": "配药时间 (均值 / P90)",
+        "pickupTime": "取药时间 (均值 / P90)",
+        "inventoryRisk": "库存风险指标",
+        "inventoryValue": "当前库存总值"
+      },
+
+      "charts": {
+        "trend": "营收与订单趋势",
+        "statusMix": "履约状态分布",
+        "topMeds": "药品销售排行",
+        "payments": "支付与取药方式",
+        "inventory": "库存健康情况",
+        "expiry": "效期分布情况",
+        "value": "高价值库存与厂商分析",
+        "alerts": "运营预警",
+        "snapshot": "数据快照"
+      }
+    },
+
+    "billing": {
+      "title": "账单与保险理赔",
+      "subtitle": "药房履约订单的理赔代理，包含保险及自付金额明细。",
+
+      "metrics": {
+        "claimable": "可理赔订单",
+        "pipeline": "理赔处理中",
+        "approved": "已批准 / 已结清",
+        "approvalRate": "批准率",
+        "totalClaimed": "申请理赔总额",
+        "copay": "患者自付总额",
+        "outstanding": "待收金额",
+        "rejected": "拒付金额"
+      },
+
+      "charts": {
+        "trend": "理赔趋势",
+        "statusMix": "状态占比",
+        "amounts": "金额构成分析",
+        "largest": "大额理赔单"
+      },
+
+      "table": {
+        "title": "理赔台账",
+        "search": "搜索订单、理赔单、保单、状态...",
+        "empty": "没有匹配当前筛选条件的理赔记录。"
+      }
+    }
+  }
+}
