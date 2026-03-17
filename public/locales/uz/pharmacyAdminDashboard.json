@@ -1,0 +1,263 @@
+{
+  "pharmacyDashboard": {
+    "menu": {
+      "overview": "Umumiy ko'rinish",
+      "prescriptions": "Retseptlar",
+      "fulfillment": "Bajarilish",
+      "inventory": "Inventarizatsiya",
+      "deliveries": "Yetkazib berish",
+      "referrals": "Yo'llanmalar",
+      "analytics": "Tahlil",
+      "billingClaims": "Hisob-kitob / Da'volar",
+      "finances": "Moliya",
+      "staff": "Xodimlar",
+      "verifyDocuments": "Hujjatlarni tasdiqlash",
+      "settings": "Sozlamalar"
+    },
+
+    "header": {
+      "title": "Dorixona paneli",
+      "subtitle": "Supabase'dan olingan retseptlar, bajarilish, tahlil va hisob-kitoblar",
+      "refresh": "Yangilash"
+    },
+
+    "overview": {
+      "prescriptionsToday": "Bugungi retseptlar",
+      "pendingFulfillment": "Kutilayotgan bajarilish",
+      "deliveriesInProgress": "Jarayondagi yetkazmalar",
+      "completedToday": "Bugun yakunlangan"
+    },
+
+    "prescriptions": {
+      "title": "Retseptlar qutisi",
+      "subtitle": "Dorixonangiz uchun yangi va kutilayotgan retseptlar.",
+      "inbox": "Retseptlar kirish qutisi",
+      "manage": "Kiruvchi va qo'lda kiritilgan retseptlarni boshqarish",
+      "new": "0 Yangi",
+      "inReview": "0 Ko'rib chiqilmoqda",
+      "newManual": "Yangi qo'lda Rx",
+      "search": "ID, retsept raqami, bemor ismi/telefoni orqali qidirish...",
+      "table": {
+        "rx": "Rx",
+        "patient": "Bemor",
+        "doctor": "Shifokor",
+        "items": "Mahsulotlar",
+        "status": "Holat",
+        "refills": "Qayta to'ldirish",
+        "date": "Sana",
+        "actions": "Harakatlar"
+      },
+      "empty": "Retseptlar topilmadi"
+    },
+
+    "manualPrescription": {
+      "title": "Yangi qo'lda kiritilgan retsept",
+      "patient": "Bemor (Kelgan)",
+      "fields": {
+        "name": "Mijoz ismi *",
+        "fullName": "To'liq ism",
+        "phone": "Telefon *",
+        "email": "Email (ixtiyoriy)",
+        "doctorId": "Shifokor ID (ixtiyoriy)",
+        "refills": "Jami qayta to'ldirish",
+        "notes": "Eslatmalar (ixtiyoriy)"
+      },
+      "placeholders": {
+        "phone": "+998 90 123 45 67",
+        "email": "email@misol.uz",
+        "doctorId": "shifokor UUID (ixtiyoriy)"
+      },
+      "medications": {
+        "title": "Dori-darmonlar",
+        "addItem": "Mahsulot qo'shish",
+        "item": "Mahsulot №1",
+        "name": "Dori nomi *",
+        "code": "Dori kodi (ixtiyoriy)",
+        "dosage": "Dozalash *",
+        "frequency": "Chastotasi *",
+        "quantity": "Miqdori *",
+        "unit": "Birlik (ixtiyoriy)",
+        "instructions": "Ko'rsatmalar (ixtiyoriy)"
+      },
+      "actions": {
+        "cancel": "Bekor qilish",
+        "create": "Retsept yaratish"
+      }
+    },
+
+    "fulfillment": {
+      "title": "Bajarilish navbati",
+      "subtitle": "Retseptlarni bajarish buyurtmalari uchun to'liq ishlov berish navbati",
+      "refresh": "Buyurtmalarni yangilash",
+
+      "stats": {
+        "activeQueue": "Faol navbat",
+        "pendingProcessingReady": "0 kutilmoqda • 0 jarayonda • 0 tayyor",
+        "overdue": "Muddati o'tgan / Xavf ostida",
+        "urgentHigh": "0 shoshilinch • 0 yuqori ustuvorlik",
+        "queueValue": "Navbat qiymati",
+        "avgOrder": "O'rtacha buyurtma $0.00",
+        "insuranceCopay": "Sug'urta / Birgalikda to'lov",
+        "copay": "Mijoz to'lovi $0.00",
+        "avgCycle": "O'rtacha bajarilish sikli",
+        "readyPickup": "Olib ketishga tayyor",
+        "deliveryQueue": "Yetkazib berish navbati",
+        "completedOrders": "Yakunlangan buyurtmalar"
+      },
+
+      "charts": {
+        "throughput": "Navbat o'tkazuvchanlik tendensiyasi",
+        "throughputDesc": "Kiruvchi va yakunlangan buyurtmalar (oxirgi 14 kunlik faoliyat)",
+        "statusMix": "Holatlar tarkibi",
+        "priority": "Ustuvorlik taqsimoti",
+        "pickupPayment": "Olish va to'lov usullari",
+        "emptyThroughput": "Hozircha ma'lumot yo'q.",
+        "emptyOrders": "Buyurtmalar mavjud emas.",
+        "noPickup": "Olish haqida ma'lumot yo'q.",
+        "noPayment": "To'lov haqida ma'lumot yo'q."
+      },
+
+      "table": {
+        "title": "Navbatdagi buyurtmalar",
+        "search": "Buyurtma #, holat, dori, retsept bo'yicha qidirish...",
+        "filters": {
+          "status": "Barcha holatlar",
+          "priority": "Barcha ustuvorliklar",
+          "pickup": "Barcha turlar"
+        },
+        "columns": {
+          "order": "Buyurtma",
+          "priority": "Ustuvorlik",
+          "route": "Yo'nalish",
+          "status": "Holat",
+          "payment": "To'lov",
+          "amounts": "Summalar",
+          "eta": "Kutilish vaqti / Yoshi",
+          "prescription": "Retsept",
+          "actions": "Harakatlar"
+        },
+        "empty": "Filtrga mos buyurtmalar topilmadi",
+        "footer": "Bajarilish navbatida 0 tadan 0 ta buyurtma ko'rsatilmoqda."
+      }
+    },
+
+    "inventory": {
+      "title": "Omborni boshqarish",
+      "subtitle": "Zaxiralarni nazorat qilish, holat monitoringi va dorixona ta'minoti tahlili",
+
+      "stats": {
+        "skus": "SKU (tovarlar)",
+        "stockRisk": "Zaxira xavfi",
+        "retailValue": "Zaxiraning chakana qiymati",
+        "costBasis": "Tannarxi $0.00",
+        "expiryRisk": "Muddati o'tish xavfi",
+        "grossMargin": "Potensial yalpi foyda",
+        "availableReserved": "Mavjud / Band qilingan",
+        "controlled": "Nazorat qilinadigan dori vositalari",
+        "refrigerated": "Muzlatkichdagi mahsulotlar"
+      },
+
+      "charts": {
+        "health": "Zaxira holati",
+        "topValue": "Chakana qiymati bo'yicha top mahsulotlar",
+        "expiry": "Yaroqlilik muddati taqsimoti",
+        "manufacturer": "Ishlab chiqaruvchilar qamrovi",
+        "empty": "Hozircha inventar ma'lumotlari yo'q."
+      },
+
+      "table": {
+        "title": "Inventar daftari",
+        "search": "Dori, kod, NDC, partiya orqali qidirish...",
+        "filters": {
+          "inventory": "Barcha zaxiralar",
+          "manufacturer": "Barcha ishlab chiqaruvchilar",
+          "sort": "Saralash: Xavf bo'yicha"
+        },
+        "columns": {
+          "medication": "Dori vositasi",
+          "manufacturer": "Ishlab chiqaruvchi",
+          "stock": "Zaxira",
+          "pricing": "Narxlash",
+          "value": "Qiymati",
+          "expiry": "Yaroqlilik muddati",
+          "flags": "Belgilar",
+          "actions": "Harakatlar"
+        },
+        "empty": "Hozircha inventar mahsulotlari yo'q",
+        "footer": "Jami zaxira: 0 SKU, 0 dona mavjud, taxminiy chakana qiymati $0.00."
+      }
+    },
+
+    "deliveries": {
+      "title": "Yetkazib berish buyurtmalari",
+      "search": "Buyurtma # yoki manzil bo'yicha qidirish...",
+      "columns": {
+        "order": "Buyurtma #",
+        "address": "Yetkazish manzili",
+        "status": "Holat",
+        "amount": "Summa",
+        "ready": "Tayyor bo'lish vaqti",
+        "created": "Yaratilgan",
+        "actions": "Harakatlar"
+      },
+      "empty": "Yetkazib berish buyurtmalari topilmadi"
+    },
+
+    "analytics": {
+      "title": "Tahlil paneli",
+      "subtitle": "Bajarilish, retseptlar, to'lovlar va inventar bo'yicha to'liq dorixona tahlili",
+
+      "metrics": {
+        "revenue": "Tushum (30 kun)",
+        "orders": "Bajarilgan buyurtmalar",
+        "fillRate": "To'ldirish ko'rsatkichi",
+        "avgOrder": "O'rtacha buyurtma qiymati",
+        "prepTime": "Tayyorlash vaqti (o'rtacha / P90)",
+        "pickupTime": "Olib ketish vaqti (o'rtacha / P90)",
+        "inventoryRisk": "Zaxira xavfi",
+        "inventoryValue": "Joriy zaxira qiymati"
+      },
+
+      "charts": {
+        "trend": "Tushum va buyurtmalar tendensiyasi",
+        "statusMix": "Bajarilish holati tarkibi",
+        "topMeds": "Top dori vositalari",
+        "payments": "To'lov va olish usullari",
+        "inventory": "Zaxira holati",
+        "expiry": "Yaroqlilik muddati taqsimoti",
+        "value": "Top qiymatli zaxira va ishlab chiqaruvchilar",
+        "alerts": "Operatsion ogohlantirishlar",
+        "snapshot": "Tezkor ko'rinish"
+      }
+    },
+
+    "billing": {
+      "title": "Hisob-kitob va sug'urta da'volari",
+      "subtitle": "Dorixona buyurtmalaridan sug'urta/to'lov summalari bilan olingan da'volar.",
+
+      "metrics": {
+        "claimable": "Talab qilinadigan buyurtmalar",
+        "pipeline": "Jarayonda",
+        "approved": "Tasdiqlangan / To'langan",
+        "approvalRate": "Tasdiqlash ko'rsatkichi",
+        "totalClaimed": "Jami talab qilingan",
+        "copay": "Bemor to'lovi",
+        "outstanding": "Qolgan qarz",
+        "rejected": "Rad etilgan summa"
+      },
+
+      "charts": {
+        "trend": "Da'volar tendensiyasi",
+        "statusMix": "Holatlar tarkibi",
+        "amounts": "Summalar taqsimoti",
+        "largest": "Eng yirik da'volar"
+      },
+
+      "table": {
+        "title": "Da'volar daftari",
+        "search": "Buyurtma, da'vo, sug'urta, holat bo'yicha qidirish...",
+        "empty": "Joriy filtrlar bo'yicha da'volar topilmadi."
+      }
+    }
+  }
+}
