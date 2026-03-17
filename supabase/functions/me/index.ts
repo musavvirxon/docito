@@ -71,13 +71,21 @@ serve(async (req) => {
     auth: { persistSession: false },
   });
 
-  const { data: userRes, error: userErr } = await authed.auth.getUser();
-  if (userErr || !userRes?.user) return json({ ok: false, error: "Unauthorized" }, 401);
+  // Use getClaims() for fast local JWT validation instead of getUser() network call
+  const token = authHeader.replace(/^Bearer\s+/i, "");
+  const { data: claimsData, error: claimsErr } = await authed.auth.getClaims(token);
+  if (claimsErr || !claimsData?.claims) return json({ ok: false, error: "Unauthorized" }, 401);
 
-  const u = userRes.user;
-  const userId = u.id;
-  const email = u.email ?? null;
-  const meta = (u.user_metadata || {}) as Record<string, unknown>;
+  const claims = claimsData.claims as Record<string, unknown>;
+  const userId = claims.sub as string;
+  const email = (claims.email as string) ?? null;
+
+  // Fetch full user metadata via getUser for profile enrichment (non-blocking fallback)
+  let meta: Record<string, unknown> = {};
+  try {
+    const { data: userRes } = await authed.auth.getUser();
+    if (userRes?.user) meta = (userRes.user.user_metadata || {}) as Record<string, unknown>;
+  } catch { /* proceed with claims only */ }
 
   const admin = createClient(env.url, env.service, {
     auth: { persistSession: false },
