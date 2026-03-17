@@ -1,52 +1,76 @@
 {
-  "account": "Account",
-  "back": "Back",
-  "signOut": "Sign out",
-  "settings": "Settings",
-  "billing": "Billing",
-  "analytics": "Analytics",
-  "profile": "Profile",
-  "updatePersonalInfo": "Update your personal information.",
-  "labName": "Lab name",
-  "email": "Email",
-  "phone": "Phone",
-  "saveProfile": "Save profile",
-  "security": "Security",
-  "changePassword": "Change your password.",
-  "newPassword": "New password",
-  "confirmPassword": "Confirm password",
-  "updatePassword": "Update password",
-  "passwordTip": "Tip: use a password manager and avoid reusing passwords.",
-  "appPreferences": "App preferences synced to your account.",
-  "refresh": "Refresh",
-  "appearanceAccessibility": "Appearance & accessibility",
-  "highPerformancePrefs": "High-performance preferences stored in Supabase.",
-  "theme": "Theme",
-  "system": "System",
-  "reduceMotion": "Reduce motion",
-  "minimizeAnimations": "Minimize animations and transitions",
-  "timezone": "Timezone",
-  "calendarTimes": "Calendar times will display in this timezone. Browser:",
-  "useBrowser": "Use browser",
-  "language": "Language",
-  "paymentMethodsHistory": "Your payment methods and invoice history.",
-  "totalPaid": "Total Paid",
-  "totalDue": "Total Due",
-  "overdue": "Overdue",
-  "paymentMethods": "Payment methods",
-  "noSavedPaymentMethods": "No saved payment methods yet.",
-  "paymentMethodManagement": "Payment method management is available during checkout/payment flows.",
-  "invoices": "Invoices",
-  "noInvoicesYet": "No invoices yet.",
-  "lightweightSnapshot": "A lightweight snapshot for the last 30 days.",
-  "appointments": "Appointments",
-  "upcoming": "Upcoming",
-  "completed": "Completed",
-  "total": "Total",
-  "paid": "Paid",
-  "payments": "Payments",
-  "totalPaidAmount": "Total paid amount in window",
-  "providerView": "Provider view",
-  "notADoctor": "Not a doctor",
-  "providerAnalyticsLink": "Your provider analytics will appear here if your account is linked to a doctor profile."
+  "profile": {
+    "account": "Account",
+    "back": "Back",
+    "signOut": "Sign out",
+
+    "menu": {
+      "settings": "Settings",
+      "billing": "Billing",
+      "analytics": "Analytics"
+    },
+
+    "profileSection": {
+      "title": "Profile",
+      "description": "Update your personal information.",
+      "labName": "Lab name",
+      "email": "Email",
+      "phone": "Phone",
+      "save": "Save profile"
+    },
+
+    "security": {
+      "title": "Security",
+      "description": "Change your password.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "update": "Update password",
+      "tip": "Tip: use a password manager and avoid reusing passwords."
+    },
+
+    "settings": {
+      "title": "Settings",
+      "refresh": "Refresh",
+      "appearance": "Appearance & accessibility",
+      "performance": "High-performance preferences stored in Supabase.",
+      "theme": "Theme",
+      "system": "System",
+      "reduceMotion": "Reduce motion",
+      "reduceMotionDesc": "Minimize animations and transitions",
+      "timezone": "Timezone",
+      "calendar": "Calendar times will display in this timezone.",
+      "browser": "Browser",
+      "useBrowser": "Use browser",
+      "language": "Language"
+    },
+
+    "billing": {
+      "title": "Billing",
+      "description": "Your payment methods and invoice history.",
+      "totalPaid": "Total Paid",
+      "totalDue": "Total Due",
+      "overdue": "Overdue",
+      "paymentMethods": "Payment methods",
+      "noPayment": "No saved payment methods yet.",
+      "paymentNote": "Payment method management is available during checkout/payment flows.",
+      "invoices": "Invoices",
+      "noInvoices": "No invoices yet."
+    },
+
+    "analytics": {
+      "title": "Analytics",
+      "description": "A lightweight snapshot for the last 30 days.",
+      "appointments": "Appointments",
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "invoices": "Invoices",
+      "total": "Total",
+      "paid": "Paid",
+      "payments": "Payments",
+      "totalPaidAmount": "Total paid amount in window",
+      "providerView": "Provider view",
+      "notDoctor": "Not a doctor",
+      "providerNote": "Your provider analytics will appear here if your account is linked to a doctor profile."
+    }
+  }
 }
