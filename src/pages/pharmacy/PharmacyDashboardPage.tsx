@@ -274,11 +274,11 @@ export default function PharmacyDashboardPage() {
         <div className="pt-16 flex items-center justify-center min-h-[calc(100vh-64px)] bg-background">
           <EmptyState
             icon={<Pill className="h-12 w-12" />}
-            title="Sign in required"
-            description="Please sign in to access the pharmacy dashboard."
+            title={t("pharmacyDashboard.header.signInRequired", "Sign in required")}
+            description={t("pharmacyDashboard.header.signInDescription", "Please sign in to access the pharmacy dashboard.")}
             action={
               <button onClick={() => navigate("/auth")} className="text-primary underline">
-                Sign In
+                {t("pharmacyDashboard.header.signIn", "Sign In")}
               </button>
             }
           />
