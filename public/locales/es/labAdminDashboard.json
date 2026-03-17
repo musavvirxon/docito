@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Resumen",
+      "orders": "Pedidos",
+      "homeCollection": "Recolección a Domicilio",
+      "samples": "Muestras",
+      "analytics": "Analíticas",
+      "billingInsurance": "Facturación / Seguro",
+      "finances": "Finanzas",
+      "referrals": "Referidos",
+      "staff": "Personal",
+      "verifyDocuments": "Verificar Documentos",
+      "settings": "Configuración"
+    },
+    "header": {
+      "title": "Panel del Laboratorio",
+      "subtitle": "Pedidos, flujo de trabajo, resultados y analíticas de Supabase",
+      "refresh": "Actualizar"
+    },
+    "overview": {
+      "title": "Resumen",
+      "analytics": "Analíticas",
+      "totalOrders": "Pedidos Totales",
+      "pending": "Pendiente",
+      "inProgress": "En curso",
+      "completed": "Completado",
+      "pendingQueue": "Cola Pendiente",
+      "inProgressQueue": "En curso",
+      "completedRecent": "Completado (reciente)",
+      "urgent": "Urgente / STAT",
+      "overdue": "Atrasado (>48h)",
+      "recentOrders": {
+        "title": "Pedidos Recientes",
+        "subtitle": "Últimos pedidos y estado del flujo",
+        "empty": "No hay pedidos todavía."
+      },
+      "activity": {
+        "title": "Flujo de Actividad",
+        "subtitle": "Actualizaciones recientes del flujo",
+        "empty": "No hay actividad reciente."
+      },
+      "queueHealth": {
+        "title": "Estado de la Cola",
+        "subtitle": "Instantánea operativa de pedidos recientes",
+        "pending": "Pendiente",
+        "inProgress": "En curso",
+        "completed": "Completado",
+        "urgent": "Urgente / STAT",
+        "overdue": "Atrasado (>48h)",
+        "footer": "Métricas de SLA y tendencias completas disponibles en la pestaña Analíticas."
+      }
+    },
+    "orders": {
+      "search": "Buscar por pedido #, nombre o teléfono...",
+      "statuses": "Todos los Estados",
+      "newOrder": "Nuevo pedido manual",
+      "testOrders": "Pedidos de Prueba",
+      "empty": "No se encontraron pedidos",
+      "details": {
+        "title": "Detalles del Pedido",
+        "select": "Seleccione un pedido para ver detalles"
+      },
+      "statusList": {
+        "completed": "completado",
+        "cancelled": "cancelado",
+        "pending": "pendiente",
+        "scheduled": "programado",
+        "processing": "procesando",
+        "sampleCollected": "muestra recolectada"
+      }
+    },
+    "collections": {
+      "today": "Recolecciones de Hoy",
+      "pendingAssignment": "Asignación Pendiente",
+      "inTransit": "En Tránsito",
+      "completedToday": "Completado Hoy",
+      "title": "Recolección de Muestras a Domicilio",
+      "subtitle": "Gestione horarios de recogida y asignaciones de personal",
+      "search": "Buscar por paciente o dirección...",
+      "allStatus": "Todos los Estados",
+      "table": {
+        "patient": "Paciente",
+        "address": "Dirección",
+        "scheduled": "Programado",
+        "collector": "Recolector",
+        "status": "Estado",
+        "actions": "Acciones",
+        "empty": "No se encontraron recolecciones"
+      },
+      "stats": {
+        "pending": "Pendiente",
+        "collected": "Recolectado",
+        "processing": "Procesando",
+        "completed": "Completado"
+      }
+    },
+    "samples": {
+      "title": "Gestión de Muestras",
+      "subtitle": "Rastree muestras desde la recolección hasta los resultados",
+      "search": "Buscar por ID de muestra, código de barras o paciente...",
+      "allStatus": "Todos los Estados",
+      "table": {
+        "sample": "Muestra",
+        "patient": "Paciente",
+        "type": "Tipo",
+        "barcode": "Código de Barras",
+        "status": "Estado",
+        "actions": "Acciones",
+        "empty": "No se encontraron muestras"
+      }
+    },
+    "analytics": {
+      "title": "Panel de Analíticas",
+      "subtitle": "Analíticas operativas sobre pedidos, pruebas y rendimiento del catálogo",
+      "last30days": "Últimos 30 días",
+      "refresh": "Actualizar",
+      "metrics": {
+        "orders": "Pedidos (30d)",
+        "vsPrevious": "+0.0% vs periodo anterior",
+        "completionRate": "Tasa de Finalización",
+        "completionDetails": "0 completados • 0 pendientes",
+        "testVolume": "Volumen de Pruebas",
+        "testsPerOrder": "0.0 pruebas / pedido",
+        "revenue": "Ingresos (30d)",
+        "turnaround": "Tiempo de respuesta (prom / P90)",
+        "turnaroundDesc": "Creación → Finalización",
+        "resultVerification": "Verificación de Resultados",
+        "verificationDetails": "0 verificados • 0 pendientes",
+        "abnormalResults": "Resultados Anormales",
+        "abnormalDetails": "0 de 0 resultados",
+        "incomingReferrals": "Referidos Entrantes"
+      },
+      "charts": {
+        "ordersTrend": "Tendencia de Pedidos, Pruebas y Resultados",
+        "throughput": "Rendimiento diario del laboratorio en el periodo",
+        "orderStatusMix": "Mix de Estado de Pedidos",
+        "statusDistribution": "Distribución por estado de pruebas",
+        "noOrders": "No hay pedidos en este periodo.",
+        "topTests": "Pruebas Principales",
+        "noTests": "No se encontraron pruebas en este periodo.",
+        "operationalMix": "Mix Operativo",
+        "priorityMix": "Mix de Prioridad",
+        "noPriority": "Sin datos de prioridad",
+        "paymentStatus": "Estado de Pago",
+        "testCategories": "Categorías de Prueba"
+      },
+      "quality": {
+        "title": "Tiempo y Calidad",
+        "sla": "SLA e indicadores de calidad",
+        "orderTat": "TAT de Pedido prom / P90",
+        "resultTat": "TAT de Resultado prom / P90",
+        "sampleTat": "Recolección prom / P90",
+        "slaBreaches": "Incumplimientos de SLA",
+        "performed": "Resultados realizados",
+        "verified": "Resultados verificados",
+        "pending": "Pendientes de verificación",
+        "abnormal": "Resultados anormales"
+      },
+      "referrals": {
+        "title": "Embudo de Referidos",
+        "subtitle": "Pipeline de referidos entrantes",
+        "received": "Recibidos",
+        "active": "Aceptados / Activos",
+        "completed": "Completados",
+        "completionRate": "Tasa de Finalización",
+        "status": "Estado de Referido"
+      },
+      "catalog": {
+        "title": "Cobertura del Catálogo",
+        "subtitle": "Amplitud y preparación del catálogo de pruebas",
+        "total": "Total Catálogo",
+        "active": "Pruebas Activas",
+        "local": "Pruebas Locales",
+        "categories": "Categorías"
+      },
+      "snapshot": {
+        "title": "Instantánea del Periodo",
+        "avgOrderValue": "Valor prom. pedido",
+        "inProgress": "Pedidos en curso",
+        "cancelled": "Pedidos cancelados",
+        "overdue": "Pedidos atrasados (>48h)"
+      },
+      "alerts": {
+        "title": "Alertas Operativas",
+        "subtitle": "Ítems que requieren atención en el flujo de trabajo",
+        "empty": "No hay alertas activas."
+      }
+    },
+    "billing": {
+      "title": "Facturación y Seguro",
+      "subtitle": "Transacciones en vivo y pedidos cubiertos por seguros.",
+      "refresh": "Actualizar",
+      "grossRevenue": "Ingresos Brutos",
+      "refunds": "Reembolsos",
+      "netRevenue": "Ingresos Netos",
+      "completedTransactions": "0 transacciones completadas",
+      "tabs": {
+        "transactions": "Transacciones",
+        "insurance": "Pedidos de Seguro"
+      },
+      "search": "Buscar por estado, tipo, descripción...",
+      "table": {
+        "date": "Fecha",
+        "type": "Tipo",
+        "status": "Estado",
+        "description": "Descripción",
+        "amount": "Monto",
+        "empty": "No se encontraron transacciones"
+      }
+    },
+    "finances": {
+      "title": "Finanzas",
+      "subtitle": "Gestione ingresos, gastos, nómina y exportaciones.",
+      "staffCompensation": {
+        "title": "Compensación del Personal",
+        "addProfile": "Añadir Perfil",
+        "empty": "No hay perfiles de compensación aún."
+      },
+      "export": {
+        "title": "Exportar entradas financieras",
+        "description": "Descargue su libro mayor en CSV para contabilidad o auditoría.",
+        "from": "Desde",
+        "to": "Hasta",
+        "type": "Tipo",
+        "category": "Categoría",
+        "all": "Todo",
+        "export": "Exportar CSV",
+        "tip": "Consejo: exporte rangos mensuales para su contador."
+      },
+      "recurring": {
+        "title": "Recurrente",
+        "subtitle": "Automatice entradas repetitivas (renta, impuestos, suscripciones).",
+        "addRule": "Añadir regla",
+        "status": "Estado",
+        "noRuns": "Sin ejecuciones previas",
+        "runDue": "Ejecutar reglas vencidas",
+        "asOf": "A partir de",
+        "runNow": "Ejecutar ahora",
+        "description": "Crea entradas para todas las reglas con fecha de ejecución vencida.",
+        "noRules": "No hay reglas recurrentes aún."
+      },
+      "categories": {
+        "title": "Categorías",
+        "subtitle": "Cree categorías como Suministros, Impuestos, Salarios.",
+        "name": "Nombre",
+        "color": "Color (opcional)",
+        "add": "Añadir",
+        "empty": "No hay categorías aún.",
+        "tip": "Consejo: use nombres consistentes para reportes limpios."
+      },
+      "ledger": {
+        "title": "Libro Mayor",
+        "subtitle": "Añada y gestione ingresos, gastos y nómina.",
+        "entries": "Entradas",
+        "income": "Ingresos",
+        "expenses": "Gastos",
+        "net": "Neto",
+        "addEntry": "Añadir entrada",
+        "manual": "Manual",
+        "date": "Fecha",
+        "type": "Tipo",
+        "currency": "Moneda",
+        "amount": "Monto",
+        "reference": "Referencia (opcional)",
+        "description": "Descripción (opcional)",
+        "empty": "No se encontraron entradas.",
+        "note": "Nota: muestra hasta 200 entradas por filtro."
+      },
+      "compensationModal": {
+        "title": "Añadir Perfil de Compensación",
+        "staff": "Miembro del Personal",
+        "select": "Seleccionar miembro…",
+        "type": "Tipo de Compensación",
+        "salary": "Salario Fijo",
+        "amount": "Monto ($)",
+        "period": "Periodo",
+        "monthly": "Mensual",
+        "frequency": "Frecuencia de Pago",
+        "notes": "Notas (opcional)",
+        "cancel": "Cancelar",
+        "save": "Guardar"
+      }
+    },
+    "referrals": {
+      "title": "Referidos",
+      "new": "Nuevo Referido",
+      "incoming": {
+        "title": "Referidos Entrantes",
+        "subtitle": "Referidos recibidos por su laboratorio",
+        "timezone": "Horas mostradas en:",
+        "empty": "No hay referidos todavía."
+      },
+      "outgoing": {
+        "title": "Referidos Salientes",
+        "subtitle": "Referidos enviados por su laboratorio",
+        "timezone": "Horas mostradas en:",
+        "empty": "No hay referidos todavía."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "Personal Activo",
+        "pending": "Invitaciones Pendientes",
+        "inactive": "Inactivo / Deshabilitado",
+        "admins": "Admin / Gerentes"
+      },
+      "invite": {
+        "title": "Invitar Personal",
+        "subtitle": "Cree invitaciones y asigne roles antes de que se unan.",
+        "email": "Correo",
+        "role": "Rol",
+        "technician": "Técnico",
+        "send": "Enviar Invitación",
+        "preset": "Ajuste de Permisos"
+      },
+      "pending": {
+        "title": "Invitaciones Pendientes",
+        "subtitle": "Gestione, reenvíe o revoque invitaciones.",
+        "empty": "No hay invitaciones pendientes."
+      },
+      "active": {
+        "title": "Gestión de Personal Activo",
+        "subtitle": "Edite roles y permisos o elimine acceso.",
+        "search": "Buscar personal...",
+        "refresh": "Actualizar",
+        "empty": "No se encontró personal activo."
+      },
+      "audit": {
+        "title": "Auditoría de Personal",
+        "subtitle": "Actividad reciente del personal para rendición de cuentas.",
+        "empty": "No se encontró actividad de auditoría."
+      }
+    },
+    "verify": {
+      "title": "Verificar Documentos",
+      "description": "Verifique la autenticidad de cualquier documento Tokito — planes de tratamiento, referidos, recetas y perfiles de pacientes.",
+      "input": "Ingrese o Escanee Código de Verificación",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verificar",
+      "types": {
+        "tp": "TP - Plan de Tratamiento",
+        "rf": "RF - Referido",
+        "rx": "RX - Receta",
+        "pt": "PT - Perfil de Paciente"
+      },
+      "scan": "Escanear Código QR"
+    }
+  }
+}
