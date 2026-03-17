@@ -1,0 +1,263 @@
+{
+  "pharmacyDashboard": {
+    "menu": {
+      "overview": "Visão Geral",
+      "prescriptions": "Prescrições",
+      "fulfillment": "Aviamento de Pedidos",
+      "inventory": "Inventário",
+      "deliveries": "Entregas",
+      "referrals": "Encaminhamentos",
+      "analytics": "Análises",
+      "billingClaims": "Faturamento / Reivindicações",
+      "finances": "Finanças",
+      "staff": "Equipe",
+      "verifyDocuments": "Verificar Documentos",
+      "settings": "Configurações"
+    },
+
+    "header": {
+      "title": "Painel da Farmácia",
+      "subtitle": "Prescrições, aviamento, análises e faturamento extraídos do Supabase",
+      "refresh": "Atualizar"
+    },
+
+    "overview": {
+      "prescriptionsToday": "Prescrições Hoje",
+      "pendingFulfillment": "Pendentes de Aviamento",
+      "deliveriesInProgress": "Entregas em Andamento",
+      "completedToday": "Concluídos Hoje"
+    },
+
+    "prescriptions": {
+      "title": "Caixa de Entrada de Prescrições",
+      "subtitle": "Prescrições novas e pendentes para sua farmácia.",
+      "inbox": "Entrada de Prescrições",
+      "manage": "Gerenciar prescrições recebidas + prescrições manuais presenciais",
+      "new": "0 Novas",
+      "inReview": "0 Em Revisão",
+      "newManual": "Nova Receita Manual",
+      "search": "Buscar por ID, nº da receita, nome do paciente/telefone...",
+      "table": {
+        "rx": "Rx",
+        "patient": "Paciente",
+        "doctor": "Médico",
+        "items": "Itens",
+        "status": "Status",
+        "refills": "Renovações",
+        "date": "Data",
+        "actions": "Ações"
+      },
+      "empty": "Nenhuma prescrição encontrada"
+    },
+
+    "manualPrescription": {
+      "title": "Nova Prescrição Manual",
+      "patient": "Paciente (Presencial)",
+      "fields": {
+        "name": "Nome do Solicitante *",
+        "fullName": "Nome completo",
+        "phone": "Telefone *",
+        "email": "E-mail (opcional)",
+        "doctorId": "ID do Médico (opcional)",
+        "refills": "Total de renovações",
+        "notes": "Notas (opcional)"
+      },
+      "placeholders": {
+        "phone": "+55 11 99999-9999",
+        "email": "email@exemplo.com",
+        "doctorId": "UUID do médico (opcional)"
+      },
+      "medications": {
+        "title": "Medicamentos",
+        "addItem": "Adicionar item",
+        "item": "Item nº 1",
+        "name": "Nome do medicamento *",
+        "code": "Código do medicamento (opcional)",
+        "dosage": "Dosagem *",
+        "frequency": "Frequência *",
+        "quantity": "Quantidade *",
+        "unit": "Unidade (opcional)",
+        "instructions": "Instruções (opcional)"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "create": "Criar Prescrição"
+      }
+    },
+
+    "fulfillment": {
+      "title": "Fila de Aviamento",
+      "subtitle": "Fila de processamento ponta a ponta para pedidos de prescrição",
+      "refresh": "Atualizar Pedidos",
+
+      "stats": {
+        "activeQueue": "Fila Ativa",
+        "pendingProcessingReady": "0 pendentes • 0 processando • 0 prontos",
+        "overdue": "Atrasados / Em Risco",
+        "urgentHigh": "0 urgentes • 0 prioridade alta",
+        "queueValue": "Valor da Fila",
+        "avgOrder": "Pedido médio R$ 0,00",
+        "insuranceCopay": "Seguro / Copagamento",
+        "copay": "Copagamento R$ 0,00",
+        "avgCycle": "Ciclo Médio de Aviamento",
+        "readyPickup": "Pronto para Retirada",
+        "deliveryQueue": "Fila de Entrega",
+        "completedOrders": "Pedidos Concluídos"
+      },
+
+      "charts": {
+        "throughput": "Tendência de Produtividade",
+        "throughputDesc": "Pedidos recebidos e concluídos (últimos 14 dias de atividade)",
+        "statusMix": "Mix de Status",
+        "priority": "Distribuição de Prioridade",
+        "pickupPayment": "Mix de Retirada e Pagamento",
+        "emptyThroughput": "Sem dados de produtividade ainda.",
+        "emptyOrders": "Nenhum pedido disponível.",
+        "noPickup": "Sem dados de retirada.",
+        "noPayment": "Sem dados de pagamento."
+      },
+
+      "table": {
+        "title": "Pedidos na Fila",
+        "search": "Buscar nº pedido, status, medicamentos, prescrição...",
+        "filters": {
+          "status": "Todos os status",
+          "priority": "Todas as prioridades",
+          "pickup": "Todas as retiradas"
+        },
+        "columns": {
+          "order": "Pedido",
+          "priority": "Prioridade",
+          "route": "Rota",
+          "status": "Status",
+          "payment": "Pagamento",
+          "amounts": "Valores",
+          "eta": "ETA / Idade",
+          "prescription": "Prescrição",
+          "actions": "Ações"
+        },
+        "empty": "Nenhum pedido corresponde aos filtros atuais",
+        "footer": "Mostrando 0 de 0 pedido(s) na fila de aviamento."
+      }
+    },
+
+    "inventory": {
+      "title": "Gestão de Inventário",
+      "subtitle": "Controle de estoque, monitoramento de saúde de estoque e análise de suprimentos",
+
+      "stats": {
+        "skus": "SKUs",
+        "stockRisk": "Risco de Estoque",
+        "retailValue": "Valor de Venda do Inventário",
+        "costBasis": "Custo base R$ 0,00",
+        "expiryRisk": "Risco de Validade",
+        "grossMargin": "Margem Bruta Potencial",
+        "availableReserved": "Disponível / Reservado",
+        "controlled": "Substâncias Controladas",
+        "refrigerated": "Itens Refrigerados"
+      },
+
+      "charts": {
+        "health": "Saúde do Estoque",
+        "topValue": "Top Inventário por Valor de Venda",
+        "expiry": "Distribuição de Validade",
+        "manufacturer": "Cobertura por Fabricante",
+        "empty": "Sem dados de inventário ainda."
+      },
+
+      "table": {
+        "title": "Livro de Registro de Inventário",
+        "search": "Buscar medicamento, código, registro, lote...",
+        "filters": {
+          "inventory": "Todo o inventario",
+          "manufacturer": "Todos os fabricantes",
+          "sort": "Ordem: Risco"
+        },
+        "columns": {
+          "medication": "Medicamento",
+          "manufacturer": "Fabricante",
+          "stock": "Estoque",
+          "pricing": "Preços",
+          "value": "Valor",
+          "expiry": "Validade",
+          "flags": "Alertas",
+          "actions": "Ações"
+        },
+        "empty": "Nenhum item de inventário ainda",
+        "footer": "Totais do inventário: 0 SKU(s), 0 unidades em mãos, R$ 0,00 valor estimado de venda."
+      }
+    },
+
+    "deliveries": {
+      "title": "Pedidos de Entrega",
+      "search": "Buscar por nº pedido ou endereço...",
+      "columns": {
+        "order": "Pedido #",
+        "address": "Endereço de Entrega",
+        "status": "Status",
+        "amount": "Valor",
+        "ready": "Est. Pronto",
+        "created": "Criado em",
+        "actions": "Ações"
+      },
+      "empty": "Nenhum pedido de entrega encontrado"
+    },
+
+    "analytics": {
+      "title": "Painel de Análises",
+      "subtitle": "Análise farmacêutica ponta a ponta em aviamento, prescrições, pagamentos e inventário",
+
+      "metrics": {
+        "revenue": "Receita (30d)",
+        "orders": "Pedidos Aviados",
+        "fillRate": "Taxa de Atendimento",
+        "avgOrder": "Valor Médio do Pedido",
+        "prepTime": "Tempo de Preparo (média / P90)",
+        "pickupTime": "Tempo de Retirada (média / P90)",
+        "inventoryRisk": "Risco de Inventário",
+        "inventoryValue": "Valor de Inventário Atual"
+      },
+
+      "charts": {
+        "trend": "Tendência de Receita e Pedidos",
+        "statusMix": "Mix de Status de Aviamento",
+        "topMeds": "Principais Medicamentos",
+        "payments": "Métodos de Pagamento e Retirada",
+        "inventory": "Saúde do Inventário",
+        "expiry": "Distribuição de Validade",
+        "value": "Principais Valores de Inventário e Fabricantes",
+        "alerts": "Alertas Operacionais",
+        "snapshot": "Resumo Rápido"
+      }
+    },
+
+    "billing": {
+      "title": "Faturamento e Reivindicações de Seguro",
+      "subtitle": "Gestão de faturamento de pedidos com valores de seguro/copagamento.",
+
+      "metrics": {
+        "claimable": "Pedidos Reivindicáveis",
+        "pipeline": "Em Processamento",
+        "approved": "Aprovados / Pagos",
+        "approvalRate": "Taxa de Aprovação",
+        "totalClaimed": "Total Reivindicado",
+        "copay": "Copagamento do Paciente",
+        "outstanding": "Valor em Aberto",
+        "rejected": "Valor Rejeitado"
+      },
+
+      "charts": {
+        "trend": "Tendência de Reivindicações",
+        "statusMix": "Mix de Status",
+        "amounts": "Detalhamento de Valores",
+        "largest": "Maiores Reivindicações"
+      },
+
+      "table": {
+        "title": "Registro de Faturamento",
+        "search": "Buscar pedido, reivindicação, apólice, status...",
+        "empty": "Nenhuma reivindicação encontrada para os filtros atuais."
+      }
+    }
+  }
+}
