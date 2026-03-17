@@ -55,6 +55,17 @@ export const I18N_NAMESPACES = [
   "common",
   "home",
   BLOG_I18N_NAMESPACE,
+  "profileMenu",
+  "dashboard",
+  "imagingAdminDashboard",
+  "labAdminDashboard",
+  "pharmacyAdminDashboard",
+  "auth",
+  "legal",
+  "howItWorks",
+  "features",
+  "about",
+  "pricing",
 ] as const;
 
 export const rtlLanguages = ["ar", "he", "fa", "ur"];

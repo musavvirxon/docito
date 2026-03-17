@@ -1,52 +1,85 @@
 {
   "account": "الحساب",
-  "back": "رجوع",
-  "signOut": "تسجيل خروج",
+  "dashboard": "لوحة التحكم",
+  "superAdmin": "المدير العام",
   "settings": "الإعدادات",
-  "billing": "الفواتير",
-  "analytics": "التحليلات",
-  "profile": "الملف الشخصي",
-  "updatePersonalInfo": "قم بتحديث معلوماتك الشخصية.",
-  "labName": "اسم المختبر",
-  "email": "البريد الإلكتروني",
-  "phone": "الهاتف",
-  "saveProfile": "حفظ الملف الشخصي",
-  "security": "الأمان",
-  "changePassword": "تغيير كلمة المرور الخاصة بك.",
-  "newPassword": "كلمة مرور جديدة",
-  "confirmPassword": "تأكيد كلمة المرور",
-  "updatePassword": "تحديث كلمة المرور",
-  "passwordTip": "نصيحة: استخدم مدير كلمات المرور وتجنب إعادة استخدام كلمات المرور.",
-  "appPreferences": "تمت مزامنة تفضيلات التطبيق مع حسابك.",
-  "refresh": "تحديث",
-  "appearanceAccessibility": "المظهر وسهولة الوصول",
-  "highPerformancePrefs": "تفضيلات الأداء العالي مخزنة في Supabase.",
-  "theme": "المظهر",
-  "system": "النظام",
-  "reduceMotion": "تقليل الحركة",
-  "minimizeAnimations": "تقليل الرسوم المتحركة والانتقالات",
-  "timezone": "المنطقة الزمنية",
-  "calendarTimes": "ستُعرض أوقات التقويم في هذه المنطقة الزمنية. المتصفح:",
-  "useBrowser": "استخدام المتصفح",
-  "language": "اللغة",
-  "paymentMethodsHistory": "طرق الدفع وسجل الفواتير الخاص بك.",
-  "totalPaid": "إجمالي المدفوع",
-  "totalDue": "إجمالي المستحق",
-  "overdue": "متأخر",
-  "paymentMethods": "طرق الدفع",
-  "noSavedPaymentMethods": "لا توجد طرق دفع محفوظة بعد.",
-  "paymentMethodManagement": "إدارة طرق الدفع متاحة أثناء عمليات الدفع أو الخروج.",
-  "invoices": "الفواتير",
-  "noInvoicesYet": "لا توجد فواتير بعد.",
-  "lightweightSnapshot": "ملخص سريع لآخر 30 يومًا.",
-  "appointments": "المواعيد",
-  "upcoming": "القادمة",
-  "completed": "المكتملة",
-  "total": "الإجمالي",
-  "paid": "المدفوعة",
-  "payments": "المدفوعات",
-  "totalPaidAmount": "إجمالي المبلغ المدفوع خلال هذه الفترة",
-  "providerView": "عرض مقدم الخدمة",
-  "notADoctor": "ليس طبيباً",
-  "providerAnalyticsLink": "ستظهر تحليلاتك هنا إذا كان حسابك مرتبطًا بملف طبيب."
+  "bugFeatureRequest": "إبلاغ عن خطأ / طلب ميزة",
+  "switchRole": "تبديل الدور",
+  "current": "الحالي",
+  "signOut": "تسجيل خروج",
+
+  "profile": {
+    "account": "الحساب",
+    "back": "رجوع",
+    "signOut": "تسجيل خروج",
+
+    "menu": {
+      "settings": "الإعدادات",
+      "billing": "الفواتير",
+      "analytics": "التحليلات"
+    },
+
+    "profileSection": {
+      "title": "الملف الشخصي",
+      "description": "قم بتحديث معلوماتك الشخصية.",
+      "labName": "اسم المختبر",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "save": "حفظ الملف الشخصي"
+    },
+
+    "security": {
+      "title": "الأمان",
+      "description": "تغيير كلمة المرور الخاصة بك.",
+      "newPassword": "كلمة مرور جديدة",
+      "confirmPassword": "تأكيد كلمة المرور",
+      "update": "تحديث كلمة المرور",
+      "tip": "نصيحة: استخدم مدير كلمات المرور وتجنب إعادة استخدام كلمات المرور."
+    },
+
+    "settings": {
+      "title": "الإعدادات",
+      "refresh": "تحديث",
+      "appearance": "المظهر وسهولة الوصول",
+      "performance": "تفضيلات الأداء العالي مخزنة في Supabase.",
+      "theme": "المظهر",
+      "system": "النظام",
+      "reduceMotion": "تقليل الحركة",
+      "reduceMotionDesc": "تقليل الرسوم المتحركة والانتقالات",
+      "timezone": "المنطقة الزمنية",
+      "calendar": "ستُعرض أوقات التقويم في هذه المنطقة الزمنية.",
+      "browser": "المتصفح",
+      "useBrowser": "استخدام المتصفح",
+      "language": "اللغة"
+    },
+
+    "billing": {
+      "title": "الفواتير",
+      "description": "طرق الدفع وسجل الفواتير الخاص بك.",
+      "totalPaid": "إجمالي المدفوع",
+      "totalDue": "إجمالي المستحق",
+      "overdue": "متأخر",
+      "paymentMethods": "طرق الدفع",
+      "noPayment": "لا توجد طرق دفع محفوظة بعد.",
+      "paymentNote": "إدارة طرق الدفع متاحة أثناء عمليات الدفع أو الخروج.",
+      "invoices": "الفواتير",
+      "noInvoices": "لا توجد فواتير بعد."
+    },
+
+    "analytics": {
+      "title": "التحليلات",
+      "description": "ملخص سريع لآخر 30 يومًا.",
+      "appointments": "المواعيد",
+      "upcoming": "القادمة",
+      "completed": "المكتملة",
+      "invoices": "الفواتير",
+      "total": "الإجمالي",
+      "paid": "المدفوعة",
+      "payments": "المدفوعات",
+      "totalPaidAmount": "إجمالي المبلغ المدفوع خلال هذه الفترة",
+      "providerView": "عرض مقدم الخدمة",
+      "notDoctor": "ليس طبيباً",
+      "providerNote": "ستظهر تحليلاتك هنا إذا كان حسابك مرتبطًا بملف طبيب."
+    }
+  }
 }
