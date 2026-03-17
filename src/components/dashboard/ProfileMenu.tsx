@@ -1,6 +1,7 @@
 // src/components/dashboard/ProfileMenu.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ interface ProfileMenuProps {
 
 const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compact = false }, ref) => {
   const navigate = useNavigate();
+  const { t } = useTranslation("profileMenu");
   const { profile, user, allRoles, activeRole, switchRole, signOut } = useAuth();
   const [practiceName, setPracticeName] = useState<string | null>(null);
 
@@ -56,7 +58,6 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
     }
     let cancelled = false;
     (async () => {
-      // Try admin_id first
       const { data: owned } = await supabase
         .from("practices")
         .select("name")
@@ -65,7 +66,6 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
       if (cancelled) return;
       if (owned?.name) { setPracticeName(owned.name); return; }
 
-      // Try clinic_staff
       const { data: staffRow } = await supabase
         .from("clinic_staff")
         .select("practice_id")
@@ -99,9 +99,9 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
   }, [effectiveActiveRole, roles.length]);
 
   const dashboardLabel = useMemo(() => {
-    if (roles.length === 1) return `${roleLabels[roles[0]] || roles[0]} Dashboard`;
-    return "Dashboard";
-  }, [roles]);
+    if (roles.length === 1) return `${roleLabels[roles[0]] || roles[0]} ${t("dashboard", "Dashboard")}`;
+    return t("dashboard", "Dashboard");
+  }, [roles, t]);
 
   const superAdminRoute = useMemo(() => {
     return DASHBOARD_ROUTES.super_admin || getDashboardRoute(["super_admin"]);
@@ -123,20 +123,19 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
 
   return (
     <DropdownMenu>
-      {/* ref anchor for parent forwardRef */}
       <DropdownMenuTrigger asChild>
         <Button
           variant={compact ? "ghost" : "outline"}
           size={compact ? "icon" : "sm"}
           className={compact ? "h-9 w-9 rounded-xl" : "h-9 rounded-full text-sm font-medium text-foreground"}
         >
-          {compact ? <User className="h-4 w-4" /> : <span className="text-foreground">{profile?.full_name || user?.user_metadata?.full_name || user?.email || "Account"}</span>}
+          {compact ? <User className="h-4 w-4" /> : <span className="text-foreground">{profile?.full_name || user?.user_metadata?.full_name || user?.email || t("account", "Account")}</span>}
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-foreground">{profile?.full_name || user?.user_metadata?.full_name || user?.email || "Account"}</span>
+          <span className="text-sm font-medium text-foreground">{profile?.full_name || user?.user_metadata?.full_name || user?.email || t("account", "Account")}</span>
           <span className="text-xs text-muted-foreground">{user?.email}</span>
           {practiceName && (
             <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -159,24 +158,24 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
         {showSuperAdminLink ? (
           <DropdownMenuItem onClick={() => handleRoleSwitch("super_admin")}>
             <Shield className="mr-2 h-4 w-4" />
-            Super Admin
+            {t("superAdmin", "Super Admin")}
           </DropdownMenuItem>
         ) : null}
 
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           <Settings className="mr-2 h-4 w-4" />
-          Settings
+          {t("settings", "Settings")}
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={() => navigate("/dashboard/feedback")}>
           <MessageSquareWarning className="mr-2 h-4 w-4" />
-          Bug / Feature Request
+          {t("bugFeatureRequest", "Bug / Feature Request")}
         </DropdownMenuItem>
 
         {canShowRoleSwitch ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Switch Role</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">{t("switchRole", "Switch Role")}</DropdownMenuLabel>
 
             {roles.map((role) => (
               <DropdownMenuItem
@@ -188,7 +187,7 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
                   <ArrowRightLeft className="mr-2 h-4 w-4" />
                   {roleLabels[role] || role}
                 </span>
-                {role === effectiveActiveRole ? <span className="text-xs text-muted-foreground">Current</span> : null}
+                {role === effectiveActiveRole ? <span className="text-xs text-muted-foreground">{t("current", "Current")}</span> : null}
               </DropdownMenuItem>
             ))}
           </>
@@ -198,7 +197,7 @@ const ProfileMenu = React.forwardRef<HTMLDivElement, ProfileMenuProps>(({ compac
 
         <DropdownMenuItem onClick={handleLogout} className="text-destructive">
           <LogOut className="mr-2 h-4 w-4" />
-          Sign out
+          {t("signOut", "Sign out")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
