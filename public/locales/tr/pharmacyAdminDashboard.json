@@ -1,0 +1,263 @@
+{
+  "pharmacyDashboard": {
+    "menu": {
+      "overview": "Genel Bakış",
+      "prescriptions": "Reçeteler",
+      "fulfillment": "Sipariş Karşılama",
+      "inventory": "Envanter",
+      "deliveries": "Teslimatlar",
+      "referrals": "Yönlendirmeler",
+      "analytics": "Analizler",
+      "billingClaims": "Faturalandırma / Talepler",
+      "finances": "Finans",
+      "staff": "Personel",
+      "verifyDocuments": "Belge Doğrulama",
+      "settings": "Ayarlar"
+    },
+
+    "header": {
+      "title": "Eczane Paneli",
+      "subtitle": "Supabase üzerinden çekilen reçete, karşılama, analiz ve faturalandırma verileri",
+      "refresh": "Yenile"
+    },
+
+    "overview": {
+      "prescriptionsToday": "Bugünkü Reçeteler",
+      "pendingFulfillment": "Bekleyen İşlemler",
+      "deliveriesInProgress": "Devam Eden Teslimatlar",
+      "completedToday": "Bugün Tamamlananlar"
+    },
+
+    "prescriptions": {
+      "title": "Gelen Reçete Kutusu",
+      "subtitle": "Eczaneniz için yeni ve bekleyen reçeteler.",
+      "inbox": "Gelen Reçeteler",
+      "manage": "Gelen ve manuel giriş yapılan reçeteleri yönetin",
+      "new": "0 Yeni",
+      "inReview": "0 İncelemede",
+      "newManual": "Yeni Manuel Reçete (Rx)",
+      "search": "ID, reçete no, hasta adı/telefonu ile ara...",
+      "table": {
+        "rx": "Reçete (Rx)",
+        "patient": "Hasta",
+        "doctor": "Doktor",
+        "items": "Kalemler",
+        "status": "Durum",
+        "refills": "Tekrarlar",
+        "date": "Tarih",
+        "actions": "İşlemler"
+      },
+      "empty": "Reçete bulunamadı"
+    },
+
+    "manualPrescription": {
+      "title": "Yeni Manuel Reçete",
+      "patient": "Hasta (Ayaktan)",
+      "fields": {
+        "name": "Hasta Adı *",
+        "fullName": "Tam Adı",
+        "phone": "Telefon *",
+        "email": "E-posta (isteğe bağlı)",
+        "doctorId": "Doktor ID (isteğe bağlı)",
+        "refills": "Toplam Tekrar",
+        "notes": "Notlar (isteğe bağlı)"
+      },
+      "placeholders": {
+        "phone": "+90 5XX XXX XX XX",
+        "email": "eposta@ornek.com",
+        "doctorId": "doktor UUID (isteğe bağlı)"
+      },
+      "medications": {
+        "title": "İlaçlar",
+        "addItem": "Öğe ekle",
+        "item": "Öğe #1",
+        "name": "İlaç Adı *",
+        "code": "İlaç Kodu (isteğe bağlı)",
+        "dosage": "Dozaj *",
+        "frequency": "Kullanım Sıklığı *",
+        "quantity": "Adet/Miktar *",
+        "unit": "Birim (isteğe bağlı)",
+        "instructions": "Talimatlar (isteğe bağlı)"
+      },
+      "actions": {
+        "cancel": "İptal",
+        "create": "Reçete Oluştur"
+      }
+    },
+
+    "fulfillment": {
+      "title": "Hazırlama Kuyruğu",
+      "subtitle": "Reçete karşılama siparişleri için uçtan uca işlem kuyruğu",
+      "refresh": "Siparişleri Yenile",
+
+      "stats": {
+        "activeQueue": "Aktif Kuyruk",
+        "pendingProcessingReady": "0 bekleyen • 0 hazırlanan • 0 hazır",
+        "overdue": "Gecikmiş / Riskli",
+        "urgentHigh": "0 acil • 0 yüksek öncelikli",
+        "queueValue": "Kuyruk Değeri",
+        "avgOrder": "Ort. sipariş ₺0,00",
+        "insuranceCopay": "Sigorta / Katılım Payı",
+        "copay": "Katılım Payı ₺0,00",
+        "avgCycle": "Ort. Karşılama Süresi",
+        "readyPickup": "Hazır, Teslimat Bekliyor",
+        "deliveryQueue": "Teslimat Kuyruğu",
+        "completedOrders": "Tamamlanan Siparişler"
+      },
+
+      "charts": {
+        "throughput": "İşlem Kapasitesi Trendi",
+        "throughputDesc": "Gelen ve tamamlanan siparişler (son 14 aktif gün)",
+        "statusMix": "Durum Dağılımı",
+        "priority": "Öncelik Dağılımı",
+        "pickupPayment": "Teslimat ve Ödeme Türleri",
+        "emptyThroughput": "Henüz veri yok.",
+        "emptyOrders": "Sipariş bulunmuyor.",
+        "noPickup": "Teslimat verisi yok.",
+        "noPayment": "Ödeme verisi yok."
+      },
+
+      "table": {
+        "title": "Kuyruktaki Siparişler",
+        "search": "Sipariş no, durum, ilaç, reçete ile ara...",
+        "filters": {
+          "status": "Tüm durumlar",
+          "priority": "Tüm öncelikler",
+          "pickup": "Tüm teslimatlar"
+        },
+        "columns": {
+          "order": "Sipariş",
+          "priority": "Öncelik",
+          "route": "Rota",
+          "status": "Durum",
+          "payment": "Ödeme",
+          "amounts": "Tutarlar",
+          "eta": "Tahmini Süre / Yaş",
+          "prescription": "Reçete",
+          "actions": "İşlemler"
+        },
+        "empty": "Filtrelere uygun sipariş bulunamadı",
+        "footer": "Hazırlama kuyruğundaki 0 siparişten 0 tanesi gösteriliyor."
+      }
+    },
+
+    "inventory": {
+      "title": "Envanter Yönetimi",
+      "subtitle": "Stok kontrolü, sağlık izleme ve eczane tedarik analizleri",
+
+      "stats": {
+        "skus": "Stok Birimleri (SKU)",
+        "stockRisk": "Stok Riski",
+        "retailValue": "Envanter Satış Değeri",
+        "costBasis": "Maliyet bazı ₺0,00",
+        "expiryRisk": "SKT Riski",
+        "grossMargin": "Potansiyel Brüt Kar",
+        "availableReserved": "Mevcut / Rezerve",
+        "controlled": "Kontrole Tabi Maddeler",
+        "refrigerated": "Soğuk Zincir Ürünleri"
+      },
+
+      "charts": {
+        "health": "Stok Sağlığı",
+        "topValue": "Değere Göre En İyi Stoklar",
+        "expiry": "Son Kullanma Dağılımı",
+        "manufacturer": "Üretici Dağılımı",
+        "empty": "Henüz envanter verisi yok."
+      },
+
+      "table": {
+        "title": "Envanter Defteri",
+        "search": "İlaç, kod, NDC, parti no ile ara...",
+        "filters": {
+          "inventory": "Tüm envanter",
+          "manufacturer": "Tüm üreticiler",
+          "sort": "Sırala: Risk"
+        },
+        "columns": {
+          "medication": "İlaç",
+          "manufacturer": "Üretici",
+          "stock": "Stok",
+          "pricing": "Fiyatlandırma",
+          "value": "Değer",
+          "expiry": "SKT",
+          "flags": "İşaretler",
+          "actions": "İşlemler"
+        },
+        "empty": "Henüz envanter öğesi yok",
+        "footer": "Envanter toplamları: 0 SKU, 0 eldeki birim, ₺0,00 tahmini satış değeri."
+      }
+    },
+
+    "deliveries": {
+      "title": "Teslimat Siparişleri",
+      "search": "Sipariş no veya adres ile ara...",
+      "columns": {
+        "order": "Sipariş #",
+        "address": "Teslimat Adresi",
+        "status": "Durum",
+        "amount": "Tutar",
+        "ready": "Tahm. Hazır",
+        "created": "Oluşturulma",
+        "actions": "İşlemler"
+      },
+      "empty": "Teslimat siparişi bulunamadı"
+    },
+
+    "analytics": {
+      "title": "Analiz Paneli",
+      "subtitle": "Hazırlama, reçeteler, ödemeler ve envanter genelinde uçtan uca analizler",
+
+      "metrics": {
+        "revenue": "Gelir (30g)",
+        "orders": "Karşılanan Siparişler",
+        "fillRate": "Karşılama Oranı",
+        "avgOrder": "Ort. Sipariş Değeri",
+        "prepTime": "Hazırlık Süresi (ort / P90)",
+        "pickupTime": "Teslim Alma Süresi (ort / P90)",
+        "inventoryRisk": "Envanter Riski",
+        "inventoryValue": "Güncel Envanter Değeri"
+      },
+
+      "charts": {
+        "trend": "Gelir ve Sipariş Trendi",
+        "statusMix": "Sipariş Durum Dağılımı",
+        "topMeds": "En Çok Verilen İlaçlar",
+        "payments": "Ödeme ve Teslimat Yöntemleri",
+        "inventory": "Envanter Sağlığı",
+        "expiry": "SKT Dağılımı",
+        "value": "En Değerli Envanter ve Üreticiler",
+        "alerts": "Operasyonel Uyarılar",
+        "snapshot": "Hızlı Görünüm"
+      }
+    },
+
+    "billing": {
+      "title": "Faturalandırma ve Sigorta Talepleri",
+      "subtitle": "Sigorta ve katılım payı tutarlarıyla eczane siparişlerinden gelen talep yönetimi.",
+
+      "metrics": {
+        "claimable": "Talep Edilebilir Siparişler",
+        "pipeline": "İşlem Sırasında",
+        "approved": "Onaylanan / Ödenen",
+        "approvalRate": "Onay Oranı",
+        "totalClaimed": "Toplam Talep Edilen",
+        "copay": "Hasta Katılım Payı",
+        "outstanding": "Ödenmemiş Tutar",
+        "rejected": "Reddedilen Tutar"
+      },
+
+      "charts": {
+        "trend": "Talep Trendi",
+        "statusMix": "Durum Dağılımı",
+        "amounts": "Tutar Dağılımı",
+        "largest": "En Yüksek Talepler"
+      },
+
+      "table": {
+        "title": "Talep Defteri",
+        "search": "Sipariş, talep, poliçe, durum ara...",
+        "empty": "Mevcut filtrelere uygun talep bulunamadı."
+      }
+    }
+  }
+}
