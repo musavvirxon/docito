@@ -309,7 +309,7 @@ export default function LabDashboardPage() {
           {ordersLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Loading orders…</span>
+              <span>{t("dashboard.orders.loading", "Loading orders…")}</span>
             </div>
           ) : (
             <LabOrderQueue orders={orders as any} labCenterId={labCenterId} onRefresh={fetchOrders} />
