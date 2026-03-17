@@ -246,12 +246,12 @@ export default function PharmacyDashboardPage() {
 
   const statCards: StatCardProps[] = useMemo(
     () => [
-      { label: "Prescriptions Today", value: stats.prescriptionsToday, icon: <Calendar className="h-6 w-6" /> },
-      { label: "Pending Fulfillment", value: stats.pendingFulfillment, icon: <Pill className="h-6 w-6" /> },
-      { label: "Deliveries In Progress", value: stats.deliveriesInProgress, icon: <Activity className="h-6 w-6" /> },
-      { label: "Completed Today", value: stats.completedToday, icon: <CheckCircle className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.prescriptionsToday", "Prescriptions Today"), value: stats.prescriptionsToday, icon: <Calendar className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.pendingFulfillment", "Pending Fulfillment"), value: stats.pendingFulfillment, icon: <Pill className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.deliveriesInProgress", "Deliveries In Progress"), value: stats.deliveriesInProgress, icon: <Activity className="h-6 w-6" /> },
+      { label: t("pharmacyDashboard.overview.completedToday", "Completed Today"), value: stats.completedToday, icon: <CheckCircle className="h-6 w-6" /> },
     ],
-    [stats],
+    [stats, t],
   );
 
   const isLoading = authLoading || loading;
