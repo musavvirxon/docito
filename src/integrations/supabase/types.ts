@@ -2570,6 +2570,51 @@ export type Database = {
           },
         ]
       }
+      finance_recurring_entity_runs: {
+        Row: {
+          as_of: string
+          created_at: string
+          created_count: number
+          entity_id: string
+          entity_type: string
+          error_count: number
+          finished_at: string | null
+          id: string
+          notes: string | null
+          skipped_count: number
+          source: string
+          started_at: string
+        }
+        Insert: {
+          as_of?: string
+          created_at?: string
+          created_count?: number
+          entity_id: string
+          entity_type: string
+          error_count?: number
+          finished_at?: string | null
+          id?: string
+          notes?: string | null
+          skipped_count?: number
+          source: string
+          started_at?: string
+        }
+        Update: {
+          as_of?: string
+          created_at?: string
+          created_count?: number
+          entity_id?: string
+          entity_type?: string
+          error_count?: number
+          finished_at?: string | null
+          id?: string
+          notes?: string | null
+          skipped_count?: number
+          source?: string
+          started_at?: string
+        }
+        Relationships: []
+      }
       finance_recurring_expenses: {
         Row: {
           amount_cents: number
@@ -2640,6 +2685,129 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      finance_recurring_rule_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          entity_run_id: string | null
+          error: string | null
+          finance_entry_id: string | null
+          id: string
+          rule_id: string
+          run_date: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          entity_run_id?: string | null
+          error?: string | null
+          finance_entry_id?: string | null
+          id?: string
+          rule_id: string
+          run_date: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          entity_run_id?: string | null
+          error?: string | null
+          finance_entry_id?: string | null
+          id?: string
+          rule_id?: string
+          run_date?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_recurring_rule_runs_entity_run_id_fkey"
+            columns: ["entity_run_id"]
+            isOneToOne: false
+            referencedRelation: "finance_recurring_entity_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_recurring_rule_runs_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "finance_recurring_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_recurring_rules: {
+        Row: {
+          active: boolean
+          amount_cents: number
+          category_id: string | null
+          category_name: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          day_of_month: number | null
+          day_of_week: number | null
+          description: string | null
+          end_date: string | null
+          entity_id: string
+          entity_type: string
+          entry_type: string
+          id: string
+          interval_n: number
+          next_run_date: string
+          schedule: string
+          start_date: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          amount_cents: number
+          category_id?: string | null
+          category_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          description?: string | null
+          end_date?: string | null
+          entity_id: string
+          entity_type: string
+          entry_type: string
+          id?: string
+          interval_n?: number
+          next_run_date: string
+          schedule: string
+          start_date?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          amount_cents?: number
+          category_id?: string | null
+          category_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          description?: string | null
+          end_date?: string | null
+          entity_id?: string
+          entity_type?: string
+          entry_type?: string
+          id?: string
+          interval_n?: number
+          next_run_date?: string
+          schedule?: string
+          start_date?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       finance_recurring_templates: {
         Row: {
@@ -9293,6 +9461,38 @@ export type Database = {
       finance_recurring_entity_status: {
         Args: { p_as_of?: string; p_entity_id: string; p_entity_type: string }
         Returns: Json
+      }
+      finance_recurring_first_run_date: {
+        Args: {
+          p_day_of_month: number
+          p_day_of_week: number
+          p_schedule: string
+          p_start_date: string
+        }
+        Returns: string
+      }
+      finance_recurring_generate_due_v2: {
+        Args: {
+          p_as_of?: string
+          p_entity_id: string
+          p_entity_run_id?: string
+          p_entity_type: string
+        }
+        Returns: {
+          finance_entry_id: string
+          rule_id: string
+          run_date: string
+          status: string
+        }[]
+      }
+      finance_recurring_next_run_date: {
+        Args: {
+          p_current_run: string
+          p_day_of_month: number
+          p_interval_n: number
+          p_schedule: string
+        }
+        Returns: string
       }
       finance_recurring_rule_deactivate: {
         Args: { p_entity_id: string; p_entity_type: string; p_rule_id: string }
