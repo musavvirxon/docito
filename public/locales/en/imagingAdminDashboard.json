@@ -34,6 +34,7 @@
       "add": "Add",
       "actions": "Actions",
       "loading": "Loading...",
+      "imagingCenter": "Imaging Center",
       "signInRequired": "Sign In Required",
       "signInDescription": "Please sign in to access the imaging center dashboard.",
       "signIn": "Sign In",
