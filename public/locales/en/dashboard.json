@@ -1286,6 +1286,20 @@
       "noHolidays": "No holidays set",
       "removeHoliday": "Remove"
     },
+"session": {
+  "notFoundTitle": "Session Not Found",
+  "notFoundBody": "This appointment session could not be loaded.",
+  "backToDashboard": "Back to Dashboard",
+  "loadError": "Failed to load appointment session",
+  "loading": "Loading appointment session...",
+  "ended": "Session ended",
+  "endError": "Failed to end session",
+  "notesSaved": "Notes saved",
+  "notesSaveError": "Failed to save notes",
+  "videoRequiresRegistered": "Video calls require a registered patient",
+  "videoStartError": "Failed to start video consultation",
+  "dentalProceduresLoadError": "Failed to load dental procedures"
+},
     "procedureLibrary": {
       "title": "My Procedure Library",
       "description": "Manage your dental procedures and treatments",
