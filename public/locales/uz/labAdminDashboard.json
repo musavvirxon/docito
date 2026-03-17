@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Umumiy ko'rinish",
+      "orders": "Buyurtmalar",
+      "homeCollection": "Uyda namuna olish",
+      "samples": "Namunalar",
+      "analytics": "Analitika",
+      "billingInsurance": "Hisob-kitob / Sug'urta",
+      "finances": "Moliya",
+      "referrals": "Yo'llanmalar",
+      "staff": "Xodimlar",
+      "verifyDocuments": "Hujjatlarni tekshirish",
+      "settings": "Sozlamalar"
+    },
+    "header": {
+      "title": "Laboratoriya xodimlari boshqaruv paneli",
+      "subtitle": "Supabase'dan olingan buyurtmalar, ish oqimi, natijalar va tahlillar",
+      "refresh": "Yangilash"
+    },
+    "overview": {
+      "title": "Umumiy ko'rinish",
+      "analytics": "Analitika",
+      "totalOrders": "Jami buyurtmalar",
+      "pending": "Kutilmoqda",
+      "inProgress": "Jarayonda",
+      "completed": "Tugallangan",
+      "pendingQueue": "Kutilayotgan navbat",
+      "inProgressQueue": "Jarayonda",
+      "completedRecent": "Tugallangan (so'nggi)",
+      "urgent": "Shoshilinch / CITO",
+      "overdue": "Muddati o'tgan (>48s)",
+      "recentOrders": {
+        "title": "So'nggi laboratoriya buyurtmalari",
+        "subtitle": "Eng so'nggi buyurtmalar va ish holati",
+        "empty": "Hozircha laboratoriya buyurtmalari yo'q."
+      },
+      "activity": {
+        "title": "Faolliklar lentasi",
+        "subtitle": "So'nggi ish oqimi yangilanishlari",
+        "empty": "So'nggi faolliklar yo'q."
+      },
+      "queueHealth": {
+        "title": "Navbat holati",
+        "subtitle": "So'nggi buyurtmalarning qisqacha operatsion holati",
+        "pending": "Kutilmoqda",
+        "inProgress": "Jarayonda",
+        "completed": "Tugallangan",
+        "urgent": "Shoshilinch / CITO",
+        "overdue": "Muddati o'tgan (>48s)",
+        "footer": "To'liq operatsion tahlillar, tendentsiyalar va SLA ko'rsatkichlari Analitika bo'limida mavjud."
+      }
+    },
+    "orders": {
+      "search": "Buyurtma raqami, bemor ismi/telefoni bo'yicha qidirish...",
+      "statuses": "Barcha holatlar",
+      "newOrder": "Yangi qo'lda kiritilgan buyurtma",
+      "testOrders": "Test buyurtmalari",
+      "empty": "Buyurtmalar topilmadi",
+      "details": {
+        "title": "Buyurtma tafsilotlari",
+        "select": "Tafsilotlarni ko'rish uchun buyurtmani tanlang"
+      },
+      "statusList": {
+        "completed": "tugallangan",
+        "cancelled": "bekor qilingan",
+        "pending": "kutilmoqda",
+        "scheduled": "rejalashtirilgan",
+        "processing": "qayta ishlanmoqda",
+        "sampleCollected": "namuna olindi"
+      }
+    },
+    "collections": {
+      "today": "Bugungi namunalar",
+      "pendingAssignment": "Tayinlash kutilmoqda",
+      "inTransit": "Yo'lda",
+      "completedToday": "Bugun tugallangan",
+      "title": "Uyda namuna olish",
+      "subtitle": "Olib ketish jadvallari va xodimlarni tayinlashni boshqarish",
+      "search": "Bemor yoki manzil bo'yicha qidirish...",
+      "allStatus": "Barcha holatlar",
+      "table": {
+        "patient": "Bemor",
+        "address": "Manzil",
+        "scheduled": "Rejalashtirilgan",
+        "collector": "Namuna oluvchi",
+        "status": "Holat",
+        "actions": "Harakatlar",
+        "empty": "Namunalar topilmadi"
+      },
+      "stats": {
+        "pending": "Kutilmoqda",
+        "collected": "To'plangan",
+        "processing": "Qayta ishlanmoqda",
+        "completed": "Tugallangan"
+      }
+    },
+    "samples": {
+      "title": "Namunalarni boshqarish",
+      "subtitle": "Namunalarni yig'ishdan tortib natijalargacha kuzatish",
+      "search": "Namuna ID, shtrix-kod yoki bemor bo'yicha qidirish...",
+      "allStatus": "Barcha holatlar",
+      "table": {
+        "sample": "Namuna",
+        "patient": "Bemor",
+        "type": "Turi",
+        "barcode": "Shtrix-kod",
+        "status": "Holat",
+        "actions": "Harakatlar",
+        "empty": "Namunalar topilmadi"
+      }
+    },
+    "analytics": {
+      "title": "Analitika boshqaruv paneli",
+      "subtitle": "Buyurtmalar, testlar, natijalar, yo'llanmalar va katalog ishlashi bo'yicha tahlillar",
+      "last30days": "So'nggi 30 kun",
+      "refresh": "Yangilash",
+      "metrics": {
+        "orders": "Buyurtmalar (30k)",
+        "vsPrevious": "Oldingi davrga nisbatan +0.0%",
+        "completionRate": "Bajarilish darajasi",
+        "completionDetails": "0 tugallangan • 0 kutilmoqda",
+        "testVolume": "Testlar hajmi",
+        "testsPerOrder": "Har bir buyurtmaga 0.0 test",
+        "revenue": "Daromad (30k)",
+        "turnaround": "Bajarish vaqti (o'rtacha / P90)",
+        "turnaroundDesc": "Buyurtma yaratildi → tugallandi",
+        "resultVerification": "Natijani tekshirish",
+        "verificationDetails": "0 tasdiqlangan • 0 kutilmoqda",
+        "abnormalResults": "G'ayritabiiy natijalar",
+        "abnormalDetails": "0 dan 0 natija",
+        "incomingReferrals": "Kiruvchi yo'llanmalar"
+      },
+      "charts": {
+        "ordersTrend": "Buyurtmalar, testlar va natijalar tendentsiyasi",
+        "throughput": "Tanlangan davrda kunlik laboratoriya o'tkazuvchanligi",
+        "orderStatusMix": "Buyurtma holati taqsimoti",
+        "statusDistribution": "Laboratoriya test buyurtmalari uchun holat taqsimoti",
+        "noOrders": "Bu davrda buyurtmalar yo'q.",
+        "topTests": "Eng ko'p o'tkazilgan testlar",
+        "noTests": "Bu davrda test elementlari topilmadi.",
+        "operationalMix": "Operatsion tarkib",
+        "priorityMix": "Ustuvorlik tarkibi",
+        "noPriority": "Ustuvorlik ma'lumotlari yo'q",
+        "paymentStatus": "To'lov holati",
+        "testCategories": "Test toifalari"
+      },
+      "quality": {
+        "title": "Bajarish vaqti va sifat",
+        "sla": "SLA va sifat ko'rsatkichlari",
+        "orderTat": "Buyurtma TAT o'rtacha / P90",
+        "resultTat": "Natija TAT o'rtacha / P90",
+        "sampleTat": "Namuna olish o'rtacha / P90",
+        "slaBreaches": "SLA buzilishlari",
+        "performed": "Bajarilgan natijalar",
+        "verified": "Tasdiqlangan natijalar",
+        "pending": "Tasdiqlash kutilmoqda",
+        "abnormal": "G'ayritabiiy natijalar"
+      },
+      "referrals": {
+        "title": "Yo'llanmalar voronkasi",
+        "subtitle": "Ushbu laboratoriya uchun kiruvchi yo'llanmalar oqimi",
+        "received": "Qabul qilingan",
+        "active": "Qabul qilingan / Faol",
+        "completed": "Tugallangan",
+        "completionRate": "Bajarilish darajasi",
+        "status": "Yo'llanma holati"
+      },
+      "catalog": {
+        "title": "Katalog qamrovi",
+        "subtitle": "Test katalogining kengligi va tayyorligi",
+        "total": "Jami katalog",
+        "active": "Faol testlar",
+        "local": "Mahalliy testlar",
+        "categories": "Toifalar"
+      },
+      "snapshot": {
+        "title": "Joriy davrning qisqacha hisoboti",
+        "avgOrderValue": "O'rtacha buyurtma qiymati",
+        "inProgress": "Jarayondagi buyurtmalar",
+        "cancelled": "Bekor qilingan buyurtmalar",
+        "overdue": "Muddati o'tgan buyurtmalar (>48s)"
+      },
+      "alerts": {
+        "title": "Operatsion ogohlantirishlar",
+        "subtitle": "Laboratoriya ish oqimi davomida e'tibor talab qiladigan holatlar",
+        "empty": "Faol ogohlantirishlar yo'q."
+      }
+    },
+    "billing": {
+      "title": "Hisob-kitob va sug'urta",
+      "subtitle": "Jonli to'lov operatsiyalari va sug'urta bilan qoplangan buyurtmalar.",
+      "refresh": "Yangilash",
+      "grossRevenue": "Yalpi daromad",
+      "refunds": "Qaytarilgan mablag'lar",
+      "netRevenue": "Sof daromad",
+      "completedTransactions": "0 ta tugallangan tranzaksiya",
+      "tabs": {
+        "transactions": "Tranzaksiyalar",
+        "insurance": "Sug'urta buyurtmalari"
+      },
+      "search": "Holat, tur, tavsif bo'yicha qidirish...",
+      "table": {
+        "date": "Sana",
+        "type": "Turi",
+        "status": "Holati",
+        "description": "Tavsifi",
+        "amount": "Miqdor",
+        "empty": "Tranzaksiyalar topilmadi"
+      }
+    },
+    "finances": {
+      "title": "Moliya",
+      "subtitle": "Daromad, xarajatlar, ish haqi, kompensatsiya profillari va eksportlarni boshqarish.",
+      "staffCompensation": {
+        "title": "Xodimlar kompensatsiyasi",
+        "addProfile": "Profil qo'shish",
+        "empty": "Hozircha kompensatsiya profillari yo'q. Xodimlaringiz uchun maosh, soatbay yoki foizga asoslangan to'lov qo'shing."
+      },
+      "export": {
+        "title": "Moliyaviy yozuvlarni eksport qilish",
+        "description": "Buxgalteriya, audit yoki chuqurroq tahlil qilish uchun kitob yozuvlarini CSV sifatida yuklab oling.",
+        "from": "Dan",
+        "to": "Gacha",
+        "type": "Turi",
+        "category": "Toifa",
+        "all": "Barchasi",
+        "export": "CSV eksport",
+        "tip": "Maslahat: oylik intervallarni eksport qiling va buxgalteringiz bilan ulashing."
+      },
+      "recurring": {
+        "title": "Takrorlanuvchi",
+        "subtitle": "Takrorlanuvchi moliyaviy yozuvlarni avtomatlashtirish (kommunal xizmatlar, ijara, soliqlar).",
+        "addRule": "Qoida qo'shish",
+        "status": "Holati",
+        "noRuns": "Oldingi ishga tushirishlar yo'q",
+        "runDue": "Muddatli qoidalarni ishga tushirish",
+        "asOf": "Holatiga ko'ra",
+        "runNow": "Hozir ishga tushirish",
+        "description": "Ishga tushirish belgilangan sanadan oldingi barcha qoidalar uchun moliyaviy yozuvlarni yaratadi.",
+        "noRules": "Hozircha takrorlanuvchi qoidalar yo'q."
+      },
+      "categories": {
+        "title": "Toifalar",
+        "subtitle": "Ta'minot, Soliqlar, Kommunal xizmatlar, Maoshlar va Komissiyalar kabi toifalarni yarating.",
+        "name": "Nomi",
+        "color": "Rang (ixtiyoriy)",
+        "add": "Qo'shish",
+        "empty": "Toifalar yo'q. Yuqorida qo'shing.",
+        "tip": "Maslahat: hisobotlar toza bo'lishi uchun doimiy nomlash qoidasini o'rnating."
+      },
+      "ledger": {
+        "title": "Bosh kitob",
+        "subtitle": "Daromad, xarajatlar va ish haqi yozuvlarini qo'shish va boshqarish.",
+        "entries": "Yozuvlar",
+        "income": "Daromad",
+        "expenses": "Xarajat",
+        "net": "Sof",
+        "addEntry": "Yozuv qo'shish",
+        "manual": "Qo'lda",
+        "date": "Sana",
+        "type": "Turi",
+        "currency": "Valyuta",
+        "amount": "Miqdor",
+        "reference": "Ma'lumotnoma (ixtiyoriy)",
+        "description": "Tavsif (ixtiyoriy)",
+        "empty": "Ushbu filtr uchun yozuvlar topilmadi.",
+        "note": "Eslatma: bu ro'yxat har bir filtr uchun 200 tagacha yozuvni ko'rsatadi."
+      },
+      "compensationModal": {
+        "title": "Kompensatsiya profilini qo'shish",
+        "staff": "Xodim",
+        "select": "Xodimni tanlang…",
+        "type": "Kompensatsiya turi",
+        "salary": "Qat'iy maosh",
+        "amount": "Miqdor ($)",
+        "period": "Davr",
+        "monthly": "Oylik",
+        "frequency": "To'lov chastotasi",
+        "notes": "Eslatmalar (ixtiyoriy)",
+        "cancel": "Bekor qilish",
+        "save": "Saqlash"
+      }
+    },
+    "referrals": {
+      "title": "Yo'llanmalar",
+      "new": "Yangi yo'llanma",
+      "incoming": {
+        "title": "Kiruvchi yo'llanmalar",
+        "subtitle": "Laboratoriyangiz tomonidan qabul qilingan yo'llanmalar",
+        "timezone": "Vaqtlar ko'rsatilgan:",
+        "empty": "Hozircha yo'llanmalar yo'q."
+      },
+      "outgoing": {
+        "title": "Chiquvchi yo'llanmalar",
+        "subtitle": "Laboratoriyangiz tomonidan yuborilgan yo'llanmalar",
+        "timezone": "Vaqtlar ko'rsatilgan:",
+        "empty": "Hozircha yo'llanmalar yo'q."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "Faol xodimlar",
+        "pending": "Kutilayotgan taklifnomalar",
+        "inactive": "Nofaol / O'chirilgan",
+        "admins": "Administrator / Menejerlar"
+      },
+      "invite": {
+        "title": "Xodimlarni taklif qilish",
+        "subtitle": "Taklifnomalar yarating, rol tayinlang va ruxsatlarni oldindan sozlang.",
+        "email": "Elektron pochta",
+        "role": "Rol",
+        "technician": "Texnik",
+        "send": "Taklifnoma yuborish",
+        "preset": "Ruxsat etish shabloni"
+      },
+      "pending": {
+        "title": "Kutilayotgan taklifnomalar",
+        "subtitle": "Kutilayotgan takliflarni boshqaring, qayta yuboring yoki bekor qiling.",
+        "empty": "Kutilayotgan taklifnomalar yo'q."
+      },
+      "active": {
+        "title": "Faol xodimlarni boshqarish",
+        "subtitle": "Rol va ruxsatlarni tahrirlash, xodimlarni o'chirish yoki kirishni olib tashlash.",
+        "search": "Xodimlarni qidirish...",
+        "refresh": "Yangilash",
+        "empty": "Faol xodimlar topilmadi."
+      },
+      "audit": {
+        "title": "Xodimlar auditi jurnali",
+        "subtitle": "Mas'uliyat uchun so'nggi xodimlar va taklifnoma faoliyati.",
+        "empty": "Xodimlar auditi faoliyati topilmadi."
+      }
+    },
+    "verify": {
+      "title": "Hujjatlarni tekshirish",
+      "description": "Har qanday Tokito hujjatining — davolash rejalari, yo'llanmalar, retseptlar va bemor profillarining haqiqiyligini tekshiring.",
+      "input": "Tekshirish kodini kiriting yoki skanerlang",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Tekshirish",
+      "types": {
+        "tp": "TP - Davolash rejasi",
+        "rf": "RF - Yo'llanma",
+        "rx": "RX - Retsept",
+        "pt": "PT - Bemor profili"
+      },
+      "scan": "O'rniga QR kodni skanerlang"
+    }
+  }
+}
