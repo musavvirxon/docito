@@ -1,0 +1,350 @@
+{
+  "dashboard": {
+    "menu": {
+      "overview": "Overview",
+      "orders": "Orders",
+      "homeCollection": "Home Collection",
+      "samples": "Samples",
+      "analytics": "Analytics",
+      "billingInsurance": "Billing / Insurance",
+      "finances": "Finances",
+      "referrals": "Referrals",
+      "staff": "Staff",
+      "verifyDocuments": "Verify Documents",
+      "settings": "Settings"
+    },
+    "header": {
+      "title": "Lab Staff Dashboard",
+      "subtitle": "Orders, workflow, results pipeline, and analytics pulled from Supabase",
+      "refresh": "Refresh"
+    },
+    "overview": {
+      "title": "Overview",
+      "analytics": "Analytics",
+      "totalOrders": "Total Orders",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "pendingQueue": "Pending Queue",
+      "inProgressQueue": "In Progress",
+      "completedRecent": "Completed (recent)",
+      "urgent": "Urgent / STAT",
+      "overdue": "Overdue (>48h)",
+      "recentOrders": {
+        "title": "Recent Lab Orders",
+        "subtitle": "Latest orders and workflow state",
+        "empty": "No lab orders yet."
+      },
+      "activity": {
+        "title": "Activity Feed",
+        "subtitle": "Recent workflow updates",
+        "empty": "No recent activity."
+      },
+      "queueHealth": {
+        "title": "Queue Health",
+        "subtitle": "Quick operational snapshot from recent orders",
+        "pending": "Pending",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "urgent": "Urgent / STAT",
+        "overdue": "Overdue (>48h)",
+        "footer": "Full operational analytics, trends, and SLA metrics are available in the Analytics tab."
+      }
+    },
+    "orders": {
+      "search": "Search by order #, patient name/phone...",
+      "statuses": "All Statuses",
+      "newOrder": "New manual order",
+      "testOrders": "Test Orders",
+      "empty": "No orders found",
+      "details": {
+        "title": "Order Details",
+        "select": "Select an order to view details"
+      },
+      "statusList": {
+        "completed": "completed",
+        "cancelled": "cancelled",
+        "pending": "pending",
+        "scheduled": "scheduled",
+        "processing": "processing",
+        "sampleCollected": "sample collected"
+      }
+    },
+    "collections": {
+      "today": "Today's Collections",
+      "pendingAssignment": "Pending Assignment",
+      "inTransit": "In Transit",
+      "completedToday": "Completed Today",
+      "title": "Home Sample Collection",
+      "subtitle": "Manage pickup schedules and staff assignments",
+      "search": "Search by patient or address...",
+      "allStatus": "All Status",
+      "table": {
+        "patient": "Patient",
+        "address": "Address",
+        "scheduled": "Scheduled",
+        "collector": "Collector",
+        "status": "Status",
+        "actions": "Actions",
+        "empty": "No collections found"
+      },
+      "stats": {
+        "pending": "Pending",
+        "collected": "Collected",
+        "processing": "Processing",
+        "completed": "Completed"
+      }
+    },
+    "samples": {
+      "title": "Sample Management",
+      "subtitle": "Track samples from collection to results",
+      "search": "Search by sample ID, barcode, or patient...",
+      "allStatus": "All Status",
+      "table": {
+        "sample": "Sample",
+        "patient": "Patient",
+        "type": "Type",
+        "barcode": "Barcode",
+        "status": "Status",
+        "actions": "Actions",
+        "empty": "No samples found"
+      }
+    },
+    "analytics": {
+      "title": "Analytics Dashboard",
+      "subtitle": "Lab operations analytics across orders, tests, results, referrals, and catalog performance",
+      "last30days": "Last 30 days",
+      "refresh": "Refresh",
+      "metrics": {
+        "orders": "Orders (30d)",
+        "vsPrevious": "+0.0% vs previous period",
+        "completionRate": "Completion Rate",
+        "completionDetails": "0 completed • 0 pending",
+        "testVolume": "Test Volume",
+        "testsPerOrder": "0.0 tests / order",
+        "revenue": "Revenue (30d)",
+        "turnaround": "Turnaround (avg / P90)",
+        "turnaroundDesc": "Order created → completed",
+        "resultVerification": "Result Verification",
+        "verificationDetails": "0 verified • 0 pending",
+        "abnormalResults": "Abnormal Results",
+        "abnormalDetails": "0 of 0 results",
+        "incomingReferrals": "Incoming Referrals"
+      },
+      "charts": {
+        "ordersTrend": "Orders, Tests & Results Trend",
+        "throughput": "Daily lab throughput in selected period",
+        "orderStatusMix": "Order Status Mix",
+        "statusDistribution": "Status distribution for lab test orders",
+        "noOrders": "No orders in this period.",
+        "topTests": "Top Tests",
+        "noTests": "No test items found in this period.",
+        "operationalMix": "Operational Mix",
+        "priorityMix": "Priority Mix",
+        "noPriority": "No priority data",
+        "paymentStatus": "Payment Status",
+        "testCategories": "Test Categories"
+      },
+      "quality": {
+        "title": "Turnaround & Quality",
+        "sla": "SLA and quality indicators",
+        "orderTat": "Order TAT avg / P90",
+        "resultTat": "Result TAT avg / P90",
+        "sampleTat": "Sample collection avg / P90",
+        "slaBreaches": "SLA Breaches",
+        "performed": "Performed results",
+        "verified": "Verified results",
+        "pending": "Pending verification",
+        "abnormal": "Abnormal results"
+      },
+      "referrals": {
+        "title": "Referral Funnel",
+        "subtitle": "Incoming referral pipeline for this lab",
+        "received": "Received",
+        "active": "Accepted / Active",
+        "completed": "Completed",
+        "completionRate": "Completion Rate",
+        "status": "Referral Status"
+      },
+      "catalog": {
+        "title": "Catalog Coverage",
+        "subtitle": "Test catalog breadth and readiness",
+        "total": "Catalog Total",
+        "active": "Active Tests",
+        "local": "Local Tests",
+        "categories": "Categories"
+      },
+      "snapshot": {
+        "title": "Current Period Snapshot",
+        "avgOrderValue": "Avg order value",
+        "inProgress": "In progress orders",
+        "cancelled": "Cancelled orders",
+        "overdue": "Overdue orders (>48h)"
+      },
+      "alerts": {
+        "title": "Operational Alerts",
+        "subtitle": "Items requiring attention across lab workflow",
+        "empty": "No active alerts."
+      }
+    },
+    "billing": {
+      "title": "Billing & Insurance",
+      "subtitle": "Live billing transactions and insurance-covered orders.",
+      "refresh": "Refresh",
+      "grossRevenue": "Gross Revenue",
+      "refunds": "Refunds",
+      "netRevenue": "Net Revenue",
+      "completedTransactions": "0 completed transactions",
+      "tabs": {
+        "transactions": "Transactions",
+        "insurance": "Insurance Orders"
+      },
+      "search": "Search by status, type, description...",
+      "table": {
+        "date": "Date",
+        "type": "Type",
+        "status": "Status",
+        "description": "Description",
+        "amount": "Amount",
+        "empty": "No transactions found"
+      }
+    },
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports.",
+      "staffCompensation": {
+        "title": "Staff Compensation",
+        "addProfile": "Add Profile",
+        "empty": "No compensation profiles yet. Add salary, hourly, or percentage-based pay for your staff."
+      },
+      "export": {
+        "title": "Export finance entries",
+        "description": "Download your ledger entries as CSV for accounting, auditing, or deeper analysis.",
+        "from": "From",
+        "to": "To",
+        "type": "Type",
+        "category": "Category",
+        "all": "All",
+        "export": "Export CSV",
+        "tip": "Tip: export monthly ranges and share with your accountant. Filters help isolate payroll vs supplies vs utilities."
+      },
+      "recurring": {
+        "title": "Recurring",
+        "subtitle": "Automate repeating finance entries (utilities, rent, taxes, subscriptions).",
+        "addRule": "Add rule",
+        "status": "Status",
+        "noRuns": "No previous runs",
+        "runDue": "Run due rules",
+        "asOf": "As of",
+        "runNow": "Run due now",
+        "description": "Running creates finance entries for all rules with next_run_date ≤ selected date (catch-up supported).",
+        "noRules": "No recurring rules yet."
+      },
+      "categories": {
+        "title": "Categories",
+        "subtitle": "Create categories like Supplies, Taxes, Utilities, Salaries, and Commissions.",
+        "name": "Name",
+        "color": "Color (optional)",
+        "add": "Add",
+        "empty": "No categories yet. Add one above.",
+        "tip": "Tip: set a consistent naming convention so reports are clean."
+      },
+      "ledger": {
+        "title": "Ledger",
+        "subtitle": "Add and manage income, expenses, and payroll entries.",
+        "entries": "Entries",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "addEntry": "Add entry",
+        "manual": "Manual",
+        "date": "Date",
+        "type": "Type",
+        "currency": "Currency",
+        "amount": "Amount",
+        "reference": "Reference (optional)",
+        "description": "Description (optional)",
+        "empty": "No entries found for this filter.",
+        "note": "Note: this list shows up to 200 entries per filter."
+      },
+      "compensationModal": {
+        "title": "Add Compensation Profile",
+        "staff": "Staff Member",
+        "select": "Select staff member…",
+        "type": "Compensation Type",
+        "salary": "Fixed Salary",
+        "amount": "Amount ($)",
+        "period": "Period",
+        "monthly": "Monthly",
+        "frequency": "Payout Frequency",
+        "notes": "Notes (optional)",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
+    "referrals": {
+      "title": "Referrals",
+      "new": "New Referral",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your lab",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      },
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your lab",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      }
+    },
+    "staff": {
+      "stats": {
+        "active": "Active Staff",
+        "pending": "Pending Invitations",
+        "inactive": "Inactive / Disabled",
+        "admins": "Admin / Managers"
+      },
+      "invite": {
+        "title": "Invite Staff",
+        "subtitle": "Create staff invitations, assign role, and pre-configure permissions before they join.",
+        "email": "Email",
+        "role": "Role",
+        "technician": "Technician",
+        "send": "Send Invite",
+        "preset": "Permission Preset"
+      },
+      "pending": {
+        "title": "Pending Invitations",
+        "subtitle": "Manage pending invites, resend, or revoke before activation.",
+        "empty": "No pending invitations."
+      },
+      "active": {
+        "title": "Active Staff Management",
+        "subtitle": "Edit roles and permissions, deactivate staff, or remove access.",
+        "search": "Search staff...",
+        "refresh": "Refresh",
+        "empty": "No active staff found."
+      },
+      "audit": {
+        "title": "Staff Audit Trail",
+        "subtitle": "Recent staff and invitation activity for accountability.",
+        "empty": "No staff audit activity found."
+      }
+    },
+    "verify": {
+      "title": "Verify Documents",
+      "description": "Verify the authenticity of any Tokito document — treatment plans, referrals, prescriptions, and patient profiles.",
+      "input": "Enter or Scan Verification Code",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Verify",
+      "types": {
+        "tp": "TP - Treatment Plan",
+        "rf": "RF - Referral",
+        "rx": "RX - Prescription",
+        "pt": "PT - Patient Profile"
+      },
+      "scan": "Scan QR Code Instead"
+    }
+  }
+}
