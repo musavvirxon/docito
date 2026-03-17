@@ -72,6 +72,7 @@
     }
   },
   "specialties": {
+    "specialtiesSubtitle": "모든 의료 분야에서 전문의를 찾으세요",
     "title": "의료 تخصص",
     "subtitle": "인증된 متخصص와 연결하세요",
     "cardiology": "심장내과",
