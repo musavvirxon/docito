@@ -1,0 +1,286 @@
+{
+  "imagingDashboard": {
+    "menu": {
+      "overview": "Genel Bakış",
+      "scanWorkflow": "Tarama Akışı",
+      "reports": "Raporlar",
+      "equipment": "Ekipman",
+      "analytics": "Analizler",
+      "billing": "Faturalandırma",
+      "finances": "Finans",
+      "referrals": "Sevkler",
+      "staff": "Personel",
+      "verifyDocuments": "Belge Doğrulama",
+      "settings": "Ayarlar"
+    },
+
+    "header": {
+      "title": "Görüntüleme Personeli Paneli",
+      "subtitle": "Supabase'den çekilen siparişler, tarama iş akışı ve analizler",
+      "refresh": "Yenile"
+    },
+
+    "common": {
+      "refresh": "Yenile",
+      "export": "Dışa Aktar",
+      "exportCSV": "CSV Olarak Dışa Aktar",
+      "search": "Ara",
+      "all": "Tümü",
+      "allStatuses": "Tüm Durumlar",
+      "noData": "Henüz veri yok.",
+      "empty": "Kullanılabilir veri yok.",
+      "cancel": "İptal",
+      "save": "Kaydet",
+      "add": "Ekle",
+      "actions": "İşlemler"
+    },
+
+    "numbers": {
+      "zero": "0",
+      "zeroPercent": "%0",
+      "zeroCurrency": "$0.00",
+      "zeroHours": "0sa"
+    },
+
+    "statuses": {
+      "pending": "Beklemede",
+      "scheduled": "Planlandı",
+      "inProgress": "Devam Ediyor",
+      "completed": "Tamamlandı",
+      "draft": "Taslaklar",
+      "finalized": "Kesinleşti",
+      "critical": "Kritik",
+      "cancelled": "İptal Edildi",
+      "processing": "İşleniyor"
+    },
+
+    "time": {
+      "last30Days": "Son 30 gün",
+      "last90Days": "Son 90 gün",
+      "today": "Bugün",
+      "dateLabels": [
+        "19.02.2026",
+        "25.02.2026",
+        "03.03.2026",
+        "09.03.2026",
+        "17.03.2026"
+      ],
+      "hourLabels": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+
+    "overview": {
+      "title": "Genel Bakış",
+      "analytics": "Analizler",
+
+      "stats": {
+        "totalOrders": "Toplam Sipariş",
+        "pendingScheduled": "Bekleyen / Planlanan",
+        "inProgress": "Devam Eden",
+        "completed": "Tamamlanan"
+      },
+
+      "queue": {
+        "pendingQueue": "Bekleme Kuyruğu",
+        "scheduled": "Planlanan",
+        "inProgress": "Devam Eden",
+        "completed": "Tamamlanan",
+        "urgent": "Acil / STAT",
+        "overdue": "Gecikmiş (>48sa)"
+      },
+
+      "recentOrders": {
+        "title": "Son Görüntüleme Siparişleri",
+        "subtitle": "En son görüntüleme sevkleri ve iş akışı durumu",
+        "empty": "Henüz görüntüleme siparişi yok."
+      },
+
+      "activity": {
+        "title": "Aktivite Akışı",
+        "subtitle": "Son iş akışı güncellemeleri",
+        "empty": "Yakın zamanda bir aktivite yok."
+      },
+
+      "queueHealth": {
+        "title": "Kuyruk Sağlığı",
+        "subtitle": "Son görüntüleme siparişlerinden hızlı özet",
+        "topModality": "En Popüler Modalite",
+        "footer": "Tüm trendler, geri dönüş süreleri, demografi, sevk edenler ve gelir metrikleri Analizler sekmesinde mevcuttur."
+      }
+    },
+
+    "analytics": {
+      "title": "Analizler",
+      "refresh": "Yenile",
+      "export": "Dışa Aktar",
+
+      "metrics": {
+        "totalScans": "Toplam Tarama",
+        "completed": "0 tamamlandı",
+        "pending": "0 beklemede",
+        "vsPrev": "Önceki döneme göre %0",
+
+        "netRevenue": "Net Gelir",
+        "revenueDetail": "$0.00 gelir • $0.00 iade",
+
+        "avgReportTime": "Ort. Rapor Süresi",
+        "avgAcceptTime": "Ort. kabul süresi: 0sa",
+
+        "opsHealth": "Operasyon Sağlığı",
+        "util": "%0 kullanım",
+        "backlog": "0 birikmiş iş",
+        "open": "0 açık"
+      },
+
+      "charts": {
+        "dailyTrend": "Günlük Trend",
+        "trendDesc": "Zaman içindeki tarama ve gelir sayıları",
+
+        "modalityMix": "Modalite Dağılımı",
+        "workflow": "İş Akışı",
+        "referralStatus": "Sevk Durumu",
+        "topReferrers": "En Çok Sevk Edenler",
+        "peakHours": "Yoğun Saatler",
+        "patientDemographics": "Hasta Demografisi",
+        "gender": "Cinsiyet",
+        "ageBuckets": "Yaş Grupları",
+        "turnaround": "Modaliteye Göre Geri Dönüş",
+        "revenueByModality": "Modaliteye Göre Gelir",
+
+        "empty": "Henüz veri yok.",
+        "noRevenue": "Henüz modalite gelir verisi bulunmuyor."
+      }
+    },
+
+    "workflow": {
+      "title": "Tarama Akışı",
+      "subtitle": "Randevusuz siparişleri buradan oluşturun ve planlamadan rapor teslimine kadar taramaları yönetin.",
+      "newWalkIn": "Yeni Randevusuz Sipariş",
+      "searchPlaceholder": "Hasta, sipariş numarası veya muayeneye göre ara...",
+      "empty": "Tarama bulunamadı"
+    },
+
+    "orderForm": {
+      "title": "Yeni Manuel Görüntüleme Siparişi",
+
+      "fields": {
+        "fullName": "Tam Adı *",
+        "phone": "Telefon *",
+        "email": "E-posta (isteğe bağlı)",
+        "dob": "Doğum Tarihi (isteğe bağlı)",
+        "modality": "Modalite",
+        "studyName": "Çalışma Adı *",
+        "bodyPart": "Vücut Bölgesi (isteğe bağlı)",
+        "contrast": "Kontrast",
+        "priority": "Öncelik",
+        "preferredDate": "Tercih Edilen Tarih (isteğe bağlı)",
+        "preferredTime": "Tercih Edilen Saat Dilimi (isteğe bağlı)",
+        "reason": "Neden (isteğe bağlı)",
+        "clinicalNotes": "Klinik Notlar (isteğe bağlı)"
+      },
+
+      "placeholders": {
+        "phone": "+90 5XX XXX XX XX",
+        "email": "eposta@ornek.com",
+        "dob": "gg/aa/yyyy",
+        "study": "Göğüs Röntgeni, Beyin MR...",
+        "bodyPart": "Göğüs, Beyin, Diz...",
+        "time": "örn. 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Bu giriş hakkında notlar..."
+      },
+
+      "actions": {
+        "cancel": "İptal",
+        "submit": "Görüntüleme Siparişi Oluştur"
+      }
+    },
+
+    "reports": {
+      "search": "Raporlarda ara...",
+      "allReports": "Tüm Raporlar",
+      "empty": "Rapor bulunamadı",
+
+      "columns": {
+        "order": "Sipariş",
+        "patient": "Hasta",
+        "exam": "Muayene",
+        "modality": "Modalite",
+        "status": "Durum",
+        "radiologist": "Radyolog",
+        "actions": "İşlemler"
+      }
+    },
+
+    "equipment": {
+      "title": "Ekipman",
+      "subtitle": "Tarayıcıları ve kapasiteyi yönetin (depolama senkronize ediliyor…)",
+      "search": "Ekipman ara...",
+      "empty": "Ekipman bulunamadı",
+
+      "columns": {
+        "name": "Ad",
+        "modality": "Modalite",
+        "status": "Durum",
+        "capacity": "Kapasite/Gün"
+      },
+
+      "form": {
+        "title": "Ekipman Ekle",
+        "name": "Ad",
+        "modality": "Modalite",
+        "status": "Durum",
+        "manufacturer": "Üretici",
+        "model": "Model",
+        "serial": "Seri Numarası",
+        "capacity": "Günlük Kapasite",
+        "scanTypes": "Tarama türleri (virgülle ayrılmış)"
+      }
+    },
+
+    "billing": {
+      "partial": "Faturalandırma görünümü kısmen doldurulmuştur",
+      "warning": "Şemanızda veya mevcut izinlerinizde bazı tablolar kullanılamıyor olabilir.",
+
+      "metrics": {
+        "processedRevenue": "İşlenen Gelir",
+        "transactions": "İşlemler",
+        "averageTicket": "Ortalama İşlem Tutarı",
+        "collectionRate": "Tahsilat Oranı",
+        "outstanding": "Ödenmemiş Faturalar",
+        "holds": "Ödeme Bekletmeleri",
+        "subscriptions": "Aktif Abonelikler",
+        "risk": "Risk / Kaçak"
+      },
+
+      "charts": {
+        "revenueTrend": "Gelir Trendi",
+        "statusMix": "İşlem Durumu Dağılımı",
+        "types": "İşlem Türleri",
+        "invoiceStatus": "Fatura Durumu",
+        "plans": "Abonelik Planları",
+        "methods": "Ödeme Yöntemleri",
+        "providers": "Sağlayıcılar / Ödeme Geçitleri",
+        "recent": "Son İşlemler",
+        "success": "Günlük İşlem Başarısı",
+        "revenueType": "Gelir Türü Dağılımı"
+      }
+    },
+
+    "verify": {
+      "title": "Belge Doğrulama",
+      "input": "Doğrulama Kodunu Girin veya Taratın",
+      "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
+      "verify": "Doğrula",
+      "scan": "QR Kodu Tarat"
+    }
+  }
+}
