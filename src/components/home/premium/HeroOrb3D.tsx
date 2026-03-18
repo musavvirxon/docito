@@ -1,5 +1,6 @@
 // src/components/home/premium/HeroOrb3D.tsx
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html, OrbitControls, Sphere } from "@react-three/drei";
 import * as THREE from "three";
