@@ -378,20 +378,6 @@ const AdminDashboard = () => {
 
   const allowModals = isVerified;
 
-  const SectionWrapper = ({ children, locked }: { children: React.ReactNode; locked: boolean }) => {
-    return (
-      <div className="relative">
-        {children}
-        {locked && (
-          <LockedOverlay
-            onRequestVerify={() => setCreateClinicOpen(true)}
-            message="This feature is locked until your organization is verified."
-          />
-        )}
-      </div>
-    );
-  };
-
   const renderSection = () => {
     switch (activeSection) {
       case "overview":
