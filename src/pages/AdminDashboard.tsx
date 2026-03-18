@@ -129,11 +129,11 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
   );
 }
 
-function SectionWrapper({ children, locked, onRequestVerify, message }: { children: React.ReactNode; locked: boolean; onRequestVerify: () => void; message: string }) {
+function SectionWrapper({ children, locked, onRequestVerify, message = "This feature is locked until your organization is verified." }: { children: React.ReactNode; locked: boolean; onRequestVerify?: () => void; message?: string }) {
   return (
     <div className="relative">
       {children}
-      {locked && (
+      {locked && onRequestVerify && (
         <LockedOverlay onRequestVerify={onRequestVerify} message={message} />
       )}
     </div>
