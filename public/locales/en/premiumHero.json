@@ -36,6 +36,45 @@
     },
     "a11y": {
       "scrollToSearch": "Scroll to search"
+    },
+    "orb": {
+      "hint": "Drag to rotate • Scroll to zoom • Click nodes for details",
+      "close": "Close",
+      "hospital": {
+        "name": "Hospital",
+        "role": "Care Hub",
+        "description": "Coordinate inpatient and emergency care with unified records"
+      },
+      "clinic": {
+        "name": "Clinic",
+        "role": "Primary Care",
+        "description": "Streamline appointments, records, and patient follow-ups"
+      },
+      "lab": {
+        "name": "Laboratory",
+        "role": "Diagnostics",
+        "description": "Fast test ordering and results sharing across providers"
+      },
+      "imaging": {
+        "name": "Imaging",
+        "role": "Radiology",
+        "description": "Orders, scheduling, and reports for MRI, CT, X-ray, and ultrasound"
+      },
+      "pharmacy": {
+        "name": "Pharmacy",
+        "role": "Medications",
+        "description": "Digital prescriptions sent directly to the right pharmacy"
+      },
+      "doctor": {
+        "name": "Doctor",
+        "role": "Specialist",
+        "description": "Connect specialists for coordinated care and referrals"
+      },
+      "patient": {
+        "name": "Patient",
+        "role": "Care Recipient",
+        "description": "Book appointments and access records in one place"
+      }
     }
   }
 }

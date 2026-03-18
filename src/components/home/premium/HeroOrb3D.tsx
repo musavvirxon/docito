@@ -1047,6 +1047,7 @@ function Scene({
 
 // Modal for selected node
 function NodeModal({ node, onClose }: { node: NodeData | null; onClose: () => void }) {
+  const { t } = useTranslation("premiumHero");
   if (!node) return null;
 
   const IconComponent = node.Icon;
@@ -1090,7 +1091,7 @@ function NodeModal({ node, onClose }: { node: NodeData | null; onClose: () => vo
               color: "white",
             }}
           >
-            Close
+            {t("hero.orb.close", "Close")}
           </button>
         </div>
       </div>
