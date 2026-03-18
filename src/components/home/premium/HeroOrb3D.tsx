@@ -53,14 +53,14 @@ const ORBIT_VARIANCE = 0.35;
 // Medical ecosystem nodes - 7 nodes evenly spaced
 const ORBIT_STEP = (Math.PI * 2) / 7;
 
-const medicalNodes: Omit<NodeData, "position">[] = [
+const medicalNodeConfigs = [
   {
     id: "hospital",
-    name: "Hospital",
-    role: "Care Hub",
-    description: "Coordinate inpatient and emergency care with unified records",
+    nameKey: "hero.orb.hospital.name",
+    roleKey: "hero.orb.hospital.role",
+    descKey: "hero.orb.hospital.description",
     Icon: Building2,
-    color: "#3b82f6", // blue
+    color: "#3b82f6",
     orbitRadius: ORBIT_BASE + 0.25,
     orbitSpeed: 0.18,
     orbitOffset: 0,
@@ -68,11 +68,11 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
   {
     id: "clinic",
-    name: "Clinic",
-    role: "Primary Care",
-    description: "Streamline appointments, records, and patient follow-ups",
+    nameKey: "hero.orb.clinic.name",
+    roleKey: "hero.orb.clinic.role",
+    descKey: "hero.orb.clinic.description",
     Icon: Heart,
-    color: "#10b981", // emerald
+    color: "#10b981",
     orbitRadius: ORBIT_BASE - 0.05,
     orbitSpeed: 0.22,
     orbitOffset: ORBIT_STEP,
@@ -80,11 +80,11 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
   {
     id: "lab",
-    name: "Laboratory",
-    role: "Diagnostics",
-    description: "Fast test ordering and results sharing across providers",
+    nameKey: "hero.orb.lab.name",
+    roleKey: "hero.orb.lab.role",
+    descKey: "hero.orb.lab.description",
     Icon: FlaskConical,
-    color: "#8b5cf6", // purple
+    color: "#8b5cf6",
     orbitRadius: ORBIT_BASE - 0.15,
     orbitSpeed: 0.26,
     orbitOffset: ORBIT_STEP * 2,
@@ -92,11 +92,11 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
   {
     id: "imaging",
-    name: "Imaging",
-    role: "Radiology",
-    description: "Orders, scheduling, and reports for MRI, CT, X-ray, and ultrasound",
+    nameKey: "hero.orb.imaging.name",
+    roleKey: "hero.orb.imaging.role",
+    descKey: "hero.orb.imaging.description",
     Icon: ScanLine,
-    color: "#06b6d4", // cyan
+    color: "#06b6d4",
     orbitRadius: ORBIT_BASE - 0.25,
     orbitSpeed: 0.24,
     orbitOffset: ORBIT_STEP * 3,
@@ -104,11 +104,11 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
   {
     id: "pharmacy",
-    name: "Pharmacy",
-    role: "Medications",
-    description: "Digital prescriptions sent directly to the right pharmacy",
+    nameKey: "hero.orb.pharmacy.name",
+    roleKey: "hero.orb.pharmacy.role",
+    descKey: "hero.orb.pharmacy.description",
     Icon: Pill,
-    color: "#f59e0b", // amber
+    color: "#f59e0b",
     orbitRadius: ORBIT_BASE + 0.05,
     orbitSpeed: 0.2,
     orbitOffset: ORBIT_STEP * 4,
@@ -116,11 +116,11 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
   {
     id: "doctor",
-    name: "Doctor",
-    role: "Specialist",
-    description: "Connect specialists for coordinated care and referrals",
+    nameKey: "hero.orb.doctor.name",
+    roleKey: "hero.orb.doctor.role",
+    descKey: "hero.orb.doctor.description",
     Icon: Stethoscope,
-    color: "#ef4444", // red
+    color: "#ef4444",
     orbitRadius: ORBIT_BASE + 0.35,
     orbitSpeed: 0.16,
     orbitOffset: ORBIT_STEP * 5,
@@ -128,11 +128,11 @@ const medicalNodes: Omit<NodeData, "position">[] = [
   },
   {
     id: "patient",
-    name: "Patient",
-    role: "Care Recipient",
-    description: "Book appointments and access records in one place",
+    nameKey: "hero.orb.patient.name",
+    roleKey: "hero.orb.patient.role",
+    descKey: "hero.orb.patient.description",
     Icon: Users,
-    color: "#ec4899", // pink
+    color: "#ec4899",
     orbitRadius: ORBIT_BASE - 0.1,
     orbitSpeed: 0.3,
     orbitOffset: ORBIT_STEP * 6,
