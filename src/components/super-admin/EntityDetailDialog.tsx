@@ -28,8 +28,6 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
 
-  if (!entity) return null;
-
   const entityName = entity?.name || entity?.practice_name || "Entity Details";
 
   const insightsEnabled = Boolean(entity?.id) && (activeTab === "overview" || activeTab === "billing" || activeTab === "settings");
