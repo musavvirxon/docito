@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.blog-studio]
 verify_jwt = false
+
+[functions.patient-billing]
+verify_jwt = false
