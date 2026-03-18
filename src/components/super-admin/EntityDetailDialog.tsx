@@ -28,8 +28,6 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
 
-  if (!entity) return null;
-
   const entityName = entity?.name || entity?.practice_name || "Entity Details";
 
   const insightsEnabled = Boolean(entity?.id) && (activeTab === "overview" || activeTab === "billing" || activeTab === "settings");
@@ -87,7 +85,7 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
     const updateFields: Record<string, any> = {};
     if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
       updateFields.verified = true;
-      updateFields.verification_status = "approved";
+      updateFields.verification_status = "verified";
     } else {
       updateFields.verified = true;
     }
@@ -149,6 +147,14 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
   const planCode = insights?.billing?.subscription?.plan?.code ?? null;
   const limit = planStaffLimit(planCode);
   const staffLimitPlaceholder = limit ? String(limit) : "Unlimited";
+
+  if (!entity) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent><p className="text-muted-foreground">No entity selected.</p></DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

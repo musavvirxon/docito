@@ -129,6 +129,17 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
   );
 }
 
+function SectionWrapper({ children, locked, onRequestVerify, message = "This feature is locked until your organization is verified." }: { children: React.ReactNode; locked: boolean; onRequestVerify?: () => void; message?: string }) {
+  return (
+    <div className="relative">
+      {children}
+      {locked && onRequestVerify && (
+        <LockedOverlay onRequestVerify={onRequestVerify} message={message} />
+      )}
+    </div>
+  );
+}
+
 const AdminDashboard = () => {
   const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
@@ -151,7 +162,7 @@ const AdminDashboard = () => {
   } = useAdminDashboard();
 
   const verificationStatus = practice?.verification_status || "pending";
-  const isVerified = verificationStatus === "verified";
+  const isVerified = verificationStatus === "verified" || verificationStatus === "approved";
 
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(
     stats.totalRevenue,
@@ -223,6 +234,7 @@ const AdminDashboard = () => {
   const getVerificationStatusColor = (status: string) => {
     switch (status) {
       case "verified":
+      case "approved":
         return "bg-green-100 text-green-800 border-green-200";
       case "rejected":
         return "bg-red-100 text-red-800 border-red-200";
@@ -378,25 +390,11 @@ const AdminDashboard = () => {
 
   const allowModals = isVerified;
 
-  const SectionWrapper = ({ children, locked }: { children: React.ReactNode; locked: boolean }) => {
-    return (
-      <div className="relative">
-        {children}
-        {locked && (
-          <LockedOverlay
-            onRequestVerify={() => setCreateClinicOpen(true)}
-            message="This feature is locked until your organization is verified."
-          />
-        )}
-      </div>
-    );
-  };
-
   const renderSection = () => {
     switch (activeSection) {
       case "overview":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card className="lg:col-span-2 rounded-xl">
                 <CardHeader>
@@ -645,7 +643,7 @@ const AdminDashboard = () => {
 
       case "providers":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
               <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
@@ -707,7 +705,7 @@ const AdminDashboard = () => {
 
       case "services":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
               <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
@@ -767,7 +765,7 @@ const AdminDashboard = () => {
 
       case "staff":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             {practice?.id ? (
               <ClinicStaffManager practiceId={practice.id} />
             ) : (
@@ -781,7 +779,7 @@ const AdminDashboard = () => {
 
       case "locations":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.locations.title")}</h2>
               <Button onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
@@ -846,7 +844,7 @@ const AdminDashboard = () => {
 
       case "patients":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.patients.title")}</h2>
               <Button variant="outline" onClick={() => guard(() => toast.info("Export patients (coming soon)"))}>
@@ -889,7 +887,7 @@ const AdminDashboard = () => {
 
       case "billing":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">Billing & Payments</h2>
               <div className="flex items-center gap-2 flex-wrap">
@@ -1015,14 +1013,14 @@ const AdminDashboard = () => {
 
       case "finances":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <FinanceManagementSection entityType="practice" entityId={practice?.id || ""} />
           </SectionWrapper>
         );
 
       case "analytics":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold">Practice Analytics</h2>
               <div className="flex gap-2 flex-wrap">
@@ -1137,7 +1135,7 @@ const AdminDashboard = () => {
 
       case "settings":
         return (
-          <SectionWrapper locked={!isVerified}>
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.settings.title", { defaultValue: "Settings" })}</h2>
               <Button variant="outline" onClick={() => guard(() => setSettingsOpen(true))} disabled={!allowModals}>

@@ -25,7 +25,7 @@ export const useVerificationStatus = (practiceId?: string) => {
 
         const status = practice?.verification_status || 'pending';
         setVerificationStatus(status);
-        setIsVerified(status === 'verified');
+        setIsVerified(status === 'verified' || status === 'approved');
 
         // Store in localStorage to track if we've shown the modal
         const hasShownModal = localStorage.getItem(`verification_modal_shown_${practiceId}`);
@@ -56,7 +56,7 @@ export const useVerificationStatus = (practiceId?: string) => {
           const newStatus = payload.new?.verification_status;
           if (newStatus) {
             setVerificationStatus(newStatus);
-            setIsVerified(newStatus === 'verified');
+            setIsVerified(newStatus === 'verified' || newStatus === 'approved');
           }
         }
       )
