@@ -1099,10 +1099,26 @@ function NodeModal({ node, onClose }: { node: NodeData | null; onClose: () => vo
 }
 
 export default function HeroOrb3D() {
+  const { t } = useTranslation("premiumHero");
   const opacity = useScrollOpacity();
   const isVisible = useTabVisibility();
   const isMobile = useIsMobile();
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
+
+  const medicalNodes = useMemo<Omit<NodeData, "position">[]>(() => {
+    return medicalNodeConfigs.map((cfg) => ({
+      id: cfg.id,
+      name: t(cfg.nameKey, cfg.id.charAt(0).toUpperCase() + cfg.id.slice(1)),
+      role: t(cfg.roleKey, cfg.id),
+      description: t(cfg.descKey, cfg.id),
+      Icon: cfg.Icon,
+      color: cfg.color,
+      orbitRadius: cfg.orbitRadius,
+      orbitSpeed: cfg.orbitSpeed,
+      orbitOffset: cfg.orbitOffset,
+      verticalOffset: cfg.verticalOffset,
+    }));
+  }, [t]);
 
   const shouldAnimate = opacity > 0.01 && isVisible;
 
@@ -1115,15 +1131,15 @@ export default function HeroOrb3D() {
         frameloop={isVisible ? "demand" : "never"}
       >
         <FrameInvalidator shouldAnimate={shouldAnimate} />
-        <Scene opacity={opacity} setSelectedNode={setSelectedNode} isMobile={isMobile} />
+        <Scene opacity={opacity} setSelectedNode={setSelectedNode} isMobile={isMobile} medicalNodes={medicalNodes} />
       </Canvas>
 
       <NodeModal node={selectedNode} onClose={() => setSelectedNode(null)} />
 
       {!isMobile && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
-          <p className="text-xs text-slate-400 opacity-60">
-            Drag to rotate • Scroll to zoom • Click nodes for details
+          <p className="text-xs text-muted-foreground opacity-60">
+            {t("hero.orb.hint", "Drag to rotate • Scroll to zoom • Click nodes for details")}
           </p>
         </div>
       )}
