@@ -148,6 +148,14 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
   const limit = planStaffLimit(planCode);
   const staffLimitPlaceholder = limit ? String(limit) : "Unlimited";
 
+  if (!entity) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent><p className="text-muted-foreground">No entity selected.</p></DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
