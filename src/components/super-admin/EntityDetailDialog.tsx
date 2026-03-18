@@ -84,9 +84,17 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
     const tableName = tableMap[entityType];
     if (!tableName) return;
 
+    const updateFields: Record<string, any> = {};
+    if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+      updateFields.verified = true;
+      updateFields.verification_status = "approved";
+    } else {
+      updateFields.verified = true;
+    }
+
     const { error } = await supabase
       .from(tableName as any)
-      .update({ is_verified: true, status: "active" })
+      .update(updateFields)
       .eq("id", entity.id);
 
     if (error) {
