@@ -278,7 +278,7 @@ const ManagementTable = ({ title, type }: ManagementTableProps) => {
         case "doctors":
           query = supabase
             .from("doctors")
-            .select("*, profiles!inner(full_name, email)")
+            .select("*, profiles!fk_doctors_user_id(full_name, email)")
             .limit(10);
           break;
         case "practices":

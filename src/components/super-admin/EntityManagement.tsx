@@ -140,6 +140,91 @@ const EntityManagement = ({ entityType }: EntityManagementProps) => {
     setDetailOpen(true);
   };
 
+  const getTableName = () => config.table;
+
+  const handleVerifyEntity = async (entity: any) => {
+    try {
+      const tableName = getTableName();
+      // practices/pharmacies use "verified" + "verification_status"; others may use "is_verified"/"status"
+      const updateFields: Record<string, any> = {};
+      if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+        updateFields.verified = true;
+        updateFields.verification_status = "approved";
+      } else {
+        updateFields.verified = true;
+      }
+
+      const { error } = await supabase.from(tableName as any).update(updateFields).eq("id", entity.id);
+      if (error) throw error;
+
+      // Also create a facility_verification_requests entry
+      await supabase.from("facility_verification_requests").insert({
+        facility_id: entity.id,
+        facility_type: entityType,
+        status: "approved",
+        reviewed_at: new Date().toISOString(),
+      });
+
+      toast.success(`${entity.name || "Entity"} verified successfully`);
+      refetch();
+    } catch (err: any) {
+      console.error("Verify error:", err);
+      toast.error(err.message || "Failed to verify entity");
+    }
+  };
+
+  const handleSuspendEntity = async (entity: any) => {
+    try {
+      const tableName = getTableName();
+      const updateFields: Record<string, any> = {};
+      if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+        updateFields.verified = false;
+        updateFields.verification_status = "suspended";
+      } else {
+        updateFields.verified = false;
+      }
+
+      const { error } = await supabase.from(tableName as any).update(updateFields).eq("id", entity.id);
+      if (error) throw error;
+
+      toast.success(`${entity.name || "Entity"} suspended`);
+      refetch();
+    } catch (err: any) {
+      console.error("Suspend error:", err);
+      toast.error(err.message || "Failed to suspend entity");
+    }
+  };
+
+  const handleRejectEntity = async (entity: any) => {
+    try {
+      const tableName = getTableName();
+      const updateFields: Record<string, any> = {};
+      if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+        updateFields.verified = false;
+        updateFields.verification_status = "rejected";
+      } else {
+        updateFields.verified = false;
+      }
+
+      const { error } = await supabase.from(tableName as any).update(updateFields).eq("id", entity.id);
+      if (error) throw error;
+
+      // Also log to facility_verification_requests
+      await supabase.from("facility_verification_requests").insert({
+        facility_id: entity.id,
+        facility_type: entityType,
+        status: "rejected",
+        reviewed_at: new Date().toISOString(),
+      });
+
+      toast.success(`${entity.name || "Entity"} rejected`);
+      refetch();
+    } catch (err: any) {
+      console.error("Reject error:", err);
+      toast.error(err.message || "Failed to reject entity");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
