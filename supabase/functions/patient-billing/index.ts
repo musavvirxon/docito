@@ -214,8 +214,10 @@ serve(async (req) => {
   if (!env.ok) return json({ ok: false, error: env.error }, 500);
 
   const authed = createClient(env.url, env.anon, { global: { headers: { Authorization: authHeader } } });
-  const { data: userRes, error: userErr } = await authed.auth.getUser();
-  if (userErr || !userRes?.user) return json({ ok: false, error: "Unauthorized" }, 401);
+  const token = authHeader.replace(/^Bearer\s+/i, "");
+  const { data: claimsData, error: claimsErr } = await authed.auth.getClaims(token);
+  if (claimsErr || !claimsData?.claims) return json({ ok: false, error: "Unauthorized" }, 401);
+  const userRes = { user: { id: claimsData.claims.sub as string, email: (claimsData.claims.email as string) || null } };
 
   let body: ReqBody;
   try {
