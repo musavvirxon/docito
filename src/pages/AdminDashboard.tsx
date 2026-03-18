@@ -162,7 +162,7 @@ const AdminDashboard = () => {
   } = useAdminDashboard();
 
   const verificationStatus = practice?.verification_status || "pending";
-  const isVerified = verificationStatus === "verified";
+  const isVerified = verificationStatus === "verified" || verificationStatus === "approved";
 
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(
     stats.totalRevenue,

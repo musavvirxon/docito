@@ -56,7 +56,7 @@ export const useVerificationStatus = (practiceId?: string) => {
           const newStatus = payload.new?.verification_status;
           if (newStatus) {
             setVerificationStatus(newStatus);
-            setIsVerified(newStatus === 'verified');
+            setIsVerified(newStatus === 'verified' || newStatus === 'approved');
           }
         }
       )
