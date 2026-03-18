@@ -57,6 +57,8 @@ export const I18N_NAMESPACES = [
   BLOG_I18N_NAMESPACE,
   "profileMenu",
   "dashboard",
+  "premium",
+  "premiumHero",
   "imagingAdminDashboard",
   "labAdminDashboard",
   "pharmacyAdminDashboard",
