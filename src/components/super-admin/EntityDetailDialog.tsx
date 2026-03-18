@@ -122,9 +122,17 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
     const tableName = tableMap[entityType];
     if (!tableName) return;
 
+    const updateFields: Record<string, any> = {};
+    if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+      updateFields.verified = false;
+      updateFields.verification_status = "suspended";
+    } else {
+      updateFields.verified = false;
+    }
+
     const { error } = await supabase
       .from(tableName as any)
-      .update({ status: "suspended" })
+      .update(updateFields)
       .eq("id", entity.id);
 
     if (error) {
