@@ -85,7 +85,7 @@ export default function EntityDetailDialog({ open, onOpenChange, entity, entityT
     const updateFields: Record<string, any> = {};
     if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
       updateFields.verified = true;
-      updateFields.verification_status = "approved";
+      updateFields.verification_status = "verified";
     } else {
       updateFields.verified = true;
     }
