@@ -82,7 +82,20 @@ type AdminSection =
   | "analytics"
   | "settings";
 
-function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => void; message: string }) {
+function SectionWrapper({ children, locked, onRequestVerify, message }: { children: React.ReactNode; locked: boolean; onRequestVerify: () => void; message: string }) {
+  return (
+    <div className="relative">
+      {children}
+      {locked && (
+        <LockedOverlay
+          onRequestVerify={onRequestVerify}
+          message={message}
+        />
+      )}
+    </div>
+  );
+}
+
   return (
     <div
       className="absolute inset-0 z-20 rounded-xl bg-background/70 backdrop-blur-sm border border-border flex items-center justify-center p-6"
