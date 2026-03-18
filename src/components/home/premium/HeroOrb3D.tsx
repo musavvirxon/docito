@@ -978,10 +978,12 @@ function Scene({
   opacity,
   setSelectedNode,
   isMobile,
+  medicalNodes,
 }: {
   opacity: number;
   setSelectedNode: (node: NodeData | null) => void;
   isMobile: boolean;
+  medicalNodes: Omit<NodeData, "position">[];
 }) {
   const nodes = useMemo<NodeData[]>(() => {
     return medicalNodes.map((node) => ({
