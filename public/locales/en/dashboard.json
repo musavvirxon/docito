@@ -161,7 +161,7 @@
   },
   "patient": {
     "title": "Patient Dashboard",
-    "loading": "Loading dashboard...",
+    "loading": "Loading...",
     "navigation": {
       "dashboard": "Dashboard",
       "myAppointments": "My Appointments",
@@ -171,12 +171,42 @@
       "settings": "Settings",
       "logout": "Log Out"
     },
+    "menu": {
+      "dashboard": "Dashboard",
+      "appointments": "Appointments",
+      "prescriptions": "Prescriptions",
+      "records": "Medical Records",
+      "treatmentPlans": "Treatment Plans",
+      "billing": "Billing",
+      "referrals": "Referrals",
+      "settings": "Settings"
+    },
+    "signOut": {
+      "label": "Sign Out",
+      "error": "Failed to sign out"
+    },
+    "nav": {
+      "notifications": "Notifications"
+    },
+    "welcome": {
+      "title": "Welcome back",
+      "book": "Book appointment",
+      "findDoctor": "Find a doctor"
+    },
     "stats": {
+      "upcoming": "Upcoming",
+      "prescriptions": "Prescriptions",
+      "records": "Records",
       "upcomingAppointments": "Upcoming Appointments",
       "medicalRecords": "Medical Records",
       "pendingReminders": "Pending Reminders",
       "nextAppointment": "Next Appointment",
       "none": "None"
+    },
+    "dashboard": {
+      "upcomingTitle": "Upcoming Appointments",
+      "upcomingEmpty": "No upcoming appointments.",
+      "viewAll": "View all appointments"
     },
     "quickActions": {
       "title": "Quick Actions",
@@ -189,14 +219,28 @@
       "location": "Location details"
     },
     "appointments": {
-      "title": "My Appointments",
+      "title": "Appointments",
+      "refresh": "Refresh",
+      "book": "Book",
+      "upcoming": "Upcoming",
+      "upcomingEmpty": "No upcoming appointments.",
+      "past": "Past",
+      "pastEmpty": "No past appointments.",
+      "open": "Open",
       "noAppointments": "No appointments scheduled",
       "bookFirst": "Book your first appointment",
       "doctor": "Doctor"
     },
+    "prescriptions": {
+      "title": "Prescriptions",
+      "emptyTitle": "No prescriptions",
+      "emptyDesc": "You don't have any prescriptions yet."
+    },
     "records": {
       "title": "Medical Records",
-      "noRecords": "No medical records yet"
+      "noRecords": "No medical records yet",
+      "emptyTitle": "No Medical Records Found",
+      "emptyDesc": "Add your first record using the Add button."
     },
     "medications": {
       "title": "Medication Reminders",
@@ -261,38 +305,27 @@
     },
     "settings": {
       "title": "Settings",
-      "subtitle": "Manage your account preferences and settings",
-      "account": "Account",
-      "notifications": "Notifications",
-      "privacy": "Privacy",
-      "security": "Security",
-      "save": "Save Changes",
-      "changePassword": "Change Password",
-      "currentPassword": "Current Password",
-      "newPassword": "New Password",
-      "confirmPassword": "Confirm Password",
-      "emailNotifications": "Email Notifications",
-      "smsNotifications": "SMS Notifications",
-      "appointmentReminders": "Appointment Reminders",
-      "medicationReminders": "Medication Reminders",
-      "marketingEmails": "Marketing Emails",
-      "profileVisibility": "Profile Visibility",
-      "shareDataWithDoctors": "Share Data with Doctors",
-      "showActivityStatus": "Show Activity Status",
-      "instructions": "Manage your account settings, notifications, and privacy preferences",
+      "subtitle": "Manage your account, notifications, privacy, and security.",
+      "profile": "Edit Profile",
+      "preferences": "Preferences",
+      "signOut": "Sign Out",
       "account": {
-        "title": "Personal Information",
-        "description": "Update your personal details",
+        "title": "Account Information",
+        "description": "Update your personal details.",
         "fullName": "Full Name",
         "email": "Email",
         "phone": "Phone",
         "dateOfBirth": "Date of Birth",
         "address": "Address",
+        "timezone": "Timezone",
+        "timezoneHint": "All appointment times will be shown in your selected timezone.",
+        "language": "Language",
+        "selectLanguage": "Select language",
         "saveChanges": "Save Changes"
       },
       "notifications": {
         "emailTitle": "Email Notifications",
-        "emailDescription": "Manage your email notification preferences",
+        "emailDescription": "Manage your email preferences.",
         "smsTitle": "SMS Notifications",
         "smsDescription": "Manage your SMS notification preferences",
         "bookingConfirmations": "Booking Confirmations",
