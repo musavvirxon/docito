@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import EntityDetailDialog from "./EntityDetailDialog";
+import { toast } from "sonner";
 
 interface EntityManagementProps {
   entityType: 'clinic' | 'pharmacy' | 'laboratory' | 'imaging' | 'doctors' | 'practices' | 'patients' | 'appointments' | 'payments';
@@ -139,6 +140,91 @@ const EntityManagement = ({ entityType }: EntityManagementProps) => {
     setDetailOpen(true);
   };
 
+  const getTableName = () => config.table;
+
+  const handleVerifyEntity = async (entity: any) => {
+    try {
+      const tableName = getTableName();
+      // practices/pharmacies use "verified" + "verification_status"; others may use "is_verified"/"status"
+      const updateFields: Record<string, any> = {};
+      if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+        updateFields.verified = true;
+        updateFields.verification_status = "approved";
+      } else {
+        updateFields.verified = true;
+      }
+
+      const { error } = await supabase.from(tableName as any).update(updateFields).eq("id", entity.id);
+      if (error) throw error;
+
+      // Also create a facility_verification_requests entry
+      await supabase.from("facility_verification_requests").insert({
+        facility_id: entity.id,
+        facility_type: entityType,
+        status: "approved",
+        reviewed_at: new Date().toISOString(),
+      });
+
+      toast.success(`${entity.name || "Entity"} verified successfully`);
+      refetch();
+    } catch (err: any) {
+      console.error("Verify error:", err);
+      toast.error(err.message || "Failed to verify entity");
+    }
+  };
+
+  const handleSuspendEntity = async (entity: any) => {
+    try {
+      const tableName = getTableName();
+      const updateFields: Record<string, any> = {};
+      if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+        updateFields.verified = false;
+        updateFields.verification_status = "suspended";
+      } else {
+        updateFields.verified = false;
+      }
+
+      const { error } = await supabase.from(tableName as any).update(updateFields).eq("id", entity.id);
+      if (error) throw error;
+
+      toast.success(`${entity.name || "Entity"} suspended`);
+      refetch();
+    } catch (err: any) {
+      console.error("Suspend error:", err);
+      toast.error(err.message || "Failed to suspend entity");
+    }
+  };
+
+  const handleRejectEntity = async (entity: any) => {
+    try {
+      const tableName = getTableName();
+      const updateFields: Record<string, any> = {};
+      if (["practices", "pharmacies", "lab_centers", "imaging_centers"].includes(tableName)) {
+        updateFields.verified = false;
+        updateFields.verification_status = "rejected";
+      } else {
+        updateFields.verified = false;
+      }
+
+      const { error } = await supabase.from(tableName as any).update(updateFields).eq("id", entity.id);
+      if (error) throw error;
+
+      // Also log to facility_verification_requests
+      await supabase.from("facility_verification_requests").insert({
+        facility_id: entity.id,
+        facility_type: entityType,
+        status: "rejected",
+        reviewed_at: new Date().toISOString(),
+      });
+
+      toast.success(`${entity.name || "Entity"} rejected`);
+      refetch();
+    } catch (err: any) {
+      console.error("Reject error:", err);
+      toast.error(err.message || "Failed to reject entity");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -244,15 +330,15 @@ const EntityManagement = ({ entityType }: EntityManagementProps) => {
                               <Eye className="w-4 h-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleVerifyEntity(entity)}>
                               <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
                               Verify
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSuspendEntity(entity)}>
                               <Ban className="w-4 h-4 mr-2 text-yellow-500" />
                               Suspend
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem className="text-destructive" onClick={() => handleRejectEntity(entity)}>
                               <XCircle className="w-4 h-4 mr-2" />
                               Reject
                             </DropdownMenuItem>
