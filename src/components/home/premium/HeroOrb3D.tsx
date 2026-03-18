@@ -993,7 +993,7 @@ function Scene({
       ),
       position: new THREE.Vector3(node.orbitRadius, node.verticalOffset, 0),
     }));
-  }, []);
+  }, [medicalNodes]);
 
   return (
     <>
