@@ -244,15 +244,15 @@ const EntityManagement = ({ entityType }: EntityManagementProps) => {
                               <Eye className="w-4 h-4 mr-2" />
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleVerifyEntity(entity)}>
                               <CheckCircle className="w-4 h-4 mr-2 text-green-500" />
                               Verify
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleSuspendEntity(entity)}>
                               <Ban className="w-4 h-4 mr-2 text-yellow-500" />
                               Suspend
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
+                            <DropdownMenuItem className="text-destructive" onClick={() => handleRejectEntity(entity)}>
                               <XCircle className="w-4 h-4 mr-2" />
                               Reject
                             </DropdownMenuItem>
