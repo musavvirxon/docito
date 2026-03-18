@@ -12,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import EntityDetailDialog from "./EntityDetailDialog";
+import { toast } from "sonner";
 
 interface EntityManagementProps {
   entityType: 'clinic' | 'pharmacy' | 'laboratory' | 'imaging' | 'doctors' | 'practices' | 'patients' | 'appointments' | 'payments';
