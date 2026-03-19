@@ -189,10 +189,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         .maybeSingle();
 
       if (sessionError) throw sessionError;
-      if (!sessionData) throw new Error('Session not found');
 
-      setSession(sessionData as SessionData);
-      setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
+      // Session may not exist yet (e.g. patient viewing before doctor starts)
+      if (sessionData) {
+        setSession(sessionData as SessionData);
+        setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
+      } else {
+        setSession(null);
+      }
 
       const { data: appointmentData, error: apptError } = await supabase
         .from('appointments')
@@ -606,17 +610,17 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     );
   }
 
-  if (!appointment || !session) {
+  if (!appointment) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">{t('doctor.session.notFoundTitle', 'Session Not Found')}</h2>
-            <p className="text-muted-foreground mb-4">{t('doctor.session.notFoundBody', 'This appointment session could not be loaded.')}</p>
-            <Button onClick={() => navigate('/doctor-dashboard')}>
+            <h2 className="text-xl font-semibold mb-2">{t('doctor.session.notFoundTitle', 'Appointment Not Found')}</h2>
+            <p className="text-muted-foreground mb-4">{t('doctor.session.notFoundBody', 'This appointment could not be loaded.')}</p>
+            <Button onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('doctor.session.backToDashboard', 'Back to Dashboard')}
+              {t('doctor.session.backToDashboard', 'Go Back')}
             </Button>
           </CardContent>
         </Card>
@@ -678,10 +682,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
               </Button>
             )}
 
-            <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
-              {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-              End Session
-            </Button>
+            {session && (
+              <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
+                {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                End Session
+              </Button>
+            )}
           </div>
         </div>
       </header>
