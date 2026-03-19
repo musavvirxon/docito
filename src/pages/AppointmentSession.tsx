@@ -189,10 +189,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         .maybeSingle();
 
       if (sessionError) throw sessionError;
-      if (!sessionData) throw new Error('Session not found');
 
-      setSession(sessionData as SessionData);
-      setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
+      // Session may not exist yet (e.g. patient viewing before doctor starts)
+      if (sessionData) {
+        setSession(sessionData as SessionData);
+        setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
+      } else {
+        setSession(null);
+      }
 
       const { data: appointmentData, error: apptError } = await supabase
         .from('appointments')
