@@ -682,10 +682,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
               </Button>
             )}
 
-            <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
-              {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-              End Session
-            </Button>
+            {session && (
+              <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
+                {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                End Session
+              </Button>
+            )}
           </div>
         </div>
       </header>
