@@ -285,25 +285,25 @@ serve(async (req) => {
 
     // NEW: Create appointment_procedures row so doctor calendar/details can show requested procedure
     if (validatedProcedureId) {
-      await service
+      const { error: apError } = await service
         .from("appointment_procedures")
         .insert({
           appointment_id: appointment.id,
           procedure_id: validatedProcedureId,
-          prescribed_by: user.id, // patient requested; still record requester
+          prescribed_by: user.id,
           patient_consent_status: "pending",
           procedure_notes: "Requested during booking",
           estimated_cost: estimatedCost,
           status: "scheduled",
-        } as any)
-        .catch((e: any) => {
-          console.error("Failed to create appointment_procedures:", e);
-        });
+        } as any);
+      if (apError) {
+        console.error("Failed to create appointment_procedures:", apError);
+      }
     }
 
     await service.from("appointment_holds").delete().eq("id", hold.id);
 
-    await service
+    const { error: auditErr } = await service
       .from("entity_audit_logs")
       .insert({
         entity_type: "appointment",
@@ -312,8 +312,10 @@ serve(async (req) => {
         actor_id: user.id,
         new_values: appointment,
         metadata: { confirmed_from_hold: hold.id, requested_procedure_id: validatedProcedureId ?? null },
-      })
-      .catch(() => {});
+      });
+    if (auditErr) {
+      console.error("Audit log insert error (non-fatal):", auditErr);
+    }
 
     return json(
       {
