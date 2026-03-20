@@ -26,6 +26,7 @@ const footerLinks = {
     { key: "privacy", href: "/legal/privacy-policy" },
     { key: "cookies", href: "/legal/cookies" },
     { key: "hipaa", href: "/legal/hipaa" },
+    { key: "refundPolicy", href: "/legal/refund-policy" },
   ],
 } as const;
 
