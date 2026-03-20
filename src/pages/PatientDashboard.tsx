@@ -13,6 +13,7 @@ import {
   Home,
   LogOut,
   MapPin,
+  MessageSquare,
   Menu,
   Pill,
   Plus,
@@ -40,6 +41,7 @@ import { PatientBilling } from "@/components/patient/PatientBilling";
 import { PatientReferralsSection } from "@/components/patient/PatientReferralsSection";
 import { PatientTreatmentPlans } from "@/components/patient/PatientTreatmentPlans";
 import { PatientRecordsUnified } from "@/components/patient/PatientRecordsUnified";
+import HealthcareMessagingCenter from "@/components/messaging/HealthcareMessagingCenter";
 import { TimezoneNotice } from "@/components/time/TimezoneNotice";
 import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
@@ -54,6 +56,7 @@ type PatientDashboardSection =
   | "treatment-plans"
   | "billing"
   | "referrals"
+  | "messages"
   | "settings";
 
 export default function PatientDashboard() {
@@ -95,6 +98,7 @@ export default function PatientDashboard() {
       "treatment-plans",
       "billing",
       "referrals",
+      "messages",
       "settings",
     ];
     if (section && allowed.includes(section)) {
@@ -164,6 +168,11 @@ export default function PatientDashboard() {
         id: "referrals" as const,
         icon: ArrowRightLeft,
         label: t("patient.menu.referrals", { defaultValue: "Referrals" }),
+      },
+      {
+        id: "messages" as const,
+        icon: MessageSquare,
+        label: t("patient.menu.messages", { defaultValue: "Messages" }),
       },
       {
         id: "settings" as const,
@@ -508,6 +517,19 @@ export default function PatientDashboard() {
 
     if (activeSection === "referrals") {
       return <PatientReferralsSection initialReferralId={deepLinkReferralId} />;
+    }
+
+    if (activeSection === "messages") {
+      return (
+        <Card className="overflow-hidden">
+          <CardHeader>
+            <CardTitle>{t("patient.messages.title", { defaultValue: "Messages" })}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <HealthcareMessagingCenter userRole="patient" className="h-[700px] min-h-[700px] rounded-none border-0" />
+          </CardContent>
+        </Card>
+      );
     }
 
     if (activeSection === "settings") {

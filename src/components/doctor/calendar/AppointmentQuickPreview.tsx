@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useMessageAction } from "@/hooks/useMessageAction";
 import type { CalendarAppointment } from "./types";
 
 interface AppointmentQuickPreviewProps {
@@ -98,6 +99,7 @@ const AppointmentQuickPreview = memo(
     const { i18n } = useTranslation("dashboard");
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { startConversation, loading: isMessaging } = useMessageAction();
     const [isStarting, setIsStarting] = useState(false);
     const [showDiagnosisForm, setShowDiagnosisForm] = useState(false);
     const [diagnosisTitle, setDiagnosisTitle] = useState("");
@@ -241,39 +243,19 @@ const AppointmentQuickPreview = memo(
       if (!appointment) return;
 
       try {
-        const { data: existing, error: e1 } = await supabase
-          .from("conversations")
-          .select("id")
-          .eq("context_type", "visit")
-          .eq("context_id", appointment.id)
-          .maybeSingle();
-
-        if (e1) throw e1;
-
-        if (existing?.id) {
-          navigate(`/messages?c=${existing.id}`);
-          onClose();
-          return;
-        }
-
         if (!appointment.patient_id) {
           toast.error("Patient messaging is only available for registered patients.");
           return;
         }
 
-        const { data: conversationId, error } = await supabase.rpc("create_direct_conversation" as any, {
-          target_user_id: appointment.patient_id,
-        } as any);
-
-        if (error) throw error;
-
-        navigate(`/messages?c=${conversationId}`);
+        const conversationId = await startConversation(appointment.patient_id);
+        if (!conversationId) return;
         onClose();
       } catch (error) {
         console.error("Error starting conversation:", error);
         toast.error("Failed to start conversation");
       }
-    }, [appointment, navigate, onClose]);
+    }, [appointment, onClose, startConversation]);
 
     const handleSaveDiagnosis = useCallback(async () => {
       if (!appointment || !diagnosisTitle.trim()) {
@@ -282,10 +264,14 @@ const AppointmentQuickPreview = memo(
       }
       setSavingDiagnosis(true);
       try {
+        if (!appointment.doctor_id || !user?.id) {
+          throw new Error("Doctor context is missing");
+        }
+
         const { error } = await supabase.from("appointment_diagnoses").insert({
           appointment_id: appointment.id,
-          doctor_id: appointment.doctor_id || "",
-          created_by: user?.id || "",
+          doctor_id: appointment.doctor_id,
+          created_by: user.id,
           diagnosis_title: diagnosisTitle.trim(),
           icd10_code: icdCode.trim() || null,
           notes: diagnosisNotes.trim() || null,
@@ -490,7 +476,7 @@ const AppointmentQuickPreview = memo(
                 <User className="h-4 w-4" />
                 View Patient
               </Button>
-              <Button variant="outline" onClick={handleMessage} className="gap-2">
+              <Button variant="outline" onClick={handleMessage} className="gap-2" disabled={isMessaging}>
                 <MessageSquare className="h-4 w-4" />
                 Message
               </Button>

@@ -37,6 +37,7 @@ import { PatientProfileView } from '@/components/appointments/PatientProfileView
 import { VideoRoom } from '@/components/video';
 import { DiagnosisTab } from '@/components/visit/tabs/DiagnosisTab';
 import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Diagnosis } from '@/components/visit/types';
 
 interface AppointmentSessionPageProps {
@@ -94,6 +95,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation('dashboard');
+  const { allRoles } = useAuth();
 
   const appointmentId = propAppointmentId || paramAppointmentId;
 
@@ -314,6 +316,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
   const isVideoAppointment = appointment?.appointment_type === 'video';
   const isDentist = (doctorSpecialty || '').toLowerCase().includes('dent');
+  const canManagePrescriptions = !(allRoles || []).includes('patient');
 
   // Ensure active tab remains valid when the appointment type changes
   useEffect(() => {
@@ -723,10 +726,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsTrigger>
                   )}
 
-                  <TabsTrigger value="prescriptions" className="gap-2">
-                    <Pill className="h-4 w-4" />
-                    Rx
-                  </TabsTrigger>
+                  {canManagePrescriptions && (
+                    <TabsTrigger value="prescriptions" className="gap-2">
+                      <Pill className="h-4 w-4" />
+                      Rx
+                    </TabsTrigger>
+                  )}
 
                   <TabsTrigger value="notes" className="gap-2">
                     <FileText className="h-4 w-4" />
@@ -790,10 +795,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             <Calendar className="h-4 w-4" />
                             Book Follow-up
                           </Button>
-                          <Button variant="outline" className="gap-2">
-                            <Pill className="h-4 w-4" />
-                            Prescription
-                          </Button>
+                          {canManagePrescriptions && (
+                            <Button variant="outline" className="gap-2" onClick={() => handleTabChange('prescriptions')}>
+                              <Pill className="h-4 w-4" />
+                              Prescription
+                            </Button>
+                          )}
                           <Button variant="outline" className="gap-2">
                             <FileText className="h-4 w-4" />
                             Referral
@@ -940,13 +947,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsContent>
                   )}
 
-                  <TabsContent value="prescriptions" className="mt-0">
-                    <PrescriptionCreator
-                      patientId={patientId}
-                      doctorId={appointment.doctor_id}
-                      onSuccess={() => toast.success('Prescription created & PDF downloaded')}
-                    />
-                  </TabsContent>
+                  {canManagePrescriptions && (
+                    <TabsContent value="prescriptions" className="mt-0">
+                      <PrescriptionCreator
+                        patientId={patientId}
+                        doctorId={appointment.doctor_id}
+                        onSuccess={() => toast.success('Prescription created & PDF downloaded')}
+                      />
+                    </TabsContent>
+                  )}
 
                   <TabsContent value="notes" className="mt-0">
                     <Card>

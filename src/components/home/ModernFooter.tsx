@@ -5,7 +5,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from "lucide-react";
 
 export default function ModernFooter() {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "home"]);
   const currentYear = new Date().getFullYear();
 
   const platformLinks = [
@@ -35,7 +35,7 @@ export default function ModernFooter() {
     { label: t("footer.privacyPolicy", "Privacy Policy"), href: "/legal/privacy-policy" },
     { label: t("footer.termsOfService", "Terms of Service"), href: "/legal/terms-of-service" },
     { label: t("footer.cookiePolicy", "Cookie Policy"), href: "/cookie-policy" },
-    { label: t("home.footer.legal.refundPolicy", "Refund Policy"), href: "/refund-policy" },
+    { label: t("footer.legal.refundPolicy", { ns: "home", defaultValue: "Refund Policy" }), href: "/refund-policy" },
   ];
 
   const socialLinks = [
