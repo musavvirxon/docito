@@ -149,7 +149,7 @@ const DoctorProcedureLibrarySection = () => {
     value: "orthodontic",
     label: "Orthodontic"
   }, {
-    value: "surgical",
+    value: "oral_surgery",
     label: "Surgical"
   }, {
     value: "prosthodontic",
@@ -158,7 +158,7 @@ const DoctorProcedureLibrarySection = () => {
     value: "endodontic",
     label: "Endodontic"
   }, {
-    value: "periodontal",
+    value: "periodontic",
     label: "Periodontal"
   }, {
     value: "oral_surgery",

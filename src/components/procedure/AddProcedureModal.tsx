@@ -34,6 +34,13 @@ import { toast } from "sonner";
 import ToothSelector from "./ToothSelector";
 import { CalendarPlus, FileText, Upload, X, AlertCircle } from "lucide-react";
 
+const PROCEDURE_CATEGORY_ALIASES: Record<string, string> = {
+  surgical: "oral_surgery",
+  periodontal: "periodontic",
+};
+
+const normalizeProcedureCategory = (value: string) => PROCEDURE_CATEGORY_ALIASES[value] || value;
+
 const formSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
   category: z.string().min(1, "Category is required"),
@@ -222,7 +229,7 @@ const AddProcedureModal = ({
       }
 
       const finalCategory =
-        values.category === "__custom__" ? customCategory.trim() : values.category;
+        normalizeProcedureCategory(values.category === "__custom__" ? customCategory.trim() : values.category);
 
       if (!finalCategory) {
         toast.error("Please choose or enter a category");
@@ -316,6 +323,7 @@ const AddProcedureModal = ({
     categoryValue.includes("restorative") ||
     categoryValue.includes("endodontic") ||
     categoryValue.includes("periodontic") ||
+    categoryValue.includes("periodontal") ||
     categoryValue.includes("oral_surgery") ||
     categoryValue.includes("prosthodontic") ||
     categoryValue.includes("orthodontic") ||

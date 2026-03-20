@@ -28,6 +28,13 @@ import { toast } from "sonner";
 import ToothSelector from "./ToothSelector";
 import { CalendarPlus, Plus, Trash2 } from "lucide-react";
 
+const PROCEDURE_CATEGORY_ALIASES: Record<string, string> = {
+  surgical: "oral_surgery",
+  periodontal: "periodontic",
+};
+
+const normalizeProcedureCategory = (value: string) => PROCEDURE_CATEGORY_ALIASES[value] || value;
+
 const formSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
   category: z.string().min(1, "Category is required"),
@@ -140,7 +147,7 @@ const EditProcedureModal = ({
     try {
       const updateData: any = {
         name: values.name,
-        category: values.category as any,
+        category: normalizeProcedureCategory(values.category) as any,
         type: values.type as any,
         default_cost: values.default_cost || null,
         notes: values.notes || null,
