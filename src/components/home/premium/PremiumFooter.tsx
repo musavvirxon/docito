@@ -31,11 +31,11 @@ const footerLinks = {
 } as const;
 
 const socialLinks = [
-  { icon: Twitter, href: "https://twitter.com/docito", label: "Twitter" },
-  { icon: Facebook, href: "https://facebook.com/docito", label: "Facebook" },
-  { icon: Instagram, href: "https://instagram.com/docito", label: "Instagram" },
-  { icon: Linkedin, href: "https://linkedin.com/company/docito", label: "LinkedIn" },
-  { icon: Youtube, href: "https://youtube.com/docito", label: "YouTube" },
+  { icon: Twitter, href: "https://twitter.com/docito_app", label: "Twitter" },
+  { icon: Facebook, href: "https://facebook.com/docito_app", label: "Facebook" },
+  { icon: Instagram, href: "https://instagram.com/docito.app", label: "Instagram" },
+  { icon: Linkedin, href: "https://linkedin.com/company/docito_app", label: "LinkedIn" },
+  { icon: Youtube, href: "https://youtube.com/docito_app", label: "YouTube" },
 ] as const;
 
 const fallbackLabels: Record<string, string> = {
@@ -58,6 +58,7 @@ const fallbackLabels: Record<string, string> = {
   privacy: "Privacy",
   cookies: "Cookies",
   hipaa: "HIPAA",
+  refundPolicy: "Refund Policy",
 };
 
 function titleizeKey(key: string) {
