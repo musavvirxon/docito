@@ -198,23 +198,29 @@ export const usePrescriptions = (options?: { doctorId?: string; patientId?: stri
     notes?: string,
   ) => {
     try {
+      const normalizedPatientId = patientId?.trim();
+      const normalizedDoctorId = doctorId?.trim();
+
+      if (!normalizedPatientId) throw new Error("Patient ID is required");
+      if (!normalizedDoctorId) throw new Error("Doctor ID is required");
+
       const jsonItems = items.map((item) => ({
         medication_name: item.medication_name,
-        medication_code: item.medication_code || null,
+        medication_code: item.medication_code?.trim() || null,
         dosage: item.dosage,
         frequency: item.frequency,
         quantity: item.quantity,
         unit: item.unit || "tablets",
-        instructions: item.instructions || null,
+        instructions: item.instructions?.trim() || null,
         substitutions_allowed: item.substitutions_allowed ?? true,
       }));
 
       const { data, error } = await supabase.rpc("create_prescription", {
-        p_patient_id: patientId,
-        p_doctor_id: doctorId,
+        p_patient_id: normalizedPatientId,
+        p_doctor_id: normalizedDoctorId,
         p_items: jsonItems,
         p_refills: refills,
-        p_notes: notes,
+        p_notes: notes?.trim() || null,
       });
 
       if (error) throw error;

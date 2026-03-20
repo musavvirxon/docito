@@ -87,6 +87,11 @@ export default function PrescriptionCreator({ patientId, doctorId, onSuccess }: 
   };
 
   const handleSubmit = async () => {
+    if (!patientId?.trim() || !doctorId?.trim()) {
+      toast.error('Missing patient or doctor information');
+      return;
+    }
+
     // Validate items
     const validItems = items.filter(item => 
       item.medication_name && item.dosage && item.frequency && item.quantity
@@ -102,7 +107,13 @@ export default function PrescriptionCreator({ patientId, doctorId, onSuccess }: 
       const prescriptionId = await createPrescription(
         patientId,
         doctorId,
-        validItems as PrescriptionItem[],
+        validItems.map((item) => ({
+          ...item,
+          medication_name: item.medication_name?.trim() || '',
+          medication_code: item.medication_code?.trim() || undefined,
+          dosage: item.dosage?.trim() || '',
+          instructions: item.instructions?.trim() || undefined,
+        })) as PrescriptionItem[],
         refills,
         notes || undefined
       );

@@ -5,7 +5,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from "lucide-react";
 
 export default function ModernFooter() {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation(["common", "home"]);
   const currentYear = new Date().getFullYear();
 
   const platformLinks = [
@@ -19,22 +19,23 @@ export default function ModernFooter() {
   ];
 
   const companyLinks = [
-    { label: t("footer.about", "About"), href: "/about" },
-    { label: t("footer.features", "Features"), href: "/features" },
+    { label: t("footer.aboutUs", "About Us"), href: "/about" },
+    { label: t("navigation.features", "Features"), href: "/features" },
     { label: t("footer.contact", "Contact"), href: "/contact" },
-    { label: t("footer.feedback", "Feedback"), href: "/feedback" },
+    { label: t("navigation.dashboard", "Dashboard"), href: "/dashboard" },
   ];
 
   const supportLinks = [
-    { label: t("footer.helpCenter", "Help Center"), href: "/help-center" },
-    { label: t("footer.support", "Support"), href: "/support" },
-    { label: t("footer.faqs", "FAQs"), href: "/faqs" },
+    { label: t("navigation.contact", "Contact"), href: "/contact" },
+    { label: t("footer.legalCenter", "Legal Center"), href: "/legal" },
+    { label: t("footer.cookiePolicy", "Cookie Policy"), href: "/cookie-policy" },
   ];
 
   const legalLinks = [
-    { label: t("footer.privacy", "Privacy Policy"), href: "/legal/privacy-policy" },
-    { label: t("footer.terms", "Terms of Service"), href: "/legal/terms-of-service" },
-    { label: t("footer.cookies", "Cookie Policy"), href: "/cookie-policy" },
+    { label: t("footer.privacyPolicy", "Privacy Policy"), href: "/legal/privacy-policy" },
+    { label: t("footer.termsOfService", "Terms of Service"), href: "/legal/terms-of-service" },
+    { label: t("footer.cookiePolicy", "Cookie Policy"), href: "/cookie-policy" },
+    { label: t("footer.legal.refundPolicy", { ns: "home", defaultValue: "Refund Policy" }), href: "/refund-policy" },
   ];
 
   const socialLinks = [
