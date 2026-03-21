@@ -394,8 +394,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Inactivity timer
   const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
     enabled: Boolean(session),
-    inactivityTime: 15 * 60 * 1000,
-    warningTime: 60 * 1000,
+    inactivityTime: 45 * 60 * 1000,
+    warningTime: 2 * 60 * 1000,
     onInactive: async () => {
       try {
         await supabase.auth.signOut();

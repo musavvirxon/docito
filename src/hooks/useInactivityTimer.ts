@@ -8,8 +8,8 @@ interface UseInactivityTimerProps {
 
 export const useInactivityTimer = ({
   onInactive,
-  inactivityTime = 15 * 60 * 1000, // 15 minutes default
-  warningTime = 60 * 1000, // 1 minute warning default
+  inactivityTime = 45 * 60 * 1000, // 45 minutes default
+  warningTime = 2 * 60 * 1000, // 2 minute warning default
   enabled = true, // New prop to control if timer is active
 }: UseInactivityTimerProps & { enabled?: boolean }) => {
   const [showWarning, setShowWarning] = useState(false);

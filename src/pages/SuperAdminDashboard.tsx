@@ -208,8 +208,8 @@ const SuperAdminDashboard = () => {
 
   const { showWarning, countdown, stayLoggedIn } = useInactivityTimer({
     onInactive: handleInactive,
-    inactivityTime: 30 * 60 * 1000,
-    warningTime: 60 * 1000,
+    inactivityTime: 60 * 60 * 1000,
+    warningTime: 2 * 60 * 1000,
     enabled: !!user && isSuperAdmin === true,
   });
 

@@ -1,4 +1,8 @@
 # Serve static files directly (not through SPA)
+/favicon.ico       /favicon.ico       200
+/favicon.png       /favicon.png       200
+/site.webmanifest  /site.webmanifest  200
+/browserconfig.xml /browserconfig.xml 200
 /sitemap.xml       /sitemap.xml       200
 /sitemap-index.xml /sitemap-index.xml 200
 /robots.txt        /robots.txt        200

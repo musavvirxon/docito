@@ -49,6 +49,7 @@ const scrollToTopFactory = () => import("@/components/home/premium/ScrollToTop")
 export default function PremiumHome() {
   const { t } = useTranslation(["home", "common"]);
   const { headerProvided, footerProvided } = usePublicChrome();
+  const showMobileAppSection = false;
 
   useEffect(() => {
     const prev = document.documentElement.style.scrollBehavior;
@@ -99,7 +100,7 @@ export default function PremiumHome() {
 
           {/* GENERAL */}
           <LazySection factory={globalTrustFactory} />
-          <LazySection factory={mobileAppFactory} />
+          {showMobileAppSection ? <LazySection factory={mobileAppFactory} /> : null}
           <LazySection factory={faqFactory} />
           <LazySection factory={finalCtaFactory} />
           <LazySection factory={scrollToTopFactory} rootMargin="0px" fallback={null} />
