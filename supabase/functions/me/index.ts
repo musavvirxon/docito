@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -74,7 +74,10 @@ serve(async (req) => {
   // Use getClaims() for fast local JWT validation instead of getUser() network call
   const token = authHeader.replace(/^Bearer\s+/i, "");
   const { data: claimsData, error: claimsErr } = await authed.auth.getClaims(token);
-  if (claimsErr || !claimsData?.claims) return json({ ok: false, error: "Unauthorized" }, 401);
+  if (claimsErr || !claimsData?.claims) {
+    console.warn("me auth rejected request", claimsErr?.message || "missing claims");
+    return json({ ok: false, error: "Unauthorized" }, 401);
+  }
 
   const claims = claimsData.claims as Record<string, unknown>;
   const userId = claims.sub as string;

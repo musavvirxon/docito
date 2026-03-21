@@ -122,6 +122,14 @@ function normalizeRolesList(input: unknown[]): AppRole[] {
   return Array.from(new Set(normalized));
 }
 
+function isUnauthorizedEdgePayload(data: unknown) {
+  const errorMessage = typeof (data as { error?: unknown })?.error === "string"
+    ? ((data as { error: string }).error || "")
+    : "";
+
+  return /unauthorized|invalid token|expired token|missing authorization/i.test(errorMessage);
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bootstrapVersionRef = useRef(0);
   const pendingRoleOverrideRef = useRef<AppRole | null>(null);
@@ -170,8 +178,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    if (error) throw error;
+    if (error) {
+      console.warn("[Auth] me bootstrap unavailable; skipping edge fallback", error);
+      return null;
+    }
     if (!data || data.ok !== true) {
+      if (isUnauthorizedEdgePayload(data)) {
+        console.warn("[Auth] me bootstrap returned unauthorized; skipping edge fallback");
+        return null;
+      }
+
       const msg = data?.error || "Failed to load account";
       throw new Error(msg);
     }
@@ -439,7 +455,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void (async () => {
       try {
         const { data } = await supabase.auth.getSession();
-        if (!didUnmount) await runBootstrap(data.session ?? null);
+
+        const nextSession = data.session ?? null;
+        if (nextSession?.access_token) {
+          const { data: validatedUser, error: validateError } = await supabase.auth.getUser(nextSession.access_token);
+
+          if (validateError || !validatedUser?.user?.id) {
+            console.warn("[Auth] Stored session is no longer valid; clearing local auth state", validateError);
+            await supabase.auth.signOut({ scope: "local" });
+            if (!didUnmount) {
+              clearAuthState();
+              setLoading(false);
+              setBootstrapped(true);
+            }
+            return;
+          }
+        }
+
+        if (!didUnmount) await runBootstrap(nextSession);
       } catch (e) {
         console.error("Initial auth bootstrap failed:", e);
         if (!didUnmount) {
