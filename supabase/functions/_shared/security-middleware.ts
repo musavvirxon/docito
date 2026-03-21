@@ -1,6 +1,7 @@
 // File: supabase/functions/_shared/security-middleware.ts
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.1";
+import { checkRateLimitMemory, RATE_LIMIT_PRESETS } from "./rate-limiter.ts";
 
 export const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -79,6 +80,33 @@ function getClientIp(req: Request): string {
     req.headers.get("x-real-ip") ||
     "unknown"
   );
+}
+
+function isKnownAutomationAgent(req: Request): boolean {
+  const ua = (req.headers.get("user-agent") || "").toLowerCase();
+  if (!ua) return false;
+
+  const allowList = ["googlebot", "bingbot", "slurp", "duckduckbot", "facebookexternalhit", "twitterbot"];
+  if (allowList.some((agent) => ua.includes(agent))) return false;
+
+  const denyList = [
+    "headlesschrome",
+    "playwright",
+    "puppeteer",
+    "selenium",
+    "phantomjs",
+    "webdriver",
+    "curl/",
+    "wget/",
+    "python-requests",
+    "python-httpx",
+    "aiohttp",
+    "go-http-client",
+    "insomnia",
+    "postmanruntime",
+  ];
+
+  return denyList.some((agent) => ua.includes(agent));
 }
 
 async function getUserRoles(serviceClient: any, userId: string): Promise<string[]> {
@@ -175,6 +203,10 @@ export async function secureHandler(
     const token = getBearerToken(req);
     const ip = getClientIp(req);
 
+    if (isKnownAutomationAgent(req)) {
+      return { response: errorResponse("Automated traffic blocked", 403, "BOT_BLOCKED") };
+    }
+
     const anonClient = createClient(supabaseUrl, anonKey, {
       auth: { persistSession: false },
       global: {
@@ -206,6 +238,17 @@ export async function secureHandler(
 
       const ok = options.requireRoles.some((r) => roles.includes(r));
       if (!ok) return { response: errorResponse("Forbidden", 403) };
+    }
+
+    if (options.rateLimit) {
+      const preset = RATE_LIMIT_PRESETS[options.rateLimit as keyof typeof RATE_LIMIT_PRESETS] ?? RATE_LIMIT_PRESETS.standard;
+      const rateLimitResult = checkRateLimitMemory(functionName, ip, user?.id ?? null, preset);
+
+      if (!rateLimitResult.allowed) {
+        return {
+          response: errorResponse("Too many requests. Please try again later.", 429, "RATE_LIMITED"),
+        };
+      }
     }
 
     // Parse and validate body

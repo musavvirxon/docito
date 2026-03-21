@@ -153,10 +153,12 @@ serve(async (req) => {
   if (response) return response;
   if (!context || !validatedBody) return errorResponse("Internal server error", 500);
 
-  const { userId, roles } = context;
+  const userId = context.userId ?? context.user?.id;
+  const { roles } = context;
   const svc = context.serviceClient;
   const { code, variants } = normalize((validatedBody as ReqBody).verification_code);
   if (!code) return errorResponse("verification_code required", 400);
+  if (!userId) return errorResponse("Unauthorized", 401);
 
   const ctx = await callerCtx(svc, userId, roles || []);
   if (!ctx.isSA && !ctx.isDoc && !ctx.phIds.length && !ctx.labIds.length && !ctx.imgIds.length) {

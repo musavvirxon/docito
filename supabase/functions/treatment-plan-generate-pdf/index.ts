@@ -820,8 +820,8 @@ function formatForLocale(locale: Locale, input: string): string {
 
   try {
     const reshaped = reshaper.reshape(s);
-    const bidi = bidiFactory();
-    if (typeof bidi?.getReorderedString === "function") {
+    const bidi = bidiFactory() as { getReorderedString?: (value: string) => string };
+    if (typeof bidi.getReorderedString === "function") {
       return bidi.getReorderedString(reshaped);
     }
     return reshaped;

@@ -11,56 +11,31 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { trackMarketingEvent } from "@/lib/marketing";
+import { useTranslation } from "react-i18next";
 
 const diagnosticServices = [
   {
     icon: Microscope,
-    title: "Laboratory testing",
-    description:
-      "Order labs, receive results, and keep everything tied to the patient record — automatically.",
-    features: [
-      "Orders & results linked to the chart",
-      "Digital result delivery",
-      "Ready for billing workflows",
-    ],
+    key: "lab",
     browseRoute: "/labs",
     joinRole: "lab_admin",
-    browseLabel: "Browse labs",
-    joinLabel: "Join as a lab",
   },
   {
     icon: Scan,
-    title: "Medical imaging",
-    description:
-      "Coordinate imaging orders and reports so referrers and patients stay aligned — without extra tools.",
-    features: [
-      "Reports attached to the visit",
-      "Easy sharing with referrers",
-      "Status updates across the care path",
-    ],
+    key: "imaging",
     browseRoute: "/imaging",
     joinRole: "imaging_admin",
-    browseLabel: "Browse imaging",
-    joinLabel: "Join as an imaging center",
   },
   {
     icon: Pill,
-    title: "Pharmacy services",
-    description:
-      "Prescribe, fulfill, and follow up — with medication updates visible across the care team.",
-    features: [
-      "ePrescriptions and refills",
-      "Availability + substitutions",
-      "Pickup or delivery coordination",
-    ],
+    key: "pharmacy",
     browseRoute: "/pharmacies",
     joinRole: "pharmacy_admin",
-    browseLabel: "Browse pharmacies",
-    joinLabel: "Join as a pharmacy",
   },
 ];
 
 export default function DiagnosticsSection() {
+  const { t } = useTranslation("premium");
   const navigate = useNavigate();
 
   const onBrowse = (serviceTitle: string, route: string) => {
@@ -92,27 +67,36 @@ export default function DiagnosticsSection() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
             <Building2 className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-primary">
-              Diagnostics & Pharmacy
+              {t("diagnostics.badge", { defaultValue: "Diagnostics & Pharmacy" })}
             </span>
           </div>
 
           <h2 className="text-4xl font-bold mb-6">
-            Keep the full care journey{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600">
-              connected
+            {t("diagnostics.title.prefix", { defaultValue: "Keep the full care journey" })}{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
+              {t("diagnostics.title.highlight", { defaultValue: "connected" })}
             </span>
           </h2>
 
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Bring labs, imaging, and pharmacy updates into the same workflow as scheduling and
-            visits — so patients and teams always have the latest context.
+            {t("diagnostics.description", {
+              defaultValue:
+                "Bring labs, imaging, and pharmacy updates into the same workflow as scheduling and visits — so patients and teams always have the latest context.",
+            })}
           </p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {diagnosticServices.map((service, index) => (
+          {diagnosticServices.map((service, index) => {
+            const serviceTitle = t(`diagnostics.services.${service.key}.title`, { defaultValue: service.key });
+            const serviceDescription = t(`diagnostics.services.${service.key}.description`, { defaultValue: "" });
+            const serviceFeatures = t(`diagnostics.services.${service.key}.features`, { returnObjects: true, defaultValue: [] }) as string[];
+            const browseLabel = t(`diagnostics.services.${service.key}.browse`, { defaultValue: "Browse" });
+            const joinLabel = t(`diagnostics.services.${service.key}.join`, { defaultValue: "Join" });
+
+            return (
             <motion.div
-              key={index}
+              key={service.key}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -120,15 +104,15 @@ export default function DiagnosticsSection() {
               className="group"
             >
               <div className="h-full bg-background/50 border border-border/40 rounded-3xl p-8 backdrop-blur-sm hover:bg-background/70 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex flex-col">
-                <div className="w-16 h-16 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <div className="w-16 h-16 bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <service.icon className="h-8 w-8 text-primary" />
                 </div>
 
-                <h3 className="text-2xl font-bold mb-4">{service.title}</h3>
-                <p className="text-muted-foreground mb-6 min-h-[72px]">{service.description}</p>
+                <h3 className="text-2xl font-bold mb-4">{serviceTitle}</h3>
+                <p className="text-muted-foreground mb-6 min-h-[72px]">{serviceDescription}</p>
 
                 <div className="space-y-3 mb-8 min-h-[108px]">
-                  {service.features.map((feature, featureIndex) => (
+                  {serviceFeatures.map((feature, featureIndex) => (
                     <div
                       key={featureIndex}
                       className="flex items-center gap-3 text-sm"
@@ -143,23 +127,24 @@ export default function DiagnosticsSection() {
                   <Button
                     variant="outline"
                     className="w-full group/btn"
-                    onClick={() => onBrowse(service.title, service.browseRoute)}
+                    onClick={() => onBrowse(serviceTitle, service.browseRoute)}
                   >
-                    {service.browseLabel}
+                    {browseLabel}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                   </Button>
 
                   <Button
                     className="w-full group/btn"
-                    onClick={() => onJoin(service.title, service.joinRole)}
+                    onClick={() => onJoin(serviceTitle, service.joinRole)}
                   >
-                    {service.joinLabel}
+                    {joinLabel}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                   </Button>
                 </div>
               </div>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
