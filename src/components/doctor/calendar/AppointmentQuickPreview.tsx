@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessageAction } from "@/hooks/useMessageAction";
+import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
 import type { CalendarAppointment } from "./types";
 
 interface AppointmentQuickPreviewProps {
@@ -301,7 +302,7 @@ const AppointmentQuickPreview = memo(
         .join("")
         .toUpperCase() || "P";
 
-    const isDentist = doctorSpecialty?.toLowerCase().includes("dent");
+    const isDentist = isDentalSpecialty(doctorSpecialty);
     const requestedProcedureName = appointment.procedure_name || extractRequestedProcedureName(appointment.notes ?? null);
 
     return (
