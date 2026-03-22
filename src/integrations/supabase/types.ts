@@ -979,6 +979,81 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          author_name: string | null
+          body: Json
+          cover_image: string
+          created_at: string
+          created_by: string | null
+          excerpt: string
+          featured: boolean
+          group_id: string
+          id: string
+          keywords: string[]
+          lang: string
+          meta_description: string
+          meta_title: string
+          og_image: string
+          publishable_language: boolean
+          published_at: string | null
+          slug: string
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          author_name?: string | null
+          body?: Json
+          cover_image?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string
+          featured?: boolean
+          group_id: string
+          id?: string
+          keywords?: string[]
+          lang: string
+          meta_description?: string
+          meta_title?: string
+          og_image?: string
+          publishable_language?: boolean
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          author_name?: string | null
+          body?: Json
+          cover_image?: string
+          created_at?: string
+          created_by?: string | null
+          excerpt?: string
+          featured?: boolean
+          group_id?: string
+          id?: string
+          keywords?: string[]
+          lang?: string
+          meta_description?: string
+          meta_title?: string
+          og_image?: string
+          publishable_language?: boolean
+          published_at?: string | null
+          slug?: string
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       bones: {
         Row: {
           bone_category: string
