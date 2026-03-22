@@ -34,8 +34,8 @@ const socialLinks = [
   { icon: Twitter, href: "https://twitter.com/docito_app", label: "Twitter" },
   { icon: Facebook, href: "https://facebook.com/docito_app", label: "Facebook" },
   { icon: Instagram, href: "https://instagram.com/docito.app", label: "Instagram" },
-  { icon: Linkedin, href: "https://linkedin.com/company/docito_app", label: "LinkedIn" },
-  { icon: Youtube, href: "https://youtube.com/docito_app", label: "YouTube" },
+  { icon: Linkedin, href: "https://linkedin.com/company/docito-app", label: "LinkedIn" },
+  { icon: Youtube, href: "https://youtube.com/@docito_app", label: "YouTube" },
 ] as const;
 
 const fallbackLabels: Record<string, string> = {
