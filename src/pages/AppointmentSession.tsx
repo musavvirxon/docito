@@ -39,6 +39,7 @@ import { DiagnosisTab } from '@/components/visit/tabs/DiagnosisTab';
 import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Diagnosis } from '@/components/visit/types';
+import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -315,7 +316,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   }, [videoConsultation]);
 
   const isVideoAppointment = appointment?.appointment_type === 'video';
-  const isDentist = (doctorSpecialty || '').toLowerCase().includes('dent');
+  const isDentist = isDentalSpecialty(doctorSpecialty);
   const canManagePrescriptions = !(allRoles || []).includes('patient');
 
   // Ensure active tab remains valid when the appointment type changes

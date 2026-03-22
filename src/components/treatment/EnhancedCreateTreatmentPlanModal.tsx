@@ -25,6 +25,7 @@ import { useDoctorProfile } from "@/hooks/useDoctorProfile";
 import PatientSelector from "@/components/patient/PatientSelector";
 import ToothSelector from "@/components/procedure/ToothSelector";
 import { EnhancedDentalChart } from "@/components/dental/EnhancedDentalChart";
+import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
 import { cn } from "@/lib/utils";
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
@@ -153,8 +154,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
-  const specialty = (profile?.specialty || "").toLowerCase();
-  const isDentist = specialty.includes("dent") || specialty.includes("oral");
+  const isDentist = isDentalSpecialty(profile?.specialty);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

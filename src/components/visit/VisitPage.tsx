@@ -11,6 +11,7 @@ import { TreatmentTab } from "./tabs/TreatmentTab";
 import { PrescriptionTab } from "./tabs/PrescriptionTab";
 import { FilesTab } from "./tabs/FilesTab";
 import { NotesTab } from "./tabs/NotesTab";
+import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
 import {
   VisitMode,
   PatientData,
@@ -33,11 +34,6 @@ interface VisitPageProps {
   onVisitUpdate?: (visit: Partial<VisitData>) => void;
   onEndVisit?: () => void;
 }
-
-const isDentist = (specialty: string) => {
-  const s = (specialty || "").toLowerCase();
-  return s.includes("dentist") || s.includes("dental") || s.includes("stomatology");
-};
 
 const isOrthopedic = (specialty: string) => {
   const s = (specialty || "").toLowerCase();
@@ -66,7 +62,7 @@ export const VisitPage = ({
   const [lastSaved, setLastSaved] = useState<Date | undefined>();
 
   const specialty = doctor?.specialty || "";
-  const showDentalChart = isDentist(specialty);
+  const showDentalChart = isDentalSpecialty(specialty);
   const showOrthoChart = !showDentalChart && isOrthopedic(specialty);
 
   const updateVisit = useCallback(
