@@ -53,7 +53,7 @@ export function useDoctorSearch() {
     try {
       let q = supabase
         .from('doctor_profiles_view')
-        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url')
+        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url, bio, languages, years_experience, license_number, practice_name, practice_address, practice_city, practice_country, email, phone, appointment_count, practice_id')
         .eq('verified', true)
         .limit(50);
 
