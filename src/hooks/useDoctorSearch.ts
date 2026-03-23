@@ -15,6 +15,18 @@ interface DoctorResult {
   videoConsultation?: boolean;
   availableToday?: boolean;
   acceptsInsurance?: boolean;
+  bio?: string;
+  languages?: string[];
+  yearsExperience?: number;
+  licenseNumber?: string;
+  practiceName?: string;
+  practiceAddress?: string;
+  practiceCity?: string;
+  practiceCountry?: string;
+  email?: string;
+  phone?: string;
+  appointmentCount?: number;
+  practiceId?: string;
 }
 
 interface SearchParams {
@@ -41,7 +53,7 @@ export function useDoctorSearch() {
     try {
       let q = supabase
         .from('doctor_profiles_view')
-        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url')
+        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url, bio, languages, years_experience, license_number, practice_name, practice_address, practice_city, practice_country, email, phone, appointment_count, practice_id')
         .eq('verified', true)
         .limit(50);
 
@@ -70,6 +82,18 @@ export function useDoctorSearch() {
         videoConsultation: (d.consultation_types || []).includes('video'),
         availableToday: false,
         acceptsInsurance: false,
+        bio: d.bio,
+        languages: d.languages,
+        yearsExperience: d.years_experience,
+        licenseNumber: d.license_number,
+        practiceName: d.practice_name,
+        practiceAddress: d.practice_address,
+        practiceCity: d.practice_city,
+        practiceCountry: d.practice_country,
+        email: d.email,
+        phone: d.phone,
+        appointmentCount: d.appointment_count,
+        practiceId: d.practice_id,
       }));
 
       setResults(mapped);
