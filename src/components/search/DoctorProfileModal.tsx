@@ -47,33 +47,34 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
   const loadExtraData = async (doctorId: string, practiceId?: string) => {
     setExtraLoading(true);
     try {
-      const [verRes, svcRes, practiceRes] = await Promise.all([
-        supabase
-          .from('doctor_verification')
-          .select('specialty, license_number, years_of_experience, status, submitted_at, reviewed_at')
-          .eq('doctor_id', doctorId)
-          .maybeSingle()
-          .then(r => r),
-        (supabase
-          .from('procedures')
-          .select('id, name, description, cost, duration_minutes, category')
-          .eq('doctor_id', doctorId) as any)
-          .eq('is_active', true)
-          .limit(20)
-          .then((r: any) => r),
-        practiceId
-          ? supabase
-              .from('practices')
-              .select('name, address, city, country, phone, email, logo_url, practice_type, description, website')
-              .eq('id', practiceId)
-              .maybeSingle()
-              .then(r => r)
-          : Promise.resolve({ data: null }),
-      ]);
-
+      // Verification
+      const verRes = await supabase
+        .from('doctor_verification')
+        .select('specialty, license_number, years_of_experience, status, submitted_at, reviewed_at')
+        .eq('doctor_id', doctorId)
+        .maybeSingle();
       setVerification(verRes?.data || null);
-      setServices(svcRes?.data || []);
-      setPractice(practiceRes?.data || null);
+
+      // Services - use rpc-style to avoid deep type instantiation
+      const { data: svcData } = await (supabase
+        .from('procedures' as any)
+        .select('id, name, description, cost, duration_minutes, category')
+        .eq('doctor_id', doctorId)
+        .eq('is_active', true)
+        .limit(20) as any);
+      setServices(svcData || []);
+
+      // Practice
+      if (practiceId) {
+        const practiceRes = await supabase
+          .from('practices')
+          .select('name, address, city, country, phone, email, logo_url, practice_type, description, website')
+          .eq('id', practiceId)
+          .maybeSingle();
+        setPractice(practiceRes?.data || null);
+      } else {
+        setPractice(null);
+      }
     } catch (err) {
       console.error('Failed to load extra data:', err);
     } finally {
