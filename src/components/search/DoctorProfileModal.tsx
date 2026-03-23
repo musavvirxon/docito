@@ -6,9 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
 import {
   Star, MapPin, Video, Shield, Globe, Briefcase, Phone, Mail,
-  Calendar, Clock, Users, Award, Building2, CheckCircle2
+  Calendar, Clock, Users, Award, Building2, CheckCircle2, User,
+  Stethoscope, BadgeCheck, FileText, MessageSquare, Heart
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, parseISO } from 'date-fns';
@@ -30,12 +32,60 @@ interface AvailabilitySlot {
 export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointment, isLoggedIn }: DoctorProfileModalProps) {
   const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
+  const [verification, setVerification] = useState<any>(null);
+  const [practice, setPractice] = useState<any>(null);
+  const [services, setServices] = useState<any[]>([]);
+  const [extraLoading, setExtraLoading] = useState(false);
 
   useEffect(() => {
     if (open && doctor?.id) {
       loadAvailability(doctor.id);
+      loadExtraData(doctor.id, doctor.practiceId);
     }
   }, [open, doctor?.id]);
+
+  const loadExtraData = async (doctorId: string, practiceId?: string) => {
+    setExtraLoading(true);
+    try {
+      // Fetch verification, services, and practice in parallel
+      const promises: Promise<any>[] = [
+        supabase
+          .from('doctor_verification')
+          .select('specialty, license_number, years_of_experience, status, submitted_at, reviewed_at')
+          .eq('doctor_id', doctorId)
+          .maybeSingle(),
+        supabase
+          .from('procedures')
+          .select('id, name, description, cost, duration_minutes, category')
+          .eq('doctor_id', doctorId)
+          .eq('is_active', true)
+          .limit(20),
+      ];
+
+      if (practiceId) {
+        promises.push(
+          supabase
+            .from('practices')
+            .select('name, address, city, country, phone, email, logo_url, practice_type, description, website')
+            .eq('id', practiceId)
+            .maybeSingle()
+        );
+      }
+
+      const results = await Promise.all(promises);
+      setVerification(results[0]?.data || null);
+      setServices(results[1]?.data || []);
+      if (practiceId && results[2]) {
+        setPractice(results[2]?.data || null);
+      } else {
+        setPractice(null);
+      }
+    } catch (err) {
+      console.error('Failed to load extra data:', err);
+    } finally {
+      setExtraLoading(false);
+    }
+  };
 
   const loadAvailability = async (doctorId: string) => {
     setLoadingAvailability(true);
@@ -43,7 +93,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
       const today = new Date();
       const days: AvailabilitySlot[] = [];
 
-      // Fetch schedule settings (working_days is a JSON object)
       const { data: scheduleData } = await supabase
         .from('schedule_settings')
         .select('working_days')
@@ -52,7 +101,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
 
       const workingDays: Record<string, any> = (scheduleData?.working_days as Record<string, any>) || {};
 
-      // Fetch existing appointments for the next 7 days
       const startDate = format(today, 'yyyy-MM-dd');
       const endDate = format(addDays(today, 6), 'yyyy-MM-dd');
 
@@ -125,94 +173,155 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
 
   const locationParts = [doctor.practiceCity, doctor.practiceCountry].filter(Boolean);
   const locationStr = doctor.location || locationParts.join(', ');
+  const isIndependent = !doctor.practiceId;
+  const consultationTypes: string[] = doctor.consultationTypes || [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
-        <ScrollArea className="max-h-[90vh]">
+      <DialogContent className="max-w-3xl max-h-[92vh] p-0 overflow-hidden">
+        <ScrollArea className="max-h-[92vh]">
           <div className="p-6 space-y-5">
-            {/* Header - Avatar + Name */}
-            <div className="flex items-start gap-4">
-              <Avatar className="h-20 w-20 border-2 border-primary/20">
-                <AvatarImage src={doctor.imageUrl} alt={doctor.name} />
-                <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <DialogHeader className="text-left p-0">
-                  <DialogTitle className="text-xl text-foreground">{doctor.name}</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-wrap items-center gap-2 mt-1">
-                  {doctor.specialty && (
-                    <Badge variant="secondary">{doctor.specialty}</Badge>
-                  )}
-                  {doctor.acceptsNewPatients && (
-                    <Badge variant="outline" className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
-                      <CheckCircle2 className="h-3 w-3 mr-1" /> Accepting Patients
-                    </Badge>
-                  )}
-                </div>
-                {doctor.rating != null && doctor.rating > 0 && (
-                  <div className="flex items-center gap-1 mt-2 text-sm text-muted-foreground">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium text-foreground">{doctor.rating.toFixed(1)}</span>
-                    <span>({doctor.reviewCount || 0} reviews)</span>
-                    {doctor.appointmentCount != null && doctor.appointmentCount > 0 && (
-                      <span className="ml-2">• {doctor.appointmentCount} appointments</span>
+            {/* Header - Cover area */}
+            <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-5">
+              <div className="flex items-start gap-5">
+                <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                  <AvatarImage src={doctor.imageUrl} alt={doctor.name} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <DialogHeader className="text-left p-0">
+                    <DialogTitle className="text-2xl text-foreground">{doctor.name}</DialogTitle>
+                  </DialogHeader>
+                  <p className="text-sm text-muted-foreground mt-0.5">{doctor.specialty}</p>
+
+                  {/* Badges row */}
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    {doctor.verified && (
+                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700">
+                        <BadgeCheck className="h-3 w-3 mr-1" /> Verified
+                      </Badge>
+                    )}
+                    {doctor.acceptsNewPatients && (
+                      <Badge variant="outline" className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
+                        <CheckCircle2 className="h-3 w-3 mr-1" /> Accepting Patients
+                      </Badge>
+                    )}
+                    {isIndependent ? (
+                      <Badge variant="outline" className="text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-700">
+                        <User className="h-3 w-3 mr-1" /> Independent Practitioner
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-violet-600 border-violet-300 dark:text-violet-400 dark:border-violet-700">
+                        <Building2 className="h-3 w-3 mr-1" /> Clinic-Based
+                      </Badge>
                     )}
                   </div>
-                )}
+
+                  {/* Rating */}
+                  {doctor.rating != null && doctor.rating > 0 && (
+                    <div className="flex items-center gap-1.5 mt-2.5 text-sm text-muted-foreground">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-semibold text-foreground">{doctor.rating.toFixed(1)}</span>
+                      <span>({doctor.reviewCount || 0} reviews)</span>
+                      {doctor.appointmentCount != null && doctor.appointmentCount > 0 && (
+                        <span className="ml-2">• {doctor.appointmentCount} consultations</span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
+
+            {/* Stats Row */}
+            <div className="grid grid-cols-4 gap-3">
+              <Card className="p-3 text-center bg-muted/30">
+                <p className="text-lg font-bold text-foreground">{doctor.rating?.toFixed(1) || '—'}</p>
+                <p className="text-xs text-muted-foreground">Rating</p>
+              </Card>
+              <Card className="p-3 text-center bg-muted/30">
+                <p className="text-lg font-bold text-foreground">{doctor.reviewCount || 0}</p>
+                <p className="text-xs text-muted-foreground">Reviews</p>
+              </Card>
+              <Card className="p-3 text-center bg-muted/30">
+                <p className="text-lg font-bold text-foreground">{doctor.yearsExperience || '—'}</p>
+                <p className="text-xs text-muted-foreground">Years Exp.</p>
+              </Card>
+              <Card className="p-3 text-center bg-muted/30">
+                <p className="text-lg font-bold text-foreground">{doctor.appointmentCount || 0}</p>
+                <p className="text-xs text-muted-foreground">Appointments</p>
+              </Card>
             </div>
 
             <Separator />
 
             {/* Tabs */}
             <Tabs defaultValue="about" className="w-full">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="practice">Practice</TabsTrigger>
+                <TabsTrigger value="services">Services</TabsTrigger>
                 <TabsTrigger value="calendar">Availability</TabsTrigger>
               </TabsList>
 
-              {/* About Tab */}
-              <TabsContent value="about" className="space-y-4 mt-4">
+              {/* ─── About Tab ─── */}
+              <TabsContent value="about" className="space-y-5 mt-4">
                 {/* Bio */}
                 {doctor.bio && (
                   <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-1">About</h4>
+                    <h4 className="text-sm font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
+                      <FileText className="h-4 w-4 text-primary" /> Biography
+                    </h4>
                     <p className="text-sm text-muted-foreground leading-relaxed">{doctor.bio}</p>
                   </div>
                 )}
 
-                {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  {doctor.yearsExperience != null && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Briefcase className="h-4 w-4 text-primary" />
-                      <span className="text-muted-foreground">{doctor.yearsExperience} years experience</span>
-                    </div>
-                  )}
-                  {locationStr && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      <span className="text-muted-foreground">{locationStr}</span>
-                    </div>
-                  )}
-                  {doctor.videoConsultation && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Video className="h-4 w-4 text-primary" />
-                      <span className="text-muted-foreground">Video consultation</span>
-                    </div>
-                  )}
-                  {doctor.acceptsInsurance && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Shield className="h-4 w-4 text-primary" />
-                      <span className="text-muted-foreground">Accepts insurance</span>
-                    </div>
-                  )}
+                {/* Professional Details */}
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                    <Stethoscope className="h-4 w-4 text-primary" /> Professional Information
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <InfoRow icon={Briefcase} label="Specialty" value={doctor.specialty} />
+                    <InfoRow icon={Award} label="Experience" value={doctor.yearsExperience ? `${doctor.yearsExperience} years` : undefined} />
+                    <InfoRow icon={Award} label="License No." value={doctor.licenseNumber || verification?.license_number} />
+                    <InfoRow
+                      icon={BadgeCheck}
+                      label="Verification"
+                      value={
+                        verification?.status
+                          ? verification.status.charAt(0).toUpperCase() + verification.status.slice(1)
+                          : doctor.verified ? 'Verified' : 'Pending'
+                      }
+                    />
+                    {verification?.submitted_at && (
+                      <InfoRow icon={Calendar} label="Member Since" value={format(parseISO(verification.submitted_at), 'MMM yyyy')} />
+                    )}
+                    {doctor.created_at && !verification?.submitted_at && (
+                      <InfoRow icon={Calendar} label="Joined" value={format(parseISO(doctor.created_at), 'MMM yyyy')} />
+                    )}
+                  </div>
                 </div>
+
+                {/* Consultation Types */}
+                {consultationTypes.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                      <MessageSquare className="h-4 w-4 text-primary" /> Consultation Types
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {consultationTypes.map((ct: string) => (
+                        <Badge key={ct} variant="secondary" className="capitalize">
+                          {ct === 'video' && <Video className="h-3 w-3 mr-1" />}
+                          {ct === 'in_person' && <Users className="h-3 w-3 mr-1" />}
+                          {ct === 'messaging' && <MessageSquare className="h-3 w-3 mr-1" />}
+                          {ct.replace(/_/g, ' ')}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Languages */}
                 {doctor.languages && doctor.languages.length > 0 && (
@@ -230,42 +339,15 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
 
                 {/* Consultation Fee */}
                 {doctor.consultationFee != null && (
-                  <div className="bg-muted/50 rounded-lg p-3 flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Consultation fee</span>
-                    <span className="text-lg font-semibold text-foreground">${doctor.consultationFee}</span>
-                  </div>
-                )}
-              </TabsContent>
-
-              {/* Details Tab */}
-              <TabsContent value="details" className="space-y-4 mt-4">
-                {/* Practice Info */}
-                {doctor.practiceName && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                      <Building2 className="h-4 w-4 text-primary" /> Practice
-                    </h4>
-                    <p className="text-sm text-muted-foreground">{doctor.practiceName}</p>
-                    {doctor.practiceAddress && (
-                      <p className="text-sm text-muted-foreground mt-0.5">{doctor.practiceAddress}</p>
-                    )}
-                    {locationStr && (
-                      <p className="text-sm text-muted-foreground mt-0.5">{locationStr}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* License */}
-                {doctor.licenseNumber && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Award className="h-4 w-4 text-primary" />
-                    <span className="text-muted-foreground">License: {doctor.licenseNumber}</span>
+                  <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Consultation Fee</span>
+                    <span className="text-xl font-bold text-primary">${doctor.consultationFee}</span>
                   </div>
                 )}
 
                 {/* Contact */}
                 <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-2">Contact</h4>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Contact Information</h4>
                   <div className="space-y-2">
                     {doctor.email && (
                       <div className="flex items-center gap-2 text-sm">
@@ -279,27 +361,138 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                         <span className="text-muted-foreground">{doctor.phone}</span>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-3 bg-muted/50 rounded-lg p-3">
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">{doctor.rating?.toFixed(1) || '—'}</p>
-                    <p className="text-xs text-muted-foreground">Rating</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">{doctor.reviewCount || 0}</p>
-                    <p className="text-xs text-muted-foreground">Reviews</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-foreground">{doctor.yearsExperience || '—'}</p>
-                    <p className="text-xs text-muted-foreground">Years Exp.</p>
+                    {locationStr && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <span className="text-muted-foreground">{locationStr}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </TabsContent>
 
-              {/* Calendar/Availability Tab */}
+              {/* ─── Practice Tab ─── */}
+              <TabsContent value="practice" className="space-y-5 mt-4">
+                {isIndependent ? (
+                  <Card className="p-5 text-center space-y-2 bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+                    <User className="h-10 w-10 mx-auto text-blue-500" />
+                    <h4 className="font-semibold text-foreground">Independent Practitioner</h4>
+                    <p className="text-sm text-muted-foreground">
+                      This doctor operates independently and is not affiliated with a clinic.
+                      Consultations are available via video and messaging only.
+                    </p>
+                    <div className="flex justify-center gap-2 mt-3">
+                      <Badge variant="secondary"><Video className="h-3 w-3 mr-1" /> Video</Badge>
+                      <Badge variant="secondary"><MessageSquare className="h-3 w-3 mr-1" /> Messaging</Badge>
+                    </div>
+                  </Card>
+                ) : (
+                  <>
+                    {/* Practice Header */}
+                    <div className="flex items-start gap-4">
+                      {practice?.logo_url && (
+                        <Avatar className="h-14 w-14 rounded-lg border">
+                          <AvatarImage src={practice.logo_url} className="rounded-lg" />
+                          <AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+                            <Building2 className="h-6 w-6" />
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-foreground text-lg">
+                          {practice?.name || doctor.practiceName || 'Practice'}
+                        </h4>
+                        {practice?.practice_type && (
+                          <Badge variant="outline" className="mt-1 capitalize">{practice.practice_type}</Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {practice?.description && (
+                      <p className="text-sm text-muted-foreground leading-relaxed">{practice.description}</p>
+                    )}
+
+                    {/* Practice Details Grid */}
+                    <div className="grid grid-cols-1 gap-3">
+                      {(practice?.address || doctor.practiceAddress) && (
+                        <div className="flex items-start gap-2 text-sm">
+                          <MapPin className="h-4 w-4 text-primary mt-0.5" />
+                          <div>
+                            <p className="text-muted-foreground">{practice?.address || doctor.practiceAddress}</p>
+                            {(practice?.city || doctor.practiceCity) && (
+                              <p className="text-muted-foreground">
+                                {[practice?.city || doctor.practiceCity, practice?.country || doctor.practiceCountry].filter(Boolean).join(', ')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {practice?.phone && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">{practice.phone}</span>
+                        </div>
+                      )}
+                      {practice?.email && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Mail className="h-4 w-4 text-primary" />
+                          <span className="text-muted-foreground">{practice.email}</span>
+                        </div>
+                      )}
+                      {practice?.website && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Globe className="h-4 w-4 text-primary" />
+                          <a href={practice.website} target="_blank" rel="noopener noreferrer" className="text-primary underline">{practice.website}</a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Insurance badge */}
+                    {doctor.acceptsInsurance && (
+                      <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-sm">
+                        <Shield className="h-4 w-4 text-primary" />
+                        <span className="text-muted-foreground">This doctor accepts insurance</span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </TabsContent>
+
+              {/* ─── Services Tab ─── */}
+              <TabsContent value="services" className="space-y-4 mt-4">
+                {services.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Stethoscope className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">No services listed yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {services.map((svc) => (
+                      <Card key={svc.id} className="p-3 flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground">{svc.name}</p>
+                          {svc.description && (
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{svc.description}</p>
+                          )}
+                          <div className="flex items-center gap-3 mt-1">
+                            {svc.category && <Badge variant="outline" className="text-xs capitalize">{svc.category}</Badge>}
+                            {svc.duration_minutes && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                <Clock className="h-3 w-3" /> {svc.duration_minutes} min
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {svc.cost != null && (
+                          <span className="text-sm font-semibold text-primary ml-3">${svc.cost}</span>
+                        )}
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* ─── Calendar/Availability Tab ─── */}
               <TabsContent value="calendar" className="space-y-4 mt-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Calendar className="h-4 w-4 text-primary" />
@@ -360,5 +553,18 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
         </ScrollArea>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/* ─── Small helper component ─── */
+function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <Icon className="h-4 w-4 text-primary flex-shrink-0" />
+      <span className="text-muted-foreground">
+        <span className="font-medium text-foreground">{label}:</span> {value}
+      </span>
+    </div>
   );
 }

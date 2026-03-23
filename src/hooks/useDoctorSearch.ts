@@ -27,6 +27,9 @@ interface DoctorResult {
   phone?: string;
   appointmentCount?: number;
   practiceId?: string;
+  consultationTypes?: string[];
+  verified?: boolean;
+  created_at?: string;
 }
 
 interface SearchParams {
