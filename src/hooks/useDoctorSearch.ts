@@ -15,6 +15,18 @@ interface DoctorResult {
   videoConsultation?: boolean;
   availableToday?: boolean;
   acceptsInsurance?: boolean;
+  bio?: string;
+  languages?: string[];
+  yearsExperience?: number;
+  licenseNumber?: string;
+  practiceName?: string;
+  practiceAddress?: string;
+  practiceCity?: string;
+  practiceCountry?: string;
+  email?: string;
+  phone?: string;
+  appointmentCount?: number;
+  practiceId?: string;
 }
 
 interface SearchParams {
