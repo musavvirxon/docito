@@ -148,7 +148,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     <Badge variant="secondary">{doctor.specialty}</Badge>
                   )}
                   {doctor.acceptsNewPatients && (
-                    <Badge variant="outline" className="text-green-600 border-green-300">
+                    <Badge variant="outline" className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Accepting Patients
                     </Badge>
                   )}
