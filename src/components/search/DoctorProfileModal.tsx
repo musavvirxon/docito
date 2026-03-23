@@ -58,7 +58,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
           .from('procedures')
           .select('id, name, description, cost, duration_minutes, category')
           .eq('doctor_id', doctorId)
-          .eq('is_active', true)
+          .eq('is_active', true as any)
           .limit(20)
           .then(r => r),
         practiceId
