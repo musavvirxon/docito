@@ -47,39 +47,33 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
   const loadExtraData = async (doctorId: string, practiceId?: string) => {
     setExtraLoading(true);
     try {
-      // Fetch verification, services, and practice in parallel
-      const promises: Promise<any>[] = [
+      const [verRes, svcRes, practiceRes] = await Promise.all([
         supabase
           .from('doctor_verification')
           .select('specialty, license_number, years_of_experience, status, submitted_at, reviewed_at')
           .eq('doctor_id', doctorId)
-          .maybeSingle(),
+          .maybeSingle()
+          .then(r => r),
         supabase
           .from('procedures')
           .select('id, name, description, cost, duration_minutes, category')
           .eq('doctor_id', doctorId)
           .eq('is_active', true)
-          .limit(20),
-      ];
+          .limit(20)
+          .then(r => r),
+        practiceId
+          ? supabase
+              .from('practices')
+              .select('name, address, city, country, phone, email, logo_url, practice_type, description, website')
+              .eq('id', practiceId)
+              .maybeSingle()
+              .then(r => r)
+          : Promise.resolve({ data: null }),
+      ]);
 
-      if (practiceId) {
-        promises.push(
-          supabase
-            .from('practices')
-            .select('name, address, city, country, phone, email, logo_url, practice_type, description, website')
-            .eq('id', practiceId)
-            .maybeSingle()
-        );
-      }
-
-      const results = await Promise.all(promises);
-      setVerification(results[0]?.data || null);
-      setServices(results[1]?.data || []);
-      if (practiceId && results[2]) {
-        setPractice(results[2]?.data || null);
-      } else {
-        setPractice(null);
-      }
+      setVerification(verRes?.data || null);
+      setServices(svcRes?.data || []);
+      setPractice(practiceRes?.data || null);
     } catch (err) {
       console.error('Failed to load extra data:', err);
     } finally {
