@@ -97,7 +97,9 @@ export function useDoctorSearch() {
         phone: d.phone,
         appointmentCount: d.appointment_count,
         practiceId: d.practice_id,
-      }));
+        consultationTypes: d.consultation_types,
+        verified: d.verified,
+        created_at: d.created_at,
 
       setResults(mapped);
       setTotalCount(mapped.length);
