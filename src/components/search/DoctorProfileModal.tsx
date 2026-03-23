@@ -54,13 +54,13 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
           .eq('doctor_id', doctorId)
           .maybeSingle()
           .then(r => r),
-        supabase
+        (supabase
           .from('procedures')
           .select('id, name, description, cost, duration_minutes, category')
-          .eq('doctor_id', doctorId)
-          .eq('is_active', true as any)
+          .eq('doctor_id', doctorId) as any)
+          .eq('is_active', true)
           .limit(20)
-          .then(r => r),
+          .then((r: any) => r),
         practiceId
           ? supabase
               .from('practices')
