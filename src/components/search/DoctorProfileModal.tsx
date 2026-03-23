@@ -369,8 +369,8 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
               {/* ─── Practice Tab ─── */}
               <TabsContent value="practice" className="space-y-5 mt-4">
                 {isIndependent ? (
-                  <Card className="p-5 text-center space-y-2 bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                    <User className="h-10 w-10 mx-auto text-blue-500" />
+                  <Card className="p-5 text-center space-y-2 bg-accent/50 border-accent">
+                    <User className="h-10 w-10 mx-auto text-primary" />
                     <h4 className="font-semibold text-foreground">Independent Practitioner</h4>
                     <p className="text-sm text-muted-foreground">
                       This doctor operates independently and is not affiliated with a clinic.
