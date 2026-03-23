@@ -100,6 +100,7 @@ export function useDoctorSearch() {
         consultationTypes: d.consultation_types,
         verified: d.verified,
         created_at: d.created_at,
+      }));
 
       setResults(mapped);
       setTotalCount(mapped.length);
