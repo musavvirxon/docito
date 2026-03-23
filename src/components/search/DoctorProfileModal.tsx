@@ -194,21 +194,21 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                   {/* Badges row */}
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {doctor.verified && (
-                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700">
+                      <Badge className="bg-accent text-accent-foreground">
                         <BadgeCheck className="h-3 w-3 mr-1" /> Verified
                       </Badge>
                     )}
                     {doctor.acceptsNewPatients && (
-                      <Badge variant="outline" className="text-emerald-600 border-emerald-300 dark:text-emerald-400 dark:border-emerald-700">
+                      <Badge variant="outline" className="text-primary border-primary/30">
                         <CheckCircle2 className="h-3 w-3 mr-1" /> Accepting Patients
                       </Badge>
                     )}
                     {isIndependent ? (
-                      <Badge variant="outline" className="text-blue-600 border-blue-300 dark:text-blue-400 dark:border-blue-700">
+                      <Badge variant="outline" className="text-secondary-foreground border-secondary">
                         <User className="h-3 w-3 mr-1" /> Independent Practitioner
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-violet-600 border-violet-300 dark:text-violet-400 dark:border-violet-700">
+                      <Badge variant="outline" className="text-secondary-foreground border-secondary">
                         <Building2 className="h-3 w-3 mr-1" /> Clinic-Based
                       </Badge>
                     )}
