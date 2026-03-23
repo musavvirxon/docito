@@ -82,6 +82,18 @@ export function useDoctorSearch() {
         videoConsultation: (d.consultation_types || []).includes('video'),
         availableToday: false,
         acceptsInsurance: false,
+        bio: d.bio,
+        languages: d.languages,
+        yearsExperience: d.years_experience,
+        licenseNumber: d.license_number,
+        practiceName: d.practice_name,
+        practiceAddress: d.practice_address,
+        practiceCity: d.practice_city,
+        practiceCountry: d.practice_country,
+        email: d.email,
+        phone: d.phone,
+        appointmentCount: d.appointment_count,
+        practiceId: d.practice_id,
       }));
 
       setResults(mapped);
