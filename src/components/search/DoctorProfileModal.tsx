@@ -43,11 +43,14 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
       const today = new Date();
       const days: AvailabilitySlot[] = [];
 
-      // Fetch schedule settings
-      const { data: schedule } = await supabase
+      // Fetch schedule settings (working_days is a JSON object)
+      const { data: scheduleData } = await supabase
         .from('schedule_settings')
-        .select('day_of_week, start_time, end_time, is_active')
-        .eq('doctor_id', doctorId);
+        .select('working_days')
+        .eq('doctor_id', doctorId)
+        .maybeSingle();
+
+      const workingDays: Record<string, any> = (scheduleData?.working_days as Record<string, any>) || {};
 
       // Fetch existing appointments for the next 7 days
       const startDate = format(today, 'yyyy-MM-dd');
@@ -68,17 +71,17 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
         const dayName = dayNames[date.getDay()];
         const dateStr = format(date, 'yyyy-MM-dd');
 
-        const daySchedule = (schedule || []).find(
-          (s: any) => s.day_of_week?.toLowerCase() === dayName && s.is_active
-        );
+        const dayConfig = workingDays[dayName];
+        const isActive = dayConfig?.enabled || dayConfig?.is_active || false;
 
-        if (daySchedule) {
-          // Generate 30-min slots
+        if (isActive && dayConfig) {
           const slots: { start_time: string; end_time: string }[] = [];
-          const [startH, startM] = daySchedule.start_time.split(':').map(Number);
-          const [endH, endM] = daySchedule.end_time.split(':').map(Number);
-          const startMinutes = startH * 60 + startM;
-          const endMinutes = endH * 60 + endM;
+          const startTime = dayConfig.start || dayConfig.start_time || '09:00';
+          const endTime = dayConfig.end || dayConfig.end_time || '17:00';
+          const [startH, startM] = startTime.split(':').map(Number);
+          const [endH, endM] = endTime.split(':').map(Number);
+          const startMinutes = startH * 60 + (startM || 0);
+          const endMinutes = endH * 60 + (endM || 0);
 
           const dayAppointments = (appointments || []).filter(
             (a: any) => a.appointment_date === dateStr
@@ -97,11 +100,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
             }
           }
 
-          days.push({
-            day: format(date, 'EEE'),
-            date: dateStr,
-            slots,
-          });
+          days.push({ day: format(date, 'EEE'), date: dateStr, slots });
         } else {
           days.push({ day: format(date, 'EEE'), date: dateStr, slots: [] });
         }
