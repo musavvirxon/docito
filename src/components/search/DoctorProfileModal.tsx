@@ -217,7 +217,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                   {/* Rating */}
                   {doctor.rating != null && doctor.rating > 0 && (
                     <div className="flex items-center gap-1.5 mt-2.5 text-sm text-muted-foreground">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="h-4 w-4 fill-primary text-primary" />
                       <span className="font-semibold text-foreground">{doctor.rating.toFixed(1)}</span>
                       <span>({doctor.reviewCount || 0} reviews)</span>
                       {doctor.appointmentCount != null && doctor.appointmentCount > 0 && (
