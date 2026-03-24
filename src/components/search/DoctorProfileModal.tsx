@@ -129,6 +129,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
           const slots: { start_time: string; end_time: string }[] = [];
           const startTime = dayConfig.start || dayConfig.start_time || '09:00';
           const endTime = dayConfig.end || dayConfig.end_time || '17:00';
+          const breaks: { start_time: string; end_time: string }[] = dayConfig.breaks || [];
           const [startH, startM] = startTime.split(':').map(Number);
           const [endH, endM] = endTime.split(':').map(Number);
           const startMinutes = startH * 60 + (startM || 0);
@@ -158,8 +159,13 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
             const isBlocked = dayBlocked.some((b: any) =>
               b.start_time <= slotStart && b.end_time > slotStart
             );
+            const isOnBreak = breaks.some((br: any) => {
+              const bStart = br.start_time || br.start;
+              const bEnd = br.end_time || br.end;
+              return bStart <= slotStart && bEnd > slotStart;
+            });
 
-            if (!isBooked && !isBlocked) {
+            if (!isBooked && !isBlocked && !isOnBreak) {
               slots.push({ start_time: slotStart, end_time: slotEnd });
             }
           }
