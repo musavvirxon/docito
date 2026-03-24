@@ -373,7 +373,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     size="sm"
                     className="text-xs"
                     onClick={() => {
-                      navigator.clipboard.writeText(`https://docito.app/doctor/${profileLink}`);
+                      navigator.clipboard.writeText(`https://docito.app/dr/${profileLink}`);
                     }}
                   >
                     Copy
