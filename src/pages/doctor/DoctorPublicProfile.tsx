@@ -57,7 +57,7 @@ interface Procedure {
   id: string;
   name: string;
   description: string | null;
-  price: number;
+  cost: number;
   duration_minutes: number;
   category: string | null;
 }
