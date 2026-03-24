@@ -45,10 +45,12 @@ import SystemLogs from "@/components/super-admin/SystemLogs";
 import DocumentVerificationLookup from "@/components/super-admin/DocumentVerificationLookup";
 import FinanceSourcesMapping from "@/components/super-admin/FinanceSourcesMapping";
 import BlogStudioSection from "@/components/super-admin/blog/BlogStudioSection";
+import LandingCMSSection from "@/components/super-admin/LandingCMSSection";
 
 const SUPER_ADMIN_SECTIONS = [
   "dashboard",
   "blogStudio",
+  "landingCMS",
   "feedback",
   "ecosystem",
   "verifications",
