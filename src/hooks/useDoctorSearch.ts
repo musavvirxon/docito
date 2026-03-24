@@ -30,6 +30,10 @@ interface DoctorResult {
   consultationTypes?: string[];
   verified?: boolean;
   created_at?: string;
+  gender?: string;
+  customProfileLink?: string;
+  profileAddress?: string;
+  username?: string;
 }
 
 interface SearchParams {
@@ -56,7 +60,7 @@ export function useDoctorSearch() {
     try {
       let q = supabase
         .from('doctor_profiles_view')
-        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url, bio, languages, years_experience, license_number, practice_name, practice_address, practice_city, practice_country, email, phone, appointment_count, practice_id, created_at')
+        .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url, bio, languages, years_experience, license_number, practice_name, practice_address, practice_city, practice_country, email, phone, appointment_count, practice_id, created_at, gender, custom_profile_link, profile_address, username')
         .eq('verified', true)
         .limit(50);
 
@@ -100,6 +104,11 @@ export function useDoctorSearch() {
         consultationTypes: d.consultation_types,
         verified: d.verified,
         created_at: d.created_at,
+        gender: d.gender,
+        customProfileLink: d.custom_profile_link,
+        profileAddress: d.profile_address,
+        username: d.username,
+        location: [d.practice_city, d.practice_country].filter(Boolean).join(', ') || d.profile_address || undefined,
       }));
 
       setResults(mapped);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,7 +11,7 @@ import { Card } from '@/components/ui/card';
 import {
   Star, MapPin, Video, Shield, Globe, Briefcase, Phone, Mail,
   Calendar, Clock, Users, Award, Building2, CheckCircle2, User,
-  Stethoscope, BadgeCheck, FileText, MessageSquare, Heart
+  Stethoscope, BadgeCheck, FileText, MessageSquare, Heart, Link2, ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, addDays, parseISO } from 'date-fns';
@@ -30,12 +31,14 @@ interface AvailabilitySlot {
 }
 
 export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointment, isLoggedIn }: DoctorProfileModalProps) {
+  const navigate = useNavigate();
   const [availability, setAvailability] = useState<AvailabilitySlot[]>([]);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [verification, setVerification] = useState<any>(null);
   const [practice, setPractice] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
   const [extraLoading, setExtraLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   useEffect(() => {
     if (open && doctor?.id) {
@@ -47,7 +50,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
   const loadExtraData = async (doctorId: string, practiceId?: string) => {
     setExtraLoading(true);
     try {
-      // Verification
       const verRes = await supabase
         .from('doctor_verification')
         .select('specialty, license_number, years_of_experience, status, submitted_at, reviewed_at')
@@ -55,7 +57,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
         .maybeSingle();
       setVerification(verRes?.data || null);
 
-      // Services - use rpc-style to avoid deep type instantiation
       const { data: svcData } = await (supabase
         .from('procedures' as any)
         .select('id, name, description, cost, duration_minutes, category')
@@ -64,7 +65,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
         .limit(20) as any);
       setServices(svcData || []);
 
-      // Practice
       if (practiceId) {
         const practiceRes = await supabase
           .from('practices')
@@ -97,7 +97,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
       const workingDays: Record<string, any> = (scheduleData?.working_days as Record<string, any>) || {};
 
       const startDate = format(today, 'yyyy-MM-dd');
-      const endDate = format(addDays(today, 6), 'yyyy-MM-dd');
+      const endDate = format(addDays(today, 13), 'yyyy-MM-dd');
 
       const { data: appointments } = await supabase
         .from('appointments')
@@ -107,9 +107,17 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
         .lte('appointment_date', endDate)
         .in('status', ['pending', 'confirmed']);
 
+      // Also check blocked_times
+      const { data: blockedTimes } = await supabase
+        .from('blocked_times')
+        .select('blocked_date, start_time, end_time')
+        .eq('doctor_id', doctorId)
+        .gte('blocked_date', startDate)
+        .lte('blocked_date', endDate);
+
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 14; i++) {
         const date = addDays(today, i);
         const dayName = dayNames[date.getDay()];
         const dateStr = format(date, 'yyyy-MM-dd');
@@ -129,16 +137,29 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
           const dayAppointments = (appointments || []).filter(
             (a: any) => a.appointment_date === dateStr
           );
+          const dayBlocked = (blockedTimes || []).filter(
+            (b: any) => b.blocked_date === dateStr
+          );
+
+          // Skip past slots for today
+          const now = new Date();
+          const isToday = dateStr === format(now, 'yyyy-MM-dd');
+          const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
           for (let m = startMinutes; m + 30 <= endMinutes; m += 30) {
+            if (isToday && m < currentMinutes + 30) continue;
+
             const slotStart = `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
             const slotEnd = `${String(Math.floor((m + 30) / 60)).padStart(2, '0')}:${String((m + 30) % 60).padStart(2, '0')}`;
 
-            const isBooked = dayAppointments.some((a: any) => {
-              return a.start_time <= slotStart && a.end_time > slotStart;
-            });
+            const isBooked = dayAppointments.some((a: any) =>
+              a.start_time <= slotStart && a.end_time > slotStart
+            );
+            const isBlocked = dayBlocked.some((b: any) =>
+              b.start_time <= slotStart && b.end_time > slotStart
+            );
 
-            if (!isBooked) {
+            if (!isBooked && !isBlocked) {
               slots.push({ start_time: slotStart, end_time: slotEnd });
             }
           }
@@ -170,13 +191,21 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
   const locationStr = doctor.location || locationParts.join(', ');
   const isIndependent = !doctor.practiceId;
   const consultationTypes: string[] = doctor.consultationTypes || [];
+  const profileLink = doctor.customProfileLink || doctor.id;
+  const profileUrl = `/doctor/${profileLink}`;
+  const genderLabel = doctor.gender ? doctor.gender.charAt(0).toUpperCase() + doctor.gender.slice(1) : null;
+
+  // Calendar helpers
+  const totalAvailableSlots = availability.reduce((sum, d) => sum + d.slots.length, 0);
+  const daysWithAvailability = availability.filter(d => d.slots.length > 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[92vh] p-0 overflow-hidden">
+        <DialogDescription className="sr-only">Doctor profile details</DialogDescription>
         <ScrollArea className="max-h-[92vh]">
           <div className="p-6 space-y-5">
-            {/* Header - Cover area */}
+            {/* Header */}
             <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-xl p-5">
               <div className="flex items-start gap-5">
                 <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
@@ -190,6 +219,25 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     <DialogTitle className="text-2xl text-foreground">{doctor.name}</DialogTitle>
                   </DialogHeader>
                   <p className="text-sm text-muted-foreground mt-0.5">{doctor.specialty}</p>
+
+                  {/* Location & gender */}
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-sm text-muted-foreground">
+                    {locationStr && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5" /> {locationStr}
+                      </span>
+                    )}
+                    {genderLabel && (
+                      <span className="flex items-center gap-1">
+                        <User className="h-3.5 w-3.5" /> {genderLabel}
+                      </span>
+                    )}
+                    {doctor.yearsExperience && (
+                      <span className="flex items-center gap-1">
+                        <Briefcase className="h-3.5 w-3.5" /> {doctor.yearsExperience}+ yrs
+                      </span>
+                    )}
+                  </div>
 
                   {/* Badges row */}
                   <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -205,11 +253,11 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     )}
                     {isIndependent ? (
                       <Badge variant="outline" className="text-secondary-foreground border-secondary">
-                        <User className="h-3 w-3 mr-1" /> Independent Practitioner
+                        <User className="h-3 w-3 mr-1" /> Independent
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-secondary-foreground border-secondary">
-                        <Building2 className="h-3 w-3 mr-1" /> Clinic-Based
+                        <Building2 className="h-3 w-3 mr-1" /> {doctor.practiceName || 'Clinic-Based'}
                       </Badge>
                     )}
                   </div>
@@ -220,13 +268,24 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                       <Star className="h-4 w-4 fill-primary text-primary" />
                       <span className="font-semibold text-foreground">{doctor.rating.toFixed(1)}</span>
                       <span>({doctor.reviewCount || 0} reviews)</span>
-                      {doctor.appointmentCount != null && doctor.appointmentCount > 0 && (
-                        <span className="ml-2">• {doctor.appointmentCount} consultations</span>
-                      )}
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* Profile link */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-3 right-3 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  onOpenChange(false);
+                  navigate(profileUrl);
+                }}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                View Full Profile
+              </Button>
             </div>
 
             {/* Stats Row */}
@@ -244,8 +303,8 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                 <p className="text-xs text-muted-foreground">Years Exp.</p>
               </Card>
               <Card className="p-3 text-center bg-muted/30">
-                <p className="text-lg font-bold text-foreground">{doctor.appointmentCount || 0}</p>
-                <p className="text-xs text-muted-foreground">Appointments</p>
+                <p className="text-lg font-bold text-foreground">{totalAvailableSlots}</p>
+                <p className="text-xs text-muted-foreground">Open Slots</p>
               </Card>
             </div>
 
@@ -257,12 +316,16 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="practice">Practice</TabsTrigger>
                 <TabsTrigger value="services">Services</TabsTrigger>
-                <TabsTrigger value="calendar">Availability</TabsTrigger>
+                <TabsTrigger value="calendar">
+                  Calendar
+                  {totalAvailableSlots > 0 && (
+                    <Badge variant="secondary" className="ml-1.5 text-[10px] px-1.5 py-0">{totalAvailableSlots}</Badge>
+                  )}
+                </TabsTrigger>
               </TabsList>
 
               {/* ─── About Tab ─── */}
               <TabsContent value="about" className="space-y-5 mt-4">
-                {/* Bio */}
                 {doctor.bio && (
                   <div>
                     <h4 className="text-sm font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
@@ -272,7 +335,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                   </div>
                 )}
 
-                {/* Professional Details */}
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
                     <Stethoscope className="h-4 w-4 text-primary" /> Professional Information
@@ -281,6 +343,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     <InfoRow icon={Briefcase} label="Specialty" value={doctor.specialty} />
                     <InfoRow icon={Award} label="Experience" value={doctor.yearsExperience ? `${doctor.yearsExperience} years` : undefined} />
                     <InfoRow icon={Award} label="License No." value={doctor.licenseNumber || verification?.license_number} />
+                    <InfoRow icon={User} label="Gender" value={genderLabel} />
                     <InfoRow
                       icon={BadgeCheck}
                       label="Verification"
@@ -290,16 +353,33 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                           : doctor.verified ? 'Verified' : 'Pending'
                       }
                     />
-                    {verification?.submitted_at && (
-                      <InfoRow icon={Calendar} label="Member Since" value={format(parseISO(verification.submitted_at), 'MMM yyyy')} />
-                    )}
-                    {doctor.created_at && !verification?.submitted_at && (
+                    {doctor.created_at && (
                       <InfoRow icon={Calendar} label="Joined" value={format(parseISO(doctor.created_at), 'MMM yyyy')} />
                     )}
                   </div>
                 </div>
 
-                {/* Consultation Types */}
+                {/* Profile Link */}
+                <div className="bg-muted/30 border border-border rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Link2 className="h-4 w-4 text-primary" />
+                    <span className="text-muted-foreground">Profile:</span>
+                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded text-foreground">
+                      docito.app/doctor/{profileLink}
+                    </code>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://docito.app/doctor/${profileLink}`);
+                    }}
+                  >
+                    Copy
+                  </Button>
+                </div>
+
                 {consultationTypes.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
@@ -310,6 +390,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                         <Badge key={ct} variant="secondary" className="capitalize">
                           {ct === 'video' && <Video className="h-3 w-3 mr-1" />}
                           {ct === 'in_person' && <Users className="h-3 w-3 mr-1" />}
+                          {ct === 'phone' && <Phone className="h-3 w-3 mr-1" />}
                           {ct === 'messaging' && <MessageSquare className="h-3 w-3 mr-1" />}
                           {ct.replace(/_/g, ' ')}
                         </Badge>
@@ -318,7 +399,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                   </div>
                 )}
 
-                {/* Languages */}
                 {doctor.languages && doctor.languages.length > 0 && (
                   <div>
                     <h4 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
@@ -332,7 +412,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                   </div>
                 )}
 
-                {/* Consultation Fee */}
                 {doctor.consultationFee != null && (
                   <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">Consultation Fee</span>
@@ -340,7 +419,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                   </div>
                 )}
 
-                {/* Contact */}
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-2">Contact Information</h4>
                   <div className="space-y-2">
@@ -374,16 +452,15 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     <h4 className="font-semibold text-foreground">Independent Practitioner</h4>
                     <p className="text-sm text-muted-foreground">
                       This doctor operates independently and is not affiliated with a clinic.
-                      Consultations are available via video and messaging only.
                     </p>
                     <div className="flex justify-center gap-2 mt-3">
-                      <Badge variant="secondary"><Video className="h-3 w-3 mr-1" /> Video</Badge>
-                      <Badge variant="secondary"><MessageSquare className="h-3 w-3 mr-1" /> Messaging</Badge>
+                      {consultationTypes.map((ct: string) => (
+                        <Badge key={ct} variant="secondary" className="capitalize">{ct.replace(/_/g, ' ')}</Badge>
+                      ))}
                     </div>
                   </Card>
                 ) : (
                   <>
-                    {/* Practice Header */}
                     <div className="flex items-start gap-4">
                       {practice?.logo_url && (
                         <Avatar className="h-14 w-14 rounded-lg border">
@@ -407,7 +484,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                       <p className="text-sm text-muted-foreground leading-relaxed">{practice.description}</p>
                     )}
 
-                    {/* Practice Details Grid */}
                     <div className="grid grid-cols-1 gap-3">
                       {(practice?.address || doctor.practiceAddress) && (
                         <div className="flex items-start gap-2 text-sm">
@@ -441,14 +517,6 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                         </div>
                       )}
                     </div>
-
-                    {/* Insurance badge */}
-                    {doctor.acceptsInsurance && (
-                      <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg text-sm">
-                        <Shield className="h-4 w-4 text-primary" />
-                        <span className="text-muted-foreground">This doctor accepts insurance</span>
-                      </div>
-                    )}
                   </>
                 )}
               </TabsContent>
@@ -487,52 +555,100 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                 )}
               </TabsContent>
 
-              {/* ─── Calendar/Availability Tab ─── */}
+              {/* ─── Calendar Tab ─── */}
               <TabsContent value="calendar" className="space-y-4 mt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  <h4 className="text-sm font-semibold text-foreground">Next 7 Days Availability</h4>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    <h4 className="text-sm font-semibold text-foreground">Next 14 Days</h4>
+                  </div>
+                  {totalAvailableSlots > 0 && (
+                    <Badge variant="secondary" className="text-xs">
+                      {totalAvailableSlots} slots available
+                    </Badge>
+                  )}
                 </div>
 
                 {loadingAvailability ? (
                   <div className="text-center py-8 text-sm text-muted-foreground">Loading availability...</div>
                 ) : (
-                  <div className="space-y-3">
-                    {availability.map((day) => (
-                      <div key={day.date} className="border border-border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-foreground">
-                            {day.day} — {format(parseISO(day.date), 'MMM d')}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {day.slots.length > 0 ? `${day.slots.length} slots` : 'No availability'}
-                          </span>
-                        </div>
-                        {day.slots.length > 0 ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            {day.slots.slice(0, 12).map((slot) => (
-                              <Badge
+                  <>
+                    {/* Day selector strip */}
+                    <div className="flex gap-1.5 overflow-x-auto pb-2">
+                      {availability.map((day) => {
+                        const hasSlots = day.slots.length > 0;
+                        const isSelected = selectedDate === day.date;
+                        return (
+                          <button
+                            key={day.date}
+                            onClick={() => hasSlots && setSelectedDate(isSelected ? null : day.date)}
+                            className={`
+                              flex flex-col items-center min-w-[52px] px-2 py-2.5 rounded-xl border text-center transition-all
+                              ${isSelected
+                                ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                                : hasSlots
+                                  ? 'bg-background border-border hover:border-primary/50 hover:bg-primary/5 cursor-pointer'
+                                  : 'bg-muted/20 border-transparent text-muted-foreground/50 cursor-not-allowed'
+                              }
+                            `}
+                            disabled={!hasSlots}
+                          >
+                            <span className="text-[10px] font-medium uppercase">{day.day}</span>
+                            <span className="text-base font-bold">{format(parseISO(day.date), 'd')}</span>
+                            {hasSlots && (
+                              <span className={`text-[9px] mt-0.5 ${isSelected ? 'text-primary-foreground/80' : 'text-primary'}`}>
+                                {day.slots.length}
+                              </span>
+                            )}
+                            {!hasSlots && (
+                              <span className="text-[9px] mt-0.5">—</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Selected day slots */}
+                    {selectedDate && (() => {
+                      const dayData = availability.find(d => d.date === selectedDate);
+                      if (!dayData || dayData.slots.length === 0) return null;
+                      return (
+                        <div className="border border-border rounded-xl p-4 bg-muted/10">
+                          <p className="text-sm font-medium text-foreground mb-3">
+                            {format(parseISO(dayData.date), 'EEEE, MMMM d')}
+                          </p>
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                            {dayData.slots.map((slot) => (
+                              <Button
                                 key={slot.start_time}
                                 variant="outline"
-                                className="text-xs cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                                size="sm"
+                                className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors"
                                 onClick={() => onBookAppointment()}
                               >
-                                <Clock className="h-3 w-3 mr-1" />
                                 {slot.start_time}
-                              </Badge>
+                              </Button>
                             ))}
-                            {day.slots.length > 12 && (
-                              <Badge variant="secondary" className="text-xs">
-                                +{day.slots.length - 12} more
-                              </Badge>
-                            )}
                           </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground italic">Not available</p>
-                        )}
+                        </div>
+                      );
+                    })()}
+
+                    {/* No selection prompt */}
+                    {!selectedDate && daysWithAvailability.length > 0 && (
+                      <p className="text-xs text-muted-foreground text-center py-3">
+                        Select a date above to view available time slots
+                      </p>
+                    )}
+
+                    {daysWithAvailability.length === 0 && (
+                      <div className="text-center py-8">
+                        <Calendar className="h-10 w-10 mx-auto text-muted-foreground/30 mb-2" />
+                        <p className="text-sm text-muted-foreground">No availability in the next 14 days</p>
+                        <p className="text-xs text-muted-foreground mt-1">The doctor may not have set their schedule yet</p>
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </TabsContent>
             </Tabs>

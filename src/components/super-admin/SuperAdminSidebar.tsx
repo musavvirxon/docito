@@ -39,6 +39,7 @@ interface SuperAdminSidebarProps {
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "blogStudio", label: "Blog Studio", icon: BookOpenText },
+  { id: "landingCMS", label: "Landing Page", icon: LayoutGrid },
   { id: "feedback", label: "Feedback Inbox", icon: Inbox },
   { id: "ecosystem", label: "Ecosystem", icon: LayoutGrid },
   { id: "verifications", label: "Verifications", icon: ShieldCheck },
