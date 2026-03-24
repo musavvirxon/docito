@@ -113,8 +113,8 @@ export default function DoctorPublicProfile() {
         // Procedures (services)
         const { data: proc, error: procErr } = await (supabase as any)
           .from("procedures")
-          .select("id, name, description, price, duration_minutes, category")
-          .eq("dentist_id", doc.id)
+          .select("id, name, description, cost, duration_minutes, category")
+          .eq("doctor_id", doc.id)
           .eq("is_active", true)
           .order("created_at", { ascending: false })
           .limit(50);
