@@ -365,7 +365,7 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
                     <Link2 className="h-4 w-4 text-primary" />
                     <span className="text-muted-foreground">Profile:</span>
                     <code className="text-xs bg-muted px-1.5 py-0.5 rounded text-foreground">
-                      docito.app/doctor/{profileLink}
+                      docito.app/dr/{profileLink}
                     </code>
                   </div>
                   <Button
