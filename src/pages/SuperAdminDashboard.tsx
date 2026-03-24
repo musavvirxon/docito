@@ -322,6 +322,9 @@ const SuperAdminDashboard = () => {
       case "blogStudio":
         return <BlogStudioSection />;
 
+      case "landingCMS":
+        return <LandingCMSSection />;
+
       case "feedback":
         return (
           <div className="space-y-6">
