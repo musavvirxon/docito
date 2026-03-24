@@ -34,6 +34,7 @@ const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingP
 const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
 const Practices = lazy(() => import("@/pages/Practices"));
+const LandingPage = lazy(() => import("@/pages/LandingPage"));
 const FindPractices = lazy(() => import("@/pages/FindPractices"));
 
 const SearchDoctors = lazy(() => import("@/pages/SearchDoctors"));
