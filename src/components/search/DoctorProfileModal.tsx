@@ -191,8 +191,8 @@ export function DoctorProfileModal({ doctor, open, onOpenChange, onBookAppointme
   const locationStr = doctor.location || locationParts.join(', ');
   const isIndependent = !doctor.practiceId;
   const consultationTypes: string[] = doctor.consultationTypes || [];
-  const profileLink = doctor.customProfileLink || doctor.id;
-  const profileUrl = `/doctor/${profileLink}`;
+  const profileLink = doctor.customProfileLink || doctor.username || doctor.id;
+  const profileUrl = `/dr/${profileLink}`;
   const genderLabel = doctor.gender ? doctor.gender.charAt(0).toUpperCase() + doctor.gender.slice(1) : null;
 
   // Calendar helpers
