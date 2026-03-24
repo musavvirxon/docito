@@ -234,6 +234,9 @@ export default function App() {
                   <Route path="doctor" element={<DoctorLandingPage />} />
                   <Route path="doctors" element={<DoctorLandingPage />} />
                   <Route path="doctor/:slug" element={<DoctorPublicProfile />} />
+                  <Route path="dr/:slug" element={<DoctorPublicProfile />} />
+                  <Route path="landing" element={<LandingPage />} />
+                  <Route path="start" element={<LandingPage />} />
                   <Route path="pharmacy" element={<PharmacyLandingPage />} />
                   <Route path="pharmacies" element={<PharmacyLandingPage />} />
                   <Route path="lab" element={<LabLandingPage />} />
