@@ -8,6 +8,7 @@ import { languages } from "@/i18n/config";
 import i18n from "@/i18n/config";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import PublicLayout from "@/layouts/PublicLayout";
+import { isLandingSubdomain } from "@/lib/subdomain";
 
 const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
 
@@ -118,6 +119,28 @@ function DefaultBlogPostRedirect() {
 }
 
 export default function App() {
+  // If on landing subdomain, render only the landing page
+  if (isLandingSubdomain()) {
+    return (
+      <HelmetProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Suspense fallback={<PageLoader />}>
+              <RouteErrorBoundary>
+                <Routes>
+                  <Route element={<PublicLayout />}>
+                    <Route path="*" element={<LandingPage />} />
+                  </Route>
+                </Routes>
+              </RouteErrorBoundary>
+            </Suspense>
+            <Toaster position="top-right" richColors />
+          </AuthProvider>
+        </ThemeProvider>
+      </HelmetProvider>
+    );
+  }
+
   return (
     <HelmetProvider>
       <ThemeProvider>
