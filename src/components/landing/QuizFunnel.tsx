@@ -237,6 +237,16 @@ export default function QuizFunnel({ role, questions, renderResults }: Props) {
     } finally {
       setSubmitting(false);
       setStep("done");
+
+      // Redirect to home page after a brief delay so user sees results
+      setTimeout(async () => {
+        const { isLandingSubdomain, getMainSiteUrl } = await import('@/lib/subdomain');
+        if (isLandingSubdomain()) {
+          window.location.href = getMainSiteUrl();
+        } else {
+          window.location.href = '/';
+        }
+      }, 4000);
     }
   }
 
