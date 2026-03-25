@@ -10085,6 +10085,34 @@ export type Database = {
         }[]
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
+      get_staff_invitation_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          accepted_at: string | null
+          created_at: string
+          custom_message: string | null
+          email: string
+          entity_id: string
+          entity_type: string
+          expires_at: string
+          full_name: string | null
+          id: string
+          invite_token: string
+          invite_type: string
+          invited_by: string | null
+          invited_user_id: string | null
+          phone: string | null
+          role: string
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "staff_invitations"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_staff_permissions: { Args: { p_user_id: string }; Returns: Json }
       get_user_primary_role: {
         Args: { _user_id: string }
