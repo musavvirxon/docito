@@ -239,7 +239,7 @@ export default function QuizFunnel({ role, questions, renderResults }: Props) {
       setStep("done");
 
       // Redirect to home page after a brief delay so user sees results
-      setTimeout(() => {
+      setTimeout(async () => {
         const { isLandingSubdomain, getMainSiteUrl } = await import('@/lib/subdomain');
         if (isLandingSubdomain()) {
           window.location.href = getMainSiteUrl();
