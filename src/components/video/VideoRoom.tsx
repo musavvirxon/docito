@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,20 +10,14 @@ import {
   VideoOff,
   PhoneOff,
   Monitor,
+  MonitorOff,
   MessageSquare,
-  Settings,
   Maximize,
   Minimize,
   Users,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
-import { cn } from '@/lib/utils';
-
-declare global {
-  interface Window {
-    JitsiMeetExternalAPI: any;
-  }
-}
+import { supabase } from '@/integrations/supabase/client';
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
@@ -40,128 +34,229 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   onEnd,
   onLeave,
 }) => {
-  const jitsiContainerRef = useRef<HTMLDivElement>(null);
-  const apiRef = useRef<any>(null);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const screenShareRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const screenStreamRef = useRef<MediaStream | null>(null);
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(consultation.notes || '');
   const [participantCount, setParticipantCount] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<string>('connecting');
 
-  useEffect(() => {
-    const loadJitsiScript = () => {
-      return new Promise<void>((resolve, reject) => {
-        if (window.JitsiMeetExternalAPI) {
-          resolve();
-          return;
-        }
+  // ICE servers for NAT traversal
+  const iceServers: RTCConfiguration = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ],
+  };
 
-        const script = document.createElement('script');
-        script.src = 'https://meet.jit.si/external_api.js';
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Jitsi'));
-        document.body.appendChild(script);
+  // Initialize local media
+  const initLocalMedia = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720, facingMode: 'user' },
+        audio: { echoCancellation: true, noiseSuppression: true },
       });
-    };
-
-    const initJitsi = async () => {
-      try {
-        await loadJitsiScript();
-
-        if (!jitsiContainerRef.current || !window.JitsiMeetExternalAPI) return;
-
-        const domain = 'meet.jit.si';
-        const options = {
-          roomName: consultation.room_id,
-          parentNode: jitsiContainerRef.current,
-          userInfo: {
-            displayName: userName,
-          },
-          configOverwrite: {
-            startWithAudioMuted: false,
-            startWithVideoMuted: false,
-            prejoinPageEnabled: false,
-            disableDeepLinking: true,
-            enableClosePage: false,
-            enableWelcomePage: false,
-            toolbarButtons: [],
-            hideConferenceSubject: true,
-            hideConferenceTimer: false,
-          },
-          interfaceConfigOverwrite: {
-            TOOLBAR_BUTTONS: [],
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_WATERMARK_FOR_GUESTS: false,
-            SHOW_BRAND_WATERMARK: false,
-            BRAND_WATERMARK_LINK: '',
-            SHOW_POWERED_BY: false,
-            SHOW_PROMOTIONAL_CLOSE_PAGE: false,
-            DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
-            FILM_STRIP_MAX_HEIGHT: 120,
-            MOBILE_APP_PROMO: false,
-            HIDE_INVITE_MORE_HEADER: true,
-          },
-        };
-
-        apiRef.current = new window.JitsiMeetExternalAPI(domain, options);
-
-        apiRef.current.addListener('videoConferenceJoined', () => {
-          setIsLoading(false);
-        });
-
-        apiRef.current.addListener('participantJoined', () => {
-          setParticipantCount(prev => prev + 1);
-        });
-
-        apiRef.current.addListener('participantLeft', () => {
-          setParticipantCount(prev => Math.max(1, prev - 1));
-        });
-
-        apiRef.current.addListener('audioMuteStatusChanged', ({ muted }: { muted: boolean }) => {
-          setIsAudioMuted(muted);
-        });
-
-        apiRef.current.addListener('videoMuteStatusChanged', ({ muted }: { muted: boolean }) => {
-          setIsVideoMuted(muted);
-        });
-
-        apiRef.current.addListener('readyToClose', () => {
-          onLeave();
-        });
-
-      } catch (error) {
-        console.error('Error initializing Jitsi:', error);
-        setIsLoading(false);
+      localStreamRef.current = stream;
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
       }
+      setIsLoading(false);
+      setConnectionStatus('connected');
+      return stream;
+    } catch (err) {
+      console.error('Failed to get local media:', err);
+      setIsLoading(false);
+      setConnectionStatus('error');
+      return null;
+    }
+  }, []);
+
+  // Set up WebRTC peer connection with Supabase Realtime signaling
+  useEffect(() => {
+    let mounted = true;
+
+    const setup = async () => {
+      const stream = await initLocalMedia();
+      if (!stream || !mounted) return;
+
+      // Create peer connection
+      const pc = new RTCPeerConnection(iceServers);
+      peerConnectionRef.current = pc;
+
+      // Add local tracks
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+
+      // Handle remote tracks
+      pc.ontrack = (event) => {
+        if (remoteVideoRef.current && event.streams[0]) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+          setParticipantCount(2);
+        }
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+          setParticipantCount(1);
+        }
+      };
+
+      // Use Supabase Realtime for signaling
+      const channel = supabase.channel(`video-signal-${consultation.room_id}`, {
+        config: { broadcast: { self: false } },
+      });
+
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          channel.send({
+            type: 'broadcast',
+            event: 'ice-candidate',
+            payload: { candidate: event.candidate.toJSON(), from: userName },
+          });
+        }
+      };
+
+      channel
+        .on('broadcast', { event: 'offer' }, async ({ payload }) => {
+          if (!peerConnectionRef.current) return;
+          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          const answer = await peerConnectionRef.current.createAnswer();
+          await peerConnectionRef.current.setLocalDescription(answer);
+          channel.send({
+            type: 'broadcast',
+            event: 'answer',
+            payload: { sdp: answer, from: userName },
+          });
+        })
+        .on('broadcast', { event: 'answer' }, async ({ payload }) => {
+          if (!peerConnectionRef.current) return;
+          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        })
+        .on('broadcast', { event: 'ice-candidate' }, async ({ payload }) => {
+          if (!peerConnectionRef.current) return;
+          try {
+            await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(payload.candidate));
+          } catch (e) {
+            console.error('ICE candidate error:', e);
+          }
+        })
+        .on('broadcast', { event: 'join' }, async () => {
+          // When another participant joins, create an offer
+          if (!peerConnectionRef.current) return;
+          const offer = await peerConnectionRef.current.createOffer();
+          await peerConnectionRef.current.setLocalDescription(offer);
+          channel.send({
+            type: 'broadcast',
+            event: 'offer',
+            payload: { sdp: offer, from: userName },
+          });
+        })
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            // Announce our presence
+            channel.send({
+              type: 'broadcast',
+              event: 'join',
+              payload: { from: userName, role: userRole },
+            });
+          }
+        });
+
+      return () => {
+        channel.unsubscribe();
+      };
     };
 
-    initJitsi();
+    const cleanupPromise = setup();
 
     return () => {
-      if (apiRef.current) {
-        apiRef.current.dispose();
-      }
+      mounted = false;
+      cleanupPromise.then((cleanup) => cleanup?.());
+      peerConnectionRef.current?.close();
+      localStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
     };
-  }, [consultation.room_id, userName, onLeave]);
+  }, [consultation.room_id, userName, userRole, initLocalMedia]);
 
   const toggleAudio = () => {
-    apiRef.current?.executeCommand('toggleAudio');
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    stream.getAudioTracks().forEach((t) => {
+      t.enabled = !t.enabled;
+    });
+    setIsAudioMuted(!isAudioMuted);
   };
 
   const toggleVideo = () => {
-    apiRef.current?.executeCommand('toggleVideo');
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    stream.getVideoTracks().forEach((t) => {
+      t.enabled = !t.enabled;
+    });
+    setIsVideoMuted(!isVideoMuted);
   };
 
-  const toggleScreenShare = () => {
-    apiRef.current?.executeCommand('toggleShareScreen');
+  const toggleScreenShare = async () => {
+    if (isScreenSharing) {
+      // Stop screen sharing
+      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      screenStreamRef.current = null;
+      setIsScreenSharing(false);
+
+      // Replace screen track with camera track
+      const cameraStream = localStreamRef.current;
+      if (cameraStream && peerConnectionRef.current) {
+        const videoTrack = cameraStream.getVideoTracks()[0];
+        const sender = peerConnectionRef.current.getSenders().find((s) => s.track?.kind === 'video');
+        if (sender && videoTrack) {
+          await sender.replaceTrack(videoTrack);
+        }
+      }
+    } else {
+      try {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+          video: true,
+          audio: false,
+        });
+        screenStreamRef.current = screenStream;
+        setIsScreenSharing(true);
+
+        if (screenShareRef.current) {
+          screenShareRef.current.srcObject = screenStream;
+        }
+
+        // Replace camera track with screen track in peer connection
+        const screenTrack = screenStream.getVideoTracks()[0];
+        if (peerConnectionRef.current) {
+          const sender = peerConnectionRef.current.getSenders().find((s) => s.track?.kind === 'video');
+          if (sender) {
+            await sender.replaceTrack(screenTrack);
+          }
+        }
+
+        screenTrack.onended = () => {
+          toggleScreenShare();
+        };
+      } catch (err) {
+        console.error('Screen share error:', err);
+      }
+    }
   };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      jitsiContainerRef.current?.requestFullscreen();
+      containerRef.current?.requestFullscreen();
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
@@ -170,19 +265,19 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   };
 
   const handleEndCall = () => {
-    if (apiRef.current) {
-      apiRef.current.executeCommand('hangup');
-    }
+    localStreamRef.current?.getTracks().forEach((t) => t.stop());
+    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+    peerConnectionRef.current?.close();
     onEnd(notes);
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div ref={containerRef} className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
-          <Badge variant={consultation.status === 'in_progress' ? 'default' : 'secondary'}>
-            {consultation.status === 'in_progress' ? 'Live' : consultation.status}
+          <Badge variant={connectionStatus === 'connected' ? 'default' : 'secondary'}>
+            {connectionStatus === 'connected' ? 'Live' : connectionStatus === 'connecting' ? 'Connecting...' : 'Error'}
           </Badge>
           <span className="text-sm text-muted-foreground">
             Room: {consultation.room_id}
@@ -197,20 +292,45 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       </div>
 
       {/* Video Container */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-black">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
             <div className="flex flex-col items-center gap-4">
               <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground">Connecting to video room...</p>
+              <p className="text-muted-foreground">Starting video call...</p>
             </div>
           </div>
         )}
-        <div
-          ref={jitsiContainerRef}
-          className="w-full h-full"
-          style={{ minHeight: '400px' }}
+
+        {/* Remote video (main) */}
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
         />
+
+        {/* Screen share overlay */}
+        {isScreenSharing && (
+          <video
+            ref={screenShareRef}
+            autoPlay
+            playsInline
+            className="absolute inset-0 w-full h-full object-contain bg-black z-5"
+          />
+        )}
+
+        {/* Local video (PiP) */}
+        <div className="absolute bottom-4 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-border shadow-lg z-10">
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover mirror"
+            style={{ transform: 'scaleX(-1)' }}
+          />
+        </div>
 
         {/* Notes Panel */}
         {showNotes && userRole === 'doctor' && (
@@ -250,12 +370,12 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </Button>
 
           <Button
-            variant="secondary"
+            variant={isScreenSharing ? 'default' : 'secondary'}
             size="lg"
             onClick={toggleScreenShare}
             className="rounded-full h-14 w-14"
           >
-            <Monitor className="h-6 w-6" />
+            {isScreenSharing ? <MonitorOff className="h-6 w-6" /> : <Monitor className="h-6 w-6" />}
           </Button>
 
           {userRole === 'doctor' && (

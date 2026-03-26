@@ -86,7 +86,7 @@ export const useVideoConsultation = () => {
   const createConsultation = async (params: CreateConsultationParams): Promise<VideoConsultation | null> => {
     try {
       const roomId = generateRoomId();
-      const roomUrl = `https://meet.jit.si/${roomId}`;
+      const roomUrl = `${window.location.origin}/video/${roomId}`;
 
       const { data, error } = await supabase
         .from('video_consultations')
