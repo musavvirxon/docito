@@ -427,26 +427,11 @@ async function createTemplate(service: any, doctorId: string, payload: any) {
 }
 
 async function listDoctorProcedures(service: any, doctorId: string, includeInactive: boolean, limit: number) {
-  // Prefer dentist_id (most common in this schema). Fallback to doctor_id if needed.
-  let q = service.from("procedures").select("*").eq("dentist_id", doctorId);
-  if (!includeInactive) q = q.eq("active", true);
+  let q = service.from("procedures").select("*").eq("doctor_id", doctorId);
+  if (!includeInactive) q = q.eq("is_active", true);
 
   const r1 = await q.order("updated_at", { ascending: false }).limit(limit);
   if (!r1.error) return (r1.data || []) as any[];
-
-  if (isMissingColumnError(r1.error, "dentist_id")) {
-    let q2 = service.from("procedures").select("*").eq("doctor_id", doctorId);
-    if (!includeInactive) q2 = q2.eq("active", true);
-    const r2 = await q2.order("updated_at", { ascending: false }).limit(limit);
-    if (r2.error) throw r2.error;
-    return (r2.data || []) as any[];
-  }
-
-  if (isMissingColumnError(r1.error, "active")) {
-    const r2 = await service.from("procedures").select("*").eq("dentist_id", doctorId).order("updated_at", { ascending: false }).limit(limit);
-    if (r2.error) throw r2.error;
-    return (r2.data || []) as any[];
-  }
 
   throw r1.error;
 }

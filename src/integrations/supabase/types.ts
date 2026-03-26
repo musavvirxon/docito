@@ -149,6 +149,187 @@ export type Database = {
         }
         Relationships: []
       }
+      appointment_clinical_item_templates: {
+        Row: {
+          created_at: string | null
+          default_cost: number | null
+          description: string | null
+          doctor_id: string
+          id: string
+          is_active: boolean | null
+          name: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          default_cost?: number | null
+          description?: string | null
+          doctor_id: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          default_cost?: number | null
+          description?: string | null
+          doctor_id?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_clinical_item_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_item_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_item_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      appointment_clinical_items: {
+        Row: {
+          appointment_id: string
+          cost: number | null
+          created_at: string | null
+          description: string | null
+          details: Json | null
+          doctor_id: string
+          doctor_patient_id: string | null
+          dosage: string | null
+          duration: string | null
+          frequency: string | null
+          id: string
+          item_type: string
+          name: string | null
+          patient_id: string | null
+          quantity: number | null
+          template_id: string | null
+          title: string
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_id: string
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          details?: Json | null
+          doctor_id: string
+          doctor_patient_id?: string | null
+          dosage?: string | null
+          duration?: string | null
+          frequency?: string | null
+          id?: string
+          item_type: string
+          name?: string | null
+          patient_id?: string | null
+          quantity?: number | null
+          template_id?: string | null
+          title: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          cost?: number | null
+          created_at?: string | null
+          description?: string | null
+          details?: Json | null
+          doctor_id?: string
+          doctor_patient_id?: string | null
+          dosage?: string | null
+          duration?: string | null
+          frequency?: string | null
+          id?: string
+          item_type?: string
+          name?: string | null
+          patient_id?: string | null
+          quantity?: number | null
+          template_id?: string | null
+          title?: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_clinical_items_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "appointment_clinical_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_clinical_item_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_diagnoses: {
         Row: {
           appointment_id: string
