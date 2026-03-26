@@ -36,16 +36,20 @@ export const NotificationDropdown = () => {
     // Best-effort mark read (do not block navigation)
     void markRead(notification.id);
 
-    // If a related_id exists, use it as a navigation target
-    if (notification.related_id) {
+    // If a related_id looks like a URL path, navigate to it
+    if (notification.related_id && notification.related_id.startsWith("/")) {
       openUrl(notification.related_id);
       return;
     }
 
-    // Fallback: If it's appointment-related, send user to THEIR active role dashboard
+    // Appointment notifications → open the appointment session
     if (notification.entity_type === "appointment" && notification.entity_id) {
-      navigate(DASHBOARD_ROUTES[activeRole] ?? "/dashboard");
+      navigate(`/appointment-session/${notification.entity_id}`);
+      return;
     }
+
+    // Fallback: go to role dashboard
+    navigate(DASHBOARD_ROUTES[activeRole] ?? "/dashboard");
   };
 
   return (
