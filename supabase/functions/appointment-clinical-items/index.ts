@@ -207,7 +207,7 @@ function normalizeTemplate(row: any) {
 }
 
 function normalizeProcedure(row: any) {
-  const active = row?.active ?? row?.is_active ?? true;
+  const isActive = row?.is_active ?? true;
   const cost = row?.price ?? row?.default_cost ?? null;
   const duration =
     row?.estimated_duration_minutes ?? row?.duration_minutes ?? row?.estimated_duration ?? row?.duration ?? null;
@@ -222,7 +222,8 @@ function normalizeProcedure(row: any) {
     duration_minutes: duration,
     is_bookable: row?.is_bookable ?? null,
     is_consultation: row?.is_consultation ?? null,
-    active: Boolean(active),
+    is_active: Boolean(isActive),
+    active: Boolean(isActive),
     created_at: row?.created_at ?? null,
     updated_at: row?.updated_at ?? null,
   };
