@@ -427,13 +427,21 @@ async function createTemplate(service: any, doctorId: string, payload: any) {
 }
 
 async function listDoctorProcedures(service: any, doctorId: string, includeInactive: boolean, limit: number) {
-  let q = service.from("procedures").select("*").eq("doctor_id", doctorId);
-  if (!includeInactive) q = q.eq("is_active", true);
+  // procedures table uses dentist_id, not doctor_id — try both for safety
+  const tryColumn = async (col: string) => {
+    let q = service.from("procedures").select("*").eq(col, doctorId);
+    if (!includeInactive) q = q.eq("is_active", true);
+    return await q.order("updated_at", { ascending: false }).limit(limit);
+  };
 
-  const r1 = await q.order("updated_at", { ascending: false }).limit(limit);
+  const r1 = await tryColumn("doctor_id");
   if (!r1.error) return (r1.data || []) as any[];
 
-  throw r1.error;
+  // Fallback to dentist_id if doctor_id doesn't exist
+  const r2 = await tryColumn("dentist_id");
+  if (!r2.error) return (r2.data || []) as any[];
+
+  throw r2.error;
 }
 
 async function listDoctorTreatmentPlans(service: any, doctorId: string, patientId: string | null, limit: number) {
