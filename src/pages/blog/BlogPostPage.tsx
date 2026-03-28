@@ -32,8 +32,13 @@ function renderNode(node: BlogDocNode, idx: number): React.ReactNode {
     case "paragraph": return <p key={idx} className="mb-4 leading-7 text-foreground">{children}</p>;
     case "heading": {
       const level = (node.attrs?.level as number) || 2;
-      const Tag = (`h${level}` as keyof JSX.IntrinsicElements);
-      return <Tag key={idx} className={`mb-3 mt-8 font-semibold text-foreground ${level <= 2 ? "text-2xl" : "text-xl"}`}>{children}</Tag>;
+      const cls = `mb-3 mt-8 font-semibold text-foreground ${level <= 2 ? "text-2xl" : "text-xl"}`;
+      if (level === 1) return <h1 key={idx} className={cls}>{children}</h1>;
+      if (level === 3) return <h3 key={idx} className={cls}>{children}</h3>;
+      if (level === 4) return <h4 key={idx} className={cls}>{children}</h4>;
+      if (level === 5) return <h5 key={idx} className={cls}>{children}</h5>;
+      if (level === 6) return <h6 key={idx} className={cls}>{children}</h6>;
+      return <h2 key={idx} className={cls}>{children}</h2>;
     }
     case "bulletList": return <ul key={idx} className="mb-4 list-disc pl-6 space-y-1">{children}</ul>;
     case "orderedList": return <ol key={idx} className="mb-4 list-decimal pl-6 space-y-1">{children}</ol>;
