@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useBlogStudio } from "@/hooks/blog/useBlogStudio";
+import { useBlogStudio, BLOG_STUDIO_QUERY_KEY } from "@/hooks/blog/useBlogStudio";
 import {
   autofillBlogSeoForLanguage,
   stringifyBlogStudioDraftExport,
 } from "@/lib/blog/studio-api";
+import { BLOG_LANGUAGES } from "@/config/blog";
+import { supabase } from "@/integrations/supabase/client";
 import type { BlogDoc, BlogLanguage, BlogPostStatus } from "@/types/blog";
 import BlogDeleteDialog from "@/components/super-admin/blog/BlogDeleteDialog";
 import BlogEditorShell from "@/components/super-admin/blog/BlogEditorShell";
@@ -21,16 +24,18 @@ import {
   toStudioAssetUploads,
   type BlogAssetItem,
 } from "@/components/super-admin/blog/BlogAssetManager";
-import { BookOpenText, Github, Languages, ShieldCheck } from "lucide-react";
+import { BookOpenText, Database, Languages, ShieldCheck } from "lucide-react";
 
 const createAssetStateKey = (groupId: string) => `docito.blogStudio.assets.${groupId}`;
 
 export default function BlogStudioSection() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const studio = useBlogStudio();
   const [jsonOpen, setJsonOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [assetMap, setAssetMap] = useState<Record<string, BlogAssetItem[]>>({});
 
   useEffect(() => {
@@ -113,6 +118,49 @@ export default function BlogStudioSection() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    if (!studio.activeDraft) return;
+    setIsSavingDraft(true);
+    try {
+      const postFiles = BLOG_LANGUAGES.map((lang) => ({
+        lang,
+        content: studio.activeDraft!.translations[lang],
+      }));
+
+      const { data, error } = await supabase.functions.invoke("blog-studio", {
+        body: {
+          action: "save_draft",
+          groupId: studio.activeDraft.groupId,
+          postFiles,
+        },
+      });
+
+      if (error) throw new Error(error.message || "Failed to save draft");
+      if (!data?.ok) throw new Error(data?.error || "Failed to save draft");
+
+      toast({
+        title: "Draft saved",
+        description: `Saved ${data.savedPosts?.length || 0} language(s) to database.`,
+      });
+
+      studio.drafts.updateDraft(studio.activeDraft.draftId, (draft) => ({
+        ...draft,
+        workflowStatus: "draft",
+        updatedAt: new Date().toISOString(),
+      }));
+
+      await queryClient.invalidateQueries({ queryKey: BLOG_STUDIO_QUERY_KEY });
+    } catch (error) {
+      toast({
+        title: "Save draft failed",
+        description: error instanceof Error ? error.message : "Unexpected error.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   const handlePublish = async () => {
     if (!studio.checklist.checklist?.passed) {
       toast({
@@ -144,9 +192,17 @@ export default function BlogStudioSection() {
       });
 
       toast({
-        title: "Publish request submitted",
-        description: `Pull request #${result.pullRequest.number} created successfully.`,
+        title: "Published successfully",
+        description: `Published ${result.publishedPosts?.length || 0} language(s).`,
       });
+
+      studio.drafts.updateDraft(studio.activeDraft!.draftId, (draft) => ({
+        ...draft,
+        workflowStatus: "published",
+        updatedAt: new Date().toISOString(),
+      }));
+
+      await queryClient.invalidateQueries({ queryKey: BLOG_STUDIO_QUERY_KEY });
     } catch (error) {
       toast({
         title: "Publish request failed",
@@ -163,8 +219,8 @@ export default function BlogStudioSection() {
       });
       setDeleteOpen(false);
       toast({
-        title: "Delete request submitted",
-        description: `Pull request #${result.pullRequest.number} created for ${result.groupId}.`,
+        title: "Deleted successfully",
+        description: `Deleted ${result.deletedPosts?.length || 0} post(s) for ${result.groupId}.`,
       });
     } catch (error) {
       toast({
@@ -259,8 +315,8 @@ export default function BlogStudioSection() {
                 Super admin only
               </Badge>
               <Badge variant="outline">
-                <Github className="mr-1.5 h-3.5 w-3.5" />
-                PR-based publish flow
+                <Database className="mr-1.5 h-3.5 w-3.5" />
+                Direct DB publish
               </Badge>
               <Badge variant="outline">
                 <Languages className="mr-1.5 h-3.5 w-3.5" />
@@ -434,8 +490,10 @@ export default function BlogStudioSection() {
               draft={studio.activeDraft}
               checklist={studio.checklist.checklist}
               isPublishing={studio.publishMutation.isPending}
+              isSavingDraft={isSavingDraft}
               onAutofillAll={handleAutofillAllSeo}
               onPublish={handlePublish}
+              onSaveDraft={handleSaveDraft}
             />
 
             <BlogPreviewPanel draft={studio.activeDraft} />

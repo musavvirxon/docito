@@ -35,9 +35,102 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
 
+    if (action === "save_draft") {
+      const groupId = body.groupId as string;
+      if (!groupId) throw new Error("groupId is required");
+
+      const postFiles = body.postFiles as Array<{ lang: string; content: Record<string, unknown> }>;
+      if (!Array.isArray(postFiles) || postFiles.length === 0) {
+        throw new Error("postFiles is required");
+      }
+
+      const results = [];
+      for (const pf of postFiles) {
+        const content = pf.content || {};
+        const lang = pf.lang || content.lang as string;
+        if (!lang) continue;
+
+        const row = {
+          group_id: groupId,
+          lang,
+          title: (content.title as string) || "",
+          slug: (content.slug as string) || groupId,
+          excerpt: (content.excerpt as string) || "",
+          body: content.doc || content.body || {},
+          cover_image: (content.coverImage as string) || "",
+          featured: Boolean(content.featured),
+          tags: Array.isArray(content.tags) ? content.tags : [],
+          keywords: Array.isArray(content.seo && (content.seo as Record<string, unknown>).keywords)
+            ? (content.seo as Record<string, unknown>).keywords
+            : [],
+          meta_title: (content.seo && (content.seo as Record<string, unknown>).metaTitle as string) || "",
+          meta_description: (content.seo && (content.seo as Record<string, unknown>).metaDescription as string) || "",
+          og_image: (content.seo && (content.seo as Record<string, unknown>).ogImage as string) || "",
+          status: "draft",
+          published_at: null,
+          updated_at: new Date().toISOString(),
+          created_by: authorized.context.user?.id || null,
+          updated_by: authorized.context.user?.id || null,
+        };
+
+        const { data, error } = await serviceClient
+          .from("blog_posts")
+          .upsert(row, { onConflict: "group_id,lang" })
+          .select("id, lang, slug");
+
+        if (error) throw new Error(`Failed to save draft for ${lang}: ${error.message}`);
+        results.push(...(data || []));
+      }
+
+      await auditBlogStudioAction(authorized.context, "blog_studio.save_draft", {
+        groupId,
+        savedPosts: results.length,
+        actorUserId: authorized.context.user?.id || null,
+      });
+
+      return okResponse({ action, groupId, savedPosts: results });
+    }
+
     if (action === "submit_for_publish") {
       const groupId = body.groupId as string;
       if (!groupId) throw new Error("groupId is required");
+
+      // First upsert all post files to DB
+      const postFiles = body.postFiles as Array<{ lang: string; content: Record<string, unknown> }> | undefined;
+      if (Array.isArray(postFiles) && postFiles.length > 0) {
+        for (const pf of postFiles) {
+          const content = pf.content || {};
+          const lang = pf.lang || content.lang as string;
+          if (!lang) continue;
+
+          const row = {
+            group_id: groupId,
+            lang,
+            title: (content.title as string) || "",
+            slug: (content.slug as string) || groupId,
+            excerpt: (content.excerpt as string) || "",
+            body: content.doc || content.body || {},
+            cover_image: (content.coverImage as string) || "",
+            featured: Boolean(content.featured),
+            tags: Array.isArray(content.tags) ? content.tags : [],
+            keywords: Array.isArray(content.seo && (content.seo as Record<string, unknown>).keywords)
+              ? (content.seo as Record<string, unknown>).keywords
+              : [],
+            meta_title: (content.seo && (content.seo as Record<string, unknown>).metaTitle as string) || "",
+            meta_description: (content.seo && (content.seo as Record<string, unknown>).metaDescription as string) || "",
+            og_image: (content.seo && (content.seo as Record<string, unknown>).ogImage as string) || "",
+            status: "published",
+            published_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            created_by: authorized.context.user?.id || null,
+            updated_by: authorized.context.user?.id || null,
+          };
+
+          await serviceClient
+            .from("blog_posts")
+            .upsert(row, { onConflict: "group_id,lang" });
+        }
+      }
 
       // Update all posts in this group to published status
       const { data, error } = await serviceClient

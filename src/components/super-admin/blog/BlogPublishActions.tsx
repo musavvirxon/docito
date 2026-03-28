@@ -6,9 +6,10 @@ import type { BlogGroupChecklistResult } from "@/types/blog";
 import {
   AlertTriangle,
   CheckCircle2,
-  GitPullRequest,
+  Database,
   Loader2,
   Rocket,
+  Save,
   Sparkles,
 } from "lucide-react";
 
@@ -16,16 +17,20 @@ interface BlogPublishActionsProps {
   draft: BlogStudioDraft | null;
   checklist: BlogGroupChecklistResult | null;
   isPublishing: boolean;
+  isSavingDraft?: boolean;
   onAutofillAll: () => void;
   onPublish: () => void;
+  onSaveDraft?: () => void;
 }
 
 export default function BlogPublishActions({
   draft,
   checklist,
   isPublishing,
+  isSavingDraft,
   onAutofillAll,
   onPublish,
+  onSaveDraft,
 }: BlogPublishActionsProps) {
   if (!draft || !checklist) {
     return (
@@ -47,7 +52,7 @@ export default function BlogPublishActions({
       .map((lang) => `${lang}:${checklist.languages[lang].missingKeys.join(", ")}`),
   ];
 
-  const publishDisabled = !checklist.passed || isPublishing;
+  const publishDisabled = !checklist.passed || isPublishing || isSavingDraft;
 
   return (
     <Card className="rounded-2xl shadow-sm">
@@ -76,20 +81,20 @@ export default function BlogPublishActions({
           </Badge>
 
           <Badge variant="outline">
-            <GitPullRequest className="mr-1 h-3.5 w-3.5" />
-            PR-based publish
+            <Database className="mr-1 h-3.5 w-3.5" />
+            Direct publish
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-4">
         <div className="rounded-xl border border-border p-4">
-          <div className="mb-2 text-sm font-semibold text-foreground">Safest publish flow</div>
+          <div className="mb-2 text-sm font-semibold text-foreground">Publish flow</div>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <div>1. Save local draft edits</div>
-            <div>2. Pass every required checklist item</div>
-            <div>3. Submit through the secured Edge Function</div>
-            <div>4. Create a GitHub PR for review before merge</div>
+            <div>1. Edit content & fill SEO fields</div>
+            <div>2. Save as draft to persist to database</div>
+            <div>3. Pass every required checklist item</div>
+            <div>4. Publish directly to make it live</div>
           </div>
         </div>
 
@@ -104,7 +109,7 @@ export default function BlogPublishActions({
           </div>
         ) : (
           <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-sm text-emerald-700 dark:text-emerald-300">
-            Every required language and global rule is satisfied. This draft can be submitted for publish.
+            Every required language and global rule is satisfied. This draft can be published.
           </div>
         )}
 
@@ -114,16 +119,37 @@ export default function BlogPublishActions({
             Autofill missing SEO fields
           </Button>
 
+          {onSaveDraft && (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isSavingDraft || isPublishing}
+              onClick={onSaveDraft}
+            >
+              {isSavingDraft ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save as draft
+                </>
+              )}
+            </Button>
+          )}
+
           <Button type="button" disabled={publishDisabled} onClick={onPublish}>
             {isPublishing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Submitting...
+                Publishing...
               </>
             ) : (
               <>
                 <Rocket className="mr-2 h-4 w-4" />
-                Submit for publish
+                Publish now
               </>
             )}
           </Button>
