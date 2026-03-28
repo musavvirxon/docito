@@ -85,32 +85,21 @@ export interface BlogStudioSubmitResult {
   ok: boolean;
   action: "submit_for_publish";
   groupId: string;
-  branch: string;
-  baseBranch: string;
-  changedPaths: string[];
-  deletedPaths: string[];
-  commitSha: string | null;
-  pullRequest: {
-    number: number;
-    url: string;
-    state: string;
-  };
+  publishedPosts: Array<{ id: string; lang: string; slug: string }>;
 }
 
 export interface BlogStudioDeleteResult {
   ok: boolean;
   action: "delete_post_group";
   groupId: string;
-  branch: string;
-  baseBranch: string;
-  changedPaths: string[];
-  deletedPaths: string[];
-  commitSha: string | null;
-  pullRequest: {
-    number: number;
-    url: string;
-    state: string;
-  };
+  deletedPosts: Array<{ id: string; lang: string }>;
+}
+
+export interface BlogStudioSaveDraftResult {
+  ok: boolean;
+  action: "save_draft";
+  groupId: string;
+  savedPosts: Array<{ id: string; lang: string; slug: string }>;
 }
 
 const nowIso = () => new Date().toISOString();
