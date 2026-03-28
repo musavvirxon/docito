@@ -113,6 +113,46 @@ export default function BlogStudioSection() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    if (!studio.activeDraft) return;
+    try {
+      const postFiles = BLOG_LANGUAGES.map((lang) => ({
+        lang,
+        content: studio.activeDraft!.translations[lang],
+      }));
+
+      const { data, error } = await supabase.functions.invoke("blog-studio", {
+        body: {
+          action: "save_draft",
+          groupId: studio.activeDraft.groupId,
+          postFiles,
+        },
+      });
+
+      if (error) throw new Error(error.message || "Failed to save draft");
+      if (!data?.ok) throw new Error(data?.error || "Failed to save draft");
+
+      toast({
+        title: "Draft saved",
+        description: `Saved ${data.savedPosts?.length || 0} language(s) to database.`,
+      });
+
+      studio.drafts.updateDraft(studio.activeDraft.draftId, (draft) => ({
+        ...draft,
+        workflowStatus: "draft",
+        updatedAt: new Date().toISOString(),
+      }));
+
+      await queryClient.invalidateQueries({ queryKey: BLOG_STUDIO_QUERY_KEY });
+    } catch (error) {
+      toast({
+        title: "Save draft failed",
+        description: error instanceof Error ? error.message : "Unexpected error.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handlePublish = async () => {
     if (!studio.checklist.checklist?.passed) {
       toast({
@@ -144,9 +184,17 @@ export default function BlogStudioSection() {
       });
 
       toast({
-        title: "Publish request submitted",
-        description: `Pull request #${result.pullRequest.number} created successfully.`,
+        title: "Published successfully",
+        description: `Published ${result.publishedPosts?.length || 0} language(s).`,
       });
+
+      studio.drafts.updateDraft(studio.activeDraft!.draftId, (draft) => ({
+        ...draft,
+        workflowStatus: "published",
+        updatedAt: new Date().toISOString(),
+      }));
+
+      await queryClient.invalidateQueries({ queryKey: BLOG_STUDIO_QUERY_KEY });
     } catch (error) {
       toast({
         title: "Publish request failed",
@@ -163,8 +211,8 @@ export default function BlogStudioSection() {
       });
       setDeleteOpen(false);
       toast({
-        title: "Delete request submitted",
-        description: `Pull request #${result.pullRequest.number} created for ${result.groupId}.`,
+        title: "Deleted successfully",
+        description: `Deleted ${result.deletedPosts?.length || 0} post(s) for ${result.groupId}.`,
       });
     } catch (error) {
       toast({
