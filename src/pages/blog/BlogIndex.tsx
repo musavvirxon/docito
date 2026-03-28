@@ -3,15 +3,12 @@ import BlogEmptyState from "@/components/blog/BlogEmptyState";
 import { SEOHead } from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { BLOG_LANGUAGES } from "@/config/blog";
-import {
-  buildBlogIndexPath,
-  getFeaturedBlogPosts,
-  getPublishedBlogPosts,
-} from "@/lib/blog/public-loader";
-import { BookOpenText, Sparkles } from "lucide-react";
+import { buildBlogIndexPath } from "@/lib/blog/public-loader";
+import { BookOpenText, Loader2, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import type { BlogLanguage } from "@/types/blog";
+import { usePublishedBlogPosts, useFeaturedBlogPosts } from "@/hooks/blog/usePublishedBlogPosts";
 
 const getSiteUrl = () => {
   const env =
@@ -35,11 +32,9 @@ export default function BlogIndex() {
   const currentLang = (lang || "en") as BlogLanguage;
   const siteUrl = getSiteUrl();
 
-  const posts = useMemo(() => getPublishedBlogPosts(currentLang), [currentLang]);
-  const featuredPosts = useMemo(
-    () => getFeaturedBlogPosts(currentLang, 3),
-    [currentLang],
-  );
+  const { data: posts = [], isLoading } = usePublishedBlogPosts(currentLang);
+  const { data: featuredPosts = [] } = useFeaturedBlogPosts(currentLang, 3);
+
   const latestPosts = useMemo(
     () =>
       posts.filter(
@@ -139,7 +134,7 @@ export default function BlogIndex() {
                 <div className="text-sm font-semibold text-foreground">Published articles</div>
                 <div className="mt-2 text-3xl font-semibold text-foreground">{posts.length}</div>
                 <div className="mt-1 text-sm text-muted-foreground">
-                  Static, language-aware blog pages backed by repo content files.
+                  Live articles from the Docito content database.
                 </div>
               </div>
 
@@ -159,7 +154,11 @@ export default function BlogIndex() {
           </div>
         </section>
 
-        {posts.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : posts.length === 0 ? (
           <BlogEmptyState
             title="No published blog posts yet"
             description="Publish the first multilingual article from Blog Studio to make it appear here."
@@ -195,7 +194,7 @@ export default function BlogIndex() {
                   Latest articles
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Clean, SEO-friendly static articles grouped by language and linked by post group.
+                  SEO-friendly articles grouped by language and linked by post group.
                 </p>
               </div>
 

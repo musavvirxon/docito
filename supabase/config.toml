@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.patient-billing]
 verify_jwt = false
+
+[functions.blog-sitemap]
+verify_jwt = false
+
+[functions.blog-ssr]
+verify_jwt = false

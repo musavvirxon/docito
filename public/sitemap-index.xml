@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>https://docito.live/sitemap.xml</loc>
+    <loc>https://www.docito.app/sitemap.xml</loc>
     <lastmod>2026-03-01</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://gswwpjdtgsxzcsnrxutu.supabase.co/functions/v1/blog-sitemap</loc>
+    <lastmod>2026-03-28</lastmod>
   </sitemap>
 </sitemapindex>
