@@ -156,6 +156,8 @@ export default function BlogStudioSection() {
         description: error instanceof Error ? error.message : "Unexpected error.",
         variant: "destructive",
       });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
