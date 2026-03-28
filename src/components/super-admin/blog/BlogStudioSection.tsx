@@ -311,8 +311,8 @@ export default function BlogStudioSection() {
                 Super admin only
               </Badge>
               <Badge variant="outline">
-                <Github className="mr-1.5 h-3.5 w-3.5" />
-                PR-based publish flow
+                <Database className="mr-1.5 h-3.5 w-3.5" />
+                Direct DB publish
               </Badge>
               <Badge variant="outline">
                 <Languages className="mr-1.5 h-3.5 w-3.5" />
