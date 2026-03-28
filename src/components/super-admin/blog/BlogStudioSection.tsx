@@ -120,6 +120,7 @@ export default function BlogStudioSection() {
 
   const handleSaveDraft = async () => {
     if (!studio.activeDraft) return;
+    setIsSavingDraft(true);
     try {
       const postFiles = BLOG_LANGUAGES.map((lang) => ({
         lang,
