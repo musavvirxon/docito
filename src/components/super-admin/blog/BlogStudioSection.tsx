@@ -35,6 +35,7 @@ export default function BlogStudioSection() {
   const [jsonOpen, setJsonOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [assetMap, setAssetMap] = useState<Record<string, BlogAssetItem[]>>({});
 
   useEffect(() => {
@@ -486,8 +487,10 @@ export default function BlogStudioSection() {
               draft={studio.activeDraft}
               checklist={studio.checklist.checklist}
               isPublishing={studio.publishMutation.isPending}
+              isSavingDraft={isSavingDraft}
               onAutofillAll={handleAutofillAllSeo}
               onPublish={handlePublish}
+              onSaveDraft={handleSaveDraft}
             />
 
             <BlogPreviewPanel draft={studio.activeDraft} />
