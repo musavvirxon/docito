@@ -1,125 +1,90 @@
-# Fix Plan: Patient Dashboard, Search, Booking, and Appointments
 
-## Issues Identified
 
-1. `**patient_all_appointments` query fails** -- trying to join `procedure:procedure_id(*)` but the view has no FK to `procedures`. Returns 400 error.
-2. `**appointment_holds.procedure_id` does not exist** -- the `book-appointment` edge function tries to insert `procedure_id` into `appointment_holds`, and `BookingConfirmation.tsx` selects it. The column doesn't exist in the table schema.
-3. **Doctor name missing in search results** -- `useDoctorSearch.ts` queries `profiles!fk_doctors_user_id(full_name, avatar_url)` but network responses show `profiles: null`. The profiles RLS blocks access. Need to use `doctor_profiles_view` instead.
-4. **Doctor name missing in DoctorProfile page** -- Uses `profiles:user_id(...)` which also fails due to RLS. Same fix needed.
-5. **Doctor name missing in BookingModal/DoctorProfileModal** -- These modals receive doctor data from the search hook which already has null profiles.
-6. **Translations not showing** -- `ResultCard.tsx` uses `useTranslation("dashboard")` but translation keys like `patient.resultCard.doctor` exist in `dashboard.json`. The issue is the search results page (`SearchDoctors.tsx`) uses `useTranslation('doctors')` namespace, and the result cards use `dashboard` namespace. Both should work. Need to check if the patient dashboard itself renders untranslated code strings.
-7. **Procedures only visible for dentists** -- The `isDentist` check limits procedure selection. Should be available for all doctors.
-8. **Patient details section in booking** -- Should be removed; patient data from profile is sent automatically.
-9. **Payment/cost should be charged only after doctor confirms** -- Cost display should show "Estimated" and note payment is post-appointment.
-10. While booking appointment doctor profile should be showed when clicked on profile button - all public info should be displayes.
-11. Booking-confirmation page should be fixed
+# Plan: Dynamic Blog Publishing with SEO Crawlability
 
-## Changes
+## Current Problems
 
-### 1. Fix `patient_all_appointments` query (supabase-api.ts + usePatientDashboard.ts)
+1. **Blog posts don't appear publicly** -- Admin publishes to the `blog_posts` Supabase table, but the public blog reads from static JSON files (`import.meta.glob`). Nothing connects them.
+2. **No blog URLs in sitemap** -- `sitemap.xml` has zero blog entries. Search engines don't know your blog pages exist.
+3. **Content invisible to crawlers** -- This is a JavaScript SPA. When Google/Bing crawl a blog URL, they get an empty `<div id="root"></div>`. The `react-helmet-async` meta tags only render after JS executes. While Googlebot can execute JS, it's slower to index and many crawlers (Bing, social media previews, AI search) cannot.
+4. **Build error** -- Likely TypeScript mismatches from recent blog-studio refactor.
 
-Remove the `procedure:procedure_id(*)` join from the `patient_all_appointments` query since the view doesn't have this FK relationship.
+## Plan
 
-**Files**: `src/lib/api/supabase-api.ts` (line 510), `src/hooks/usePatientDashboard.ts` (lines 44-64)
+### Step 1: Connect public blog pages to Supabase
 
-Remove `, procedure:procedure_id (*)` from the select string. Keep the doctor and practice joins.
+Replace the static file loader with live database queries.
 
-### 2. Add `procedure_id` column to `appointment_holds` (SQL migration)
+- Create `src/hooks/blog/usePublishedBlogPosts.ts` -- queries `blog_posts` table where `status = 'published'`, ordered by `published_at DESC`
+- Create `src/hooks/blog/useBlogPostBySlug.ts` -- single post lookup by lang + slug
+- Update `BlogIndex.tsx` to use the Supabase hook instead of `getPublishedBlogPosts()`
+- Update `BlogPost.tsx` to use the Supabase hook instead of `getBlogPostBySlug()`
+- Keep all existing SEO components (`SEOHead`, structured data, hreflang) -- they just need real data
 
-```sql
-ALTER TABLE public.appointment_holds 
-ADD COLUMN IF NOT EXISTS procedure_id uuid REFERENCES procedures(id);
+### Step 2: Create a dynamic blog sitemap edge function
+
+Blog URLs are dynamic, so the static `sitemap.xml` cannot include them.
+
+- Create `supabase/functions/blog-sitemap/index.ts` -- queries published posts, returns valid XML sitemap with `<loc>`, `<lastmod>`, and `<xhtml:link>` alternates per language
+- Add rewrite in `public/_redirects`: `/blog-sitemap.xml` routes to the edge function
+- Add `blog-sitemap.xml` reference to `public/sitemap-index.xml`
+- Add blog sitemap URL to `public/robots.txt`
+
+### Step 3: Create a blog prerender edge function (makes content crawlable)
+
+This is the critical step for search engine discoverability. Create an edge function that serves server-rendered HTML for blog URLs when visited by crawlers.
+
+- Create `supabase/functions/blog-ssr/index.ts`:
+  - Detects crawler user-agents (Googlebot, Bingbot, Twitterbot, facebookexternalhit, LinkedInBot, etc.)
+  - For crawlers: fetches the blog post from `blog_posts` table, renders a complete HTML page with all meta tags, structured data, Open Graph tags, and the full article text in semantic HTML
+  - For regular users: returns a redirect to the SPA (normal React app)
+- Add rewrite rules in `public/_redirects` for blog paths (`/:lang/blog/*`) pointing to the edge function
+- This ensures Google, Bing, social media link previews, and AI search engines can all read your blog content and recommend it in search results
+
+### Step 4: Fix build error
+
+Audit and fix TypeScript type mismatches in `BlogStudioSection.tsx` and `BlogPublishActions.tsx` from the recent `studio-api.ts` refactor.
+
+## Technical Details
+
+**Blog SSR edge function** will serve HTML like:
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>My Blog Post | Docito Blog</title>
+  <meta name="description" content="..." />
+  <meta property="og:title" content="..." />
+  <link rel="canonical" href="https://docito.live/en/blog/my-post" />
+  <script type="application/ld+json">{"@type":"Article",...}</script>
+</head>
+<body>
+  <article><h1>My Blog Post</h1><p>Full content here...</p></article>
+</body>
+</html>
 ```
 
-This fixes:
-
-- The `book-appointment` edge function insert
-- The `BookingConfirmation.tsx` select
-
-### 3. Fix doctor name in search results (useDoctorSearch.ts)
-
-Replace `profiles!fk_doctors_user_id(full_name, avatar_url)` with a separate query to `doctor_profiles_view` or use the view directly. The simplest fix: query `doctor_profiles_view` instead of `doctors` table, since the view already includes `full_name` and `avatar_url`.
-
-**File**: `src/hooks/useDoctorSearch.ts`
-
-Change the query to use `doctor_profiles_view` which bypasses profiles RLS:
-
-```ts
-let q = supabase
-  .from('doctor_profiles_view')
-  .select('id, specialty, consultation_fee, accepts_new_patients, average_rating, num_reviews, consultation_types, verified, full_name, avatar_url')
-  .eq('verified', true)
-  .limit(50);
+**Blog sitemap output:**
+```xml
+<url>
+  <loc>https://docito.live/en/blog/my-post-slug</loc>
+  <lastmod>2026-03-25</lastmod>
+  <xhtml:link rel="alternate" hreflang="de" href="https://docito.live/de/blog/..." />
+</url>
 ```
 
-Update the mapping to use `d.full_name` directly instead of `d.profiles?.full_name`.
+**Files to create:**
+- `src/hooks/blog/usePublishedBlogPosts.ts`
+- `src/hooks/blog/useBlogPostBySlug.ts`
+- `supabase/functions/blog-sitemap/index.ts`
+- `supabase/functions/blog-ssr/index.ts`
 
-### 4. Fix doctor name in DoctorProfile page
+**Files to modify:**
+- `src/pages/blog/BlogIndex.tsx` -- use Supabase hook
+- `src/pages/blog/BlogPost.tsx` -- use Supabase hook
+- `public/sitemap-index.xml` -- add blog sitemap reference
+- `public/robots.txt` -- add blog sitemap URL
+- `public/_redirects` -- add blog-sitemap + blog-ssr rewrites
+- `src/components/super-admin/blog/BlogStudioSection.tsx` -- fix types
+- `src/components/super-admin/blog/BlogPublishActions.tsx` -- fix types
 
-**File**: `src/pages/DoctorProfile.tsx`
-
-After fetching from `doctors` table, hydrate the name from `doctor_profiles_view` if `profiles` is null (RLS blocked). Add a fallback fetch:
-
-```ts
-if (!data.profiles || !data.profiles.full_name) {
-  const { data: dpv } = await supabase
-    .from('doctor_profiles_view')
-    .select('full_name, avatar_url')
-    .eq('id', data.id)
-    .maybeSingle();
-  if (dpv) {
-    data.profiles = { ...data.profiles, full_name: dpv.full_name, avatar_url: dpv.avatar_url };
-  }
-}
-```
-
-### 5. Fix doctor name in BookingModal and DoctorProfileModal
-
-These receive `doctor` prop from `SearchDoctors.tsx`. The search results already map `name` from `profiles.full_name`. With fix #3, the name will be populated correctly. No additional changes needed for these modals.
-
-### 6. Make procedures available for all doctors (not just dentists)
-
-**File**: `src/pages/AppointmentBooking.tsx`
-
-- Remove the `isDentist` check that gates the procedures section (line 547: `{isDentist && (`)
-- Change it to always show if procedures exist
-- Update procedure loading to use `doctor_id` instead of `dentist_id` for non-dentist doctors (check both columns)
-
-### 7. Remove patient details section from booking
-
-**File**: `src/pages/AppointmentBooking.tsx`
-
-- Remove the "Patient details" Card (lines 708-756) containing name/email/phone inputs
-- Keep only the Notes textarea
-- Remove `patientName`, `patientEmail` state variables
-- Keep `patientPhone` but auto-fill from profile (already done) and don't show input
-- Update `canBook` to not require phone: `const canBook = Boolean(selectedSlotStart) && !booking`
-- Update `handleBook` to pull patient info from auth/profile automatically
-- In `combinedNotes`, remove the manual name/email/phone lines
-
-### 8. Update cost/payment messaging
-
-**File**: `src/pages/AppointmentBooking.tsx`
-
-- Change consultation fee display to say "Estimated fee" 
-- Add note: "Payment will only be charged after appointment completion and doctor confirmation"
-- In the procedure cost display, change "Estimate:" label to "Estimated cost (charged after appointment):"
-
-### 9. Fix patient dashboard translations
-
-The `ResultCard.tsx` uses `useTranslation("dashboard")` which loads `public/locales/en/dashboard.json`. The keys like `patient.resultCard.doctor` exist there, so translations should work. The issue may be that the patient dashboard components themselves show raw keys. Need to verify the patient dashboard view uses the correct translation namespace.
-
-**File**: `src/components/patient-dashboard/PatientDashboardView.tsx` - verify it uses `useTranslation("dashboard")`
-
-## Summary of Changes
-
-
-| File                                | Change                                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------------------- |
-| SQL migration                       | Add `procedure_id` column to `appointment_holds`                                          |
-| `src/lib/api/supabase-api.ts`       | Remove `procedure:procedure_id(*)` from `patient_all_appointments` query                  |
-| `src/hooks/usePatientDashboard.ts`  | Remove procedure join from query                                                          |
-| `src/hooks/useDoctorSearch.ts`      | Use `doctor_profiles_view` instead of `doctors` table for search                          |
-| `src/pages/DoctorProfile.tsx`       | Add fallback name hydration from `doctor_profiles_view`                                   |
-| `src/pages/AppointmentBooking.tsx`  | Remove patient details section, show procedures for all doctors, update payment messaging |
-| `src/pages/BookingConfirmation.tsx` | No change needed (procedure_id column fix handles it)                                     |
