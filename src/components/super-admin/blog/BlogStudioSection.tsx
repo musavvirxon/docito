@@ -30,6 +30,7 @@ const createAssetStateKey = (groupId: string) => `docito.blogStudio.assets.${gro
 
 export default function BlogStudioSection() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const studio = useBlogStudio();
   const [jsonOpen, setJsonOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
