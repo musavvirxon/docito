@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useBlogStudio } from "@/hooks/blog/useBlogStudio";
+import { useBlogStudio, BLOG_STUDIO_QUERY_KEY } from "@/hooks/blog/useBlogStudio";
 import {
   autofillBlogSeoForLanguage,
   stringifyBlogStudioDraftExport,
 } from "@/lib/blog/studio-api";
+import { BLOG_LANGUAGES } from "@/config/blog";
+import { supabase } from "@/integrations/supabase/client";
 import type { BlogDoc, BlogLanguage, BlogPostStatus } from "@/types/blog";
 import BlogDeleteDialog from "@/components/super-admin/blog/BlogDeleteDialog";
 import BlogEditorShell from "@/components/super-admin/blog/BlogEditorShell";
@@ -21,7 +24,7 @@ import {
   toStudioAssetUploads,
   type BlogAssetItem,
 } from "@/components/super-admin/blog/BlogAssetManager";
-import { BookOpenText, Github, Languages, ShieldCheck } from "lucide-react";
+import { BookOpenText, Database, Languages, ShieldCheck } from "lucide-react";
 
 const createAssetStateKey = (groupId: string) => `docito.blogStudio.assets.${groupId}`;
 
