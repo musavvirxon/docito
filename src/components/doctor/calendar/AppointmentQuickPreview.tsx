@@ -98,7 +98,8 @@ const AppointmentQuickPreview = memo(
     doctorSpecialty = "",
   }: AppointmentQuickPreviewProps) => {
     const { t, i18n } = useTranslation("dashboard");
-    const { user } = useAuth();
+    const { user, activeRole } = useAuth();
+    const isPatient = activeRole === "patient";
     const navigate = useNavigate();
     const { startConversation, loading: isMessaging } = useMessageAction();
     const [isStarting, setIsStarting] = useState(false);
