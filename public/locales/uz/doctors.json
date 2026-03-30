@@ -1653,7 +1653,52 @@
         "notificationsError": "Bildirishnoma sozlamalarini saqlab bo‘lmadi",
         "privacySuccess": "Maxfiylik sozlamalari muvaffaqiyatli saqlandi",
         "privacyError": "Maxfiylik sozlamalarini saqlab bo‘lmadi"
-      }
+      },
+  "page": {
+    "title": "Shifokor topish",
+    "subtitle": "Ishonchli tibbiyot mutaxassislarini qidiring va ular bilan uchrashuv belgilang"
+  },
+  "search": {
+    "placeholder": "Shifokorlar, mutaxassisliklar yoki klinikalarni qidiring",
+    "submit": "Qidirish",
+    "filters": "Filtrlar",
+    "clearFilters": "Barcha filtrlarni tozalash",
+    "specialty": "Mutaxassislik",
+    "location": "Joylashuv",
+    "rating": "Reyting",
+    "consultationFee": "Konsultatsiya narxi",
+    "availability": "Mavjudlik"
+  },
+  "specialties": {
+    "all": "Barcha mutaxassisliklar"
+  },
+  "filters": {
+    "distance": {
+      "label": "Masofa",
+      "any": "Istalgan masofa",
+      "km50": "50 km ichida"
+    },
+    "rating": {
+      "minimum": "Minimal reyting",
+      "any": "Istalgan reyting",
+      "max": "5 yulduz"
+    },
+    "priceRanges": {
+      "any": "Istalgan narx",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "availability": {
+      "availableToday": "Bugun mavjud",
+      "acceptsNewPatients": "Yangi bemorlarni qabul qiladi"
+    },
+    "services": {
+      "title": "Xizmatlar"
+    }
+  }
+}
     }
   }
 }
