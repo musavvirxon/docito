@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, type AppRole } from "@/contexts/AuthContext";
 import { useMessageAction } from "@/hooks/useMessageAction";
 import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
 import type { CalendarAppointment } from "./types";
