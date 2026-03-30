@@ -257,6 +257,37 @@ const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatie
         </CardContent>
       </Card>
 
+      {/* Patient Source Tabs */}
+      <div className="flex gap-2">
+        <Button
+          variant={activeTab === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("all")}
+          className="gap-2"
+        >
+          <Users className="h-4 w-4" />
+          All ({stats.total})
+        </Button>
+        <Button
+          variant={activeTab === "appointment" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("appointment")}
+          className="gap-2"
+        >
+          <Calendar className="h-4 w-4" />
+          Registered ({stats.fromAppointments})
+        </Button>
+        <Button
+          variant={activeTab === "direct" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setActiveTab("direct")}
+          className="gap-2"
+        >
+          <UserPlus className="h-4 w-4" />
+          Manually Added ({stats.directlyAdded})
+        </Button>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>

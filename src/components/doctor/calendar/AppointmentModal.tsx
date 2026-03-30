@@ -54,6 +54,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import CancelAppointmentDialog from "./CancelAppointmentDialog";
+import PatientInfoTab from "./PatientInfoTab";
 import { RescheduleAppointmentModal } from "@/components/appointments/RescheduleAppointmentModal";
 import type { CalendarAppointment } from "./types";
 
@@ -1702,35 +1703,7 @@ const requestedProcedureName = useMemo(() => {
               </TabsContent>
 
               <TabsContent value="patient" className="mt-4 space-y-4">
-                <div className="space-y-3">
-                  {appointment.patient_phone && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{appointment.patient_phone}</p>
-                      </div>
-                    </div>
-                  )}
-                  {appointment.patient_email && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Email</p>
-                        <p className="font-medium">{appointment.patient_email}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <Button variant="outline" onClick={handleMessage} className="w-full gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  {t("doctor.calendar.sendMessage", "Send Message")}
-                </Button>
+                <PatientInfoTab appointment={appointment} onMessage={handleMessage} />
               </TabsContent>
             </ScrollArea>
           </Tabs>

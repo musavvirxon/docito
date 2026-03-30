@@ -67,7 +67,6 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
           .eq("doctor_id", doctorId)
           .gte("appointment_date", startStr)
           .lte("appointment_date", endStr)
-          .neq("status", "canceled")
           .order("appointment_date", { ascending: true })
           .order("start_time", { ascending: true });
 
