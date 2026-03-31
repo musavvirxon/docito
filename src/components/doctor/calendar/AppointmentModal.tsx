@@ -709,7 +709,7 @@ const requestedProcedureName = useMemo(() => {
     const deleteItem = useCallback(
       async (itemId: string) => {
         if (!appointmentId) return;
-        const ok = window.confirm("Delete this clinical item?");
+        const ok = window.confirm(tm("deleteClinicalItem", "Delete this clinical item?"));
         if (!ok) return;
 
         try {
