@@ -1531,7 +1531,7 @@ const requestedProcedureName = useMemo(() => {
                                       </div>
 
                                       <div className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">Cost</div>
+                                        <div className="text-sm text-muted-foreground">{tm("cost", "Cost")}</div>
                                         <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder={tm("costOptional", "e.g. 120")} />
                                       </div>
 
@@ -1579,10 +1579,10 @@ const requestedProcedureName = useMemo(() => {
                                     {it.description && <div className="whitespace-pre-wrap">{it.description}</div>}
                                     {(it.dosage || it.frequency || it.duration || it.quantity != null) && (
                                       <div className="text-xs text-muted-foreground">
-                                        {it.dosage ? `Dosage: ${it.dosage} ` : ""}
-                                        {it.frequency ? `• Frequency: ${it.frequency} ` : ""}
-                                        {it.duration ? `• Duration: ${it.duration} ` : ""}
-                                        {it.quantity != null ? `• Qty: ${it.quantity}` : ""}
+                                        {it.dosage ? `{tm("dosage", "Dosage")}: ${it.dosage} ` : ""}
+                                        {it.frequency ? `• {tm("frequency", "Frequency")}: ${it.frequency} ` : ""}
+                                        {it.duration ? `• {tm("duration", "Duration")}: ${it.duration} ` : ""}
+                                        {it.quantity != null ? `• {tm("quantity", "Qty")}: ${it.quantity}` : ""}
                                       </div>
                                     )}
                                   </div>
@@ -1599,11 +1599,11 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsContent value="procedures" className="mt-4 space-y-4">
                 {loadingProcedures ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading procedures...</div>
+                  <div className="text-center py-8 text-muted-foreground">{tm("loadingProceduresTab", "Loading procedures...")}</div>
                 ) : appointmentProcedures.length === 0 ? (
                   <div className="text-center py-8">
                     <Stethoscope className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">No procedures assigned to this appointment</p>
+                    <p className="text-muted-foreground">{tm("noProceduresAssigned", "No procedures assigned to this appointment")}</p>
                     <Button variant="outline" size="sm" className="mt-4 gap-2">
                       <Stethoscope className="h-4 w-4" />
                       Add Procedure
@@ -1649,11 +1649,11 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsContent value="treatment-plans" className="mt-4 space-y-4">
                 {loadingPlans ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading treatment plans...</div>
+                  <div className="text-center py-8 text-muted-foreground">{tm("loadingTreatmentPlans", "Loading treatment plans...")}</div>
                 ) : treatmentPlans.length === 0 ? (
                   <div className="text-center py-8">
                     <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">No treatment plans for this patient</p>
+                    <p className="text-muted-foreground">{tm("noTreatmentPlans", "No treatment plans for this patient")}</p>
                     <Button
                       variant="outline"
                       size="sm"
