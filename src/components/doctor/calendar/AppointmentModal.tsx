@@ -811,7 +811,7 @@ const requestedProcedureName = useMemo(() => {
 
         if (catalogMode === "treatment_plan") {
           if (!selectedPlan) {
-            toast.error("Select a treatment plan");
+            toast.error(tm("selectATreatmentPlan", "Select a treatment plan"));
             return;
           }
 
