@@ -683,12 +683,12 @@ const requestedProcedureName = useMemo(() => {
           cost: toNumberOrNull(editCost),
         });
 
-        toast.success("Clinical item updated");
+        toast.success(tm("clinicalItemUpdated", "Clinical item updated"));
         cancelEditItem();
         await refreshClinicalItems();
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to update item");
+        toast.error(e?.message ?? tm("failedUpdateItem", "Failed to update item"));
       }
     }, [
       appointmentId,
