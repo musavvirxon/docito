@@ -71,24 +71,16 @@ serve(async (req) => {
     auth: { persistSession: false },
   });
 
-  // Use getClaims() for fast local JWT validation instead of getUser() network call
-  const token = authHeader.replace(/^Bearer\s+/i, "");
-  const { data: claimsData, error: claimsErr } = await authed.auth.getClaims(token);
-  if (claimsErr || !claimsData?.claims) {
-    console.warn("me auth rejected request", claimsErr?.message || "missing claims");
+  // Validate token via getUser() – the only reliable method in edge functions
+  const { data: userRes, error: userErr } = await authed.auth.getUser();
+  if (userErr || !userRes?.user) {
+    console.warn("me auth rejected request", userErr?.message || "no user");
     return json({ ok: false, error: "Unauthorized" }, 401);
   }
 
-  const claims = claimsData.claims as Record<string, unknown>;
-  const userId = claims.sub as string;
-  const email = (claims.email as string) ?? null;
-
-  // Fetch full user metadata via getUser for profile enrichment (non-blocking fallback)
-  let meta: Record<string, unknown> = {};
-  try {
-    const { data: userRes } = await authed.auth.getUser();
-    if (userRes?.user) meta = (userRes.user.user_metadata || {}) as Record<string, unknown>;
-  } catch { /* proceed with claims only */ }
+  const userId = userRes.user.id;
+  const email = userRes.user.email ?? null;
+  const meta = (userRes.user.user_metadata || {}) as Record<string, unknown>;
 
   const admin = createClient(env.url, env.service, {
     auth: { persistSession: false },
