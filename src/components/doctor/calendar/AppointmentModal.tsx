@@ -452,7 +452,7 @@ const requestedProcedureName = useMemo(() => {
           const procs: AppointmentProcedure[] = (data || []).map((p: any) => ({
             id: p.id,
             procedure_id: p.procedure_id,
-            procedure_name: p.procedures?.name || "Unknown Procedure",
+            procedure_name: p.procedures?.name || tm("noProcedureFound", "Unknown Procedure"),
             status: p.status,
             estimated_cost: p.estimated_cost,
             procedure_notes: p.procedure_notes,
