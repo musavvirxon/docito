@@ -850,7 +850,7 @@ const requestedProcedureName = useMemo(() => {
     const applyTemplate = useCallback(async () => {
       if (!appointmentId) return;
       if (!selectedTemplate) {
-        toast.error("Select a template");
+        toast.error(tm("selectATemplate", "Select a template"));
         return;
       }
 
