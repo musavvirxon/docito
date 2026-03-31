@@ -1931,10 +1931,7 @@
     "footer": "© 2025 Docito Admin Platform - Secure Access Only",
     "sessionExpired": "Session expired",
     "sessionExpiredDesc": "You have been logged out due to inactivity"
-  }
-  // public/locales/en/dashboard.json
-// MERGE INTO: doctor
-{
+  },
   "financialStats": {
     "overview": {
       "tbd": "TBD"
