@@ -555,7 +555,7 @@ const requestedProcedureName = useMemo(() => {
           onClose();
         } catch (error) {
           console.error("Error cancelling appointment:", error);
-          toast.error("Failed to cancel appointment");
+          toast.error(tm("failedCancelAppointment", "Failed to cancel appointment"));
         }
       },
       [appointment, t, onCancel, onClose],
