@@ -856,13 +856,13 @@ const requestedProcedureName = useMemo(() => {
 
       try {
         await invokeClinical({ action: "apply_template", appointment_id: appointmentId, template_id: selectedTemplate.id });
-        toast.success("Template applied");
+        toast.success(tm("templateApplied", "Template applied"));
         setSelectedTemplateId(null);
         setTemplateApplyOpen(false);
         await refreshClinicalItems();
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to apply template");
+        toast.error(e?.message ?? tm("failedApplyTemplate", "Failed to apply template"));
       }
     }, [appointmentId, invokeClinical, refreshClinicalItems, selectedTemplate]);
 
