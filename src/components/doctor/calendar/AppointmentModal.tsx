@@ -785,7 +785,7 @@ const requestedProcedureName = useMemo(() => {
       try {
         if (catalogMode === "procedure") {
           if (!selectedProcedure) {
-            toast.error("Select a procedure");
+            toast.error(tm("selectAProcedure", "Select a procedure"));
             return;
           }
 
