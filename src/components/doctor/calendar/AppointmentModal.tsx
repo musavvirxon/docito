@@ -959,7 +959,7 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsTrigger value="procedures" className="gap-1.5">
                 <Stethoscope className="h-3.5 w-3.5" />
-                Procedures
+                {tm("proceduresTab", "Procedures")}
                 {appointmentProcedures.length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                     {appointmentProcedures.length}
