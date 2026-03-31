@@ -261,6 +261,7 @@ const AppointmentModal = memo(
     onCancel,
   }: AppointmentModalProps) => {
     const { t, i18n } = useTranslation("dashboard");
+    const tm = useCallback((key: string, fallback?: string) => t(`appointmentModal.${key}`, fallback ?? key), [t]);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("details");
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
