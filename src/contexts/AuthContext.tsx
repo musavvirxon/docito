@@ -173,10 +173,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
     if (!accessToken) return null;
 
-    const { data, error } = await supabase.functions.invoke("me", {
-      body: { action: "get" },
-      headers: { Authorization: `Bearer ${accessToken}` },
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    const resp = await fetch(`${supabaseUrl}/functions/v1/me`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        apikey: anonKey,
+      },
+      body: JSON.stringify({ action: "get" }),
     });
+
+    const data = await resp.json().catch(() => null);
+    const error = !resp.ok ? new Error(data?.error || `me returned ${resp.status}`) : null;
 
     if (error) {
       console.warn("[Auth] me bootstrap unavailable; skipping edge fallback", error);
