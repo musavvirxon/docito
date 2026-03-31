@@ -827,13 +827,13 @@ const requestedProcedureName = useMemo(() => {
             cost,
           });
 
-          toast.success("Treatment plan added to appointment");
+          toast.success(tm("treatmentPlanAdded", "Treatment plan added to appointment"));
           resetCatalogForm();
           await refreshClinicalItems();
         }
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to add from catalog");
+        toast.error(e?.message ?? tm("failedAddFromCatalog", "Failed to add from catalog"));
       }
     }, [
       appointmentId,
