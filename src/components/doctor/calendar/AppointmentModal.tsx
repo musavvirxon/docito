@@ -574,7 +574,7 @@ const requestedProcedureName = useMemo(() => {
 
     const handleMessage = useCallback(async () => {
       if (!appointment?.patient_id) {
-        toast.error("Patient information not available");
+        toast.error(tm("patientInfoUnavailable", "Patient information not available"));
         return;
       }
 
