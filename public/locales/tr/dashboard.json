@@ -3,7 +3,6 @@
     "title": "Doktor Paneli",
     "loading": "Paneliniz yükleniyor...",
     "settingUp": "Doktor profiliniz ayarlanıyor...",
-
     "navigation": {
       "dashboard": "Panel",
       "myProfile": "Profilim",
@@ -21,24 +20,20 @@
       "settings": "Ayarlar",
       "logout": "Çıkış Yap"
     },
-
     "clinic": {
       "verified": "Doğrulandı",
       "requestToLeave": "Ayrılma Talebi Gönder"
     },
-
     "verification": {
       "pending": "Doğrulama Bekleniyor",
       "message": "Profiliniz incelemede. Doğrulamayı hızlandırmak için profilinizi tamamlayın.",
       "completeProfile": "Profili Tamamla",
       "viewProfile": "Profili Görüntüle"
     },
-
     "profileCompletion": {
       "title": "Profil Tamamlama",
       "message": "Daha fazla hasta çekmek için profilinizi tamamlayın"
     },
-
     "stats": {
       "totalAppointments": "Toplam Randevu",
       "allTimeBookings": "Tüm Zamanlar Rezervasyonları",
@@ -49,7 +44,6 @@
       "revenue": "Gelir",
       "totalEarnings": "Toplam Kazanç"
     },
-
     "appointmentStatus": {
       "confirmed": "Onaylandı",
       "pending": "Bekliyor",
@@ -58,19 +52,16 @@
       "canceled": "İptal Edildi",
       "rescheduled": "Yeniden Planlandı"
     },
-
     "upcomingAppointments": {
       "title": "Yaklaşan Randevular",
       "noAppointments": "Yaklaşan randevu yok",
       "scheduleIsClear": "Takviminiz şu anda boş"
     },
-
     "recentActivity": {
       "title": "Son Etkinlikler",
       "noActivity": "Son etkinlik yok",
       "startBuildingHistory": "Etkinlik geçmişi oluşturmaya başlayın"
     },
-
     "quickActions": {
       "title": "Hızlı İşlemler",
       "setAvailability": "Müsaitliği Ayarla",
@@ -79,7 +70,6 @@
       "blockTime": "Zaman Blokla",
       "updateSettings": "Ayarları Güncelle"
     },
-
     "todaysSchedule": {
       "title": "Bugünkü Takvim",
       "patients": "hasta",
@@ -87,13 +77,11 @@
       "noAppointments": "Bugün randevu yok",
       "freeDay": "Bugün boş bir gününüz var!"
     },
-
     "dashboardContent": {
       "welcomeBack": "Tekrar hoş geldiniz",
       "specialtyNotProvided": "Uzmanlık belirtilmemiş",
       "completeProfileBanner": "Profilinizi tamamlayın ({{completion}}%)",
       "completeProfileMessage": "Tam bir profil, hastaların sizi daha kolay bulmasına ve size güvenmesine yardımcı olur",
-
       "clinicProfile": "Klinik Profili",
       "requestToLeave": "Ayrılma Talebi",
       "verificationPending": "Doğrulama Bekleniyor",
@@ -123,7 +111,6 @@
       "findClinics": "Klinik Bul",
       "blockTime": "Zaman Blokla"
     },
-
     "profileSetup": {
       "required": "Profil Kurulumu Gerekli",
       "message": "Panele erişmek için doktor profilinizi tamamlayın.",
@@ -134,7 +121,6 @@
       "settingUp": "Profil ayarlanıyor",
       "unableToLoad": "Doktor profiliniz yüklenemedi. Profiliniz hâlâ ayarlanıyor olabilir veya geçici bir sorun oluşmuş olabilir."
     },
-
     "calendar": {
       "title": "Takvimim",
       "today": "Bugün",
@@ -144,18 +130,15 @@
       "clinicDescription": "Klinik rezervasyonlarıyla senkronize edilmiş takvimi görüntüleyin",
       "clinicCalendarDesc": "Klinik randevularını görüntüleyin ve yönetin",
       "myCalendarDesc": "Randevularınızı ve müsaitliğinizi görüntüleyin ve yönetin",
-
       "views": {
         "day": "Gün",
         "week": "Hafta",
         "month": "Ay"
       },
-
       "viewMode": "Görünüm Modu",
       "day": "Gün",
       "week": "Hafta",
       "month": "Ay",
-
       "searchPlaceholder": "Hasta veya not ara...",
       "filters": "Filtreler",
       "appointmentType": "Randevu Türü",
@@ -173,7 +156,6 @@
         "canceled": "İptal edildi",
         "no-show": "Gelmedi"
       },
-
       "showBuffers": "Buffer süreleri göster",
       "blockTime": "Zaman Blokla",
       "setAvailability": "Müsaitliği Ayarla",
@@ -188,7 +170,6 @@
       "dayOff": "Bu gün, takvim ayarlarınızda çalışma günü olarak ayarlanmamış.",
       "notWorkingDay": "Çalışma günü değil",
       "officeClosed": "Ofis kapalı",
-
       "startVisit": "Muayeneyi Başlat",
       "addNote": "Not Ekle",
       "addPrescription": "Reçete Ekle",
@@ -204,7 +185,6 @@
       "reschedule": "Yeniden Planla",
       "cancel": "İptal Et",
       "close": "Kapat",
-
       "profileLoading": "Doktor profili hâlâ yükleniyor. Lütfen sayfayı yenileyin.",
       "rescheduleSuccess": "Randevu başarıyla yeniden planlandı",
       "cancelSuccess": "Randevu başarıyla iptal edildi",
@@ -213,7 +193,6 @@
       "cancelReason": "İptal nedeni (isteğe bağlı)",
       "confirmCancel": "Evet, iptal et",
       "keepAppointment": "Randevuyu Koru",
-
       "calendarSettings": "Takvim Ayarları",
       "scheduleOverview": "Takvim Özeti",
       "selectProcedure": "Prosedür/hizmet seçin",
@@ -225,15 +204,12 @@
       "quickActions": "Hızlı İşlemler",
       "syncGoogleCalendar": "Google Takvim ile Senkronize Et",
       "syncGoogle": "Google Takvim ile Senkronize Et",
-
       "timeBlockedSuccess": "Zaman başarıyla bloklandı",
       "appointmentBookedSuccess": "Randevu başarıyla oluşturuldu",
       "availabilityUpdated": "Müsaitlik güncellendi",
-
       "availabilitySettings": "Müsaitlik Ayarları",
       "configureWorkingHours": "Çalışma saatlerinizi ve randevu ayarlarını yapılandırın",
       "availabilityDescription": "Çalışma saatlerinizi ve randevu ayarlarını yapılandırın",
-
       "bufferTime": "Randevular arası buffer süre",
       "noBuffer": "Buffer yok",
       "minutes15": "15 dakika",
@@ -241,16 +217,13 @@
       "minutes45": "45 dakika",
       "bufferTimeDesc": "Randevular arasında hazırlık süresi",
       "bufferDescription": "Hazırlık için randevular arasına eklenen süre",
-
       "weeklySchedule": "Haftalık Takvim",
       "to": "-",
       "closed": "Kapalı",
-
       "saveAvailabilitySettings": "Müsaitlik Ayarlarını Kaydet",
       "saveAvailability": "Müsaitliği Kaydet",
       "saving": "Kaydediliyor..."
     },
-
     "quickModals": {
       "settings": {
         "title": "Hızlı Profil Ayarları",
@@ -299,5 +272,150 @@
         "timeBlocked": "{{start}} - {{end}} arası zaman bloklandı"
       }
     }
+  },
+  "appointmentPreview": {
+    "inPerson": "In-Person",
+    "videoCall": "Video Call",
+    "homeVisit": "Home Visit",
+    "messaging": "Messaging",
+    "followUp": "Follow-up",
+    "viewPatient": "View Patient",
+    "message": "Message",
+    "startAppointment": "Start Appointment",
+    "startVideoAppointment": "Start Video Appointment",
+    "requestToStart": "Request to Start",
+    "addDiagnosis": "Add Diagnosis",
+    "diagnosisTitle": "Diagnosis title *",
+    "icdCode": "ICD-10 code (optional)",
+    "notes": "Notes (optional)",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "moreDetails": "More Details",
+    "waitingForPatient": "Waiting for patient acceptance.",
+    "startRequests": "Start requests",
+    "doctor": "Doctor",
+    "patient": "Patient",
+    "direct": "(direct)",
+    "startHintDirect": "Send request to start. Direct patients can begin after doctor request.",
+    "startHintDirectReady": "Ready to start (direct patient).",
+    "startHintPatientMustAccept": "Patient must accept appointment first.",
+    "startHintBothMustRequest": "Both doctor and patient must request start.",
+    "startHintReady": "Ready to start.",
+    "startAvailableInfo": "Start requests are available on the appointment day, starting 15 minutes before the scheduled time.",
+    "startingAppointment": "Starting...",
+    "startRequestSent": "Start request sent.",
+    "appointmentStarted": "Appointment started.",
+    "startingVideoConsultation": "Starting video consultation…",
+    "failedToStart": "Failed to request/start appointment",
+    "patientInfoUnavailable": "Patient information not available",
+    "messagingRegisteredOnly": "Patient messaging is only available for registered patients.",
+    "failedConversation": "Failed to start conversation",
+    "diagnosisRequired": "Diagnosis title is required",
+    "diagnosisAdded": "Diagnosis added",
+    "failedDiagnosis": "Failed to save diagnosis",
+    "openDentalChart": "Open Dental Chart",
+    "requestedProcedure": "Requested Procedure"
+  },
+  "appointmentModal": {
+    "referral": "Referral",
+    "waitingForAcceptance": "Waiting for patient acceptance. You can start after it becomes confirmed.",
+    "bookFollowUp": "Book Follow-up",
+    "clinicalItems": "Clinical Items",
+    "refresh": "Refresh",
+    "catalog": "Catalog",
+    "custom": "Custom",
+    "templates": "Templates",
+    "catalogDesc": "Add your own procedures / plans during the appointment",
+    "procedures": "Procedures",
+    "treatmentPlans": "Treatment Plans",
+    "selectProcedure": "Select procedure",
+    "loadingProcedures": "Loading procedures...",
+    "searchProcedures": "Search procedures...",
+    "noProcedureFound": "No procedure found.",
+    "myProcedures": "My Procedures",
+    "costOptional": "Cost (optional)",
+    "duration": "Duration",
+    "notesOptional": "Notes (optional)",
+    "addProcedureNotes": "Add any procedure notes...",
+    "addToAppointment": "Add to Appointment",
+    "selectTreatmentPlan": "Select treatment plan",
+    "loadingPlans": "Loading plans...",
+    "searchTreatmentPlans": "Search treatment plans...",
+    "noPlanFound": "No plan found.",
+    "myTreatmentPlans": "My Treatment Plans",
+    "addNotes": "Add any notes...",
+    "type": "Type",
+    "selectType": "Select type",
+    "procedure": "procedure",
+    "medication": "medication",
+    "treatmentPlan": "treatment_plan",
+    "name": "Name",
+    "namePlaceholder": "e.g. Ibuprofen 200mg",
+    "descriptionNotes": "Description / Notes",
+    "optionalNotes": "Optional notes...",
+    "cost": "Cost",
+    "dosage": "Dosage",
+    "dosagePlaceholder": "e.g. 200mg",
+    "frequency": "Frequency",
+    "frequencyPlaceholder": "e.g. BID",
+    "durationLabel": "Duration",
+    "durationPlaceholder": "e.g. 7 days",
+    "durationMinPlaceholder": "e.g. 30 min",
+    "quantity": "Quantity",
+    "quantityPlaceholder": "e.g. 14",
+    "saveAsTemplate": "Save as template",
+    "templateNameOptional": "Template name (optional)",
+    "reset": "Reset",
+    "add": "Add",
+    "applyTemplateDesc": "Apply a saved template to this appointment",
+    "loading": "Loading...",
+    "selectTemplate": "Select template",
+    "loadingTemplates": "Loading templates...",
+    "searchTemplates": "Search templates...",
+    "noTemplateFound": "No template found.",
+    "myTemplates": "My Templates",
+    "noDefaultCost": "No default cost",
+    "defaultCost": "Default: {{cost}}",
+    "clear": "Clear",
+    "apply": "Apply",
+    "items": "Items",
+    "noClinicalItems": "No clinical items yet.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "proceduresTab": "Procedures",
+    "loadingProceduresTab": "Loading procedures...",
+    "noProceduresAssigned": "No procedures assigned to this appointment",
+    "addProcedure": "Add Procedure",
+    "markDone": "Mark Done",
+    "treatmentPlansTab": "Treatment Plans",
+    "loadingTreatmentPlans": "Loading treatment plans...",
+    "noTreatmentPlans": "No treatment plans for this patient",
+    "createTreatmentPlan": "Create Treatment Plan",
+    "procedureCompleted": "Procedure marked as completed",
+    "failedUpdateProcedure": "Failed to update procedure",
+    "clinicalItemUpdated": "Clinical item updated",
+    "failedUpdateItem": "Failed to update item",
+    "deleteClinicalItem": "Delete this clinical item?",
+    "clinicalItemDeleted": "Clinical item deleted",
+    "failedDeleteItem": "Failed to delete item",
+    "nameRequired": "Name is required",
+    "itemAddedTemplate": "Item added and saved as template",
+    "clinicalItemAdded": "Clinical item added",
+    "failedAddItem": "Failed to add item",
+    "selectAProcedure": "Select a procedure",
+    "procedureAdded": "Procedure added to appointment",
+    "selectATreatmentPlan": "Select a treatment plan",
+    "treatmentPlanAdded": "Treatment plan added to appointment",
+    "failedAddFromCatalog": "Failed to add from catalog",
+    "templateApplied": "Template applied",
+    "selectATemplate": "Select a template",
+    "failedApplyTemplate": "Failed to apply template",
+    "failedLoadClinical": "Failed to load clinical data",
+    "patientInfoUnavailable": "Patient information not available",
+    "failedStartConversation": "Failed to start conversation",
+    "failedCancelAppointment": "Failed to cancel appointment",
+    "noDuration": "No duration",
+    "noCost": "No cost"
   }
 }
