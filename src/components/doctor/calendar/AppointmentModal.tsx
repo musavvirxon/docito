@@ -1282,7 +1282,7 @@ const requestedProcedureName = useMemo(() => {
 
                             <div className="space-y-2">
                               <div className="text-sm text-muted-foreground">{tm("costOptional", "Cost (optional)")}</div>
-                              <Input value={customCost} onChange={(e) => setCustomCost(e.target.value)} placeholder="e.g. 120" />
+                              <Input value={customCost} onChange={(e) => setCustomCost(e.target.value)} placeholder={tm("costOptional", "e.g. 120")} />
                             </div>
 
                             {customType === "medication" && (
@@ -1297,7 +1297,7 @@ const requestedProcedureName = useMemo(() => {
                                 </div>
                                 <div className="space-y-2">
                                   <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
-                                  <Input value={customDuration} onChange={(e) => setCustomDuration(e.target.value)} placeholder="e.g. 7 days" />
+                                  <Input value={customDuration} onChange={(e) => setCustomDuration(e.target.value)} placeholder={tm("durationPlaceholder", "e.g. 7 days")} />
                                 </div>
                                 <div className="space-y-2">
                                   <div className="text-sm text-muted-foreground">{tm("quantity", "Quantity")}</div>
@@ -1312,7 +1312,7 @@ const requestedProcedureName = useMemo(() => {
                                 <Input
                                   value={customDuration}
                                   onChange={(e) => setCustomDuration(e.target.value)}
-                                  placeholder="e.g. 30 min"
+                                  placeholder={tm("durationMinPlaceholder", "e.g. 30 min")}
                                 />
                               </div>
                             )}
@@ -1326,14 +1326,14 @@ const requestedProcedureName = useMemo(() => {
                                 onCheckedChange={(v) => setSaveAsTemplate(Boolean(v))}
                               />
                               <label htmlFor="saveAsTemplate" className="text-sm cursor-pointer select-none">
-                                Save as template
+                                {tm("saveAsTemplate", "Save as template")}
                               </label>
                             </div>
                             {saveAsTemplate && (
                               <Input
                                 value={templateName}
                                 onChange={(e) => setTemplateName(e.target.value)}
-                                placeholder="Template name (optional)"
+                                placeholder={tm("templateNameOptional", "Template name (optional)")}
                                 className="max-w-[260px]"
                               />
                             )}
@@ -1353,25 +1353,25 @@ const requestedProcedureName = useMemo(() => {
                         {/* Templates */}
                         <TabsContent value="templates" className="space-y-4">
                           <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <div className="text-sm text-muted-foreground">Apply a saved template to this appointment</div>
-                            {templatesLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+                            <div className="text-sm text-muted-foreground">{tm("applyTemplateDesc", "Apply a saved template to this appointment")}</div>
+                            {templatesLoading && <div className="text-xs text-muted-foreground">{tm("loading", "Loading...")}</div>}
                           </div>
 
                           <Popover open={templateApplyOpen} onOpenChange={setTemplateApplyOpen}>
                             <PopoverTrigger asChild>
                               <Button variant="outline" role="combobox" aria-expanded={templateApplyOpen} className="w-full justify-between">
                                 <span className="truncate">
-                                  {selectedTemplate ? selectedTemplate.name : templatesLoading ? "Loading templates..." : "Select template"}
+                                  {selectedTemplate ? selectedTemplate.name : templatesLoading ? tm("loadingTemplates", "Loading templates...") : tm("selectTemplate", "Select template")}
                                 </span>
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[420px] p-0" align="start">
                               <Command>
-                                <CommandInput placeholder="Search templates..." />
+                                <CommandInput placeholder={tm("searchTemplates", "Search templates...")} />
                                 <CommandList>
-                                  <CommandEmpty>No template found.</CommandEmpty>
-                                  <CommandGroup heading="My Templates">
+                                  <CommandEmpty>{tm("noTemplateFound", "No template found.")}</CommandEmpty>
+                                  <CommandGroup heading={tm("myTemplates", "My Templates")}>
                                     {templatesSorted
                                       .filter((tpl) => tpl.is_active)
                                       .map((tpl) => (
@@ -1449,7 +1449,7 @@ const requestedProcedureName = useMemo(() => {
                       </div>
 
                       {clinicalItemsSorted.length === 0 ? (
-                        <div className="text-sm text-muted-foreground py-6 text-center">No clinical items yet.</div>
+                        <div className="text-sm text-muted-foreground py-6 text-center">{tm("noClinicalItems", "No clinical items yet.")}</div>
                       ) : (
                         <div className="space-y-3">
                           {clinicalItemsSorted.map((it) => {
@@ -1532,7 +1532,7 @@ const requestedProcedureName = useMemo(() => {
 
                                       <div className="space-y-2">
                                         <div className="text-sm text-muted-foreground">Cost</div>
-                                        <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="e.g. 120" />
+                                        <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder={tm("costOptional", "e.g. 120")} />
                                       </div>
 
                                       {editType === "medication" && (
@@ -1559,7 +1559,7 @@ const requestedProcedureName = useMemo(() => {
                                       {editType === "procedure" && (
                                         <div className="space-y-2 md:col-span-2">
                                           <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
-                                          <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} placeholder="e.g. 30 min" />
+                                          <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} placeholder={tm("durationMinPlaceholder", "e.g. 30 min")} />
                                         </div>
                                       )}
                                     </div>
