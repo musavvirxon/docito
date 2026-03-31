@@ -754,12 +754,12 @@ const requestedProcedureName = useMemo(() => {
             : {}),
         });
 
-        toast.success(saveAsTemplate ? "Item added and saved as template" : "Clinical item added");
+        toast.success(saveAsTemplate ? tm("itemAddedTemplate", "Item added and saved as template") : tm("clinicalItemAdded", "Clinical item added"));
         resetCustomForm();
         await Promise.all([refreshClinicalItems(), refreshTemplates()]);
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to add item");
+        toast.error(e?.message ?? tm("failedAddItem", "Failed to add item"));
       }
     }, [
       appointmentId,
