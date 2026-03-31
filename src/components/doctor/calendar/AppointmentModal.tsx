@@ -803,7 +803,7 @@ const requestedProcedureName = useMemo(() => {
             duration,
           });
 
-          toast.success("Procedure added to appointment");
+          toast.success(tm("procedureAdded", "Procedure added to appointment"));
           resetCatalogForm();
           await refreshClinicalItems();
           return;
