@@ -604,7 +604,7 @@ const requestedProcedureName = useMemo(() => {
         onClose();
       } catch (error) {
         console.error("Error creating conversation:", error);
-        toast.error("Failed to start conversation");
+        toast.error(tm("failedStartConversation", "Failed to start conversation"));
       }
     }, [appointment, navigate, onClose]);
 
