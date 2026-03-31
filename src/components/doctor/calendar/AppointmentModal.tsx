@@ -397,7 +397,7 @@ const requestedProcedureName = useMemo(() => {
         await Promise.all([refreshClinicalItems(), refreshTemplates(), refreshCatalog()]);
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to load clinical data");
+        toast.error(e?.message ?? tm("failedLoadClinical", "Failed to load clinical data"));
       } finally {
         setClinicalLoading(false);
         setTemplatesLoading(false);
