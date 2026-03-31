@@ -1182,17 +1182,17 @@ const requestedProcedureName = useMemo(() => {
                                 <PopoverTrigger asChild>
                                   <Button variant="outline" role="combobox" aria-expanded={planPickerOpen} className="w-full justify-between">
                                     <span className="truncate">
-                                      {selectedPlan ? selectedPlan.title : catalogLoading ? "Loading plans..." : "Select treatment plan"}
+                                      {selectedPlan ? selectedPlan.title : catalogLoading ? tm("loadingPlans", "Loading plans...") : tm("selectTreatmentPlan", "Select treatment plan")}
                                     </span>
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[420px] p-0" align="start">
                                   <Command>
-                                    <CommandInput placeholder="Search treatment plans..." />
+                                    <CommandInput placeholder={tm("searchTreatmentPlans", "Search treatment plans...")} />
                                     <CommandList>
-                                      <CommandEmpty>No plan found.</CommandEmpty>
-                                      <CommandGroup heading="My Treatment Plans">
+                                      <CommandEmpty>{tm("noPlanFound", "No plan found.")}</CommandEmpty>
+                                      <CommandGroup heading={tm("myTreatmentPlans", "My Treatment Plans")}>
                                         {catalogPlans.map((p) => (
                                           <CommandItem
                                             key={p.id}
@@ -1208,7 +1208,7 @@ const requestedProcedureName = useMemo(() => {
                                               <span className="truncate">{p.title}</span>
                                               <span className="text-xs text-muted-foreground">
                                                 {p.status ? `${p.status} • ` : ""}
-                                                {p.total_cost != null ? `${formatCurrency(p.total_cost)}` : "No cost"}
+                                                {p.total_cost != null ? `${formatCurrency(p.total_cost)}` : tm("noCost", "No cost")}
                                               </span>
                                             </div>
                                           </CommandItem>
@@ -1234,7 +1234,7 @@ const requestedProcedureName = useMemo(() => {
                                   value={catalogNotes}
                                   onChange={(e) => setCatalogNotes(e.target.value)}
                                   className="min-h-[90px]"
-                                  placeholder="Add any notes..."
+                                  placeholder={tm("addNotes", "Add any notes...")}
                                 />
                               </div>
 
@@ -1252,10 +1252,10 @@ const requestedProcedureName = useMemo(() => {
                         <TabsContent value="custom" className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="space-y-2">
-                              <div className="text-sm text-muted-foreground">Type</div>
+                              <div className="text-sm text-muted-foreground">{tm("type", "Type")}</div>
                               <Select value={customType} onValueChange={(v) => setCustomType(v as ClinicalItemType)}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select type" />
+                                  <SelectValue placeholder={tm("selectType", "Select type")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="procedure">procedure</SelectItem>
@@ -1266,17 +1266,17 @@ const requestedProcedureName = useMemo(() => {
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                              <div className="text-sm text-muted-foreground">Name</div>
-                              <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Ibuprofen 200mg" />
+                              <div className="text-sm text-muted-foreground">{tm("name", "Name")}</div>
+                              <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder={tm("namePlaceholder", "e.g. Ibuprofen 200mg")} />
                             </div>
 
                             <div className="space-y-2 md:col-span-3">
-                              <div className="text-sm text-muted-foreground">Description / Notes</div>
+                              <div className="text-sm text-muted-foreground">{tm("descriptionNotes", "Description / Notes")}</div>
                               <Textarea
                                 value={customDescription}
                                 onChange={(e) => setCustomDescription(e.target.value)}
                                 className="min-h-[90px]"
-                                placeholder="Optional notes..."
+                                placeholder={tm("optionalNotes", "Optional notes...")}
                               />
                             </div>
 
@@ -1288,27 +1288,27 @@ const requestedProcedureName = useMemo(() => {
                             {customType === "medication" && (
                               <>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Dosage</div>
-                                  <Input value={customDosage} onChange={(e) => setCustomDosage(e.target.value)} placeholder="e.g. 200mg" />
+                                  <div className="text-sm text-muted-foreground">{tm("dosage", "Dosage")}</div>
+                                  <Input value={customDosage} onChange={(e) => setCustomDosage(e.target.value)} placeholder={tm("dosagePlaceholder", "e.g. 200mg")} />
                                 </div>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Frequency</div>
-                                  <Input value={customFrequency} onChange={(e) => setCustomFrequency(e.target.value)} placeholder="e.g. BID" />
+                                  <div className="text-sm text-muted-foreground">{tm("frequency", "Frequency")}</div>
+                                  <Input value={customFrequency} onChange={(e) => setCustomFrequency(e.target.value)} placeholder={tm("frequencyPlaceholder", "e.g. BID")} />
                                 </div>
                                 <div className="space-y-2">
                                   <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
                                   <Input value={customDuration} onChange={(e) => setCustomDuration(e.target.value)} placeholder="e.g. 7 days" />
                                 </div>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Quantity</div>
-                                  <Input value={customQuantity} onChange={(e) => setCustomQuantity(e.target.value)} placeholder="e.g. 14" />
+                                  <div className="text-sm text-muted-foreground">{tm("quantity", "Quantity")}</div>
+                                  <Input value={customQuantity} onChange={(e) => setCustomQuantity(e.target.value)} placeholder={tm("quantityPlaceholder", "e.g. 14")} />
                                 </div>
                               </>
                             )}
 
                             {customType === "procedure" && (
                               <div className="space-y-2 md:col-span-2">
-                                <div className="text-sm text-muted-foreground">Duration (optional)</div>
+                                <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
                                 <Input
                                   value={customDuration}
                                   onChange={(e) => setCustomDuration(e.target.value)}
@@ -1503,7 +1503,7 @@ const requestedProcedureName = useMemo(() => {
                                   <div className="space-y-3">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                       <div className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">Type</div>
+                                        <div className="text-sm text-muted-foreground">{tm("type", "Type")}</div>
                                         <Select value={editType} onValueChange={(v) => setEditType(v as ClinicalItemType)}>
                                           <SelectTrigger>
                                             <SelectValue />
@@ -1517,12 +1517,12 @@ const requestedProcedureName = useMemo(() => {
                                       </div>
 
                                       <div className="space-y-2 md:col-span-2">
-                                        <div className="text-sm text-muted-foreground">Name</div>
+                                        <div className="text-sm text-muted-foreground">{tm("name", "Name")}</div>
                                         <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
                                       </div>
 
                                       <div className="space-y-2 md:col-span-3">
-                                        <div className="text-sm text-muted-foreground">Description / Notes</div>
+                                        <div className="text-sm text-muted-foreground">{tm("descriptionNotes", "Description / Notes")}</div>
                                         <Textarea
                                           value={editDescription}
                                           onChange={(e) => setEditDescription(e.target.value)}
@@ -1538,11 +1538,11 @@ const requestedProcedureName = useMemo(() => {
                                       {editType === "medication" && (
                                         <>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Dosage</div>
+                                            <div className="text-sm text-muted-foreground">{tm("dosage", "Dosage")}</div>
                                             <Input value={editDosage} onChange={(e) => setEditDosage(e.target.value)} />
                                           </div>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Frequency</div>
+                                            <div className="text-sm text-muted-foreground">{tm("frequency", "Frequency")}</div>
                                             <Input value={editFrequency} onChange={(e) => setEditFrequency(e.target.value)} />
                                           </div>
                                           <div className="space-y-2">
@@ -1550,7 +1550,7 @@ const requestedProcedureName = useMemo(() => {
                                             <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} />
                                           </div>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Quantity</div>
+                                            <div className="text-sm text-muted-foreground">{tm("quantity", "Quantity")}</div>
                                             <Input value={editQuantity} onChange={(e) => setEditQuantity(e.target.value)} />
                                           </div>
                                         </>
