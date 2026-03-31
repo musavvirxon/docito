@@ -969,7 +969,7 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsTrigger value="treatment-plans" className="gap-1.5">
                 <ClipboardList className="h-3.5 w-3.5" />
-                Treatment Plans
+                {tm("treatmentPlans", "Treatment Plans")}
               </TabsTrigger>
 
               <TabsTrigger value="patient">{t("doctor.calendar.patient", "Patient")}</TabsTrigger>
