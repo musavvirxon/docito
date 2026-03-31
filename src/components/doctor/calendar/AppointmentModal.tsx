@@ -714,11 +714,11 @@ const requestedProcedureName = useMemo(() => {
 
         try {
           await invokeClinical({ action: "delete", appointment_id: appointmentId, item_id: itemId });
-          toast.success("Clinical item deleted");
+          toast.success(tm("clinicalItemDeleted", "Clinical item deleted"));
           await refreshClinicalItems();
         } catch (e: any) {
           console.error(e);
-          toast.error(e?.message ?? "Failed to delete item");
+          toast.error(e?.message ?? tm("failedDeleteItem", "Failed to delete item"));
         }
       },
       [appointmentId, invokeClinical, refreshClinicalItems],
