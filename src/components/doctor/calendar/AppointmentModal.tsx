@@ -519,9 +519,9 @@ const requestedProcedureName = useMemo(() => {
         if (error) throw error;
 
         setAppointmentProcedures((prev) => prev.map((p) => (p.id === procedureId ? { ...p, status: "completed" } : p)));
-        toast.success("Procedure marked as completed");
+        toast.success(tm("procedureCompleted", "Procedure marked as completed"));
       } catch (err: any) {
-        toast.error(err?.message || "Failed to update procedure");
+        toast.error(err?.message || tm("failedUpdateProcedure", "Failed to update procedure"));
       }
     }, []);
 
