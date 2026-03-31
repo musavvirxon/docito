@@ -261,6 +261,7 @@ const AppointmentModal = memo(
     onCancel,
   }: AppointmentModalProps) => {
     const { t, i18n } = useTranslation("dashboard");
+    const tm = useCallback((key: string, fallback?: string) => t(`appointmentModal.${key}`, fallback ?? key), [t]);
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("details");
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
@@ -396,7 +397,7 @@ const requestedProcedureName = useMemo(() => {
         await Promise.all([refreshClinicalItems(), refreshTemplates(), refreshCatalog()]);
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to load clinical data");
+        toast.error(e?.message ?? tm("failedLoadClinical", "Failed to load clinical data"));
       } finally {
         setClinicalLoading(false);
         setTemplatesLoading(false);
@@ -451,7 +452,7 @@ const requestedProcedureName = useMemo(() => {
           const procs: AppointmentProcedure[] = (data || []).map((p: any) => ({
             id: p.id,
             procedure_id: p.procedure_id,
-            procedure_name: p.procedures?.name || "Unknown Procedure",
+            procedure_name: p.procedures?.name || tm("noProcedureFound", "Unknown Procedure"),
             status: p.status,
             estimated_cost: p.estimated_cost,
             procedure_notes: p.procedure_notes,
@@ -518,9 +519,9 @@ const requestedProcedureName = useMemo(() => {
         if (error) throw error;
 
         setAppointmentProcedures((prev) => prev.map((p) => (p.id === procedureId ? { ...p, status: "completed" } : p)));
-        toast.success("Procedure marked as completed");
+        toast.success(tm("procedureCompleted", "Procedure marked as completed"));
       } catch (err: any) {
-        toast.error(err?.message || "Failed to update procedure");
+        toast.error(err?.message || tm("failedUpdateProcedure", "Failed to update procedure"));
       }
     }, []);
 
@@ -554,7 +555,7 @@ const requestedProcedureName = useMemo(() => {
           onClose();
         } catch (error) {
           console.error("Error cancelling appointment:", error);
-          toast.error("Failed to cancel appointment");
+          toast.error(tm("failedCancelAppointment", "Failed to cancel appointment"));
         }
       },
       [appointment, t, onCancel, onClose],
@@ -573,7 +574,7 @@ const requestedProcedureName = useMemo(() => {
 
     const handleMessage = useCallback(async () => {
       if (!appointment?.patient_id) {
-        toast.error("Patient information not available");
+        toast.error(tm("patientInfoUnavailable", "Patient information not available"));
         return;
       }
 
@@ -603,7 +604,7 @@ const requestedProcedureName = useMemo(() => {
         onClose();
       } catch (error) {
         console.error("Error creating conversation:", error);
-        toast.error("Failed to start conversation");
+        toast.error(tm("failedStartConversation", "Failed to start conversation"));
       }
     }, [appointment, navigate, onClose]);
 
@@ -663,7 +664,7 @@ const requestedProcedureName = useMemo(() => {
 
       const name = editName.trim();
       if (!name) {
-        toast.error("Name is required");
+        toast.error(tm("nameRequired", "Name is required"));
         return;
       }
 
@@ -682,12 +683,12 @@ const requestedProcedureName = useMemo(() => {
           cost: toNumberOrNull(editCost),
         });
 
-        toast.success("Clinical item updated");
+        toast.success(tm("clinicalItemUpdated", "Clinical item updated"));
         cancelEditItem();
         await refreshClinicalItems();
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to update item");
+        toast.error(e?.message ?? tm("failedUpdateItem", "Failed to update item"));
       }
     }, [
       appointmentId,
@@ -708,16 +709,16 @@ const requestedProcedureName = useMemo(() => {
     const deleteItem = useCallback(
       async (itemId: string) => {
         if (!appointmentId) return;
-        const ok = window.confirm("Delete this clinical item?");
+        const ok = window.confirm(tm("deleteClinicalItem", "Delete this clinical item?"));
         if (!ok) return;
 
         try {
           await invokeClinical({ action: "delete", appointment_id: appointmentId, item_id: itemId });
-          toast.success("Clinical item deleted");
+          toast.success(tm("clinicalItemDeleted", "Clinical item deleted"));
           await refreshClinicalItems();
         } catch (e: any) {
           console.error(e);
-          toast.error(e?.message ?? "Failed to delete item");
+          toast.error(e?.message ?? tm("failedDeleteItem", "Failed to delete item"));
         }
       },
       [appointmentId, invokeClinical, refreshClinicalItems],
@@ -727,7 +728,7 @@ const requestedProcedureName = useMemo(() => {
       if (!appointmentId) return;
       const name = customName.trim();
       if (!name) {
-        toast.error("Name is required");
+        toast.error(tm("nameRequired", "Name is required"));
         return;
       }
 
@@ -753,12 +754,12 @@ const requestedProcedureName = useMemo(() => {
             : {}),
         });
 
-        toast.success(saveAsTemplate ? "Item added and saved as template" : "Clinical item added");
+        toast.success(saveAsTemplate ? tm("itemAddedTemplate", "Item added and saved as template") : tm("clinicalItemAdded", "Clinical item added"));
         resetCustomForm();
         await Promise.all([refreshClinicalItems(), refreshTemplates()]);
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to add item");
+        toast.error(e?.message ?? tm("failedAddItem", "Failed to add item"));
       }
     }, [
       appointmentId,
@@ -784,7 +785,7 @@ const requestedProcedureName = useMemo(() => {
       try {
         if (catalogMode === "procedure") {
           if (!selectedProcedure) {
-            toast.error("Select a procedure");
+            toast.error(tm("selectAProcedure", "Select a procedure"));
             return;
           }
 
@@ -802,7 +803,7 @@ const requestedProcedureName = useMemo(() => {
             duration,
           });
 
-          toast.success("Procedure added to appointment");
+          toast.success(tm("procedureAdded", "Procedure added to appointment"));
           resetCatalogForm();
           await refreshClinicalItems();
           return;
@@ -810,7 +811,7 @@ const requestedProcedureName = useMemo(() => {
 
         if (catalogMode === "treatment_plan") {
           if (!selectedPlan) {
-            toast.error("Select a treatment plan");
+            toast.error(tm("selectATreatmentPlan", "Select a treatment plan"));
             return;
           }
 
@@ -826,13 +827,13 @@ const requestedProcedureName = useMemo(() => {
             cost,
           });
 
-          toast.success("Treatment plan added to appointment");
+          toast.success(tm("treatmentPlanAdded", "Treatment plan added to appointment"));
           resetCatalogForm();
           await refreshClinicalItems();
         }
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to add from catalog");
+        toast.error(e?.message ?? tm("failedAddFromCatalog", "Failed to add from catalog"));
       }
     }, [
       appointmentId,
@@ -849,19 +850,19 @@ const requestedProcedureName = useMemo(() => {
     const applyTemplate = useCallback(async () => {
       if (!appointmentId) return;
       if (!selectedTemplate) {
-        toast.error("Select a template");
+        toast.error(tm("selectATemplate", "Select a template"));
         return;
       }
 
       try {
         await invokeClinical({ action: "apply_template", appointment_id: appointmentId, template_id: selectedTemplate.id });
-        toast.success("Template applied");
+        toast.success(tm("templateApplied", "Template applied"));
         setSelectedTemplateId(null);
         setTemplateApplyOpen(false);
         await refreshClinicalItems();
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to apply template");
+        toast.error(e?.message ?? tm("failedApplyTemplate", "Failed to apply template"));
       }
     }, [appointmentId, invokeClinical, refreshClinicalItems, selectedTemplate]);
 
@@ -883,7 +884,7 @@ const requestedProcedureName = useMemo(() => {
                     {appointment.source === "referral" && (
                       <Badge variant="secondary" className="text-xs">
                         <ArrowRightLeft className="h-3 w-3 mr-1" />
-                        Referral
+                        {tm("referral", "Referral")}
                       </Badge>
                     )}
                   </DialogTitle>
@@ -948,7 +949,7 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsTrigger value="clinical" className="gap-1.5">
                 <ClipboardList className="h-3.5 w-3.5" />
-                Clinical Items
+                {tm("clinicalItems", "Clinical Items")}
                 {clinicalItems.length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                     {clinicalItems.length}
@@ -958,7 +959,7 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsTrigger value="procedures" className="gap-1.5">
                 <Stethoscope className="h-3.5 w-3.5" />
-                Procedures
+                {tm("proceduresTab", "Procedures")}
                 {appointmentProcedures.length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                     {appointmentProcedures.length}
@@ -968,7 +969,7 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsTrigger value="treatment-plans" className="gap-1.5">
                 <ClipboardList className="h-3.5 w-3.5" />
-                Treatment Plans
+                {tm("treatmentPlans", "Treatment Plans")}
               </TabsTrigger>
 
               <TabsTrigger value="patient">{t("doctor.calendar.patient", "Patient")}</TabsTrigger>
@@ -1014,7 +1015,7 @@ const requestedProcedureName = useMemo(() => {
 
                 {appointment.status === "pending" && (
                   <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-sm text-amber-700 dark:text-amber-300">
-                    Waiting for patient acceptance. You can start after it becomes <b>confirmed</b>.
+                    {tm("waitingForAcceptance", "Waiting for patient acceptance. You can start after it becomes confirmed.")}
                   </div>
                 )}
 
@@ -1067,7 +1068,7 @@ const requestedProcedureName = useMemo(() => {
                         {/* Catalog */}
                         <TabsContent value="catalog" className="space-y-4">
                           <div className="flex items-center justify-between">
-                            <div className="text-sm text-muted-foreground">Add your own procedures / plans during the appointment</div>
+                            <div className="text-sm text-muted-foreground">{tm("catalogDesc", "Add your own procedures / plans during the appointment")}</div>
                           </div>
 
                           <div className="grid grid-cols-2 gap-2">
@@ -1099,17 +1100,17 @@ const requestedProcedureName = useMemo(() => {
                                 <PopoverTrigger asChild>
                                   <Button variant="outline" role="combobox" aria-expanded={procedurePickerOpen} className="w-full justify-between">
                                     <span className="truncate">
-                                      {selectedProcedure ? selectedProcedure.name : catalogLoading ? "Loading procedures..." : "Select procedure"}
+                                      {selectedProcedure ? selectedProcedure.name : catalogLoading ? tm("loadingProcedures", "Loading procedures...") : tm("selectProcedure", "Select procedure")}
                                     </span>
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[420px] p-0" align="start">
                                   <Command>
-                                    <CommandInput placeholder="Search procedures..." />
+                                    <CommandInput placeholder={tm("searchProcedures", "Search procedures...")} />
                                     <CommandList>
-                                      <CommandEmpty>No procedure found.</CommandEmpty>
-                                      <CommandGroup heading="My Procedures">
+                                      <CommandEmpty>{tm("noProcedureFound", "No procedure found.")}</CommandEmpty>
+                                      <CommandGroup heading={tm("myProcedures", "My Procedures")}>
                                         {catalogProcedures
                                           .filter((p) => p.active)
                                           .map((p) => (
@@ -1127,7 +1128,7 @@ const requestedProcedureName = useMemo(() => {
                                                 <span>{p.name}</span>
                                                 <span className="text-xs text-muted-foreground">
                                                   {p.category ? `${p.category} • ` : ""}
-                                                  {p.duration_minutes != null ? `${p.duration_minutes} min` : "No duration"}
+                                                  {p.duration_minutes != null ? `${p.duration_minutes} min` : tm("noDuration", "No duration")}
                                                   {p.cost != null ? ` • ${formatCurrency(p.cost)}` : ""}
                                                 </span>
                                               </div>
@@ -1141,7 +1142,7 @@ const requestedProcedureName = useMemo(() => {
 
                               <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Cost (optional)</div>
+                                  <div className="text-sm text-muted-foreground">{tm("costOptional", "Cost (optional)")}</div>
                                   <Input
                                     value={catalogCost}
                                     onChange={(e) => setCatalogCost(e.target.value)}
@@ -1149,7 +1150,7 @@ const requestedProcedureName = useMemo(() => {
                                   />
                                 </div>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Duration</div>
+                                  <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
                                   <Input
                                     value={selectedProcedure?.duration_minutes != null ? `${selectedProcedure.duration_minutes} min` : ""}
                                     readOnly
@@ -1159,12 +1160,12 @@ const requestedProcedureName = useMemo(() => {
                               </div>
 
                               <div className="space-y-2">
-                                <div className="text-sm text-muted-foreground">Notes (optional)</div>
+                                <div className="text-sm text-muted-foreground">{tm("notesOptional", "Notes (optional)")}</div>
                                 <Textarea
                                   value={catalogNotes}
                                   onChange={(e) => setCatalogNotes(e.target.value)}
                                   className="min-h-[90px]"
-                                  placeholder="Add any procedure notes..."
+                                  placeholder={tm("addProcedureNotes", "Add any procedure notes...")}
                                 />
                               </div>
 
@@ -1181,17 +1182,17 @@ const requestedProcedureName = useMemo(() => {
                                 <PopoverTrigger asChild>
                                   <Button variant="outline" role="combobox" aria-expanded={planPickerOpen} className="w-full justify-between">
                                     <span className="truncate">
-                                      {selectedPlan ? selectedPlan.title : catalogLoading ? "Loading plans..." : "Select treatment plan"}
+                                      {selectedPlan ? selectedPlan.title : catalogLoading ? tm("loadingPlans", "Loading plans...") : tm("selectTreatmentPlan", "Select treatment plan")}
                                     </span>
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                   </Button>
                                 </PopoverTrigger>
                                 <PopoverContent className="w-[420px] p-0" align="start">
                                   <Command>
-                                    <CommandInput placeholder="Search treatment plans..." />
+                                    <CommandInput placeholder={tm("searchTreatmentPlans", "Search treatment plans...")} />
                                     <CommandList>
-                                      <CommandEmpty>No plan found.</CommandEmpty>
-                                      <CommandGroup heading="My Treatment Plans">
+                                      <CommandEmpty>{tm("noPlanFound", "No plan found.")}</CommandEmpty>
+                                      <CommandGroup heading={tm("myTreatmentPlans", "My Treatment Plans")}>
                                         {catalogPlans.map((p) => (
                                           <CommandItem
                                             key={p.id}
@@ -1207,7 +1208,7 @@ const requestedProcedureName = useMemo(() => {
                                               <span className="truncate">{p.title}</span>
                                               <span className="text-xs text-muted-foreground">
                                                 {p.status ? `${p.status} • ` : ""}
-                                                {p.total_cost != null ? `${formatCurrency(p.total_cost)}` : "No cost"}
+                                                {p.total_cost != null ? `${formatCurrency(p.total_cost)}` : tm("noCost", "No cost")}
                                               </span>
                                             </div>
                                           </CommandItem>
@@ -1219,7 +1220,7 @@ const requestedProcedureName = useMemo(() => {
                               </Popover>
 
                               <div className="space-y-2">
-                                <div className="text-sm text-muted-foreground">Cost (optional)</div>
+                                <div className="text-sm text-muted-foreground">{tm("costOptional", "Cost (optional)")}</div>
                                 <Input
                                   value={catalogCost}
                                   onChange={(e) => setCatalogCost(e.target.value)}
@@ -1228,12 +1229,12 @@ const requestedProcedureName = useMemo(() => {
                               </div>
 
                               <div className="space-y-2">
-                                <div className="text-sm text-muted-foreground">Notes (optional)</div>
+                                <div className="text-sm text-muted-foreground">{tm("notesOptional", "Notes (optional)")}</div>
                                 <Textarea
                                   value={catalogNotes}
                                   onChange={(e) => setCatalogNotes(e.target.value)}
                                   className="min-h-[90px]"
-                                  placeholder="Add any notes..."
+                                  placeholder={tm("addNotes", "Add any notes...")}
                                 />
                               </div>
 
@@ -1251,10 +1252,10 @@ const requestedProcedureName = useMemo(() => {
                         <TabsContent value="custom" className="space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="space-y-2">
-                              <div className="text-sm text-muted-foreground">Type</div>
+                              <div className="text-sm text-muted-foreground">{tm("type", "Type")}</div>
                               <Select value={customType} onValueChange={(v) => setCustomType(v as ClinicalItemType)}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select type" />
+                                  <SelectValue placeholder={tm("selectType", "Select type")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="procedure">procedure</SelectItem>
@@ -1265,53 +1266,53 @@ const requestedProcedureName = useMemo(() => {
                             </div>
 
                             <div className="space-y-2 md:col-span-2">
-                              <div className="text-sm text-muted-foreground">Name</div>
-                              <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. Ibuprofen 200mg" />
+                              <div className="text-sm text-muted-foreground">{tm("name", "Name")}</div>
+                              <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder={tm("namePlaceholder", "e.g. Ibuprofen 200mg")} />
                             </div>
 
                             <div className="space-y-2 md:col-span-3">
-                              <div className="text-sm text-muted-foreground">Description / Notes</div>
+                              <div className="text-sm text-muted-foreground">{tm("descriptionNotes", "Description / Notes")}</div>
                               <Textarea
                                 value={customDescription}
                                 onChange={(e) => setCustomDescription(e.target.value)}
                                 className="min-h-[90px]"
-                                placeholder="Optional notes..."
+                                placeholder={tm("optionalNotes", "Optional notes...")}
                               />
                             </div>
 
                             <div className="space-y-2">
-                              <div className="text-sm text-muted-foreground">Cost (optional)</div>
-                              <Input value={customCost} onChange={(e) => setCustomCost(e.target.value)} placeholder="e.g. 120" />
+                              <div className="text-sm text-muted-foreground">{tm("costOptional", "Cost (optional)")}</div>
+                              <Input value={customCost} onChange={(e) => setCustomCost(e.target.value)} placeholder={tm("costOptional", "e.g. 120")} />
                             </div>
 
                             {customType === "medication" && (
                               <>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Dosage</div>
-                                  <Input value={customDosage} onChange={(e) => setCustomDosage(e.target.value)} placeholder="e.g. 200mg" />
+                                  <div className="text-sm text-muted-foreground">{tm("dosage", "Dosage")}</div>
+                                  <Input value={customDosage} onChange={(e) => setCustomDosage(e.target.value)} placeholder={tm("dosagePlaceholder", "e.g. 200mg")} />
                                 </div>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Frequency</div>
-                                  <Input value={customFrequency} onChange={(e) => setCustomFrequency(e.target.value)} placeholder="e.g. BID" />
+                                  <div className="text-sm text-muted-foreground">{tm("frequency", "Frequency")}</div>
+                                  <Input value={customFrequency} onChange={(e) => setCustomFrequency(e.target.value)} placeholder={tm("frequencyPlaceholder", "e.g. BID")} />
                                 </div>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Duration</div>
-                                  <Input value={customDuration} onChange={(e) => setCustomDuration(e.target.value)} placeholder="e.g. 7 days" />
+                                  <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
+                                  <Input value={customDuration} onChange={(e) => setCustomDuration(e.target.value)} placeholder={tm("durationPlaceholder", "e.g. 7 days")} />
                                 </div>
                                 <div className="space-y-2">
-                                  <div className="text-sm text-muted-foreground">Quantity</div>
-                                  <Input value={customQuantity} onChange={(e) => setCustomQuantity(e.target.value)} placeholder="e.g. 14" />
+                                  <div className="text-sm text-muted-foreground">{tm("quantity", "Quantity")}</div>
+                                  <Input value={customQuantity} onChange={(e) => setCustomQuantity(e.target.value)} placeholder={tm("quantityPlaceholder", "e.g. 14")} />
                                 </div>
                               </>
                             )}
 
                             {customType === "procedure" && (
                               <div className="space-y-2 md:col-span-2">
-                                <div className="text-sm text-muted-foreground">Duration (optional)</div>
+                                <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
                                 <Input
                                   value={customDuration}
                                   onChange={(e) => setCustomDuration(e.target.value)}
-                                  placeholder="e.g. 30 min"
+                                  placeholder={tm("durationMinPlaceholder", "e.g. 30 min")}
                                 />
                               </div>
                             )}
@@ -1325,14 +1326,14 @@ const requestedProcedureName = useMemo(() => {
                                 onCheckedChange={(v) => setSaveAsTemplate(Boolean(v))}
                               />
                               <label htmlFor="saveAsTemplate" className="text-sm cursor-pointer select-none">
-                                Save as template
+                                {tm("saveAsTemplate", "Save as template")}
                               </label>
                             </div>
                             {saveAsTemplate && (
                               <Input
                                 value={templateName}
                                 onChange={(e) => setTemplateName(e.target.value)}
-                                placeholder="Template name (optional)"
+                                placeholder={tm("templateNameOptional", "Template name (optional)")}
                                 className="max-w-[260px]"
                               />
                             )}
@@ -1352,25 +1353,25 @@ const requestedProcedureName = useMemo(() => {
                         {/* Templates */}
                         <TabsContent value="templates" className="space-y-4">
                           <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <div className="text-sm text-muted-foreground">Apply a saved template to this appointment</div>
-                            {templatesLoading && <div className="text-xs text-muted-foreground">Loading...</div>}
+                            <div className="text-sm text-muted-foreground">{tm("applyTemplateDesc", "Apply a saved template to this appointment")}</div>
+                            {templatesLoading && <div className="text-xs text-muted-foreground">{tm("loading", "Loading...")}</div>}
                           </div>
 
                           <Popover open={templateApplyOpen} onOpenChange={setTemplateApplyOpen}>
                             <PopoverTrigger asChild>
                               <Button variant="outline" role="combobox" aria-expanded={templateApplyOpen} className="w-full justify-between">
                                 <span className="truncate">
-                                  {selectedTemplate ? selectedTemplate.name : templatesLoading ? "Loading templates..." : "Select template"}
+                                  {selectedTemplate ? selectedTemplate.name : templatesLoading ? tm("loadingTemplates", "Loading templates...") : tm("selectTemplate", "Select template")}
                                 </span>
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-[420px] p-0" align="start">
                               <Command>
-                                <CommandInput placeholder="Search templates..." />
+                                <CommandInput placeholder={tm("searchTemplates", "Search templates...")} />
                                 <CommandList>
-                                  <CommandEmpty>No template found.</CommandEmpty>
-                                  <CommandGroup heading="My Templates">
+                                  <CommandEmpty>{tm("noTemplateFound", "No template found.")}</CommandEmpty>
+                                  <CommandGroup heading={tm("myTemplates", "My Templates")}>
                                     {templatesSorted
                                       .filter((tpl) => tpl.is_active)
                                       .map((tpl) => (
@@ -1448,7 +1449,7 @@ const requestedProcedureName = useMemo(() => {
                       </div>
 
                       {clinicalItemsSorted.length === 0 ? (
-                        <div className="text-sm text-muted-foreground py-6 text-center">No clinical items yet.</div>
+                        <div className="text-sm text-muted-foreground py-6 text-center">{tm("noClinicalItems", "No clinical items yet.")}</div>
                       ) : (
                         <div className="space-y-3">
                           {clinicalItemsSorted.map((it) => {
@@ -1502,7 +1503,7 @@ const requestedProcedureName = useMemo(() => {
                                   <div className="space-y-3">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                       <div className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">Type</div>
+                                        <div className="text-sm text-muted-foreground">{tm("type", "Type")}</div>
                                         <Select value={editType} onValueChange={(v) => setEditType(v as ClinicalItemType)}>
                                           <SelectTrigger>
                                             <SelectValue />
@@ -1516,12 +1517,12 @@ const requestedProcedureName = useMemo(() => {
                                       </div>
 
                                       <div className="space-y-2 md:col-span-2">
-                                        <div className="text-sm text-muted-foreground">Name</div>
+                                        <div className="text-sm text-muted-foreground">{tm("name", "Name")}</div>
                                         <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
                                       </div>
 
                                       <div className="space-y-2 md:col-span-3">
-                                        <div className="text-sm text-muted-foreground">Description / Notes</div>
+                                        <div className="text-sm text-muted-foreground">{tm("descriptionNotes", "Description / Notes")}</div>
                                         <Textarea
                                           value={editDescription}
                                           onChange={(e) => setEditDescription(e.target.value)}
@@ -1530,26 +1531,26 @@ const requestedProcedureName = useMemo(() => {
                                       </div>
 
                                       <div className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">Cost</div>
-                                        <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="e.g. 120" />
+                                        <div className="text-sm text-muted-foreground">{tm("cost", "Cost")}</div>
+                                        <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder={tm("costOptional", "e.g. 120")} />
                                       </div>
 
                                       {editType === "medication" && (
                                         <>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Dosage</div>
+                                            <div className="text-sm text-muted-foreground">{tm("dosage", "Dosage")}</div>
                                             <Input value={editDosage} onChange={(e) => setEditDosage(e.target.value)} />
                                           </div>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Frequency</div>
+                                            <div className="text-sm text-muted-foreground">{tm("frequency", "Frequency")}</div>
                                             <Input value={editFrequency} onChange={(e) => setEditFrequency(e.target.value)} />
                                           </div>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Duration</div>
+                                            <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
                                             <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} />
                                           </div>
                                           <div className="space-y-2">
-                                            <div className="text-sm text-muted-foreground">Quantity</div>
+                                            <div className="text-sm text-muted-foreground">{tm("quantity", "Quantity")}</div>
                                             <Input value={editQuantity} onChange={(e) => setEditQuantity(e.target.value)} />
                                           </div>
                                         </>
@@ -1557,8 +1558,8 @@ const requestedProcedureName = useMemo(() => {
 
                                       {editType === "procedure" && (
                                         <div className="space-y-2 md:col-span-2">
-                                          <div className="text-sm text-muted-foreground">Duration</div>
-                                          <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} placeholder="e.g. 30 min" />
+                                          <div className="text-sm text-muted-foreground">{tm("duration", "Duration")}</div>
+                                          <Input value={editDuration} onChange={(e) => setEditDuration(e.target.value)} placeholder={tm("durationMinPlaceholder", "e.g. 30 min")} />
                                         </div>
                                       )}
                                     </div>
@@ -1578,10 +1579,10 @@ const requestedProcedureName = useMemo(() => {
                                     {it.description && <div className="whitespace-pre-wrap">{it.description}</div>}
                                     {(it.dosage || it.frequency || it.duration || it.quantity != null) && (
                                       <div className="text-xs text-muted-foreground">
-                                        {it.dosage ? `Dosage: ${it.dosage} ` : ""}
-                                        {it.frequency ? `• Frequency: ${it.frequency} ` : ""}
-                                        {it.duration ? `• Duration: ${it.duration} ` : ""}
-                                        {it.quantity != null ? `• Qty: ${it.quantity}` : ""}
+                                        {it.dosage ? `{tm("dosage", "Dosage")}: ${it.dosage} ` : ""}
+                                        {it.frequency ? `• {tm("frequency", "Frequency")}: ${it.frequency} ` : ""}
+                                        {it.duration ? `• {tm("duration", "Duration")}: ${it.duration} ` : ""}
+                                        {it.quantity != null ? `• {tm("quantity", "Qty")}: ${it.quantity}` : ""}
                                       </div>
                                     )}
                                   </div>
@@ -1598,11 +1599,11 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsContent value="procedures" className="mt-4 space-y-4">
                 {loadingProcedures ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading procedures...</div>
+                  <div className="text-center py-8 text-muted-foreground">{tm("loadingProceduresTab", "Loading procedures...")}</div>
                 ) : appointmentProcedures.length === 0 ? (
                   <div className="text-center py-8">
                     <Stethoscope className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">No procedures assigned to this appointment</p>
+                    <p className="text-muted-foreground">{tm("noProceduresAssigned", "No procedures assigned to this appointment")}</p>
                     <Button variant="outline" size="sm" className="mt-4 gap-2">
                       <Stethoscope className="h-4 w-4" />
                       Add Procedure
@@ -1648,11 +1649,11 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsContent value="treatment-plans" className="mt-4 space-y-4">
                 {loadingPlans ? (
-                  <div className="text-center py-8 text-muted-foreground">Loading treatment plans...</div>
+                  <div className="text-center py-8 text-muted-foreground">{tm("loadingTreatmentPlans", "Loading treatment plans...")}</div>
                 ) : treatmentPlans.length === 0 ? (
                   <div className="text-center py-8">
                     <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">No treatment plans for this patient</p>
+                    <p className="text-muted-foreground">{tm("noTreatmentPlans", "No treatment plans for this patient")}</p>
                     <Button
                       variant="outline"
                       size="sm"
