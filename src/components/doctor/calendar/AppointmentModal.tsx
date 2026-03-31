@@ -884,7 +884,7 @@ const requestedProcedureName = useMemo(() => {
                     {appointment.source === "referral" && (
                       <Badge variant="secondary" className="text-xs">
                         <ArrowRightLeft className="h-3 w-3 mr-1" />
-                        Referral
+                        {tm("referral", "Referral")}
                       </Badge>
                     )}
                   </DialogTitle>
