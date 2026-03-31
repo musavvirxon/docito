@@ -949,7 +949,7 @@ const requestedProcedureName = useMemo(() => {
 
               <TabsTrigger value="clinical" className="gap-1.5">
                 <ClipboardList className="h-3.5 w-3.5" />
-                Clinical Items
+                {tm("clinicalItems", "Clinical Items")}
                 {clinicalItems.length > 0 && (
                   <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
                     {clinicalItems.length}
