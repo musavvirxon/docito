@@ -728,7 +728,7 @@ const requestedProcedureName = useMemo(() => {
       if (!appointmentId) return;
       const name = customName.trim();
       if (!name) {
-        toast.error("Name is required");
+        toast.error(tm("nameRequired", "Name is required"));
         return;
       }
 
