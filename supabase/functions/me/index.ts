@@ -51,8 +51,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
-  if (!authHeader) return json({ ok: false, error: "Missing Authorization" }, 401);
+  const authHeader = (req.headers.get("authorization") || req.headers.get("Authorization") || "").trim();
+  if (!authHeader || !/^Bearer\s+/i.test(authHeader)) {
+    return json({ ok: false, error: "Missing Authorization" }, 401);
+  }
 
   const env = requireEnv();
   if (!env.ok) return json({ ok: false, error: env.error }, 500);
@@ -72,7 +74,8 @@ serve(async (req) => {
   });
 
   // Try getClaims first (fast, local), fall back to getUser if unavailable
-  const token = authHeader.replace(/^Bearer\s+/i, "");
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return json({ ok: false, error: "Unauthorized" }, 401);
   let userId: string;
   let email: string | null = null;
   let meta: Record<string, unknown> = {};
@@ -83,7 +86,7 @@ serve(async (req) => {
     if (claimsErr || !claimsData?.claims?.sub) {
       console.warn("me getClaims failed, trying getUser:", claimsErr?.message);
       // Fall through to getUser
-      const { data: userRes, error: userErr } = await authed.auth.getUser();
+      const { data: userRes, error: userErr } = await authed.auth.getUser(token);
       if (userErr || !userRes?.user) {
         console.warn("me auth rejected request", userErr?.message || "no user");
         return json({ ok: false, error: "Unauthorized" }, 401);
@@ -98,7 +101,7 @@ serve(async (req) => {
     }
   } else {
     // Fallback: getUser
-    const { data: userRes, error: userErr } = await authed.auth.getUser();
+    const { data: userRes, error: userErr } = await authed.auth.getUser(token);
     if (userErr || !userRes?.user) {
       console.warn("me auth rejected (getUser):", userErr?.message || "no user");
       return json({ ok: false, error: "Unauthorized" }, 401);
