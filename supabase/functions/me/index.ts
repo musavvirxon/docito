@@ -68,53 +68,23 @@ serve(async (req) => {
   if (!body?.action) return json({ ok: false, error: "Missing action" }, 400);
   if (body.action !== "get") return json({ ok: false, error: "Unknown action" }, 400);
 
-  const authed = createClient(env.url, env.anon, {
-    global: { headers: { Authorization: authHeader } },
-    auth: { persistSession: false },
-  });
-
-  // Try getClaims first (fast, local), fall back to getUser if unavailable
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
   if (!token) return json({ ok: false, error: "Unauthorized" }, 401);
-  let userId: string;
-  let email: string | null = null;
-  let meta: Record<string, unknown> = {};
-
-  // Try getClaims (available in newer supabase-js)
-  if (typeof (authed.auth as any).getClaims === "function") {
-    const { data: claimsData, error: claimsErr } = await (authed.auth as any).getClaims(token);
-    if (claimsErr || !claimsData?.claims?.sub) {
-      console.warn("me getClaims failed, trying getUser:", claimsErr?.message);
-      // Fall through to getUser
-      const { data: userRes, error: userErr } = await authed.auth.getUser(token);
-      if (userErr || !userRes?.user) {
-        console.warn("me auth rejected request", userErr?.message || "no user");
-        return json({ ok: false, error: "Unauthorized" }, 401);
-      }
-      userId = userRes.user.id;
-      email = userRes.user.email ?? null;
-      meta = (userRes.user.user_metadata || {}) as Record<string, unknown>;
-    } else {
-      userId = claimsData.claims.sub;
-      email = claimsData.claims.email ?? null;
-      meta = (claimsData.claims.user_metadata || {}) as Record<string, unknown>;
-    }
-  } else {
-    // Fallback: getUser
-    const { data: userRes, error: userErr } = await authed.auth.getUser(token);
-    if (userErr || !userRes?.user) {
-      console.warn("me auth rejected (getUser):", userErr?.message || "no user");
-      return json({ ok: false, error: "Unauthorized" }, 401);
-    }
-    userId = userRes.user.id;
-    email = userRes.user.email ?? null;
-    meta = (userRes.user.user_metadata || {}) as Record<string, unknown>;
-  }
-
   const admin = createClient(env.url, env.service, {
     auth: { persistSession: false },
     global: { "X-Client-Info": "me" } as any,
   });
+
+  // Validate JWT with service-role auth client (reliable in edge runtime)
+  const { data: userRes, error: userErr } = await admin.auth.getUser(token);
+  if (userErr || !userRes?.user) {
+    console.warn("me auth rejected request", userErr?.message || "no user");
+    return json({ ok: false, error: "Unauthorized" }, 401);
+  }
+
+  const userId = userRes.user.id;
+  const email = userRes.user.email ?? null;
+  const meta = (userRes.user.user_metadata || {}) as Record<string, unknown>;
 
   const fullName =
     (typeof meta.full_name === "string" && meta.full_name.trim()) ||
