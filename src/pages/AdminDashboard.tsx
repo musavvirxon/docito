@@ -38,6 +38,7 @@ import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 
+import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
