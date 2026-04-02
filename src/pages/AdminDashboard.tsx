@@ -820,7 +820,10 @@ const AdminDashboard = () => {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => guard(() => toast.info("Edit location (coming soon)"))}
+                            onClick={() => guard(() => {
+                              setEditingLocation(location);
+                              setAddLocationOpen(true);
+                            })}
                             disabled={!allowModals}
                           >
                             <Settings className="h-4 w-4" />
@@ -828,7 +831,20 @@ const AdminDashboard = () => {
                           <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => guard(() => toast.info("Remove location (coming soon)"))}
+                            onClick={() => guard(async () => {
+                              if (!confirm("Are you sure you want to delete this location?")) return;
+                              try {
+                                const { error } = await supabase
+                                  .from("practice_locations")
+                                  .delete()
+                                  .eq("id", location.id);
+                                if (error) throw error;
+                                toast.success("Location deleted");
+                                refreshData();
+                              } catch (err: any) {
+                                toast.error(err?.message || "Failed to delete location");
+                              }
+                            })}
                             disabled={!allowModals}
                           >
                             <X className="h-4 w-4" />
