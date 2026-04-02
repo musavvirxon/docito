@@ -1156,7 +1156,7 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-background flex flex-col">
-        <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+        <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
@@ -1173,8 +1173,8 @@ const AdminDashboard = () => {
           </div>
         </header>
 
-        <div className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 4rem)' }}>
-          <Sidebar className="!h-[calc(100vh-4rem)] !top-16 !bottom-0">
+        <div className="flex-1 flex overflow-hidden [&_[data-sidebar=sidebar]]:!h-[calc(100vh-4rem)] [&_[data-sidebar=sidebar]]:!top-16 [&>div>[data-sidebar=sidebar]~div]:!h-[calc(100vh-4rem)]">
+          <Sidebar>
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center justify-between">
