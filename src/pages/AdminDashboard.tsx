@@ -1258,7 +1258,15 @@ const AdminDashboard = () => {
 
         <InviteStaffModal open={inviteStaffOpen} onOpenChange={setInviteStaffOpen} practiceId={practice?.id} />
 
-        <AddLocationModal open={addLocationOpen} onOpenChange={setAddLocationOpen} />
+        <AddLocationModal
+          open={addLocationOpen}
+          onOpenChange={(open) => {
+            setAddLocationOpen(open);
+            if (!open) setEditingLocation(null);
+          }}
+          editingLocation={editingLocation}
+          onSaved={() => refreshData()}
+        />
 
         <ComprehensiveRegistrationModal open={settingsOpen} onOpenChange={setSettingsOpen} practiceId={practice?.id} onSuccess={() => {}} />
 
