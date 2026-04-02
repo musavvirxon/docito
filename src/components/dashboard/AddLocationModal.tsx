@@ -247,9 +247,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
 
     setSaving(true);
     try {
-      // NOTE: Photo upload UI exists, but real upload requires Supabase Storage + implementation.
-      // For now, we create the location row without photo_urls.
-      const payload: PracticeLocationInsert = {
+      const payload = {
         practice_id: practiceId,
         name: formData.locationName.trim(),
         address: formData.address.trim(),
@@ -257,19 +255,28 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
         phone: formData.phoneNumber.trim() || null,
         email: formData.email.trim() || null,
         operating_hours: operatingHoursPayload,
-        photo_urls: null,
         is_primary: formData.isPrimary ? true : false,
       };
 
-      const { error } = await supabase.from("practice_locations").insert(payload as any);
-      if (error) throw error;
+      if (isEditing && editingLocation?.id) {
+        const { error } = await supabase
+          .from("practice_locations")
+          .update(payload as any)
+          .eq("id", editingLocation.id);
+        if (error) throw error;
+        toast.success("Location updated successfully");
+      } else {
+        const { error } = await supabase.from("practice_locations").insert({ ...payload, photo_urls: null } as any);
+        if (error) throw error;
+        toast.success("Location added successfully");
+      }
 
-      toast.success("Location added successfully");
       onOpenChange(false);
       resetForm();
+      onSaved?.();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to add location");
+      toast.error(e?.message || (isEditing ? "Failed to update location" : "Failed to add location"));
     } finally {
       setSaving(false);
     }
