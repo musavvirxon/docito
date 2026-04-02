@@ -1174,7 +1174,7 @@ const AdminDashboard = () => {
         </header>
 
         <div className="flex-1 flex overflow-hidden" style={{ height: 'calc(100vh - 4rem)' }}>
-          <Sidebar className="!h-[calc(100vh-4rem)] !min-h-0">
+          <Sidebar className="!h-[calc(100vh-4rem)] !top-16 !bottom-0">
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center justify-between">
