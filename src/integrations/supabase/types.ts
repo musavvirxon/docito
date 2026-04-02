@@ -10241,6 +10241,15 @@ export type Database = {
           status: string
         }[]
       }
+      get_practice_providers: {
+        Args: { p_practice_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          specialty: string
+        }[]
+      }
       get_practice_services: {
         Args: { p_practice_id: string }
         Returns: {
