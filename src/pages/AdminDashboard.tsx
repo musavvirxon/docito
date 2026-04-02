@@ -1222,28 +1222,47 @@ const AdminDashboard = () => {
                 </SidebarGroupContent>
               </SidebarGroup>
 
-              <SidebarGroup>
-                <SidebarGroupLabel className="flex items-center justify-between">
-                  <span>{t("admin.sidebar.status")}</span>
-                  <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <div className="p-3 space-y-3">
-                    <div className="text-xs text-muted-foreground">{getVerificationMessage(verificationStatus)}</div>
-                    {!isVerified ? (
-                      <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        {t("admin.sidebar.verify")}
-                      </Button>
-                    ) : (
-                      <Button variant="outline" onClick={() => toast.success("You're verified!") } className="w-full">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Verified
-                      </Button>
-                    )}
-                  </div>
-                </SidebarGroupContent>
-              </SidebarGroup>
+              {(() => {
+                const STORAGE_KEY = `verification_seen_${practice?.id}`;
+                const seenAt = localStorage.getItem(STORAGE_KEY);
+                const now = Date.now();
+                const ONE_DAY = 24 * 60 * 60 * 1000;
+
+                // If verified and seen more than 1 day ago, hide the bar
+                if (isVerified && seenAt && now - Number(seenAt) > ONE_DAY) {
+                  return null;
+                }
+
+                // If verified and not yet marked as seen, mark it now
+                if (isVerified && !seenAt && practice?.id) {
+                  localStorage.setItem(STORAGE_KEY, String(now));
+                }
+
+                return (
+                  <SidebarGroup>
+                    <SidebarGroupLabel className="flex items-center justify-between">
+                      <span>{t("admin.sidebar.status")}</span>
+                      <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
+                    </SidebarGroupLabel>
+                    <SidebarGroupContent>
+                      <div className="p-3 space-y-3">
+                        <div className="text-xs text-muted-foreground">{getVerificationMessage(verificationStatus)}</div>
+                        {!isVerified ? (
+                          <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            {t("admin.sidebar.verify")}
+                          </Button>
+                        ) : (
+                          <Button variant="outline" onClick={() => toast.success("You're verified!")} className="w-full">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Verified
+                          </Button>
+                        )}
+                      </div>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                );
+              })()}
             </SidebarContent>
           </Sidebar>
 
