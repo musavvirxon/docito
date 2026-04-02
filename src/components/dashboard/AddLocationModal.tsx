@@ -627,7 +627,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                     Saving...
                   </>
                 ) : (
-                  "Add Location"
+                  isEditing ? "Update Location" : "Add Location"
                 )}
               </Button>
             </DialogFooter>
