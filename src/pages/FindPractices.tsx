@@ -275,25 +275,42 @@ export default function FindPractices() {
 }
 
 function PracticeCard({ practice, navigate, t }: any) {
+  const displayName = practice.name;
+  const practiceName = practice.practice_name && practice.practice_name !== practice.name
+    ? practice.practice_name
+    : null;
+  const locationLine = [practice.address, practice.city, practice.state, practice.country]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div className="bg-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border-2 border-border hover:border-primary">
       <div className="flex items-start gap-4 mb-4">
         <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-          <Building2 className="w-8 h-8 text-primary-foreground" />
+          {practice.logo_url ? (
+            <img src={practice.logo_url} alt={displayName} className="w-full h-full object-cover rounded-xl" />
+          ) : (
+            <Building2 className="w-8 h-8 text-primary-foreground" />
+          )}
         </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-bold text-foreground mb-1">{practice.name}</h3>
-          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-bold text-foreground mb-1 truncate">{displayName}</h3>
+          {practiceName && (
+            <p className="text-sm text-muted-foreground truncate">{practiceName}</p>
+          )}
+          <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary mt-1">
             {practice.practice_type || t('practices:types.clinic')}
           </span>
         </div>
       </div>
 
       <div className="space-y-2 mb-4">
-        <div className="flex items-start gap-2 text-sm text-muted-foreground">
-          <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>{practice.city && practice.country ? `${practice.city}, ${practice.country}` : t('practices:card.locationAvailable')}</span>
-        </div>
+        {locationLine && (
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <span>{locationLine}</span>
+          </div>
+        )}
         {practice.phone && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Phone className="w-4 h-4" />
@@ -316,16 +333,16 @@ function PracticeCard({ practice, navigate, t }: any) {
         )}
       </div>
 
-      {practice.average_rating && (
+      {practice.average_rating > 0 && (
         <div className="flex items-center gap-1 mb-4">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-          <span className="text-sm font-semibold text-foreground">{practice.average_rating.toFixed(1)}</span>
+          <span className="text-sm font-semibold text-foreground">{Number(practice.average_rating).toFixed(1)}</span>
           <span className="text-xs text-muted-foreground">({practice.num_reviews || 0} {t('practices:card.reviews')})</span>
         </div>
       )}
 
       <Button
-        onClick={() => navigate(`/practices/${practice.id}`)}
+        onClick={() => navigate(`/practices/${practice.practice_id || practice.id}`)}
         className="w-full"
       >
         {t('practices:card.viewPractice')}

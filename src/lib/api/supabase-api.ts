@@ -1185,39 +1185,96 @@ export const practiceApi = {
 
   async searchPractices(params: { query?: string; location?: string; practiceType?: string; minRating?: number }) {
     try {
+      // Query practice_locations joined with verified practices
+      // Each location appears as a separate result
       let q = (supabase as any)
-        .from('practices')
-        .select('*');
+        .from('practice_locations')
+        .select(`
+          id,
+          name,
+          address,
+          city,
+          state,
+          country,
+          zip_code,
+          phone,
+          email,
+          operating_hours,
+          is_primary,
+          photo_urls,
+          practice_id,
+          practices!inner (
+            id,
+            name,
+            description,
+            verified,
+            average_rating,
+            weighted_rating,
+            num_reviews,
+            appointment_count,
+            logo_url,
+            website,
+            practice_type,
+            email,
+            phone
+          )
+        `)
+        .eq('practices.verified', true);
 
       const cleanQ = (params.query || '').trim();
       if (cleanQ) {
-        q = q.or(`name.ilike.%${cleanQ}%,description.ilike.%${cleanQ}%`);
+        q = q.or(`name.ilike.%${cleanQ}%,address.ilike.%${cleanQ}%,city.ilike.%${cleanQ}%,practices.name.ilike.%${cleanQ}%,practices.description.ilike.%${cleanQ}%`);
       }
 
       const cleanLoc = (params.location || '').trim();
       if (cleanLoc) {
-        q = q.or(`city.ilike.%${cleanLoc}%,country.ilike.%${cleanLoc}%`);
+        q = q.or(`city.ilike.%${cleanLoc}%,country.ilike.%${cleanLoc}%,state.ilike.%${cleanLoc}%,address.ilike.%${cleanLoc}%`);
       }
 
       if (params.practiceType && params.practiceType !== 'all') {
-        q = q.eq('practice_type', params.practiceType);
+        q = q.eq('practices.practice_type', params.practiceType);
       }
 
       if (params.minRating) {
-        q = q.gte('weighted_rating', params.minRating);
+        q = q.gte('practices.weighted_rating', params.minRating);
       }
 
-      const { data, error } = await q
-        .order('weighted_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false });
+      const { data, error } = await q.order('is_primary', { ascending: false });
 
       if (error) throw error;
 
-      const normalized = (data || []).map((row: any) => ({
-        ...row,
-        average_rating: row.weighted_rating,
-        rating: row.weighted_rating,
-      }));
+      // Flatten: each location becomes a card with practice info merged
+      const normalized = (data || []).map((row: any) => {
+        const practice = row.practices;
+        return {
+          id: row.id, // location id for uniqueness
+          practice_id: practice?.id,
+          name: row.name || practice?.name,
+          practice_name: practice?.name,
+          description: practice?.description,
+          address: row.address,
+          city: row.city,
+          state: row.state,
+          country: row.country,
+          zip_code: row.zip_code,
+          phone: row.phone || practice?.phone,
+          email: row.email || practice?.email,
+          website: practice?.website,
+          logo_url: practice?.logo_url,
+          practice_type: practice?.practice_type,
+          average_rating: practice?.weighted_rating || practice?.average_rating,
+          weighted_rating: practice?.weighted_rating,
+          num_reviews: practice?.num_reviews,
+          appointment_count: practice?.appointment_count,
+          operating_hours: row.operating_hours,
+          is_primary: row.is_primary,
+          photo_urls: row.photo_urls,
+          verified: practice?.verified,
+        };
+      });
+
+      // Sort by weighted_rating desc
+      normalized.sort((a: any, b: any) => (b.weighted_rating || 0) - (a.weighted_rating || 0));
 
       return { data: normalized, success: true };
     } catch (error: any) {

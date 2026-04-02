@@ -18,6 +18,8 @@ import { toast } from "sonner";
 interface AddLocationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingLocation?: any;
+  onSaved?: () => void;
 }
 
 type PracticeLocationInsert = {
@@ -85,7 +87,8 @@ async function resolveMyPracticeId(): Promise<string | null> {
   return null;
 }
 
-export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) => {
+export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved }: AddLocationModalProps) => {
+  const isEditing = !!editingLocation;
   const [practiceId, setPracticeId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -129,13 +132,45 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
     return obj;
   }, [workingHours]);
 
+  // Populate form when editing
+  useEffect(() => {
+    if (!open) return;
+    if (editingLocation) {
+      setFormData({
+        locationName: editingLocation.name || "",
+        address: editingLocation.address || "",
+        zipCode: editingLocation.zip_code || "",
+        phoneNumber: editingLocation.phone || "",
+        email: editingLocation.email || "",
+        assignedProviders: [],
+        services: [],
+        coordinates: "",
+        isPrimary: editingLocation.is_primary || false,
+      });
+      if (editingLocation.operating_hours && typeof editingLocation.operating_hours === "object") {
+        const hours: Record<string, { isOpen: boolean; startTime: string; endTime: string }> = {};
+        for (const day of daysOfWeek) {
+          const dayData = (editingLocation.operating_hours as any)[day];
+          hours[day] = {
+            isOpen: dayData?.isOpen ?? true,
+            startTime: dayData?.startTime || "09:00",
+            endTime: dayData?.endTime || "17:00",
+          };
+        }
+        setWorkingHours(hours);
+      }
+    } else {
+      resetForm();
+    }
+  }, [open, editingLocation]);
+
   useEffect(() => {
     if (!open) return;
 
     (async () => {
       setLoadingDeps(true);
       try {
-        const pid = await resolveMyPracticeId();
+        const pid = editingLocation?.practice_id || await resolveMyPracticeId();
         setPracticeId(pid);
 
         if (!pid) {
@@ -171,7 +206,7 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
         setLoadingDeps(false);
       }
     })();
-  }, [open]);
+  }, [open, editingLocation]);
 
   const resetForm = () => {
     setFormData({
@@ -212,9 +247,7 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
 
     setSaving(true);
     try {
-      // NOTE: Photo upload UI exists, but real upload requires Supabase Storage + implementation.
-      // For now, we create the location row without photo_urls.
-      const payload: PracticeLocationInsert = {
+      const payload = {
         practice_id: practiceId,
         name: formData.locationName.trim(),
         address: formData.address.trim(),
@@ -222,19 +255,28 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
         phone: formData.phoneNumber.trim() || null,
         email: formData.email.trim() || null,
         operating_hours: operatingHoursPayload,
-        photo_urls: null,
         is_primary: formData.isPrimary ? true : false,
       };
 
-      const { error } = await supabase.from("practice_locations").insert(payload as any);
-      if (error) throw error;
+      if (isEditing && editingLocation?.id) {
+        const { error } = await supabase
+          .from("practice_locations")
+          .update(payload as any)
+          .eq("id", editingLocation.id);
+        if (error) throw error;
+        toast.success("Location updated successfully");
+      } else {
+        const { error } = await supabase.from("practice_locations").insert({ ...payload, photo_urls: null } as any);
+        if (error) throw error;
+        toast.success("Location added successfully");
+      }
 
-      toast.success("Location added successfully");
       onOpenChange(false);
       resetForm();
+      onSaved?.();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to add location");
+      toast.error(e?.message || (isEditing ? "Failed to update location" : "Failed to add location"));
     } finally {
       setSaving(false);
     }
@@ -286,7 +328,7 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Location</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Location" : "Add New Location"}</DialogTitle>
         </DialogHeader>
 
         {loadingDeps ? (
@@ -585,7 +627,7 @@ export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) 
                     Saving...
                   </>
                 ) : (
-                  "Add Location"
+                  isEditing ? "Update Location" : "Add Location"
                 )}
               </Button>
             </DialogFooter>

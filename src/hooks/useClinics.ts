@@ -27,7 +27,7 @@ export function useClinics(searchQuery?: string, specialty?: string) {
       let query = supabase
         .from('practices')
         .select('*')
-        .order('verified', { ascending: false })
+        .eq('verified', true)
         .order('average_rating', { ascending: false });
 
       if (searchQuery && searchQuery.trim()) {
