@@ -18,6 +18,8 @@ import { toast } from "sonner";
 interface AddLocationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  editingLocation?: any;
+  onSaved?: () => void;
 }
 
 type PracticeLocationInsert = {
