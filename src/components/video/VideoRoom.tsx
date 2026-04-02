@@ -18,6 +18,17 @@ import {
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  Room,
+  RoomEvent,
+  Track,
+  LocalTrackPublication,
+  RemoteTrackPublication,
+  RemoteParticipant,
+  LocalParticipant,
+  ConnectionState,
+  createLocalTracks,
+} from 'livekit-client';
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
@@ -38,10 +49,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
   const screenShareRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const localStreamRef = useRef<MediaStream | null>(null);
-  const screenStreamRef = useRef<MediaStream | null>(null);
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const roomRef = useRef<Room | null>(null);
 
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
@@ -53,206 +61,203 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<string>('connecting');
 
-  // ICE servers for NAT traversal
-  const iceServers: RTCConfiguration = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-    ],
-  };
-
-  // Initialize local media
-  const initLocalMedia = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 1280, height: 720, facingMode: 'user' },
-        audio: { echoCancellation: true, noiseSuppression: true },
-      });
-      localStreamRef.current = stream;
-      if (localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
+  // Attach a track to a video element
+  const attachTrack = useCallback(
+    (
+      publication: RemoteTrackPublication | LocalTrackPublication,
+      targetRef: React.RefObject<HTMLVideoElement | null>,
+    ) => {
+      const track = publication.track;
+      if (!track || !targetRef.current) return;
+      const el = track.attach();
+      if (el instanceof HTMLVideoElement) {
+        targetRef.current.srcObject = el.srcObject;
       }
-      setIsLoading(false);
-      setConnectionStatus('connected');
-      return stream;
-    } catch (err) {
-      console.error('Failed to get local media:', err);
-      setIsLoading(false);
-      setConnectionStatus('error');
-      return null;
-    }
+    },
+    [],
+  );
+
+  // Update participant count from room
+  const updateParticipantCount = useCallback(() => {
+    if (!roomRef.current) return;
+    setParticipantCount(roomRef.current.numParticipants + 1); // +1 for local
   }, []);
 
-  // Set up WebRTC peer connection with Supabase Realtime signaling
+  // Handle remote tracks
+  const handleTrackSubscribed = useCallback(
+    (
+      track: Track,
+      publication: RemoteTrackPublication,
+      participant: RemoteParticipant,
+    ) => {
+      if (track.kind === Track.Kind.Video) {
+        if (track.source === Track.Source.ScreenShare) {
+          if (screenShareRef.current) {
+            const el = track.attach();
+            if (el instanceof HTMLVideoElement) {
+              screenShareRef.current.srcObject = el.srcObject;
+            }
+          }
+          setIsScreenSharing(true);
+        } else {
+          if (remoteVideoRef.current) {
+            const el = track.attach();
+            if (el instanceof HTMLVideoElement) {
+              remoteVideoRef.current.srcObject = el.srcObject;
+            }
+          }
+        }
+      }
+      // Audio tracks auto-attach
+      if (track.kind === Track.Kind.Audio) {
+        const audioEl = track.attach();
+        document.body.appendChild(audioEl);
+      }
+    },
+    [],
+  );
+
+  const handleTrackUnsubscribed = useCallback(
+    (track: Track) => {
+      track.detach().forEach((el) => el.remove());
+      if (track.source === Track.Source.ScreenShare) {
+        setIsScreenSharing(false);
+        if (screenShareRef.current) {
+          screenShareRef.current.srcObject = null;
+        }
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     let mounted = true;
+    const room = new Room({
+      adaptiveStream: true,
+      dynacast: true,
+    });
+    roomRef.current = room;
 
-    const setup = async () => {
-      const stream = await initLocalMedia();
-      if (!stream || !mounted) return;
-
-      // Create peer connection
-      const pc = new RTCPeerConnection(iceServers);
-      peerConnectionRef.current = pc;
-
-      // Add local tracks
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-      // Handle remote tracks
-      pc.ontrack = (event) => {
-        if (remoteVideoRef.current && event.streams[0]) {
-          remoteVideoRef.current.srcObject = event.streams[0];
-          setParticipantCount(2);
+    const connect = async () => {
+      try {
+        // Get LiveKit token from edge function
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        if (!token) {
+          setConnectionStatus('error');
+          setIsLoading(false);
+          return;
         }
-      };
 
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
-          setParticipantCount(1);
+        const resp = await supabase.functions.invoke('livekit-token', {
+          body: {
+            appointmentId: consultation.id,
+            roomId: consultation.room_id,
+          },
+        });
+
+        if (resp.error || !resp.data?.token) {
+          console.error('Failed to get LiveKit token:', resp.error);
+          setConnectionStatus('error');
+          setIsLoading(false);
+          return;
         }
-      };
 
-      // Use Supabase Realtime for signaling
-      const channel = supabase.channel(`video-signal-${consultation.room_id}`, {
-        config: { broadcast: { self: false } },
-      });
+        const { token: livekitToken, url: livekitUrl } = resp.data;
 
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          channel.send({
-            type: 'broadcast',
-            event: 'ice-candidate',
-            payload: { candidate: event.candidate.toJSON(), from: userName },
-          });
-        }
-      };
-
-      channel
-        .on('broadcast', { event: 'offer' }, async ({ payload }) => {
-          if (!peerConnectionRef.current) return;
-          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-          const answer = await peerConnectionRef.current.createAnswer();
-          await peerConnectionRef.current.setLocalDescription(answer);
-          channel.send({
-            type: 'broadcast',
-            event: 'answer',
-            payload: { sdp: answer, from: userName },
-          });
-        })
-        .on('broadcast', { event: 'answer' }, async ({ payload }) => {
-          if (!peerConnectionRef.current) return;
-          await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
-        })
-        .on('broadcast', { event: 'ice-candidate' }, async ({ payload }) => {
-          if (!peerConnectionRef.current) return;
-          try {
-            await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(payload.candidate));
-          } catch (e) {
-            console.error('ICE candidate error:', e);
-          }
-        })
-        .on('broadcast', { event: 'join' }, async () => {
-          // When another participant joins, create an offer
-          if (!peerConnectionRef.current) return;
-          const offer = await peerConnectionRef.current.createOffer();
-          await peerConnectionRef.current.setLocalDescription(offer);
-          channel.send({
-            type: 'broadcast',
-            event: 'offer',
-            payload: { sdp: offer, from: userName },
-          });
-        })
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            // Announce our presence
-            channel.send({
-              type: 'broadcast',
-              event: 'join',
-              payload: { from: userName, role: userRole },
-            });
+        // Set up event handlers
+        room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+        room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+        room.on(RoomEvent.ParticipantConnected, updateParticipantCount);
+        room.on(RoomEvent.ParticipantDisconnected, updateParticipantCount);
+        room.on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
+          if (!mounted) return;
+          if (state === ConnectionState.Connected) {
+            setConnectionStatus('connected');
+          } else if (state === ConnectionState.Disconnected) {
+            setConnectionStatus('disconnected');
+          } else if (state === ConnectionState.Reconnecting) {
+            setConnectionStatus('connecting');
           }
         });
 
-      return () => {
-        channel.unsubscribe();
-      };
+        // Attach local video when published
+        room.on(
+          RoomEvent.LocalTrackPublished,
+          (pub: LocalTrackPublication, participant: LocalParticipant) => {
+            if (pub.track?.kind === Track.Kind.Video && pub.track.source === Track.Source.Camera) {
+              if (localVideoRef.current) {
+                const el = pub.track.attach();
+                if (el instanceof HTMLVideoElement) {
+                  localVideoRef.current.srcObject = el.srcObject;
+                }
+              }
+            }
+          },
+        );
+
+        // Connect to room
+        await room.connect(livekitUrl, livekitToken);
+
+        // Enable camera + mic
+        await room.localParticipant.enableCameraAndMicrophone();
+
+        if (mounted) {
+          setIsLoading(false);
+          setConnectionStatus('connected');
+          updateParticipantCount();
+        }
+      } catch (err) {
+        console.error('LiveKit connect error:', err);
+        if (mounted) {
+          setConnectionStatus('error');
+          setIsLoading(false);
+        }
+      }
     };
 
-    const cleanupPromise = setup();
+    connect();
 
     return () => {
       mounted = false;
-      cleanupPromise.then((cleanup) => cleanup?.());
-      peerConnectionRef.current?.close();
-      localStreamRef.current?.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
+      room.disconnect(true);
+      roomRef.current = null;
     };
-  }, [consultation.room_id, userName, userRole, initLocalMedia]);
+  }, [
+    consultation.id,
+    consultation.room_id,
+    handleTrackSubscribed,
+    handleTrackUnsubscribed,
+    updateParticipantCount,
+  ]);
 
-  const toggleAudio = () => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-    stream.getAudioTracks().forEach((t) => {
-      t.enabled = !t.enabled;
-    });
-    setIsAudioMuted(!isAudioMuted);
-  };
+  const toggleAudio = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    const enabled = room.localParticipant.isMicrophoneEnabled;
+    await room.localParticipant.setMicrophoneEnabled(!enabled);
+    setIsAudioMuted(enabled);
+  }, []);
 
-  const toggleVideo = () => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-    stream.getVideoTracks().forEach((t) => {
-      t.enabled = !t.enabled;
-    });
-    setIsVideoMuted(!isVideoMuted);
-  };
+  const toggleVideo = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    const enabled = room.localParticipant.isCameraEnabled;
+    await room.localParticipant.setCameraEnabled(!enabled);
+    setIsVideoMuted(enabled);
+  }, []);
 
-  const toggleScreenShare = async () => {
-    if (isScreenSharing) {
-      // Stop screen sharing
-      screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-      screenStreamRef.current = null;
-      setIsScreenSharing(false);
-
-      // Replace screen track with camera track
-      const cameraStream = localStreamRef.current;
-      if (cameraStream && peerConnectionRef.current) {
-        const videoTrack = cameraStream.getVideoTracks()[0];
-        const sender = peerConnectionRef.current.getSenders().find((s) => s.track?.kind === 'video');
-        if (sender && videoTrack) {
-          await sender.replaceTrack(videoTrack);
-        }
-      }
-    } else {
-      try {
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: false,
-        });
-        screenStreamRef.current = screenStream;
-        setIsScreenSharing(true);
-
-        if (screenShareRef.current) {
-          screenShareRef.current.srcObject = screenStream;
-        }
-
-        // Replace camera track with screen track in peer connection
-        const screenTrack = screenStream.getVideoTracks()[0];
-        if (peerConnectionRef.current) {
-          const sender = peerConnectionRef.current.getSenders().find((s) => s.track?.kind === 'video');
-          if (sender) {
-            await sender.replaceTrack(screenTrack);
-          }
-        }
-
-        screenTrack.onended = () => {
-          toggleScreenShare();
-        };
-      } catch (err) {
-        console.error('Screen share error:', err);
-      }
+  const toggleScreenShare = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    try {
+      const enabled = room.localParticipant.isScreenShareEnabled;
+      await room.localParticipant.setScreenShareEnabled(!enabled);
+      setIsScreenSharing(!enabled);
+    } catch (err) {
+      console.error('Screen share error:', err);
     }
-  };
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -264,12 +269,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     }
   };
 
-  const handleEndCall = () => {
-    localStreamRef.current?.getTracks().forEach((t) => t.stop());
-    screenStreamRef.current?.getTracks().forEach((t) => t.stop());
-    peerConnectionRef.current?.close();
+  const handleEndCall = useCallback(() => {
+    roomRef.current?.disconnect(true);
     onEnd(notes);
-  };
+  }, [notes, onEnd]);
 
   return (
     <div ref={containerRef} className="flex flex-col h-full bg-background">
@@ -277,7 +280,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
           <Badge variant={connectionStatus === 'connected' ? 'default' : 'secondary'}>
-            {connectionStatus === 'connected' ? 'Live' : connectionStatus === 'connecting' ? 'Connecting...' : 'Error'}
+            {connectionStatus === 'connected'
+              ? 'Live'
+              : connectionStatus === 'connecting'
+                ? 'Connecting...'
+                : 'Error'}
           </Badge>
           <span className="text-sm text-muted-foreground">
             Room: {consultation.room_id}
@@ -375,7 +382,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             onClick={toggleScreenShare}
             className="rounded-full h-14 w-14"
           >
-            {isScreenSharing ? <MonitorOff className="h-6 w-6" /> : <Monitor className="h-6 w-6" />}
+            {isScreenSharing ? (
+              <MonitorOff className="h-6 w-6" />
+            ) : (
+              <Monitor className="h-6 w-6" />
+            )}
           </Button>
 
           {userRole === 'doctor' && (
@@ -395,7 +406,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             onClick={toggleFullscreen}
             className="rounded-full h-14 w-14"
           >
-            {isFullscreen ? <Minimize className="h-6 w-6" /> : <Maximize className="h-6 w-6" />}
+            {isFullscreen ? (
+              <Minimize className="h-6 w-6" />
+            ) : (
+              <Maximize className="h-6 w-6" />
+            )}
           </Button>
 
           <Button
