@@ -87,7 +87,8 @@ async function resolveMyPracticeId(): Promise<string | null> {
   return null;
 }
 
-export const AddLocationModal = ({ open, onOpenChange }: AddLocationModalProps) => {
+export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved }: AddLocationModalProps) => {
+  const isEditing = !!editingLocation;
   const [practiceId, setPracticeId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
