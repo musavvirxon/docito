@@ -132,13 +132,45 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
     return obj;
   }, [workingHours]);
 
+  // Populate form when editing
+  useEffect(() => {
+    if (!open) return;
+    if (editingLocation) {
+      setFormData({
+        locationName: editingLocation.name || "",
+        address: editingLocation.address || "",
+        zipCode: editingLocation.zip_code || "",
+        phoneNumber: editingLocation.phone || "",
+        email: editingLocation.email || "",
+        assignedProviders: [],
+        services: [],
+        coordinates: "",
+        isPrimary: editingLocation.is_primary || false,
+      });
+      if (editingLocation.operating_hours && typeof editingLocation.operating_hours === "object") {
+        const hours: Record<string, { isOpen: boolean; startTime: string; endTime: string }> = {};
+        for (const day of daysOfWeek) {
+          const dayData = (editingLocation.operating_hours as any)[day];
+          hours[day] = {
+            isOpen: dayData?.isOpen ?? true,
+            startTime: dayData?.startTime || "09:00",
+            endTime: dayData?.endTime || "17:00",
+          };
+        }
+        setWorkingHours(hours);
+      }
+    } else {
+      resetForm();
+    }
+  }, [open, editingLocation]);
+
   useEffect(() => {
     if (!open) return;
 
     (async () => {
       setLoadingDeps(true);
       try {
-        const pid = await resolveMyPracticeId();
+        const pid = editingLocation?.practice_id || await resolveMyPracticeId();
         setPracticeId(pid);
 
         if (!pid) {
@@ -174,7 +206,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
         setLoadingDeps(false);
       }
     })();
-  }, [open]);
+  }, [open, editingLocation]);
 
   const resetForm = () => {
     setFormData({
