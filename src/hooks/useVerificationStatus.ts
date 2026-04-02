@@ -27,11 +27,7 @@ export const useVerificationStatus = (practiceId?: string) => {
         setVerificationStatus(status);
         setIsVerified(status === 'verified' || status === 'approved');
 
-        // Store in localStorage to track if we've shown the modal
-        const hasShownModal = localStorage.getItem(`verification_modal_shown_${practiceId}`);
-        if (status === 'verified' && !hasShownModal) {
-          localStorage.setItem(`verification_modal_shown_${practiceId}`, 'true');
-        }
+        // localStorage check is handled by shouldShowModal/markModalAsShown
       } catch (error) {
         console.error('Error fetching verification status:', error);
       } finally {
