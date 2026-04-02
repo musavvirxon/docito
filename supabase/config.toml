@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.blog-ssr]
 verify_jwt = false
+
+[functions.livekit-token]
+verify_jwt = false
