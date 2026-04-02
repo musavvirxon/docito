@@ -328,7 +328,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Location</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Location" : "Add New Location"}</DialogTitle>
         </DialogHeader>
 
         {loadingDeps ? (
