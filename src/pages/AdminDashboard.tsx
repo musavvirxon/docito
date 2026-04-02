@@ -179,6 +179,7 @@ const AdminDashboard = () => {
   const [addServiceOpen, setAddServiceOpen] = useState(false);
   const [inviteStaffOpen, setInviteStaffOpen] = useState(false);
   const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<any>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
