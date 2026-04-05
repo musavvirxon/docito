@@ -1399,41 +1399,28 @@ async function generateTreatmentPlanPdf(params: {
     y -= (sectionSize + 10);
   };
 
-  // Plan header fields
-  drawKV("planId", params.planId);
-  drawKV("status", params.status);
-  drawKV("totalCost", params.totalCost);
+  // Description and notes only (removed Plan ID, Status, Total Cost, Created/Updated At)
   if (params.description) drawKV("description", params.description);
   if (params.notes) drawKV("notes", params.notes);
-  if (params.createdAt) drawKV("createdAt", params.createdAt);
-  if (params.updatedAt) drawKV("updatedAt", params.updatedAt);
-  if (params.publishedAt) drawKV("publishedAt", params.publishedAt);
-  if (params.completedAt) drawKV("completedAt", params.completedAt);
 
-  // Dental chart removed — tooth numbers are shown inline in the procedures table
-
-  // Patient section
-  y -= 6;
-  drawSection("patient");
-  drawKV("patient", params.patientName);
-  if (params.patientIdNumber) drawKV("planId", params.patientIdNumber); // reuse planId label as ID label
-  if (params.patientDob) drawKV("dob", params.patientDob);
-  if (params.patientGender) drawKV("gender", params.patientGender);
-  if (params.patientPhone) drawKV("phone", params.patientPhone);
-  if (params.patientEmail) drawKV("email", params.patientEmail);
-  if (params.patientAddress) drawKV("address", params.patientAddress);
-
-  // Doctor section
+  // Doctor section FIRST
   y -= 6;
   drawSection("doctor");
   drawKV("doctor", params.doctorName);
   if (params.doctorSpecialty) drawKV("specialty", params.doctorSpecialty);
   if (params.doctorPhone) drawKV("phone", params.doctorPhone);
   if (params.doctorEmail) drawKV("email", params.doctorEmail);
-  if (params.practiceName) {
-    const practiceLabel = params.practiceName + (params.practicePhone ? ` · ${params.practicePhone}` : "");
-    drawKV("notes", practiceLabel);
-  }
+
+  // Patient section
+  y -= 6;
+  drawSection("patient");
+  drawKV("patient", params.patientName);
+  if (params.patientIdNumber) drawKV("planId", params.patientIdNumber);
+  if (params.patientDob) drawKV("dob", params.patientDob);
+  if (params.patientGender) drawKV("gender", params.patientGender);
+  if (params.patientPhone) drawKV("phone", params.patientPhone);
+  if (params.patientEmail) drawKV("email", params.patientEmail);
+  if (params.patientAddress) drawKV("address", params.patientAddress);
 
   // Procedures table
   y -= 6;
