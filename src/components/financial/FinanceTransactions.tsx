@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 type Props = {
   entityType: FinanceEntityType;
   entityId: string;
+  locationId?: string | null;
 };
 
 type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
@@ -51,7 +52,7 @@ function isoForDaysAgo(days: number) {
   return d.toISOString();
 }
 
-export default function FinanceTransactions({ entityType, entityId }: Props) {
+export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const [type, setType] = useState<EntryType | "all">("all");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
@@ -95,6 +96,8 @@ export default function FinanceTransactions({ entityType, entityId }: Props) {
         .gte("occurred_at", from)
         .lt("occurred_at", to);
 
+      if (locationId) q = q.eq("location_id", locationId);
+
       if (type !== "all") q = q.eq("entry_type", type);
 
       q = q.order("occurred_at", { ascending: sort === "oldest" });
@@ -115,7 +118,7 @@ export default function FinanceTransactions({ entityType, entityId }: Props) {
   useEffect(() => {
     void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entityType, entityId, range, type, sort]);
+  }, [entityType, entityId, range, type, sort, locationId]);
 
   const totals = useMemo(() => {
     const sums: Record<string, number> = { income: 0, expense: 0, payroll: 0, transfer: 0, adjustment: 0 };

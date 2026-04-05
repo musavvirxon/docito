@@ -7,6 +7,7 @@ import type { FinanceEntityType } from "@/components/financial/FinanceHub";
 type Props = {
   entityType: FinanceEntityType;
   entityId: string;
+  locationId?: string | null;
 };
 
 export default function PayrollPanel(_props: Props) {
