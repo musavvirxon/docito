@@ -1038,6 +1038,7 @@ export type Database = {
           entity_type: string | null
           id: string
           invoice_id: string | null
+          location_id: string | null
           metadata: Json | null
           payment_hold_id: string | null
           practice_id: string | null
@@ -1062,6 +1063,7 @@ export type Database = {
           entity_type?: string | null
           id?: string
           invoice_id?: string | null
+          location_id?: string | null
           metadata?: Json | null
           payment_hold_id?: string | null
           practice_id?: string | null
@@ -1086,6 +1088,7 @@ export type Database = {
           entity_type?: string | null
           id?: string
           invoice_id?: string | null
+          location_id?: string | null
           metadata?: Json | null
           payment_hold_id?: string | null
           practice_id?: string | null
@@ -1112,6 +1115,20 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "practice_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "public_practice_locations"
             referencedColumns: ["id"]
           },
           {
@@ -2493,6 +2510,7 @@ export type Database = {
           logo_url: string | null
           num_reviews: number | null
           practice_id: string | null
+          practice_location_id: string | null
           specialty: string
           specialty_ar: string | null
           specialty_en: string | null
@@ -2522,6 +2540,7 @@ export type Database = {
           logo_url?: string | null
           num_reviews?: number | null
           practice_id?: string | null
+          practice_location_id?: string | null
           specialty: string
           specialty_ar?: string | null
           specialty_en?: string | null
@@ -2551,6 +2570,7 @@ export type Database = {
           logo_url?: string | null
           num_reviews?: number | null
           practice_id?: string | null
+          practice_location_id?: string | null
           specialty?: string
           specialty_ar?: string | null
           specialty_en?: string | null
@@ -2567,6 +2587,20 @@ export type Database = {
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctors_practice_location_id_fkey"
+            columns: ["practice_location_id"]
+            isOneToOne: false
+            referencedRelation: "practice_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctors_practice_location_id_fkey"
+            columns: ["practice_location_id"]
+            isOneToOne: false
+            referencedRelation: "public_practice_locations"
             referencedColumns: ["id"]
           },
           {
@@ -2853,6 +2887,7 @@ export type Database = {
           entity_type: string
           entry_type: string
           id: string
+          location_id: string | null
           metadata: Json | null
           occurred_at: string
           reference: string | null
@@ -2870,6 +2905,7 @@ export type Database = {
           entity_type: string
           entry_type?: string
           id?: string
+          location_id?: string | null
           metadata?: Json | null
           occurred_at?: string
           reference?: string | null
@@ -2887,6 +2923,7 @@ export type Database = {
           entity_type?: string
           entry_type?: string
           id?: string
+          location_id?: string | null
           metadata?: Json | null
           occurred_at?: string
           reference?: string | null
@@ -2899,6 +2936,20 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_entries_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "practice_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_entries_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "public_practice_locations"
             referencedColumns: ["id"]
           },
         ]
@@ -10247,6 +10298,8 @@ export type Database = {
           avatar_url: string
           full_name: string
           id: string
+          location_name: string
+          practice_location_id: string
           specialty: string
         }[]
       }
@@ -10325,7 +10378,7 @@ export type Database = {
         Returns: boolean
       }
       homepage_unified_search: {
-        Args: { search_location: string; search_query: string }
+        Args: { search_location?: string; search_query?: string }
         Returns: {
           id: string
           image_url: string
