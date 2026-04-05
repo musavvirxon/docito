@@ -18,17 +18,23 @@ import {
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
-// @ts-ignore — livekit-client is an optional peer dependency; stub types when missing
-let Room: any, RoomEvent: any, Track: any, LocalTrackPublication: any, RemoteTrackPublication: any, RemoteParticipant: any, LocalParticipant: any, ConnectionState: any, createLocalTracks: any;
-try {
-  const lk = require('livekit-client');
-  Room = lk.Room; RoomEvent = lk.RoomEvent; Track = lk.Track;
-  LocalTrackPublication = lk.LocalTrackPublication; RemoteTrackPublication = lk.RemoteTrackPublication;
-  RemoteParticipant = lk.RemoteParticipant; LocalParticipant = lk.LocalParticipant;
-  ConnectionState = lk.ConnectionState; createLocalTracks = lk.createLocalTracks;
-} catch {
-  // livekit-client not installed – video features will be unavailable
-}
+// livekit-client types — stubbed as `any` when the package isn't installed
+type Room = any;
+type RoomEvent = any;
+type Track = any;
+type LocalTrackPublication = any;
+type RemoteTrackPublication = any;
+type RemoteParticipant = any;
+type LocalParticipant = any;
+type ConnectionState = any;
+
+const getLivekit = async () => {
+  try {
+    return await import('livekit-client');
+  } catch {
+    return null;
+  }
+};
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
