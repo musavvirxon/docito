@@ -1214,25 +1214,24 @@ async function generateTreatmentPlanPdf(params: {
   const borderLight = rgb(0.88, 0.88, 0.88);
   const rowAlt = rgb(0.97, 0.97, 0.98);
 
-  const bottomReserve = 220;
+  const FOOTER_H = 24; // reserved for compact one-line footer on every page
+  const bottomReserve = 40; // reduced — heavy verification block moved to footer
 
   let page = pdf.addPage([W, H]);
   let y = H - margin;
 
   // ─── header() ────────────────────────────────────────────────────────────
-  // Entity logo (doctor/clinic) on the left, practice name + doc type on the right.
-  const HEADER_H = 52; // increased to prevent text overlapping
+  // Center: practice/doctor logo. Right: practice info or "Independent Practitioner".
+  const HEADER_H = 52;
   const header = () => {
     y = H - margin;
 
     // ── Blue background bar (full width) ──────────────────────────────────
     page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: accentColor });
 
-    // ── Left side: Entity logo (doctor/clinic) or fallback initials ───────
-    const logoLeftX = margin;
+    // ── Center: Entity logo (practice/doctor) ─────────────────────────────
     const logoAreaH = HEADER_H - 12;
     if (entityLogo) {
-      // Scale entity logo to fit header
       let elW = entityLogoW;
       let elH = entityLogoH;
       if (elH > logoAreaH) {
@@ -1241,26 +1240,29 @@ async function generateTreatmentPlanPdf(params: {
       }
       const logoTopY = H - HEADER_H + (HEADER_H - elH) / 2;
       page.drawImage(entityLogo, {
-        x: logoLeftX,
+        x: (W - elW) / 2,
         y: logoTopY,
         width: elW,
         height: elH,
       });
     } else {
-      // Fallback: show practice/doctor name text on the left
-      const leftLabel = params.practiceName || params.doctorName || "—";
-      const leftSize = 12;
-      const leftText = formatForLocale(params.locale, leftLabel);
-      page.drawText(leftText.slice(0, 30), {
-        x: logoLeftX,
-        y: H - HEADER_H + (HEADER_H + leftSize) / 2 - 3,
-        size: leftSize,
-        font,
-        color: rgb(1, 1, 1),
-      });
+      // Fallback: show practice/doctor name centered
+      const centerLabel = params.practiceName || params.doctorName || "";
+      if (centerLabel) {
+        const centerSize = 13;
+        const centerText = formatForLocale(params.locale, centerLabel);
+        const centerW = font.widthOfTextAtSize(centerText.slice(0, 30), centerSize);
+        page.drawText(centerText.slice(0, 30), {
+          x: (W - centerW) / 2,
+          y: H - HEADER_H + (HEADER_H + centerSize) / 2 - 3,
+          size: centerSize,
+          font,
+          color: rgb(1, 1, 1),
+        });
+      }
     }
 
-    // ── Right side (white text): practice name + document type ────────────
+    // ── Right side: practice info or "Independent Practitioner" ────────────
     const practiceLabel = params.practiceName || t(params.locale, "independentPractitioner");
     const docTitle = params.isDentist ? t(params.locale, "dentalTitle") : t(params.locale, "title");
 
@@ -1286,21 +1288,22 @@ async function generateTreatmentPlanPdf(params: {
       color: rgb(0.85, 0.90, 1.0),
     });
 
-    const metaSize = 8;
-    const createdLine = params.createdAt ? `${t(params.locale, "createdAt")}: ${params.createdAt}` : "";
-    if (createdLine) {
-      const createdText = formatForLocale(params.locale, createdLine);
-      const createdW = font.widthOfTextAtSize(createdText, metaSize);
-      page.drawText(createdText, {
-        x: W - margin - createdW,
+    // Practice address or phone on third line
+    const practiceDetail = params.practiceAddress || params.practicePhone || "";
+    if (practiceDetail) {
+      const detailSize = 7.5;
+      const detailText = formatForLocale(params.locale, practiceDetail).slice(0, 50);
+      const detailW = font.widthOfTextAtSize(detailText, detailSize);
+      page.drawText(detailText, {
+        x: W - margin - detailW,
         y: H - HEADER_H + 8,
-        size: metaSize,
+        size: detailSize,
         font,
         color: rgb(0.75, 0.82, 0.97),
       });
     }
 
-    // ── Thin white divider below header (optional accent) ─────────────────
+    // ── Thin accent divider below header ───────────────────────────────────
     page.drawRectangle({ x: 0, y: H - HEADER_H - 2, width: W, height: 2, color: accentLight });
 
     // ── Plan title (below header) ─────────────────────────────────────────
@@ -1317,27 +1320,6 @@ async function generateTreatmentPlanPdf(params: {
       color: accentColor,
     });
     y -= 16;
-
-    // Doctor + practice subtitle line
-    let generatedLine = "";
-    if (params.doctorName && params.doctorName !== "—") {
-      generatedLine = params.doctorName;
-      if (params.doctorSpecialty) generatedLine += ` · ${params.doctorSpecialty}`;
-      if (params.practiceName) generatedLine += ` — ${params.practiceName}`;
-    }
-    if (generatedLine) {
-      const genText = formatForLocale(params.locale, generatedLine);
-      const genSize = 9;
-      const genW = font.widthOfTextAtSize(genText, genSize);
-      page.drawText(genText, {
-        x: rtl ? (W - margin - genW) : margin,
-        y,
-        size: genSize,
-        font,
-        color: textMuted,
-      });
-      y -= 14;
-    }
 
     // ── Accent divider line under the title block ─────────────────────────
     y -= 4;
