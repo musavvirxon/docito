@@ -1733,14 +1733,13 @@ async function generateTreatmentPlanPdf(params: {
   });
   y -= 8;
 
-  // Footer on last page — ensure enough space for signature + verification + QR
-  const footerBlockH = 200;
-  if (y < margin + footerBlockH + 20) newPage();
+  // Footer on last page — ensure enough space for signature block
+  const sigBlockH = 60;
+  if (y < margin + FOOTER_H + sigBlockH + 20) newPage();
 
   // ── Signature section (print-ready) ─────────────────────────────────────
   const sigGap = 24;
   const sigW = (W - margin * 2 - sigGap) / 2;
-  // Position signatures well above verification block
   let sigY = y - 10;
 
   const patientSigLabel = formatForLocale(params.locale, t(params.locale, "patientSignature"));
@@ -1768,140 +1767,61 @@ async function generateTreatmentPlanPdf(params: {
   page.drawText(providerSigLabel, { x: sx2, y: sigY - 12, size: 8.5, font, color: textMuted });
   page.drawText(`${dateLabel}: ____________`, { x: sx2, y: sigY - 24, size: 8, font, color: textMuted });
 
-  // ── Verification section ────────────────────────────────────────────────
-  const verSectionY = sigY - 50;
-
-  page.drawLine({
-    start: { x: margin, y: verSectionY },
-    end: { x: W - margin, y: verSectionY },
-    thickness: 0.8,
-    color: borderLight,
-  });
-
-  const verificationLabel = formatForLocale(params.locale, t(params.locale, "verification") + ":");
-  const verificationLabelSize = 9;
-  page.drawText(verificationLabel, {
-    x: margin,
-    y: verSectionY - 14,
-    size: verificationLabelSize,
-    font,
-    color: textMuted,
-  });
-
-  const vCodeLine = formatForLocale(params.locale, `${t(params.locale, "verificationCode")}: ${params.verificationCode}`);
-  const vUrlLine = formatForLocale(params.locale, `${t(params.locale, "verifyAt")}: ${params.verifyUrl}`);
-  const vSize = 8;
-
-  page.drawText(vCodeLine, {
-    x: margin,
-    y: verSectionY - 28,
-    size: vSize,
-    font,
-    color: textDark,
-  });
-
-  page.drawText(vUrlLine, {
-    x: margin,
-    y: verSectionY - 40,
-    size: vSize,
-    font,
-    color: textDark,
-  });
-
-  // QR code (right-aligned next to verification text)
-  try {
-    const dataUrl = await QRCode.toDataURL(params.verifyUrl, { margin: 1, width: 140 });
-    const b64 = dataUrl.split(",")[1] || "";
-    if (b64) {
-      const qrBytes = b64ToBytes(b64);
-      const qr = await pdf.embedPng(qrBytes);
-      const qrW = 70;
-      const qrH = 70;
-
-      page.drawImage(qr, {
-        x: W - margin - qrW,
-        y: verSectionY - qrH + 10,
-        width: qrW,
-        height: qrH,
-      });
-    }
-  } catch {
-    // ignore QR failures
-  }
-
-  // ── Docito branding (bottom) — HQ logo + name ──────────────────────────
-  const brandY = verSectionY - 70;
-
-  // Divider above Docito branding
-  page.drawLine({
-    start: { x: margin, y: brandY + 10 },
-    end: { x: W - margin, y: brandY + 10 },
-    thickness: 0.5,
-    color: borderLight,
-  });
-
-  // Docito full logo (HQ) at bottom
-  if (docitoFullLogo && docitoFullLogoW > 0) {
-    const footerLogoH = 14;
-    const footerLogoW = (docitoFullLogo.width / docitoFullLogo.height) * footerLogoH;
-    page.drawImage(docitoFullLogo, {
-      x: margin,
-      y: brandY - 6,
-      width: footerLogoW,
-      height: footerLogoH,
-    });
-
-    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-    page.drawText(genText, {
-      x: margin + footerLogoW + 6,
-      y: brandY,
-      size: 7.5,
-      font,
-      color: textMuted,
-    });
-  } else if (docitoLogo) {
-    // Fallback to icon
-    page.drawImage(docitoLogo, {
-      x: margin,
-      y: brandY - 2,
-      width: docitoLogoW,
-      height: docitoLogoH,
-    });
-
-    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-    page.drawText(genText, {
-      x: margin + docitoLogoW + 4,
-      y: brandY + 2,
-      size: 7.5,
-      font,
-      color: textMuted,
-    });
-  } else {
-    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-    page.drawText(genText, { x: margin, y: brandY, size: 7.5, font, color: textMuted });
-  }
-
-  const confLabel = formatForLocale(params.locale, `Confidential -- ${params.practiceName || t(params.locale, "generatedBy")}`);
-  page.drawText(confLabel, {
-    x: margin,
-    y: brandY - 18,
-    size: 7,
-    font,
-    color: textMuted,
-  });
-
-  // ── Page numbers on every page (patient-PDF style) ────────────────────────
+  // ── Compact one-line footer on EVERY page ─────────────────────────────────
+  // Format: [Docito logo] | Verify: <url> | Confidential — <practice> | Page X of Y
   const pageCount = pdf.getPageCount();
+  const footerY = 18; // near bottom of page
+  const footerSize = 6.5;
+  const confEntity = params.practiceName || t(params.locale, "generatedBy");
+  const footerVerifyText = `${params.verifyUrl}`;
+  const footerConfText = `Confidential - ${confEntity}`;
+
   for (let i = 0; i < pageCount; i++) {
     const pg = pdf.getPage(i);
-    const pageNum = i + 1;
-    const pageLabel = `Page ${pageNum} of ${pageCount}`;
-    const pageLabelSize = 8;
-    const pageLabelW = font.widthOfTextAtSize(pageLabel, pageLabelSize);
+
+    // Thin divider line above footer
+    pg.drawLine({
+      start: { x: margin, y: footerY + 10 },
+      end: { x: W - margin, y: footerY + 10 },
+      thickness: 0.4,
+      color: borderLight,
+    });
+
+    let fx = margin;
+
+    // Docito logo icon
+    if (docitoLogo) {
+      const fLogoH = 8;
+      const fLogoW = (docitoLogoW / docitoLogoH) * fLogoH;
+      pg.drawImage(docitoLogo, {
+        x: fx,
+        y: footerY - 1,
+        width: fLogoW,
+        height: fLogoH,
+      });
+      fx += fLogoW + 4;
+    }
+
+    // Verification link
+    const verText = formatForLocale(params.locale, footerVerifyText);
+    pg.drawText(verText, { x: fx, y: footerY, size: footerSize, font, color: textMuted });
+    fx += font.widthOfTextAtSize(verText, footerSize) + 10;
+
+    // Separator
+    pg.drawText("|", { x: fx, y: footerY, size: footerSize, font, color: borderLight });
+    fx += 10;
+
+    // Confidential
+    const confText = formatForLocale(params.locale, footerConfText);
+    pg.drawText(confText, { x: fx, y: footerY, size: footerSize, font, color: textMuted });
+
+    // Page number (right-aligned)
+    const pageLabel = `Page ${i + 1} of ${pageCount}`;
+    const pageLabelW = font.widthOfTextAtSize(pageLabel, footerSize);
     pg.drawText(pageLabel, {
       x: W - margin - pageLabelW,
-      y: margin + 8,
-      size: pageLabelSize,
+      y: footerY,
+      size: footerSize,
       font,
       color: textMuted,
     });
