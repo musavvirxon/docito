@@ -11,6 +11,7 @@ import PayrollPanel from "@/components/financial/PayrollPanel";
 import ExpensesPanel from "@/components/financial/ExpensesPanel";
 import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import ReportsPanel from "@/components/financial/ReportsPanel";
+import BranchSelector from "@/components/shared/BranchSelector";
 import { useEnsureFinanceDefaults } from "@/hooks/useEnsureFinanceDefaults";
 
 export type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
@@ -26,6 +27,8 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
   const [tab, setTab] = useState<
     "overview" | "transactions" | "expenses" | "payroll" | "attendance" | "budgets" | "reports"
   >("overview");
+
+  const [locationId, setLocationId] = useState<string | null>(null);
 
   useEnsureFinanceDefaults({ entityType, entityId });
 
@@ -44,6 +47,8 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
     }
   }, [entityType]);
 
+  const showBranchSelector = entityType === "clinic" || entityType === "practice";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -52,6 +57,13 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
           <h2 className="text-lg font-semibold">Finance</h2>
           <Badge variant="secondary">{entityLabel}</Badge>
         </div>
+        {showBranchSelector && (
+          <BranchSelector
+            practiceId={entityId}
+            value={locationId}
+            onChange={setLocationId}
+          />
+        )}
       </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
@@ -87,19 +99,19 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsList>
 
         <TabsContent value="overview">
-          <FinanceOverview entityType={entityType} entityId={entityId} />
+          <FinanceOverview entityType={entityType} entityId={entityId} locationId={locationId} />
         </TabsContent>
 
         <TabsContent value="transactions">
-          <FinanceTransactions entityType={entityType} entityId={entityId} />
+          <FinanceTransactions entityType={entityType} entityId={entityId} locationId={locationId} />
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ExpensesPanel entityType={entityType} entityId={entityId} />
+          <ExpensesPanel entityType={entityType} entityId={entityId} locationId={locationId} />
         </TabsContent>
 
         <TabsContent value="payroll">
-          <PayrollPanel entityType={entityType} entityId={entityId} />
+          <PayrollPanel entityType={entityType} entityId={entityId} locationId={locationId} />
         </TabsContent>
 
         <TabsContent value="attendance">
@@ -111,7 +123,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         </TabsContent>
 
         <TabsContent value="reports">
-          <ReportsPanel entityType={entityType} entityId={entityId} />
+          <ReportsPanel entityType={entityType} entityId={entityId} locationId={locationId} />
         </TabsContent>
       </Tabs>
     </div>
