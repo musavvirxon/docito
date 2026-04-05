@@ -1047,6 +1047,9 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold">Practice Analytics</h2>
               <div className="flex gap-2 flex-wrap">
+                {practice?.id && (
+                  <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
+                )}
                 <Button variant={analyticsRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("7d"))}>
                   7D
                 </Button>
