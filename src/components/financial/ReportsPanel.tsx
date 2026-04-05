@@ -67,6 +67,7 @@ function downloadTextFile(filename: string, mimeType: string, content: string) {
 interface Props {
   entityType: FinanceEntityType;
   entityId: string;
+  locationId?: string | null;
 }
 
 export default function ReportsPanel({ entityType, entityId }: Props) {

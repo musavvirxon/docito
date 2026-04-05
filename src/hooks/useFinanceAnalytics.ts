@@ -56,14 +56,15 @@ type Args = {
   entityId: string;
   from?: string;
   to?: string;
+  locationId?: string;
 };
 
-export function useFinanceAnalytics({ entityType, entityId, from, to }: Args) {
+export function useFinanceAnalytics({ entityType, entityId, from, to, locationId }: Args) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<FinanceAnalyticsResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const key = useMemo(() => `${entityType}:${entityId}:${from || ""}:${to || ""}`, [entityType, entityId, from, to]);
+  const key = useMemo(() => `${entityType}:${entityId}:${from || ""}:${to || ""}:${locationId || ""}`, [entityType, entityId, from, to, locationId]);
 
   const refresh = useCallback(async () => {
     if (!entityType || !entityId) return;
@@ -80,6 +81,7 @@ export function useFinanceAnalytics({ entityType, entityId, from, to }: Args) {
             entityId,
             from: from || undefined,
             to: to || undefined,
+            locationId: locationId || undefined,
             groupBy: "day",
           },
         },
@@ -96,7 +98,7 @@ export function useFinanceAnalytics({ entityType, entityId, from, to }: Args) {
     } finally {
       setLoading(false);
     }
-  }, [entityType, entityId, from, to]);
+  }, [entityType, entityId, from, to, locationId]);
 
   useEffect(() => {
     void refresh();

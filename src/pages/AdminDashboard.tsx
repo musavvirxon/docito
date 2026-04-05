@@ -44,6 +44,7 @@ import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
+import BranchSelector from "@/components/shared/BranchSelector";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
 
@@ -188,6 +189,7 @@ const AdminDashboard = () => {
 
   const [billingRange, setBillingRange] = useState<"7d" | "30d" | "90d">("30d");
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
+  const [branchFilter, setBranchFilter] = useState<string | null>(null);
 
   const billing = usePracticeInsights({
     action: "billing",
@@ -909,6 +911,9 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">Billing & Payments</h2>
               <div className="flex items-center gap-2 flex-wrap">
+                {practice?.id && (
+                  <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
+                )}
                 <Button variant={billingRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("7d"))}>
                   7D
                 </Button>
@@ -1042,6 +1047,9 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold">Practice Analytics</h2>
               <div className="flex gap-2 flex-wrap">
+                {practice?.id && (
+                  <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
+                )}
                 <Button variant={analyticsRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("7d"))}>
                   7D
                 </Button>

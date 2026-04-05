@@ -13,6 +13,7 @@ import { useFinanceAnalytics } from "@/hooks/useFinanceAnalytics";
 type Props = {
   entityType: FinanceEntityType;
   entityId: string;
+  locationId?: string | null;
 };
 
 function isoForDaysAgo(days: number) {
@@ -35,7 +36,7 @@ function bpsToPct(bps: number) {
   return (Number(bps || 0) || 0) / 100;
 }
 
-export default function FinanceOverview({ entityType, entityId }: Props) {
+export default function FinanceOverview({ entityType, entityId, locationId }: Props) {
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
 
   const { from, to } = useMemo(() => {
@@ -49,6 +50,7 @@ export default function FinanceOverview({ entityType, entityId }: Props) {
     entityId,
     from,
     to,
+    locationId: locationId || undefined,
   });
 
   const currency = data?.currency || "USD";
