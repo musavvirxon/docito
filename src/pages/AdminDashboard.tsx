@@ -44,6 +44,7 @@ import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
+import BranchSelector from "@/components/shared/BranchSelector";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
 
@@ -188,6 +189,7 @@ const AdminDashboard = () => {
 
   const [billingRange, setBillingRange] = useState<"7d" | "30d" | "90d">("30d");
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
+  const [branchFilter, setBranchFilter] = useState<string | null>(null);
 
   const billing = usePracticeInsights({
     action: "billing",
