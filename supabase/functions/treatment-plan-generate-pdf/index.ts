@@ -1214,25 +1214,24 @@ async function generateTreatmentPlanPdf(params: {
   const borderLight = rgb(0.88, 0.88, 0.88);
   const rowAlt = rgb(0.97, 0.97, 0.98);
 
-  const bottomReserve = 220;
+  const FOOTER_H = 24; // reserved for compact one-line footer on every page
+  const bottomReserve = 40; // reduced — heavy verification block moved to footer
 
   let page = pdf.addPage([W, H]);
   let y = H - margin;
 
   // ─── header() ────────────────────────────────────────────────────────────
-  // Entity logo (doctor/clinic) on the left, practice name + doc type on the right.
-  const HEADER_H = 52; // increased to prevent text overlapping
+  // Center: practice/doctor logo. Right: practice info or "Independent Practitioner".
+  const HEADER_H = 52;
   const header = () => {
     y = H - margin;
 
     // ── Blue background bar (full width) ──────────────────────────────────
     page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: accentColor });
 
-    // ── Left side: Entity logo (doctor/clinic) or fallback initials ───────
-    const logoLeftX = margin;
+    // ── Center: Entity logo (practice/doctor) ─────────────────────────────
     const logoAreaH = HEADER_H - 12;
     if (entityLogo) {
-      // Scale entity logo to fit header
       let elW = entityLogoW;
       let elH = entityLogoH;
       if (elH > logoAreaH) {
@@ -1241,26 +1240,29 @@ async function generateTreatmentPlanPdf(params: {
       }
       const logoTopY = H - HEADER_H + (HEADER_H - elH) / 2;
       page.drawImage(entityLogo, {
-        x: logoLeftX,
+        x: (W - elW) / 2,
         y: logoTopY,
         width: elW,
         height: elH,
       });
     } else {
-      // Fallback: show practice/doctor name text on the left
-      const leftLabel = params.practiceName || params.doctorName || "—";
-      const leftSize = 12;
-      const leftText = formatForLocale(params.locale, leftLabel);
-      page.drawText(leftText.slice(0, 30), {
-        x: logoLeftX,
-        y: H - HEADER_H + (HEADER_H + leftSize) / 2 - 3,
-        size: leftSize,
-        font,
-        color: rgb(1, 1, 1),
-      });
+      // Fallback: show practice/doctor name centered
+      const centerLabel = params.practiceName || params.doctorName || "";
+      if (centerLabel) {
+        const centerSize = 13;
+        const centerText = formatForLocale(params.locale, centerLabel);
+        const centerW = font.widthOfTextAtSize(centerText.slice(0, 30), centerSize);
+        page.drawText(centerText.slice(0, 30), {
+          x: (W - centerW) / 2,
+          y: H - HEADER_H + (HEADER_H + centerSize) / 2 - 3,
+          size: centerSize,
+          font,
+          color: rgb(1, 1, 1),
+        });
+      }
     }
 
-    // ── Right side (white text): practice name + document type ────────────
+    // ── Right side: practice info or "Independent Practitioner" ────────────
     const practiceLabel = params.practiceName || t(params.locale, "independentPractitioner");
     const docTitle = params.isDentist ? t(params.locale, "dentalTitle") : t(params.locale, "title");
 
@@ -1286,21 +1288,22 @@ async function generateTreatmentPlanPdf(params: {
       color: rgb(0.85, 0.90, 1.0),
     });
 
-    const metaSize = 8;
-    const createdLine = params.createdAt ? `${t(params.locale, "createdAt")}: ${params.createdAt}` : "";
-    if (createdLine) {
-      const createdText = formatForLocale(params.locale, createdLine);
-      const createdW = font.widthOfTextAtSize(createdText, metaSize);
-      page.drawText(createdText, {
-        x: W - margin - createdW,
+    // Practice address or phone on third line
+    const practiceDetail = params.practiceAddress || params.practicePhone || "";
+    if (practiceDetail) {
+      const detailSize = 7.5;
+      const detailText = formatForLocale(params.locale, practiceDetail).slice(0, 50);
+      const detailW = font.widthOfTextAtSize(detailText, detailSize);
+      page.drawText(detailText, {
+        x: W - margin - detailW,
         y: H - HEADER_H + 8,
-        size: metaSize,
+        size: detailSize,
         font,
         color: rgb(0.75, 0.82, 0.97),
       });
     }
 
-    // ── Thin white divider below header (optional accent) ─────────────────
+    // ── Thin accent divider below header ───────────────────────────────────
     page.drawRectangle({ x: 0, y: H - HEADER_H - 2, width: W, height: 2, color: accentLight });
 
     // ── Plan title (below header) ─────────────────────────────────────────
@@ -1317,27 +1320,6 @@ async function generateTreatmentPlanPdf(params: {
       color: accentColor,
     });
     y -= 16;
-
-    // Doctor + practice subtitle line
-    let generatedLine = "";
-    if (params.doctorName && params.doctorName !== "—") {
-      generatedLine = params.doctorName;
-      if (params.doctorSpecialty) generatedLine += ` · ${params.doctorSpecialty}`;
-      if (params.practiceName) generatedLine += ` — ${params.practiceName}`;
-    }
-    if (generatedLine) {
-      const genText = formatForLocale(params.locale, generatedLine);
-      const genSize = 9;
-      const genW = font.widthOfTextAtSize(genText, genSize);
-      page.drawText(genText, {
-        x: rtl ? (W - margin - genW) : margin,
-        y,
-        size: genSize,
-        font,
-        color: textMuted,
-      });
-      y -= 14;
-    }
 
     // ── Accent divider line under the title block ─────────────────────────
     y -= 4;
@@ -1417,41 +1399,28 @@ async function generateTreatmentPlanPdf(params: {
     y -= (sectionSize + 10);
   };
 
-  // Plan header fields
-  drawKV("planId", params.planId);
-  drawKV("status", params.status);
-  drawKV("totalCost", params.totalCost);
+  // Description and notes only (removed Plan ID, Status, Total Cost, Created/Updated At)
   if (params.description) drawKV("description", params.description);
   if (params.notes) drawKV("notes", params.notes);
-  if (params.createdAt) drawKV("createdAt", params.createdAt);
-  if (params.updatedAt) drawKV("updatedAt", params.updatedAt);
-  if (params.publishedAt) drawKV("publishedAt", params.publishedAt);
-  if (params.completedAt) drawKV("completedAt", params.completedAt);
 
-  // Dental chart removed — tooth numbers are shown inline in the procedures table
-
-  // Patient section
-  y -= 6;
-  drawSection("patient");
-  drawKV("patient", params.patientName);
-  if (params.patientIdNumber) drawKV("planId", params.patientIdNumber); // reuse planId label as ID label
-  if (params.patientDob) drawKV("dob", params.patientDob);
-  if (params.patientGender) drawKV("gender", params.patientGender);
-  if (params.patientPhone) drawKV("phone", params.patientPhone);
-  if (params.patientEmail) drawKV("email", params.patientEmail);
-  if (params.patientAddress) drawKV("address", params.patientAddress);
-
-  // Doctor section
+  // Doctor section FIRST
   y -= 6;
   drawSection("doctor");
   drawKV("doctor", params.doctorName);
   if (params.doctorSpecialty) drawKV("specialty", params.doctorSpecialty);
   if (params.doctorPhone) drawKV("phone", params.doctorPhone);
   if (params.doctorEmail) drawKV("email", params.doctorEmail);
-  if (params.practiceName) {
-    const practiceLabel = params.practiceName + (params.practicePhone ? ` · ${params.practicePhone}` : "");
-    drawKV("notes", practiceLabel);
-  }
+
+  // Patient section
+  y -= 6;
+  drawSection("patient");
+  drawKV("patient", params.patientName);
+  if (params.patientIdNumber) drawKV("planId", params.patientIdNumber);
+  if (params.patientDob) drawKV("dob", params.patientDob);
+  if (params.patientGender) drawKV("gender", params.patientGender);
+  if (params.patientPhone) drawKV("phone", params.patientPhone);
+  if (params.patientEmail) drawKV("email", params.patientEmail);
+  if (params.patientAddress) drawKV("address", params.patientAddress);
 
   // Procedures table
   y -= 6;
@@ -1764,14 +1733,13 @@ async function generateTreatmentPlanPdf(params: {
   });
   y -= 8;
 
-  // Footer on last page — ensure enough space for signature + verification + QR
-  const footerBlockH = 200;
-  if (y < margin + footerBlockH + 20) newPage();
+  // Footer on last page — ensure enough space for signature block
+  const sigBlockH = 60;
+  if (y < margin + FOOTER_H + sigBlockH + 20) newPage();
 
   // ── Signature section (print-ready) ─────────────────────────────────────
   const sigGap = 24;
   const sigW = (W - margin * 2 - sigGap) / 2;
-  // Position signatures well above verification block
   let sigY = y - 10;
 
   const patientSigLabel = formatForLocale(params.locale, t(params.locale, "patientSignature"));
@@ -1799,140 +1767,61 @@ async function generateTreatmentPlanPdf(params: {
   page.drawText(providerSigLabel, { x: sx2, y: sigY - 12, size: 8.5, font, color: textMuted });
   page.drawText(`${dateLabel}: ____________`, { x: sx2, y: sigY - 24, size: 8, font, color: textMuted });
 
-  // ── Verification section ────────────────────────────────────────────────
-  const verSectionY = sigY - 50;
-
-  page.drawLine({
-    start: { x: margin, y: verSectionY },
-    end: { x: W - margin, y: verSectionY },
-    thickness: 0.8,
-    color: borderLight,
-  });
-
-  const verificationLabel = formatForLocale(params.locale, t(params.locale, "verification") + ":");
-  const verificationLabelSize = 9;
-  page.drawText(verificationLabel, {
-    x: margin,
-    y: verSectionY - 14,
-    size: verificationLabelSize,
-    font,
-    color: textMuted,
-  });
-
-  const vCodeLine = formatForLocale(params.locale, `${t(params.locale, "verificationCode")}: ${params.verificationCode}`);
-  const vUrlLine = formatForLocale(params.locale, `${t(params.locale, "verifyAt")}: ${params.verifyUrl}`);
-  const vSize = 8;
-
-  page.drawText(vCodeLine, {
-    x: margin,
-    y: verSectionY - 28,
-    size: vSize,
-    font,
-    color: textDark,
-  });
-
-  page.drawText(vUrlLine, {
-    x: margin,
-    y: verSectionY - 40,
-    size: vSize,
-    font,
-    color: textDark,
-  });
-
-  // QR code (right-aligned next to verification text)
-  try {
-    const dataUrl = await QRCode.toDataURL(params.verifyUrl, { margin: 1, width: 140 });
-    const b64 = dataUrl.split(",")[1] || "";
-    if (b64) {
-      const qrBytes = b64ToBytes(b64);
-      const qr = await pdf.embedPng(qrBytes);
-      const qrW = 70;
-      const qrH = 70;
-
-      page.drawImage(qr, {
-        x: W - margin - qrW,
-        y: verSectionY - qrH + 10,
-        width: qrW,
-        height: qrH,
-      });
-    }
-  } catch {
-    // ignore QR failures
-  }
-
-  // ── Docito branding (bottom) — HQ logo + name ──────────────────────────
-  const brandY = verSectionY - 70;
-
-  // Divider above Docito branding
-  page.drawLine({
-    start: { x: margin, y: brandY + 10 },
-    end: { x: W - margin, y: brandY + 10 },
-    thickness: 0.5,
-    color: borderLight,
-  });
-
-  // Docito full logo (HQ) at bottom
-  if (docitoFullLogo && docitoFullLogoW > 0) {
-    const footerLogoH = 14;
-    const footerLogoW = (docitoFullLogo.width / docitoFullLogo.height) * footerLogoH;
-    page.drawImage(docitoFullLogo, {
-      x: margin,
-      y: brandY - 6,
-      width: footerLogoW,
-      height: footerLogoH,
-    });
-
-    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-    page.drawText(genText, {
-      x: margin + footerLogoW + 6,
-      y: brandY,
-      size: 7.5,
-      font,
-      color: textMuted,
-    });
-  } else if (docitoLogo) {
-    // Fallback to icon
-    page.drawImage(docitoLogo, {
-      x: margin,
-      y: brandY - 2,
-      width: docitoLogoW,
-      height: docitoLogoH,
-    });
-
-    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-    page.drawText(genText, {
-      x: margin + docitoLogoW + 4,
-      y: brandY + 2,
-      size: 7.5,
-      font,
-      color: textMuted,
-    });
-  } else {
-    const genText = formatForLocale(params.locale, t(params.locale, "generatedBy"));
-    page.drawText(genText, { x: margin, y: brandY, size: 7.5, font, color: textMuted });
-  }
-
-  const confLabel = formatForLocale(params.locale, `Confidential -- ${params.practiceName || t(params.locale, "generatedBy")}`);
-  page.drawText(confLabel, {
-    x: margin,
-    y: brandY - 18,
-    size: 7,
-    font,
-    color: textMuted,
-  });
-
-  // ── Page numbers on every page (patient-PDF style) ────────────────────────
+  // ── Compact one-line footer on EVERY page ─────────────────────────────────
+  // Format: [Docito logo] | Verify: <url> | Confidential — <practice> | Page X of Y
   const pageCount = pdf.getPageCount();
+  const footerY = 18; // near bottom of page
+  const footerSize = 6.5;
+  const confEntity = params.practiceName || t(params.locale, "generatedBy");
+  const footerVerifyText = `${params.verifyUrl}`;
+  const footerConfText = `Confidential - ${confEntity}`;
+
   for (let i = 0; i < pageCount; i++) {
     const pg = pdf.getPage(i);
-    const pageNum = i + 1;
-    const pageLabel = `Page ${pageNum} of ${pageCount}`;
-    const pageLabelSize = 8;
-    const pageLabelW = font.widthOfTextAtSize(pageLabel, pageLabelSize);
+
+    // Thin divider line above footer
+    pg.drawLine({
+      start: { x: margin, y: footerY + 10 },
+      end: { x: W - margin, y: footerY + 10 },
+      thickness: 0.4,
+      color: borderLight,
+    });
+
+    let fx = margin;
+
+    // Docito logo icon
+    if (docitoLogo) {
+      const fLogoH = 8;
+      const fLogoW = (docitoLogoW / docitoLogoH) * fLogoH;
+      pg.drawImage(docitoLogo, {
+        x: fx,
+        y: footerY - 1,
+        width: fLogoW,
+        height: fLogoH,
+      });
+      fx += fLogoW + 4;
+    }
+
+    // Verification link
+    const verText = formatForLocale(params.locale, footerVerifyText);
+    pg.drawText(verText, { x: fx, y: footerY, size: footerSize, font, color: textMuted });
+    fx += font.widthOfTextAtSize(verText, footerSize) + 10;
+
+    // Separator
+    pg.drawText("|", { x: fx, y: footerY, size: footerSize, font, color: borderLight });
+    fx += 10;
+
+    // Confidential
+    const confText = formatForLocale(params.locale, footerConfText);
+    pg.drawText(confText, { x: fx, y: footerY, size: footerSize, font, color: textMuted });
+
+    // Page number (right-aligned)
+    const pageLabel = `Page ${i + 1} of ${pageCount}`;
+    const pageLabelW = font.widthOfTextAtSize(pageLabel, footerSize);
     pg.drawText(pageLabel, {
       x: W - margin - pageLabelW,
-      y: margin + 8,
-      size: pageLabelSize,
+      y: footerY,
+      size: footerSize,
       font,
       color: textMuted,
     });
