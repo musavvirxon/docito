@@ -98,7 +98,7 @@ export function useFinanceAnalytics({ entityType, entityId, from, to, locationId
     } finally {
       setLoading(false);
     }
-  }, [entityType, entityId, from, to]);
+  }, [entityType, entityId, from, to, locationId]);
 
   useEffect(() => {
     void refresh();
