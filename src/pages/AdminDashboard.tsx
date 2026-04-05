@@ -911,6 +911,9 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">Billing & Payments</h2>
               <div className="flex items-center gap-2 flex-wrap">
+                {practice?.id && (
+                  <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
+                )}
                 <Button variant={billingRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("7d"))}>
                   7D
                 </Button>
