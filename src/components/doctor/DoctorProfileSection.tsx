@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, ExternalLink, Shield, UserRound, Camera } from "lucide-react";
+import { Loader2, ExternalLink, Shield, UserRound, Camera, Link2, Copy, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -84,6 +84,26 @@ export default function DoctorProfileSection() {
     if (!publicSlug) return "";
     return `/doctor/${publicSlug}`;
   }, [publicSlug]);
+
+  const bookingLink = useMemo(() => {
+    if (!doctorProfile?.id) return "";
+    const slug = doctorProfile.custom_profile_link || doctorProfile.id;
+    return `${window.location.origin}/book-appointment/${slug}`;
+  }, [doctorProfile?.id, doctorProfile?.custom_profile_link]);
+
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const copyBookingLink = async () => {
+    if (!bookingLink) return;
+    try {
+      await navigator.clipboard.writeText(bookingLink);
+      setLinkCopied(true);
+      toast({ title: "Copied!", description: "Booking link copied to clipboard." });
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      toast({ title: "Failed to copy", variant: "destructive" });
+    }
+  };
 
   const usernameError = useMemo(() => {
     const un = normalizeUsername(username || "");
@@ -422,6 +442,35 @@ export default function DoctorProfileSection() {
               <AlertDescription>Your profile is private (unlisted). Share your link directly if needed.</AlertDescription>
             </Alert>
           )}
+        </div>
+
+        <Separator />
+
+        {/* Booking Link Section */}
+        <div className="space-y-3">
+          <h3 className="font-medium flex items-center gap-2">
+            <Link2 className="h-4 w-4" />
+            Patient Booking Link
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Share this link with patients so they can book an appointment directly with you.
+          </p>
+          <div className="flex items-center gap-2">
+            <Input
+              value={bookingLink}
+              readOnly
+              className="font-mono text-sm bg-muted/50"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={copyBookingLink}
+              disabled={!bookingLink}
+              className="shrink-0"
+            >
+              {linkCopied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
