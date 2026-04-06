@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock,
+  Download,
   FileText,
   Home,
+  Loader2,
   LogOut,
   MapPin,
   MessageSquare,
@@ -47,6 +49,7 @@ import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
 import { getEffectiveTimeZone } from "@/lib/timezone";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
+import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 
 type PatientDashboardSection =
   | "dashboard"
@@ -75,6 +78,7 @@ export default function PatientDashboard() {
     useAppointments('patient');
   const { prescriptions, loading: prescriptionsLoading } = usePrescriptions();
   const { records, loading: recordsLoading } = useMedicalRecords();
+  const { downloadSummary, loading: pdfLoading } = useAppointmentSummaryPdf();
 
   const [activeSection, setActiveSection] = useState<PatientDashboardSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -394,6 +398,25 @@ export default function PatientDashboard() {
                           </div>
 
                           <div className="flex items-center gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => downloadSummary({
+                                id: a.id,
+                                appointment_date: a.appointment_date,
+                                start_time: a.start_time,
+                                end_time: a.end_time,
+                                status: a.status,
+                                appointment_type: a.appointment_type,
+                                notes: a.notes,
+                                patient_name: profile?.full_name || "Patient",
+                                doctor_id: a.doctor_id,
+                                patient_id: a.patient_id,
+                              })}
+                              disabled={pdfLoading}
+                            >
+                              {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => navigate(`/appointment-session/${a.id}`)}>
                               {t("patient.appointments.open", { defaultValue: "Open" })}
                             </Button>
@@ -446,6 +469,25 @@ export default function PatientDashboard() {
                           </div>
 
                           <div className="flex items-center gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => downloadSummary({
+                                id: a.id,
+                                appointment_date: a.appointment_date,
+                                start_time: a.start_time,
+                                end_time: a.end_time,
+                                status: a.status,
+                                appointment_type: a.appointment_type,
+                                notes: a.notes,
+                                patient_name: profile?.full_name || "Patient",
+                                doctor_id: a.doctor_id,
+                                patient_id: a.patient_id,
+                              })}
+                              disabled={pdfLoading}
+                            >
+                              {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => navigate(`/appointment-session/${a.id}`)}>
                               {t("patient.appointments.open", { defaultValue: "Open" })}
                             </Button>
