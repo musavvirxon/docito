@@ -19,6 +19,7 @@ import {
   Activity,
   Plus,
   Loader2,
+  Download,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessageAction } from "@/hooks/useMessageAction";
 import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
+import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 import type { CalendarAppointment } from "./types";
 
 interface AppointmentQuickPreviewProps {
@@ -109,6 +111,7 @@ const AppointmentQuickPreview = memo(
     const [diagnosisNotes, setDiagnosisNotes] = useState("");
     const [savingDiagnosis, setSavingDiagnosis] = useState(false);
     const isRTL = i18n.language === "ar";
+    const { downloadSummary, loading: pdfLoading } = useAppointmentSummaryPdf();
 
     const tp = useCallback((key: string) => t(`appointmentPreview.${key}`), [t]);
 
