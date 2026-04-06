@@ -1,5 +1,6 @@
 // Path: src/components/doctor/calendar/AppointmentModal.tsx
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,6 +26,8 @@ import {
   Save,
   RefreshCw,
   Layers,
+  Download,
+  Loader2 as Loader2Icon,
   ChevronsUpDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
