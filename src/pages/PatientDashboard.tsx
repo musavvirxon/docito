@@ -78,6 +78,7 @@ export default function PatientDashboard() {
     useAppointments('patient');
   const { prescriptions, loading: prescriptionsLoading } = usePrescriptions();
   const { records, loading: recordsLoading } = useMedicalRecords();
+  const { downloadSummary, loading: pdfLoading } = useAppointmentSummaryPdf();
 
   const [activeSection, setActiveSection] = useState<PatientDashboardSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
