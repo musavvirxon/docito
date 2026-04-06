@@ -1,5 +1,6 @@
 // Path: src/components/doctor/calendar/AppointmentModal.tsx
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,6 +26,8 @@ import {
   Save,
   RefreshCw,
   Layers,
+  Download,
+  Loader2 as Loader2Icon,
   ChevronsUpDown,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -267,6 +270,7 @@ const AppointmentModal = memo(
     const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
     const [isRescheduleModalOpen, setIsRescheduleModalOpen] = useState(false);
     const [isRescheduling] = useState(false);
+    const { downloadSummary, loading: pdfLoading } = useAppointmentSummaryPdf();
     const isRTL = i18n.language === "ar";
 
     // Existing appointment procedures + patient plans (non-edge, legacy views)
@@ -1019,10 +1023,20 @@ const requestedProcedureName = useMemo(() => {
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button variant="outline" size="sm" onClick={handleBookFollowUp} className="gap-2">
                     <CalendarPlus className="h-4 w-4" />
                     Book Follow-up
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadSummary(appointment)}
+                    disabled={pdfLoading}
+                    className="gap-2"
+                  >
+                    {pdfLoading ? <Loader2Icon className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                    Download Summary
                   </Button>
                 </div>
               </TabsContent>

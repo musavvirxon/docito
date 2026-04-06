@@ -237,35 +237,61 @@ const ManualBookAppointmentModal = ({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
-              <Label className="text-base font-medium">Select Patient</Label>
+              <Label className="text-base font-medium">
+                {preselectedPatient ? "Patient" : "Select Patient"}
+              </Label>
             </div>
 
-            <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
+            {preselectedPatient ? (
+              <div className="p-3 rounded-lg border border-border bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <User className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="font-medium text-sm">{preselectedPatient.name}</p>
+                    {preselectedPatient.phone && (
+                      <p className="text-xs text-muted-foreground">{preselectedPatient.phone}</p>
+                    )}
+                    {preselectedPatient.email && (
+                      <p className="text-xs text-muted-foreground">{preselectedPatient.email}</p>
+                    )}
+                  </div>
+                </div>
+                {followupOfAppointmentId && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Patient auto-filled from previous appointment
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
 
-            <Button
-              type="button"
-              variant="link"
-              className="p-0 h-auto text-primary"
-              onClick={() => setCreatePatientOpen(true)}
-            >
-              Add New Patient
-            </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 h-auto text-primary"
+                  onClick={() => setCreatePatientOpen(true)}
+                >
+                  Add New Patient
+                </Button>
 
-            <CreatePatientModal
-              open={createPatientOpen}
-              onOpenChange={setCreatePatientOpen}
-              onSuccess={(newDoctorPatient: DoctorPatientRow) => {
-                setSelectedPatient({
-                  id: newDoctorPatient.id,
-                  name: newDoctorPatient.full_name,
-                  phone: newDoctorPatient.phone,
-                  email: newDoctorPatient.email ?? undefined,
-                  date_of_birth: newDoctorPatient.date_of_birth,
-                  created_at: newDoctorPatient.created_at,
-                  source: "doctor_added",
-                });
-              }}
-            />
+                <CreatePatientModal
+                  open={createPatientOpen}
+                  onOpenChange={setCreatePatientOpen}
+                  onSuccess={(newDoctorPatient: DoctorPatientRow) => {
+                    setSelectedPatient({
+                      id: newDoctorPatient.id,
+                      name: newDoctorPatient.full_name,
+                      phone: newDoctorPatient.phone,
+                      email: newDoctorPatient.email ?? undefined,
+                      date_of_birth: newDoctorPatient.date_of_birth,
+                      created_at: newDoctorPatient.created_at,
+                      source: "doctor_added",
+                    });
+                  }}
+                />
+              </>
+            )}
           </div>
 
           <div className="space-y-2">
