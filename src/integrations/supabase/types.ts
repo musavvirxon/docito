@@ -9882,6 +9882,7 @@ export type Database = {
         }
         Returns: Json
       }
+      assign_initial_role: { Args: { p_role: string }; Returns: undefined }
       book_appointment: {
         Args: {
           appointment_date: string
@@ -10328,6 +10329,17 @@ export type Database = {
         }[]
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
+      get_public_doctor_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          full_name: string
+          is_verified: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+          username: string
+        }[]
+      }
       get_staff_invitation_by_token: {
         Args: { p_token: string }
         Returns: {
