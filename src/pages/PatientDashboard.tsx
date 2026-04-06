@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   ClipboardList,
   Clock,
+  Download,
   FileText,
   Home,
+  Loader2,
   LogOut,
   MapPin,
   MessageSquare,
@@ -47,6 +49,7 @@ import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
 import { getEffectiveTimeZone } from "@/lib/timezone";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
+import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 
 type PatientDashboardSection =
   | "dashboard"
