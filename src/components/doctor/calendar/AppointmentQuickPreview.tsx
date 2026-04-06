@@ -482,6 +482,17 @@ const AppointmentQuickPreview = memo(
               </Button>
             </div>
 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadSummary(appointment)}
+              disabled={pdfLoading}
+              className="w-full gap-2"
+            >
+              {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {tp("downloadSummary") === "appointmentPreview.downloadSummary" ? "Download Summary" : tp("downloadSummary")}
+            </Button>
+
             {isDentist && (
               <Button
                 variant="secondary"
