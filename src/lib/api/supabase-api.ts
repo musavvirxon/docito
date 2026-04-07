@@ -1168,16 +1168,51 @@ export const practiceApi = {
   async fetchTopPracticesByCountry(limit: number = 6) {
     try {
       const { data, error } = await (supabase as any)
-        .from('practices')
-        .select('*')
-        .eq('verified', true)
-        .order('num_reviews', { ascending: false, nullsFirst: false })
-        .order('average_rating', { ascending: false, nullsFirst: false })
-        .order('appointment_count', { ascending: false, nullsFirst: false })
+        .from('practice_locations')
+        .select(`
+          id, name, address, city, state, country, zip_code, phone, email,
+          operating_hours, is_primary, photo_urls, practice_id, created_at,
+          practices!inner (
+            id, name, description, verified, average_rating, weighted_rating,
+            num_reviews, appointment_count, logo_url, website, practice_type, email, phone
+          )
+        `)
+        .eq('practices.verified', true)
+        .order('is_primary', { ascending: false })
         .limit(limit);
 
       if (error) throw error;
-      return { data: data || [], success: true };
+
+      const normalized = (data || []).map((row: any) => {
+        const p = row.practices || {};
+        return {
+          id: row.id,
+          practice_id: p.id,
+          name: row.name || p.name,
+          practice_name: p.name,
+          description: p.description,
+          address: row.address,
+          city: row.city,
+          country: row.country,
+          phone: row.phone || p.phone,
+          email: row.email || p.email,
+          logo_url: p.logo_url,
+          website: p.website,
+          verified: p.verified,
+          average_rating: p.weighted_rating || p.average_rating || 0,
+          num_reviews: p.num_reviews || 0,
+          appointment_count: p.appointment_count || 0,
+          practice_type: p.practice_type,
+          photo_urls: row.photo_urls,
+          operating_hours: row.operating_hours,
+          is_primary: row.is_primary,
+          created_at: row.created_at,
+        };
+      });
+
+      normalized.sort((a: any, b: any) => (b.average_rating || 0) - (a.average_rating || 0));
+
+      return { data: normalized, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to fetch top practices');
     }
