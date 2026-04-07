@@ -301,31 +301,34 @@ const ClinicFinderSection = () => {
             <div className="space-y-3">
               {joinRequests
                 .filter((req: any) => req.status === 'pending')
-                .map((req: any) => (
-                  <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={req.practices.logo_url || "/api/placeholder/40/40"} />
-                        <AvatarFallback>{req.practices.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{req.practices.name}</div>
-                        <div className="text-sm text-muted-foreground">{req.practices.city}</div>
+                .map((req: any) => {
+                  const practice = req.practices || {};
+                  return (
+                    <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={practice.logo_url || ""} />
+                          <AvatarFallback>{(practice.name || "?").charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{practice.name || "Unknown Practice"}</div>
+                          <div className="text-sm text-muted-foreground">{practice.city || ""}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-amber-100 text-amber-700">Pending</Badge>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => cancelRequest(req.practice_id)}
+                          disabled={cancelRequestMutation.isPending}
+                        >
+                          Cancel
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-amber-100 text-amber-700">Pending</Badge>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => cancelRequest(req.practice_id)}
-                        disabled={cancelRequestMutation.isPending}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           </CardContent>
         </Card>

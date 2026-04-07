@@ -53,7 +53,7 @@ export function useClinicJoinRequests(doctorId: string) {
       try {
         const { data, error } = await supabase
           .from('practice_join_requests' as any)
-          .select('*')
+          .select('*, practices:practice_id(id, name, logo_url, city)')
           .eq('doctor_id', doctorId)
           .order('created_at', { ascending: false });
 
