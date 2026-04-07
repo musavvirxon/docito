@@ -57,9 +57,10 @@ const ClinicFinderSection = () => {
     return map;
   }, [joinRequests]);
 
-  const handleJoinRequest = async (clinicId: string) => {
+  const handleJoinRequest = async (clinic: Clinic) => {
     if (!doctorId) return;
-    await requestToJoinMutation.mutateAsync({ doctorId, practiceId: clinicId });
+    const practiceId = clinic.practice_id || clinic.id;
+    await requestToJoinMutation.mutateAsync({ doctorId, practiceId });
   };
 
   const cancelRequest = async (clinicId: string) => {
