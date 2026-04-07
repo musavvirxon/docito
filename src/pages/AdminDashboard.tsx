@@ -42,6 +42,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
+import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import BranchSelector from "@/components/shared/BranchSelector";
