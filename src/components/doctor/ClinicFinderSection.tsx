@@ -57,9 +57,10 @@ const ClinicFinderSection = () => {
     return map;
   }, [joinRequests]);
 
-  const handleJoinRequest = async (clinicId: string) => {
+  const handleJoinRequest = async (clinic: Clinic) => {
     if (!doctorId) return;
-    await requestToJoinMutation.mutateAsync({ doctorId, practiceId: clinicId });
+    const practiceId = clinic.practice_id || clinic.id;
+    await requestToJoinMutation.mutateAsync({ doctorId, practiceId });
   };
 
   const cancelRequest = async (clinicId: string) => {
@@ -91,12 +92,13 @@ const ClinicFinderSection = () => {
 
   const handleJoinFromModal = () => {
     if (selectedClinic && doctorId) {
-      handleJoinRequest(selectedClinic.id);
+      handleJoinRequest(selectedClinic);
     }
   };
 
-  const renderActionButton = (clinicId: string) => {
-    const status = getRequestStatus(clinicId);
+  const renderActionButton = (clinic: Clinic) => {
+    const practiceId = clinic.practice_id || clinic.id;
+    const status = getRequestStatus(practiceId);
     
     switch (status) {
       case "pending":
@@ -106,7 +108,7 @@ const ClinicFinderSection = () => {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => cancelRequest(clinicId)}
+              onClick={() => cancelRequest(practiceId)}
               disabled={cancelRequestMutation.isPending}
             >
               {t("doctor.clinicFinder.cancelRequest")}
@@ -120,7 +122,7 @@ const ClinicFinderSection = () => {
       default:
         return (
           <Button 
-            onClick={() => handleJoinRequest(clinicId)}
+            onClick={() => handleJoinRequest(clinic)}
             disabled={requestToJoinMutation.isPending}
           >
             {requestToJoinMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
@@ -267,7 +269,7 @@ const ClinicFinderSection = () => {
                     >
                       View Details
                     </Button>
-                    {renderActionButton(clinic.id)}
+                    {renderActionButton(clinic)}
                   </div>
                 </div>
               </div>
