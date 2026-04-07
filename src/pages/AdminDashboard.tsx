@@ -42,6 +42,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
+import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import BranchSelector from "@/components/shared/BranchSelector";
@@ -1162,15 +1163,14 @@ const AdminDashboard = () => {
       case "settings":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("admin.settings.title", { defaultValue: "Settings" })}</h2>
-              <Button variant="outline" onClick={() => guard(() => setSettingsOpen(true))} disabled={!allowModals}>
-                <Settings className="h-4 w-4 mr-2" />
-                {t("admin.settings.open", { defaultValue: "Open settings" })}
-              </Button>
-            </div>
-
-            <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
+            {practice?.id ? (
+              <EntitySettingsPage entityType="clinic" entityId={practice.id} heading={t("admin.settings.title", { defaultValue: "Clinic Settings" })} />
+            ) : (
+              <div className="text-center py-10 text-muted-foreground">
+                <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p className="font-medium">No practice linked</p>
+              </div>
+            )}
           </SectionWrapper>
         );
 
@@ -1275,7 +1275,7 @@ const AdminDashboard = () => {
           </Sidebar>
 
           <main className="flex-1 overflow-auto p-4 sm:p-6">
-            <div className="max-w-7xl mx-auto space-y-6">{renderSection()}</div>
+            <div className="space-y-6">{renderSection()}</div>
           </main>
         </div>
 
