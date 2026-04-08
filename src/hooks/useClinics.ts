@@ -125,7 +125,7 @@ export function useClinicJoinRequests(doctorId: string) {
       try {
         const { data, error } = await (supabase as any)
           .from('practice_join_requests')
-          .select('*, practices:practice_id(id, name, logo_url, city)')
+          .select('*, practices:practice_id(id, name, logo_url, city), location:location_id(id, name, address, city)')
           .eq('doctor_id', doctorId)
           .order('created_at', { ascending: false });
 
@@ -143,18 +143,47 @@ export function useClinicJoinRequests(doctorId: string) {
   });
 }
 
+export function usePracticeJoinRequests(practiceId: string) {
+  return useQuery({
+    queryKey: ['practice-join-requests', practiceId],
+    queryFn: async () => {
+      if (!practiceId) return [];
+      try {
+        const { data, error } = await (supabase as any)
+          .from('practice_join_requests')
+          .select('*, doctors:doctor_id(id, user_id, specialty, profiles:user_id(full_name, avatar_url, email)), location:location_id(id, name, address, city)')
+          .eq('practice_id', practiceId)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching practice join requests:', error);
+          return [];
+        }
+        return data || [];
+      } catch (err) {
+        console.error('Error:', err);
+        return [];
+      }
+    },
+    enabled: !!practiceId,
+  });
+}
+
 export function useRequestToJoinClinic() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ doctorId, practiceId }: { doctorId: string; practiceId: string }) => {
+    mutationFn: async ({ doctorId, practiceId, locationId }: { doctorId: string; practiceId: string; locationId?: string }) => {
+      const insertData: any = {
+        doctor_id: doctorId,
+        practice_id: practiceId,
+        status: 'pending',
+      };
+      if (locationId) insertData.location_id = locationId;
+      
       const { data, error } = await (supabase as any)
         .from('practice_join_requests')
-        .insert({
-          doctor_id: doctorId,
-          practice_id: practiceId,
-          status: 'pending',
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -163,11 +192,63 @@ export function useRequestToJoinClinic() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clinic-join-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-join-requests'] });
       toast.success('Join request submitted successfully');
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to submit join request');
     },
+  });
+}
+
+export function useRespondToJoinRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ requestId, status, reviewedBy }: { requestId: string; status: 'accepted' | 'rejected'; reviewedBy: string }) => {
+      const { error } = await (supabase as any)
+        .from('practice_join_requests')
+        .update({ status, reviewed_by: reviewedBy, reviewed_at: new Date().toISOString() })
+        .eq('id', requestId);
+
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['practice-join-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['clinic-join-requests'] });
+      toast.success(`Request ${vars.status}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update request');
+    },
+  });
+}
+
+export function useDoctorInvitations(doctorEmail: string) {
+  return useQuery({
+    queryKey: ['doctor-invitations', doctorEmail],
+    queryFn: async () => {
+      if (!doctorEmail) return [];
+      try {
+        const { data, error } = await (supabase as any)
+          .from('staff_invitations')
+          .select('*')
+          .eq('email', doctorEmail)
+          .eq('entity_type', 'practice')
+          .in('invite_type', ['doctor', 'provider'])
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching invitations:', error);
+          return [];
+        }
+        return data || [];
+      } catch (err) {
+        console.error('Error:', err);
+        return [];
+      }
+    },
+    enabled: !!doctorEmail,
   });
 }
 
@@ -185,6 +266,7 @@ export function useCancelJoinRequest() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clinic-join-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['practice-join-requests'] });
       toast.success('Join request cancelled');
     },
     onError: (error: any) => {
