@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, MapPin, Star, Users, Building2, Phone, Mail, Globe, Clock, Loader2, Filter } from "lucide-react";
-import { useClinics, useClinicJoinRequests, useRequestToJoinClinic, useCancelJoinRequest, Clinic } from "@/hooks/useClinics";
+import { Search, MapPin, Star, Users, Building2, Phone, Mail, Globe, Clock, Loader2, Filter, CheckCircle, XCircle, Inbox } from "lucide-react";
+import { useClinics, useClinicJoinRequests, useRequestToJoinClinic, useCancelJoinRequest, useDoctorInvitations, Clinic } from "@/hooks/useClinics";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ClinicDetailModal } from "./ClinicDetailModal";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 
 const ClinicFinderSection = () => {
   const { t } = useTranslation("dashboard");
@@ -21,13 +22,10 @@ const ClinicFinderSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { user, profile } = useAuth();
   
-  // Debounce search query for better performance
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   
-  // Get doctor ID
   const [doctorId, setDoctorId] = useState<string | null>(null);
   
-  // Fetch doctor ID
   useEffect(() => {
     const getDoctorId = async () => {
       if (!user) return;
@@ -43,12 +41,10 @@ const ClinicFinderSection = () => {
 
   const { data: clinics, isLoading, error } = useClinics(debouncedSearchQuery, selectedSpecialty);
   const { data: joinRequests } = useClinicJoinRequests(doctorId || '');
+  const { data: invitations } = useDoctorInvitations(profile?.email || user?.email || '');
   const requestToJoinMutation = useRequestToJoinClinic();
   const cancelRequestMutation = useCancelJoinRequest();
 
-  const specialties = ["All Specialties", "Cardiology", "Family Medicine", "Internal Medicine", "Pediatrics", "Orthopedics", "Dermatology"];
-
-  // Create a map of clinic IDs to request status
   const requestStatusMap = useMemo(() => {
     const map: Record<string, any> = {};
     joinRequests?.forEach((req: any) => {
@@ -60,7 +56,8 @@ const ClinicFinderSection = () => {
   const handleJoinRequest = async (clinic: Clinic) => {
     if (!doctorId) return;
     const practiceId = clinic.practice_id || clinic.id;
-    await requestToJoinMutation.mutateAsync({ doctorId, practiceId });
+    const locationId = clinic.practice_id ? clinic.id : undefined;
+    await requestToJoinMutation.mutateAsync({ doctorId, practiceId, locationId });
   };
 
   const cancelRequest = async (clinicId: string) => {
@@ -77,10 +74,8 @@ const ClinicFinderSection = () => {
 
   const filteredClinics = useMemo(() => {
     if (!clinics) return [];
-    
     return clinics.filter(clinic => {
       const matchesRating = selectedRating === null || clinic.average_rating >= selectedRating;
-      
       return matchesRating;
     });
   }, [clinics, selectedRating]);
@@ -145,6 +140,112 @@ const ClinicFinderSection = () => {
 
   return (
     <div className="space-y-6">
+      {/* Clinic Invitations */}
+      {invitations && invitations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Inbox className="w-5 h-5" />
+              Clinic Invitations
+              <Badge variant="secondary">{invitations.filter((i: any) => i.status === 'pending').length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {invitations.map((inv: any) => (
+                <div key={inv.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                  <div>
+                    <p className="font-medium">Invitation to join as {inv.role}</p>
+                    {inv.custom_message && <p className="text-sm text-muted-foreground mt-1">{inv.custom_message}</p>}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                      <Clock className="h-3 w-3" />
+                      {format(new Date(inv.created_at), "MMM dd, yyyy")}
+                      <span>• Expires: {format(new Date(inv.expires_at), "MMM dd, yyyy")}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {inv.status === 'pending' ? (
+                      <Badge className="bg-amber-100 text-amber-700">Pending</Badge>
+                    ) : inv.status === 'accepted' ? (
+                      <Badge className="bg-green-100 text-green-700">Accepted</Badge>
+                    ) : (
+                      <Badge variant="destructive">{inv.status}</Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* My Applications */}
+      {joinRequests && joinRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              My Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {joinRequests.map((req: any) => {
+                const practice = req.practices || {};
+                const location = req.location || {};
+                return (
+                  <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={practice.logo_url || ""} />
+                        <AvatarFallback>{(practice.name || "?").charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{practice.name || "Unknown Practice"}</div>
+                        {location.name && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3" />
+                            {location.name}{location.city ? `, ${location.city}` : ''}
+                          </div>
+                        )}
+                        <div className="text-xs text-muted-foreground">
+                          Applied: {format(new Date(req.created_at), "MMM dd, yyyy")}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {req.status === 'pending' ? (
+                        <>
+                          <Badge className="bg-amber-100 text-amber-700">Pending</Badge>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => cancelRequest(req.practice_id)}
+                            disabled={cancelRequestMutation.isPending}
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      ) : req.status === 'accepted' ? (
+                        <Badge className="bg-green-100 text-green-700">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Accepted
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">
+                          <XCircle className="h-3 w-3 mr-1" />
+                          Rejected
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search Header */}
       <Card>
         <CardHeader>
@@ -192,22 +293,16 @@ const ClinicFinderSection = () => {
         {filteredClinics.map((clinic) => (
           <Card key={clinic.id} className="overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Clinic Photos - Placeholder */}
               <div className="lg:col-span-1">
                 <div className="h-48 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
                   {clinic.logo_url ? (
-                    <img
-                      src={clinic.logo_url}
-                      alt={`${clinic.name} logo`}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={clinic.logo_url} alt={`${clinic.name} logo`} className="w-full h-full object-cover" />
                   ) : (
                     <Building2 className="w-16 h-16 text-muted-foreground" />
                   )}
                 </div>
               </div>
 
-              {/* Clinic Information */}
               <div className="lg:col-span-2 p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
@@ -289,52 +384,6 @@ const ClinicFinderSection = () => {
           </Card>
         )}
       </div>
-
-      {/* Join Request Status */}
-      {joinRequests && joinRequests.filter((req: any) => req.status === 'pending').length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Pending Requests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {joinRequests
-                .filter((req: any) => req.status === 'pending')
-                .map((req: any) => {
-                  const practice = req.practices || {};
-                  return (
-                    <div key={req.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={practice.logo_url || ""} />
-                          <AvatarFallback>{(practice.name || "?").charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium">{practice.name || "Unknown Practice"}</div>
-                          <div className="text-sm text-muted-foreground">{practice.city || ""}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-amber-100 text-amber-700">Pending</Badge>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => cancelRequest(req.practice_id)}
-                          disabled={cancelRequestMutation.isPending}
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
       
       {/* Clinic Detail Modal */}
       <ClinicDetailModal
