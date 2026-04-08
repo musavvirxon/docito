@@ -657,6 +657,13 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            {/* Join Applications from Doctors */}
+            {practice?.id && (
+              <div className="mt-6">
+                <JoinRequestsSection practiceId={practice.id} />
+              </div>
+            )}
+
             <Card className="rounded-xl mt-6">
               <CardHeader>
                 <CardTitle>{t("admin.providers.listTitle")}</CardTitle>
