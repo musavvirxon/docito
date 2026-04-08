@@ -257,13 +257,13 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient.from("patient_test_results").insert(insertRow as any).select("*").single();
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       return jsonResponse(
@@ -305,7 +305,7 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient
@@ -317,7 +317,7 @@ serve(async (req) => {
         .single();
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       return jsonResponse(
@@ -342,7 +342,7 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient
@@ -353,7 +353,7 @@ serve(async (req) => {
         .eq("created_by_patient", true);
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       return jsonResponse({ ok: true, warning: "rls_delete_failed_fallback_used" }, { status: 200, origin });
@@ -399,6 +399,6 @@ serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown_error";
     console.error(`[patient-self-service] Error: ${msg}`);
-    return jsonResponse({ ok: false, error: msg }, { status: 500, origin });
+    return jsonResponse({ ok: false, error: "An unexpected error occurred" }, { status: 500, origin });
   }
 });
