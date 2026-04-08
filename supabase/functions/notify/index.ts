@@ -91,6 +91,7 @@ serve(async (req) => {
 
     return json({ ok: true, id: insertedId });
   } catch (e) {
-    return json({ ok: false, error: String((e as any)?.message ?? e) }, 500);
+    console.error("[notify] Error:", e);
+    return json({ ok: false, error: "Failed to process notification" }, 500);
   }
 });
