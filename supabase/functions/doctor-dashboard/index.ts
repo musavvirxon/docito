@@ -120,7 +120,7 @@ serve(async (req) => {
       recent_appointments: (recent || []).map(mapAppt),
     });
   } catch (e: any) {
-    console.error("doctor-dashboard error:", e);
-    return json({ ok: false, error: e?.message || "Unknown error" }, 500);
+    console.error("[doctor-dashboard] Error:", e);
+    return json({ ok: false, error: "Failed to load dashboard data" }, 500);
   }
 });
