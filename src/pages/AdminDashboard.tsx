@@ -37,6 +37,7 @@ import { ComprehensiveRegistrationModal } from "@/components/dashboard/Comprehen
 import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
+import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -656,6 +657,13 @@ const AdminDashboard = () => {
                 {t("admin.providers.invite")}
               </Button>
             </div>
+
+            {/* Join Applications from Doctors */}
+            {practice?.id && (
+              <div className="mt-6">
+                <JoinRequestsSection practiceId={practice.id} />
+              </div>
+            )}
 
             <Card className="rounded-xl mt-6">
               <CardHeader>

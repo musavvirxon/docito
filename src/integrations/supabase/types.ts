@@ -5771,6 +5771,7 @@ export type Database = {
           created_at: string
           doctor_id: string
           id: string
+          location_id: string | null
           notes: string | null
           practice_id: string
           reviewed_at: string | null
@@ -5782,6 +5783,7 @@ export type Database = {
           created_at?: string
           doctor_id: string
           id?: string
+          location_id?: string | null
           notes?: string | null
           practice_id: string
           reviewed_at?: string | null
@@ -5793,6 +5795,7 @@ export type Database = {
           created_at?: string
           doctor_id?: string
           id?: string
+          location_id?: string | null
           notes?: string | null
           practice_id?: string
           reviewed_at?: string | null
@@ -5820,6 +5823,20 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_join_requests_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "practice_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_join_requests_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "public_practice_locations"
             referencedColumns: ["id"]
           },
           {
