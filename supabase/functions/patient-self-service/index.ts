@@ -156,13 +156,13 @@ serve(async (req) => {
 
       // 2) Fallback via service role (if RLS not yet applied in env)
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Failed to save medication" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient.from("medications").insert(insertRow as any).select("*").single();
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Failed to save medication" }, { status: 500, origin });
       }
 
       return jsonResponse(
@@ -202,13 +202,13 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Failed to save medical record" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient.from("medical_records").insert(insertRow as any).select("*").single();
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Failed to save medical record" }, { status: 500, origin });
       }
 
       return jsonResponse(
@@ -219,16 +219,22 @@ serve(async (req) => {
 
     // ===== ADD TEST RESULT =====
     if (action === "add_test_result") {
-      // Support both naming conventions from different client components
-      const test_type = optionalString(payload?.test_type ?? payload?.testType ?? payload?.category) || "lab";
-      const test_name = optionalString(payload?.test_name ?? payload?.testName ?? payload?.title) || "Test Result";
-      const result_value = optionalString(payload?.result_value ?? payload?.resultValue);
-      const result_unit = optionalString(payload?.result_unit ?? payload?.resultUnit);
+      // Validate enum fields
+      const validTestTypes = ['lab', 'imaging', 'other'];
+      const rawTestType = optionalString(payload?.test_type ?? payload?.testType ?? payload?.category) || "lab";
+      const test_type = validTestTypes.includes(rawTestType) ? rawTestType : "other";
+      const test_name = (optionalString(payload?.test_name ?? payload?.testName ?? payload?.title) || "Test Result").slice(0, 200);
+      const result_value = (optionalString(payload?.result_value ?? payload?.resultValue) || "").slice(0, 500);
+      const result_unit = (optionalString(payload?.result_unit ?? payload?.resultUnit) || "").slice(0, 50);
       const test_date = optionalISODate(payload?.test_date ?? payload?.testDate) ?? new Date().toISOString().split('T')[0];
-      const notes = optionalString(payload?.notes);
-      const lab_name = optionalString(payload?.lab_name ?? payload?.labName);
+      const notes = (optionalString(payload?.notes) || "").slice(0, 2000);
+      const lab_name = (optionalString(payload?.lab_name ?? payload?.labName) || "").slice(0, 200);
       const attachment_bucket = optionalString(payload?.attachment_bucket);
-      const attachment_paths = Array.isArray(payload?.attachment_paths) ? payload.attachment_paths : null;
+      // Validate attachment paths - no traversal, max 10 items
+      const rawPaths = Array.isArray(payload?.attachment_paths) ? payload.attachment_paths : null;
+      const attachment_paths = rawPaths
+        ? rawPaths.filter((p: unknown) => typeof p === 'string' && !String(p).includes('..') && !String(p).startsWith('/')).slice(0, 10)
+        : null;
 
       const insertRow = {
         patient_id: user.id,
@@ -251,13 +257,13 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient.from("patient_test_results").insert(insertRow as any).select("*").single();
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       return jsonResponse(
@@ -299,7 +305,7 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient
@@ -311,7 +317,7 @@ serve(async (req) => {
         .single();
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       return jsonResponse(
@@ -336,7 +342,7 @@ serve(async (req) => {
       }
 
       if (!adminClient) {
-        return jsonResponse({ ok: false, error: rlsAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       const adminAttempt = await adminClient
@@ -347,7 +353,7 @@ serve(async (req) => {
         .eq("created_by_patient", true);
 
       if (adminAttempt.error) {
-        return jsonResponse({ ok: false, error: adminAttempt.error.message }, { status: 500, origin });
+        return jsonResponse({ ok: false, error: "Operation failed" }, { status: 500, origin });
       }
 
       return jsonResponse({ ok: true, warning: "rls_delete_failed_fallback_used" }, { status: 200, origin });
@@ -393,6 +399,6 @@ serve(async (req) => {
   } catch (e) {
     const msg = e instanceof Error ? e.message : "unknown_error";
     console.error(`[patient-self-service] Error: ${msg}`);
-    return jsonResponse({ ok: false, error: msg }, { status: 500, origin });
+    return jsonResponse({ ok: false, error: "An unexpected error occurred" }, { status: 500, origin });
   }
 });
