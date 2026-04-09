@@ -1,131 +1,36 @@
 
 
-# Pages & Translation Namespace Mapping + Fixes
+# Fix: Preview Build Crash
 
-## Current State
+## Problem
 
-### Pages WITH translations connected (47 files)
+The dev server crashes repeatedly with:
 
-| Page | Namespace(s) Used |
-|------|------------------|
-| `Index.tsx` (Home) | `home`, `common`, `homeSearch` |
-| `Auth.tsx` | `auth` |
-| `About.tsx` / `AboutLocalized.tsx` | `about`, `common` |
-| `Contact.tsx` / `ContactLocalized.tsx` | `contact`, `common` |
-| `Features.tsx` / `FeaturesLocalized.tsx` | `features`, `common` |
-| `FAQs.tsx` / `FAQsLocalized.tsx` | `faqs`, `common` |
-| `HelpCenter.tsx` / `HelpCenterLocalized.tsx` | `help`, `common` |
-| `Support.tsx` / `SupportLocalized.tsx` | `support`, `common` |
-| `Legal.tsx` / `LegalLocalized.tsx` | `legal`, `common` |
-| `LegalDetail.tsx` | `legal` |
-| `CookiePolicy.tsx` | `legal` |
-| `TermsOfService.tsx` | `common`, `legal` |
-| `legal/PrivacyPolicy.tsx` | `legal` |
-| `legal/RefundPolicy.tsx` | `legal` |
-| `HowItWorks.tsx` | `howItWorks`, `common` |
-| `Pricing.tsx` | `pricing` |
-| `PremiumHome.tsx` | `premium`, `premiumHero` |
-| `Doctors.tsx` / `DoctorsLocalized.tsx` | `doctors`, `common` |
-| `SearchDoctors.tsx` / `SearchDoctorsLocalized.tsx` | `doctors`, `common` |
-| `BrowseSpecialties.tsx` / `BrowseSpecialtiesLocalized.tsx` | `specialties`, `doctors` |
-| `Practices.tsx` / `PracticesLocalized.tsx` | `practices`, `common` |
-| `FindPractices.tsx` | `practicePage`, `common` |
-| `DoctorProfile.tsx` | `doctors` |
-| `DoctorSignUp.tsx` | `auth` |
-| `ProfilePage.tsx` | `profileMenu` |
-| `PatientDashboard.tsx` | `dashboard` |
-| `DoctorDashboard.tsx` | `dashboard` |
-| `SuperAdminDashboard.tsx` | `dashboard` |
-| `AppointmentSession.tsx` | `dashboard` |
-| `NotFound.tsx` | `common` |
-| `doctor/DoctorLandingPage.tsx` | `doctorPage`, `common` |
-| `imaging/ImagingLandingPage.tsx` | `imagingPage`, `common` |
-| `lab/LabLandingPage.tsx` | `lab`, `common` |
-| `lab/LabDashboardPage.tsx` | `labAdminDashboard` |
-| `pharmacy/PharmacyLandingPage.tsx` | `pharmacyPage`, `common` |
-| `pharmacy/PharmacyDashboardPage.tsx` | `pharmacyAdminDashboard` |
+```
+No matching export in "node_modules/zustand/esm/index.mjs" for import "default"
+```
 
-### Pages WITHOUT translations (need connecting) — 32 files
+**Root cause**: `@react-three/fiber@8.18.0` depends on `zustand@^3.7.1` and uses `import create from 'zustand'` (default export). However, `zustand@5.0.10` is installed, which removed the default export. This version mismatch causes every build to fail.
 
-| Page | Should Use Namespace |
-|------|---------------------|
-| `AppointmentBooking.tsx` | `common` (patient-facing, has hardcoded strings) |
-| `BookingConfirmation.tsx` | `common` (patient-facing, has hardcoded strings) |
-| `Messages.tsx` | `common` (minimal UI, low priority) |
-| `VideoCall.tsx` | `common` (has hardcoded strings) |
-| `LandingPage.tsx` | `common` (role selector page) |
-| `FeedbackCenter.tsx` | `common` |
-| `BillingPage.tsx` | `dashboard` |
-| `FinanceDashboard.tsx` | `dashboard` |
-| `TreatmentPlanning.tsx` | `dashboard` |
-| `DoctorScheduleSettings.tsx` | `dashboard` |
-| `PracticeSettings.tsx` | `dashboard` |
-| `PracticeVerification.tsx` | `verification` |
-| `RegisterPractice.tsx` | `common` |
-| `ProcessingPractice.tsx` | `common` |
-| `AcceptInvite.tsx` | `common` |
-| `VerifyDocument.tsx` | `common` |
-| `VerifyPatient.tsx` | `common` |
-| `ProcedureLibrary.tsx` | `common` |
-| `AdminDashboard.tsx` (Practice) | `dashboard` |
-| `AdminDashboardPage.tsx` | `dashboard` |
-| `AdminProfileSettings.tsx` | `dashboard` |
-| `AdminSettingsPage.tsx` | `dashboard` |
-| `StaffDashboard.tsx` / `StaffDashboardPage.tsx` | `dashboard` |
-| `SuperAdminFeedbackInbox.tsx` | `dashboard` |
-| `TranslationManagement.tsx` | `admin` |
-| `admin/*.tsx` (3 files) | `admin` |
-| `doctor/DoctorPatientProfile.tsx` | `dashboard` |
-| `doctor/DoctorPublicProfile.tsx` | `doctorPage` |
-| `doctor/DoctorVerification.tsx` | `verification` |
-| `imaging/ImagingDashboard*.tsx`, `ImagingSettings.tsx`, etc. | `imagingAdminDashboard` |
-| `lab/LabDashboard.tsx`, `LabSettings.tsx`, etc. | `labAdminDashboard` |
-| `pharmacy/PharmacyDashboard.tsx`, `PharmacySettings.tsx`, etc. | `pharmacyAdminDashboard` |
-| `blog/*.tsx` (4 files) | `common` (blog content is CMS-driven) |
-| `dashboard/Feedback.tsx` | `dashboard` |
-| `verification/VerificationPage.tsx` | `verification` |
+## Fix
 
-### Locale files (35 in `public/locales/en/`)
+**Add a Vite resolve alias** in `vite.config.ts` to redirect zustand imports to a compatibility shim, or more simply, add a `zustand` version override in `package.json` to force `zustand@3.7.2` which has the default export that `@react-three/fiber` expects.
 
-All translation files exist in `en/` and most other languages. The files are: `about`, `admin`, `auth`, `common`, `contact`, `dashboard`, `doctorPage`, `doctors`, `faqs`, `features`, `help`, `home`, `homeSearch`, `howItWorks`, `imaging`, `imagingAdminDashboard`, `imagingPage`, `lab`, `labAdminDashboard`, `legal`, `patients`, `pharmacy`, `pharmacyAdminDashboard`, `pharmacyPage`, `popups`, `practicePage`, `practices`, `premium`, `premiumHero`, `pricing`, `pricing_matrix`, `profileMenu`, `specialties`, `support`, `verification`.
+**Preferred approach — package.json override**:
 
-### Namespaces missing from `I18N_NAMESPACES` config
+Add to `package.json`:
+```json
+"overrides": {
+  "@react-three/fiber": {
+    "zustand": "3.7.2"
+  }
+}
+```
 
-The `I18N_NAMESPACES` array in `src/i18n/config.ts` only lists 16 namespaces. These 19 are used by pages but not registered for preloading:
+Then reinstall dependencies. This pins zustand to v3 only for `@react-three/fiber` without affecting the rest of the project (which doesn't use zustand directly).
 
-`contact`, `doctors`, `faqs`, `help`, `support`, `practices`, `specialties`, `doctorPage`, `pharmacyPage`, `imagingPage`, `lab`, `practicePage`, `homeSearch`, `patients`, `popups`, `verification`, `admin`, `imaging`, `pharmacy`, `pricing_matrix`
+**Alternative — if overrides don't work in this environment**, downgrade zustand globally:
+- Change `"zustand"` in dependencies to `"3.7.2"` (or remove it if it's only there as a transitive dep) and reinstall.
 
----
-
-## Implementation Plan
-
-### Step 1: Register all missing namespaces in i18n config
-
-Update `src/i18n/config.ts` — add all 19 missing namespaces to `I18N_NAMESPACES` so they are properly preloaded.
-
-### Step 2: Add `useTranslation` to unconnected pages
-
-For each of the 32 pages without `useTranslation`, add the import and hook call with the appropriate namespace. This does NOT require converting all hardcoded strings to `t()` calls immediately — it establishes the connection so translations can be incrementally added.
-
-**Priority pages** (patient-facing, most visible):
-- `AppointmentBooking.tsx` → `useTranslation(['common', 'dashboard'])`
-- `BookingConfirmation.tsx` → `useTranslation('common')`
-- `VideoCall.tsx` → `useTranslation('common')`
-- `LandingPage.tsx` → `useTranslation('common')`
-
-**Dashboard pages** (doctor/admin-facing):
-- `AdminDashboard.tsx`, `AdminDashboardPage.tsx`, `StaffDashboard.tsx`, `FinanceDashboard.tsx`, `BillingPage.tsx`, `TreatmentPlanning.tsx`, `DoctorScheduleSettings.tsx` → `useTranslation('dashboard')`
-
-**Facility pages**:
-- `imaging/*.tsx` → `useTranslation('imagingAdminDashboard')`
-- `lab/*.tsx` → `useTranslation('labAdminDashboard')`
-- `pharmacy/*.tsx` → `useTranslation('pharmacyAdminDashboard')`
-
-**Remaining pages**: Connect with `common` or their closest matching namespace.
-
-### Step 3: Verify `popups.json` is used
-
-Check if `popups` namespace is referenced anywhere in components. If not, connect it to popup/dialog components that use hardcoded strings.
-
-This plan touches ~35 files total: 1 config file + ~32 page files + potentially 2-3 shared component files.
+**Single file change**: `package.json`
 
