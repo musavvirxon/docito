@@ -15,6 +15,7 @@ import { CalendarDays, Languages, Sparkles, Tag } from "lucide-react";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { BlogDoc, BlogLanguage } from "@/types/blog";
+import { useTranslation } from "react-i18next";
 
 const getSiteUrl = () => {
   const env =
@@ -64,6 +65,7 @@ const estimateReadingMinutes = (doc: BlogDoc) => {
 };
 
 export default function BlogPost() {
+  const { t } = useTranslation('common');
   const { lang, slug } = useParams<{ lang: string; slug: string }>();
   const currentLang = (lang || "en") as BlogLanguage;
   const currentSlug = slug || "";

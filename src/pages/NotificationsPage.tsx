@@ -6,8 +6,10 @@ import { Loader2, CheckCheck, RefreshCw, ExternalLink } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useRealtimeNotifications } from "@/hooks/useRealtimeNotifications";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function NotificationsPage() {
+  const { t } = useTranslation('common');
   const { loading, items, unreadCount, refetch, markRead, markAllRead } = useNotifications({
     limit: 200,
     unreadOnly: false,

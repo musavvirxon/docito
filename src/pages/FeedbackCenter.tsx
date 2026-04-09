@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleLabels, AppRole } from "@/lib/rbac";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 type FeedbackKind = "bug" | "feature";
 type Status = "new" | "working" | "done";
@@ -62,6 +63,7 @@ const statusBadgeVariant = (status: Status) => {
 };
 
 export default function FeedbackCenter() {
+  const { t } = useTranslation('common');
   const { toast } = useToast();
   const { user, profile, allRoles, activeRole } = useAuth();
   const navigate = useNavigate();

@@ -30,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 type DoctorInfo = {
   id: string;
@@ -79,6 +80,7 @@ const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
 };
 
 export default function AppointmentBooking() {
+  const { t } = useTranslation(['common', 'dashboard']);
   const { doctorId } = useParams();
   const navigate = useNavigate();
 

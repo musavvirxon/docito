@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, CheckCircle, XCircle, Clock, Loader2, FileText, Plus, X } from "lucide-react";
 import { useFileUpload } from "@/hooks/useFileUpload";
+import { useTranslation } from "react-i18next";
 
 interface VerificationData {
   business_name: string;
@@ -63,6 +64,7 @@ const REQUIRED_DOCUMENTS: DocumentUpload[] = [
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function PracticeVerification() {
+  const { t } = useTranslation('verification');
   const navigate = useNavigate();
   const { user } = useAuth();
   const { uploadFile, uploading } = useFileUpload();

@@ -19,8 +19,10 @@ import {
   type InsuranceProvider,
   type InsurancePlan,
 } from '@/hooks/useInsurance';
+import { useTranslation } from "react-i18next";
 
 const AdminInsuranceManagement = () => {
+  const { t } = useTranslation('admin');
   const [searchQuery, setSearchQuery] = useState('');
   const [countryFilter, setCountryFilter] = useState<string>('all');
   const [providerDialog, setProviderDialog] = useState<{ open: boolean; provider?: InsuranceProvider }>({ open: false });

@@ -5,6 +5,7 @@ import RoleSelector from "@/components/landing/RoleSelector";
 import DoctorLanding from "@/components/landing/DoctorLanding";
 import ClinicLanding from "@/components/landing/ClinicLanding";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 export type LandingRole = "doctor" | "clinic";
 
@@ -22,6 +23,7 @@ interface LandingSection {
 }
 
 export default function LandingPage() {
+  const { t } = useTranslation('common');
   const [role, setRole] = useState<LandingRole | null>(null);
   const [sections, setSections] = useState<LandingSection[]>([]);
 

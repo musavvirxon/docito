@@ -54,6 +54,7 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
 type UploadKind =
   | "avatar"
@@ -213,6 +214,7 @@ function FilePick({
 }
 
 export default function DoctorVerification() {
+  const { t } = useTranslation('verification');
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 

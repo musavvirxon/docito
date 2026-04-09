@@ -24,6 +24,7 @@ import FinanceAnalyticsPanel from "@/components/financial/FinanceAnalyticsPanel"
 import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import SuppliesPanel from "@/components/financial/SuppliesPanel";
 import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
+import { useTranslation } from "react-i18next";
 
 type FinanceTab =
   | "overview"
@@ -48,6 +49,7 @@ function labelForType(t: string) {
 }
 
 export default function FinanceDashboard() {
+  const { t } = useTranslation('dashboard');
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading, activeRole } = useAuth();

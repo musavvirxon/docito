@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, CreditCard, ExternalLink, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 function badgeVariant(status: string) {
   const s = String(status || "").toLowerCase();
@@ -17,6 +18,7 @@ function badgeVariant(status: string) {
 }
 
 export default function BillingPage() {
+  const { t } = useTranslation('dashboard');
   const { permissions } = useStaffContext();
   const [sp] = useSearchParams();
 

@@ -6,6 +6,7 @@ import { ArrowLeft, CalendarDays, Loader2, Tag } from "lucide-react";
 import type { BlogLanguage, BlogDocNode } from "@/types/blog";
 import { useBlogPostBySlug, useBlogPostTranslations } from "@/hooks/blog/useBlogPostBySlug";
 import { BLOG_LANGUAGES } from "@/config/blog";
+import { useTranslation } from "react-i18next";
 
 const getSiteUrl = () => {
   const env =
@@ -52,6 +53,7 @@ function renderNode(node: BlogDocNode, idx: number): React.ReactNode {
 }
 
 export default function BlogPostPage() {
+  const { t } = useTranslation('common');
   const { lang = "en", slug = "post" } = useParams<{ lang: string; slug: string }>();
   const currentLang = lang as BlogLanguage;
   const siteUrl = getSiteUrl();

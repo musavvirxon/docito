@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Globe2, Newspaper } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function BlogIndexPage() {
+  const { t } = useTranslation('common');
   const { lang = "en" } = useParams<{ lang: string }>();
 
   return (

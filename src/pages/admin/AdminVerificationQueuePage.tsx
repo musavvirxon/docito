@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Loader2, RefreshCw, CheckCircle2, XCircle, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 function statusVariant(status: SubmissionStatus) {
   if (status === "approved") return "default";
@@ -35,6 +36,7 @@ function safeStringify(v: unknown) {
 }
 
 export default function AdminVerificationQueuePage() {
+  const { t } = useTranslation('admin');
   const { loading, list, get, approve, reject } = useAdminVerification();
 
   const [statusFilter, setStatusFilter] = useState<SubmissionStatus | "all">("submitted");

@@ -3,8 +3,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getDashboardRoute } from "@/lib/rbac";
+import { useTranslation } from "react-i18next";
 
 const Dashboard = React.forwardRef<HTMLDivElement>(function Dashboard(_props, ref) {
+  const { t } = useTranslation('dashboard');
   const { user, loading, activeRole, bootstrapped } = useAuth();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang?: string }>();

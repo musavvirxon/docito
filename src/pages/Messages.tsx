@@ -3,8 +3,10 @@ import { MessagingCenter } from "@/components/messaging";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const Messages: React.FC = () => {
+  const { t } = useTranslation('common');
   const { user, loading } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 

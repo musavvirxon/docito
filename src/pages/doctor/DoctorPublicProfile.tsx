@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import PremiumHeroSection from "@/components/doctor/public/PremiumHeroSection";
+import { useTranslation } from "react-i18next";
 
 const AboutSection = lazy(() => import("@/components/doctor/public/AboutSection"));
 const AvailabilityPreview = lazy(() => import("@/components/doctor/public/AvailabilityPreview"));
@@ -63,6 +64,7 @@ interface Procedure {
 }
 
 export default function DoctorPublicProfile() {
+  const { t } = useTranslation('doctorPage');
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();

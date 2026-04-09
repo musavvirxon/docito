@@ -21,6 +21,7 @@ import {
   List
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface Doctor {
   id: string;
@@ -39,6 +40,7 @@ interface Doctor {
 }
 
 const CategorySearch = () => {
+  const { t } = useTranslation('common');
   const { category } = useParams();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');

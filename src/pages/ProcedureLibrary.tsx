@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import AddProcedureModal from "@/components/procedure/AddProcedureModal";
 import EditProcedureModal from "@/components/procedure/EditProcedureModal";
 import ToothSelector from "@/components/procedure/ToothSelector";
+import { useTranslation } from "react-i18next";
 
 interface Procedure {
   id: string;
@@ -30,6 +31,7 @@ interface Procedure {
 }
 
 const ProcedureLibrary = () => {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [filteredProcedures, setFilteredProcedures] = useState<Procedure[]>([]);

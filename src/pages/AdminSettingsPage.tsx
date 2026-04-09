@@ -14,6 +14,7 @@ import BudgetEditorPanel from "@/components/financial/BudgetEditorPanel";
 import BudgetDashboard from "@/components/financial/BudgetDashboard";
 import RecurringExpensesPanel from "@/components/financial/RecurringExpensesPanel";
 import SuppliesPurchasesPanel from "@/components/financial/SuppliesPurchasesPanel";
+import { useTranslation } from "react-i18next";
 
 type FinanceEntityType = "clinic" | "lab" | "imaging" | "pharmacy";
 
@@ -23,6 +24,7 @@ type PracticeRow = {
 };
 
 export default function AdminSettingsPage() {
+  const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);

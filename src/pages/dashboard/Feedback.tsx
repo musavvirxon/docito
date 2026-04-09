@@ -13,11 +13,13 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ArrowLeft, Bug, Lightbulb, MessageSquareWarning, Send, Loader2 } from "lucide-react";
 import { roleLabels } from "@/lib/rbac";
+import { useTranslation } from "react-i18next";
 
 type FeedbackType = "bug" | "feature" | "other";
 type Severity = "low" | "medium" | "high";
 
 export default function DashboardFeedback() {
+  const { t } = useTranslation('dashboard');
   const { user, profile, allRoles, activeRole } = useAuth();
   const navigate = useNavigate();
 
