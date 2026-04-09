@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useStaffContext } from "@/hooks/useStaffContext";
 import { useRealtimeImagingOrders } from "@/hooks/useRealtimeImagingOrders";
+import { useTranslation } from "react-i18next";
 
 type ImagingOrderRow = {
   referral_id: string;
@@ -27,6 +28,7 @@ function badgeVariant(status: string) {
 }
 
 export default function ImagingOrdersPage() {
+  const { t } = useTranslation('imagingAdminDashboard');
   const { permissions } = useStaffContext();
   const imagingCenterId = (permissions as any)?.entity_id || null;
 

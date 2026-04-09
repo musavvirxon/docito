@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, FileText, Shield, Building2, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const ProcessingPractice = () => {
+  const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [isComplete, setIsComplete] = useState(false);

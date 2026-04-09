@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import EnhancedCreateTreatmentPlanModal from "@/components/treatment/EnhancedCreateTreatmentPlanModal";
 import EnhancedTreatmentPlanDetailModal from "@/components/treatment/EnhancedTreatmentPlanDetailModal";
+import { useTranslation } from "react-i18next";
 
 interface TreatmentPlan {
   id: string;
@@ -37,6 +38,7 @@ interface Patient {
 }
 
 const TreatmentPlanning = () => {
+  const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
   const [treatmentPlans, setTreatmentPlans] = useState<TreatmentPlan[]>([]);
   const [filteredPlans, setFilteredPlans] = useState<TreatmentPlan[]>([]);

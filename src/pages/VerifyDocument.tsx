@@ -21,8 +21,10 @@ import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck, LogIn, QrCode, FileText, ArrowRightLeft, Pill, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function VerifyDocument() {
+  const { t } = useTranslation('common');
   const [params] = useSearchParams();
   const { user, loading } = useAuth();
 

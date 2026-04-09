@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ThumbsUp, RefreshCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type Status = "new" | "working" | "done";
 type Kind = "bug" | "feature";
@@ -26,6 +27,7 @@ type Row = {
 const statusVariant = (s: Status) => (s === "done" ? "secondary" : s === "working" ? "default" : "outline");
 
 export default function SuperAdminFeedbackInbox() {
+  const { t } = useTranslation('dashboard');
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);

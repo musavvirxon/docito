@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle, Building2, Pill, FlaskConical, Scan } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAcceptStaffInvitation, getInvitationByToken, type StaffInvitation, type EntityType, entityDashboardRoutes } from '@/hooks/useStaffInvitations';
+import { useTranslation } from "react-i18next";
 
 const entityIcons: Record<EntityType, React.ReactNode> = {
   practice: <Building2 className="w-16 h-16 text-primary" />,
@@ -23,6 +24,7 @@ const entityLabels: Record<EntityType, string> = {
 };
 
 const AcceptInvite = () => {
+  const { t } = useTranslation('common');
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

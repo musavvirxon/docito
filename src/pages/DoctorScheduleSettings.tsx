@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import BackButton from '@/components/BackButton';
+import { useTranslation } from "react-i18next";
 
 interface WorkingHours {
   enabled: boolean;
@@ -45,6 +46,7 @@ interface ScheduleSettings {
 }
 
 const DoctorScheduleSettings = () => {
+  const { t } = useTranslation('dashboard');
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();

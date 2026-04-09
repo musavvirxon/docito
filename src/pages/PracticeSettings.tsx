@@ -4,8 +4,10 @@ import DashboardTopNav from "@/components/dashboard/DashboardTopNav";
 import type { AppRole } from "@/lib/rbac";
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
+import { useTranslation } from "react-i18next";
 
 export default function PracticeSettings() {
+  const { t } = useTranslation('dashboard');
   const { practice } = useAdminDashboard();
 
   if (!practice?.id) {

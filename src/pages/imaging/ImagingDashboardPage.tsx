@@ -37,6 +37,7 @@ import {
   Loader2,
   ScanLine,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type ImagingCenterRow = {
   id: string;
@@ -105,6 +106,7 @@ async function fetchMyImagingCenter(userId: string): Promise<ImagingCenterRow | 
 }
 
 export default function ImagingDashboardPage() {
+  const { t } = useTranslation('imagingAdminDashboard');
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading: authLoading, activeRole } = useAuth();

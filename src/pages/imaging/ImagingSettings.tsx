@@ -5,8 +5,10 @@ import DashboardTopNav from "@/components/dashboard/DashboardTopNav";
 import type { AppRole } from "@/lib/rbac";
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import { useStaffContext } from "@/hooks/useStaffContext";
+import { useTranslation } from "react-i18next";
 
 export default function ImagingSettings() {
+  const { t } = useTranslation('imagingAdminDashboard');
   const { staffType, permissions } = useStaffContext();
 
   const entityId = useMemo(() => {

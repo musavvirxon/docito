@@ -43,8 +43,10 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from "react-i18next";
 
 export default function VerificationAdminPanel() {
+  const { t } = useTranslation('admin');
   const { 
     submissions, 
     loading, 

@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { languages } from '@/i18n/config';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useTranslation } from "react-i18next";
 
 interface PageContent {
   pageKey: string;
@@ -48,6 +49,7 @@ const pages = [
 ];
 
 const TranslationManagement = () => {
+  const { t } = useTranslation('admin');
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean | null>(null);

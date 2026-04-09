@@ -5,8 +5,10 @@ import { PatientProfileView } from '@/components/appointments/PatientProfileView
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 export default function DoctorPatientProfile() {
+  const { t } = useTranslation('dashboard');
   const { profile, loading } = useAuth();
   const navigate = useNavigate();
   const { patientId } = useParams();

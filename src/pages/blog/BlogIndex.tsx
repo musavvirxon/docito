@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 import type { BlogLanguage } from "@/types/blog";
 import { usePublishedBlogPosts, useFeaturedBlogPosts } from "@/hooks/blog/usePublishedBlogPosts";
+import { useTranslation } from "react-i18next";
 
 const getSiteUrl = () => {
   const env =
@@ -28,6 +29,7 @@ const getSiteUrl = () => {
 };
 
 export default function BlogIndex() {
+  const { t } = useTranslation('common');
   const { lang } = useParams<{ lang: string }>();
   const currentLang = (lang || "en") as BlogLanguage;
   const siteUrl = getSiteUrl();

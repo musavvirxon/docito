@@ -12,6 +12,7 @@ import { useVerificationFiles, type EntityType } from "@/hooks/useVerificationFi
 import { Input } from "@/components/ui/input";
 import PageShell from "@/components/ui/PageShell";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useTranslation } from "react-i18next";
 
 type DraftRow = {
   id: string;
@@ -50,6 +51,7 @@ function badgeVariant(status: string) {
 }
 
 export default function VerificationPage() {
+  const { t } = useTranslation('verification');
   const { entityType: entityTypeParam } = useParams();
   const entityType = (entityTypeParam || "clinic") as EntityType;
 

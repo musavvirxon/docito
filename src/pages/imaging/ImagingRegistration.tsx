@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScanLine, ArrowLeft, Building2 } from "lucide-react";
 import { useImagingCenter, ImagingCenterInput } from "@/hooks/useImagingCenter";
+import { useTranslation } from "react-i18next";
 
 const PremiumTopNav = lazy(() => import("@/components/home/premium/PremiumTopNav"));
 
 export default function ImagingRegistration() {
+  const { t } = useTranslation('imagingAdminDashboard');
   const navigate = useNavigate();
   const { createImagingCenter, loading } = useImagingCenter();
   const [formData, setFormData] = useState<ImagingCenterInput>({

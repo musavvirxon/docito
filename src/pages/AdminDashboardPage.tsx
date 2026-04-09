@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, RefreshCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation('dashboard');
   const { practice, stats, doctors, appointments, services, staff, locations, patients, payments, messages, metrics, loading, error, refreshData } =
     useAdminDashboard();
 

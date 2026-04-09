@@ -27,6 +27,7 @@ import { TimezoneNotice } from "@/components/time/TimezoneNotice";
 import { formatAppointmentForViewer, getAppointmentUtcRange } from "@/lib/appointmentTime";
 import { formatDateInTimeZone, formatTimeInTimeZone, getEffectiveTimeZone } from "@/lib/timezone";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 type HoldDetails = {
   id: string;
@@ -89,6 +90,7 @@ function extractRequestedProcedure(notes?: string | null) {
 }
 
 export default function BookingConfirmation() {
+  const { t } = useTranslation('common');
   const { appointmentId: bookingId } = useParams<{ appointmentId: string }>();
   const navigate = useNavigate();
   const location = useLocation();

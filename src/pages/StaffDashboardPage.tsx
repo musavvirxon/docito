@@ -19,6 +19,7 @@ import SettingsSection from "@/components/staff/SettingsSection";
 
 import TimeClockCard from "@/components/staff/TimeClockCard";
 import AttendanceAdminPanel from "@/components/staff/AttendanceAdminPanel";
+import { useTranslation } from "react-i18next";
 
 type SectionId =
   | "dashboard"
@@ -46,6 +47,7 @@ function toCentsFromMajor(v: unknown): number {
 }
 
 export default function StaffDashboardPage() {
+  const { t } = useTranslation('dashboard');
   const location = useLocation();
   const navigate = useNavigate();
 

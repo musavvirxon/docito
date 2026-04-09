@@ -9,10 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { FlaskConical, ArrowLeft, Building2 } from "lucide-react";
 import { useLabCenter, LabCenterInput } from "@/hooks/useLabCenter";
+import { useTranslation } from "react-i18next";
 
 const PremiumTopNav = lazy(() => import("@/components/home/premium/PremiumTopNav"));
 
 export default function LabRegistration() {
+  const { t } = useTranslation('labAdminDashboard');
   const navigate = useNavigate();
   const { createLabCenter, loading } = useLabCenter();
   const [formData, setFormData] = useState<LabCenterInput>({

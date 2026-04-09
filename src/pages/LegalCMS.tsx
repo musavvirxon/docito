@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Save, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 interface LegalPage {
   id: string;
@@ -31,6 +32,7 @@ interface AboutSection {
 }
 
 export default function LegalCMS() {
+  const { t } = useTranslation('legal');
   const { profile, user } = useAuth();
   const [legalPages, setLegalPages] = useState<LegalPage[]>([]);
   const [aboutSections, setAboutSections] = useState<AboutSection[]>([]);

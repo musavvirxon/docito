@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Building2, MapPin, Phone, Mail, Globe, FileText, Truck } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from "react-i18next";
 
 const PremiumTopNav = lazy(() => import("@/components/home/premium/PremiumTopNav"));
 
@@ -49,6 +50,7 @@ const pharmacySchema = z.object({
 type PharmacyFormData = z.infer<typeof pharmacySchema>;
 
 export default function PharmacyRegistration() {
+  const { t } = useTranslation('pharmacyAdminDashboard');
   const navigate = useNavigate();
   const { createPharmacy } = usePharmacy();
   const [isSubmitting, setIsSubmitting] = useState(false);
