@@ -1,72 +1,131 @@
 
 
-# Unused Edge Functions: Analysis & Recommendation
+# Pages & Translation Namespace Mapping + Fixes
 
-## Summary
+## Current State
 
-After cross-referencing all 100 edge functions against the frontend codebase (`supabase.functions.invoke(...)` calls), **21 functions have zero frontend references** and are not webhook/cron targets.
+### Pages WITH translations connected (47 files)
 
-## Functions Safe to Delete (21)
+| Page | Namespace(s) Used |
+|------|------------------|
+| `Index.tsx` (Home) | `home`, `common`, `homeSearch` |
+| `Auth.tsx` | `auth` |
+| `About.tsx` / `AboutLocalized.tsx` | `about`, `common` |
+| `Contact.tsx` / `ContactLocalized.tsx` | `contact`, `common` |
+| `Features.tsx` / `FeaturesLocalized.tsx` | `features`, `common` |
+| `FAQs.tsx` / `FAQsLocalized.tsx` | `faqs`, `common` |
+| `HelpCenter.tsx` / `HelpCenterLocalized.tsx` | `help`, `common` |
+| `Support.tsx` / `SupportLocalized.tsx` | `support`, `common` |
+| `Legal.tsx` / `LegalLocalized.tsx` | `legal`, `common` |
+| `LegalDetail.tsx` | `legal` |
+| `CookiePolicy.tsx` | `legal` |
+| `TermsOfService.tsx` | `common`, `legal` |
+| `legal/PrivacyPolicy.tsx` | `legal` |
+| `legal/RefundPolicy.tsx` | `legal` |
+| `HowItWorks.tsx` | `howItWorks`, `common` |
+| `Pricing.tsx` | `pricing` |
+| `PremiumHome.tsx` | `premium`, `premiumHero` |
+| `Doctors.tsx` / `DoctorsLocalized.tsx` | `doctors`, `common` |
+| `SearchDoctors.tsx` / `SearchDoctorsLocalized.tsx` | `doctors`, `common` |
+| `BrowseSpecialties.tsx` / `BrowseSpecialtiesLocalized.tsx` | `specialties`, `doctors` |
+| `Practices.tsx` / `PracticesLocalized.tsx` | `practices`, `common` |
+| `FindPractices.tsx` | `practicePage`, `common` |
+| `DoctorProfile.tsx` | `doctors` |
+| `DoctorSignUp.tsx` | `auth` |
+| `ProfilePage.tsx` | `profileMenu` |
+| `PatientDashboard.tsx` | `dashboard` |
+| `DoctorDashboard.tsx` | `dashboard` |
+| `SuperAdminDashboard.tsx` | `dashboard` |
+| `AppointmentSession.tsx` | `dashboard` |
+| `NotFound.tsx` | `common` |
+| `doctor/DoctorLandingPage.tsx` | `doctorPage`, `common` |
+| `imaging/ImagingLandingPage.tsx` | `imagingPage`, `common` |
+| `lab/LabLandingPage.tsx` | `lab`, `common` |
+| `lab/LabDashboardPage.tsx` | `labAdminDashboard` |
+| `pharmacy/PharmacyLandingPage.tsx` | `pharmacyPage`, `common` |
+| `pharmacy/PharmacyDashboardPage.tsx` | `pharmacyAdminDashboard` |
 
-| # | Function | What it does | Why it's not needed |
-|---|----------|-------------|-------------------|
-| 1 | `account-analytics` | User-level analytics snapshot | Replaced by `practice-analytics` and dashboard-level queries |
-| 2 | `admin-bulk-actions` | Bulk approve/reject entities | Never wired to any UI; superadmin does this individually |
-| 3 | `app-analytics` | App-wide analytics | Replaced by `practice-analytics` + `facility-analytics` |
-| 4 | `appointment-actions` | Generic appointment CRUD | Replaced by `book-appointment`, `confirm-appointment`, `request-start-appointment` |
-| 5 | `clinic-analytics` | Clinic-specific analytics | Replaced by `practice-analytics` (location-centric) |
-| 6 | `confirm-appointment-request` | Confirm appointment requests | Replaced by `confirm-appointment` |
-| 7 | `finance-recurring-cron` | Scheduled recurring finance | Duplicate of `finance-recurring-run` (manual trigger) |
-| 8 | `generate-referral-pdf` | Generate referral PDF | Duplicate of `referral-generate-pdf` (which IS used) |
-| 9 | `get_verification_checklist` | Fetch verification steps | Replaced by `verification-submit` (get_draft action) |
-| 10 | `imaging-analytics` | Imaging center analytics | Replaced by `facility-analytics` |
-| 11 | `imaging-dashboard` | Imaging dashboard data | Replaced by `entity-dashboard` |
-| 12 | `invite-staff` | Send staff invitations | Replaced by `send-invitation-email` |
-| 13 | `lab-analytics` | Lab center analytics | Replaced by `facility-analytics` |
-| 14 | `lab-create-order` | Create lab orders | Replaced by direct DB inserts + `imaging-create-order` pattern |
-| 15 | `payroll-run-generate` | Generate payroll runs | Never connected; payroll uses `finance-payroll-pay` |
-| 16 | `pharmacy-analytics` | Pharmacy analytics | Replaced by `facility-analytics` |
-| 17 | `referral-verify` | Verify referral codes | Never called; `document-verify` handles verification |
-| 18 | `timezone-mapping-admin` | Admin timezone mappings | Never called; `timezone-detect` + `timezone-update` handle this |
-| 19 | `verify-entity` | Verify an entity | Never called; `verification-admin` handles admin verification |
-| 20 | `supabase` | Empty/scaffold folder | Not a real function |
-| 21 | `_shared` | Shared utilities folder | Not a function (keep this - it's imported by other functions) |
+### Pages WITHOUT translations (need connecting) — 32 files
 
-**Correction**: `_shared` is a shared code directory, not a function. **20 functions** to delete.
+| Page | Should Use Namespace |
+|------|---------------------|
+| `AppointmentBooking.tsx` | `common` (patient-facing, has hardcoded strings) |
+| `BookingConfirmation.tsx` | `common` (patient-facing, has hardcoded strings) |
+| `Messages.tsx` | `common` (minimal UI, low priority) |
+| `VideoCall.tsx` | `common` (has hardcoded strings) |
+| `LandingPage.tsx` | `common` (role selector page) |
+| `FeedbackCenter.tsx` | `common` |
+| `BillingPage.tsx` | `dashboard` |
+| `FinanceDashboard.tsx` | `dashboard` |
+| `TreatmentPlanning.tsx` | `dashboard` |
+| `DoctorScheduleSettings.tsx` | `dashboard` |
+| `PracticeSettings.tsx` | `dashboard` |
+| `PracticeVerification.tsx` | `verification` |
+| `RegisterPractice.tsx` | `common` |
+| `ProcessingPractice.tsx` | `common` |
+| `AcceptInvite.tsx` | `common` |
+| `VerifyDocument.tsx` | `common` |
+| `VerifyPatient.tsx` | `common` |
+| `ProcedureLibrary.tsx` | `common` |
+| `AdminDashboard.tsx` (Practice) | `dashboard` |
+| `AdminDashboardPage.tsx` | `dashboard` |
+| `AdminProfileSettings.tsx` | `dashboard` |
+| `AdminSettingsPage.tsx` | `dashboard` |
+| `StaffDashboard.tsx` / `StaffDashboardPage.tsx` | `dashboard` |
+| `SuperAdminFeedbackInbox.tsx` | `dashboard` |
+| `TranslationManagement.tsx` | `admin` |
+| `admin/*.tsx` (3 files) | `admin` |
+| `doctor/DoctorPatientProfile.tsx` | `dashboard` |
+| `doctor/DoctorPublicProfile.tsx` | `doctorPage` |
+| `doctor/DoctorVerification.tsx` | `verification` |
+| `imaging/ImagingDashboard*.tsx`, `ImagingSettings.tsx`, etc. | `imagingAdminDashboard` |
+| `lab/LabDashboard.tsx`, `LabSettings.tsx`, etc. | `labAdminDashboard` |
+| `pharmacy/PharmacyDashboard.tsx`, `PharmacySettings.tsx`, etc. | `pharmacyAdminDashboard` |
+| `blog/*.tsx` (4 files) | `common` (blog content is CMS-driven) |
+| `dashboard/Feedback.tsx` | `dashboard` |
+| `verification/VerificationPage.tsx` | `verification` |
 
-## Functions That ARE Used (Keep)
+### Locale files (35 in `public/locales/en/`)
 
-All other ~80 functions are actively invoked from the frontend or serve as webhook/cron/infra endpoints (e.g., `billing-webhook`, `stripe-webhook`, `blog-sitemap`, `notify`, `send-sms`, `update-ratings`).
+All translation files exist in `en/` and most other languages. The files are: `about`, `admin`, `auth`, `common`, `contact`, `dashboard`, `doctorPage`, `doctors`, `faqs`, `features`, `help`, `home`, `homeSearch`, `howItWorks`, `imaging`, `imagingAdminDashboard`, `imagingPage`, `lab`, `labAdminDashboard`, `legal`, `patients`, `pharmacy`, `pharmacyAdminDashboard`, `pharmacyPage`, `popups`, `practicePage`, `practices`, `premium`, `premiumHero`, `pricing`, `pricing_matrix`, `profileMenu`, `specialties`, `support`, `verification`.
 
-`prescription-generate-pdf` and `treatment-plan-generate-pdf` — both are called from `src/lib/api/` and should be kept.
+### Namespaces missing from `I18N_NAMESPACES` config
+
+The `I18N_NAMESPACES` array in `src/i18n/config.ts` only lists 16 namespaces. These 19 are used by pages but not registered for preloading:
+
+`contact`, `doctors`, `faqs`, `help`, `support`, `practices`, `specialties`, `doctorPage`, `pharmacyPage`, `imagingPage`, `lab`, `practicePage`, `homeSearch`, `patients`, `popups`, `verification`, `admin`, `imaging`, `pharmacy`, `pricing_matrix`
+
+---
 
 ## Implementation Plan
 
-**Single step**: Delete the 20 unused edge function directories and use the Supabase delete tool to remove them from the deployed project.
+### Step 1: Register all missing namespaces in i18n config
 
-Directories to remove:
-```text
-supabase/functions/account-analytics/
-supabase/functions/admin-bulk-actions/
-supabase/functions/app-analytics/
-supabase/functions/appointment-actions/
-supabase/functions/clinic-analytics/
-supabase/functions/confirm-appointment-request/
-supabase/functions/finance-recurring-cron/
-supabase/functions/generate-referral-pdf/
-supabase/functions/get_verification_checklist/
-supabase/functions/imaging-analytics/
-supabase/functions/imaging-dashboard/
-supabase/functions/invite-staff/
-supabase/functions/lab-analytics/
-supabase/functions/lab-create-order/
-supabase/functions/payroll-run-generate/
-supabase/functions/pharmacy-analytics/
-supabase/functions/referral-verify/
-supabase/functions/supabase/
-supabase/functions/timezone-mapping-admin/
-supabase/functions/verify-entity/
-```
+Update `src/i18n/config.ts` — add all 19 missing namespaces to `I18N_NAMESPACES` so they are properly preloaded.
 
-This reduces the function count from ~100 to ~80, cutting deployment surface area and maintenance burden.
+### Step 2: Add `useTranslation` to unconnected pages
+
+For each of the 32 pages without `useTranslation`, add the import and hook call with the appropriate namespace. This does NOT require converting all hardcoded strings to `t()` calls immediately — it establishes the connection so translations can be incrementally added.
+
+**Priority pages** (patient-facing, most visible):
+- `AppointmentBooking.tsx` → `useTranslation(['common', 'dashboard'])`
+- `BookingConfirmation.tsx` → `useTranslation('common')`
+- `VideoCall.tsx` → `useTranslation('common')`
+- `LandingPage.tsx` → `useTranslation('common')`
+
+**Dashboard pages** (doctor/admin-facing):
+- `AdminDashboard.tsx`, `AdminDashboardPage.tsx`, `StaffDashboard.tsx`, `FinanceDashboard.tsx`, `BillingPage.tsx`, `TreatmentPlanning.tsx`, `DoctorScheduleSettings.tsx` → `useTranslation('dashboard')`
+
+**Facility pages**:
+- `imaging/*.tsx` → `useTranslation('imagingAdminDashboard')`
+- `lab/*.tsx` → `useTranslation('labAdminDashboard')`
+- `pharmacy/*.tsx` → `useTranslation('pharmacyAdminDashboard')`
+
+**Remaining pages**: Connect with `common` or their closest matching namespace.
+
+### Step 3: Verify `popups.json` is used
+
+Check if `popups` namespace is referenced anywhere in components. If not, connect it to popup/dialog components that use hardcoded strings.
+
+This plan touches ~35 files total: 1 config file + ~32 page files + potentially 2-3 shared component files.
 
