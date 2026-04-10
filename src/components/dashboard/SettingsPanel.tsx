@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -75,7 +74,6 @@ interface StaffRole {
 }
 
 export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
-  const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState("general");
