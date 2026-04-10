@@ -14,20 +14,17 @@
       "verifyDocuments": "Verify Documents",
       "settings": "Settings"
     },
-
     "header": {
       "title": "Pharmacy Dashboard",
       "subtitle": "Prescriptions, fulfillment, analytics, and billing pulled from Supabase",
       "refresh": "Refresh"
     },
-
     "overview": {
       "prescriptionsToday": "Prescriptions Today",
       "pendingFulfillment": "Pending Fulfillment",
       "deliveriesInProgress": "Deliveries In Progress",
       "completedToday": "Completed Today"
     },
-
     "prescriptions": {
       "title": "Prescription Inbox",
       "subtitle": "New and pending prescriptions for your pharmacy.",
@@ -49,7 +46,6 @@
       },
       "empty": "No prescriptions found"
     },
-
     "manualPrescription": {
       "title": "New Manual Prescription",
       "patient": "Patient (Walk-in)",
@@ -84,12 +80,10 @@
         "create": "Create Prescription"
       }
     },
-
     "fulfillment": {
       "title": "Fulfillment Queue",
       "subtitle": "End-to-end processing queue for prescription fulfillment orders",
       "refresh": "Refresh Orders",
-
       "stats": {
         "activeQueue": "Active Queue",
         "pendingProcessingReady": "0 pending • 0 processing • 0 ready",
@@ -104,7 +98,6 @@
         "deliveryQueue": "Delivery Queue",
         "completedOrders": "Completed Orders"
       },
-
       "charts": {
         "throughput": "Queue Throughput Trend",
         "throughputDesc": "Incoming and completed orders (last 14 activity days)",
@@ -116,7 +109,6 @@
         "noPickup": "No pickup data.",
         "noPayment": "No payment data."
       },
-
       "table": {
         "title": "Queue Orders",
         "search": "Search order #, status, meds, prescription...",
@@ -140,11 +132,9 @@
         "footer": "Showing 0 of 0 order(s) in fulfillment queue."
       }
     },
-
     "inventory": {
       "title": "Inventory Management",
       "subtitle": "Inventory control, stock health monitoring, and pharmacy supply analytics",
-
       "stats": {
         "skus": "SKUs",
         "stockRisk": "Stock Risk",
@@ -156,7 +146,6 @@
         "controlled": "Controlled Substances",
         "refrigerated": "Refrigerated Items"
       },
-
       "charts": {
         "health": "Stock Health",
         "topValue": "Top Inventory by Retail Value",
@@ -164,7 +153,6 @@
         "manufacturer": "Manufacturer Coverage",
         "empty": "No inventory data yet."
       },
-
       "table": {
         "title": "Inventory Ledger",
         "search": "Search medication, code, NDC, batch...",
@@ -187,7 +175,6 @@
         "footer": "Inventory totals: 0 SKU(s), 0 on-hand units, $0.00 estimated retail value."
       }
     },
-
     "deliveries": {
       "title": "Delivery Orders",
       "search": "Search by order # or address...",
@@ -202,11 +189,9 @@
       },
       "empty": "No delivery orders found"
     },
-
     "analytics": {
       "title": "Analytics Dashboard",
       "subtitle": "End-to-end pharmacy analytics across fulfillment, prescriptions, payments, and inventory",
-
       "metrics": {
         "revenue": "Revenue (30d)",
         "orders": "Fulfillment Orders",
@@ -217,7 +202,6 @@
         "inventoryRisk": "Inventory Risk",
         "inventoryValue": "Current Inventory Value"
       },
-
       "charts": {
         "trend": "Revenue & Order Trend",
         "statusMix": "Fulfillment Status Mix",
@@ -230,11 +214,9 @@
         "snapshot": "Quick Snapshot"
       }
     },
-
     "billing": {
       "title": "Billing & Insurance Claims",
       "subtitle": "Claims proxy from pharmacy fulfillment orders with insurance/coplay amounts.",
-
       "metrics": {
         "claimable": "Claimable Orders",
         "pipeline": "In Pipeline",
@@ -245,19 +227,58 @@
         "outstanding": "Outstanding Amount",
         "rejected": "Rejected Amount"
       },
-
       "charts": {
         "trend": "Claims Trend",
         "statusMix": "Status Mix",
         "amounts": "Amounts Breakdown",
         "largest": "Largest Claims"
       },
-
       "table": {
         "title": "Claims Ledger",
         "search": "Search order, claim, policy, status...",
         "empty": "No claims found for the current filters."
       }
+    },
+    "referrals": {
+      "title": "Referrals",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your pharmacy"
+      },
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your pharmacy"
+      }
+    },
+    "staff": {
+      "active": "Active Staff",
+      "pending": "Pending Invitations",
+      "inactive": "Inactive / Disabled",
+      "admins": "Admin / Managers",
+      "invite": {
+        "title": "Invite Staff"
+      },
+      "audit": {
+        "title": "Staff Audit Trail"
+      }
+    },
+    "settings": {
+      "title": "Pharmacy Settings",
+      "profile": {
+        "title": "Pharmacy Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
+    },
+    "patients": {
+      "title": "Patient View",
+      "search": "Search patients..."
+    },
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports."
     }
   }
 }

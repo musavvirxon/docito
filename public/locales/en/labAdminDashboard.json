@@ -345,6 +345,31 @@
         "pt": "PT - Patient Profile"
       },
       "scan": "Scan QR Code Instead"
+    },
+    "settings": {
+      "profile": {
+        "title": "Lab Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
+    },
+    "catalog": {
+      "title": "Test Catalog",
+      "search": "Search tests...",
+      "addTest": "Add Test",
+      "editTest": "Edit Test",
+      "empty": "No tests found. Add your first test to get started."
+    },
+    "results": {
+      "title": "Enter Results",
+      "ordersInProgress": "Orders In Progress",
+      "selectOrder": "Select an Order",
+      "selectTest": "Select a test to enter results",
+      "submit": "Submit Result",
+      "manualEntry": "Manual Entry",
+      "uploadFile": "Upload File"
     }
   }
 }
