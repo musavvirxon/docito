@@ -37,6 +37,7 @@ type LabSettings = {
 };
 
 export function LabSettingsSection({ labCenterId }: { labCenterId: string }) {
+  const { t } = useTranslation("labAdminDashboard");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [center, setCenter] = useState<LabCenter | null>(null);

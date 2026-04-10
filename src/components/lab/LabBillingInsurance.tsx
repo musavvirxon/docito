@@ -107,6 +107,7 @@ function statusBadge(status: string | null | undefined) {
 }
 
 export default function LabBillingInsurance({ labCenterId }: Props) {
+  const { t } = useTranslation("labAdminDashboard");
   const [loading, setLoading] = useState(true);
   const [txLoading, setTxLoading] = useState(false);
 

@@ -223,6 +223,7 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const sb: any = supabase as any;
 
   const [loading, setLoading] = useState(true);

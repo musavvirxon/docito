@@ -6,6 +6,7 @@ interface LabReferralsSectionProps {
 }
 
 export function LabReferralsSection({ labCenterId }: LabReferralsSectionProps) {
+  const { t } = useTranslation("labAdminDashboard");
   if (!labCenterId) {
     return null;
   }

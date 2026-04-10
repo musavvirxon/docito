@@ -40,6 +40,7 @@ type PatientMatch = {
 };
 
 function makeOrderNumber() {
+  const { t } = useTranslation("labAdminDashboard");
   return `LAB-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 

@@ -63,6 +63,7 @@ interface Props {
 }
 
 export default function LabHomeCollection({ labCenterId }: Props) {
+  const { t } = useTranslation("labAdminDashboard");
   const [collections, setCollections] = useState<HomeCollection[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

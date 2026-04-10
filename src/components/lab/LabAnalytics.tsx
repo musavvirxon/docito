@@ -219,6 +219,7 @@ function isInCurrentRange(dateValue: string | null | undefined, days: number) {
 }
 
 export default function LabAnalytics({ labCenterId }: Props) {
+  const { t } = useTranslation("labAdminDashboard");
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticsState>({

@@ -32,6 +32,7 @@ interface TestOrderCreatorProps {
 }
 
 export function TestOrderCreator({ patientId, doctorId, appointmentId, onSuccess }: TestOrderCreatorProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const { labCenters, testCatalog, fetchLabCenters, fetchTestCatalog, loading: catalogLoading } = useLabCenter();
   const { createTestOrder, loading: orderLoading } = useTestOrders();
   

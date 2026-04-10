@@ -36,6 +36,7 @@ interface LabOrderQueueProps {
 }
 
 export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const { updateOrderStatus, loading } = useTestOrders();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');

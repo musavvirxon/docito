@@ -62,6 +62,7 @@ interface Props {
 }
 
 export default function LabSampleManager({ labCenterId }: Props) {
+  const { t } = useTranslation("labAdminDashboard");
   const [samples, setSamples] = useState<Sample[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

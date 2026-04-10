@@ -41,6 +41,7 @@ function generateId() {
 }
 
 export function TestParameterEditor({ parameters, onChange }: TestParameterEditorProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const [expandedParam, setExpandedParam] = useState<string | null>(null);
 
   const addParameter = () => {

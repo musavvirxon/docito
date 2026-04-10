@@ -140,6 +140,7 @@ interface ResultEntryProps {
 }
 
 export function ResultEntry({ orders }: ResultEntryProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const { fetchOrderItems, createResult, uploadResultFile, loading } = useTestOrders();
   const { uploadFile, uploading } = useFileUpload();
 
