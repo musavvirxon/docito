@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePracticeInvitations, PracticeInvitation } from "@/hooks/usePracticeInvitations";
+import { useTranslation } from "react-i18next";
 
 interface InvitationsListProps {
   practiceId: string;
@@ -38,6 +39,7 @@ const roleLabels: Record<string, string> = {
 };
 
 export function InvitationsList({ practiceId }: InvitationsListProps) {
+  const { t } = useTranslation('dashboard');
   const { invitations, loading, cancelInvitation, resendInvitation } = usePracticeInvitations(practiceId);
 
   if (loading) {
@@ -53,7 +55,7 @@ export function InvitationsList({ practiceId }: InvitationsListProps) {
   if (!invitations?.length) {
     return (
       <div className="text-center py-8 text-muted-foreground">
-        No invitations sent yet. Use the "Invite Staff" button to send your first invitation.
+        {t('staff.invitations.empty', 'No invitations sent yet. Use the "Invite Staff" button to send your first invitation.')}
       </div>
     );
   }
@@ -70,11 +72,11 @@ export function InvitationsList({ practiceId }: InvitationsListProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Recipient</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Sent</TableHead>
-          <TableHead>Expires</TableHead>
+          <TableHead>{t('staff.invitations.recipient', 'Recipient')}</TableHead>
+          <TableHead>{t('staff.invitations.role', 'Role')}</TableHead>
+          <TableHead>{t('staff.invitations.status', 'Status')}</TableHead>
+          <TableHead>{t('staff.invitations.sent', 'Sent')}</TableHead>
+          <TableHead>{t('staff.invitations.expires', 'Expires')}</TableHead>
           <TableHead className="w-[70px]"></TableHead>
         </TableRow>
       </TableHeader>
@@ -144,7 +146,7 @@ export function InvitationsList({ practiceId }: InvitationsListProps) {
                     {canResend && (
                       <DropdownMenuItem onClick={() => handleResend(invitation)}>
                         <RefreshCw className="h-4 w-4 mr-2" />
-                        Resend Invitation
+                        {t('staff.invitations.resend', 'Resend Invitation')}
                       </DropdownMenuItem>
                     )}
                     {canCancel && (
@@ -153,7 +155,7 @@ export function InvitationsList({ practiceId }: InvitationsListProps) {
                         className="text-destructive"
                       >
                         <X className="h-4 w-4 mr-2" />
-                        Cancel Invitation
+                        {t('staff.invitations.cancel', 'Cancel Invitation')}
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>

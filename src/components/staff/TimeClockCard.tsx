@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogIn, LogOut, Timer } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
@@ -33,6 +34,7 @@ function formatDurationMinutes(mins: number) {
 }
 
 export default function TimeClockCard({ entityType, entityId }: Props) {
+  const { t } = useTranslation('dashboard');
   const [loading, setLoading] = useState(false);
   const [openSession, setOpenSession] = useState<SessionRow | null>(null);
 
@@ -127,7 +129,7 @@ export default function TimeClockCard({ entityType, entityId }: Props) {
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base flex items-center gap-2">
           <Timer className="h-4 w-4 text-muted-foreground" />
-          Time clock
+          {t('staff.timeClock.title', 'Time clock')}
         </CardTitle>
       </CardHeader>
 
@@ -135,26 +137,26 @@ export default function TimeClockCard({ entityType, entityId }: Props) {
         {openSession ? (
           <div className="space-y-2">
             <div className="text-sm">
-              You are <span className="font-medium">clocked in</span>{" "}
-              <span className="text-muted-foreground">({formatDurationMinutes(elapsedMinutes)} so far)</span>
+              {t('staff.timeClock.clockedIn', 'You are')} <span className="font-medium">{t('staff.timeClock.clockedInStatus', 'clocked in')}</span>{" "}
+              <span className="text-muted-foreground">({formatDurationMinutes(elapsedMinutes)} {t('staff.timeClock.soFar', 'so far')})</span>
             </div>
 
             <Button onClick={() => void clockOut()} disabled={loading} className="gap-2 w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-              Clock out
+              {t('staff.timeClock.clockOut', 'Clock out')}
             </Button>
 
             <div className="text-xs text-muted-foreground">
-              Started: {new Date(openSession.clock_in_at).toLocaleString()}
+              {t('staff.timeClock.started', 'Started')}: {new Date(openSession.clock_in_at).toLocaleString()}
             </div>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">You are not clocked in.</div>
+            <div className="text-sm text-muted-foreground">{t('staff.timeClock.notClockedIn', 'You are not clocked in.')}</div>
 
             <Button onClick={() => void clockIn()} disabled={loading} className="gap-2 w-full">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
-              Clock in
+              {t('staff.timeClock.clockIn', 'Clock in')}
             </Button>
           </div>
         )}
