@@ -16,6 +16,7 @@ import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const USERNAME_RE = /^[a-z0-9][a-z0-9_-]{2,29}$/;
 
@@ -26,12 +27,12 @@ export default function DoctorProfileSection() {
   const { toast } = useToast();
   const { profile } = useAuth();
   const { doctorProfile, refreshAllData } = useDoctorData();
+  const { t } = useTranslation("dashboard");
 
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Profile fields
   const [specialty, setSpecialty] = useState("");
   const [bio, setBio] = useState("");
   const [consultationFee, setConsultationFee] = useState<string>("");
@@ -39,16 +40,12 @@ export default function DoctorProfileSection() {
   const [languages, setLanguages] = useState<string>("");
   const [phone, setPhone] = useState("");
 
-  // Public profile
   const [isPublic, setIsPublic] = useState(false);
   const [username, setUsername] = useState("");
-
-  // Avatar
   const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
     if (!doctorProfile) return;
-
     setSpecialty(doctorProfile.specialty || "");
     setBio(doctorProfile.bio || "");
     setConsultationFee(
@@ -63,7 +60,6 @@ export default function DoctorProfileSection() {
     );
     setLanguages(Array.isArray(doctorProfile.languages) ? doctorProfile.languages.join(", ") : "");
     setPhone(doctorProfile.profiles?.phone || "");
-
     const vis = doctorProfile.profiles?.profile_visibility;
     setIsPublic(vis === "public");
     setUsername(doctorProfile.profiles?.username || "");
@@ -73,10 +69,7 @@ export default function DoctorProfileSection() {
   const publicSlug = useMemo(() => {
     const vis = isPublic;
     const un = normalizeUsername(username || "");
-
     if (vis && USERNAME_RE.test(un)) return un;
-
-    // If not public, prefer custom link (unlisted), else fallback to id
     return doctorProfile?.custom_profile_link || doctorProfile?.id || "";
   }, [doctorProfile?.custom_profile_link, doctorProfile?.id, isPublic, username]);
 
@@ -98,20 +91,20 @@ export default function DoctorProfileSection() {
     try {
       await navigator.clipboard.writeText(bookingLink);
       setLinkCopied(true);
-      toast({ title: "Copied!", description: "Booking link copied to clipboard." });
+      toast({ title: t("doctor.profileSection.copied"), description: t("doctor.profileSection.copiedDesc") });
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
-      toast({ title: "Failed to copy", variant: "destructive" });
+      toast({ title: t("doctor.profileSection.copyFailed"), variant: "destructive" });
     }
   };
 
   const usernameError = useMemo(() => {
     const un = normalizeUsername(username || "");
     if (!isPublic) return "";
-    if (!un) return "Username is required for a public profile.";
-    if (!USERNAME_RE.test(un)) return "Username must be 3–30 chars and use lowercase letters, numbers, _ or -.";
+    if (!un) return t("doctor.profileSection.usernameRequired");
+    if (!USERNAME_RE.test(un)) return t("doctor.profileSection.usernameInvalid");
     return "";
-  }, [isPublic, username]);
+  }, [isPublic, username, t]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,11 +112,11 @@ export default function DoctorProfileSection() {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      toast({ title: "Invalid file type", description: "Please upload a JPG, PNG or WebP image.", variant: "destructive" });
+      toast({ title: t("doctor.profileSection.invalidFileType"), description: t("doctor.profileSection.invalidFileTypeDesc"), variant: "destructive" });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: "File too large", description: "Max file size is 5MB.", variant: "destructive" });
+      toast({ title: t("doctor.profileSection.fileTooLarge"), description: t("doctor.profileSection.fileTooLargeDesc"), variant: "destructive" });
       return;
     }
 
@@ -131,29 +124,18 @@ export default function DoctorProfileSection() {
     try {
       const ext = file.name.split(".").pop() || "jpg";
       const filePath = `avatars/${doctorProfile.user_id}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("attachments")
-        .upload(filePath, file, { upsert: true });
-
+      const { error: uploadError } = await supabase.storage.from("attachments").upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
-
       const { data: urlData } = supabase.storage.from("attachments").getPublicUrl(filePath);
       const newUrl = urlData?.publicUrl || "";
-
-      const { error: profErr } = await supabase
-        .from("profiles")
-        .update({ avatar_url: newUrl })
-        .eq("user_id", doctorProfile.user_id);
-
+      const { error: profErr } = await supabase.from("profiles").update({ avatar_url: newUrl }).eq("user_id", doctorProfile.user_id);
       if (profErr) throw profErr;
-
       setAvatarUrl(newUrl);
-      toast({ title: "Photo updated", description: "Your profile photo has been updated." });
+      toast({ title: t("doctor.profileSection.photoUpdated"), description: t("doctor.profileSection.photoUpdatedDesc") });
       await refreshAllData();
     } catch (err: any) {
       console.error("Photo upload error:", err);
-      toast({ title: "Upload failed", description: err?.message || "Failed to upload photo", variant: "destructive" });
+      toast({ title: t("doctor.profileSection.uploadFailed"), description: err?.message || t("doctor.profileSection.uploadFailed"), variant: "destructive" });
     } finally {
       setUploadingPhoto(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -163,15 +145,12 @@ export default function DoctorProfileSection() {
   const handleSave = async () => {
     if (!doctorProfile) return;
     if (isPublic && usernameError) {
-      toast({ title: "Invalid username", description: usernameError, variant: "destructive" });
+      toast({ title: t("doctor.profileSection.invalidUsername"), description: usernameError, variant: "destructive" });
       return;
     }
-
     setSaving(true);
     try {
       const un = normalizeUsername(username || "");
-
-      // Update doctor profile fields
       const { error: docErr } = await supabase
         .from("doctors")
         .update({
@@ -179,41 +158,28 @@ export default function DoctorProfileSection() {
           bio: bio.trim() || null,
           consultation_fee: consultationFee.trim() ? Number(consultationFee) : null,
           years_experience: yearsExperience.trim() ? Number(yearsExperience) : null,
-          languages: languages
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
+          languages: languages.split(",").map((s) => s.trim()).filter(Boolean),
         })
         .eq("id", doctorProfile.id);
-
       if (docErr) throw docErr;
-
-      // Update profile fields (phone + public profile settings)
       const profileUpdate: Record<string, any> = {
         phone: phone.trim() || null,
         profile_visibility: isPublic ? "public" : "private",
         username: isPublic ? un : null,
       };
-
-      const { error: profErr } = await supabase
-        .from("profiles")
-        .update(profileUpdate)
-        .eq("user_id", doctorProfile.user_id);
-
+      const { error: profErr } = await supabase.from("profiles").update(profileUpdate).eq("user_id", doctorProfile.user_id);
       if (profErr) {
-        // Handle unique violations cleanly
         const msg = String((profErr as any)?.message || "");
         if (msg.toLowerCase().includes("duplicate") || msg.toLowerCase().includes("unique")) {
-          throw new Error("That username is already taken. Please choose another.");
+          throw new Error(t("doctor.profileSection.usernameTaken"));
         }
         throw profErr;
       }
-
-      toast({ title: "Saved", description: "Your profile has been updated." });
+      toast({ title: t("doctor.profileSection.saved"), description: t("doctor.profileSection.savedDesc") });
       await refreshAllData();
     } catch (e: any) {
       console.error("Profile save error:", e);
-      toast({ title: "Error", description: e?.message || "Failed to save profile", variant: "destructive" });
+      toast({ title: t("doctor.profileSection.error"), description: e?.message || t("doctor.profileSection.error"), variant: "destructive" });
     } finally {
       setSaving(false);
     }
@@ -222,13 +188,11 @@ export default function DoctorProfileSection() {
   if (!doctorProfile) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>{t("doctor.profileSection.title")}</CardTitle></CardHeader>
         <CardContent>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Loading profile…
+            {t("doctor.profileSection.loading")}
           </div>
         </CardContent>
       </Card>
@@ -236,10 +200,7 @@ export default function DoctorProfileSection() {
   }
 
   const initials = (profile?.full_name || doctorProfile.profiles?.full_name || "D")
-    .split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .toUpperCase();
+    .split(" ").map((n: string) => n[0]).join("").toUpperCase();
 
   return (
     <Card>
@@ -247,87 +208,46 @@ export default function DoctorProfileSection() {
         <div className="min-w-0">
           <CardTitle className="flex items-center gap-2">
             <UserRound className="h-5 w-5" />
-            Doctor Profile
+            {t("doctor.profileSection.title")}
           </CardTitle>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant={doctorProfile.verified ? "default" : "secondary"}>
-              {doctorProfile.verified ? "Verified" : "Unverified"}
+              {doctorProfile.verified ? t("doctor.profileSection.verified") : t("doctor.profileSection.unverified")}
             </Badge>
-            {doctorProfile.profiles?.profile_visibility === "public" ? (
-              <Badge variant="outline">Public</Badge>
-            ) : (
-              <Badge variant="outline">Private</Badge>
-            )}
+            <Badge variant="outline">
+              {doctorProfile.profiles?.profile_visibility === "public" ? t("doctor.profileSection.public") : t("doctor.profileSection.private")}
+            </Badge>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              if (publicSlug) navigate(`/doctor/${publicSlug}`);
-            }}
-            disabled={!publicSlug}
-          >
+          <Button variant="outline" size="sm" onClick={() => { if (publicSlug) navigate(`/doctor/${publicSlug}`); }} disabled={!publicSlug}>
             <ExternalLink className="h-4 w-4 mr-2" />
-            Preview
+            {t("doctor.profileSection.preview")}
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saving}>
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving…
-              </>
-            ) : (
-              "Save"
-            )}
+            {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("doctor.profileSection.saving")}</>) : t("doctor.profileSection.save")}
           </Button>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Profile Photo */}
         <div className="flex items-center gap-6">
           <div className="relative group">
             <Avatar className="h-24 w-24 ring-2 ring-primary/20">
               <AvatarImage src={avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">
-                {initials}
-              </AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary text-xl font-semibold">{initials}</AvatarFallback>
             </Avatar>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingPhoto}
-              className="absolute inset-0 flex items-center justify-center rounded-full bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-            >
-              {uploadingPhoto ? (
-                <Loader2 className="h-6 w-6 text-background animate-spin" />
-              ) : (
-                <Camera className="h-6 w-6 text-background" />
-              )}
+            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto} className="absolute inset-0 flex items-center justify-center rounded-full bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              {uploadingPhoto ? <Loader2 className="h-6 w-6 text-background animate-spin" /> : <Camera className="h-6 w-6 text-background" />}
             </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={handlePhotoUpload}
-            />
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePhotoUpload} />
           </div>
           <div className="space-y-1">
             <p className="font-medium text-foreground">{profile?.full_name || "Doctor"}</p>
             <p className="text-sm text-muted-foreground">{profile?.email || ""}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingPhoto}
-              className="mt-2 gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingPhoto} className="mt-2 gap-2">
               {uploadingPhoto ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
-              Change Photo
+              {t("doctor.profileSection.changePhoto")}
             </Button>
           </div>
         </div>
@@ -336,64 +256,29 @@ export default function DoctorProfileSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="specialty">Specialty</Label>
-            <Input
-              id="specialty"
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              placeholder="e.g., Dermatology"
-            />
+            <Label htmlFor="specialty">{t("doctor.profileSection.specialty")}</Label>
+            <Input id="specialty" value={specialty} onChange={(e) => setSpecialty(e.target.value)} placeholder={t("doctor.profileSection.specialtyPlaceholder")} />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">{t("doctor.profileSection.phone")}</Label>
             <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+998…" />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="consultationFee">Consultation Fee</Label>
-            <Input
-              id="consultationFee"
-              type="number"
-              inputMode="decimal"
-              value={consultationFee}
-              onChange={(e) => setConsultationFee(e.target.value)}
-              placeholder="e.g., 200"
-            />
+            <Label htmlFor="consultationFee">{t("doctor.profileSection.consultationFee")}</Label>
+            <Input id="consultationFee" type="number" inputMode="decimal" value={consultationFee} onChange={(e) => setConsultationFee(e.target.value)} placeholder="e.g., 200" />
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="yearsExperience">Years of Experience</Label>
-            <Input
-              id="yearsExperience"
-              type="number"
-              inputMode="numeric"
-              value={yearsExperience}
-              onChange={(e) => setYearsExperience(e.target.value)}
-              placeholder="e.g., 8"
-            />
+            <Label htmlFor="yearsExperience">{t("doctor.profileSection.yearsExperience")}</Label>
+            <Input id="yearsExperience" type="number" inputMode="numeric" value={yearsExperience} onChange={(e) => setYearsExperience(e.target.value)} placeholder="e.g., 8" />
           </div>
-
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="languages">Languages</Label>
-            <Input
-              id="languages"
-              value={languages}
-              onChange={(e) => setLanguages(e.target.value)}
-              placeholder="English, Russian, Uzbek"
-            />
-            <p className="text-xs text-muted-foreground">Comma-separated</p>
+            <Label htmlFor="languages">{t("doctor.profileSection.languages")}</Label>
+            <Input id="languages" value={languages} onChange={(e) => setLanguages(e.target.value)} placeholder={t("doctor.profileSection.languagesPlaceholder")} />
+            <p className="text-xs text-muted-foreground">{t("doctor.profileSection.commaSeparated")}</p>
           </div>
-
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={5}
-              placeholder="Introduce yourself to patients…"
-            />
+            <Label htmlFor="bio">{t("doctor.profileSection.bio")}</Label>
+            <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={5} placeholder={t("doctor.profileSection.bioPlaceholder")} />
           </div>
         </div>
 
@@ -404,70 +289,46 @@ export default function DoctorProfileSection() {
             <div>
               <h3 className="font-medium flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                Public Profile
+                {t("doctor.profileSection.publicProfile")}
               </h3>
               <p className="text-sm text-muted-foreground">
-                When enabled, patients can visit your profile at{" "}
+                {t("doctor.profileSection.publicProfileDesc")}{" "}
                 <span className="font-mono">{publicUrl || "/doctor/username"}</span>.
               </p>
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g., dr_ahmad"
-                disabled={!isPublic}
-              />
+              <Label htmlFor="username">{t("doctor.profileSection.username")}</Label>
+              <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder={t("doctor.profileSection.usernamePlaceholder")} disabled={!isPublic} />
               {usernameError ? (
                 <p className="text-xs text-destructive">{usernameError}</p>
               ) : (
-                <p className="text-xs text-muted-foreground">3–30 chars, lowercase letters/numbers, _ or -</p>
+                <p className="text-xs text-muted-foreground">{t("doctor.profileSection.usernameHint")}</p>
               )}
             </div>
-
             <div className="space-y-2">
-              <Label>Profile URL</Label>
+              <Label>{t("doctor.profileSection.profileUrl")}</Label>
               <Input value={publicUrl || ""} readOnly />
             </div>
           </div>
-
           {!isPublic && (
-            <Alert>
-              <AlertDescription>Your profile is private (unlisted). Share your link directly if needed.</AlertDescription>
-            </Alert>
+            <Alert><AlertDescription>{t("doctor.profileSection.profilePrivateNotice")}</AlertDescription></Alert>
           )}
         </div>
 
         <Separator />
 
-        {/* Booking Link Section */}
         <div className="space-y-3">
           <h3 className="font-medium flex items-center gap-2">
             <Link2 className="h-4 w-4" />
-            Patient Booking Link
+            {t("doctor.profileSection.bookingLink")}
           </h3>
-          <p className="text-sm text-muted-foreground">
-            Share this link with patients so they can book an appointment directly with you.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("doctor.profileSection.bookingLinkDesc")}</p>
           <div className="flex items-center gap-2">
-            <Input
-              value={bookingLink}
-              readOnly
-              className="font-mono text-sm bg-muted/50"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={copyBookingLink}
-              disabled={!bookingLink}
-              className="shrink-0"
-            >
+            <Input value={bookingLink} readOnly className="font-mono text-sm bg-muted/50" />
+            <Button variant="outline" size="icon" onClick={copyBookingLink} disabled={!bookingLink} className="shrink-0">
               {linkCopied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
