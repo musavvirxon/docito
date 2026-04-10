@@ -9,6 +9,7 @@ import {
   ChevronRight, RefreshCw 
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import type { StaffPatient } from '@/hooks/useStaffDashboard';
 
 interface PatientListSectionProps {
@@ -22,6 +23,7 @@ export const PatientListSection = ({
   onRefresh, 
   canManagePatients 
 }: PatientListSectionProps) => {
+  const { t } = useTranslation('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredPatients = patients.filter(patient =>
@@ -34,40 +36,38 @@ export const PatientListSection = ({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Patients</h2>
-          <p className="text-muted-foreground">View and manage patient information</p>
+          <h2 className="text-2xl font-bold text-foreground">{t('staff.patients.title', 'Patients')}</h2>
+          <p className="text-muted-foreground">{t('staff.patients.subtitle', 'View and manage patient information')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+            {t('staff.patients.refresh', 'Refresh')}
           </Button>
           {canManagePatients && (
             <Button size="sm">
               <UserPlus className="w-4 h-4 mr-2" />
-              Add Patient
+              {t('staff.patients.addPatient', 'Add Patient')}
             </Button>
           )}
         </div>
       </div>
 
-      {/* Search */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search patients..."
+          placeholder={t('staff.patients.searchPlaceholder', 'Search patients...')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"
         />
       </div>
 
-      {/* Patient List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Patient Directory ({filteredPatients.length})
+            {t('staff.patients.directory', 'Patient Directory')} ({filteredPatients.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -75,7 +75,9 @@ export const PatientListSection = ({
             <div className="text-center py-8 text-muted-foreground">
               <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
               <p>
-                {searchQuery ? 'No patients match your search' : 'No patients found'}
+                {searchQuery 
+                  ? t('staff.patients.noMatch', 'No patients match your search') 
+                  : t('staff.patients.noPatients', 'No patients found')}
               </p>
             </div>
           ) : (
@@ -109,7 +111,7 @@ export const PatientListSection = ({
                         {patient.last_visit && (
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            Last visit: {format(parseISO(patient.last_visit), 'MMM d, yyyy')}
+                            {t('staff.patients.lastVisit', 'Last visit')}: {format(parseISO(patient.last_visit), 'MMM d, yyyy')}
                           </span>
                         )}
                       </div>

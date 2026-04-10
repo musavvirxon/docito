@@ -1,5 +1,3 @@
-// File: src/components/staff/StaffDashboardOverview.tsx
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -9,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import type { StaffAppointment, StaffPayment, StaffPermissions, PracticeInfo } from '@/hooks/useStaffDashboard';
 
 interface StaffDashboardOverviewProps {
@@ -28,6 +27,7 @@ export const StaffDashboardOverview = ({
   recentPayments,
   onNavigate,
 }: StaffDashboardOverviewProps) => {
+  const { t } = useTranslation('dashboard');
   const pendingAppointments = todaysAppointments.filter(a => a.status === 'pending' || a.status === 'confirmed');
   const completedToday = todaysAppointments.filter(a => a.status === 'completed').length;
   const currency = recentPayments.find((p) => p.currency)?.currency || 'usd';
@@ -61,17 +61,15 @@ export const StaffDashboardOverview = ({
 
   return (
     <div className="space-y-6">
-      {/* Welcome Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground">
-          Welcome to {practice?.name || 'Your Practice'}
+          {t('staff.overview.welcome', 'Welcome to {{name}}', { name: practice?.name || t('staff.overview.yourPractice', 'Your Practice') })}
         </h1>
         <p className="text-muted-foreground">
           {format(new Date(), 'EEEE, MMMM d, yyyy')}
         </p>
       </div>
 
-      {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {permissions?.can_view_schedule && (
           <>
@@ -79,10 +77,10 @@ export const StaffDashboardOverview = ({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Today's Appointments</p>
+                    <p className="text-sm text-muted-foreground">{t('staff.overview.todaysAppointments', "Today's Appointments")}</p>
                     <p className="text-2xl font-bold text-foreground">{todaysAppointments.length}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {completedToday} completed
+                      {t('staff.overview.completed', '{{count}} completed', { count: completedToday })}
                     </p>
                   </div>
                   <Calendar className="w-8 h-8 text-primary opacity-80" />
@@ -94,10 +92,10 @@ export const StaffDashboardOverview = ({
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Pending Check-ins</p>
+                    <p className="text-sm text-muted-foreground">{t('staff.overview.pendingCheckins', 'Pending Check-ins')}</p>
                     <p className="text-2xl font-bold text-foreground">{pendingAppointments.length}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      awaiting arrival
+                      {t('staff.overview.awaitingArrival', 'awaiting arrival')}
                     </p>
                   </div>
                   <Clock className="w-8 h-8 text-yellow-500 opacity-80" />
@@ -112,10 +110,10 @@ export const StaffDashboardOverview = ({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Upcoming Patients</p>
+                  <p className="text-sm text-muted-foreground">{t('staff.overview.upcomingPatients', 'Upcoming Patients')}</p>
                   <p className="text-2xl font-bold text-foreground">{upcomingAppointments.length}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    next 7 days
+                    {t('staff.overview.next7days', 'next 7 days')}
                   </p>
                 </div>
                 <Users className="w-8 h-8 text-blue-500 opacity-80" />
@@ -129,10 +127,10 @@ export const StaffDashboardOverview = ({
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Recent Collections</p>
+                  <p className="text-sm text-muted-foreground">{t('staff.overview.recentCollections', 'Recent Collections')}</p>
                   <p className="text-2xl font-bold text-foreground">{formatCurrency(totalRevenueCents, currency)}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {recentPayments.length} transactions
+                    {t('staff.overview.transactions', '{{count}} transactions', { count: recentPayments.length })}
                   </p>
                 </div>
                 <DollarSign className="w-8 h-8 text-green-500 opacity-80" />
@@ -142,16 +140,15 @@ export const StaffDashboardOverview = ({
         )}
       </div>
 
-      {/* Next Appointments */}
       {permissions?.can_view_schedule && pendingAppointments.length > 0 && (
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5" />
-              Next Up
+              {t('staff.overview.nextUp', 'Next Up')}
             </CardTitle>
             <Button variant="ghost" size="sm" onClick={() => onNavigate('today')}>
-              View All <ArrowRight className="w-4 h-4 ml-1" />
+              {t('staff.overview.viewAll', 'View All')} <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </CardHeader>
           <CardContent>
@@ -169,7 +166,7 @@ export const StaffDashboardOverview = ({
                     </Avatar>
                     <div>
                       <p className="font-medium text-foreground">{apt.patient_name}</p>
-                      <p className="text-sm text-muted-foreground">with Dr. {apt.doctor_name}</p>
+                      <p className="text-sm text-muted-foreground">{t('staff.overview.withDr', 'with Dr. {{name}}', { name: apt.doctor_name })}</p>
                     </div>
                   </div>
                   <Badge variant="outline" className="capitalize">
@@ -182,35 +179,34 @@ export const StaffDashboardOverview = ({
         </Card>
       )}
 
-      {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>{t('staff.overview.quickActions', 'Quick Actions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {permissions?.can_book_appointments && (
               <Button variant="outline" className="h-auto py-4 flex flex-col gap-2">
                 <Calendar className="w-5 h-5" />
-                <span className="text-sm">Book Appointment</span>
+                <span className="text-sm">{t('staff.overview.bookAppointment', 'Book Appointment')}</span>
               </Button>
             )}
             {permissions?.can_view_schedule && (
               <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => onNavigate('today')}>
                 <Clock className="w-5 h-5" />
-                <span className="text-sm">Check-in Patient</span>
+                <span className="text-sm">{t('staff.overview.checkinPatient', 'Check-in Patient')}</span>
               </Button>
             )}
             {permissions?.can_manage_patients && (
               <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => onNavigate('patients')}>
                 <Users className="w-5 h-5" />
-                <span className="text-sm">Find Patient</span>
+                <span className="text-sm">{t('staff.overview.findPatient', 'Find Patient')}</span>
               </Button>
             )}
             {permissions?.can_manage_billing && (
               <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => onNavigate('billing')}>
                 <DollarSign className="w-5 h-5" />
-                <span className="text-sm">Process Payment</span>
+                <span className="text-sm">{t('staff.overview.processPayment', 'Process Payment')}</span>
               </Button>
             )}
           </div>

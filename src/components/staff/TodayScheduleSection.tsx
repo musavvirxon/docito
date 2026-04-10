@@ -8,6 +8,7 @@ import {
   PauseCircle, User, ChevronRight, RefreshCw 
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import type { StaffAppointment } from '@/hooks/useStaffDashboard';
 
 interface TodayScheduleSectionProps {
@@ -17,23 +18,24 @@ interface TodayScheduleSectionProps {
   canUpdateAppointments: boolean;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
-  confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
-  arrived: { label: 'Arrived', color: 'bg-green-100 text-green-800 border-green-200', icon: User },
-  in_progress: { label: 'In Progress', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: PlayCircle },
-  completed: { label: 'Completed', color: 'bg-gray-100 text-gray-800 border-gray-200', icon: CheckCircle },
-  canceled: { label: 'Canceled', color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
-  no_show: { label: 'No Show', color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
-};
-
 export const TodayScheduleSection = ({ 
   appointments, 
   onStatusUpdate, 
   onRefresh,
   canUpdateAppointments 
 }: TodayScheduleSectionProps) => {
+  const { t } = useTranslation('dashboard');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
+    pending: { label: t('staff.schedule.status.pending', 'Pending'), color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
+    confirmed: { label: t('staff.schedule.status.confirmed', 'Confirmed'), color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
+    arrived: { label: t('staff.schedule.status.arrived', 'Arrived'), color: 'bg-green-100 text-green-800 border-green-200', icon: User },
+    in_progress: { label: t('staff.schedule.status.inProgress', 'In Progress'), color: 'bg-purple-100 text-purple-800 border-purple-200', icon: PlayCircle },
+    completed: { label: t('staff.schedule.status.completed', 'Completed'), color: 'bg-gray-100 text-gray-800 border-gray-200', icon: CheckCircle },
+    canceled: { label: t('staff.schedule.status.canceled', 'Canceled'), color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
+    no_show: { label: t('staff.schedule.status.noShow', 'No Show'), color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
+  };
 
   const handleStatusUpdate = async (appointmentId: string, newStatus: string) => {
     setUpdatingId(appointmentId);
@@ -56,21 +58,21 @@ export const TodayScheduleSection = ({
     switch (currentStatus) {
       case 'pending':
         return [
-          { status: 'confirmed', label: 'Confirm', variant: 'default' as const },
-          { status: 'canceled', label: 'Cancel', variant: 'destructive' as const },
+          { status: 'confirmed', label: t('staff.schedule.actions.confirm', 'Confirm'), variant: 'default' as const },
+          { status: 'canceled', label: t('staff.schedule.actions.cancel', 'Cancel'), variant: 'destructive' as const },
         ];
       case 'confirmed':
         return [
-          { status: 'arrived', label: 'Mark Arrived', variant: 'default' as const },
-          { status: 'no_show', label: 'No Show', variant: 'outline' as const },
+          { status: 'arrived', label: t('staff.schedule.actions.markArrived', 'Mark Arrived'), variant: 'default' as const },
+          { status: 'no_show', label: t('staff.schedule.actions.noShow', 'No Show'), variant: 'outline' as const },
         ];
       case 'arrived':
         return [
-          { status: 'in_progress', label: 'Start', variant: 'default' as const },
+          { status: 'in_progress', label: t('staff.schedule.actions.start', 'Start'), variant: 'default' as const },
         ];
       case 'in_progress':
         return [
-          { status: 'completed', label: 'Complete', variant: 'default' as const },
+          { status: 'completed', label: t('staff.schedule.actions.complete', 'Complete'), variant: 'default' as const },
         ];
       default:
         return [];
@@ -81,14 +83,14 @@ export const TodayScheduleSection = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Today's Schedule</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t('staff.schedule.title', "Today's Schedule")}</h2>
           <p className="text-muted-foreground">
-            {format(new Date(), 'EEEE, MMMM d, yyyy')} • {appointments.length} appointments
+            {format(new Date(), 'EEEE, MMMM d, yyyy')} • {t('staff.schedule.appointmentCount', '{{count}} appointments', { count: appointments.length })}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onRefresh}>
           <RefreshCw className="w-4 h-4 mr-2" />
-          Refresh
+          {t('staff.schedule.refresh', 'Refresh')}
         </Button>
       </div>
 
@@ -96,8 +98,8 @@ export const TodayScheduleSection = ({
         <Card>
           <CardContent className="p-8 text-center">
             <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No Appointments Today</h3>
-            <p className="text-muted-foreground">The schedule is clear for today.</p>
+            <h3 className="text-lg font-medium text-foreground mb-2">{t('staff.schedule.noAppointments', 'No Appointments Today')}</h3>
+            <p className="text-muted-foreground">{t('staff.schedule.scheduleClear', 'The schedule is clear for today.')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -111,7 +113,6 @@ export const TodayScheduleSection = ({
               <Card key={apt.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
-                    {/* Time */}
                     <div className="text-center min-w-[80px]">
                       <p className="text-lg font-bold text-foreground">
                         {formatTime(apt.start_time)}
@@ -121,7 +122,6 @@ export const TodayScheduleSection = ({
                       </p>
                     </div>
 
-                    {/* Patient Info */}
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <Avatar className="h-10 w-10">
@@ -132,12 +132,11 @@ export const TodayScheduleSection = ({
                         <div>
                           <h4 className="font-semibold text-foreground">{apt.patient_name}</h4>
                           <p className="text-sm text-muted-foreground">
-                            with Dr. {apt.doctor_name}
+                            {t('staff.schedule.withDr', 'with Dr. {{name}}', { name: apt.doctor_name })}
                           </p>
                         </div>
                       </div>
 
-                      {/* Contact Info */}
                       <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                         {apt.patient_phone && (
                           <span className="flex items-center gap-1">
@@ -160,7 +159,6 @@ export const TodayScheduleSection = ({
                       )}
                     </div>
 
-                    {/* Status & Actions */}
                     <div className="text-right space-y-2">
                       <Badge className={statusConfig.color}>
                         <StatusIcon className="w-3 h-3 mr-1" />
