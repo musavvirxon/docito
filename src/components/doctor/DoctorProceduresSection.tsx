@@ -55,6 +55,7 @@ interface Procedure {
 }
 
 const DoctorProceduresSection = () => {
+  const { t } = useTranslation('dashboard');
   const { toast } = useToast();
   const { user } = useAuth();
   const { procedures: dbProcedures, loading: dbLoading, createProcedure } = useProcedures();

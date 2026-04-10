@@ -75,6 +75,7 @@ interface StaffRole {
 }
 
 export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
+  const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState("general");

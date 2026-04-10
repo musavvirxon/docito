@@ -37,6 +37,7 @@ interface MedicalRecord {
 }
 
 const AssignedPatientsSection = () => {
+  const { t } = useTranslation("dashboard");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
