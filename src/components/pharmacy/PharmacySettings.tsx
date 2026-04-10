@@ -1,6 +1,7 @@
 // File: src/components/pharmacy/PharmacySettings.tsx
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -117,6 +118,7 @@ function centsToDollars(v: number) {
 }
 
 export default function PharmacySettings({ pharmacyId }: Props) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

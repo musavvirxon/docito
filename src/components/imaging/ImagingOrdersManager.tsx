@@ -1,6 +1,7 @@
 // File: src/components/imaging/ImagingOrdersManager.tsx
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +94,7 @@ const REFERRAL_STATUSES = ["pending", "accepted", "declined", "completed"];
 const PRIORITIES = ["routine", "urgent", "stat"];
 
 export default function ImagingOrdersManager({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
 

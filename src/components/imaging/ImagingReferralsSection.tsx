@@ -1,8 +1,10 @@
 // src/components/imaging/ImagingReferralsSection.tsx
 
 import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
+import { useTranslation } from 'react-i18next';
 
 export function ImagingReferralsSection({ centerId }: { centerId: string }) {
+  const { t } = useTranslation("imagingAdminDashboard");
   if (!centerId) return null;
 
   return (

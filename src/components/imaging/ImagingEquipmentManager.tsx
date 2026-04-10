@@ -1,6 +1,7 @@
 // File: src/components/imaging/ImagingEquipmentManager.tsx
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +51,7 @@ function statusBadge(status: EquipmentStatus) {
 }
 
 export default function ImagingEquipmentManager({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
   const [items, setItems] = useState<Equipment[]>([]);

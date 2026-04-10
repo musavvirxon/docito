@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -265,6 +266,7 @@ function statusBadge(status: ClaimStatus) {
 }
 
 export default function PharmacyInsuranceClaims({ pharmacyId }: Props) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const [claims, setClaims] = useState<InsuranceClaim[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

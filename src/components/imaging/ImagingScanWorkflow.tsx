@@ -1,6 +1,7 @@
 // src/components/imaging/ImagingScanWorkflow.tsx
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +59,7 @@ function labelForStatus(status: ImagingWorkflowStatus) {
 }
 
 export default function ImagingScanWorkflow({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const { orders, loading, fetchCenterOrders, updateOrderStatus, mergeResultAttachments } = useImagingOrders();
 
   const [filter, setFilter] = useState<string>("all");

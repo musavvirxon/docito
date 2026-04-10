@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -236,6 +237,7 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export function ImagingStaffManager({ imagingCenterId }: ImagingStaffManagerProps) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const sb: any = supabase as any;
 
   const [loading, setLoading] = useState(true);

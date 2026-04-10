@@ -1,10 +1,12 @@
 import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
+import { useTranslation } from 'react-i18next';
 
 interface PharmacyReferralsSectionProps {
   pharmacyId: string;
 }
 
 export function PharmacyReferralsSection({ pharmacyId }: PharmacyReferralsSectionProps) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   if (!pharmacyId) {
     return null;
   }

@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { format, startOfDay, subDays, differenceInMinutes } from "date-fns";
 import {
   ResponsiveContainer,
@@ -132,6 +133,7 @@ function getOrderCreatedAt(order: FulfillmentOrderExt): string | undefined {
 }
 
 export default function PharmacyAnalytics({ pharmacyId }: Props) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
   const {

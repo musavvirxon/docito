@@ -2,6 +2,7 @@
 // Direct-query staff management (same pattern as LabStaffManager)
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,6 +157,7 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManagerProps) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const sb: any = supabase as any;
 
   const [loading, setLoading] = useState(true);

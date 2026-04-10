@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT (no backend / no edge function; direct Supabase queries)
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -287,6 +288,7 @@ function ageBucketFromDob(dob?: string | null): string | null {
 }
 
 export default function ImagingAnalytics({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const [period, setPeriod] = useState<"7" | "30" | "90">("30");
   const [loading, setLoading] = useState<boolean>(true);
   const [data, setData] = useState<AnalyticsResponse | null>(null);
