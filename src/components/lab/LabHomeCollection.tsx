@@ -171,7 +171,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                   <Calendar className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Today's Collections</p>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.collections.today")}</p>
                   <p className="text-2xl font-bold">{todayCollections.length}</p>
                 </div>
               </div>
@@ -184,7 +184,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                   <Clock className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Pending Assignment</p>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.collections.pendingAssignment")}</p>
                   <p className="text-2xl font-bold">
                     {collections.filter((c) => c.status === 'pending').length}
                   </p>
@@ -199,7 +199,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                   <Truck className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">In Transit</p>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.collections.inTransit")}</p>
                   <p className="text-2xl font-bold">
                     {collections.filter((c) => c.status === 'in_transit').length}
                   </p>
@@ -214,7 +214,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                   <CheckCircle className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed Today</p>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.collections.completedToday")}</p>
                   <p className="text-2xl font-bold">
                     {todayCollections.filter((c) => c.status === 'completed').length}
                   </p>
@@ -233,7 +233,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                   <Truck className="h-5 w-5" />
                   Home Sample Collection
                 </CardTitle>
-                <CardDescription>Manage pickup schedules and staff assignments</CardDescription>
+                <CardDescription>{t("dashboard.collections.subtitle")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={fetchCollections}>
                 <RefreshCw className="h-4 w-4" />
@@ -246,7 +246,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  placeholder="Search by patient or address..."
+                  placeholder={t("dashboard.collections.search")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -258,7 +258,7 @@ export default function LabHomeCollection({ labCenterId }: Props) {
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="scheduled">{t("dashboard.collections.table.scheduled")}</SelectItem>
                   <SelectItem value="in_transit">In Transit</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -271,11 +271,11 @@ export default function LabHomeCollection({ labCenterId }: Props) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Address</TableHead>
+                    <TableHead>{t("dashboard.collections.table.patient")}</TableHead>
+                    <TableHead>{t("dashboard.collections.table.address")}</TableHead>
                     <TableHead>Scheduled</TableHead>
-                    <TableHead>Collector</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>{t("dashboard.collections.table.collector")}</TableHead>
+                    <TableHead>{t("dashboard.collections.table.status")}</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>

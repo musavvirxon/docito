@@ -780,7 +780,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
             Analytics Dashboard
           </h2>
           <p className="text-sm text-muted-foreground">
-            Lab operations analytics across orders, tests, results, referrals, and catalog performance
+            {t("dashboard.analytics.subtitle")}
           </p>
         </div>
 
@@ -827,7 +827,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm text-muted-foreground">Completion Rate</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.analytics.metrics.completionRate")}</p>
                 <p className="text-2xl font-bold">{analytics.completionRate.toFixed(1)}%</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {analytics.completedOrdersCount} completed • {analytics.pendingOrdersCount} pending
@@ -844,7 +844,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm text-muted-foreground">Test Volume</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.analytics.metrics.testVolume")}</p>
                 <p className="text-2xl font-bold">{analytics.totalTestsCurrent.toLocaleString()}</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {analytics.avgTestsPerOrder.toFixed(1)} tests / order
@@ -899,7 +899,7 @@ export default function LabAnalytics({ labCenterId }: Props) {
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Result Verification</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.analytics.metrics.resultVerification")}</p>
                 <p className="text-xl font-bold">{analytics.verificationRate.toFixed(1)}%</p>
                 <p className="text-xs text-muted-foreground">
                   {analytics.verifiedCount} verified • {analytics.pendingVerification} pending

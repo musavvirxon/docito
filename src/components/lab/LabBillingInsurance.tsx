@@ -317,9 +317,9 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <CreditCard className="h-6 w-6" />
-            Billing & Insurance
+            {t("dashboard.billing.title")}
           </h2>
-          <p className="text-muted-foreground">Live billing transactions and insurance-covered orders.</p>
+          <p className="text-muted-foreground">{t("dashboard.billing.subtitle")}</p>
         </div>
         <Button variant="outline" onClick={fetchAll} disabled={txLoading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${txLoading ? 'animate-spin' : ''}`} />
@@ -333,7 +333,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Gross Revenue</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.billing.grossRevenue")}</p>
                 <p className="text-3xl font-bold">{moneyFromCents(txSummary.grossCents)}</p>
                 <p className="text-xs text-muted-foreground mt-1">{currency.toUpperCase()}</p>
               </div>
@@ -347,7 +347,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Refunds</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.billing.refunds")}</p>
                 <p className="text-3xl font-bold">{moneyFromCents(txSummary.refundCents)}</p>
                 <p className="text-xs text-muted-foreground mt-1">{currency.toUpperCase()}</p>
               </div>
@@ -361,7 +361,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Net Revenue</p>
+                <p className="text-sm text-muted-foreground">{t("dashboard.billing.netRevenue")}</p>
                 <p className="text-3xl font-bold">{moneyFromCents(txSummary.netCents)}</p>
                 <p className="text-xs text-muted-foreground mt-1">{txSummary.completed} completed transactions</p>
               </div>
@@ -375,7 +375,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
 
       <Tabs defaultValue="transactions" className="w-full">
         <TabsList>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="transactions">{t("dashboard.billing.tabs.transactions")}</TabsTrigger>
           <TabsTrigger value="insurance">Insurance Orders</TabsTrigger>
         </TabsList>
 
@@ -406,7 +406,7 @@ export default function LabBillingInsurance({ labCenterId }: Props) {
                     {filteredTx.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                          No transactions found
+                          {t("dashboard.billing.table.empty")}
                         </TableCell>
                       </TableRow>
                     ) : (

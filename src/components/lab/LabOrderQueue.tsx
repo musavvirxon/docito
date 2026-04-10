@@ -110,7 +110,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by order #, patient name/phone..."
+              placeholder={t("dashboard.orders.search")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -122,7 +122,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="all">{t("dashboard.orders.statuses")}</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="scheduled">Scheduled</SelectItem>
               <SelectItem value="sample_collected">Sample Collected</SelectItem>
@@ -154,7 +154,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
             <CardContent className="p-0">
               <ScrollArea className="h-[500px]">
                 {filteredOrders.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">No orders found</div>
+                  <div className="p-6 text-center text-muted-foreground">{t("dashboard.orders.empty")}</div>
                 ) : (
                   <div className="divide-y">
                     {filteredOrders.map((order) => {
@@ -212,7 +212,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
           {/* Order Details */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Order Details</CardTitle>
+              <CardTitle className="text-lg">{t("dashboard.orders.details.title")}</CardTitle>
             </CardHeader>
             <CardContent>
               {selectedOrder ? (
@@ -318,7 +318,7 @@ export function LabOrderQueue({ orders, labCenterId, onRefresh }: LabOrderQueueP
                 <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <TestTube className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Select an order to view details</p>
+                    <p>{t("dashboard.orders.details.select")}</p>
                   </div>
                 </div>
               )}
