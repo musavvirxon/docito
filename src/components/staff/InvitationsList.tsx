@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { usePracticeInvitations, PracticeInvitation } from "@/hooks/usePracticeInvitations";
+import { useTranslation } from "react-i18next";
 
 interface InvitationsListProps {
   practiceId: string;

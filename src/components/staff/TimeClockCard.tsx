@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogIn, LogOut, Timer } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
