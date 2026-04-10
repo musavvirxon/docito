@@ -1,5 +1,6 @@
 // File: src/components/doctor/DoctorProfileSection.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ const USERNAME_RE = /^[a-z0-9][a-z0-9_-]{2,29}$/;
 const normalizeUsername = (v: string) => v.trim().toLowerCase();
 
 export default function DoctorProfileSection() {
+  const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile } = useAuth();

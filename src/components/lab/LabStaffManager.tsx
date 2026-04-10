@@ -1,6 +1,7 @@
 // File: src/components/lab/LabStaffManager.tsx
 // FULL FILE REPLACEMENT
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -222,6 +223,7 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const sb: any = supabase as any;
 
   const [loading, setLoading] = useState(true);
@@ -695,7 +697,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Active Staff</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.staff.stats.active")}</div>
               <div className="text-2xl font-semibold">{activeRows.length}</div>
             </div>
             <Users className="h-5 w-5 text-muted-foreground" />
@@ -705,7 +707,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Pending Invitations</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.staff.pending.title")}</div>
               <div className="text-2xl font-semibold">{pendingRows.length}</div>
             </div>
             <Clock3 className="h-5 w-5 text-muted-foreground" />
@@ -715,7 +717,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Inactive / Disabled</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.staff.stats.inactive")}</div>
               <div className="text-2xl font-semibold">{inactiveRows.length}</div>
             </div>
             <Power className="h-5 w-5 text-muted-foreground" />
@@ -725,7 +727,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Admin / Managers</div>
+              <div className="text-sm text-muted-foreground">{t("dashboard.staff.stats.admins")}</div>
               <div className="text-2xl font-semibold">
                 {
                   activeRows.filter((r) => ["admin", "manager"].includes(String(getStaffRole(r)).toLowerCase())).length
@@ -830,7 +832,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         </CardHeader>
         <CardContent>
           {pendingRows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No pending invitations.</div>
+            <div className="text-sm text-muted-foreground">{t("dashboard.staff.pending.empty")}</div>
           ) : (
             <div className="space-y-3">
               {pendingRows.map((row) => {
@@ -921,7 +923,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading staff…</div>
           ) : filteredActiveRows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No active staff found.</div>
+            <div className="text-sm text-muted-foreground">{t("dashboard.staff.active.empty")}</div>
           ) : (
             <div className="space-y-4">
               {filteredActiveRows.map((row) => {
@@ -1083,7 +1085,7 @@ export function LabStaffManager({ labCenterId }: LabStaffManagerProps) {
         </CardHeader>
         <CardContent>
           {auditTrail.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No staff audit activity found.</div>
+            <div className="text-sm text-muted-foreground">{t("dashboard.staff.audit.empty")}</div>
           ) : (
             <div className="space-y-3">
               {auditTrail.map((item) => (

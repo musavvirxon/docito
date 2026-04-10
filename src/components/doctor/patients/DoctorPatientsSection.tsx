@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from 'react-i18next';
 import PatientListSection from "./PatientListSection";
 import AddPatientModal from "./AddPatientModal";
 import PatientDashboardView from "@/components/patient-dashboard/PatientDashboardView";

@@ -2,6 +2,7 @@
 // Direct-query staff management (same pattern as LabStaffManager)
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,6 +157,7 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManagerProps) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const sb: any = supabase as any;
 
   const [loading, setLoading] = useState(true);
@@ -451,8 +453,8 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Active Staff</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Pending Invitations</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("pharmacyDashboard.staff.active", "Active Staff")}</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("pharmacyDashboard.staff.pending", "Pending Invitations")}</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
         <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Inactive / Disabled</div><div className="text-2xl font-semibold">{inactiveRows.length}</div></div><Power className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
         <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Admin / Pharmacists</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "pharmacist"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
       </div>

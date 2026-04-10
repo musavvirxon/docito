@@ -1,4 +1,5 @@
 import { PremiumDoctorCalendar } from './calendar';
+import { useTranslation } from 'react-i18next';
 
 interface DoctorCalendarSectionProps {
   doctorId?: string;

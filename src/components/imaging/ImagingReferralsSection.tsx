@@ -1,15 +1,17 @@
 // src/components/imaging/ImagingReferralsSection.tsx
 
 import { FacilityReferralCreator, ReferralsSection } from "@/components/referrals";
+import { useTranslation } from 'react-i18next';
 
 export function ImagingReferralsSection({ centerId }: { centerId: string }) {
+  const { t } = useTranslation("imagingAdminDashboard");
   if (!centerId) return null;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Referrals</h2>
+          <h2 className="text-lg font-semibold">{t("imagingDashboard.referrals.title", "Referrals")}</h2>
           <p className="text-sm text-muted-foreground">
             Manage incoming referrals and create outgoing referrals
           </p>

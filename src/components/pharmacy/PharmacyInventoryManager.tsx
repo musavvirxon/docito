@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { format, differenceInCalendarDays } from "date-fns";
 import {
   ResponsiveContainer,
@@ -112,6 +113,7 @@ function humanize(v?: string | null): string {
 }
 
 export default function PharmacyInventoryManager({ pharmacyId }: Props) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const {
     inventory,
     loading,

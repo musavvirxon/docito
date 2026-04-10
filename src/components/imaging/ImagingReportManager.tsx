@@ -1,6 +1,7 @@
 // File: src/components/imaging/ImagingReportManager.tsx
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ function statusLabel(s: ReportStatus) {
 }
 
 export default function ImagingReportManager({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | ReportStatus>("all");

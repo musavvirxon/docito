@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import {
   ArrowRightLeft,
   ArrowUpRight,
@@ -786,6 +787,7 @@ function PatientPickerDialog({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function DoctorReferralsSection() {
+  const { t } = useTranslation("dashboard");
   const { doctorProfile } = useDoctorData();
   const { createReferral, sendReferral, acceptReferral, rejectReferral, completeReferral } =
     useReferralActions();

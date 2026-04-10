@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ interface AcceptNewPatientsToggleProps {
 }
 
 export function AcceptNewPatientsToggle({ doctorId, initialValue = true }: AcceptNewPatientsToggleProps) {
+  const { t } = useTranslation("dashboard");
   const [acceptsNewPatients, setAcceptsNewPatients] = useState(initialValue);
   const [saving, setSaving] = useState(false);
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ type PatientMatch = {
 };
 
 function makeOrderNumber() {
+  const { t } = useTranslation("labAdminDashboard");
   return `LAB-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 }
 

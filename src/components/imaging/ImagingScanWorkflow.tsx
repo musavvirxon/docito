@@ -1,6 +1,7 @@
 // src/components/imaging/ImagingScanWorkflow.tsx
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +59,7 @@ function labelForStatus(status: ImagingWorkflowStatus) {
 }
 
 export default function ImagingScanWorkflow({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const { orders, loading, fetchCenterOrders, updateOrderStatus, mergeResultAttachments } = useImagingOrders();
 
   const [filter, setFilter] = useState<string>("all");
@@ -280,7 +282,7 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
       <Card>
         <CardContent className="pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <div className="text-sm font-semibold">Scan Workflow</div>
+            <div className="text-sm font-semibold">{t("imagingDashboard.workflow.title")}</div>
             <div className="text-sm text-muted-foreground">
               Create walk-in orders here and manage scans from scheduling to report delivery.
             </div>
@@ -340,7 +342,7 @@ export default function ImagingScanWorkflow({ centerId }: Props) {
           {filteredScans.length === 0 ? (
             <div className="text-center py-12">
               <FileImage className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No scans found</p>
+              <p className="text-muted-foreground">{t("imagingDashboard.workflow.empty")}</p>
             </div>
           ) : (
             <ScrollArea className="h-[600px]">

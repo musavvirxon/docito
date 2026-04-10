@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -186,7 +187,7 @@ export function PharmacyManualPrescriptionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Manual Prescription</DialogTitle>
+          <DialogTitle>{t("pharmacyDashboard.manualPrescription.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

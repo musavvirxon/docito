@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,6 +32,7 @@ interface TestOrderCreatorProps {
 }
 
 export function TestOrderCreator({ patientId, doctorId, appointmentId, onSuccess }: TestOrderCreatorProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const { labCenters, testCatalog, fetchLabCenters, fetchTestCatalog, loading: catalogLoading } = useLabCenter();
   const { createTestOrder, loading: orderLoading } = useTestOrders();
   

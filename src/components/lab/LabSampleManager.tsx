@@ -1,5 +1,6 @@
 // src/components/lab/LabSampleManager.tsx
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +62,7 @@ interface Props {
 }
 
 export default function LabSampleManager({ labCenterId }: Props) {
+  const { t } = useTranslation("labAdminDashboard");
   const [samples, setSamples] = useState<Sample[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -219,7 +221,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
                   <TestTube className="h-5 w-5" />
                   Sample Management
                 </CardTitle>
-                <CardDescription>Track samples from collection to results</CardDescription>
+                <CardDescription>{t("dashboard.samples.subtitle")}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={fetchSamples}>
                 <RefreshCw className="h-4 w-4" />
@@ -232,7 +234,7 @@ export default function LabSampleManager({ labCenterId }: Props) {
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
-                  placeholder="Search by sample ID, barcode, or patient..."
+                  placeholder={t("dashboard.samples.search")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

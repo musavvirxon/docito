@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { format, formatDistanceToNow } from "date-fns";
 import {
   ResponsiveContainer,
@@ -107,6 +108,7 @@ function money(v: number) {
 }
 
 export default function FulfillmentQueue({ pharmacyId }: Props) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const { fulfillmentOrders, loading, processFulfillment, fetchFulfillmentOrders } = usePrescriptions({ pharmacyId });
 
   const [searchTerm, setSearchTerm] = useState("");

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -131,7 +132,7 @@ export function ImagingManualOrderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Manual Imaging Order</DialogTitle>
+          <DialogTitle>{t("imagingDashboard.newOrder.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

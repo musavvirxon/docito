@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -326,6 +327,7 @@ async function safeQuery<T>(
 }
 
 export default function ImagingBillingSection({ centerId }: Props) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const [period, setPeriod] = useState<"30" | "90" | "180">("90");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticsPayload | null>(null);

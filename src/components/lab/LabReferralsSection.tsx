@@ -1,10 +1,12 @@
 import { ReferralsSection, FacilityReferralCreator } from '@/components/referrals';
+import { useTranslation } from 'react-i18next';
 
 interface LabReferralsSectionProps {
   labCenterId: string;
 }
 
 export function LabReferralsSection({ labCenterId }: LabReferralsSectionProps) {
+  const { t } = useTranslation("labAdminDashboard");
   if (!labCenterId) {
     return null;
   }
@@ -13,7 +15,7 @@ export function LabReferralsSection({ labCenterId }: LabReferralsSectionProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Referrals</h2>
+          <h2 className="text-lg font-semibold">{t("dashboard.referrals.title")}</h2>
           <p className="text-sm text-muted-foreground">
             Manage incoming referrals and create outgoing referrals
           </p>
@@ -26,8 +28,8 @@ export function LabReferralsSection({ labCenterId }: LabReferralsSectionProps) {
         entityType="lab"
         entityId={labCenterId}
         showCreateButton={false}
-        title="Incoming Referrals"
-        description="Referrals received by your lab"
+        title={t("dashboard.referrals.incoming.title")}
+        description={t("dashboard.referrals.incoming.subtitle")}
       />
 
       <ReferralsSection
@@ -35,8 +37,8 @@ export function LabReferralsSection({ labCenterId }: LabReferralsSectionProps) {
         entityType="lab"
         entityId={labCenterId}
         showCreateButton={false}
-        title="Outgoing Referrals"
-        description="Referrals sent by your lab"
+        title={t("dashboard.referrals.outgoing.title")}
+        description={t("dashboard.referrals.outgoing.subtitle")}
       />
     </div>
   );

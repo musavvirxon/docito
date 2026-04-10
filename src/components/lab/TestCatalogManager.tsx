@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ interface FormDataWithParams extends TestCatalogInput {
 }
 
 export function TestCatalogManager({ labCenterId }: TestCatalogManagerProps) {
+  const { t } = useTranslation("labAdminDashboard");
   const { testCatalog, fetchTestCatalog, upsertTestCatalog, loading } = useLabCenter();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');

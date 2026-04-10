@@ -1,6 +1,7 @@
 // File: src/components/lab/LabSettingsSection.tsx
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,7 @@ type LabSettings = {
 };
 
 export function LabSettingsSection({ labCenterId }: { labCenterId: string }) {
+  const { t } = useTranslation("labAdminDashboard");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [center, setCenter] = useState<LabCenter | null>(null);
@@ -136,7 +138,7 @@ export function LabSettingsSection({ labCenterId }: { labCenterId: string }) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Lab Profile</CardTitle>
+          <CardTitle>{t("dashboard.settings.profile.title", "Lab Profile")}</CardTitle>
           <CardDescription>Basic information used across your lab workflows.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -179,7 +181,7 @@ export function LabSettingsSection({ labCenterId }: { labCenterId: string }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Operational Settings</CardTitle>
+          <CardTitle>{t("dashboard.settings.operational.title", "Operational Settings")}</CardTitle>
           <CardDescription>Notifications, billing defaults, and turnaround expectations.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,4 +1,5 @@
 import { motion, type Easing } from "framer-motion";
+import { useTranslation } from 'react-i18next';
 
 /**
  * A lightweight SVG animation showing the care network:
@@ -6,6 +7,7 @@ import { motion, type Easing } from "framer-motion";
  * Runs once on load for performance.
  */
 export default function CareNetworkAnimation() {
+  const { t } = useTranslation("dashboard");
   const easeInOut: Easing = [0.4, 0, 0.2, 1];
   const easeOut: Easing = [0, 0, 0.2, 1];
 
