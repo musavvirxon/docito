@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -54,6 +55,7 @@ interface Procedure {
 }
 
 const DoctorProceduresSection = () => {
+  const { t } = useTranslation('dashboard');
   const { toast } = useToast();
   const { user } = useAuth();
   const { procedures: dbProcedures, loading: dbLoading, createProcedure } = useProcedures();

@@ -10,6 +10,7 @@ import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { useDashboardTopBar } from "@/hooks/useDashboardTopBar";
 import type { AppRole } from "@/lib/rbac";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 function verificationRouteForFacility(facilityType: string) {
   if (facilityType === "practice") return "/practice-verification";
@@ -43,6 +44,7 @@ function canRequestVerification(status: string) {
 export default function DashboardTopNav(props: { role: AppRole; showSettings?: boolean }) {
   const { role, showSettings = true } = props;
   const nav = useNavigate();
+  const { t } = useTranslation("dashboard");
 
   const { loading, entityName, entityStatus, unreadCount, facilityType, requestVerification } = useDashboardTopBar(role);
 
@@ -51,12 +53,12 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
 
   const statusLabel = useMemo(() => {
     const s = String(entityStatus || "unknown").toLowerCase();
-    if (s === "verified") return "Verified";
-    if (s === "pending") return "Pending";
-    if (s === "suspended") return "Suspended";
-    if (s === "active") return "Active";
-    return "Unknown";
-  }, [entityStatus]);
+    if (s === "verified") return t("doctor.topNav.verified");
+    if (s === "pending") return t("doctor.topNav.pending");
+    if (s === "suspended") return t("doctor.topNav.suspended");
+    if (s === "active") return t("doctor.topNav.active");
+    return t("doctor.topNav.unknown");
+  }, [entityStatus, t]);
 
   const badgeCount = Math.min(Math.max(0, unreadCount || 0), 99);
 
@@ -66,15 +68,15 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
         <div className="flex items-center gap-3 min-w-0">
           <LayoutDashboard className="h-5 w-5 text-muted-foreground shrink-0" />
           <div className="min-w-0">
-            <div className="font-semibold truncate">{entityName || "Dashboard"}</div>
+            <div className="font-semibold truncate">{entityName || t("doctor.topNav.dashboard")}</div>
             <div className="text-xs text-muted-foreground truncate">
-              {loading ? "Loading…" : facilityType === "none" ? "Platform" : facilityType}
+              {loading ? t("doctor.topNav.loading") : facilityType === "none" ? t("doctor.topNav.platform") : facilityType}
             </div>
           </div>
 
-          <Button variant="ghost" className="h-9 px-3" onClick={() => nav(verificationRoute)} title="Open verification page">
+          <Button variant="ghost" className="h-9 px-3" onClick={() => nav(verificationRoute)} title={t("doctor.topNav.verification")}>
             <ShieldCheck className="h-4 w-4 mr-2" />
-            Verification
+            {t("doctor.topNav.verification")}
             <Badge className="ml-2" variant={statusBadgeVariant(entityStatus)}>
               {statusLabel}
             </Badge>
@@ -87,15 +89,15 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
               onClick={async () => {
                 try {
                   await requestVerification();
-                  toast.success("Verification request submitted");
+                  toast.success(t("doctor.topNav.verificationRequestSubmitted"));
                   nav(verificationRoute);
                 } catch (e: any) {
-                  toast.error(e?.message || "Failed to request verification");
+                  toast.error(e?.message || t("doctor.topNav.failedToRequestVerification"));
                 }
               }}
-              title="Request verification review"
+              title={t("doctor.topNav.requestReview")}
             >
-              Request review
+              {t("doctor.topNav.requestReview")}
             </Button>
           ) : null}
         </div>
@@ -104,8 +106,8 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
           <ThemeToggle />
           <LanguageSwitcher />
 
-          <Button asChild variant="ghost" size="icon" className="relative" title="Notifications">
-            <Link to="/notifications" aria-label="Notifications">
+          <Button asChild variant="ghost" size="icon" className="relative" title={t("doctor.topNav.notifications")}>
+            <Link to="/notifications" aria-label={t("doctor.topNav.notifications")}>
               <Bell className="h-5 w-5" />
               {badgeCount > 0 ? (
                 <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
@@ -116,10 +118,10 @@ export default function DashboardTopNav(props: { role: AppRole; showSettings?: b
           </Button>
 
           {showSettings && facilityType !== "none" ? (
-            <Button asChild variant="ghost" className="h-9 px-3" title="Settings">
+            <Button asChild variant="ghost" className="h-9 px-3" title={t("doctor.topNav.settings")}>
               <Link to={settingsRoute}>
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                {t("doctor.topNav.settings")}
               </Link>
             </Button>
           ) : null}
