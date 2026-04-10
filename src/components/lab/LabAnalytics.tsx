@@ -2,6 +2,7 @@
 // FULL FILE REPLACEMENT
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfDay, subDays, differenceInHours, differenceInMinutes } from "date-fns";
 import {

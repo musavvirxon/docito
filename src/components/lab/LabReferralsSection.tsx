@@ -1,4 +1,5 @@
 import { ReferralsSection, FacilityReferralCreator } from '@/components/referrals';
+import { useTranslation } from 'react-i18next';
 
 interface LabReferralsSectionProps {
   labCenterId: string;

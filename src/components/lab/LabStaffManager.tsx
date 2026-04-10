@@ -1,6 +1,7 @@
 // File: src/components/lab/LabStaffManager.tsx
 // FULL FILE REPLACEMENT
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
