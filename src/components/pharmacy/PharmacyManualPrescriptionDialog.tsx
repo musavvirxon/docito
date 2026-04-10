@@ -187,7 +187,7 @@ export function PharmacyManualPrescriptionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Manual Prescription</DialogTitle>
+          <DialogTitle>{t("pharmacyDashboard.manualPrescription.title")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

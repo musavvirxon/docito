@@ -721,7 +721,7 @@ export function ImagingStaffManager({ imagingCenterId }: ImagingStaffManagerProp
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-sm text-muted-foreground">Active Staff</div>
+              <div className="text-sm text-muted-foreground">{t("imagingDashboard.staff.active", "Active Staff")}</div>
               <div className="text-2xl font-semibold">{activeRows.length}</div>
             </div>
             <Users className="h-5 w-5 text-muted-foreground" />

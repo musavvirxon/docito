@@ -296,7 +296,7 @@ export default function ImagingEquipmentManager({ centerId }: Props) {
       <Card>
         <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <CardTitle>Equipment</CardTitle>
+            <CardTitle>{t("imagingDashboard.equipment.title")}</CardTitle>
             <CardDescription>
               Manage scanners and capacity{!available ? " (storage syncing…)" : ""}
             </CardDescription>
