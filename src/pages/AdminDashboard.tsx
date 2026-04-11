@@ -86,7 +86,7 @@ type AdminSection =
   | "analytics"
   | "settings";
 
-function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => void; message: string }) {
+function LockedOverlay({ onRequestVerify, message, t }: { onRequestVerify: () => void; message: string; t: (key: string, opts?: any) => string }) {
   return (
     <div
       className="absolute inset-0 z-20 rounded-xl bg-background/70 backdrop-blur-sm border border-border flex items-center justify-center p-6"
@@ -99,12 +99,12 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-amber-600" />
-              Verification required
+              {t("lockedOverlay.title")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Your clinic/practice/hospital dashboard is visible, but actions are disabled until your organization is verified.
+              {t("lockedOverlay.description")}
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
@@ -114,16 +114,16 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
                 }}
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Start verification
+                {t("lockedOverlay.startVerification")}
               </Button>
               <Button
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toast.info("You can browse sections, but actions remain locked until verification.");
+                  toast.info(t("lockedOverlay.browseInfo"));
                 }}
               >
-                Okay
+                {t("lockedOverlay.okay")}
               </Button>
             </div>
           </CardContent>
@@ -133,12 +133,13 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
   );
 }
 
-function SectionWrapper({ children, locked, onRequestVerify, message = "This feature is locked until your organization is verified." }: { children: React.ReactNode; locked: boolean; onRequestVerify?: () => void; message?: string }) {
+function SectionWrapper({ children, locked, onRequestVerify, message, t }: { children: React.ReactNode; locked: boolean; onRequestVerify?: () => void; message?: string; t: (key: string, opts?: any) => string }) {
+  const defaultMessage = t("lockedOverlay.featureLocked");
   return (
     <div className="relative">
       {children}
       {locked && onRequestVerify && (
-        <LockedOverlay onRequestVerify={onRequestVerify} message={message} />
+        <LockedOverlay onRequestVerify={onRequestVerify} message={message || defaultMessage} t={t} />
       )}
     </div>
   );
