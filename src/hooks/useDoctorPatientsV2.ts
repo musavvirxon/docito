@@ -114,9 +114,10 @@ export const useDoctorPatientsV2 = () => {
     updates: Partial<DoctorPatient>
   ): Promise<{ success: boolean; error?: string }> => {
     try {
+      const { age, ...dbUpdates } = updates as any;
       const { error } = await supabase
         .from('doctor_patients')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', patientId);
 
       if (error) throw error;

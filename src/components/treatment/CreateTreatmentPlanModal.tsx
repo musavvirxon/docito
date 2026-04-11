@@ -61,17 +61,17 @@ const CreateTreatmentPlanModal = ({ open, onOpenChange, onSuccess }: CreateTreat
       const patientId = values.patient_id;
 
       const planData = {
-        dentist_id: user.id,
+        doctor_id: user.id,
         patient_id: patientId,
         title: values.title,
         description: values.description || null,
-        status: "draft" as any,
+        status: "draft",
         total_cost: 0,
       };
 
       const { error } = await supabase
         .from("treatment_plans")
-        .insert([planData]);
+        .insert([planData] as any);
 
       if (error) throw error;
 

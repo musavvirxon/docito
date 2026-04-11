@@ -626,7 +626,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       if (!user) throw new Error("No user logged in");
 
-      const { error } = await supabase.from("profiles").update(updates).eq("user_id", user.id);
+      const { roles, ...dbUpdates } = updates as any;
+      const { error } = await supabase.from("profiles").update(dbUpdates).eq("user_id", user.id);
       if (error) throw error;
 
       await refreshProfile();

@@ -115,8 +115,7 @@ export const useMedicationReminders = () => {
       const { error } = await supabase
         .from("medication_reminders")
         .update({
-          status: "taken",
-          taken_at: new Date().toISOString(),
+          status: "taken" as string,
         })
         .eq("id", reminderId);
 

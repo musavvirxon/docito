@@ -285,7 +285,7 @@ export const useReferralActions = () => {
         receiverUserId = (doc as any)?.user_id ?? null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('referrals')
         .insert({
           patient_id: input.patient_id,
