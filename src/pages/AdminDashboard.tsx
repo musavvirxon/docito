@@ -1207,7 +1207,7 @@ const AdminDashboard = () => {
           </div>
         </header>
 
-        <div className="flex-1 flex min-h-0 [&_.peer>div:nth-child(2)]:!top-16 [&_.peer>div:nth-child(2)]:!h-[calc(100vh-4rem)] [&_.peer>div:first-child]:!h-[calc(100vh-4rem)]">
+        <div className="flex-1 flex min-h-0" style={{ "--sidebar-top-offset": "4rem" } as React.CSSProperties}>
           <Sidebar>
             <SidebarContent>
               <SidebarGroup>
