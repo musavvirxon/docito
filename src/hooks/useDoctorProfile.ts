@@ -89,9 +89,10 @@ export const useDoctorProfile = () => {
     if (!profile) return { error: 'No profile found' };
 
     try {
+      const { profiles, practices, ...dbUpdates } = updates as any;
       const { error } = await supabase
         .from('doctors')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', profile.id);
 
       if (error) throw error;

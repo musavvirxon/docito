@@ -191,7 +191,7 @@ export default function DoctorProfileSection() {
       if (docErr) throw docErr;
 
       // Update profile fields (phone + public profile settings)
-      const profileUpdate: Record<string, any> = {
+      const profileUpdate = {
         phone: phone.trim() || null,
         profile_visibility: isPublic ? "public" : "private",
         username: isPublic ? un : null,
@@ -199,7 +199,7 @@ export default function DoctorProfileSection() {
 
       const { error: profErr } = await supabase
         .from("profiles")
-        .update(profileUpdate)
+        .update(profileUpdate as any)
         .eq("user_id", doctorProfile.user_id);
 
       if (profErr) {

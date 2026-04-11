@@ -426,7 +426,8 @@ export const useDoctorIntegration = () => {
   const updateProfile = async (updates: Partial<DoctorProfile>): Promise<{ success?: boolean; error?: string }> => {
     if (!doctorProfile) return { error: "No doctor profile found" };
     try {
-      const { error } = await supabase.from("doctors").update(updates).eq("id", doctorProfile.id);
+      const { profiles, practices, ...dbUpdates } = updates as any;
+      const { error } = await supabase.from("doctors").update(dbUpdates).eq("id", doctorProfile.id);
       if (error) throw error;
       toast.success("Profile updated successfully");
       refreshSeq.current += 1;

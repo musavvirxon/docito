@@ -269,9 +269,10 @@ export const useUpdateInsurancePlan = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...plan }: Partial<InsurancePlan> & { id: string }) => {
+      const { provider, ...dbPlan } = plan as any;
       const { data, error } = await supabase
         .from('insurance_plans')
-        .update(plan)
+        .update(dbPlan)
         .eq('id', id)
         .select()
         .single();
@@ -402,9 +403,10 @@ export const useUpdatePatientInsurance = () => {
 
   return useMutation({
     mutationFn: async ({ id, ...insurance }: Partial<PatientInsurance> & { id: string }) => {
+      const { provider, plan, ...dbInsurance } = insurance as any;
       const { data, error } = await supabase
         .from('patient_insurance')
-        .update(insurance)
+        .update(dbInsurance)
         .eq('id', id)
         .select()
         .single();

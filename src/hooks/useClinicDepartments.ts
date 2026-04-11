@@ -73,7 +73,7 @@ export function useClinicDepartments() {
       
       const { error } = await supabase
         .from('practices')
-        .update({ [updateField]: enabled })
+        .update({ [updateField]: enabled } as any)
         .eq('id', clinicId);
 
       if (error) throw error;
