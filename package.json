@@ -74,6 +74,8 @@
     "input-otp": "^1.4.2",
     "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.7",
+    "livekit-client": "^2.18.1",
+    "xlsx": "^0.18.5",
     "lovable-tagger": "^1.1.13",
     "lucide-react": "^0.542.0",
     "picomatch": "^4.0.2",
