@@ -86,7 +86,8 @@ type AdminSection =
   | "analytics"
   | "settings";
 
-function LockedOverlay({ onRequestVerify, message, t }: { onRequestVerify: () => void; message: string; t: (key: string, opts?: any) => string }) {
+function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => void; message: string }) {
+  const { t } = useTranslation("dashboard");
   return (
     <div
       className="absolute inset-0 z-20 rounded-xl bg-background/70 backdrop-blur-sm border border-border flex items-center justify-center p-6"
@@ -133,13 +134,14 @@ function LockedOverlay({ onRequestVerify, message, t }: { onRequestVerify: () =>
   );
 }
 
-function SectionWrapper({ children, locked, onRequestVerify, message, t }: { children: React.ReactNode; locked: boolean; onRequestVerify?: () => void; message?: string; t: (key: string, opts?: any) => string }) {
+function SectionWrapper({ children, locked, onRequestVerify, message }: { children: React.ReactNode; locked: boolean; onRequestVerify?: () => void; message?: string }) {
+  const { t } = useTranslation("dashboard");
   const defaultMessage = t("lockedOverlay.featureLocked");
   return (
     <div className="relative">
       {children}
       {locked && onRequestVerify && (
-        <LockedOverlay onRequestVerify={onRequestVerify} message={message || defaultMessage} t={t} />
+        <LockedOverlay onRequestVerify={onRequestVerify} message={message || defaultMessage} />
       )}
     </div>
   );
