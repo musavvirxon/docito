@@ -229,7 +229,7 @@ const Sidebar = React.forwardRef<
               ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
-          style={{ height: "var(--sidebar-top-offset, 0px)" !== "0px" ? "calc(100svh - var(--sidebar-top-offset, 0px))" : "100svh" }}
+          style={{ height: "calc(100svh - var(--sidebar-top-offset, 0px))" }}
         />
         <div
           className={cn(
