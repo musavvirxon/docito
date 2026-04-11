@@ -240,8 +240,9 @@ export const usePracticeInvitations = (practiceId?: string) => {
 
     if (!practiceId) return;
 
+    const channelId = `practice-invitations-${practiceId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const channel = supabase
-      .channel(`practice-invitations-changes-${practiceId}`)
+      .channel(channelId)
       .on(
         'postgres_changes',
         {
