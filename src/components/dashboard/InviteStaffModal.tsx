@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Mail, Phone, User, Briefcase, MessageSquare } from 'lucide-react';
 import { usePracticeInvitations } from '@/hooks/usePracticeInvitations';
+import { useTranslation } from 'react-i18next';
 
 interface InviteStaffModalProps {
   open: boolean;
@@ -25,6 +26,7 @@ const STAFF_ROLES = [
 ];
 
 export const InviteStaffModal = ({ open, onOpenChange, practiceId }: InviteStaffModalProps) => {
+  const { t } = useTranslation('dashboard');
   const { sendInvitation } = usePracticeInvitations(practiceId);
   const [sending, setSending] = useState(false);
   const [formData, setFormData] = useState({
@@ -71,9 +73,9 @@ export const InviteStaffModal = ({ open, onOpenChange, practiceId }: InviteStaff
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Invite Staff Member</DialogTitle>
+          <DialogTitle>{t("inviteStaff.title")}</DialogTitle>
           <DialogDescription>
-            Send an invitation to join your practice. We'll check if they already have an account.
+            {t("inviteStaff.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -81,23 +83,23 @@ export const InviteStaffModal = ({ open, onOpenChange, practiceId }: InviteStaff
           <div>
             <Label htmlFor="full_name">
               <User className="w-4 h-4 inline mr-2" />
-              Full Name (Optional)
+              {t("inviteStaff.fullName")}
             </Label>
             <Input
               id="full_name"
               value={formData.full_name}
               onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-              placeholder="John Doe"
+              placeholder={t("inviteStaff.fullNamePlaceholder")}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              If the person already has an account, we'll use their registered name
+              {t("inviteStaff.existingAccountNote")}
             </p>
           </div>
 
           <div>
             <Label htmlFor="email">
               <Mail className="w-4 h-4 inline mr-2" />
-              Email Address <span className="text-destructive">*</span>
+              {t("inviteStaff.emailAddress")} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="email"
@@ -105,28 +107,28 @@ export const InviteStaffModal = ({ open, onOpenChange, practiceId }: InviteStaff
               required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="john@example.com"
+              placeholder={t("inviteStaff.emailPlaceholder")}
             />
           </div>
 
           <div>
             <Label htmlFor="phone">
               <Phone className="w-4 h-4 inline mr-2" />
-              Phone Number (Optional)
+              {t("inviteStaff.phoneNumber")}
             </Label>
             <Input
               id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="+1 (555) 123-4567"
+              placeholder={t("inviteStaff.phonePlaceholder")}
             />
           </div>
 
           <div>
             <Label htmlFor="role">
               <Briefcase className="w-4 h-4 inline mr-2" />
-              Role / Position <span className="text-destructive">*</span>
+              {t("inviteStaff.rolePosition")} <span className="text-destructive">*</span>
             </Label>
             <Select
               value={formData.role}
@@ -134,7 +136,7 @@ export const InviteStaffModal = ({ open, onOpenChange, practiceId }: InviteStaff
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select a role" />
+                <SelectValue placeholder={t("inviteStaff.selectRole")} />
               </SelectTrigger>
               <SelectContent>
                 {STAFF_ROLES.map((role) => (
@@ -149,29 +151,29 @@ export const InviteStaffModal = ({ open, onOpenChange, practiceId }: InviteStaff
           <div>
             <Label htmlFor="custom_message">
               <MessageSquare className="w-4 h-4 inline mr-2" />
-              Welcome Message (Optional)
+              {t("inviteStaff.welcomeMessage")}
             </Label>
             <Textarea
               id="custom_message"
               value={formData.custom_message}
               onChange={(e) => setFormData({ ...formData, custom_message: e.target.value })}
-              placeholder="We're excited to have you join our team!"
+              placeholder={t("inviteStaff.welcomePlaceholder")}
               rows={3}
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("inviteStaff.cancel")}
             </Button>
             <Button type="submit" disabled={sending || !formData.email || !formData.role}>
               {sending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
+                  {t("inviteStaff.sending")}
                 </>
               ) : (
-                'Send Invitation'
+                t("inviteStaff.sendInvitation")
               )}
             </Button>
           </div>
