@@ -23,6 +23,7 @@ export function ImagingManualOrderDialog({
   imagingCenterId: string;
   onCreated?: () => void;
 }) {
+  const { t } = useTranslation("imagingAdminDashboard");
   const [loading, setLoading] = useState(false);
 
   const [patientName, setPatientName] = useState("");

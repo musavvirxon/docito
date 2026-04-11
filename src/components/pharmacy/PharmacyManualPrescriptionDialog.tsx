@@ -33,6 +33,7 @@ export function PharmacyManualPrescriptionDialog({
   pharmacyId: string;
   onCreated?: () => void;
 }) {
+  const { t } = useTranslation("pharmacyAdminDashboard");
   const [loading, setLoading] = useState(false);
 
   const [patientName, setPatientName] = useState('');
