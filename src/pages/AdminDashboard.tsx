@@ -267,7 +267,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const lockMessage = "This feature is locked until your organization is verified.";
+  const lockMessage = t("lockedOverlay.featureLocked");
 
   const guard = (fn: () => void) => {
     if (!isVerified) {
@@ -336,21 +336,20 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5 text-primary" />
-                Welcome! Set up your practice
+                {t("setupScreen.title")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                You don't have a clinic or practice linked to your account yet.
-                Create one to start managing doctors, staff, appointments, and finances.
+                {t("setupScreen.description")}
               </p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <Button onClick={() => setCreateClinicOpen(true)} className="flex-1">
                   <Building2 className="h-4 w-4 mr-2" />
-                  Create Practice
+                  {t("setupScreen.createPractice")}
                 </Button>
                 <Button variant="outline" onClick={() => navigate("/register-practice")} className="flex-1">
-                  Register Practice
+                  {t("setupScreen.registerPractice")}
                 </Button>
               </div>
             </CardContent>
@@ -638,7 +637,7 @@ const AdminDashboard = () => {
                   <CardTitle className="flex items-center justify-between">
                     <span>{t("admin.overview.advancedFinancialMetrics")}</span>
                     <Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>
-                      Refresh
+                      {t("adminBilling.refresh")}
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -787,7 +786,7 @@ const AdminDashboard = () => {
             ) : (
               <div className="text-center py-10 text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">No practice linked</p>
+                <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
               </div>
             )}
           </SectionWrapper>
@@ -921,7 +920,7 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">Billing & Payments</h2>
+              <h2 className="text-xl font-semibold">{t("adminBilling.title")}</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 {practice?.id && (
                   <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
@@ -936,7 +935,7 @@ const AdminDashboard = () => {
                   90D
                 </Button>
                 <Button variant="outline" onClick={() => guard(() => billing.refetch())}>
-                  Refresh
+                  {t("adminBilling.refresh")}
                 </Button>
               </div>
             </div>
@@ -946,14 +945,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
-                    Payment Summary
+                    {t("adminBilling.paymentSummary")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {billing.loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading…</span>
+                      <span>{t("adminBilling.loading")}</span>
                     </div>
                   ) : billing.error ? (
                     <p className="text-sm text-destructive">{billing.error}</p>
@@ -966,15 +965,15 @@ const AdminDashboard = () => {
                       return (
                         <div className="space-y-4">
                           <div className="flex justify-between">
-                            <span>Total Revenue ({b.period?.days ?? 0} days)</span>
+                            <span>{t("adminBilling.totalRevenue")} ({b.period?.days ?? 0} {t("adminBilling.days")})</span>
                             <span className="font-semibold">{fmt(b.summary?.totalRevenueCents ?? 0)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Pending</span>
+                            <span>{t("adminBilling.pending")}</span>
                             <span className="font-semibold text-yellow-600">{fmt(b.summary?.pendingCents ?? 0)}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Refunds</span>
+                            <span>{t("adminBilling.refunds")}</span>
                             <span className="font-semibold text-red-600">{fmt(b.summary?.refundCents ?? 0)}</span>
                           </div>
                           <div className="pt-2 text-sm text-muted-foreground">
@@ -985,27 +984,27 @@ const AdminDashboard = () => {
                       );
                     })()
                   ) : (
-                    <p className="text-sm text-muted-foreground">No billing data.</p>
+                    <p className="text-sm text-muted-foreground">{t("adminBilling.noBillingData")}</p>
                   )}
                 </CardContent>
               </Card>
 
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>Recent Transactions</CardTitle>
+                  <CardTitle>{t("adminBilling.recentTransactions")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {billing.loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading…</span>
+                      <span>{t("adminBilling.loading")}</span>
                     </div>
                   ) : billing.error ? (
                     <p className="text-sm text-destructive">{billing.error}</p>
                   ) : !billing.data || !(billing.data as any).transactions?.length ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>No transactions in this period</p>
+                      <p>{t("adminBilling.noTransactions")}</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1057,7 +1056,7 @@ const AdminDashboard = () => {
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-xl font-semibold">Practice Analytics</h2>
+              <h2 className="text-xl font-semibold">{t("adminAnalytics.title")}</h2>
               <div className="flex gap-2 flex-wrap">
                 {practice?.id && (
                   <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
@@ -1078,7 +1077,7 @@ const AdminDashboard = () => {
                   90D
                 </Button>
                 <Button variant="outline" onClick={() => guard(() => analytics.refetch())}>
-                  Refresh
+                  {t("adminAnalytics.refresh")}
                 </Button>
               </div>
             </div>
@@ -1086,20 +1085,20 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>Daily Trend</CardTitle>
+                  <CardTitle>{t("adminAnalytics.dailyTrend")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {analytics.loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading…</span>
+                      <span>{t("adminAnalytics.loading")}</span>
                     </div>
                   ) : analytics.error ? (
                     <p className="text-sm text-destructive">{analytics.error}</p>
                   ) : !(analytics.data as any)?.trend?.length ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>No analytics data.</p>
+                      <p>{t("adminAnalytics.noData")}</p>
                     </div>
                   ) : (
                     <div className="h-72">
@@ -1125,13 +1124,13 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl">
                 <CardHeader>
-                  <CardTitle>Summary</CardTitle>
+                  <CardTitle>{t("adminAnalytics.summary")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {analytics.loading ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Loading…</span>
+                      <span>{t("adminAnalytics.loading")}</span>
                     </div>
                   ) : analytics.error ? (
                     <p className="text-sm text-destructive">{analytics.error}</p>
@@ -1141,20 +1140,23 @@ const AdminDashboard = () => {
                       return (
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span>Appointments</span>
+                            <span>{t("adminAnalytics.appointments")}</span>
                             <span className="font-semibold">{a.summary?.appointments ?? 0}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Unique Patients</span>
+                            <span>{t("adminAnalytics.uniquePatients")}</span>
                             <span className="font-semibold">{a.summary?.patients ?? 0}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Providers</span>
+                            <span>{t("adminAnalytics.providers")}</span>
                             <span className="font-semibold">{a.summary?.providers ?? 0}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span>Locations</span>
+                            <span>{t("adminAnalytics.locations")}</span>
                             <span className="font-semibold">{a.summary?.locations ?? 0}</span>
+                          </div>
+                          <div className="pt-2 text-xs text-muted-foreground">
+                            {t("adminAnalytics.range")}: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}
                           </div>
                           <div className="pt-2 text-xs text-muted-foreground">
                             Range: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}
@@ -1163,7 +1165,7 @@ const AdminDashboard = () => {
                       );
                     })()
                   ) : (
-                    <p className="text-sm text-muted-foreground">No analytics data.</p>
+                    <p className="text-sm text-muted-foreground">{t("adminAnalytics.noData")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -1179,7 +1181,7 @@ const AdminDashboard = () => {
             ) : (
               <div className="text-center py-10 text-muted-foreground">
                 <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">No practice linked</p>
+                <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
               </div>
             )}
           </SectionWrapper>
@@ -1215,7 +1217,7 @@ const AdminDashboard = () => {
             <SidebarContent>
               <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center justify-between">
-                  <span>{t("admin.sidebar.title")}</span>
+                  <span>{t("adminSidebar.title")}</span>
                   {practice?.name ? (
                     <Badge variant="outline" className="text-xs">
                       {practice.name}
@@ -1260,7 +1262,7 @@ const AdminDashboard = () => {
                 return (
                   <SidebarGroup>
                     <SidebarGroupLabel className="flex items-center justify-between">
-                      <span>{t("admin.sidebar.status")}</span>
+                      <span>{t("adminSidebar.status")}</span>
                       <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
                     </SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -1269,12 +1271,12 @@ const AdminDashboard = () => {
                         {!isVerified ? (
                           <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
                             <CheckCircle className="h-4 w-4 mr-2" />
-                            {t("admin.sidebar.verify")}
+                            {t("adminSidebar.verify")}
                           </Button>
                         ) : (
                           <Button variant="outline" onClick={() => toast.success("You're verified!")} className="w-full">
                             <CheckCircle className="h-4 w-4 mr-2" />
-                            Verified
+                            {t("adminSidebar.verified")}
                           </Button>
                         )}
                       </div>
