@@ -72,14 +72,14 @@ export default function StaffDashboardPage() {
 
   const availableSections = useMemo(() => {
     const s: { id: SectionId; label: string; visible: boolean }[] = [
-      { id: "dashboard", label: "Dashboard", visible: true },
-      { id: "today", label: "Today", visible: Boolean(permissions?.can_view_schedule) },
-      { id: "patients", label: "Patients", visible: Boolean(permissions?.can_manage_patients) },
-      { id: "billing", label: "Billing", visible: Boolean(permissions?.can_manage_billing) },
-      { id: "analytics", label: "Analytics", visible: Boolean(practice?.id) },
-      { id: "settings", label: "Settings", visible: Boolean(isAdminLike && practice?.id) },
-      { id: "attendance", label: "Attendance", visible: Boolean(isAdminLike && practice?.id) },
-      { id: "invites", label: "Invites", visible: Boolean(isAdminLike && practice?.id) },
+      { id: "dashboard", label: t("staff.sidebar.menu.dashboard"), visible: true },
+      { id: "today", label: t("staff.sidebar.menu.today"), visible: Boolean(permissions?.can_view_schedule) },
+      { id: "patients", label: t("staff.sidebar.menu.patients"), visible: Boolean(permissions?.can_manage_patients) },
+      { id: "billing", label: t("staff.sidebar.menu.billing"), visible: Boolean(permissions?.can_manage_billing) },
+      { id: "analytics", label: t("staff.analytics.title"), visible: Boolean(practice?.id) },
+      { id: "settings", label: t("staff.sidebar.settings"), visible: Boolean(isAdminLike && practice?.id) },
+      { id: "attendance", label: t("staff.timeClock.title"), visible: Boolean(isAdminLike && practice?.id) },
+      { id: "invites", label: t("staff.invitations.recipient", { defaultValue: "Invites" }), visible: Boolean(isAdminLike && practice?.id) },
     ];
 
     return s.filter((x) => x.visible);
@@ -262,9 +262,9 @@ export default function StaffDashboardPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="flex items-center gap-2 text-muted-foreground">
+      <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Loading dashboard…</span>
+          <span>{t("admin.loading")}</span>
         </div>
       </div>
     );
@@ -275,12 +275,12 @@ export default function StaffDashboardPage() {
       <div className="p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Staff Dashboard</CardTitle>
+            <CardTitle>{t("staff.sidebar.menu.dashboard")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm text-muted-foreground">{error}</div>
             <button type="button" className="text-sm text-primary underline" onClick={() => void refresh()}>
-              Retry
+              {t("staff.analytics.retry")}
             </button>
           </CardContent>
         </Card>
@@ -293,9 +293,9 @@ export default function StaffDashboardPage() {
       <div className="p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Staff Dashboard</CardTitle>
+            <CardTitle>{t("staff.sidebar.menu.dashboard")}</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">No clinic practice is linked to this account.</CardContent>
+          <CardContent className="text-sm text-muted-foreground">{t("setupScreen.description", { defaultValue: "No clinic practice is linked to this account." })}</CardContent>
         </Card>
       </div>
     );
@@ -370,7 +370,7 @@ export default function StaffDashboardPage() {
         <TabsContent value="invites" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Invitations</CardTitle>
+              <CardTitle>{t("staff.invitations.recipient", { defaultValue: "Invitations" })}</CardTitle>
             </CardHeader>
             <CardContent>
               <InvitationsList practiceId={practice.id} />

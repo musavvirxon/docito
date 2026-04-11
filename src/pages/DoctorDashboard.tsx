@@ -160,7 +160,7 @@ const DoctorDashboardContent = () => {
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
-    { id: "verify-documents", label: "Verify Documents", icon: ShieldCheck },
+    { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
     { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
@@ -176,7 +176,7 @@ const DoctorDashboardContent = () => {
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
-    { id: "verify-documents", label: "Verify Documents", icon: ShieldCheck },
+    { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
   ];

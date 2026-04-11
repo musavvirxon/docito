@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import {
   ResponsiveContainer,
   LineChart,
@@ -56,6 +57,7 @@ interface Props {
 }
 
 export default function PracticeAnalyticsSection({ practiceId }: Props) {
+  const { t } = useTranslation('dashboard');
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,13 +74,13 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
       });
 
       if (fnErr) throw fnErr;
-      if (!res?.ok) throw new Error(res?.error || 'Failed to load analytics');
+      if (!res?.ok) throw new Error(res?.error || t("practiceAnalytics.loadFailed"));
 
       setData(res);
     } catch (e: any) {
       console.error(e);
-      setError(e?.message || 'Failed to load analytics');
-      toast.error(e?.message || 'Failed to load analytics');
+      setError(e?.message || t("practiceAnalytics.loadFailed"));
+      toast.error(e?.message || t("practiceAnalytics.loadFailed"));
       setData(null);
     } finally {
       setLoading(false);
@@ -127,10 +129,10 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Analytics</CardTitle>
+          <CardTitle>{t("practiceAnalytics.analyticsTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="text-sm text-muted-foreground">{error || 'No analytics available yet.'}</div>
+          <div className="text-sm text-muted-foreground">{error || t("practiceAnalytics.noAnalytics")}</div>
         </CardContent>
       </Card>
     );
@@ -139,15 +141,15 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Practice Analytics</h2>
+        <h2 className="text-lg font-semibold">{t("practiceAnalytics.title")}</h2>
         <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select range" />
+            <SelectValue placeholder={t("practiceAnalytics.selectRange")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
+            <SelectItem value="7d">{t("practiceAnalytics.timeRanges.7d")}</SelectItem>
+            <SelectItem value="30d">{t("practiceAnalytics.timeRanges.30d")}</SelectItem>
+            <SelectItem value="90d">{t("practiceAnalytics.timeRanges.90d")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -155,58 +157,58 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bookings</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("practiceAnalytics.kpis.bookings")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{kpis.totalBookings}</div>
             <p className="text-xs text-muted-foreground">
               {kpis.bookingsChangePct >= 0 ? '+' : ''}
-              {kpis.bookingsChangePct}% vs previous period
+              {kpis.bookingsChangePct}% {t("practiceAnalytics.vsPrevious")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("practiceAnalytics.kpis.revenue")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(kpis.totalRevenueCents)}</div>
             <p className="text-xs text-muted-foreground">
               {kpis.revenueChangePct >= 0 ? '+' : ''}
-              {kpis.revenueChangePct}% vs previous period
+              {kpis.revenueChangePct}% {t("practiceAnalytics.vsPrevious")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Patient Retention</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("practiceAnalytics.kpis.patientRetention")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.patientRetentionPct}%</div>
-            <p className="text-xs text-muted-foreground">Returning patients (180d)</p>
+            <p className="text-xs text-muted-foreground">{t("practiceAnalytics.returningPatients")}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">No-show Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("practiceAnalytics.kpis.noShowRate")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.noShowRatePct}%</div>
-            <p className="text-xs text-muted-foreground">Canceled / total</p>
+            <p className="text-xs text-muted-foreground">{t("practiceAnalytics.canceledTotal")}</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Bookings & Revenue Trend</CardTitle>
+          <CardTitle>{t("practiceAnalytics.trendTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-80">
@@ -218,8 +220,8 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
                 <Tooltip
                   formatter={(value: any, name: string) => {
-                    if (name === 'revenue') return [new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0), 'Revenue'];
-                    if (name === 'bookings') return [value, 'Bookings'];
+                    if (name === 'revenue') return [new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0), t("practiceAnalytics.kpis.revenue")];
+                    if (name === 'bookings') return [value, t("practiceAnalytics.kpis.bookings")];
                     return [value, name];
                   }}
                 />
@@ -235,15 +237,15 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Operational</CardTitle>
+            <CardTitle>{t("practiceAnalytics.operational")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Completed appointments</span>
+              <span className="text-muted-foreground">{t("practiceAnalytics.completedAppointments")}</span>
               <Badge variant="outline">{kpis.completedAppointments}</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Canceled appointments</span>
+              <span className="text-muted-foreground">{t("practiceAnalytics.canceledAppointments")}</span>
               <Badge variant="outline">{kpis.cancelledAppointments}</Badge>
             </div>
           </CardContent>
@@ -251,17 +253,17 @@ export default function PracticeAnalyticsSection({ practiceId }: Props) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Avg Booking Lead Time</CardTitle>
+            <CardTitle>{t("practiceAnalytics.avgBookingLeadTime")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Lead time
+                {t("practiceAnalytics.leadTime")}
               </span>
               <Badge variant="secondary">{formatMinutes(metrics.avgLeadTimeMinutes)}</Badge>
             </div>
-            <p className="text-xs text-muted-foreground">Time from booking to scheduled start (completed only)</p>
+            <p className="text-xs text-muted-foreground">{t("practiceAnalytics.leadTimeDesc")}</p>
           </CardContent>
         </Card>
       </div>

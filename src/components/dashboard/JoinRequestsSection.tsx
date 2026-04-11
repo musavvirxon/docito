@@ -7,12 +7,14 @@ import { Check, X, MapPin, Clock, Loader2, UserPlus } from "lucide-react";
 import { usePracticeJoinRequests, useRespondToJoinRequest } from "@/hooks/useClinics";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface JoinRequestsSectionProps {
   practiceId: string;
 }
 
 export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionProps) {
+  const { t } = useTranslation('dashboard');
   const { user } = useAuth();
   const { data: requests, isLoading } = usePracticeJoinRequests(practiceId);
   const respondMutation = useRespondToJoinRequest();
@@ -40,12 +42,11 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
 
   return (
     <div className="space-y-6">
-      {/* Pending Applications */}
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Pending Doctor Applications
+            {t("joinRequests.pendingTitle")}
             {pendingRequests.length > 0 && (
               <Badge variant="secondary">{pendingRequests.length}</Badge>
             )}
@@ -53,7 +54,7 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
         </CardHeader>
         <CardContent>
           {pendingRequests.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No pending applications</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("joinRequests.noPending")}</p>
           ) : (
             <div className="space-y-3">
               {pendingRequests.map((req: any) => {
@@ -68,12 +69,12 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
                         <AvatarFallback>{(profile.full_name || "?").charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{profile.full_name || "Unknown Doctor"}</p>
-                        <p className="text-sm text-muted-foreground">{doctor.specialty || "General"} • {profile.email || ""}</p>
+                        <p className="font-medium">{profile.full_name || t("joinRequests.unknownDoctor")}</p>
+                        <p className="text-sm text-muted-foreground">{doctor.specialty || t("joinRequests.general")} • {profile.email || ""}</p>
                         {location.name && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                             <MapPin className="h-3 w-3" />
-                            Applied to: {location.name}{location.city ? `, ${location.city}` : ''}
+                            {t("joinRequests.appliedTo")} {location.name}{location.city ? `, ${location.city}` : ''}
                           </div>
                         )}
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -89,7 +90,7 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
                         disabled={respondMutation.isPending}
                       >
                         <Check className="h-4 w-4 mr-1" />
-                        Accept
+                        {t("joinRequests.accept")}
                       </Button>
                       <Button
                         size="sm"
@@ -98,7 +99,7 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
                         disabled={respondMutation.isPending}
                       >
                         <X className="h-4 w-4 mr-1" />
-                        Reject
+                        {t("joinRequests.reject")}
                       </Button>
                     </div>
                   </div>
@@ -109,11 +110,10 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
         </CardContent>
       </Card>
 
-      {/* Processed Applications */}
       {processedRequests.length > 0 && (
         <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="text-base">Previous Applications</CardTitle>
+            <CardTitle className="text-base">{t("joinRequests.previousTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -129,7 +129,7 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
                         <AvatarFallback className="text-xs">{(profile.full_name || "?").charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="text-sm font-medium">{profile.full_name || "Unknown"}</p>
+                        <p className="text-sm font-medium">{profile.full_name || t("joinRequests.unknownDoctor")}</p>
                         {location.name && (
                           <p className="text-xs text-muted-foreground">
                             <MapPin className="h-3 w-3 inline mr-1" />{location.name}
