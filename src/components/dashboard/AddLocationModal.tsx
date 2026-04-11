@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -62,7 +63,6 @@ async function resolveMyPracticeId(): Promise<string | null> {
   const userId = auth.user?.id;
   if (!userId) return null;
 
-  // Admin -> practices.admin_id
   const { data: adminPractice, error: adminErr } = await supabase
     .from("practices")
     .select("id")
@@ -73,7 +73,6 @@ async function resolveMyPracticeId(): Promise<string | null> {
 
   if (!adminErr && adminPractice?.id) return adminPractice.id;
 
-  // Staff -> practice_staff.practice_id
   const { data: staffRow, error: staffErr } = await supabase
     .from("practice_staff")
     .select("practice_id,status")
@@ -88,6 +87,7 @@ async function resolveMyPracticeId(): Promise<string | null> {
 }
 
 export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved }: AddLocationModalProps) => {
+  const { t } = useTranslation("dashboard");
   const isEditing = !!editingLocation;
   const [practiceId, setPracticeId] = useState<string | null>(null);
 
@@ -97,8 +97,8 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
     zipCode: "",
     phoneNumber: "",
     email: "",
-    assignedProviders: [] as string[], // doctor_id (kept for UI only)
-    services: [] as string[], // service_id (kept for UI only)
+    assignedProviders: [] as string[],
+    services: [] as string[],
     coordinates: "",
     isPrimary: false,
   });
@@ -120,7 +120,6 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
   const [saving, setSaving] = useState(false);
 
   const operatingHoursPayload = useMemo(() => {
-    // Store structured hours. Backend column is JSON.
     const obj: Record<string, any> = {};
     for (const day of daysOfWeek) {
       obj[day] = {
@@ -132,7 +131,6 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
     return obj;
   }, [workingHours]);
 
-  // Populate form when editing
   useEffect(() => {
     if (!open) return;
     if (editingLocation) {
@@ -174,11 +172,10 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
         setPracticeId(pid);
 
         if (!pid) {
-          toast.error("Could not determine your practice. Please try again.");
+          toast.error(t("addLocation.practiceNotFound"));
           return;
         }
 
-        // Providers (RPC)
         const { data: prov, error: provErr } = await supabase.rpc(
           "get_practice_providers" as any,
           { p_practice_id: pid }
@@ -186,14 +183,12 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
         if (provErr) throw provErr;
         setProviders((prov as any[]) || []);
 
-        // Services (RPC)
         const { data: svc, error: svcErr } = await supabase.rpc(
           "get_practice_services" as any,
           { p_practice_id: pid }
         );
         if (svcErr) throw svcErr;
 
-        // Normalize (some RPC returns different columns depending on your migration)
         const normalized: ServiceRow[] = ((svc as any[]) || []).map((s) => ({
           id: s.id,
           name: s.name,
@@ -201,7 +196,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
         setServices(normalized);
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message || "Failed to load practice data");
+        toast.error(e?.message || t("addLocation.loadFailed"));
       } finally {
         setLoadingDeps(false);
       }
@@ -236,12 +231,12 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
     e.preventDefault();
 
     if (!practiceId) {
-      toast.error("Practice not found for this account.");
+      toast.error(t("addLocation.practiceNotFoundSubmit"));
       return;
     }
 
     if (!formData.locationName.trim() || !formData.address.trim()) {
-      toast.error("Location name and address are required.");
+      toast.error(t("addLocation.nameAddressRequired"));
       return;
     }
 
@@ -264,11 +259,11 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
           .update(payload as any)
           .eq("id", editingLocation.id);
         if (error) throw error;
-        toast.success("Location updated successfully");
+        toast.success(t("addLocation.locationUpdated"));
       } else {
         const { error } = await supabase.from("practice_locations").insert({ ...payload, photo_urls: null } as any);
         if (error) throw error;
-        toast.success("Location added successfully");
+        toast.success(t("addLocation.locationAdded"));
       }
 
       onOpenChange(false);
@@ -276,7 +271,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
       onSaved?.();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || (isEditing ? "Failed to update location" : "Failed to add location"));
+      toast.error(e?.message || (isEditing ? t("addLocation.updateFailed") : t("addLocation.addFailed")));
     } finally {
       setSaving(false);
     }
@@ -328,25 +323,23 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Location" : "Add New Location"}</DialogTitle>
+          <DialogTitle>{isEditing ? t("addLocation.titleEdit") : t("addLocation.titleAdd")}</DialogTitle>
         </DialogHeader>
 
         {loadingDeps ? (
           <div className="py-10 flex items-center justify-center gap-2 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading practice data...
+            {t("addLocation.loadingData")}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column */}
               <div className="space-y-6">
-                {/* Location Details */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Location Details</h3>
+                  <h3 className="text-lg font-semibold">{t("addLocation.locationDetails")}</h3>
 
                   <div>
-                    <Label htmlFor="locationName">Location Name</Label>
+                    <Label htmlFor="locationName">{t("addLocation.locationName")}</Label>
                     <Input
                       id="locationName"
                       value={formData.locationName}
@@ -356,25 +349,25 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                           locationName: e.target.value,
                         }))
                       }
-                      placeholder="e.g., Downtown Medical Center"
+                      placeholder={t("addLocation.locationNamePlaceholder")}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">{t("addLocation.address")}</Label>
                     <Input
                       id="address"
                       value={formData.address}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, address: e.target.value }))
                       }
-                      placeholder="123 Medical Center Dr"
+                      placeholder={t("addLocation.addressPlaceholder")}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="zipCode">ZIP / Postal Code</Label>
+                      <Label htmlFor="zipCode">{t("addLocation.zipCode")}</Label>
                       <Input
                         id="zipCode"
                         value={formData.zipCode}
@@ -385,7 +378,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                       />
                     </div>
                     <div>
-                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Label htmlFor="phoneNumber">{t("addLocation.phoneNumber")}</Label>
                       <Input
                         id="phoneNumber"
                         value={formData.phoneNumber}
@@ -401,7 +394,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                   </div>
 
                   <div>
-                    <Label htmlFor="email">Email (Optional)</Label>
+                    <Label htmlFor="email">{t("addLocation.email")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -409,7 +402,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, email: e.target.value }))
                       }
-                      placeholder="location@practice.com"
+                      placeholder={t("addLocation.emailPlaceholder")}
                     />
                   </div>
 
@@ -421,11 +414,11 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                         setFormData((prev) => ({ ...prev, isPrimary: !!checked }))
                       }
                     />
-                    <Label htmlFor="isPrimary">Set as Primary Location</Label>
+                    <Label htmlFor="isPrimary">{t("addLocation.setPrimary")}</Label>
                   </div>
 
                   <div>
-                    <Label htmlFor="coordinates">Map Coordinates (Optional)</Label>
+                    <Label htmlFor="coordinates">{t("addLocation.coordinates")}</Label>
                     <Input
                       id="coordinates"
                       value={formData.coordinates}
@@ -435,16 +428,15 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                           coordinates: e.target.value,
                         }))
                       }
-                      placeholder="40.7128, -74.0060"
+                      placeholder={t("addLocation.coordinatesPlaceholder")}
                     />
                   </div>
                 </div>
 
-                {/* Working Hours */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Clock className="h-5 w-5" />
-                    <h3 className="text-lg font-semibold">Working Hours</h3>
+                    <h3 className="text-lg font-semibold">{t("addLocation.workingHours")}</h3>
                   </div>
                   <Card>
                     <CardContent className="p-4">
@@ -474,7 +466,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                                   }
                                   className="w-24"
                                 />
-                                <span className="text-sm text-muted-foreground">to</span>
+                                <span className="text-sm text-muted-foreground">{t("addLocation.to")}</span>
                                 <Input
                                   type="time"
                                   value={workingHours[day]?.endTime}
@@ -485,7 +477,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                                 />
                               </div>
                             ) : (
-                              <span className="text-sm text-muted-foreground">Closed</span>
+                              <span className="text-sm text-muted-foreground">{t("addLocation.closed")}</span>
                             )}
                           </div>
                         ))}
@@ -495,15 +487,13 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                 </div>
               </div>
 
-              {/* Right Column */}
               <div className="space-y-6">
-                {/* Assigned Providers (UI only) */}
                 <div className="space-y-4">
-                  <Label>Assign Providers (optional)</Label>
+                  <Label>{t("addLocation.assignProviders")}</Label>
                   <Card>
                     <CardContent className="p-4">
                       {providers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No providers found.</p>
+                        <p className="text-sm text-muted-foreground">{t("addLocation.noProviders")}</p>
                       ) : (
                         <div className="space-y-2">
                           {providers.map((p) => {
@@ -527,19 +517,18 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                         </div>
                       )}
                       <p className="mt-3 text-xs text-muted-foreground">
-                        Note: assignment is currently UI-only unless you have a provider-location mapping table.
+                        {t("addLocation.providerNote")}
                       </p>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Services Offered (UI only) */}
                 <div className="space-y-4">
-                  <Label>Services Offered (optional)</Label>
+                  <Label>{t("addLocation.servicesOffered")}</Label>
                   <Card>
                     <CardContent className="p-4">
                       {services.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">No services found.</p>
+                        <p className="text-sm text-muted-foreground">{t("addLocation.noServices")}</p>
                       ) : (
                         <div className="space-y-2">
                           {services.map((s) => (
@@ -557,24 +546,23 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                         </div>
                       )}
                       <p className="mt-3 text-xs text-muted-foreground">
-                        Note: mapping services to locations requires a junction table (not implemented here).
+                        {t("addLocation.serviceNote")}
                       </p>
                     </CardContent>
                   </Card>
                 </div>
 
-                {/* Photo Upload (UI only until storage implemented) */}
                 <div className="space-y-4">
-                  <Label>Location Photos (Up to 6)</Label>
+                  <Label>{t("addLocation.locationPhotos")}</Label>
                   <div className="space-y-4">
                     {uploadedPhotos.length < 6 && (
                       <label className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center cursor-pointer block">
                         <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Click to upload photos ({uploadedPhotos.length}/6)
+                          {t("addLocation.clickToUploadPhotos", { current: uploadedPhotos.length })}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Reception, waiting area, entrance, treatment rooms, etc.
+                          {t("addLocation.photoSuggestion")}
                         </p>
                         <input
                           type="file"
@@ -609,7 +597,7 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Photo upload requires Supabase Storage wiring (not included in this modal).
+                      {t("addLocation.photoNote")}
                     </p>
                   </div>
                 </div>
@@ -618,16 +606,16 @@ export const AddLocationModal = ({ open, onOpenChange, editingLocation, onSaved 
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-                Cancel
+                {t("addLocation.cancel")}
               </Button>
               <Button type="submit" disabled={saving}>
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    {t("addLocation.saving")}
                   </>
                 ) : (
-                  isEditing ? "Update Location" : "Add Location"
+                  isEditing ? t("addLocation.updateLocation") : t("addLocation.addLocationBtn")
                 )}
               </Button>
             </DialogFooter>

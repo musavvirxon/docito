@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -82,6 +83,7 @@ async function resolveMyPracticeId(): Promise<string | null> {
 }
 
 export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) => {
+  const { t } = useTranslation("dashboard");
   const [practiceId, setPracticeId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -90,11 +92,11 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
     description: "",
     price: "",
     duration: "",
-    providers: [] as string[], // doctor_id
-    locations: [] as string[], // location_id (UI-only unless you add mapping table)
+    providers: [] as string[],
+    locations: [] as string[],
     tags: [] as string[],
     cptCode: "",
-    isPublic: true, // maps to is_bookable
+    isPublic: true,
   });
 
   const [providers, setProviders] = useState<ProviderRow[]>([]);
@@ -125,11 +127,10 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
         setPracticeId(pid);
 
         if (!pid) {
-          toast.error("Could not determine your practice. Please try again.");
+          toast.error(t("addService.practiceNotFound"));
           return;
         }
 
-        // Providers
         const { data: prov, error: provErr } = await supabase.rpc(
           "get_practice_providers" as any,
           { p_practice_id: pid }
@@ -137,7 +138,6 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
         if (provErr) throw provErr;
         setProviders((prov as any[]) || []);
 
-        // Locations
         const { data: loc, error: locErr } = await supabase.rpc(
           "get_practice_locations" as any,
           { p_practice_id: pid }
@@ -151,7 +151,7 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
         setLocations(normalized);
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message || "Failed to load practice data");
+        toast.error(e?.message || t("addService.loadFailed"));
       } finally {
         setLoadingDeps(false);
       }
@@ -190,10 +190,10 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
   };
 
   const addTag = () => {
-    const t = newTag.trim();
-    if (!t) return;
-    if (formData.tags.includes(t)) return;
-    setFormData((prev) => ({ ...prev, tags: [...prev.tags, t] }));
+    const tagVal = newTag.trim();
+    if (!tagVal) return;
+    if (formData.tags.includes(tagVal)) return;
+    setFormData((prev) => ({ ...prev, tags: [...prev.tags, tagVal] }));
     setNewTag("");
   };
 
@@ -205,37 +205,35 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
     e.preventDefault();
 
     if (!practiceId) {
-      toast.error("Practice not found for this account.");
+      toast.error(t("addService.practiceNotFoundSubmit"));
       return;
     }
 
     if (!formData.serviceName.trim()) {
-      toast.error("Service name is required.");
+      toast.error(t("addService.serviceNameRequired"));
       return;
     }
 
     if (!numericPrice || numericPrice <= 0) {
-      toast.error("Valid price is required.");
+      toast.error(t("addService.validPriceRequired"));
       return;
     }
 
     if (!durationMinutes || durationMinutes <= 0) {
-      toast.error("Duration is required.");
+      toast.error(t("addService.durationRequired"));
       return;
     }
 
     if (formData.providers.length === 0) {
-      toast.error("Select at least one provider.");
+      toast.error(t("addService.selectProvider"));
       return;
     }
 
     setSaving(true);
     try {
-      // Create ONE procedure per provider because procedures.dentist_id is single-valued
       const inserts = formData.providers.map((doctorId) => ({
         name: formData.serviceName.trim(),
         description: formData.description.trim() || null,
-        // category is enum in DB; we pass as any to avoid TS friction
         category: (formData.category || null) as any,
         default_cost: numericPrice,
         price: numericPrice,
@@ -243,22 +241,19 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
         estimated_duration_minutes: durationMinutes,
         dentist_id: doctorId,
         is_active: true,
-        is_bookable: formData.isPublic, // public booking visibility
+        is_bookable: formData.isPublic,
         notes: formData.cptCode?.trim() ? `Code: ${formData.cptCode.trim()}` : null,
       }));
 
       const { error } = await supabase.from("procedures").insert(inserts as any);
       if (error) throw error;
 
-      // Locations mapping is UI-only unless you add a junction table (not present in repo).
-      // Tags/image upload are UI-only until you add storage + a tags field/table.
-
-      toast.success("Service added successfully");
+      toast.success(t("addService.serviceAdded"));
       onOpenChange(false);
       resetForm();
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to add service");
+      toast.error(e?.message || t("addService.addFailed"));
     } finally {
       setSaving(false);
     }
@@ -268,38 +263,37 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Service</DialogTitle>
+          <DialogTitle>{t("addService.title")}</DialogTitle>
         </DialogHeader>
 
         {loadingDeps ? (
           <div className="py-10 flex items-center justify-center gap-2 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading practice data...
+            {t("addService.loadingData")}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Basic Information</h3>
+              <h3 className="text-lg font-semibold">{t("addService.basicInfo")}</h3>
               <div>
-                <Label htmlFor="serviceName">Service Name</Label>
+                <Label htmlFor="serviceName">{t("addService.serviceName")}</Label>
                 <Input
                   id="serviceName"
                   value={formData.serviceName}
                   onChange={(e) => setFormData((prev) => ({ ...prev, serviceName: e.target.value }))}
-                  placeholder="e.g., General Consultation"
+                  placeholder={t("addService.serviceNamePlaceholder")}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="category">Category</Label>
+                  <Label htmlFor="category">{t("addService.category")}</Label>
                   <Select
                     value={formData.category}
                     onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t("addService.selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
                       {serviceCategories.map((category) => (
@@ -312,13 +306,13 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                 </div>
 
                 <div>
-                  <Label htmlFor="duration">Duration</Label>
+                  <Label htmlFor="duration">{t("addService.duration")}</Label>
                   <Select
                     value={formData.duration}
                     onValueChange={(value) => setFormData((prev) => ({ ...prev, duration: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select duration" />
+                      <SelectValue placeholder={t("addService.selectDuration")} />
                     </SelectTrigger>
                     <SelectContent>
                       {durations.map((duration) => (
@@ -332,19 +326,19 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
               </div>
 
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t("addService.description")}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                  placeholder="Describe the service and what it includes..."
+                  placeholder={t("addService.descriptionPlaceholder")}
                   rows={4}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">{t("addService.price")}</Label>
                   <Input
                     id="price"
                     type="number"
@@ -357,7 +351,7 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                 </div>
 
                 <div>
-                  <Label htmlFor="cptCode">CPT/ICD Code (Optional)</Label>
+                  <Label htmlFor="cptCode">{t("addService.cptCode")}</Label>
                   <Input
                     id="cptCode"
                     value={formData.cptCode}
@@ -368,13 +362,12 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
               </div>
             </div>
 
-            {/* Providers */}
             <div className="space-y-4">
-              <Label>Providers Offering This Service</Label>
+              <Label>{t("addService.providersOffering")}</Label>
               <Card>
                 <CardContent className="p-4">
                   {providers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No providers found.</p>
+                    <p className="text-sm text-muted-foreground">{t("addService.noProviders")}</p>
                   ) : (
                     <div className="space-y-2">
                       {providers.map((p) => (
@@ -396,13 +389,12 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
               </Card>
             </div>
 
-            {/* Locations (UI only unless mapping table exists) */}
             <div className="space-y-4">
-              <Label>Available at Locations (optional)</Label>
+              <Label>{t("addService.availableAtLocations")}</Label>
               <Card>
                 <CardContent className="p-4">
                   {locations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No locations found.</p>
+                    <p className="text-sm text-muted-foreground">{t("addService.noLocations")}</p>
                   ) : (
                     <div className="space-y-2">
                       {locations.map((l) => (
@@ -418,20 +410,19 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                     </div>
                   )}
                   <p className="mt-3 text-xs text-muted-foreground">
-                    Note: saving location-service mapping requires a junction table (not implemented here).
+                    {t("addService.locationNote")}
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Tags (UI only unless you add storage/table) */}
             <div className="space-y-4">
-              <Label>Tags</Label>
+              <Label>{t("addService.tags")}</Label>
               <div className="flex gap-2">
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add a tag..."
+                  placeholder={t("addService.addTag")}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();
@@ -467,9 +458,8 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
               )}
             </div>
 
-            {/* Service Image (UI only until storage implemented) */}
             <div className="space-y-4">
-              <Label>Service Image/Icon (Optional)</Label>
+              <Label>{t("addService.serviceImage")}</Label>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                 {uploadedImage ? (
                   <div className="flex items-center justify-between p-2 bg-muted rounded">
@@ -481,7 +471,7 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                 ) : (
                   <label className="cursor-pointer block">
                     <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <p className="mt-2 text-sm text-muted-foreground">Click to upload</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("addService.clickToUpload")}</p>
                     <input
                       type="file"
                       accept="image/*"
@@ -495,41 +485,40 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Upload requires Supabase Storage wiring (not included here).
+                {t("addService.uploadNote")}
               </p>
             </div>
 
-            {/* Visibility */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Service Visibility</Label>
+                <Label>{t("addService.serviceVisibility")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Public services appear in patient booking. Internal services are for admin use only.
+                  {t("addService.visibilityDesc")}
                 </p>
               </div>
               <div className="flex items-center space-x-2">
-                <Label htmlFor="visibility">Internal</Label>
+                <Label htmlFor="visibility">{t("addService.internal")}</Label>
                 <Switch
                   id="visibility"
                   checked={formData.isPublic}
                   onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isPublic: checked }))}
                 />
-                <Label htmlFor="visibility">Public</Label>
+                <Label htmlFor="visibility">{t("addService.public")}</Label>
               </div>
             </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
-                Cancel
+                {t("addService.cancel")}
               </Button>
               <Button type="submit" disabled={saving}>
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
+                    {t("addService.saving")}
                   </>
                 ) : (
-                  "Add Service"
+                  t("addService.addServiceBtn")
                 )}
               </Button>
             </DialogFooter>
