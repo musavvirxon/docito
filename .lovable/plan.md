@@ -1,72 +1,71 @@
 
+Goal: restore preview builds so updates can appear again, then clean up the secondary warnings that are cluttering the preview.
 
-# Connect All Dashboards to i18n Translations
+What is actually broken
+1. The immediate preview blocker is the Vite build config, not the preview system itself.
+2. `vite.config.ts` forces `build.minify: 'terser'` and defines `terserOptions`.
+3. `package.json` no longer includes `terser` in `devDependencies`.
+4. Your build log confirms this exact failure: `[vite:terser] terser not found`.
+5. Because preview deployments run a production-style build, every preview fails before it can show new updates.
 
-## Scope
+Why every preview is failing
+```text
+package.json      -> terser package removed
+vite.config.ts    -> still requires terser explicitly
+preview build     -> runs vite build --mode development
+vite build        -> tries to load terser
+terser missing    -> build exits with code 1
+preview stays on previous saved version / fails to update
+```
 
-**~75 component files** across 6 dashboard areas have hardcoded English strings that need i18n connection. Total: ~26,000+ lines of component code plus ~6,000 lines in doctor components.
+Implementation plan
+1. Fix the build blocker first
+   - Open `vite.config.ts`.
+   - Remove the explicit Terser dependency path by either:
+     - switching `build.minify` from `'terser'` to the default/esbuild-friendly option, or
+     - re-adding `terser` to `devDependencies`.
+   - Preferred fix: use Vite’s built-in minifier path unless there is a proven need for Terser-only compression.
+   - If keeping custom console stripping is important, adapt the config to options supported without Terser.
 
-### Components Without i18n (by dashboard)
+2. Make dependency resolution stable again
+   - Review `package.json` against current imports.
+   - Ensure required packages remain present, especially `xlsx` and `livekit-client`.
+   - Regenerate the lockfile cleanly so the install step stops requesting stale alias tarballs like `string-width-cjs`, `wrap-ansi-cjs`, and `strip-ansi-cjs`.
 
-| Dashboard | Files | Total Lines |
-|-----------|-------|-------------|
-| **Staff** (clinic staff) | 15 files: StaffSidebar, StaffDashboardOverview, TodayScheduleSection, BillingSection, PatientListSection, AnalyticsSection, AttendanceAdminPanel, CompensationProfilesPanel, InvitationsList, StaffInviteDialog, TimeClockCard, ImagingDashboardContent, LabDashboardContent, PharmacyDashboardContent | ~4,000 |
-| **Lab** | 13 files: LabAnalytics, LabBillingInsurance, LabHomeCollection, LabManualTestOrderDialog, LabOrderQueue, LabReferralsSection, LabSampleManager, LabSettingsSection, LabStaffManager, ResultEntry, TestCatalogManager, TestOrderCreator, TestParameterEditor | ~6,500 |
-| **Pharmacy** | 11 files: FulfillmentQueue, PharmacyAnalytics, PharmacyDeliveryOrders, PharmacyInsuranceClaims, PharmacyInventoryManager, PharmacyManualPrescriptionDialog, PharmacyPatientView, PharmacyPrescriptionInbox, PharmacyReferralsSection, PharmacySettings, PharmacyStaffManager | ~7,700 |
-| **Imaging** | 11 files: ImagingAnalytics, ImagingBillingSection, ImagingEquipmentManager, ImagingManualOrderDialog, ImagingOrdersManager, ImagingReferralsSection, ImagingReportManager, ImagingScanWorkflow, ImagingSettings, ImagingSettingsSection, ImagingStaffManager | ~7,100 |
-| **Doctor** | 23 files: DoctorProfileSection, DoctorProceduresSection, DoctorReferralsSection, AssignedPatientsSection, InternalMessagingSection, PatientDetailView, DoctorVerificationStatusCard, various modals | ~6,200 |
-| **Practice Admin** | AdminDashboard.tsx partial (billing/analytics sections still hardcoded) | ~400 lines |
+3. Re-run install/build validation
+   - Run install with the project’s current package manager flow.
+   - Run the exact failing build command: `vite build --mode development`.
+   - Confirm preview can compile successfully again.
 
-### Translation files already exist
-- `dashboard.json` (1442 lines) — covers admin, patient, doctor dashboard keys
-- `imagingAdminDashboard.json` (644 lines) — covers imaging dashboard
-- `labAdminDashboard.json` (349 lines) — covers lab dashboard
-- `pharmacyAdminDashboard.json` (263 lines) — covers pharmacy dashboard
+4. Clean up the non-blocking warnings
+   - Fix the Tailwind ambiguous utility warning in `src/pages/About.tsx` by replacing the ambiguous arbitrary class or using a non-ambiguous delay utility.
+   - Fix the `ThemeToggle` ref warning in `src/components/home/ThemeToggle.tsx` by making the tooltip trigger child ref-safe if needed.
+   - These warnings are not the cause of preview failure, but they should be cleaned up to reduce runtime noise.
 
-The JSON files have good key coverage but components don't reference them.
+5. Final verification
+   - Confirm a fresh preview build succeeds.
+   - Confirm the preview reflects current code instead of the last successful build.
+   - Confirm no new install-time dependency errors remain.
 
----
+Files likely to change
+- `vite.config.ts`
+- `package.json`
+- lockfile if regenerated
+- `src/pages/About.tsx`
+- `src/components/home/ThemeToggle.tsx`
 
-## Implementation Plan
+Technical details
+- Root cause: missing optional dependency required by config.
+- Current mismatch:
+  - `vite.config.ts` uses:
+    - `minify: 'terser'`
+    - `terserOptions: { ... }`
+  - `package.json` does not include `terser`
+- Best-priority fix:
+  - either restore `terser`
+  - or remove the explicit Terser requirement from Vite config
+- Based on the current error, fixing this one issue should unblock previews immediately; the Tailwind and React ref warnings are secondary.
 
-### Step 1: Add `useTranslation` hook + replace strings in Staff components (15 files)
-- Add `useTranslation('dashboard')` to all `src/components/staff/*.tsx`
-- Replace hardcoded labels in StaffSidebar (role labels, menu items, staff type labels)
-- Replace strings in StaffDashboardOverview, TodayScheduleSection, BillingSection, PatientListSection, TimeClockCard, etc.
-- Add missing translation keys to `dashboard.json` under a new `staff` section
-
-### Step 2: Add `useTranslation` hook + replace strings in Lab components (13 files)
-- Add `useTranslation('labAdminDashboard')` to all `src/components/lab/*.tsx`
-- Replace hardcoded strings with `t('dashboard.orders...')`, `t('dashboard.samples...')`, etc.
-- Add any missing keys to `labAdminDashboard.json`
-
-### Step 3: Add `useTranslation` hook + replace strings in Pharmacy components (11 files)
-- Add `useTranslation('pharmacyAdminDashboard')` to all `src/components/pharmacy/*.tsx`
-- Replace hardcoded strings with `t('pharmacyDashboard...')`
-- Add any missing keys to `pharmacyAdminDashboard.json`
-
-### Step 4: Add `useTranslation` hook + replace strings in Imaging components (11 files)
-- Add `useTranslation('imagingAdminDashboard')` to all `src/components/imaging/*.tsx` (ImagingDashboard.tsx already has it)
-- Replace hardcoded strings with `t('imagingDashboard...')`
-- Add any missing keys to `imagingAdminDashboard.json`
-
-### Step 5: Add `useTranslation` hook + replace strings in Doctor components (23 files)
-- Add `useTranslation('dashboard')` to the 23 doctor components without it
-- Replace hardcoded strings with `t('doctor...')`
-- Add any missing keys to `dashboard.json` under the `doctor` section
-
-### Step 6: Fix remaining hardcoded strings in AdminDashboard.tsx
-- Replace ~12 remaining hardcoded strings in billing/analytics sections with existing `t('admin...')` keys
-- Add any missing keys
-
-### Step 7: Validate
-- Run `tsc --noEmit` to verify no type errors
-- Verify JSON files are valid
-
-### Technical Details
-- Each component gets `import { useTranslation } from "react-i18next"` and `const { t } = useTranslation("namespace")`
-- Namespace mapping: staff/admin/doctor components use `dashboard`, facility components use their respective admin dashboard namespace
-- Static label maps (like `STATUS_CONFIG`, `ROLE_LABELS`) will use `t()` calls inside the component body rather than at module level
-- Translation JSON will be English-only (other languages can be added later via the translation management system)
-- ~75 files modified, 4 JSON files updated
-
+Notes specific to your project
+- This is a healthcare app, so I will keep the fix narrowly scoped to build/config reliability and avoid changing sensitive auth/data-access logic.
+- I will not alter Supabase/auth behavior for this issue because the current failure happens before the app is even deployed to preview.
