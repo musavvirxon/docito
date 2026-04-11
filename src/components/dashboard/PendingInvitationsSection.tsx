@@ -6,12 +6,14 @@ import { usePracticeInvitations } from '@/hooks/usePracticeInvitations';
 import { formatDistance } from 'date-fns';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface PendingInvitationsSectionProps {
   practiceId: string;
 }
 
 const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProps) => {
+  const { t } = useTranslation('dashboard');
   const { invitations, loading, resendInvitation, cancelInvitation } = usePracticeInvitations(practiceId);
   const { toast } = useToast();
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -26,14 +28,14 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
       await navigator.clipboard.writeText(inviteLink);
       setCopiedId(invitationId);
       toast({
-        title: 'Link Copied',
-        description: 'Invitation link copied to clipboard',
+        title: t("pendingInvitations.linkCopied"),
+        description: t("pendingInvitations.linkCopiedDesc"),
       });
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to copy link',
+        title: t("pendingInvitations.copyFailed"),
+        description: t("pendingInvitations.copyFailed"),
         variant: 'destructive',
       });
     }
@@ -43,7 +45,7 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Pending Invitations</CardTitle>
+          <CardTitle>{t("pendingInvitations.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
@@ -57,13 +59,13 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pending Invitations ({pendingInvitations.length})</CardTitle>
+        <CardTitle>{t("pendingInvitations.title")} ({pendingInvitations.length})</CardTitle>
       </CardHeader>
       <CardContent>
         {pendingInvitations.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No pending invitations</p>
+            <p>{t("pendingInvitations.noPending")}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -80,7 +82,7 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
                     <Badge
                       variant={invitation.invite_type === 'existingUser' ? 'default' : 'secondary'}
                     >
-                      {invitation.invite_type === 'existingUser' ? 'Existing User' : 'New User'}
+                      {invitation.invite_type === 'existingUser' ? t("pendingInvitations.existingUser") : t("pendingInvitations.newUser")}
                     </Badge>
                     <Badge variant="outline">{invitation.role}</Badge>
                   </div>
@@ -100,7 +102,7 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
                     )}
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      Sent {formatDistance(new Date(invitation.created_at), new Date(), { addSuffix: true })}
+                      {t("pendingInvitations.sent")} {formatDistance(new Date(invitation.created_at), new Date(), { addSuffix: true })}
                     </div>
                   </div>
 
@@ -123,7 +125,7 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
                       ) : (
                         <Copy className="w-4 h-4 mr-1" />
                       )}
-                      {copiedId === invitation.id ? 'Copied' : 'Copy Link'}
+                      {copiedId === invitation.id ? t("pendingInvitations.copied") : t("pendingInvitations.copyLink")}
                     </Button>
                   )}
                   <Button
@@ -132,7 +134,7 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
                     onClick={() => resendInvitation(invitation.id)}
                   >
                     <Send className="w-4 h-4 mr-1" />
-                    Resend
+                    {t("pendingInvitations.resend")}
                   </Button>
                   <Button
                     size="sm"
@@ -140,7 +142,7 @@ const PendingInvitationsSection = ({ practiceId }: PendingInvitationsSectionProp
                     onClick={() => cancelInvitation(invitation.id)}
                   >
                     <XCircle className="w-4 h-4 mr-1" />
-                    Cancel
+                    {t("pendingInvitations.cancelInvite")}
                   </Button>
                 </div>
               </div>
