@@ -238,28 +238,27 @@ export const usePracticeInvitations = (practiceId?: string) => {
   useEffect(() => {
     fetchInvitations();
 
-    // Subscribe to real-time updates
-    if (practiceId) {
-      const channel = supabase
-        .channel('practice-invitations-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'practice_invitations',
-            filter: `practice_id=eq.${practiceId}`,
-          },
-          () => {
-            fetchInvitations();
-          }
-        )
-        .subscribe();
+    if (!practiceId) return;
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
+    const channel = supabase
+      .channel(`practice-invitations-changes-${practiceId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'practice_invitations',
+          filter: `practice_id=eq.${practiceId}`,
+        },
+        () => {
+          fetchInvitations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [practiceId]);
 
   return {
