@@ -112,5 +112,6 @@ export default defineConfig(({ mode }) => ({
   // Avoid transpiling modern JS features that are baseline in all browsers
   esbuild: {
     target: 'esnext',
+    drop: ['console', 'debugger'],
   },
 }));
