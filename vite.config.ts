@@ -104,24 +104,14 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    // Use terser for more aggressive minification (especially for icons)
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
-      },
-      mangle: true,
-      format: {
-        comments: false,
-      },
-    },
+    // Use esbuild for minification (built into Vite, no extra dependency)
+    minify: 'esbuild',
     // CSS code splitting for smaller initial payload
     cssCodeSplit: true,
   },
   // Avoid transpiling modern JS features that are baseline in all browsers
   esbuild: {
     target: 'esnext',
+    drop: ['console', 'debugger'],
   },
 }));

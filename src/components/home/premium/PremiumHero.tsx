@@ -277,7 +277,7 @@ export default function PremiumHero() {
 
       {/* Scroll indicator */}
       <div
-        className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-500 delay-[1500ms] ${
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-500 delay-1000 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >

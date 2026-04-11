@@ -32,7 +32,7 @@ const ThemeToggle = () => {
       <div className="flex items-center gap-1 p-1 rounded-full bg-muted/50">
         {modes.map((m) => (
           <Tooltip key={m.value}>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <button
                 onClick={() => handleModeClick(m.value)}
                 className={cn(
