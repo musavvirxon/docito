@@ -649,7 +649,8 @@
       "settings": "Settings",
       "logout": "Log Out",
       "diagnoses": "Diagnoses",
-      "referrals": "Referrals"
+      "referrals": "Referrals",
+      "verifyDocuments": "Verify Documents"
     },
     "messaging": {
       "description": "Communicate with patients and healthcare providers"
