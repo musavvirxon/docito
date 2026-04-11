@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -74,6 +75,7 @@ interface StaffRole {
 }
 
 export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
+  const { t } = useTranslation("dashboard");
   const { user } = useAuth();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState("general");
@@ -118,7 +120,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
     
     setLoading(true);
     try {
-      // Load practice
       const { data: practiceData, error: practiceError } = await supabase
         .from('practices')
         .select('id, name, legal_business_name, business_registration_number, country, logo_url')
@@ -129,7 +130,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
       setPractice(practiceData);
 
       if (practiceData) {
-        // Load practice settings
         const { data: settingsData, error: settingsError } = await supabase
           .from('practice_settings')
           .select('*')
@@ -159,7 +159,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
           });
         }
 
-        // Load locations
         const { data: locationsData, error: locationsError } = await supabase
           .from('practice_locations')
           .select('id, name, address, city, phone, is_primary')
@@ -169,7 +168,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
         if (locationsError) throw locationsError;
         setLocations(locationsData || []);
 
-        // Load staff roles
         const { data: rolesData, error: rolesError } = await supabase
           .from('staff_roles')
           .select('*')
@@ -186,7 +184,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
       }
     } catch (err: any) {
       console.error('Error loading settings:', err);
-      toast.error("Failed to load settings");
+      toast.error(t("settingsPanel.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -203,16 +201,16 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
       const result = await uploadFile(file, 'practice-logos', `${practice.id}_logo`);
       if (result) {
         setLogoFile(file);
-        toast.success("Logo uploaded successfully");
+        toast.success(t("settingsPanel.general.logoUploaded"));
       }
     } catch (err: any) {
       console.error('Error uploading logo:', err);
-      toast.error("Failed to upload logo");
+      toast.error(t("settingsPanel.general.logoUploadFailed"));
     }
   };
 
   const handleDeleteLocation = async (locationId: string) => {
-    if (!confirm("Are you sure you want to delete this location?")) return;
+    if (!confirm(t("settingsPanel.locations.deleteConfirm"))) return;
 
     try {
       const { error } = await supabase
@@ -223,10 +221,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
       if (error) throw error;
       
       setLocations(locations.filter(loc => loc.id !== locationId));
-      toast.success("Location deleted successfully");
+      toast.success(t("settingsPanel.locations.deleted"));
     } catch (err: any) {
       console.error('Error deleting location:', err);
-      toast.error("Failed to delete location");
+      toast.error(t("settingsPanel.locations.deleteFailed"));
     }
   };
 
@@ -248,7 +246,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
     setSavingGeneral(true);
     try {
-      // Update practice basic info
       const { error: practiceError } = await supabase
         .from('practices')
         .update({
@@ -259,7 +256,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (practiceError) throw practiceError;
 
-      // Update tagline and timezone in settings
       const { error: settingsError } = await supabase
         .from('practice_settings')
         .upsert({
@@ -272,10 +268,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (settingsError) throw settingsError;
 
-      toast.success("General settings saved successfully");
+      toast.success(t("settingsPanel.general.saved"));
     } catch (err: any) {
       console.error('Error saving general settings:', err);
-      toast.error(err.message || "Failed to save general settings");
+      toast.error(err.message || t("settingsPanel.general.saveFailed"));
     } finally {
       setSavingGeneral(false);
     }
@@ -286,7 +282,6 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
     setSavingPermissions(true);
     try {
-      // Update staff role permissions
       for (const role of staffRoles) {
         const { error: roleError } = await supabase
           .from('staff_roles')
@@ -296,10 +291,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
         if (roleError) throw roleError;
       }
 
-      toast.success("Permissions saved successfully");
+      toast.success(t("settingsPanel.permissions.saved"));
     } catch (err: any) {
       console.error('Error saving permissions:', err);
-      toast.error(err.message || "Failed to save permissions");
+      toast.error(err.message || t("settingsPanel.permissions.saveFailed"));
     } finally {
       setSavingPermissions(false);
     }
@@ -324,10 +319,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (error) throw error;
 
-      toast.success("Booking settings saved successfully");
+      toast.success(t("settingsPanel.booking.saved"));
     } catch (err: any) {
       console.error('Error saving booking settings:', err);
-      toast.error(err.message || "Failed to save booking settings");
+      toast.error(err.message || t("settingsPanel.booking.saveFailed"));
     } finally {
       setSavingBooking(false);
     }
@@ -352,10 +347,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (error) throw error;
 
-      toast.success("Payment settings saved successfully");
+      toast.success(t("settingsPanel.payments.saved"));
     } catch (err: any) {
       console.error('Error saving payment settings:', err);
-      toast.error(err.message || "Failed to save payment settings");
+      toast.error(err.message || t("settingsPanel.payments.saveFailed"));
     } finally {
       setSavingPayments(false);
     }
@@ -381,10 +376,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (error) throw error;
 
-      toast.success("Notification settings saved successfully");
+      toast.success(t("settingsPanel.notifications.saved"));
     } catch (err: any) {
       console.error('Error saving notification settings:', err);
-      toast.error(err.message || "Failed to save notification settings");
+      toast.error(err.message || t("settingsPanel.notifications.saveFailed"));
     } finally {
       setSavingNotifications(false);
     }
@@ -395,7 +390,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Practice Settings</DialogTitle>
+            <DialogTitle>{t("settingsPanel.title")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 p-6">
             <Skeleton className="h-12 w-full" />
@@ -411,18 +406,18 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Practice Settings</DialogTitle>
+          <DialogTitle>{t("settingsPanel.title")}</DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
           <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="locations">Locations</TabsTrigger>
-            <TabsTrigger value="permissions">Permissions</TabsTrigger>
-            <TabsTrigger value="restrictions">Restrictions</TabsTrigger>
-            <TabsTrigger value="booking">Booking</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="general">{t("settingsPanel.tabs.general")}</TabsTrigger>
+            <TabsTrigger value="locations">{t("settingsPanel.tabs.locations")}</TabsTrigger>
+            <TabsTrigger value="permissions">{t("settingsPanel.tabs.permissions")}</TabsTrigger>
+            <TabsTrigger value="restrictions">{t("settingsPanel.tabs.restrictions")}</TabsTrigger>
+            <TabsTrigger value="booking">{t("settingsPanel.tabs.booking")}</TabsTrigger>
+            <TabsTrigger value="payments">{t("settingsPanel.tabs.payments")}</TabsTrigger>
+            <TabsTrigger value="notifications">{t("settingsPanel.tabs.notifications")}</TabsTrigger>
           </TabsList>
 
           <div className="mt-6 overflow-y-auto max-h-[70vh]">
@@ -431,17 +426,17 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
-                    General Information
+                    {t("settingsPanel.general.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label>Practice Name</Label>
+                      <Label>{t("settingsPanel.general.practiceName")}</Label>
                       <Input value={practice?.name || ''} disabled />
                     </div>
                     <div>
-                      <Label htmlFor="registrationNumber">Registration Number</Label>
+                      <Label htmlFor="registrationNumber">{t("settingsPanel.general.registrationNumber")}</Label>
                       <Input
                         id="registrationNumber"
                         value={practice?.business_registration_number || ''}
@@ -451,19 +446,19 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </div>
 
                   <div>
-                    <Label htmlFor="tagline">Tagline</Label>
+                    <Label htmlFor="tagline">{t("settingsPanel.general.tagline")}</Label>
                     <Textarea
                       id="tagline"
                       value={settings.tagline || ''}
                       onChange={(e) => updateSetting("tagline", e.target.value)}
                       rows={2}
-                      placeholder="Your practice's tagline or motto"
+                      placeholder={t("settingsPanel.general.taglinePlaceholder")}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="timezone">Timezone</Label>
+                      <Label htmlFor="timezone">{t("settingsPanel.general.timezone")}</Label>
                       <Select value={settings.timezone} onValueChange={(value) => updateSetting("timezone", value)}>
                         <SelectTrigger>
                           <SelectValue />
@@ -476,7 +471,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="country">Country</Label>
+                      <Label htmlFor="country">{t("settingsPanel.general.country")}</Label>
                       <Input
                         id="country"
                         value={practice?.country || ''}
@@ -486,11 +481,11 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Practice Logo</Label>
+                    <Label>{t("settingsPanel.general.practiceLogo")}</Label>
                     <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                       {logoFile || practice?.logo_url ? (
                         <div className="flex items-center justify-between p-2 bg-muted rounded">
-                          <span className="text-sm">{logoFile?.name || 'Current logo'}</span>
+                          <span className="text-sm">{logoFile?.name || t("settingsPanel.general.currentLogo")}</span>
                           <Button
                             type="button"
                             variant="ghost"
@@ -516,7 +511,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                             ) : (
                               <>
                                 <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                                <p className="mt-2 text-sm text-muted-foreground">Upload logo</p>
+                                <p className="mt-2 text-sm text-muted-foreground">{t("settingsPanel.general.uploadLogo")}</p>
                               </>
                             )}
                           </Label>
@@ -532,10 +527,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   {savingGeneral ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t("settingsPanel.general.saving")}
                     </>
                   ) : (
-                    "Save Changes"
+                    t("settingsPanel.general.saveChanges")
                   )}
                 </Button>
               </div>
@@ -546,13 +541,13 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="h-5 w-5" />
-                    Manage Locations
+                    {t("settingsPanel.locations.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {locations.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">
-                      No locations added yet. Add your first location to get started.
+                      {t("settingsPanel.locations.noLocations")}
                     </p>
                   ) : (
                     locations.map((location) => (
@@ -561,7 +556,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium">{location.name}</h4>
                             {location.is_primary && (
-                              <Badge variant="default">Primary</Badge>
+                              <Badge variant="default">{t("settingsPanel.locations.primary")}</Badge>
                             )}
                           </div>
                           {location.address && (
@@ -592,7 +587,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    Staff Permissions
+                    {t("settingsPanel.permissions.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -632,10 +627,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   {savingPermissions ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t("settingsPanel.permissions.saving")}
                     </>
                   ) : (
-                    "Save Changes"
+                    t("settingsPanel.permissions.saveChanges")
                   )}
                 </Button>
               </div>
@@ -650,13 +645,13 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5" />
-                    Booking Settings
+                    {t("settingsPanel.booking.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="defaultDuration">Default Appointment Duration (minutes)</Label>
+                      <Label htmlFor="defaultDuration">{t("settingsPanel.booking.defaultDuration")}</Label>
                       <Select 
                         value={settings.default_duration_minutes.toString()} 
                         onValueChange={(value) => updateSetting("default_duration_minutes", parseInt(value))}
@@ -665,15 +660,15 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="15">15 minutes</SelectItem>
-                          <SelectItem value="30">30 minutes</SelectItem>
-                          <SelectItem value="45">45 minutes</SelectItem>
-                          <SelectItem value="60">60 minutes</SelectItem>
+                          <SelectItem value="15">{t("settingsPanel.booking.durations.15")}</SelectItem>
+                          <SelectItem value="30">{t("settingsPanel.booking.durations.30")}</SelectItem>
+                          <SelectItem value="45">{t("settingsPanel.booking.durations.45")}</SelectItem>
+                          <SelectItem value="60">{t("settingsPanel.booking.durations.60")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="maxPerDay">Maximum Appointments Per Day</Label>
+                      <Label htmlFor="maxPerDay">{t("settingsPanel.booking.maxPerDay")}</Label>
                       <Input
                         id="maxPerDay"
                         type="number"
@@ -685,7 +680,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="cancellationHours">Cancellation Notice (hours)</Label>
+                      <Label htmlFor="cancellationHours">{t("settingsPanel.booking.cancellationHours")}</Label>
                       <Input
                         id="cancellationHours"
                         type="number"
@@ -694,7 +689,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="bufferTime">Buffer Time Between Appointments (minutes)</Label>
+                      <Label htmlFor="bufferTime">{t("settingsPanel.booking.bufferTime")}</Label>
                       <Input
                         id="bufferTime"
                         type="number"
@@ -711,10 +706,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   {savingBooking ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t("settingsPanel.booking.saving")}
                     </>
                   ) : (
-                    "Save Changes"
+                    t("settingsPanel.booking.saveChanges")
                   )}
                 </Button>
               </div>
@@ -725,14 +720,14 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
-                    Payment Settings
+                    {t("settingsPanel.payments.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label>Enable Online Payments</Label>
-                      <p className="text-sm text-muted-foreground">Allow patients to pay online</p>
+                      <Label>{t("settingsPanel.payments.enableOnline")}</Label>
+                      <p className="text-sm text-muted-foreground">{t("settingsPanel.payments.enableOnlineDesc")}</p>
                     </div>
                     <Switch
                       checked={settings.payments_enabled}
@@ -743,7 +738,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   {settings.payments_enabled && (
                     <>
                       <div>
-                        <Label htmlFor="currency">Currency</Label>
+                        <Label htmlFor="currency">{t("settingsPanel.payments.currency")}</Label>
                         <Select value={settings.currency} onValueChange={(value) => updateSetting("currency", value)}>
                           <SelectTrigger>
                             <SelectValue />
@@ -758,12 +753,12 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
                       <div className="space-y-2">
                         <Button variant="outline" className="w-full" disabled>
-                          {settings.stripe_connected ? "✓ Stripe Connected" : "Connect Stripe"}
+                          {settings.stripe_connected ? t("settingsPanel.payments.stripeConnected") : t("settingsPanel.payments.connectStripe")}
                         </Button>
                         <Button variant="outline" className="w-full" disabled>
-                          {settings.paypal_connected ? "✓ PayPal Connected" : "Connect PayPal"}
+                          {settings.paypal_connected ? t("settingsPanel.payments.paypalConnected") : t("settingsPanel.payments.connectPaypal")}
                         </Button>
-                        <p className="text-xs text-muted-foreground">Payment integration coming soon</p>
+                        <p className="text-xs text-muted-foreground">{t("settingsPanel.payments.integrationComingSoon")}</p>
                       </div>
                     </>
                   )}
@@ -775,10 +770,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   {savingPayments ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t("settingsPanel.payments.saving")}
                     </>
                   ) : (
-                    "Save Changes"
+                    t("settingsPanel.payments.saveChanges")
                   )}
                 </Button>
               </div>
@@ -789,22 +784,22 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Bell className="h-5 w-5" />
-                    Notification Settings
+                    {t("settingsPanel.notifications.title")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h4 className="font-medium">Booking Confirmations</h4>
+                    <h4 className="font-medium">{t("settingsPanel.notifications.bookingConfirmations")}</h4>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label>Email Confirmations</Label>
+                        <Label>{t("settingsPanel.notifications.emailConfirmations")}</Label>
                         <Switch
                           checked={settings.email_booking_confirm}
                           onCheckedChange={(checked) => updateSetting("email_booking_confirm", checked)}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label>SMS Confirmations</Label>
+                        <Label>{t("settingsPanel.notifications.smsConfirmations")}</Label>
                         <Switch
                           checked={settings.sms_booking_confirm}
                           onCheckedChange={(checked) => updateSetting("sms_booking_confirm", checked)}
@@ -814,17 +809,17 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   </div>
 
                   <div className="space-y-4">
-                    <h4 className="font-medium">Appointment Reminders</h4>
+                    <h4 className="font-medium">{t("settingsPanel.notifications.appointmentReminders")}</h4>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <Label>Email Reminders</Label>
+                        <Label>{t("settingsPanel.notifications.emailReminders")}</Label>
                         <Switch
                           checked={settings.email_reminders}
                           onCheckedChange={(checked) => updateSetting("email_reminders", checked)}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label>SMS Reminders</Label>
+                        <Label>{t("settingsPanel.notifications.smsReminders")}</Label>
                         <Switch
                           checked={settings.sms_reminders}
                           onCheckedChange={(checked) => updateSetting("sms_reminders", checked)}
@@ -833,7 +828,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                     </div>
 
                     <div>
-                      <Label htmlFor="reminderTiming">Send Reminders (hours before)</Label>
+                      <Label htmlFor="reminderTiming">{t("settingsPanel.notifications.sendRemindersBefore")}</Label>
                       <Select 
                         value={settings.reminder_hours_before.toString()} 
                         onValueChange={(value) => updateSetting("reminder_hours_before", parseInt(value))}
@@ -842,10 +837,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">1 hour</SelectItem>
-                          <SelectItem value="24">24 hours</SelectItem>
-                          <SelectItem value="48">48 hours</SelectItem>
-                          <SelectItem value="72">72 hours</SelectItem>
+                          <SelectItem value="1">{t("settingsPanel.notifications.reminderOptions.1")}</SelectItem>
+                          <SelectItem value="24">{t("settingsPanel.notifications.reminderOptions.24")}</SelectItem>
+                          <SelectItem value="48">{t("settingsPanel.notifications.reminderOptions.48")}</SelectItem>
+                          <SelectItem value="72">{t("settingsPanel.notifications.reminderOptions.72")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -858,10 +853,10 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                   {savingNotifications ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {t("settingsPanel.notifications.saving")}
                     </>
                   ) : (
-                    "Save Changes"
+                    t("settingsPanel.notifications.saveChanges")
                   )}
                 </Button>
               </div>
@@ -870,7 +865,7 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
+              {t("settingsPanel.close")}
             </Button>
           </div>
         </Tabs>
