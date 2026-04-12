@@ -660,6 +660,28 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            {/* Summary stats row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{doctors.length}</div>
+                  <p className="text-sm text-muted-foreground">{t("admin.providers.listTitle")}</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{doctors.filter(d => d.status === "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{doctors.filter(d => d.status !== "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Pending / Inactive</p>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Join Applications from Doctors */}
             {practice?.id && (
               <div className="mt-6">
@@ -687,15 +709,14 @@ const AdminDashboard = () => {
                     {doctors.map((doctor) => (
                       <div
                         key={doctor.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
                       >
                         <div className="min-w-0">
                           <p className="font-medium truncate">{doctor.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {doctor.specialty} • {doctor.email}
-                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="text-sm text-muted-foreground truncate">{doctor.specialty}</div>
+                        <div className="text-sm text-muted-foreground truncate">{doctor.email}</div>
+                        <div className="flex items-center justify-end gap-2">
                           <Badge variant="outline">{doctor.status}</Badge>
                           <Button variant="outline" size="icon" onClick={() => toast.info("View profile (coming soon)")}>
                             <Eye className="h-4 w-4" />
@@ -729,6 +750,33 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{services.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Services</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {services.length > 0
+                      ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
+                      : "$0"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Avg. Price</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {new Set(services.map(s => s.category)).size}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Categories</p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="rounded-xl mt-6">
               <CardHeader>
                 <CardTitle>{t("admin.services.listTitle")}</CardTitle>
@@ -749,14 +797,12 @@ const AdminDashboard = () => {
                     {services.map((service) => (
                       <div
                         key={service.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
                       >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{service.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{service.category}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold">${service.price}</span>
+                        <div className="font-medium truncate">{service.name}</div>
+                        <div className="text-sm text-muted-foreground truncate">{service.category}</div>
+                        <div className="font-semibold">${service.price}</div>
+                        <div className="flex items-center justify-end gap-2">
                           <Button variant="outline" size="icon" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
                             <Settings className="h-4 w-4" />
                           </Button>
@@ -803,6 +849,27 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{locations.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Locations</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{locations.filter(l => l.status === "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{locations.filter(l => l.status !== "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Inactive</p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="rounded-xl mt-6">
               <CardHeader>
                 <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
@@ -823,14 +890,12 @@ const AdminDashboard = () => {
                     {locations.map((location) => (
                       <div
                         key={location.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
                       >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{location.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{location.address}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{location.status}</Badge>
+                        <div className="font-medium truncate">{location.name}</div>
+                        <div className="text-sm text-muted-foreground truncate sm:col-span-1">{location.address}</div>
+                        <div><Badge variant="outline">{location.status}</Badge></div>
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="outline"
                             size="icon"
@@ -883,6 +948,27 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{patients.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Patients</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{patients.filter(p => p.status === "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{new Set(patients.map(p => p.doctor_name)).size}</div>
+                  <p className="text-sm text-muted-foreground">Assigned Providers</p>
+                </CardContent>
+              </Card>
+            </div>
+
             {patients.length === 0 ? (
               <Card className="rounded-xl mt-6">
                 <CardContent className="py-12 text-center text-muted-foreground">
@@ -900,7 +986,7 @@ const AdminDashboard = () => {
                   {patients.map((patient) => (
                     <div
                       key={patient.id}
-                      className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 rounded-xl bg-muted/30 border border-border"
+                      className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 rounded-xl bg-muted/30 border border-border items-center"
                     >
                       <div className="font-medium truncate">{patient.name}</div>
                       <div className="text-muted-foreground">{format(new Date(patient.last_visit), "MMM dd, yyyy")}</div>
