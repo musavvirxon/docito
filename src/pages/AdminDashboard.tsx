@@ -332,22 +332,37 @@ const AdminDashboard = () => {
           </div>
         </header>
         <main className="flex-1 p-6 sm:p-8 lg:p-10">
-          <Card className="w-full rounded-2xl">
-            <CardContent className="grid min-h-[calc(100vh-10rem)] grid-cols-1 gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)] lg:p-10">
-              <div className="flex flex-col justify-center space-y-5">
-                <div className="space-y-3">
+          <div className="grid min-h-[calc(100vh-7rem)] grid-cols-1 gap-6 lg:grid-cols-12">
+            <Card className="rounded-2xl lg:col-span-8">
+              <CardContent className="flex h-full min-h-[420px] flex-col justify-between p-6 sm:p-8 lg:p-10">
+                <div className="space-y-5">
                   <div className="inline-flex w-fit items-center rounded-full border border-border bg-muted px-3 py-1 text-sm text-muted-foreground">
                     {t("setupScreen.title")}
                   </div>
-                  <div className="space-y-2">
-                    <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("setupScreen.title")}</h1>
-                    <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
+                  <div className="space-y-3">
+                    <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">{t("setupScreen.title")}</h1>
+                    <p className="max-w-3xl text-base text-muted-foreground sm:text-lg lg:text-xl">
                       {t("setupScreen.description")}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="text-sm font-medium">Providers</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Invite doctors and review incoming applications.</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="text-sm font-medium">Operations</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Run staff, services, locations, appointments, and patients.</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="text-sm font-medium">Finance</p>
+                    <p className="mt-2 text-sm text-muted-foreground">Track billing, revenue, and settings once your practice is active.</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <Button onClick={() => setCreateClinicOpen(true)} className="sm:w-auto">
                     <Building2 className="h-4 w-4 mr-2" />
                     {t("setupScreen.createPractice")}
@@ -356,28 +371,28 @@ const AdminDashboard = () => {
                     {t("setupScreen.registerPractice")}
                   </Button>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                <Card className="rounded-xl border-border bg-card">
-                  <CardHeader>
-                    <CardTitle className="text-base">Providers</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">Invite doctors and review incoming applications from professionals who want to join your practice.</p>
-                  </CardContent>
-                </Card>
-                <Card className="rounded-xl border-border bg-card">
-                  <CardHeader>
-                    <CardTitle className="text-base">Operations</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">Manage staff, services, locations, appointments, patients, billing, and settings from one workspace.</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="grid gap-6 lg:col-span-4 lg:grid-rows-2">
+              <Card className="rounded-2xl h-full">
+                <CardHeader>
+                  <CardTitle className="text-base">Providers</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Invite doctors and review incoming applications from professionals who want to join your practice.</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-2xl h-full">
+                <CardHeader>
+                  <CardTitle className="text-base">Operations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Manage staff, services, locations, appointments, patients, billing, and settings from one workspace.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
           <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} onSuccess={() => refreshData()} />
         </main>
       </div>
