@@ -948,6 +948,27 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{patients.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Patients</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{patients.filter(p => p.status === "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{new Set(patients.map(p => p.doctor_name)).size}</div>
+                  <p className="text-sm text-muted-foreground">Assigned Providers</p>
+                </CardContent>
+              </Card>
+            </div>
+
             {patients.length === 0 ? (
               <Card className="rounded-xl mt-6">
                 <CardContent className="py-12 text-center text-muted-foreground">
@@ -965,7 +986,7 @@ const AdminDashboard = () => {
                   {patients.map((patient) => (
                     <div
                       key={patient.id}
-                      className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 rounded-xl bg-muted/30 border border-border"
+                      className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 rounded-xl bg-muted/30 border border-border items-center"
                     >
                       <div className="font-medium truncate">{patient.name}</div>
                       <div className="text-muted-foreground">{format(new Date(patient.last_visit), "MMM dd, yyyy")}</div>
