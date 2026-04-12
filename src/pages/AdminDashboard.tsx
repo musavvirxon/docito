@@ -750,6 +750,33 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{services.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Services</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {services.length > 0
+                      ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
+                      : "$0"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Avg. Price</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {new Set(services.map(s => s.category)).size}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Categories</p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="rounded-xl mt-6">
               <CardHeader>
                 <CardTitle>{t("admin.services.listTitle")}</CardTitle>
@@ -770,14 +797,12 @@ const AdminDashboard = () => {
                     {services.map((service) => (
                       <div
                         key={service.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
                       >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{service.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{service.category}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold">${service.price}</span>
+                        <div className="font-medium truncate">{service.name}</div>
+                        <div className="text-sm text-muted-foreground truncate">{service.category}</div>
+                        <div className="font-semibold">${service.price}</div>
+                        <div className="flex items-center justify-end gap-2">
                           <Button variant="outline" size="icon" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
                             <Settings className="h-4 w-4" />
                           </Button>
