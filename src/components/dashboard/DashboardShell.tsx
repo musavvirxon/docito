@@ -56,7 +56,7 @@ export function DashboardShell({
         <div className="flex-1 flex flex-col min-h-[calc(100vh-64px)]">
           {/* Content */}
           <main className={cn("flex-1 overflow-auto px-4 sm:px-6 lg:px-8 py-6", className)}>
-            <div className="max-w-7xl mx-auto">{children}</div>
+            <div className="w-full">{children}</div>
           </main>
 
           {/* Footer */}
