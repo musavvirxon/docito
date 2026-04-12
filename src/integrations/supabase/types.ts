@@ -2654,6 +2654,33 @@ export type Database = {
         }
         Relationships: []
       }
+      entity_settings: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          payload: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          payload?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          payload?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       facility_patients: {
         Row: {
           address: string | null
@@ -10252,6 +10279,10 @@ export type Database = {
           doctor_id: string
         }[]
       }
+      get_entity_settings: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: Json
+      }
       get_my_entity_scopes: {
         Args: never
         Returns: {
@@ -10561,6 +10592,10 @@ export type Database = {
           new_role: Database["public"]["Enums"]["user_role"]
           user_id: string
         }
+        Returns: Json
+      }
+      upsert_entity_settings: {
+        Args: { p_entity_id: string; p_entity_type: string; p_payload: Json }
         Returns: Json
       }
       validate_appointment_slot: {
