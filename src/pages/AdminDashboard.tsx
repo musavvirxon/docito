@@ -849,6 +849,27 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{locations.length}</div>
+                  <p className="text-sm text-muted-foreground">Total Locations</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{locations.filter(l => l.status === "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{locations.filter(l => l.status !== "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Inactive</p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card className="rounded-xl mt-6">
               <CardHeader>
                 <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
@@ -869,14 +890,12 @@ const AdminDashboard = () => {
                     {locations.map((location) => (
                       <div
                         key={location.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
                       >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{location.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">{location.address}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{location.status}</Badge>
+                        <div className="font-medium truncate">{location.name}</div>
+                        <div className="text-sm text-muted-foreground truncate sm:col-span-1">{location.address}</div>
+                        <div><Badge variant="outline">{location.status}</Badge></div>
+                        <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="outline"
                             size="icon"
