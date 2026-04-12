@@ -660,6 +660,28 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
+            {/* Summary stats row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{doctors.length}</div>
+                  <p className="text-sm text-muted-foreground">{t("admin.providers.listTitle")}</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{doctors.filter(d => d.status === "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Active</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{doctors.filter(d => d.status !== "active").length}</div>
+                  <p className="text-sm text-muted-foreground">Pending / Inactive</p>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Join Applications from Doctors */}
             {practice?.id && (
               <div className="mt-6">
@@ -687,15 +709,14 @@ const AdminDashboard = () => {
                     {doctors.map((doctor) => (
                       <div
                         key={doctor.id}
-                        className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border"
+                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
                       >
                         <div className="min-w-0">
                           <p className="font-medium truncate">{doctor.name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {doctor.specialty} • {doctor.email}
-                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="text-sm text-muted-foreground truncate">{doctor.specialty}</div>
+                        <div className="text-sm text-muted-foreground truncate">{doctor.email}</div>
+                        <div className="flex items-center justify-end gap-2">
                           <Badge variant="outline">{doctor.status}</Badge>
                           <Button variant="outline" size="icon" onClick={() => toast.info("View profile (coming soon)")}>
                             <Eye className="h-4 w-4" />
