@@ -10250,6 +10250,7 @@ export type Database = {
       }
       generate_invoice_number: { Args: never; Returns: string }
       generate_video_room_id: { Args: never; Returns: string }
+      get_admin_practice_ids: { Args: { _user_id: string }; Returns: string[] }
       get_doctor_monthly_trends: {
         Args: { p_doctor_id: string; p_months?: number }
         Returns: {
@@ -10417,6 +10418,7 @@ export type Database = {
         }
       }
       get_staff_permissions: { Args: { p_user_id: string }; Returns: Json }
+      get_staff_practice_ids: { Args: { _user_id: string }; Returns: string[] }
       get_user_primary_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
