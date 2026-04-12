@@ -130,6 +130,9 @@ export default function JoinRequestsSection({ practiceId }: JoinRequestsSectionP
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{profile.full_name || t("joinRequests.unknownDoctor")}</p>
+                        {doctor.specialty && (
+                          <p className="text-xs text-muted-foreground">{doctor.specialty}</p>
+                        )}
                         {location.name && (
                           <p className="text-xs text-muted-foreground">
                             <MapPin className="h-3 w-3 inline mr-1" />{location.name}
