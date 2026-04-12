@@ -331,31 +331,55 @@ const AdminDashboard = () => {
             </div>
           </div>
         </header>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <Card className="max-w-lg w-full rounded-xl">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                {t("setupScreen.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {t("setupScreen.description")}
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button onClick={() => setCreateClinicOpen(true)} className="flex-1">
-                  <Building2 className="h-4 w-4 mr-2" />
-                  {t("setupScreen.createPractice")}
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/register-practice")} className="flex-1">
-                  {t("setupScreen.registerPractice")}
-                </Button>
+        <main className="flex-1 p-6 sm:p-8 lg:p-10">
+          <Card className="w-full rounded-2xl">
+            <CardContent className="grid min-h-[calc(100vh-10rem)] grid-cols-1 gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)] lg:p-10">
+              <div className="flex flex-col justify-center space-y-5">
+                <div className="space-y-3">
+                  <div className="inline-flex w-fit items-center rounded-full border border-border bg-muted px-3 py-1 text-sm text-muted-foreground">
+                    {t("setupScreen.title")}
+                  </div>
+                  <div className="space-y-2">
+                    <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t("setupScreen.title")}</h1>
+                    <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
+                      {t("setupScreen.description")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button onClick={() => setCreateClinicOpen(true)} className="sm:w-auto">
+                    <Building2 className="h-4 w-4 mr-2" />
+                    {t("setupScreen.createPractice")}
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate("/register-practice")} className="sm:w-auto">
+                    {t("setupScreen.registerPractice")}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <Card className="rounded-xl border-border bg-card">
+                  <CardHeader>
+                    <CardTitle className="text-base">Providers</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">Invite doctors and review incoming applications from professionals who want to join your practice.</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl border-border bg-card">
+                  <CardHeader>
+                    <CardTitle className="text-base">Operations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">Manage staff, services, locations, appointments, patients, billing, and settings from one workspace.</p>
+                  </CardContent>
+                </Card>
               </div>
             </CardContent>
           </Card>
           <CreateClinicModal open={createClinicOpen} onOpenChange={setCreateClinicOpen} onSuccess={() => refreshData()} />
-        </div>
+        </main>
       </div>
     );
   }
