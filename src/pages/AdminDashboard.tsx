@@ -1865,25 +1865,6 @@ const AdminDashboard = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-background flex flex-col pt-16">
-        <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-          <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
-              <a href="/" className="flex items-center gap-2 font-bold text-lg">
-                <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
-              </a>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <ThemeToggle />
-              <LanguageSwitcher />
-              <ProfileMenu />
-            </div>
-          </div>
-        </header>
-
-        <div className="flex-1 flex min-h-0" style={{ "--sidebar-top-offset": "4rem" } as React.CSSProperties}>
           <Sidebar>
             <SidebarContent>
               <SidebarGroup>
@@ -1920,12 +1901,10 @@ const AdminDashboard = () => {
                 const now = Date.now();
                 const ONE_DAY = 24 * 60 * 60 * 1000;
 
-                // If verified and seen more than 1 day ago, hide the bar
                 if (isVerified && seenAt && now - Number(seenAt) > ONE_DAY) {
                   return null;
                 }
 
-                // If verified and not yet marked as seen, mark it now
                 if (isVerified && !seenAt && practice?.id) {
                   localStorage.setItem(STORAGE_KEY, String(now));
                 }
@@ -1958,10 +1937,27 @@ const AdminDashboard = () => {
             </SidebarContent>
           </Sidebar>
 
+      <div className="min-h-screen bg-background flex flex-col pt-16 flex-1">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <a href="/" className="flex items-center gap-2 font-bold text-lg">
+                <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
+              </a>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <LanguageSwitcher />
+              <ProfileMenu />
+            </div>
+          </div>
+        </header>
+
           <main className="flex-1 overflow-auto w-full min-w-0 px-4 py-6 sm:px-6">
             <div className="w-full min-w-0 space-y-6">{renderSection()}</div>
           </main>
-        </div>
 
         <InviteProviderModal open={inviteProviderOpen} onOpenChange={setInviteProviderOpen} />
 
