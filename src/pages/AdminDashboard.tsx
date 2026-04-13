@@ -882,7 +882,7 @@ const AdminDashboard = () => {
                       ).map(([category, count]) => (
                         <div key={category} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                           <span className="text-sm font-medium">{category}</span>
-                          <Badge variant="secondary">{count} service{count !== 1 ? "s" : ""}</Badge>
+                          <Badge variant="secondary">{count as number} service{(count as number) !== 1 ? "s" : ""}</Badge>
                         </div>
                       ))}
                     </div>
@@ -1133,7 +1133,7 @@ const AdminDashboard = () => {
                           ).map(([doctor, count]) => (
                             <div key={doctor} className="flex items-center justify-between p-2 bg-muted/20 rounded-md border border-border">
                               <span className="text-sm">{doctor}</span>
-                              <Badge variant="outline">{count}</Badge>
+                              <Badge variant="outline">{count as number}</Badge>
                             </div>
                           ))}
                         </div>
