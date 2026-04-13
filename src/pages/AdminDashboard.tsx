@@ -1866,7 +1866,7 @@ const AdminDashboard = () => {
   return (
     <SidebarProvider>
           <Sidebar>
-            <SidebarContent>
+            <SidebarContent className="pt-16">
               <SidebarGroup>
                 <SidebarGroupLabel className="flex items-center justify-between">
                   <span>{t("adminSidebar.title")}</span>
