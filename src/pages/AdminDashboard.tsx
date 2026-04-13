@@ -403,7 +403,7 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
             <a href="/" className="flex items-center gap-2 font-bold text-lg">
               <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
             </a>
