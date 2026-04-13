@@ -1,28 +1,57 @@
 
+Goal: make the non-overview/non-finance practice admin sections feel as wide and dense as Overview and Finances by adding more full-width content blocks, not just changing item rows.
 
-## Problem
-The **Providers**, **Services**, **Locations**, and **Patients** sections use single-column stacked layouts, leaving the right half of the screen visually empty. The **Overview**, **Finance**, **Billing**, and **Analytics** sections use multi-column grids that fill the full width.
+What I found:
+- The page shell is already full width. The problem is inside `src/pages/AdminDashboard.tsx`: `providers`, `services`, `locations`, and `patients` each stop after one `lg:grid-cols-2` row.
+- Overview/Finances feel wider because they have multiple dashboard rows and more substantial cards.
+- In Providers, `JoinRequestsSection` can still render a small sparse card, so one side stays visually empty.
+- Staff is handled by `ClinicStaffManager`, which is denser already, but I should still verify it does not need an additional summary row/header treatment for consistency.
 
-## Plan
+Implementation plan:
+1. Normalize the narrow sections to the same dashboard rhythm as Overview
+- Keep the top header/actions
+- Keep the 3 stat cards row
+- Add a second full-width content row after the current two-column row
+- Use `grid grid-cols-1 lg:grid-cols-3 gap-6` and `lg:grid-cols-2` patterns already used in Overview
 
-Restructure the four narrow sections in `src/pages/AdminDashboard.tsx` to use multi-column grid layouts matching the overview pattern:
+2. Expand Providers beyond the current two cards
+- Keep Join Requests + Doctors List as the first row
+- Add a second row with:
+  - Provider status distribution card
+  - Specialty breakdown card
+  - Recent/active provider activity card
+- If join requests are empty, replace that space with a richer provider insights card instead of leaving a thin empty card
 
-### 1. Providers section (lines ~691-779)
-- Place the **Join Requests** card and the **Doctors List** card side by side in a `lg:grid-cols-2` grid below the stat cards
-- If no join requests exist, the doctors list spans full width (`lg:col-span-2`)
+3. Expand Services with more operational cards
+- Keep Services List + Category Breakdown
+- Add another row with:
+  - Price range / average pricing card
+  - Most common categories card
+  - Recently added or top service summary card
+- Make the services list the dominant card when data exists
 
-### 2. Services section (lines ~781-864)
-- Split into a `lg:grid-cols-2` layout: **Services List** on the left spanning more space, and a new **Category Breakdown** summary card on the right showing service counts per category
+4. Expand Locations with richer right-side and lower-row content
+- Keep Locations List + Location Status Overview
+- Add another row with:
+  - Coverage/branch summary card
+  - Address / branch quick reference card
+  - Operational health card (active vs inactive, branch count, latest updated-style summary)
 
-### 3. Locations section (lines ~880-978)
-- Use a `lg:grid-cols-2` grid: **Locations List** on the left, and a **Map/Status Overview** card on the right showing active vs inactive counts and location details
+5. Expand Patients with more cards
+- Keep Patients List + Patient Statistics
+- Add another row with:
+  - Provider assignment breakdown
+  - Recent visits / last-visit summary
+  - Status segmentation card
+- Make sure patient cards fill the row even when the patient list is short
 
-### 4. Patients section (lines ~980-1042)
-- Use a `lg:grid-cols-2` grid: **Patients List** on the left, and a **Patient Stats** card on the right (active vs inactive breakdown, recent patients)
+6. Audit remaining practice admin sections for consistency
+- Review `staff` rendering via `ClinicStaffManager`
+- If it still feels visually lighter than Overview/Finances, add a lightweight dashboard header/summary wrapper in `AdminDashboard.tsx` before the manager component rather than rewriting the manager itself
+- Verify `settings` does not introduce a narrow inner container; only adjust if needed
 
-### Technical details
-- All changes are in one file: `src/pages/AdminDashboard.tsx`
-- Each section's stat cards row stays as `sm:grid-cols-3` (already full-width)
-- Below the stats, content Cards are arranged in `lg:grid-cols-2` grids instead of single-column stacks
-- Matches the visual density pattern used by overview and billing sections
-
+Technical details:
+- Main file: `src/pages/AdminDashboard.tsx`
+- Possible minor follow-up only if needed: `src/components/dashboard/JoinRequestsSection.tsx`
+- No shell-width issue is visible in the current code; this is a content-density/layout composition issue
+- Best fix is to add more cards and rows per section, using the same grid patterns as Overview and Finances, rather than only widening existing list items
