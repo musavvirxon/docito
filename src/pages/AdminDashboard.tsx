@@ -54,17 +54,22 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 
 import {
   AlertCircle,
+  ArrowLeft,
   BarChart3,
   Building2,
   Calendar,
   CheckCircle,
+  Clock,
   CreditCard,
   DollarSign,
   Eye,
+  FileText,
+  Filter,
   Loader2,
   Mail,
   MapPin,
   MessageCircle,
+  Phone,
   Star,
   Settings,
   Stethoscope,
@@ -195,6 +200,13 @@ const AdminDashboard = () => {
   const [billingRange, setBillingRange] = useState<"7d" | "30d" | "90d">("30d");
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
   const [branchFilter, setBranchFilter] = useState<string | null>(null);
+
+  // Provider section state
+  const [selectedProvider, setSelectedProvider] = useState<any>(null);
+  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'procedures' | 'reviews' | 'documents'>('overview');
+  const [providerSearch, setProviderSearch] = useState('');
+  const [providerStatusFilter, setProviderStatusFilter] = useState('all');
+  const [providerSpecialtyFilter, setProviderSpecialtyFilter] = useState('all');
 
   const billing = usePracticeInsights({
     action: "billing",
