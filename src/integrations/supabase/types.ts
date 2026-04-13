@@ -10310,6 +10310,34 @@ export type Database = {
           status: string
         }[]
       }
+      get_practice_locations: {
+        Args: { p_practice_id: string }
+        Returns: {
+          address: string
+          address_ar: string
+          address_en: string
+          address_ru: string
+          address_uz: string
+          city: string
+          country: string
+          created_at: string
+          email: string
+          id: string
+          is_primary: boolean
+          name: string
+          name_ar: string
+          name_en: string
+          name_ru: string
+          name_uz: string
+          operating_hours: Json
+          phone: string
+          photo_urls: string[]
+          practice_id: string
+          state: string
+          updated_at: string
+          zip_code: string
+        }[]
+      }
       get_practice_messages: {
         Args: { p_limit_count?: number; p_practice_id: string }
         Returns: {
