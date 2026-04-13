@@ -1,57 +1,36 @@
 
-Goal: make the non-overview/non-finance practice admin sections feel as wide and dense as Overview and Finances by adding more full-width content blocks, not just changing item rows.
 
-What I found:
-- The page shell is already full width. The problem is inside `src/pages/AdminDashboard.tsx`: `providers`, `services`, `locations`, and `patients` each stop after one `lg:grid-cols-2` row.
-- Overview/Finances feel wider because they have multiple dashboard rows and more substantial cards.
-- In Providers, `JoinRequestsSection` can still render a small sparse card, so one side stays visually empty.
-- Staff is handled by `ClinicStaffManager`, which is denser already, but I should still verify it does not need an additional summary row/header treatment for consistency.
+## Problem
+The practice admin dashboard sections appear "small" despite previous layout fixes. Two root causes:
 
-Implementation plan:
-1. Normalize the narrow sections to the same dashboard rhythm as Overview
-- Keep the top header/actions
-- Keep the 3 stat cards row
-- Add a second full-width content row after the current two-column row
-- Use `grid grid-cols-1 lg:grid-cols-3 gap-6` and `lg:grid-cols-2` patterns already used in Overview
+1. **Header uses `container mx-auto` with `max-width: 1400px`** (from Tailwind config) -- this caps the header at 1400px on wider screens, making the whole dashboard feel constrained even though the content area below is full-width.
 
-2. Expand Providers beyond the current two cards
-- Keep Join Requests + Doctors List as the first row
-- Add a second row with:
-  - Provider status distribution card
-  - Specialty breakdown card
-  - Recent/active provider activity card
-- If join requests are empty, replace that space with a richer provider insights card instead of leaving a thin empty card
+2. **The `<main>` padding is conservative** (`px-4 sm:px-6 lg:px-8`) and some sections' card content is sparse, creating visual emptiness.
 
-3. Expand Services with more operational cards
-- Keep Services List + Category Breakdown
-- Add another row with:
-  - Price range / average pricing card
-  - Most common categories card
-  - Recently added or top service summary card
-- Make the services list the dominant card when data exists
+## Plan
 
-4. Expand Locations with richer right-side and lower-row content
-- Keep Locations List + Location Status Overview
-- Add another row with:
-  - Coverage/branch summary card
-  - Address / branch quick reference card
-  - Operational health card (active vs inactive, branch count, latest updated-style summary)
+### 1. Remove `container mx-auto` from the dashboard header
+**File:** `src/pages/AdminDashboard.tsx` (line 1840)
 
-5. Expand Patients with more cards
-- Keep Patients List + Patient Statistics
-- Add another row with:
-  - Provider assignment breakdown
-  - Recent visits / last-visit summary
-  - Status segmentation card
-- Make sure patient cards fill the row even when the patient list is short
+Change the header inner div from `container mx-auto` to `w-full` so the header stretches edge-to-edge, matching the full-width content area below.
 
-6. Audit remaining practice admin sections for consistency
-- Review `staff` rendering via `ClinicStaffManager`
-- If it still feels visually lighter than Overview/Finances, add a lightweight dashboard header/summary wrapper in `AdminDashboard.tsx` before the manager component rather than rewriting the manager itself
-- Verify `settings` does not introduce a narrow inner container; only adjust if needed
+### 2. Reduce main content padding for wider feel
+**File:** `src/pages/AdminDashboard.tsx` (line 1931)
 
-Technical details:
-- Main file: `src/pages/AdminDashboard.tsx`
-- Possible minor follow-up only if needed: `src/components/dashboard/JoinRequestsSection.tsx`
-- No shell-width issue is visible in the current code; this is a content-density/layout composition issue
-- Best fix is to add more cards and rows per section, using the same grid patterns as Overview and Finances, rather than only widening existing list items
+Change the main area from `px-4 sm:px-6 lg:px-8` to `px-4 sm:px-6` to give more room to the cards on large screens.
+
+### 3. Make stat cards use 4-column grid on large screens
+All sections currently use `sm:grid-cols-3` for their top stat cards. Add a fourth stat card to each section and switch to `sm:grid-cols-2 lg:grid-cols-4` to fill more horizontal space:
+- **Providers**: Add "Specialties" count stat
+- **Services**: Add "Total Revenue Potential" stat
+- **Locations**: Add "Providers per Location" stat
+- **Patients**: Add "Avg. Patients per Provider" stat
+
+### 4. Also fix early-return screens (loading, error, no-practice)
+Lines 296-406 also use `container mx-auto` in their headers. Change these to `w-full` for consistency.
+
+### Technical details
+- Single file change: `src/pages/AdminDashboard.tsx`
+- ~10 targeted edits: header classes, stat grid classes, adding one stat card per section
+- No new components or dependencies
+
