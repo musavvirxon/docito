@@ -703,194 +703,611 @@ const AdminDashboard = () => {
           </SectionWrapper>
         );
 
-      case "providers":
+      case "providers": {
+        const avatarColors = [
+          'bg-primary', 'bg-accent', 'bg-secondary',
+          'hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))',
+        ];
+        const avatarBgClasses = ['bg-primary', 'bg-accent', 'bg-destructive', 'bg-secondary'];
+        const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??';
+
+        const uniqueSpecialties = Array.from(new Set(doctors.map(d => d.specialty).filter(Boolean)));
+
+        const filteredDoctors = doctors.filter(d => {
+          const matchSearch = providerSearch === '' ||
+            d.name?.toLowerCase().includes(providerSearch.toLowerCase()) ||
+            d.specialty?.toLowerCase().includes(providerSearch.toLowerCase()) ||
+            d.email?.toLowerCase().includes(providerSearch.toLowerCase());
+          const matchStatus = providerStatusFilter === 'all' || d.status === providerStatusFilter;
+          const matchSpecialty = providerSpecialtyFilter === 'all' || d.specialty === providerSpecialtyFilter;
+          return matchSearch && matchStatus && matchSpecialty;
+        });
+
+        const statusColor = (status: string) => {
+          if (status === 'active') return 'bg-green-500/10 text-green-700 border-green-200';
+          if (status === 'pending') return 'bg-yellow-500/10 text-yellow-700 border-yellow-200';
+          return 'bg-red-500/10 text-red-700 border-red-200';
+        };
+
+        // Provider profile helpers
+        const providerAppointments = selectedProvider
+          ? appointments.filter(a => a.doctor_id === selectedProvider.id || a.doctor_name === selectedProvider.name)
+          : [];
+        const providerUniquePatients = selectedProvider
+          ? new Set(providerAppointments.map(a => a.patient_id).filter(Boolean))
+          : new Set();
+
+        const providerTabs: Array<{ key: typeof providerTab; label: string }> = [
+          { key: 'overview', label: 'Overview' },
+          { key: 'calendar', label: 'Calendar' },
+          { key: 'patients', label: 'Patients' },
+          { key: 'analytics', label: 'Analytics' },
+          { key: 'procedures', label: 'Procedures' },
+          { key: 'reviews', label: 'Reviews' },
+          { key: 'documents', label: 'Documents' },
+        ];
+
+        // PROFILE VIEW
+        if (selectedProvider) {
+          const completed = providerAppointments.filter(a => a.status === 'completed').length;
+          const pending = providerAppointments.filter(a => a.status === 'pending').length;
+          const cancelled = providerAppointments.filter(a => a.status === 'cancelled').length;
+          const noShow = providerAppointments.filter(a => a.status === 'no_show').length;
+          const total = providerAppointments.length;
+
+          return (
+            <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+              <div className={sectionShellClass}>
+                {/* Back button */}
+                <Button variant="ghost" className="mb-4 -ml-2" onClick={() => setSelectedProvider(null)}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t("admin.providers.title")}
+                </Button>
+
+                {/* Profile header */}
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col md:flex-row items-start gap-6">
+                      <div className={`h-20 w-20 rounded-full ${avatarBgClasses[0]} text-primary-foreground flex items-center justify-center text-2xl font-bold shrink-0`}>
+                        {getInitials(selectedProvider.name)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="text-2xl font-bold">{selectedProvider.name}</h2>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <Badge variant="secondary">{selectedProvider.specialty || 'General'}</Badge>
+                          <Badge className={statusColor(selectedProvider.status || 'pending')} variant="outline">
+                            {selectedProvider.status || 'pending'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
+                          {selectedProvider.email && (
+                            <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{selectedProvider.email}</span>
+                          )}
+                          {selectedProvider.phone && (
+                            <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{selectedProvider.phone}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap shrink-0">
+                        <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Edit provider coming soon'))} disabled={!allowModals}>Edit</Button>
+                        <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Suspend coming soon'))} disabled={!allowModals}>Suspend</Button>
+                        <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Message coming soon'))} disabled={!allowModals}>
+                          <MessageCircle className="h-4 w-4 mr-1" /> Message
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Tab bar */}
+                <div className="flex gap-1 border-b border-border mb-6 mt-6 overflow-x-auto">
+                  {providerTabs.map(tab => (
+                    <Button
+                      key={tab.key}
+                      variant="ghost"
+                      className={`rounded-none ${providerTab === tab.key ? 'border-b-2 border-primary font-medium' : ''}`}
+                      onClick={() => setProviderTab(tab.key)}
+                    >
+                      {tab.label}
+                    </Button>
+                  ))}
+                </div>
+
+                {/* Tab content */}
+                {providerTab === 'overview' && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                      {/* Personal Info */}
+                      <Card className="rounded-xl lg:col-span-8">
+                        <CardHeader><CardTitle>Personal Information</CardTitle></CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[
+                              ['Full Name', selectedProvider.name],
+                              ['Specialty', selectedProvider.specialty],
+                              ['Email', selectedProvider.email],
+                              ['Phone', selectedProvider.phone],
+                              ['License Number', selectedProvider.license_number],
+                              ['Languages', Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
+                            ].map(([label, value]) => (
+                              <div key={label as string}>
+                                <p className="text-sm text-muted-foreground">{label}</p>
+                                <p className="font-medium">{value || '—'}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <Button variant="outline" className="mt-4" onClick={() => toast.info('Edit coming soon')}>Edit Info</Button>
+                        </CardContent>
+                      </Card>
+                      {/* Quick Stats */}
+                      <Card className="rounded-xl lg:col-span-4">
+                        <CardHeader><CardTitle>Quick Stats</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Total Appointments</span><span className="font-bold">{total}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Patients Seen</span><span className="font-bold">{providerUniquePatients.size}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Rating</span><span className="font-bold flex items-center gap-1"><Star className="h-4 w-4 text-yellow-500" />{selectedProvider.rating || '—'}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Member Since</span><span className="font-bold">{selectedProvider.created_at ? format(new Date(selectedProvider.created_at), 'MMM yyyy') : '—'}</span></div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    {/* Activity Summary */}
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Activity Summary</CardTitle></CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                          {[
+                            { label: 'Pending', count: pending, color: 'text-yellow-600' },
+                            { label: 'Completed', count: completed, color: 'text-green-600' },
+                            { label: 'Cancelled', count: cancelled, color: 'text-red-600' },
+                            { label: 'No-show', count: noShow, color: 'text-orange-600' },
+                          ].map(s => (
+                            <div key={s.label} className="text-center p-4 bg-muted/30 rounded-lg border border-border">
+                              <p className={`text-2xl font-bold ${s.color}`}>{s.count}</p>
+                              <p className="text-sm text-muted-foreground">{s.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {providerTab === 'calendar' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Schedule & Availability</h3>
+                      <Button variant="outline" onClick={() => guard(() => toast.info('Block time coming soon'))} disabled={!allowModals}>
+                        <Clock className="h-4 w-4 mr-2" /> Block Time
+                      </Button>
+                    </div>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle className="text-base">Working Hours</CardTitle></CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
+                            <div key={day} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                              <span className="text-sm font-medium w-24">{day}</span>
+                              <Badge variant="secondary">Open</Badge>
+                              <span className="text-sm text-muted-foreground">09:00 – 17:00</span>
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-3">Edit working hours coming soon</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle className="text-base">Upcoming Appointments</CardTitle></CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const today = new Date().toISOString().split('T')[0];
+                          const upcoming = providerAppointments
+                            .filter(a => a.status !== 'cancelled' && a.appointment_date >= today)
+                            .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date))
+                            .slice(0, 10);
+                          if (upcoming.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">No upcoming appointments</p>;
+                          return (
+                            <div className="space-y-2">
+                              {upcoming.map(a => (
+                                <div key={a.id} className="grid grid-cols-4 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                  <span>{a.appointment_date} {a.start_time}</span>
+                                  <span className="truncate">{a.patient_name || 'Unknown'}</span>
+                                  <span className="truncate">{a.service_name || '—'}</span>
+                                  <Badge variant="outline" className="w-fit">{a.status}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <p className="text-xs text-muted-foreground mt-3">Full calendar view coming soon</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {providerTab === 'patients' && (() => {
+                  const patientMap = new Map<string, { name: string; lastVisit: string; totalVisits: number; lastService: string }>();
+                  providerAppointments.forEach(a => {
+                    const pid = a.patient_id || a.patient_name || 'unknown';
+                    const existing = patientMap.get(pid);
+                    if (!existing || a.appointment_date > existing.lastVisit) {
+                      patientMap.set(pid, {
+                        name: a.patient_name || 'Unknown',
+                        lastVisit: a.appointment_date,
+                        totalVisits: (existing?.totalVisits || 0) + 1,
+                        lastService: a.service_name || '—',
+                      });
+                    } else {
+                      existing.totalVisits += 1;
+                    }
+                  });
+                  const patientList = Array.from(patientMap.values());
+                  const filteredPatients = providerSearch
+                    ? patientList.filter(p => p.name.toLowerCase().includes(providerSearch.toLowerCase()))
+                    : patientList;
+                  return (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold">{t("admin.providers.listTitle")}</h3>
+                          <Badge variant="secondary">{patientList.length}</Badge>
+                        </div>
+                      </div>
+                      <Input placeholder="Search patients…" value={providerSearch} onChange={e => setProviderSearch(e.target.value)} className="max-w-sm" />
+                      <Card className="rounded-xl">
+                        <CardContent className="pt-6">
+                          {filteredPatients.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-6">No patients found</p>
+                          ) : (
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
+                                <span>Patient Name</span><span>Last Visit</span><span>Total Visits</span><span>Last Service</span><span></span>
+                              </div>
+                              {filteredPatients.map((p, i) => (
+                                <div key={i} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                  <span className="font-medium truncate">{p.name}</span>
+                                  <span>{p.lastVisit}</span>
+                                  <span>{p.totalVisits}</span>
+                                  <span className="truncate">{p.lastService}</span>
+                                  <Button variant="outline" size="sm" onClick={() => toast.info('Full patient profile coming soon')}>View</Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })()}
+
+                {providerTab === 'analytics' && (() => {
+                  const total2 = providerAppointments.length;
+                  const completed2 = providerAppointments.filter(a => a.status === 'completed').length;
+                  const cancelled2 = providerAppointments.filter(a => a.status === 'cancelled').length;
+                  const completionRate = total2 > 0 ? (completed2 / total2 * 100).toFixed(0) : '0';
+                  const cancellationRate = total2 > 0 ? (cancelled2 / total2 * 100).toFixed(0) : '0';
+
+                  // Group by month
+                  const monthMap: Record<string, number> = {};
+                  providerAppointments.forEach(a => {
+                    const m = a.appointment_date?.slice(0, 7);
+                    if (m) monthMap[m] = (monthMap[m] || 0) + 1;
+                  });
+                  const chartData = Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count }));
+
+                  const statusBreakdown = [
+                    { label: 'Completed', count: completed2, color: 'bg-green-500', pct: total2 > 0 ? (completed2 / total2 * 100) : 0 },
+                    { label: 'Pending', count: pending, color: 'bg-yellow-500', pct: total2 > 0 ? (pending / total2 * 100) : 0 },
+                    { label: 'Cancelled', count: cancelled2, color: 'bg-red-500', pct: total2 > 0 ? (cancelled2 / total2 * 100) : 0 },
+                    { label: 'No-show', count: noShow, color: 'bg-orange-500', pct: total2 > 0 ? (noShow / total2 * 100) : 0 },
+                  ];
+
+                  return (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {[
+                          { label: 'Total Appointments', value: total2 },
+                          { label: 'Unique Patients', value: providerUniquePatients.size },
+                          { label: 'Completion Rate', value: `${completionRate}%` },
+                          { label: 'Cancellation Rate', value: `${cancellationRate}%` },
+                        ].map(k => (
+                          <Card key={k.label} className="rounded-xl">
+                            <CardContent className="pt-6">
+                              <p className="text-2xl font-bold">{k.value}</p>
+                              <p className="text-sm text-muted-foreground">{k.label}</p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Appointments Over Time</CardTitle></CardHeader>
+                        <CardContent>
+                          {chartData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={220}>
+                              <AreaChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                                <YAxis tick={{ fontSize: 12 }} />
+                                <Tooltip />
+                                <Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <p className="text-sm text-muted-foreground text-center py-6">No appointment data</p>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Status Breakdown</CardTitle></CardHeader>
+                        <CardContent className="space-y-3">
+                          {statusBreakdown.map(s => (
+                            <div key={s.label}>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>{s.label}</span>
+                                <span className="font-medium">{s.count}</span>
+                              </div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div className={`h-full ${s.color} rounded-full`} style={{ width: `${s.pct}%` }} />
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Performance Indicators</CardTitle></CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { label: 'Average Rating', value: selectedProvider.rating ? `${selectedProvider.rating} ★` : 'No ratings yet' },
+                              { label: 'Patient Retention', value: 'Coming soon' },
+                              { label: 'Utilization Rate', value: 'Coming soon' },
+                              { label: 'On-time Rate', value: 'Coming soon' },
+                            ].map(p => (
+                              <div key={p.label} className="p-3 bg-muted/30 rounded-lg border border-border">
+                                <p className="text-sm text-muted-foreground">{p.label}</p>
+                                <p className="font-medium">{p.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })()}
+
+                {providerTab === 'procedures' && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">Services & Procedures</h3>
+                      <p className="text-sm text-muted-foreground">Services this provider performs. Set individual fees and toggle availability.</p>
+                    </div>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        {services.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-6">No services configured</p>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
+                              <span>Service Name</span><span>Category</span><span>Base Price</span><span>Provider Fee</span><span>Offered</span>
+                            </div>
+                            {services.map((svc: any) => (
+                              <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                <span className="font-medium truncate">{svc.name}</span>
+                                <Badge variant="outline">{svc.category || '—'}</Badge>
+                                <span>{svc.price ? `$${svc.price}` : '—'}</span>
+                                <Input placeholder="Custom fee" className="h-8" onBlur={() => toast.info('Save fee coming soon')} />
+                                <Badge variant="secondary">Active</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-3">Pricing overrides will be saved in a future update</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {providerTab === 'reviews' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Patient Reviews</h3>
+                      <div className="flex items-center gap-2">
+                        <Star className="h-5 w-5 text-yellow-500" />
+                        <span className="text-lg font-bold">{selectedProvider.rating || '—'}</span>
+                      </div>
+                    </div>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle className="text-base">Rating Breakdown</CardTitle></CardHeader>
+                      <CardContent className="space-y-2">
+                        {[5, 4, 3, 2, 1].map(stars => (
+                          <div key={stars} className="flex items-center gap-3">
+                            <span className="text-sm w-8">{stars}★</span>
+                            <div className="flex-1 h-2 bg-muted rounded-full" />
+                            <span className="text-sm text-muted-foreground w-6 text-right">0</span>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                          <p className="font-medium">No reviews yet for this provider</p>
+                          <p className="text-sm mt-1">Patient reviews will appear here</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {providerTab === 'documents' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">Documents & Credentials</h3>
+                      <Button variant="outline" onClick={() => guard(() => toast.info('Upload coming soon'))} disabled={!allowModals}>
+                        <FileText className="h-4 w-4 mr-2" /> Upload Document
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {['License & Certifications', 'Contracts', 'Other'].map(cat => (
+                        <Card key={cat} className="rounded-xl">
+                          <CardHeader><CardTitle className="text-base">{cat}</CardTitle></CardHeader>
+                          <CardContent>
+                            <div className="text-center py-6 text-muted-foreground">
+                              <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">No documents yet</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Document upload and management coming in a future update.</p>
+                  </div>
+                )}
+              </div>
+            </SectionWrapper>
+          );
+        }
+
+        // DIRECTORY VIEW
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
-              <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
-                <UserPlus className="h-4 w-4 mr-2" />
-                {t("admin.providers.invite")}
-              </Button>
-            </div>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
+                <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  {t("admin.providers.invite")}
+                </Button>
+              </div>
 
-            {/* Summary stats row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">{doctors.length}</div>
-                  <p className="text-sm text-muted-foreground">{t("admin.providers.listTitle")}</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">{doctors.filter(d => d.status === "active").length}</div>
-                  <p className="text-sm text-muted-foreground">Active</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">{doctors.filter(d => d.status !== "active").length}</div>
-                  <p className="text-sm text-muted-foreground">Pending / Inactive</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">{new Set(doctors.map(d => d.specialty).filter(Boolean)).size}</div>
-                  <p className="text-sm text-muted-foreground">Specialties</p>
-                </CardContent>
-              </Card>
-            </div>
+              {/* KPI cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">{doctors.length}</div>
+                    <p className="text-sm text-muted-foreground">{t("admin.providers.listTitle")}</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">{doctors.filter(d => d.status === "active").length}</div>
+                    <p className="text-sm text-muted-foreground">Active</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">{doctors.filter(d => d.status !== "active").length}</div>
+                    <p className="text-sm text-muted-foreground">Pending / Inactive</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">{new Set(doctors.map(d => d.specialty).filter(Boolean)).size}</div>
+                    <p className="text-sm text-muted-foreground">Specialties</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-            <div className={sectionMainGridClass}>
-              {/* Join Applications from Doctors */}
+              {/* Filters row */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-6">
+                <Input
+                  placeholder="Search by name, specialty or email…"
+                  value={providerSearch}
+                  onChange={e => setProviderSearch(e.target.value)}
+                  className="max-w-xs"
+                />
+                <div className="flex gap-1 flex-wrap">
+                  {['all', 'active', 'pending', 'inactive'].map(s => (
+                    <Button
+                      key={s}
+                      variant={providerStatusFilter === s ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setProviderStatusFilter(s)}
+                    >
+                      {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                    </Button>
+                  ))}
+                </div>
+                <select
+                  className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                  value={providerSpecialtyFilter}
+                  onChange={e => setProviderSpecialtyFilter(e.target.value)}
+                >
+                  <option value="all">All Specialties</option>
+                  {uniqueSpecialties.map(sp => (
+                    <option key={sp} value={sp}>{sp}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Provider grid */}
+              {filteredDoctors.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground mt-6">
+                  <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">{t("admin.providers.emptyTitle")}</p>
+                  <p className="text-sm mt-1">{t("admin.providers.emptyDescription")}</p>
+                  <Button className="mt-4" onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {t("admin.providers.invite")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                  {filteredDoctors.map((doctor, idx) => (
+                    <Card key={doctor.id} className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-3">
+                          <div className={`h-12 w-12 rounded-full ${avatarBgClasses[idx % avatarBgClasses.length]} text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0`}>
+                            {getInitials(doctor.name)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold truncate">{doctor.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">{doctor.specialty || 'General'}</p>
+                            <p className="text-xs text-muted-foreground truncate">{doctor.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-4">
+                          <Badge className={statusColor(doctor.status || 'pending')} variant="outline">
+                            {doctor.status || 'pending'}
+                          </Badge>
+                          <span className="flex items-center gap-1 text-sm">
+                            <Star className="h-3.5 w-3.5 text-yellow-500" />
+                            {doctor.rating || '—'}
+                          </span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          className="w-full mt-4"
+                          onClick={() => { setSelectedProvider(doctor); setProviderTab('overview'); }}
+                        >
+                          View Profile
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Pending join requests */}
               {practice?.id && (
-                <div className="lg:col-span-5 min-w-0">
+                <div className="mt-6">
                   <JoinRequestsSection practiceId={practice.id} />
                 </div>
               )}
 
-              <Card className={`rounded-xl min-w-0 ${!practice?.id ? 'lg:col-span-12' : 'lg:col-span-7'}`}>
-              <CardHeader>
-                <CardTitle>{t("admin.providers.listTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {doctors.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground">
-                    <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-medium">{t("admin.providers.emptyTitle")}</p>
-                    <p className="text-sm mt-1">{t("admin.providers.emptyDescription")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      {t("admin.providers.invite")}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {doctors.map((doctor) => (
-                      <div
-                        key={doctor.id}
-                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
-                      >
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{doctor.name}</p>
-                        </div>
-                        <div className="text-sm text-muted-foreground truncate">{doctor.specialty}</div>
-                        <div className="text-sm text-muted-foreground truncate">{doctor.email}</div>
-                        <div className="flex items-center justify-end gap-2">
-                          <Badge variant="outline">{doctor.status}</Badge>
-                          <Button variant="outline" size="icon" onClick={() => toast.info("View profile (coming soon)")}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => guard(() => toast.info("Remove provider (coming soon)"))}
-                            disabled={!allowModals}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            </div>
-
-            {/* Second row: Provider insights */}
-            <div className={sectionInsightGridClass}>
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle className="text-base">Status Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {(() => {
-                      const statusCounts = doctors.reduce((acc, d) => {
-                        const s = d.status || "unknown";
-                        acc[s] = (acc[s] || 0) + 1;
-                        return acc;
-                      }, {} as Record<string, number>);
-                      return Object.entries(statusCounts).length > 0 ? Object.entries(statusCounts).map(([status, count]) => (
-                        <div key={status} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                          <div className="flex items-center gap-2">
-                            <div className={`h-2.5 w-2.5 rounded-full ${status === 'active' ? 'bg-green-500' : status === 'pending' ? 'bg-yellow-500' : 'bg-muted-foreground'}`} />
-                            <span className="text-sm font-medium capitalize">{status}</span>
-                          </div>
-                          <Badge variant="secondary">{count as number}</Badge>
-                        </div>
-                      )) : (
-                        <p className="text-sm text-muted-foreground">No providers yet</p>
-                      );
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle className="text-base">Specialty Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {(() => {
-                      const specialtyCounts = doctors.reduce((acc, d) => {
-                        const s = d.specialty || "General";
-                        acc[s] = (acc[s] || 0) + 1;
-                        return acc;
-                      }, {} as Record<string, number>);
-                      return Object.entries(specialtyCounts).length > 0 ? Object.entries(specialtyCounts).map(([specialty, count]) => (
-                        <div key={specialty} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                          <span className="text-sm font-medium">{specialty}</span>
-                          <Badge variant="outline">{count as number}</Badge>
-                        </div>
-                      )) : (
-                        <p className="text-sm text-muted-foreground">No specialties yet</p>
-                      );
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle className="text-base">Provider Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Total Providers</span>
-                      <span className="text-lg font-bold">{doctors.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Active Rate</span>
-                      <span className="text-lg font-bold">
-                        {doctors.length > 0 ? Math.round((doctors.filter(d => d.status === "active").length / doctors.length) * 100) : 0}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Unique Specialties</span>
-                      <span className="text-lg font-bold">{new Set(doctors.map(d => d.specialty)).size}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Avg. per Specialty</span>
-                      <span className="text-lg font-bold">
-                        {(() => {
-                          const specCount = new Set(doctors.map(d => d.specialty)).size;
-                          return specCount > 0 ? (doctors.length / specCount).toFixed(1) : "0";
-                        })()}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+              {/* Pending invitations */}
+              {practice?.id && (
+                <div className="mt-6">
+                  <PendingInvitationsSection practiceId={practice.id} />
+                </div>
+              )}
             </div>
           </SectionWrapper>
         );
+      }
 
       case "services":
         return (
