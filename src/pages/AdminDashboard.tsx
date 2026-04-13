@@ -721,14 +721,15 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            {/* Join Applications from Doctors */}
-            {practice?.id && (
-              <div className="mt-6">
-                <JoinRequestsSection practiceId={practice.id} />
-              </div>
-            )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              {/* Join Applications from Doctors */}
+              {practice?.id && (
+                <div className="lg:col-span-1">
+                  <JoinRequestsSection practiceId={practice.id} />
+                </div>
+              )}
 
-            <Card className="rounded-xl mt-6">
+              <Card className={`rounded-xl ${!practice?.id ? 'lg:col-span-2' : 'lg:col-span-1'}`}>
               <CardHeader>
                 <CardTitle>{t("admin.providers.listTitle")}</CardTitle>
               </CardHeader>
@@ -775,6 +776,7 @@ const AdminDashboard = () => {
                 )}
               </CardContent>
             </Card>
+            </div>
           </SectionWrapper>
         );
 
@@ -816,50 +818,78 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <Card className="rounded-xl mt-6">
-              <CardHeader>
-                <CardTitle>{t("admin.services.listTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {services.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground">
-                    <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-medium">{t("admin.services.emptyTitle")}</p>
-                    <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
-                      <Building2 className="h-4 w-4 mr-2" />
-                      {t("admin.services.add")}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {services.map((service) => (
-                      <div
-                        key={service.id}
-                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
-                      >
-                        <div className="font-medium truncate">{service.name}</div>
-                        <div className="text-sm text-muted-foreground truncate">{service.category}</div>
-                        <div className="font-semibold">${service.price}</div>
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="outline" size="icon" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
-                            <Settings className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => guard(() => toast.info("Delete service (coming soon)"))}
-                            disabled={!allowModals}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card className="rounded-xl lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>{t("admin.services.listTitle")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {services.length === 0 ? (
+                    <div className="text-center py-10 text-muted-foreground">
+                      <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">{t("admin.services.emptyTitle")}</p>
+                      <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
+                      <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
+                        <Building2 className="h-4 w-4 mr-2" />
+                        {t("admin.services.add")}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {services.map((service) => (
+                        <div
+                          key={service.id}
+                          className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
+                        >
+                          <div className="font-medium truncate">{service.name}</div>
+                          <div className="text-sm text-muted-foreground truncate">{service.category}</div>
+                          <div className="font-semibold">${service.price}</div>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="icon" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
+                              <Settings className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => guard(() => toast.info("Delete service (coming soon)"))}
+                              disabled={!allowModals}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>Category Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {services.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No services yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {Object.entries(
+                        services.reduce((acc, s) => {
+                          const cat = s.category || "Uncategorized";
+                          acc[cat] = (acc[cat] || 0) + 1;
+                          return acc;
+                        }, {} as Record<string, number>)
+                      ).map(([category, count]) => (
+                        <div key={category} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <span className="text-sm font-medium">{category}</span>
+                          <Badge variant="secondary">{count} service{count !== 1 ? "s" : ""}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </SectionWrapper>
         );
 
@@ -909,71 +939,106 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <Card className="rounded-xl mt-6">
-              <CardHeader>
-                <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {locations.length === 0 ? (
-                  <div className="text-center py-10 text-muted-foreground">
-                    <MapPin className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="font-medium">{t("admin.locations.emptyTitle")}</p>
-                    <p className="text-sm mt-1">{t("admin.locations.emptyDescription")}</p>
-                    <Button className="mt-4" onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {t("admin.locations.add")}
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {locations.map((location) => (
-                      <div
-                        key={location.id}
-                        className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
-                      >
-                        <div className="font-medium truncate">{location.name}</div>
-                        <div className="text-sm text-muted-foreground truncate sm:col-span-1">{location.address}</div>
-                        <div><Badge variant="outline">{location.status}</Badge></div>
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => guard(() => {
-                              setEditingLocation(location);
-                              setAddLocationOpen(true);
-                            })}
-                            disabled={!allowModals}
-                          >
-                            <Settings className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => guard(async () => {
-                              if (!confirm("Are you sure you want to delete this location?")) return;
-                              try {
-                                const { error } = await supabase
-                                  .from("practice_locations")
-                                  .delete()
-                                  .eq("id", location.id);
-                                if (error) throw error;
-                                toast.success("Location deleted");
-                                refreshData();
-                              } catch (err: any) {
-                                toast.error(err?.message || "Failed to delete location");
-                              }
-                            })}
-                            disabled={!allowModals}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card className="rounded-xl lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {locations.length === 0 ? (
+                    <div className="text-center py-10 text-muted-foreground">
+                      <MapPin className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">{t("admin.locations.emptyTitle")}</p>
+                      <p className="text-sm mt-1">{t("admin.locations.emptyDescription")}</p>
+                      <Button className="mt-4" onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
+                        <MapPin className="h-4 w-4 mr-2" />
+                        {t("admin.locations.add")}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {locations.map((location) => (
+                        <div
+                          key={location.id}
+                          className="flex flex-col gap-2 p-4 bg-muted/30 rounded-xl border border-border"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium truncate">{location.name}</div>
+                            <Badge variant="outline">{location.status}</Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground truncate">{location.address}</div>
+                          <div className="flex items-center gap-2 pt-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => guard(() => {
+                                setEditingLocation(location);
+                                setAddLocationOpen(true);
+                              })}
+                              disabled={!allowModals}
+                            >
+                              <Settings className="h-4 w-4 mr-1" /> Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => guard(async () => {
+                                if (!confirm("Are you sure you want to delete this location?")) return;
+                                try {
+                                  const { error } = await supabase
+                                    .from("practice_locations")
+                                    .delete()
+                                    .eq("id", location.id);
+                                  if (error) throw error;
+                                  toast.success("Location deleted");
+                                  refreshData();
+                                } catch (err: any) {
+                                  toast.error(err?.message || "Failed to delete location");
+                                }
+                              })}
+                              disabled={!allowModals}
+                            >
+                              <X className="h-4 w-4 mr-1" /> Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>Location Status Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Active Locations</span>
+                      <Badge variant="secondary">{locations.filter(l => l.status === "active").length}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Inactive Locations</span>
+                      <Badge variant="secondary">{locations.filter(l => l.status !== "active").length}</Badge>
+                    </div>
+                    {locations.length > 0 && (
+                      <div className="pt-2">
+                        <h4 className="text-sm font-medium mb-2 text-muted-foreground">All Addresses</h4>
+                        <div className="space-y-2">
+                          {locations.map(l => (
+                            <div key={l.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border">
+                              <span className="font-medium">{l.name}</span>
+                              <p className="text-muted-foreground text-xs mt-0.5">{l.address}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </SectionWrapper>
         );
 
@@ -1008,36 +1073,76 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            {patients.length === 0 ? (
-              <Card className="rounded-xl mt-6">
-                <CardContent className="py-12 text-center text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="font-medium">{t("admin.patients.emptyTitle")}</p>
-                  <p className="text-sm mt-1">{t("admin.patients.emptyDescription")}</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="rounded-xl mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <Card className="rounded-xl lg:col-span-1">
                 <CardHeader>
                   <CardTitle>{t("admin.patients.listTitle")}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {patients.map((patient) => (
-                    <div
-                      key={patient.id}
-                      className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 rounded-xl bg-muted/30 border border-border items-center"
-                    >
-                      <div className="font-medium truncate">{patient.name}</div>
-                      <div className="text-muted-foreground">{format(new Date(patient.last_visit), "MMM dd, yyyy")}</div>
-                      <div className="text-muted-foreground">{patient.doctor_name}</div>
-                      <div>
-                        <Badge variant="outline">{patient.status}</Badge>
-                      </div>
+                <CardContent>
+                  {patients.length === 0 ? (
+                    <div className="text-center py-10 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">{t("admin.patients.emptyTitle")}</p>
+                      <p className="text-sm mt-1">{t("admin.patients.emptyDescription")}</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-3">
+                      {patients.map((patient) => (
+                        <div
+                          key={patient.id}
+                          className="flex flex-col gap-1 p-4 rounded-xl bg-muted/30 border border-border"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium truncate">{patient.name}</span>
+                            <Badge variant="outline">{patient.status}</Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {format(new Date(patient.last_visit), "MMM dd, yyyy")} · {patient.doctor_name}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )}
+
+              <Card className="rounded-xl lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>Patient Statistics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Active Patients</span>
+                      <Badge variant="secondary">{patients.filter(p => p.status === "active").length}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Inactive Patients</span>
+                      <Badge variant="secondary">{patients.filter(p => p.status !== "active").length}</Badge>
+                    </div>
+                    {patients.length > 0 && (
+                      <div className="pt-2">
+                        <h4 className="text-sm font-medium mb-2 text-muted-foreground">By Provider</h4>
+                        <div className="space-y-2">
+                          {Object.entries(
+                            patients.reduce((acc, p) => {
+                              const doc = p.doctor_name || "Unassigned";
+                              acc[doc] = (acc[doc] || 0) + 1;
+                              return acc;
+                            }, {} as Record<string, number>)
+                          ).map(([doctor, count]) => (
+                            <div key={doctor} className="flex items-center justify-between p-2 bg-muted/20 rounded-md border border-border">
+                              <span className="text-sm">{doctor}</span>
+                              <Badge variant="outline">{count}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </SectionWrapper>
         );
 
