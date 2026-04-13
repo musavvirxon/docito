@@ -777,6 +777,95 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
             </div>
+
+            {/* Second row: Provider insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Status Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      const statusCounts = doctors.reduce((acc, d) => {
+                        const s = d.status || "unknown";
+                        acc[s] = (acc[s] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      return Object.entries(statusCounts).length > 0 ? Object.entries(statusCounts).map(([status, count]) => (
+                        <div key={status} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-2">
+                            <div className={`h-2.5 w-2.5 rounded-full ${status === 'active' ? 'bg-green-500' : status === 'pending' ? 'bg-yellow-500' : 'bg-muted-foreground'}`} />
+                            <span className="text-sm font-medium capitalize">{status}</span>
+                          </div>
+                          <Badge variant="secondary">{count as number}</Badge>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No providers yet</p>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Specialty Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      const specialtyCounts = doctors.reduce((acc, d) => {
+                        const s = d.specialty || "General";
+                        acc[s] = (acc[s] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      return Object.entries(specialtyCounts).length > 0 ? Object.entries(specialtyCounts).map(([specialty, count]) => (
+                        <div key={specialty} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <span className="text-sm font-medium">{specialty}</span>
+                          <Badge variant="outline">{count as number}</Badge>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No specialties yet</p>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Provider Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Total Providers</span>
+                      <span className="text-lg font-bold">{doctors.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Active Rate</span>
+                      <span className="text-lg font-bold">
+                        {doctors.length > 0 ? Math.round((doctors.filter(d => d.status === "active").length / doctors.length) * 100) : 0}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Unique Specialties</span>
+                      <span className="text-lg font-bold">{new Set(doctors.map(d => d.specialty)).size}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Avg. per Specialty</span>
+                      <span className="text-lg font-bold">
+                        {(() => {
+                          const specCount = new Set(doctors.map(d => d.specialty)).size;
+                          return specCount > 0 ? (doctors.length / specCount).toFixed(1) : "0";
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </SectionWrapper>
         );
 
@@ -887,6 +976,110 @@ const AdminDashboard = () => {
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Second row: Service insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Pricing Overview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Lowest Price</span>
+                      <span className="text-lg font-bold">
+                        {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Highest Price</span>
+                      <span className="text-lg font-bold">
+                        {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Average Price</span>
+                      <span className="text-lg font-bold">
+                        {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Total Revenue Potential</span>
+                      <span className="text-lg font-bold">
+                        ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Top Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      const catCounts = services.reduce((acc, s) => {
+                        const cat = s.category || "Uncategorized";
+                        acc[cat] = (acc[cat] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      const sorted = Object.entries(catCounts).sort(([, a], [, b]) => (b as number) - (a as number));
+                      return sorted.length > 0 ? sorted.slice(0, 5).map(([cat, count], i) => (
+                        <div key={cat} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                            <span className="text-sm font-medium">{cat}</span>
+                          </div>
+                          <Badge variant="outline">{count as number}</Badge>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No categories yet</p>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Service Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Total Services</span>
+                      <span className="text-lg font-bold">{services.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Categories</span>
+                      <span className="text-lg font-bold">{new Set(services.map(s => s.category)).size}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Avg. per Category</span>
+                      <span className="text-lg font-bold">
+                        {(() => {
+                          const catCount = new Set(services.map(s => s.category)).size;
+                          return catCount > 0 ? (services.length / catCount).toFixed(1) : "0";
+                        })()}
+                      </span>
+                    </div>
+                    {services.length > 0 && (
+                      <div className="pt-2">
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Recently Added</h4>
+                        {services.slice(0, 3).map(s => (
+                          <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
+                            <span className="font-medium">{s.name}</span>
+                            <span className="text-muted-foreground ml-2">${s.price}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -1039,6 +1232,99 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Second row: Location insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Coverage Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Total Branches</span>
+                      <span className="text-lg font-bold">{locations.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Active Rate</span>
+                      <span className="text-lg font-bold">
+                        {locations.length > 0 ? Math.round((locations.filter(l => l.status === "active").length / locations.length) * 100) : 0}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                      <span className="text-sm font-medium">Unique Cities</span>
+                      <span className="text-lg font-bold">
+                        {new Set(locations.map(l => {
+                          const parts = (l.address || "").split(",");
+                          return parts.length > 1 ? parts[parts.length - 2]?.trim() : "Unknown";
+                        })).size}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Branch Directory</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {locations.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No branches added yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {locations.map((l, i) => (
+                        <div key={l.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary text-sm font-bold shrink-0">
+                            {i + 1}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{l.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{l.address}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Operational Health</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      const statusCounts = locations.reduce((acc, l) => {
+                        const s = l.status || "unknown";
+                        acc[s] = (acc[s] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      return Object.entries(statusCounts).length > 0 ? Object.entries(statusCounts).map(([status, count]) => (
+                        <div key={status} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-2">
+                            <div className={`h-2.5 w-2.5 rounded-full ${status === 'active' ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+                            <span className="text-sm font-medium capitalize">{status}</span>
+                          </div>
+                          <Badge variant="secondary">{count as number}</Badge>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No location data</p>
+                      );
+                    })()}
+                    <div className="pt-2 border-t border-border">
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                        <span className="text-sm font-medium">Providers per Location</span>
+                        <span className="text-lg font-bold">
+                          {locations.length > 0 ? (doctors.length / locations.length).toFixed(1) : "0"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </SectionWrapper>
         );
 
@@ -1139,6 +1425,110 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Second row: Patient insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Provider Assignment</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      const providerCounts = patients.reduce((acc, p) => {
+                        const doc = p.doctor_name || "Unassigned";
+                        acc[doc] = (acc[doc] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      const sorted = Object.entries(providerCounts).sort(([, a], [, b]) => (b as number) - (a as number));
+                      return sorted.length > 0 ? sorted.map(([doc, count]) => (
+                        <div key={doc} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-2">
+                            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">{doc}</span>
+                          </div>
+                          <Badge variant="outline">{count as number} patient{(count as number) !== 1 ? "s" : ""}</Badge>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No patients yet</p>
+                      );
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Recent Visits</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {patients.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No visit data available.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {[...patients]
+                        .sort((a, b) => new Date(b.last_visit).getTime() - new Date(a.last_visit).getTime())
+                        .slice(0, 5)
+                        .map(p => (
+                          <div key={p.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium truncate">{p.name}</p>
+                              <p className="text-xs text-muted-foreground">{p.doctor_name}</p>
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                              {format(new Date(p.last_visit), "MMM dd, yyyy")}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-xl">
+                <CardHeader>
+                  <CardTitle className="text-base">Status Segmentation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      const statusCounts = patients.reduce((acc, p) => {
+                        const s = p.status || "unknown";
+                        acc[s] = (acc[s] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      return Object.entries(statusCounts).length > 0 ? Object.entries(statusCounts).map(([status, count]) => (
+                        <div key={status} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                          <div className="flex items-center gap-2">
+                            <div className={`h-2.5 w-2.5 rounded-full ${status === 'active' ? 'bg-green-500' : status === 'inactive' ? 'bg-muted-foreground' : 'bg-yellow-500'}`} />
+                            <span className="text-sm font-medium capitalize">{status}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">{count as number}</Badge>
+                            <span className="text-xs text-muted-foreground">
+                              ({patients.length > 0 ? Math.round(((count as number) / patients.length) * 100) : 0}%)
+                            </span>
+                          </div>
+                        </div>
+                      )) : (
+                        <p className="text-sm text-muted-foreground">No patient data</p>
+                      );
+                    })()}
+                    <div className="pt-2 border-t border-border">
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                        <span className="text-sm font-medium">Patients per Provider</span>
+                        <span className="text-lg font-bold">
+                          {(() => {
+                            const provCount = new Set(patients.map(p => p.doctor_name)).size;
+                            return provCount > 0 ? (patients.length / provCount).toFixed(1) : "0";
+                          })()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
