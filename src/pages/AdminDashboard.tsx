@@ -436,14 +436,17 @@ const AdminDashboard = () => {
   }
 
   const allowModals = isVerified;
+  const sectionShellClass = "w-full min-w-0";
+  const sectionMainGridClass = "grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 items-start";
+  const sectionInsightGridClass = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 mt-6 items-start";
 
   const renderSection = () => {
     switch (activeSection) {
       case "overview":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <Card className="lg:col-span-2 rounded-xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{t("admin.overview.recentAppointments")}</span>
@@ -479,7 +482,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("admin.overview.practiceStatus")}</CardTitle>
                 </CardHeader>
@@ -538,8 +541,8 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionInsightGridClass}>
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
@@ -570,7 +573,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
@@ -599,7 +602,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Mail className="h-5 w-5" />
@@ -629,8 +632,8 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionMainGridClass}>
+              <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
@@ -655,7 +658,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{t("admin.overview.pendingInvitations")}</span>
@@ -691,6 +694,7 @@ const AdminDashboard = () => {
       case "providers":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
               <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
@@ -721,15 +725,15 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div className={sectionMainGridClass}>
               {/* Join Applications from Doctors */}
               {practice?.id && (
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-5 min-w-0">
                   <JoinRequestsSection practiceId={practice.id} />
                 </div>
               )}
 
-              <Card className={`rounded-xl ${!practice?.id ? 'lg:col-span-2' : 'lg:col-span-1'}`}>
+              <Card className={`rounded-xl min-w-0 ${!practice?.id ? 'lg:col-span-12' : 'lg:col-span-7'}`}>
               <CardHeader>
                 <CardTitle>{t("admin.providers.listTitle")}</CardTitle>
               </CardHeader>
@@ -779,8 +783,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Second row: Provider insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionInsightGridClass}>
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Status Distribution</CardTitle>
                 </CardHeader>
@@ -808,7 +812,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Specialty Breakdown</CardTitle>
                 </CardHeader>
@@ -833,7 +837,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Provider Activity</CardTitle>
                 </CardHeader>
@@ -866,12 +870,14 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+            </div>
           </SectionWrapper>
         );
 
       case "services":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
               <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
@@ -907,8 +913,8 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl lg:col-span-1">
+            <div className={sectionMainGridClass}>
+              <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("admin.services.listTitle")}</CardTitle>
                 </CardHeader>
@@ -953,7 +959,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl lg:col-span-1">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle>Category Breakdown</CardTitle>
                 </CardHeader>
@@ -981,8 +987,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Second row: Service insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionInsightGridClass}>
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Pricing Overview</CardTitle>
                 </CardHeader>
@@ -1016,7 +1022,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Top Categories</CardTitle>
                 </CardHeader>
@@ -1045,7 +1051,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Service Summary</CardTitle>
                 </CardHeader>
@@ -1083,26 +1089,30 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+            </div>
           </SectionWrapper>
         );
 
       case "staff":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
-            {practice?.id ? (
-              <ClinicStaffManager practiceId={practice.id} />
-            ) : (
-              <div className="text-center py-10 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
-              </div>
-            )}
+            <div className={sectionShellClass}>
+              {practice?.id ? (
+                <ClinicStaffManager practiceId={practice.id} />
+              ) : (
+                <div className="text-center py-10 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
+                </div>
+              )}
+            </div>
           </SectionWrapper>
         );
 
       case "locations":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.locations.title")}</h2>
               <Button onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
@@ -1132,8 +1142,8 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl lg:col-span-1">
+            <div className={sectionMainGridClass}>
+              <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
                 </CardHeader>
@@ -1201,7 +1211,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl lg:col-span-1">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle>Location Status Overview</CardTitle>
                 </CardHeader>
@@ -1234,8 +1244,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Second row: Location insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionInsightGridClass}>
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Coverage Summary</CardTitle>
                 </CardHeader>
@@ -1264,7 +1274,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Branch Directory</CardTitle>
                 </CardHeader>
@@ -1289,7 +1299,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Operational Health</CardTitle>
                 </CardHeader>
@@ -1325,12 +1335,14 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+            </div>
           </SectionWrapper>
         );
 
       case "patients":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.patients.title")}</h2>
               <Button variant="outline" onClick={() => guard(() => toast.info("Export patients (coming soon)"))}>
@@ -1359,8 +1371,8 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl lg:col-span-1">
+            <div className={sectionMainGridClass}>
+              <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("admin.patients.listTitle")}</CardTitle>
                 </CardHeader>
@@ -1392,7 +1404,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl lg:col-span-1">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle>Patient Statistics</CardTitle>
                 </CardHeader>
@@ -1431,8 +1443,8 @@ const AdminDashboard = () => {
             </div>
 
             {/* Second row: Patient insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionInsightGridClass}>
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Provider Assignment</CardTitle>
                 </CardHeader>
@@ -1461,7 +1473,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Recent Visits</CardTitle>
                 </CardHeader>
@@ -1489,7 +1501,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="text-base">Status Segmentation</CardTitle>
                 </CardHeader>
@@ -1533,12 +1545,14 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+            </div>
           </SectionWrapper>
         );
 
       case "billing":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("adminBilling.title")}</h2>
               <div className="flex items-center gap-2 flex-wrap">
@@ -1560,8 +1574,8 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionMainGridClass}>
+              <Card className="rounded-xl lg:col-span-5 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CreditCard className="h-5 w-5" />
@@ -1609,7 +1623,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-7 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("adminBilling.recentTransactions")}</CardTitle>
                 </CardHeader>
@@ -1662,19 +1676,23 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+            </div>
           </SectionWrapper>
         );
 
       case "finances":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
-            <FinanceManagementSection entityType="practice" entityId={practice?.id || ""} />
+            <div className={sectionShellClass}>
+              <FinanceManagementSection entityType="practice" entityId={practice?.id || ""} />
+            </div>
           </SectionWrapper>
         );
 
       case "analytics":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-xl font-semibold">{t("adminAnalytics.title")}</h2>
               <div className="flex gap-2 flex-wrap">
@@ -1702,8 +1720,8 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-              <Card className="rounded-xl">
+            <div className={sectionMainGridClass}>
+              <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("adminAnalytics.dailyTrend")}</CardTitle>
                 </CardHeader>
@@ -1742,7 +1760,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-xl">
+              <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("adminAnalytics.summary")}</CardTitle>
                 </CardHeader>
@@ -1790,20 +1808,23 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+            </div>
           </SectionWrapper>
         );
 
       case "settings":
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
-            {practice?.id ? (
-              <EntitySettingsPage entityType="clinic" entityId={practice.id} heading={t("admin.settings.title", { defaultValue: "Clinic Settings" })} />
-            ) : (
-              <div className="text-center py-10 text-muted-foreground">
-                <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
-              </div>
-            )}
+            <div className={sectionShellClass}>
+              {practice?.id ? (
+                <EntitySettingsPage entityType="clinic" entityId={practice.id} heading={t("admin.settings.title", { defaultValue: "Clinic Settings" })} />
+              ) : (
+                <div className="text-center py-10 text-muted-foreground">
+                  <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
+                </div>
+              )}
+            </div>
           </SectionWrapper>
         );
 
@@ -1907,8 +1928,8 @@ const AdminDashboard = () => {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 overflow-auto p-4 sm:p-6">
-            <div className="space-y-6">{renderSection()}</div>
+          <main className="flex-1 overflow-auto w-full min-w-0 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="w-full min-w-0 space-y-6">{renderSection()}</div>
           </main>
         </div>
 
