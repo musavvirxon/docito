@@ -295,7 +295,7 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+           <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
             <a href="/" className="flex items-center gap-2 font-bold text-lg">
               <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
             </a>
@@ -320,7 +320,7 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
             <a href="/" className="flex items-center gap-2 font-bold text-lg">
               <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
             </a>
@@ -331,7 +331,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </header>
-        <main className="flex-1 p-6 sm:p-8 lg:p-10">
+        <main className="flex-1 p-4 sm:p-6">
           <div className="grid min-h-[calc(100vh-7rem)] grid-cols-1 gap-6 lg:grid-cols-12">
             <Card className="rounded-2xl lg:col-span-8">
               <CardContent className="flex h-full min-h-[420px] flex-col justify-between p-6 sm:p-8 lg:p-10">
@@ -403,7 +403,7 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <header className="sticky top-0 z-40 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
             <a href="/" className="flex items-center gap-2 font-bold text-lg">
               <img src="/logos/horizontal/docito-horizontal-sm.png" alt="Docito" className="h-7" width={93} height={28} />
             </a>
@@ -704,7 +704,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Summary stats row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{doctors.length}</div>
@@ -721,6 +721,12 @@ const AdminDashboard = () => {
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{doctors.filter(d => d.status !== "active").length}</div>
                   <p className="text-sm text-muted-foreground">Pending / Inactive</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{new Set(doctors.map(d => d.specialty).filter(Boolean)).size}</div>
+                  <p className="text-sm text-muted-foreground">Specialties</p>
                 </CardContent>
               </Card>
             </div>
@@ -886,7 +892,7 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{services.length}</div>
@@ -909,6 +915,14 @@ const AdminDashboard = () => {
                     {new Set(services.map(s => s.category)).size}
                   </div>
                   <p className="text-sm text-muted-foreground">Categories</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Revenue Potential</p>
                 </CardContent>
               </Card>
             </div>
@@ -1121,7 +1135,7 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{locations.length}</div>
@@ -1138,6 +1152,14 @@ const AdminDashboard = () => {
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{locations.filter(l => l.status !== "active").length}</div>
                   <p className="text-sm text-muted-foreground">Inactive</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {locations.length > 0 ? (doctors.length / locations.length).toFixed(1) : "0"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Providers / Location</p>
                 </CardContent>
               </Card>
             </div>
@@ -1350,7 +1372,7 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{patients.length}</div>
@@ -1367,6 +1389,14 @@ const AdminDashboard = () => {
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{new Set(patients.map(p => p.doctor_name)).size}</div>
                   <p className="text-sm text-muted-foreground">Assigned Providers</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-xl">
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">
+                    {doctors.length > 0 ? (patients.length / doctors.length).toFixed(1) : "0"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">Avg. per Provider</p>
                 </CardContent>
               </Card>
             </div>
@@ -1837,7 +1867,7 @@ const AdminDashboard = () => {
     <SidebarProvider>
       <div className="min-h-screen bg-background flex flex-col pt-16">
         <header className="fixed top-0 left-0 right-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
               <SidebarTrigger />
               <a href="/" className="flex items-center gap-2 font-bold text-lg">
@@ -1928,7 +1958,7 @@ const AdminDashboard = () => {
             </SidebarContent>
           </Sidebar>
 
-          <main className="flex-1 overflow-auto w-full min-w-0 px-4 py-6 sm:px-6 lg:px-8">
+          <main className="flex-1 overflow-auto w-full min-w-0 px-4 py-6 sm:px-6">
             <div className="w-full min-w-0 space-y-6">{renderSection()}</div>
           </main>
         </div>
