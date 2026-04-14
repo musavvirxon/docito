@@ -3526,14 +3526,552 @@ const AdminDashboard = () => {
         );
       }
 
-      case "finances":
+      case "finances": {
+        const finIncome = financeEntries.filter(e => e.type === 'income').reduce((s, e) => s + (e.amount || 0), 0);
+        const finExpenses = financeEntries.filter(e => e.type === 'expense').reduce((s, e) => s + (e.amount || 0), 0);
+        const finNet = finIncome - finExpenses;
+
+        const filteredLedger = financeEntries.filter(e => {
+          if (ledgerTypeFilter !== 'all' && e.type !== ledgerTypeFilter) return false;
+          if (ledgerCategoryFilter !== 'all' && e.category !== ledgerCategoryFilter) return false;
+          if (ledgerSearch && !(e.description || '').toLowerCase().includes(ledgerSearch.toLowerCase()) && !(e.reference || '').toLowerCase().includes(ledgerSearch.toLowerCase())) return false;
+          try {
+            if (ledgerFrom && new Date(e.date || e.created_at) < new Date(ledgerFrom)) return false;
+            if (ledgerTo && new Date(e.date || e.created_at) > new Date(ledgerTo)) return false;
+          } catch {}
+          return true;
+        });
+
+        const filteredIncome = filteredLedger.filter(e => e.type === 'income').reduce((s, e) => s + (e.amount || 0), 0);
+        const filteredExpenses = filteredLedger.filter(e => e.type === 'expense').reduce((s, e) => s + (e.amount || 0), 0);
+
+        const monthlyData = (() => {
+          const map: Record<string, { month: string; income: number; expense: number }> = {};
+          financeEntries.forEach(e => {
+            try {
+              const d = new Date(e.date || e.created_at);
+              const key = format(d, 'yyyy-MM');
+              const label = format(d, 'MMM yyyy');
+              if (!map[key]) map[key] = { month: label, income: 0, expense: 0 };
+              if (e.type === 'income') map[key].income += e.amount || 0;
+              if (e.type === 'expense') map[key].expense += e.amount || 0;
+            } catch {}
+          });
+          return Object.values(map).sort((a, b) => a.month.localeCompare(b.month));
+        })();
+
+        const expenseByCategory = (() => {
+          const map: Record<string, number> = {};
+          financeEntries.filter(e => e.type === 'expense').forEach(e => {
+            const cat = e.category || 'Uncategorized';
+            map[cat] = (map[cat] || 0) + (e.amount || 0);
+          });
+          return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
+        })();
+
+        const recentEntries = [...financeEntries].sort((a, b) => {
+          try { return new Date(b.date || b.created_at).getTime() - new Date(a.date || a.created_at).getTime(); } catch { return 0; }
+        }).slice(0, 8);
+
+        const finTabs = [
+          { key: 'overview' as const, label: 'Overview' },
+          { key: 'ledger' as const, label: 'Ledger' },
+          { key: 'compensation' as const, label: 'Compensation' },
+          { key: 'recurring' as const, label: 'Recurring' },
+          { key: 'categories' as const, label: 'Categories' },
+          { key: 'export' as const, label: 'Export' },
+        ];
+
+        const catColors = ['hsl(var(--primary))', 'hsl(142 71% 45%)', 'hsl(38 92% 50%)', 'hsl(280 68% 60%)', 'hsl(0 84% 60%)'];
+
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
-              <FinanceManagementSection entityType="practice" entityId={practice?.id || ""} />
+              {/* Header */}
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <h2 className="text-xl font-semibold">Finance</h2>
+                <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Export coming soon'))}>
+                  <Download className="h-4 w-4 mr-2" /> Export CSV
+                </Button>
+              </div>
+
+              {/* Tab bar */}
+              <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
+                {finTabs.map(tab => (
+                  <Button
+                    key={tab.key}
+                    variant="ghost"
+                    size="sm"
+                    className={financeTab === tab.key ? 'border-b-2 border-primary rounded-none font-medium' : 'rounded-none'}
+                    onClick={() => setFinanceTab(tab.key)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+
+              {/* ===== OVERVIEW TAB ===== */}
+              {financeTab === 'overview' && (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">${finIncome.toFixed(2)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">${finExpenses.toFixed(2)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>${finNet.toFixed(2)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Entries</p><p className="text-2xl font-bold text-foreground">{financeEntries.length}</p></CardContent></Card>
+                  </div>
+
+                  {/* Chart */}
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Income vs Expenses</CardTitle></CardHeader>
+                    <CardContent>
+                      {monthlyData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={260}>
+                          <AreaChart data={monthlyData}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="month" />
+                            <YAxis />
+                            <Tooltip />
+                            <Area type="monotone" dataKey="income" stroke="hsl(142, 71%, 45%)" fill="hsl(142, 71%, 45%)" fillOpacity={0.2} name="Income" />
+                            <Area type="monotone" dataKey="expense" stroke="hsl(0, 84%, 60%)" fill="hsl(0, 84%, 60%)" fillOpacity={0.2} name="Expenses" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <TrendingUp className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                          <p>No entries yet. Add your first entry in the Ledger tab.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Two-column row */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader><CardTitle>Expense Breakdown by Category</CardTitle></CardHeader>
+                      <CardContent>
+                        {expenseByCategory.length > 0 ? expenseByCategory.map((cat, i) => (
+                          <div key={cat.name} className="flex items-center gap-3 mb-3">
+                            <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: catColors[i % catColors.length] }} />
+                            <span className="text-sm flex-1">{cat.name}</span>
+                            <span className="text-sm font-medium">${cat.total.toFixed(2)}</span>
+                            <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
+                              <div className="h-full rounded-full" style={{ width: `${finExpenses > 0 ? (cat.total / finExpenses * 100) : 0}%`, backgroundColor: catColors[i % catColors.length] }} />
+                            </div>
+                          </div>
+                        )) : (
+                          <p className="text-sm text-muted-foreground text-center py-6">No expense entries yet.</p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader><CardTitle>Recent Entries</CardTitle></CardHeader>
+                      <CardContent>
+                        {recentEntries.length > 0 ? recentEntries.map(e => {
+                          let dateStr = '';
+                          try { dateStr = format(new Date(e.date || e.created_at), 'MMM dd'); } catch { dateStr = '—'; }
+                          return (
+                            <div key={e.id} className="flex items-center gap-2 mb-2 text-sm">
+                              <span className="text-muted-foreground w-14 flex-shrink-0">{dateStr}</span>
+                              <Badge variant={e.type === 'income' ? 'default' : e.type === 'payroll' ? 'secondary' : 'destructive'} className="text-xs">{e.type}</Badge>
+                              <span className="flex-1 truncate">{e.category || '—'}</span>
+                              <span className="font-medium">${(e.amount || 0).toFixed(2)}</span>
+                            </div>
+                          );
+                        }) : (
+                          <p className="text-sm text-muted-foreground text-center py-6">No entries yet.</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </>
+              )}
+
+              {/* ===== LEDGER TAB ===== */}
+              {financeTab === 'ledger' && (() => {
+                const [addOpen, setAddOpen] = useState(false);
+                const [fDate, setFDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+                const [fType, setFType] = useState<'expense' | 'income' | 'payroll'>('expense');
+                const [fCurrency, setFCurrency] = useState('USD');
+                const [fAmount, setFAmount] = useState('');
+                const [fCategory, setFCategory] = useState('');
+                const [fRef, setFRef] = useState('');
+                const [fDesc, setFDesc] = useState('');
+
+                return (
+                  <>
+                    {/* Filters */}
+                    <div className="flex flex-wrap gap-3 mb-4">
+                      <Input type="date" className="w-36" value={ledgerFrom} onChange={e => setLedgerFrom(e.target.value)} />
+                      <Input type="date" className="w-36" value={ledgerTo} onChange={e => setLedgerTo(e.target.value)} />
+                      <div className="flex gap-1">
+                        {(['all', 'income', 'expense', 'payroll'] as const).map(t => (
+                          <Button key={t} size="sm" variant={ledgerTypeFilter === t ? 'default' : 'outline'} onClick={() => setLedgerTypeFilter(t)}>{t.charAt(0).toUpperCase() + t.slice(1)}</Button>
+                        ))}
+                      </div>
+                      <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={ledgerCategoryFilter} onChange={e => setLedgerCategoryFilter(e.target.value)}>
+                        <option value="all">All categories</option>
+                        {financeCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                      <Input placeholder="Search entries…" className="w-48" value={ledgerSearch} onChange={e => setLedgerSearch(e.target.value)} />
+                    </div>
+
+                    {/* Summary */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                      <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Entries</p><p className="text-lg font-bold">{filteredLedger.length}</p></CardContent></Card>
+                      <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Income</p><p className="text-lg font-bold">${filteredIncome.toFixed(2)}</p></CardContent></Card>
+                      <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Expenses</p><p className="text-lg font-bold text-destructive">${filteredExpenses.toFixed(2)}</p></CardContent></Card>
+                      <Card><CardContent className="pt-4"><p className="text-xs text-muted-foreground">Net</p><p className={`text-lg font-bold ${(filteredIncome - filteredExpenses) >= 0 ? '' : 'text-destructive'}`}>${(filteredIncome - filteredExpenses).toFixed(2)}</p></CardContent></Card>
+                    </div>
+
+                    {/* Add Entry */}
+                    <Card className="mb-6">
+                      <CardHeader className="cursor-pointer" onClick={() => setAddOpen(!addOpen)}>
+                        <CardTitle className="flex items-center justify-between text-base">
+                          <span className="flex items-center gap-2"><Plus className="h-4 w-4" /> Add Entry</span>
+                          <span className="text-xs text-muted-foreground">{addOpen ? 'Collapse' : 'Expand'}</span>
+                        </CardTitle>
+                      </CardHeader>
+                      {addOpen && (
+                        <CardContent>
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                            <Input type="date" value={fDate} onChange={e => setFDate(e.target.value)} />
+                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={fType} onChange={e => setFType(e.target.value as any)}>
+                              <option value="expense">Expense</option>
+                              <option value="income">Income</option>
+                              <option value="payroll">Payroll</option>
+                            </select>
+                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={fCurrency} onChange={e => setFCurrency(e.target.value)}>
+                              <option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="UZS">UZS</option>
+                            </select>
+                            <Input type="number" placeholder="Amount" value={fAmount} onChange={e => setFAmount(e.target.value)} />
+                          </div>
+                          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={fCategory} onChange={e => setFCategory(e.target.value)}>
+                              <option value="">Select category</option>
+                              {financeCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                            <Input placeholder="Reference (optional)" value={fRef} onChange={e => setFRef(e.target.value)} />
+                            <Input placeholder="Description (optional)" value={fDesc} onChange={e => setFDesc(e.target.value)} />
+                          </div>
+                          <Button disabled={!allowModals} onClick={() => guard(() => {
+                            setFinanceEntries(prev => [...prev, { id: Date.now().toString(), date: fDate, type: fType, currency: fCurrency, amount: parseFloat(fAmount) || 0, category: fCategory, reference: fRef, description: fDesc, created_at: new Date().toISOString() }]);
+                            setFAmount(''); setFRef(''); setFDesc('');
+                            toast.success('Entry added');
+                          })}>Add entry</Button>
+                        </CardContent>
+                      )}
+                    </Card>
+
+                    {/* Entries table */}
+                    <Card>
+                      <CardHeader><CardTitle className="flex items-center gap-2">Entries <Badge variant="secondary">{filteredLedger.length}</Badge></CardTitle></CardHeader>
+                      <CardContent>
+                        {filteredLedger.length > 0 ? (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead><tr className="border-b border-border text-left text-muted-foreground">
+                                <th className="pb-2">Date</th><th className="pb-2">Type</th><th className="pb-2">Category</th><th className="pb-2">Amount</th><th className="pb-2">Currency</th><th className="pb-2">Reference</th><th className="pb-2">Description</th><th className="pb-2"></th>
+                              </tr></thead>
+                              <tbody>
+                                {filteredLedger.slice(0, 200).map(entry => {
+                                  let ds = ''; try { ds = format(new Date(entry.date || entry.created_at), 'MMM dd, yyyy'); } catch { ds = '—'; }
+                                  return (
+                                    <tr key={entry.id} className="border-b border-border/50">
+                                      <td className="py-2">{ds}</td>
+                                      <td className="py-2"><Badge variant={entry.type === 'income' ? 'default' : entry.type === 'payroll' ? 'secondary' : 'destructive'} className="text-xs">{entry.type}</Badge></td>
+                                      <td className="py-2">{entry.category || '—'}</td>
+                                      <td className="py-2 font-medium">${(entry.amount || 0).toFixed(2)}</td>
+                                      <td className="py-2">{entry.currency || 'USD'}</td>
+                                      <td className="py-2 truncate max-w-[120px]">{entry.reference || '—'}</td>
+                                      <td className="py-2 truncate max-w-[150px]">{entry.description || '—'}</td>
+                                      <td className="py-2">
+                                        <Button size="icon" variant="ghost" disabled={!allowModals} onClick={() => guard(() => setFinanceEntries(prev => prev.filter(x => x.id !== entry.id)))}>
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground text-center py-8">No entries found for this filter.</p>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-3">Shows up to 200 entries per filter. For full exports use the Export tab.</p>
+                      </CardContent>
+                    </Card>
+                  </>
+                );
+              })()}
+
+              {/* ===== COMPENSATION TAB ===== */}
+              {financeTab === 'compensation' && (
+                <>
+                  <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
+                    <h3 className="text-lg font-semibold">Staff Compensation</h3>
+                    <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Add compensation profile coming soon'))}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Profile
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Card><CardContent className="pt-6 flex items-start gap-3"><Lock className="h-5 w-5 text-muted-foreground mt-0.5" /><div><p className="font-medium">Fixed Salary</p><p className="text-xs text-muted-foreground">Fixed monthly or weekly salary</p><Badge variant="secondary" className="mt-1">0 profiles</Badge></div></CardContent></Card>
+                    <Card><CardContent className="pt-6 flex items-start gap-3"><Clock className="h-5 w-5 text-muted-foreground mt-0.5" /><div><p className="font-medium">Hourly</p><p className="text-xs text-muted-foreground">Rate × hours logged</p><Badge variant="secondary" className="mt-1">0 profiles</Badge></div></CardContent></Card>
+                    <Card><CardContent className="pt-6 flex items-start gap-3"><Percent className="h-5 w-5 text-muted-foreground mt-0.5" /><div><p className="font-medium">Percentage</p><p className="text-xs text-muted-foreground">% of revenue they generate</p><Badge variant="secondary" className="mt-1">0 profiles</Badge></div></CardContent></Card>
+                  </div>
+
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Compensation Profiles</CardTitle></CardHeader>
+                    <CardContent>
+                      {compensationProfiles.length > 0 ? compensationProfiles.map(p => (
+                        <div key={p.id} className="flex items-center justify-between py-3 border-b border-border/50 last:border-0">
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium">{p.name || 'Staff'}</span>
+                            <Badge variant="secondary">{p.pay_type || 'salary'}</Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">${(p.amount || 0).toFixed(2)}</span>
+                            <Button size="sm" variant="outline" onClick={() => toast.info('Run payout coming soon')}>Run Payout</Button>
+                            <Button size="sm" variant="ghost" onClick={() => toast.info('Edit coming soon')}>Edit</Button>
+                          </div>
+                        </div>
+                      )) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                          <p className="font-medium">No compensation profiles yet.</p>
+                          <p className="text-sm mt-1">Add salary, hourly, or percentage-based pay for your staff.</p>
+                          <Button className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Add compensation profile coming soon'))}>
+                            <Plus className="h-4 w-4 mr-2" /> Add Profile
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Run Payroll</CardTitle></CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">Calculate owed amounts for all active profiles for a selected period.</p>
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        <Input type="date" className="w-44" />
+                        <Input type="date" className="w-44" />
+                      </div>
+                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Payroll run coming soon'))}>Calculate & Run</Button>
+                      <p className="text-xs text-muted-foreground mt-3">Running payroll creates ledger entries automatically for each active compensation profile.</p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ===== RECURRING TAB ===== */}
+              {financeTab === 'recurring' && (
+                <>
+                  <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
+                    <h3 className="text-lg font-semibold">Recurring Rules</h3>
+                    <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Add rule coming soon'))}>
+                      <Plus className="h-4 w-4 mr-2" /> Add Rule
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Due Rules</p><p className="text-2xl font-bold">{recurringRules.filter(r => r.status === 'due').length}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Active Rules</p><p className="text-2xl font-bold">{recurringRules.filter(r => r.status !== 'paused').length}</p></CardContent></Card>
+                  </div>
+
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Rules</CardTitle></CardHeader>
+                    <CardContent>
+                      {recurringRules.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead><tr className="border-b border-border text-left text-muted-foreground">
+                              <th className="pb-2">Description</th><th className="pb-2">Category</th><th className="pb-2">Schedule</th><th className="pb-2">Next Run</th><th className="pb-2">Amount</th><th className="pb-2">Status</th><th className="pb-2">Actions</th>
+                            </tr></thead>
+                            <tbody>
+                              {recurringRules.map(rule => (
+                                <tr key={rule.id} className="border-b border-border/50">
+                                  <td className="py-2">{rule.description}</td>
+                                  <td className="py-2">{rule.category || '—'}</td>
+                                  <td className="py-2"><Badge variant="secondary">{rule.schedule || 'monthly'}</Badge></td>
+                                  <td className="py-2">{rule.next_run || '—'}</td>
+                                  <td className="py-2 font-medium">${(rule.amount || 0).toFixed(2)}</td>
+                                  <td className="py-2"><Badge variant={rule.status === 'active' ? 'default' : 'secondary'}>{rule.status}</Badge></td>
+                                  <td className="py-2 flex gap-1">
+                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Edit coming soon')}>Edit</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Pause coming soon')}>Pause</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Delete coming soon')}><Trash2 className="h-3 w-3" /></Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                          <Clock className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                          <p className="font-medium">No recurring rules yet.</p>
+                          <p className="text-sm mt-1">Automate repeating finance entries (utilities, rent, taxes, subscriptions).</p>
+                          <Button className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Add rule coming soon'))}>
+                            <Plus className="h-4 w-4 mr-2" /> Add Rule
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Run Due Rules</CardTitle></CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">Creates finance entries for all rules with next_run_date ≤ selected date. Catch-up supported.</p>
+                      <div className="flex gap-3 items-end mb-3">
+                        <div>
+                          <label className="text-xs text-muted-foreground">As of</label>
+                          <Input type="date" className="w-44" defaultValue={format(new Date(), 'yyyy-MM-dd')} />
+                        </div>
+                        <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Run due rules coming soon'))}>Run due now</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>Recent Runs</span>
+                        <Button size="sm" variant="ghost" onClick={() => toast.info('Refreshed')}>Refresh</Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground text-center py-8">No automation runs yet.</p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ===== CATEGORIES TAB ===== */}
+              {financeTab === 'categories' && (
+                <>
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Create Category</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3 items-end mb-3">
+                        <div className="flex-1 min-w-[200px]">
+                          <label className="text-xs text-muted-foreground">Name</label>
+                          <Input placeholder="e.g. Utilities: Electricity" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} />
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Color</label>
+                          <div className="flex gap-2">
+                            {['blue', 'green', 'orange', 'purple', 'red'].map(c => (
+                              <button
+                                key={c}
+                                className={`w-6 h-6 rounded-full transition-all ${newCategoryColor === c ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                                style={{ backgroundColor: c === 'blue' ? 'hsl(221, 83%, 53%)' : c === 'green' ? 'hsl(142, 71%, 45%)' : c === 'orange' ? 'hsl(38, 92%, 50%)' : c === 'purple' ? 'hsl(280, 68%, 60%)' : 'hsl(0, 84%, 60%)' }}
+                                onClick={() => setNewCategoryColor(c)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <Button disabled={!allowModals} onClick={() => guard(() => {
+                          if (newCategoryName.trim()) {
+                            setFinanceCategories(prev => [...prev, newCategoryName.trim()]);
+                            setNewCategoryName('');
+                            toast.success('Category added');
+                          }
+                        })}>Add</Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Tip: Set a consistent naming convention so reports are clean (e.g. "Utilities: Electricity", "Utilities: Water").</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <span>Your Categories</span>
+                        <Button size="sm" variant="ghost" onClick={() => toast.info('Refreshed')}>Refresh</Button>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {financeCategories.length > 0 ? financeCategories.map((cat, i) => {
+                        const count = financeEntries.filter(e => e.category === cat).length;
+                        return (
+                          <div key={cat} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
+                            <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: catColors[i % catColors.length] }} />
+                            <span className="flex-1 text-sm font-medium">{cat}</span>
+                            <Badge variant="secondary">{count} entries</Badge>
+                            {count === 0 && (
+                              <Button size="icon" variant="ghost" disabled={!allowModals} onClick={() => guard(() => setFinanceCategories(prev => prev.filter(c => c !== cat)))}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      }) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">No categories yet. Add one above.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ===== EXPORT TAB ===== */}
+              {financeTab === 'export' && (
+                <>
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Export Finance Entries</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                        <Input type="date" />
+                        <Input type="date" />
+                        <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
+                          <option>All</option><option>Income</option><option>Expense</option><option>Payroll</option>
+                        </select>
+                        <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
+                          <option>All categories</option>
+                          {financeCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Export coming soon'))}>
+                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-3">Export monthly ranges and share with your accountant. Filters help isolate payroll vs supplies vs utilities.</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="mb-6">
+                    <CardHeader><CardTitle>Export Recurring Runs</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        <Input type="date" className="w-44" />
+                        <Input type="date" className="w-44" />
+                      </div>
+                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Export recurring runs coming soon'))}>
+                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-3">Exports rule runs + linked created entries for auditing and analytics.</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Export Payroll</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
+                          <option>This Month</option><option>Last Month</option><option>Custom</option>
+                        </select>
+                      </div>
+                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Export payroll coming soon'))}>
+                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
           </SectionWrapper>
         );
+      }
 
       case "analytics":
         return (
