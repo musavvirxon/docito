@@ -2381,136 +2381,689 @@ const AdminDashboard = () => {
         );
       }
 
-      case "billing":
+      case "billing": {
+        const bData: any = billing.data;
+        const bTxs: any[] = bData?.transactions || [];
+        const fmtCents = (cents: number) =>
+          `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+
+        const billingTabs: { key: typeof billingTab; label: string }[] = [
+          { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
+          { key: 'invoices', label: 'Invoices' },
+          { key: 'transactions', label: t("adminBilling.recentTransactions").split(' ').slice(-1)[0] || 'Transactions' },
+          { key: 'insurance', label: 'Insurance' },
+          { key: 'settings', label: 'Settings' },
+        ];
+
+        // Filtered invoices
+        const filteredInvoices = bTxs.filter((tx: any) => {
+          const name = (tx?.metadata?.patient_name || tx?.metadata?.customer_name || '').toLowerCase();
+          if (invoiceSearch && !name.includes(invoiceSearch.toLowerCase())) return false;
+          if (invoiceStatusFilter !== 'all') {
+            const s = String(tx.status || '').toLowerCase();
+            if (invoiceStatusFilter === 'paid' && s !== 'completed' && s !== 'paid') return false;
+            if (invoiceStatusFilter === 'pending' && s !== 'pending') return false;
+            if (invoiceStatusFilter === 'overdue' && s !== 'overdue') return false;
+            if (invoiceStatusFilter === 'refunded' && s !== 'refunded') return false;
+          }
+          return true;
+        });
+
+        // Group by payment method
+        const byMethod: Record<string, { count: number; total: number }> = {};
+        bTxs.forEach((tx: any) => {
+          const m = tx.payment_method || 'Unknown';
+          if (!byMethod[m]) byMethod[m] = { count: 0, total: 0 };
+          byMethod[m].count++;
+          byMethod[m].total += Number(tx.amount_cents || 0);
+        });
+
+        // Group by status
+        const byStatus: Record<string, number> = {};
+        bTxs.forEach((tx: any) => {
+          const s = String(tx.status || 'unknown').toLowerCase();
+          byStatus[s] = (byStatus[s] || 0) + 1;
+        });
+
+        const completedSum = bTxs.filter((tx: any) => {
+          const s = String(tx.status || '').toLowerCase();
+          return s === 'completed' || s === 'paid';
+        }).reduce((sum: number, tx: any) => sum + Number(tx.amount_cents || 0), 0);
+
+        const refundedSum = bTxs.filter((tx: any) =>
+          String(tx.status || '').toLowerCase() === 'refunded'
+        ).reduce((sum: number, tx: any) => sum + Number(tx.amount_cents || 0), 0);
+
+        const statusColors: Record<string, string> = {
+          completed: 'bg-green-500', paid: 'bg-green-500',
+          pending: 'bg-yellow-500',
+          refunded: 'bg-red-500', failed: 'bg-red-500',
+        };
+
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("adminBilling.title")}</h2>
-              <div className="flex items-center gap-2 flex-wrap">
-                {practice?.id && (
-                  <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
-                )}
-                <Button variant={billingRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("7d"))}>
-                  7D
-                </Button>
-                <Button variant={billingRange === "30d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("30d"))}>
-                  30D
-                </Button>
-                <Button variant={billingRange === "90d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("90d"))}>
-                  90D
-                </Button>
-                <Button variant="outline" onClick={() => guard(() => billing.refetch())}>
-                  {t("adminBilling.refresh")}
-                </Button>
+              {/* Header row — preserved exactly */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <h2 className="text-xl font-semibold">{t("adminBilling.title")}</h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {practice?.id && (
+                    <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
+                  )}
+                  <Button variant={billingRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("7d"))}>
+                    7D
+                  </Button>
+                  <Button variant={billingRange === "30d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("30d"))}>
+                    30D
+                  </Button>
+                  <Button variant={billingRange === "90d" ? "default" : "outline"} onClick={() => guard(() => setBillingRange("90d"))}>
+                    90D
+                  </Button>
+                  <Button variant="outline" onClick={() => guard(() => billing.refetch())}>
+                    {t("adminBilling.refresh")}
+                  </Button>
+                </div>
               </div>
-            </div>
 
-            <div className={sectionMainGridClass}>
-              <Card className="rounded-xl lg:col-span-5 min-w-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    {t("adminBilling.paymentSummary")}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {billing.loading ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>{t("adminBilling.loading")}</span>
-                    </div>
-                  ) : billing.error ? (
-                    <p className="text-sm text-destructive">{billing.error}</p>
-                  ) : billing.data ? (
-                    (() => {
-                      const b: any = billing.data;
-                      const fmt = (cents: number) =>
-                        `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+              {/* Tab bar */}
+              <div className="flex gap-1 border-b border-border mb-6 mt-4 overflow-x-auto">
+                {billingTabs.map(tab => (
+                  <Button
+                    key={tab.key}
+                    variant="ghost"
+                    className={`rounded-none px-4 py-2 text-sm font-medium ${billingTab === tab.key ? 'border-b-2 border-primary text-foreground' : 'text-muted-foreground'}`}
+                    onClick={() => setBillingTab(tab.key)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
 
-                      return (
-                        <div className="space-y-4">
+              {/* ========== TAB: OVERVIEW ========== */}
+              {billingTab === 'overview' && (
+                <>
+                  {/* KPI cards row */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-muted-foreground">{t("adminBilling.totalRevenue")}</p>
+                        <p className="text-2xl font-bold">{billing.loading ? '…' : fmtCents(bData?.summary?.totalRevenueCents ?? 0)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-muted-foreground">{t("adminBilling.pending")}</p>
+                        <p className="text-2xl font-bold text-yellow-600">{billing.loading ? '…' : fmtCents(bData?.summary?.pendingCents ?? 0)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-muted-foreground">{t("adminBilling.refunds")}</p>
+                        <p className="text-2xl font-bold text-red-600">{billing.loading ? '…' : fmtCents(bData?.summary?.refundCents ?? 0)}</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <p className="text-sm text-muted-foreground">Transactions</p>
+                        <p className="text-2xl font-bold">{billing.loading ? '…' : (bData?.summary?.transactionCount ?? 0)}</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Main grid — existing Payment Summary + Recent Transactions */}
+                  <div className={sectionMainGridClass}>
+                    <Card className="rounded-xl lg:col-span-5 min-w-0">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <CreditCard className="h-5 w-5" />
+                          {t("adminBilling.paymentSummary")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {billing.loading ? (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>{t("adminBilling.loading")}</span>
+                          </div>
+                        ) : billing.error ? (
+                          <p className="text-sm text-destructive">{billing.error}</p>
+                        ) : billing.data ? (
+                          (() => {
+                            const b: any = billing.data;
+                            const fmt = (cents: number) =>
+                              `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+                            return (
+                              <div className="space-y-4">
+                                <div className="flex justify-between">
+                                  <span>{t("adminBilling.totalRevenue")} ({b.period?.days ?? 0} {t("adminBilling.days")})</span>
+                                  <span className="font-semibold">{fmt(b.summary?.totalRevenueCents ?? 0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>{t("adminBilling.pending")}</span>
+                                  <span className="font-semibold text-yellow-600">{fmt(b.summary?.pendingCents ?? 0)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>{t("adminBilling.refunds")}</span>
+                                  <span className="font-semibold text-red-600">{fmt(b.summary?.refundCents ?? 0)}</span>
+                                </div>
+                                <div className="pt-2 text-sm text-muted-foreground">
+                                  {b.summary?.completedCount ?? 0} completed • {b.summary?.pendingCount ?? 0} pending •{" "}
+                                  {b.summary?.transactionCount ?? 0} total
+                                </div>
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <p className="text-sm text-muted-foreground">{t("adminBilling.noBillingData")}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="rounded-xl lg:col-span-7 min-w-0">
+                      <CardHeader>
+                        <CardTitle>{t("adminBilling.recentTransactions")}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {billing.loading ? (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>{t("adminBilling.loading")}</span>
+                          </div>
+                        ) : billing.error ? (
+                          <p className="text-sm text-destructive">{billing.error}</p>
+                        ) : !billing.data || !(billing.data as any).transactions?.length ? (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                            <p>{t("adminBilling.noTransactions")}</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {(billing.data as any).transactions.map((tx: any) => {
+                              const patientName =
+                                tx?.metadata?.patient_name || tx?.metadata?.customer_name || tx?.metadata?.payer_name || "—";
+                              const fmt = `$${(Number(tx.amount_cents || 0) / 100).toLocaleString(undefined, {
+                                maximumFractionDigits: 2,
+                              })}`;
+                              const statusLower = String(tx.status || "").toLowerCase();
+                              const isPaid = statusLower === "completed" || statusLower === "paid";
+                              const isPending = statusLower === "pending";
+                              const badgeVariant = isPaid ? "default" : isPending ? "outline" : "secondary";
+                              return (
+                                <div
+                                  key={tx.id}
+                                  className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="font-medium truncate">{patientName}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {(() => { try { return format(new Date(tx.created_at), "MMM dd, yyyy"); } catch { return '—'; } })()}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="font-semibold">{fmt}</p>
+                                    <Badge variant={badgeVariant}>{tx.status}</Badge>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Insight cards */}
+                  <div className={sectionInsightGridClass}>
+                    {/* By Payment Method */}
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader><CardTitle className="text-base">By Payment Method</CardTitle></CardHeader>
+                      <CardContent>
+                        {Object.keys(byMethod).length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No data available</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {Object.entries(byMethod).map(([method, data]) => (
+                              <div key={method} className="flex items-center justify-between">
+                                <span className="text-sm font-medium">{method}</span>
+                                <div className="text-right">
+                                  <span className="text-sm text-muted-foreground">{data.count} tx</span>
+                                  <span className="ml-2 font-semibold text-sm">{fmtCents(data.total)}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* By Status */}
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader><CardTitle className="text-base">By Status</CardTitle></CardHeader>
+                      <CardContent>
+                        {Object.keys(byStatus).length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No data available</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {Object.entries(byStatus).map(([status, count]) => {
+                              const pct = bTxs.length > 0 ? (count / bTxs.length) * 100 : 0;
+                              return (
+                                <div key={status}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-2 h-2 rounded-full ${statusColors[status] || 'bg-muted-foreground'}`} />
+                                      <span className="text-sm capitalize">{status}</span>
+                                    </div>
+                                    <span className="text-sm text-muted-foreground">{count}</span>
+                                  </div>
+                                  <div className="w-full bg-muted rounded-full h-2">
+                                    <div className={`h-2 rounded-full ${statusColors[status] || 'bg-muted-foreground'}`} style={{ width: `${pct}%` }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Period Summary */}
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader><CardTitle className="text-base">Period Summary</CardTitle></CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span>{t("adminBilling.totalRevenue")} ({b.period?.days ?? 0} {t("adminBilling.days")})</span>
-                            <span className="font-semibold">{fmt(b.summary?.totalRevenueCents ?? 0)}</span>
+                            <span className="text-sm text-muted-foreground">Avg Transaction</span>
+                            <span className="font-semibold text-sm">
+                              {bTxs.length > 0 ? fmtCents((bData?.summary?.totalRevenueCents ?? 0) / (bData?.summary?.transactionCount || 1)) : '—'}
+                            </span>
                           </div>
                           <div className="flex justify-between">
-                            <span>{t("adminBilling.pending")}</span>
-                            <span className="font-semibold text-yellow-600">{fmt(b.summary?.pendingCents ?? 0)}</span>
+                            <span className="text-sm text-muted-foreground">Highest Tx</span>
+                            <span className="font-semibold text-sm">
+                              {bTxs.length > 0 ? fmtCents(Math.max(...bTxs.map((tx: any) => Number(tx.amount_cents || 0)))) : '—'}
+                            </span>
                           </div>
                           <div className="flex justify-between">
-                            <span>{t("adminBilling.refunds")}</span>
-                            <span className="font-semibold text-red-600">{fmt(b.summary?.refundCents ?? 0)}</span>
+                            <span className="text-sm text-muted-foreground">Period</span>
+                            <span className="text-sm">
+                              {(() => { try { return `${format(new Date(bData?.period?.from), 'MMM dd')} → ${format(new Date(bData?.period?.to), 'MMM dd')}`; } catch { return '—'; } })()}
+                            </span>
                           </div>
-                          <div className="pt-2 text-sm text-muted-foreground">
-                            {b.summary?.completedCount ?? 0} completed • {b.summary?.pendingCount ?? 0} pending •{" "}
-                            {b.summary?.transactionCount ?? 0} total
+                          <div className="flex justify-between">
+                            <span className="text-sm text-muted-foreground">Completion Rate</span>
+                            <span className="font-semibold text-sm">
+                              {(bData?.summary?.transactionCount ?? 0) > 0
+                                ? `${((bData?.summary?.completedCount ?? 0) / (bData?.summary?.transactionCount ?? 1) * 100).toFixed(0)}%`
+                                : '—'}
+                            </span>
                           </div>
                         </div>
-                      );
-                    })()
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{t("adminBilling.noBillingData")}</p>
-                  )}
-                </CardContent>
-              </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </>
+              )}
 
-              <Card className="rounded-xl lg:col-span-7 min-w-0">
-                <CardHeader>
-                  <CardTitle>{t("adminBilling.recentTransactions")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {billing.loading ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>{t("adminBilling.loading")}</span>
-                    </div>
-                  ) : billing.error ? (
-                    <p className="text-sm text-destructive">{billing.error}</p>
-                  ) : !billing.data || !(billing.data as any).transactions?.length ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>{t("adminBilling.noTransactions")}</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {(billing.data as any).transactions.map((tx: any) => {
-                        const patientName =
-                          tx?.metadata?.patient_name || tx?.metadata?.customer_name || tx?.metadata?.payer_name || "—";
+              {/* ========== TAB: INVOICES ========== */}
+              {billingTab === 'invoices' && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Invoices</h3>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Create invoice coming soon'))}>
+                      <FileText className="h-4 w-4 mr-2" />Create Invoice
+                    </Button>
+                  </div>
 
-                        const fmt = `$${(Number(tx.amount_cents || 0) / 100).toLocaleString(undefined, {
-                          maximumFractionDigits: 2,
-                        })}`;
+                  {/* Filters */}
+                  <div className="flex items-center gap-3 flex-wrap mb-4">
+                    <Input
+                      placeholder="Search by patient name…"
+                      value={invoiceSearch}
+                      onChange={e => setInvoiceSearch(e.target.value)}
+                      className="max-w-xs"
+                    />
+                    {['all', 'paid', 'pending', 'overdue', 'refunded'].map(s => (
+                      <Button
+                        key={s}
+                        variant={invoiceStatusFilter === s ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setInvoiceStatusFilter(s)}
+                      >
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
 
-                        const statusLower = String(tx.status || "").toLowerCase();
-                        const isPaid = statusLower === "completed" || statusLower === "paid";
-                        const isPending = statusLower === "pending";
-                        const badgeVariant = isPaid ? "default" : isPending ? "outline" : "secondary";
+                  {/* Invoices table */}
+                  <Card className="rounded-xl">
+                    <CardContent className="pt-4">
+                      {billing.loading ? (
+                        <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin" /><span>{t("adminBilling.loading")}</span>
+                        </div>
+                      ) : billing.error ? (
+                        <p className="text-sm text-destructive py-4">{billing.error}</p>
+                      ) : filteredInvoices.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                          <p>{t("adminBilling.noTransactions")}</p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-border text-left">
+                                <th className="pb-2 font-medium text-muted-foreground">Invoice #</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Patient</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Date</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Amount</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Status</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredInvoices.map((tx: any) => {
+                                const pName = tx?.metadata?.patient_name || tx?.metadata?.customer_name || '—';
+                                const sLow = String(tx.status || '').toLowerCase();
+                                const isPaid = sLow === 'completed' || sLow === 'paid';
+                                const isPend = sLow === 'pending';
+                                return (
+                                  <tr key={tx.id} className="border-b border-border/50">
+                                    <td className="py-3 font-mono text-xs">{String(tx.id || '').slice(-8)}</td>
+                                    <td className="py-3">{pName}</td>
+                                    <td className="py-3 text-muted-foreground">
+                                      {(() => { try { return format(new Date(tx.created_at), 'MMM dd, yyyy'); } catch { return '—'; } })()}
+                                    </td>
+                                    <td className="py-3 font-semibold">{fmtCents(tx.amount_cents || 0)}</td>
+                                    <td className="py-3">
+                                      <Badge variant={isPaid ? 'default' : isPend ? 'outline' : 'secondary'}>{tx.status}</Badge>
+                                    </td>
+                                    <td className="py-3">
+                                      <div className="flex gap-1">
+                                        <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info('View invoice coming soon'))}>
+                                          <Eye className="h-3 w-3" />
+                                        </Button>
+                                        <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info('Send invoice coming soon'))}>
+                                          <Mail className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                        return (
-                          <div
-                            key={tx.id}
-                            className="flex items-center justify-between p-3 bg-muted/40 rounded-xl border border-border"
-                          >
-                            <div className="min-w-0">
-                              <p className="font-medium truncate">{patientName}</p>
-                              <p className="text-sm text-muted-foreground">{format(new Date(tx.created_at), "MMM dd, yyyy")}</p>
+                  {/* Summary stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Total Invoices</p>
+                      <p className="text-xl font-bold">{filteredInvoices.length}</p>
+                    </CardContent></Card>
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Total Amount</p>
+                      <p className="text-xl font-bold">{fmtCents(filteredInvoices.reduce((s: number, tx: any) => s + Number(tx.amount_cents || 0), 0))}</p>
+                    </CardContent></Card>
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Outstanding</p>
+                      <p className="text-xl font-bold text-yellow-600">
+                        {fmtCents(filteredInvoices.filter((tx: any) => String(tx.status || '').toLowerCase() === 'pending').reduce((s: number, tx: any) => s + Number(tx.amount_cents || 0), 0))}
+                      </p>
+                    </CardContent></Card>
+                  </div>
+                </>
+              )}
+
+              {/* ========== TAB: TRANSACTIONS ========== */}
+              {billingTab === 'transactions' && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">All Transactions</h3>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Export coming soon'))}>
+                      Export CSV
+                    </Button>
+                  </div>
+
+                  {/* Summary cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Total Income</p>
+                      <p className="text-xl font-bold text-green-600">{fmtCents(completedSum)}</p>
+                    </CardContent></Card>
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Total Refunds</p>
+                      <p className="text-xl font-bold text-red-600">{fmtCents(refundedSum)}</p>
+                    </CardContent></Card>
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Net Revenue</p>
+                      <p className="text-xl font-bold">{fmtCents(completedSum - refundedSum)}</p>
+                    </CardContent></Card>
+                  </div>
+
+                  {/* Full transaction log */}
+                  <Card className="rounded-xl">
+                    <CardContent className="pt-4">
+                      {billing.loading ? (
+                        <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin" /><span>{t("adminBilling.loading")}</span>
+                        </div>
+                      ) : billing.error ? (
+                        <p className="text-sm text-destructive py-4">{billing.error}</p>
+                      ) : bTxs.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                          <p>{t("adminBilling.noTransactions")}</p>
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-border text-left">
+                                <th className="pb-2 font-medium text-muted-foreground">Date</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Patient</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Amount</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Method</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Status</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Reference</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {[...bTxs].sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((tx: any) => {
+                                const pName = tx?.metadata?.patient_name || tx?.metadata?.customer_name || '—';
+                                const sLow = String(tx.status || '').toLowerCase();
+                                const isPaid = sLow === 'completed' || sLow === 'paid';
+                                const isPend = sLow === 'pending';
+                                return (
+                                  <tr key={tx.id} className="border-b border-border/50">
+                                    <td className="py-3 text-muted-foreground">
+                                      {(() => { try { return format(new Date(tx.created_at), 'MMM dd, yyyy'); } catch { return '—'; } })()}
+                                    </td>
+                                    <td className="py-3">{pName}</td>
+                                    <td className="py-3 font-semibold">{fmtCents(tx.amount_cents || 0)}</td>
+                                    <td className="py-3 text-muted-foreground">{tx.payment_method || '—'}</td>
+                                    <td className="py-3">
+                                      <Badge variant={isPaid ? 'default' : isPend ? 'outline' : 'secondary'}>{tx.status}</Badge>
+                                    </td>
+                                    <td className="py-3 font-mono text-xs text-muted-foreground">{String(tx.id || '').slice(-8)}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ========== TAB: INSURANCE ========== */}
+              {billingTab === 'insurance' && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Insurance Claims</h3>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Submit claim coming soon'))}>
+                      Submit Claim
+                    </Button>
+                  </div>
+
+                  {/* Summary cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Submitted</p>
+                      <p className="text-xl font-bold">0</p>
+                    </CardContent></Card>
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Approved</p>
+                      <p className="text-xl font-bold text-green-600">0</p>
+                    </CardContent></Card>
+                    <Card className="rounded-xl"><CardContent className="pt-6">
+                      <p className="text-sm text-muted-foreground">Rejected</p>
+                      <p className="text-xl font-bold text-red-600">0</p>
+                    </CardContent></Card>
+                  </div>
+
+                  {/* Empty claims table */}
+                  <Card className="rounded-xl mb-6">
+                    <CardContent className="pt-4">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-border text-left">
+                              <th className="pb-2 font-medium text-muted-foreground">Patient</th>
+                              <th className="pb-2 font-medium text-muted-foreground">Insurer</th>
+                              <th className="pb-2 font-medium text-muted-foreground">Service</th>
+                              <th className="pb-2 font-medium text-muted-foreground">Amount</th>
+                              <th className="pb-2 font-medium text-muted-foreground">Submitted</th>
+                              <th className="pb-2 font-medium text-muted-foreground">Status</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+                      <div className="text-center py-8 text-muted-foreground">
+                        <AlertCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p className="font-medium">No insurance claims yet</p>
+                        <p className="text-sm mt-1">Insurance claim tracking coming in a future update.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Accepted insurers */}
+                  <Card className="rounded-xl">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">Accepted Insurance Providers</CardTitle>
+                        <Button size="sm" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Add insurer coming soon'))}>
+                          Add Insurer
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-6 text-muted-foreground">
+                        <p>No insurers added yet</p>
+                        <p className="text-sm mt-1">Add the insurance providers your practice accepts.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ========== TAB: SETTINGS ========== */}
+              {billingTab === 'settings' && (
+                <>
+                  {/* Billing Settings */}
+                  <Card className="rounded-xl mb-6">
+                    <CardHeader><CardTitle className="text-base">Billing Settings</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="text-sm font-medium">Default Currency</span>
+                          <Badge variant="outline">USD</Badge>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="text-sm font-medium">Tax / VAT</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">0%</span>
+                            <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info('Edit tax coming soon'))}>Edit</Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="text-sm font-medium">Auto-send Receipt</span>
+                          <div className="w-10 h-5 rounded-full bg-muted relative cursor-pointer">
+                            <div className="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-muted-foreground transition-all" />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between py-2 border-b border-border/50">
+                          <span className="text-sm font-medium">Invoice Logo</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Use clinic logo</span>
+                            <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info('Change logo coming soon'))}>Change</Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between py-2">
+                          <span className="text-sm font-medium">Payment Terms</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Due on receipt</span>
+                            <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info('Edit terms coming soon'))}>Edit</Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Invoice Template */}
+                  <Card className="rounded-xl mb-6">
+                    <CardHeader><CardTitle className="text-base">Invoice Template</CardTitle></CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">Customize how invoices look when sent to patients.</p>
+                      <div className="border-2 border-dashed border-border rounded-xl h-[200px] flex items-center justify-center text-muted-foreground">
+                        <p>Invoice preview coming soon</p>
+                      </div>
+                      <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Template editor coming soon'))}>
+                        Customize Template
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Accepted Payment Methods */}
+                  <Card className="rounded-xl">
+                    <CardHeader><CardTitle className="text-base">Accepted Payment Methods</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[
+                          { name: 'Cash', icon: DollarSign },
+                          { name: 'Credit Card', icon: CreditCard },
+                          { name: 'Debit Card', icon: CreditCard },
+                          { name: 'Insurance', icon: FileText },
+                          { name: 'Bank Transfer', icon: Building2 },
+                          { name: 'Online Payment', icon: CreditCard },
+                        ].map(({ name, icon: Icon }) => (
+                          <div key={name} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                            <div className="flex items-center gap-2">
+                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium">{name}</span>
                             </div>
-                            <div className="text-right">
-                              <p className="font-semibold">{fmt}</p>
-                              <Badge variant={badgeVariant}>{tx.status}</Badge>
+                            <div className="w-10 h-5 rounded-full bg-muted relative cursor-pointer">
+                              <div className="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-muted-foreground transition-all" />
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        ))}
+                      </div>
+                      <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Save payment methods coming soon'))}>
+                        Save
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
           </SectionWrapper>
         );
+      }
 
       case "finances":
         return (
