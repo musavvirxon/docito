@@ -4720,7 +4720,7 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>Inactive Patients (90+ days)</CardTitle></CardHeader>
                     <CardContent>
                       {inactivePatientsList.length > 0 ? (
-                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => toast.info('Re-engage coming soon')}>Re-engage</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
+                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => toast.info('Patient re-engagement emails require notification setup.')}>Re-engage</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
                       ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>No inactive patients. Great retention!</p></div>}
                     </CardContent>
                   </Card>
@@ -5221,7 +5221,12 @@ const AdminDashboard = () => {
                       })} disabled={!allowModals}><Download className="h-4 w-4 mr-2" /> Export All Data (ZIP)</Button>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                         {['Patients CSV', 'Appointments CSV', 'Finance CSV', 'Staff CSV'].map(label => (
-                          <Button key={label} size="sm" variant="outline" onClick={() => guard(() => toast.info('Export coming soon'))} disabled={!allowModals}>{label}</Button>
+                          <Button key={label} size="sm" variant="outline" onClick={() => guard(() => {
+                            if (label === 'Patients CSV') downloadCSV('patients.csv', ['Name', 'Phone', 'Email'], patients.map((p: any) => [p.name || '', p.phone || '', p.email || '']));
+                            else if (label === 'Appointments CSV') downloadCSV('appointments.csv', ['Date', 'Provider', 'Status'], appointments.map((a: any) => [a.appointment_date || '', a.doctor_name || '', a.status || '']));
+                            else if (label === 'Finance CSV') downloadCSV('finance.csv', ['Date', 'Type', 'Amount'], financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0)]));
+                            else downloadCSV('staff.csv', ['Name', 'Role'], staff.map((s: any) => [s.name || '', s.role || '']));
+                          })} disabled={!allowModals}>{label}</Button>
                         ))}
                       </div>
                     </CardContent>
