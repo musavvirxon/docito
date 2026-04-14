@@ -1797,7 +1797,331 @@ const AdminDashboard = () => {
           </SectionWrapper>
         );
 
-      case "patients":
+      case "patients": {
+        const patientAvatarColors = ['bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-cyan-500', 'bg-indigo-500', 'bg-teal-500'];
+        const getPatientInitials = (name: string) => name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+
+        const filteredPatients = patients.filter(p => {
+          if (patientStatusFilter !== 'all' && p.status !== patientStatusFilter) return false;
+          if (patientProviderFilter !== 'all' && p.doctor_name !== patientProviderFilter) return false;
+          if (patientSearch) {
+            const q = patientSearch.toLowerCase();
+            const matchName = p.name?.toLowerCase().includes(q);
+            const matchPhone = p.phone?.toLowerCase().includes(q);
+            const matchEmail = p.email?.toLowerCase().includes(q);
+            if (!matchName && !matchPhone && !matchEmail) return false;
+          }
+          return true;
+        });
+
+        const formatPatientDate = (dateStr: string | null | undefined, fmt = "MMM dd, yyyy") => {
+          if (!dateStr) return "—";
+          try { return format(new Date(dateStr), fmt); } catch { return "—"; }
+        };
+
+        // Profile view
+        if (selectedPatient) {
+          const patientAppts = appointments.filter(a => a.patient_id === selectedPatient.id || a.patient_name === selectedPatient.name);
+          const patientPayments = payments.filter((p: any) => p.patient_id === selectedPatient.id);
+          const sortedAppts = [...patientAppts].sort((a, b) => new Date(b.date || b.appointment_date || 0).getTime() - new Date(a.date || a.appointment_date || 0).getTime());
+          const lastVisitDate = sortedAppts.length > 0 ? formatPatientDate(sortedAppts[0].date || sortedAppts[0].appointment_date) : "—";
+          const totalInvoiced = patientPayments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+          const totalPaid = patientPayments.filter((p: any) => p.status === 'completed' || p.status === 'paid').reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+          const patientTabs: { key: typeof patientTab; label: string }[] = [
+            { key: 'overview', label: 'Overview' },
+            { key: 'appointments', label: 'Appointments' },
+            { key: 'billing', label: 'Billing' },
+            { key: 'documents', label: 'Documents' },
+            { key: 'notes', label: 'Notes' },
+            { key: 'activity', label: 'Activity' },
+          ];
+
+          return (
+            <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+              <div className={sectionShellClass}>
+                {/* Back button */}
+                <Button variant="ghost" className="gap-2 mb-4 -ml-2" onClick={() => setSelectedPatient(null)}>
+                  <ArrowLeft className="h-4 w-4" /> {t("admin.patients.title")}
+                </Button>
+
+                {/* Profile header */}
+                <Card className="rounded-xl mb-6">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                      <div className={`h-16 w-16 rounded-full flex items-center justify-center text-white font-bold text-xl ${patientAvatarColors[0]}`}>
+                        {getPatientInitials(selectedPatient.name)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h2 className="text-xl font-bold">{selectedPatient.name}</h2>
+                          <Badge className={selectedPatient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>{selectedPatient.status || 'unknown'}</Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                          {selectedPatient.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{selectedPatient.phone}</span>}
+                          {selectedPatient.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{selectedPatient.email}</span>}
+                          {selectedPatient.gender && <span className="capitalize">{selectedPatient.gender}</span>}
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('Edit patient coming soon'))}>Edit</Button>
+                        <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('New appointment coming soon'))}>New Appointment</Button>
+                        <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('Block patient coming soon'))}>Block</Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Tab bar */}
+                <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
+                  {patientTabs.map(tab => (
+                    <Button key={tab.key} variant="ghost" size="sm"
+                      className={`rounded-none ${patientTab === tab.key ? 'border-b-2 border-primary font-medium' : ''}`}
+                      onClick={() => setPatientTab(tab.key)}
+                    >{tab.label}</Button>
+                  ))}
+                </div>
+
+                {/* Tab content */}
+                {patientTab === 'overview' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div className="lg:col-span-8 space-y-6">
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Personal Information</CardTitle></CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            {[
+                              ['Full Name', selectedPatient.name],
+                              ['Date of Birth', formatPatientDate(selectedPatient.date_of_birth)],
+                              ['Gender', selectedPatient.gender || '—'],
+                              ['Phone', selectedPatient.phone || '—'],
+                              ['Email', selectedPatient.email || '—'],
+                              ['Address', selectedPatient.address || '—'],
+                              ['Emergency Contact', selectedPatient.emergency_contact || '—'],
+                            ].map(([label, val]) => (
+                              <div key={label as string}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">{val || '—'}</p></div>
+                            ))}
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Edit coming soon'))}>Edit Info</Button>
+                        </CardContent>
+                      </Card>
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Medical Summary</CardTitle></CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            {['Blood Type', 'Allergies', 'Chronic Conditions', 'Current Medications'].map(label => (
+                              <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">—</p></div>
+                            ))}
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Edit medical info coming soon'))}>Edit Medical Info</Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <div className="lg:col-span-4 space-y-6">
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Quick Stats</CardTitle></CardHeader>
+                        <CardContent className="space-y-3">
+                          {[
+                            ['Total Visits', patientAppts.length.toString()],
+                            ['Last Visit', lastVisitDate],
+                            ['Assigned Provider', selectedPatient.doctor_name || '—'],
+                            ['Member Since', formatPatientDate(selectedPatient.created_at, 'MMM yyyy')],
+                          ].map(([label, val]) => (
+                            <div key={label as string} className="flex justify-between text-sm p-2 bg-muted/30 rounded-lg border border-border">
+                              <span className="text-muted-foreground">{label}</span><span className="font-medium">{val}</span>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Insurance</CardTitle></CardHeader>
+                        <CardContent>
+                          <div className="space-y-3 text-sm">
+                            {['Insurance Provider', 'Policy Number', 'Coverage'].map(label => (
+                              <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">—</p></div>
+                            ))}
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Edit insurance coming soon'))}>Edit Insurance</Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                )}
+
+                {patientTab === 'appointments' && (() => {
+                  const [apptFilter, setApptFilter] = [patientStatusFilter, setPatientStatusFilter];
+                  const filtered = sortedAppts.filter(a => {
+                    if (apptFilter === 'upcoming') return a.status === 'scheduled' || a.status === 'confirmed';
+                    if (apptFilter === 'completed') return a.status === 'completed';
+                    if (apptFilter === 'cancelled') return a.status === 'cancelled';
+                    return true;
+                  });
+                  const completed = patientAppts.filter(a => a.status === 'completed').length;
+                  const cancelled = patientAppts.filter(a => a.status === 'cancelled').length;
+                  return (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between flex-wrap gap-3">
+                        <h3 className="text-base font-semibold">Appointment History</h3>
+                        <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('Add appointment coming soon'))}>Add Appointment</Button>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        {['all', 'upcoming', 'completed', 'cancelled'].map(f => (
+                          <Button key={f} variant={apptFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setApptFilter(f)} className="capitalize">{f}</Button>
+                        ))}
+                      </div>
+                      {filtered.length === 0 ? (
+                        <div className="text-center py-10 text-muted-foreground">
+                          <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                          <p className="font-medium">No appointments found</p>
+                        </div>
+                      ) : (
+                        <Card className="rounded-xl overflow-hidden">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead><tr className="border-b border-border bg-muted/30">
+                                <th className="text-left p-3 font-medium">Date & Time</th>
+                                <th className="text-left p-3 font-medium">Provider</th>
+                                <th className="text-left p-3 font-medium">Service</th>
+                                <th className="text-left p-3 font-medium">Status</th>
+                                <th className="text-left p-3 font-medium">Actions</th>
+                              </tr></thead>
+                              <tbody>
+                                {filtered.map(a => (
+                                  <tr key={a.id} className="border-b border-border last:border-0">
+                                    <td className="p-3">{formatPatientDate(a.date || a.appointment_date)} {a.start_time || ''}</td>
+                                    <td className="p-3">{a.doctor_name || '—'}</td>
+                                    <td className="p-3">{a.service_name || a.appointment_type || '—'}</td>
+                                    <td className="p-3"><Badge variant="outline" className="capitalize">{a.status}</Badge></td>
+                                    <td className="p-3"><Button variant="ghost" size="sm" onClick={() => toast.info('View appointment coming soon')}><Eye className="h-4 w-4" /></Button></td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </Card>
+                      )}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {[['Total', patientAppts.length], ['Completed', completed], ['Cancelled', cancelled]].map(([label, count]) => (
+                          <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
+                            <div className="text-2xl font-bold">{count}</div><p className="text-sm text-muted-foreground">{label}</p>
+                          </CardContent></Card>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {patientTab === 'billing' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <h3 className="text-base font-semibold">Billing & Payments</h3>
+                      <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('Create invoice coming soon'))}>Create Invoice</Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {[['Total Invoiced', `$${totalInvoiced.toLocaleString()}`], ['Paid', `$${totalPaid.toLocaleString()}`], ['Outstanding', `$${(totalInvoiced - totalPaid).toLocaleString()}`]].map(([label, val]) => (
+                        <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
+                          <div className="text-2xl font-bold">{val}</div><p className="text-sm text-muted-foreground">{label}</p>
+                        </CardContent></Card>
+                      ))}
+                    </div>
+                    {patientPayments.length === 0 ? (
+                      <div className="text-center py-10 text-muted-foreground">
+                        <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="font-medium">No billing records found</p>
+                      </div>
+                    ) : (
+                      <Card className="rounded-xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead><tr className="border-b border-border bg-muted/30">
+                              <th className="text-left p-3 font-medium">Date</th>
+                              <th className="text-left p-3 font-medium">Description</th>
+                              <th className="text-left p-3 font-medium">Amount</th>
+                              <th className="text-left p-3 font-medium">Status</th>
+                            </tr></thead>
+                            <tbody>
+                              {patientPayments.map((p: any) => (
+                                <tr key={p.id} className="border-b border-border last:border-0">
+                                  <td className="p-3">{formatPatientDate(p.created_at || p.date)}</td>
+                                  <td className="p-3">{p.description || p.service_name || '—'}</td>
+                                  <td className="p-3">${(p.amount || 0).toLocaleString()}</td>
+                                  <td className="p-3"><Badge variant="outline" className="capitalize">{p.status}</Badge></td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                {patientTab === 'documents' && (
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <h3 className="text-base font-semibold">Documents</h3>
+                      <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('Upload coming soon'))}>Upload</Button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {['Prescriptions', 'Test Results', 'Other'].map(cat => (
+                        <Card key={cat} className="rounded-xl"><CardContent className="pt-6 text-center py-10">
+                          <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-50" />
+                          <p className="text-sm font-medium">{cat}</p>
+                          <p className="text-xs text-muted-foreground mt-1">No documents yet</p>
+                        </CardContent></Card>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center">Document upload coming in a future update.</p>
+                  </div>
+                )}
+
+                {patientTab === 'notes' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-semibold">Internal Notes</h3>
+                    <p className="text-sm text-muted-foreground">Notes are internal only and not visible to the patient.</p>
+                    <div className="space-y-3">
+                      <textarea className="w-full border border-border rounded-lg p-3 text-sm bg-background resize-none" rows={4} placeholder="Write a note…" />
+                      <Button size="sm" disabled={!allowModals} onClick={() => guard(() => toast.info('Save note coming soon'))}>Add Note</Button>
+                    </div>
+                    <div className="text-center py-10 text-muted-foreground">
+                      <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">No notes yet</p>
+                      <p className="text-sm mt-1">Notes will appear here once added.</p>
+                    </div>
+                  </div>
+                )}
+
+                {patientTab === 'activity' && (
+                  <div className="space-y-6">
+                    <h3 className="text-base font-semibold">Activity Timeline</h3>
+                    {sortedAppts.length === 0 ? (
+                      <div className="text-center py-10 text-muted-foreground">
+                        <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="font-medium">No activity recorded yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {sortedAppts.slice(0, 20).map((a, i) => (
+                          <div key={a.id} className="flex gap-3 items-start">
+                            <div className={`mt-1 h-3 w-3 rounded-full flex-shrink-0 ${a.status === 'completed' ? 'bg-green-500' : a.status === 'cancelled' ? 'bg-red-400' : 'bg-blue-500'}`} />
+                            <div className="min-w-0">
+                              <p className="text-sm">Appointment with <span className="font-medium">{a.doctor_name || 'Provider'}</span> — <span className="capitalize">{a.status}</span></p>
+                              <p className="text-xs text-muted-foreground">{formatPatientDate(a.date || a.appointment_date)}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </SectionWrapper>
+          );
+        }
+
+        // Directory view
+        const uniqueProviderNames = [...new Set(patients.map(p => p.doctor_name).filter(Boolean))];
+
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
@@ -1837,13 +2161,40 @@ const AdminDashboard = () => {
               </Card>
             </div>
 
+            {/* Filters row */}
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <div className="relative flex-1">
+                <Input
+                  placeholder="Search by name, phone or email…"
+                  value={patientSearch}
+                  onChange={e => setPatientSearch(e.target.value)}
+                  className="pl-9"
+                />
+                <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex gap-2">
+                {['all', 'active', 'inactive'].map(s => (
+                  <Button key={s} variant={patientStatusFilter === s ? 'default' : 'outline'} size="sm"
+                    onClick={() => setPatientStatusFilter(s)} className="capitalize">{s === 'all' ? 'All' : s}</Button>
+                ))}
+              </div>
+              <select
+                className="border border-border rounded-md px-3 py-1.5 text-sm bg-background"
+                value={patientProviderFilter}
+                onChange={e => setPatientProviderFilter(e.target.value)}
+              >
+                <option value="all">All Providers</option>
+                {uniqueProviderNames.map(name => <option key={name} value={name}>{name}</option>)}
+              </select>
+            </div>
+
             <div className={sectionMainGridClass}>
               <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
                   <CardTitle>{t("admin.patients.listTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {patients.length === 0 ? (
+                  {filteredPatients.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
                       <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
                       <p className="font-medium">{t("admin.patients.emptyTitle")}</p>
@@ -1851,18 +2202,27 @@ const AdminDashboard = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {patients.map((patient) => (
+                      {filteredPatients.map((patient, idx) => (
                         <div
                           key={patient.id}
-                          className="flex flex-col gap-1 p-4 rounded-xl bg-muted/30 border border-border"
+                          className="flex items-center gap-3 p-4 rounded-xl bg-muted/30 border border-border hover:bg-muted/50 transition-colors"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium truncate">{patient.name}</span>
-                            <Badge variant="outline">{patient.status}</Badge>
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 ${patientAvatarColors[idx % patientAvatarColors.length]}`}>
+                            {getPatientInitials(patient.name)}
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            {format(new Date(patient.last_visit), "MMM dd, yyyy")} · {patient.doctor_name}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{patient.name}</p>
+                            <p className="text-sm text-muted-foreground truncate">{patient.doctor_name}</p>
                           </div>
+                          <div className="hidden sm:block text-sm text-muted-foreground whitespace-nowrap">
+                            {formatPatientDate(patient.last_visit)}
+                          </div>
+                          <Badge className={patient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>
+                            {patient.status || 'unknown'}
+                          </Badge>
+                          <Button variant="ghost" size="sm" onClick={() => { setSelectedPatient(patient); setPatientTab('overview'); }}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
                         </div>
                       ))}
                     </div>
@@ -1958,7 +2318,7 @@ const AdminDashboard = () => {
                               <p className="text-xs text-muted-foreground">{p.doctor_name}</p>
                             </div>
                             <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                              {format(new Date(p.last_visit), "MMM dd, yyyy")}
+                              {formatPatientDate(p.last_visit)}
                             </span>
                           </div>
                         ))}
@@ -2014,6 +2374,7 @@ const AdminDashboard = () => {
             </div>
           </SectionWrapper>
         );
+      }
 
       case "billing":
         return (
