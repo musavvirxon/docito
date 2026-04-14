@@ -214,6 +214,7 @@ const AdminDashboard = () => {
   const [patientSearch, setPatientSearch] = useState('');
   const [patientStatusFilter, setPatientStatusFilter] = useState('all');
   const [patientProviderFilter, setPatientProviderFilter] = useState('all');
+  const [patientApptFilter, setPatientApptFilter] = useState('all');
 
   const billing = usePracticeInsights({
     action: "billing",
@@ -1949,11 +1950,10 @@ const AdminDashboard = () => {
                 )}
 
                 {patientTab === 'appointments' && (() => {
-                  const [apptFilter, setApptFilter] = [patientStatusFilter, setPatientStatusFilter];
                   const filtered = sortedAppts.filter(a => {
-                    if (apptFilter === 'upcoming') return a.status === 'scheduled' || a.status === 'confirmed';
-                    if (apptFilter === 'completed') return a.status === 'completed';
-                    if (apptFilter === 'cancelled') return a.status === 'cancelled';
+                    if (patientApptFilter === 'upcoming') return a.status === 'scheduled' || a.status === 'confirmed';
+                    if (patientApptFilter === 'completed') return a.status === 'completed';
+                    if (patientApptFilter === 'cancelled') return a.status === 'cancelled';
                     return true;
                   });
                   const completed = patientAppts.filter(a => a.status === 'completed').length;
