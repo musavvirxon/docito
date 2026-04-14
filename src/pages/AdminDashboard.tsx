@@ -50,7 +50,7 @@ import BranchSelector from "@/components/shared/BranchSelector";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
 
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import {
   AlertCircle,
@@ -220,6 +220,12 @@ const AdminDashboard = () => {
   const [billingTab, setBillingTab] = useState<'overview' | 'invoices' | 'transactions' | 'insurance' | 'settings'>('overview');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState('all');
+
+  // Services section state
+  const [serviceTab, setServiceTab] = useState<'catalog' | 'pricing' | 'categories' | 'analytics'>('catalog');
+  const [serviceSearch, setServiceSearch] = useState('');
+  const [serviceCategoryFilter, setServiceCategoryFilter] = useState('all');
+  const [selectedServiceId, setSelectedServiceId] = useState<any>(null);
 
   const billing = usePracticeInsights({
     action: "billing",
@@ -1322,232 +1328,667 @@ const AdminDashboard = () => {
         );
       }
 
-      case "services":
+      case "services": {
+        const svcTabs = [
+          { key: 'catalog' as const, label: 'Catalog' },
+          { key: 'pricing' as const, label: 'Pricing Rules' },
+          { key: 'categories' as const, label: 'Categories' },
+          { key: 'analytics' as const, label: 'Analytics' },
+        ];
+        const uniqueCategories = Array.from(new Set(services.map(s => s.category).filter(Boolean)));
+        const filteredServices = services.filter(s => {
+          const matchSearch = !serviceSearch || s.name?.toLowerCase().includes(serviceSearch.toLowerCase()) || s.category?.toLowerCase().includes(serviceSearch.toLowerCase());
+          const matchCat = serviceCategoryFilter === 'all' || s.category === serviceCategoryFilter;
+          return matchSearch && matchCat;
+        });
+        const catColors = ['hsl(var(--primary))', 'hsl(142 76% 36%)', 'hsl(38 92% 50%)', 'hsl(280 68% 60%)', 'hsl(0 84% 60%)'];
+        const catColorsTW = ['bg-primary', 'bg-green-500', 'bg-orange-500', 'bg-purple-500', 'bg-red-500'];
+
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
-              <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
-                <Building2 className="h-4 w-4 mr-2" />
-                {t("admin.services.add")}
-              </Button>
-            </div>
+              {/* Header */}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
+                <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
+                  <Building2 className="h-4 w-4 mr-2" />
+                  {t("admin.services.add")}
+                </Button>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">{services.length}</div>
-                  <p className="text-sm text-muted-foreground">Total Services</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">
-                    {services.length > 0
-                      ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
-                      : "$0"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Avg. Price</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">
-                    {new Set(services.map(s => s.category)).size}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Categories</p>
-                </CardContent>
-              </Card>
-              <Card className="rounded-xl">
-                <CardContent className="pt-6">
-                  <div className="text-2xl font-bold">
-                    ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Revenue Potential</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className={sectionMainGridClass}>
-              <Card className="rounded-xl lg:col-span-8 min-w-0">
-                <CardHeader>
-                  <CardTitle>{t("admin.services.listTitle")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {services.length === 0 ? (
-                    <div className="text-center py-10 text-muted-foreground">
-                      <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">{t("admin.services.emptyTitle")}</p>
-                      <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
-                      <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
-                        <Building2 className="h-4 w-4 mr-2" />
-                        {t("admin.services.add")}
-                      </Button>
+              {/* KPI cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">{services.length}</div>
+                    <p className="text-sm text-muted-foreground">Total Services</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">
+                      {services.length > 0
+                        ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
+                        : "$0"}
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {services.map((service) => (
-                        <div
-                          key={service.id}
-                          className="grid grid-cols-1 sm:grid-cols-4 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
-                        >
-                          <div className="font-medium truncate">{service.name}</div>
-                          <div className="text-sm text-muted-foreground truncate">{service.category}</div>
-                          <div className="font-semibold">${service.price}</div>
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="icon" onClick={() => guard(() => toast.info("Edit service (coming soon)"))}>
-                              <Settings className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => guard(() => toast.info("Delete service (coming soon)"))}
-                              disabled={!allowModals}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
+                    <p className="text-sm text-muted-foreground">Avg. Price</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">
+                      {new Set(services.map(s => s.category)).size}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Categories</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-xl">
+                  <CardContent className="pt-6">
+                    <div className="text-2xl font-bold">
+                      ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Revenue Potential</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Tab bar */}
+              <div className="flex gap-1 border-b border-border mb-6 mt-6 overflow-x-auto">
+                {svcTabs.map(tab => (
+                  <Button
+                    key={tab.key}
+                    variant="ghost"
+                    size="sm"
+                    className={`rounded-none border-b-2 ${serviceTab === tab.key ? 'border-primary font-medium' : 'border-transparent text-muted-foreground'}`}
+                    onClick={() => setServiceTab(tab.key)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+
+              {/* ============ TAB: CATALOG ============ */}
+              {serviceTab === 'catalog' && (
+                <>
+                  {/* Filters */}
+                  <div className="flex gap-3 flex-wrap mb-4">
+                    <input
+                      type="text"
+                      placeholder="Search services…"
+                      value={serviceSearch}
+                      onChange={e => setServiceSearch(e.target.value)}
+                      className="px-3 py-2 border border-border rounded-lg bg-background text-sm w-64 focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <select
+                      value={serviceCategoryFilter}
+                      onChange={e => setServiceCategoryFilter(e.target.value)}
+                      className="px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="all">All Categories</option>
+                      {uniqueCategories.map(c => (
+                        <option key={c} value={c}>{c}</option>
                       ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle>Category Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {services.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No services yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {Object.entries(
-                        services.reduce((acc, s) => {
-                          const cat = s.category || "Uncategorized";
-                          acc[cat] = (acc[cat] || 0) + 1;
-                          return acc;
-                        }, {} as Record<string, number>)
-                      ).map(([category, count]) => (
-                        <div key={category} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                          <span className="text-sm font-medium">{category}</span>
-                          <Badge variant="secondary">{count as number} service{(count as number) !== 1 ? "s" : ""}</Badge>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Second row: Service insights */}
-            <div className={sectionInsightGridClass}>
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle className="text-base">Pricing Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Lowest Price</span>
-                      <span className="text-lg font-bold">
-                        {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Highest Price</span>
-                      <span className="text-lg font-bold">
-                        {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Average Price</span>
-                      <span className="text-lg font-bold">
-                        {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Total Revenue Potential</span>
-                      <span className="text-lg font-bold">
-                        ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
-                      </span>
-                    </div>
+                    </select>
                   </div>
-                </CardContent>
-              </Card>
 
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle className="text-base">Top Categories</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {(() => {
-                      const catCounts = services.reduce((acc, s) => {
-                        const cat = s.category || "Uncategorized";
-                        acc[cat] = (acc[cat] || 0) + 1;
-                        return acc;
-                      }, {} as Record<string, number>);
-                      const sorted = Object.entries(catCounts).sort(([, a], [, b]) => (b as number) - (a as number));
-                      return sorted.length > 0 ? sorted.slice(0, 5).map(([cat, count], i) => (
-                        <div key={cat} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
-                            <span className="text-sm font-medium">{cat}</span>
+                  <div className={sectionMainGridClass}>
+                    <Card className="rounded-xl lg:col-span-8 min-w-0">
+                      <CardHeader>
+                        <CardTitle>{t("admin.services.listTitle")}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {services.length === 0 ? (
+                          <div className="text-center py-10 text-muted-foreground">
+                            <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p className="font-medium">{t("admin.services.emptyTitle")}</p>
+                            <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
+                            <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
+                              <Building2 className="h-4 w-4 mr-2" />
+                              {t("admin.services.add")}
+                            </Button>
                           </div>
-                          <Badge variant="outline">{count as number}</Badge>
-                        </div>
-                      )) : (
-                        <p className="text-sm text-muted-foreground">No categories yet</p>
-                      );
-                    })()}
+                        ) : filteredServices.length === 0 ? (
+                          <div className="text-center py-10 text-muted-foreground">
+                            <Filter className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No services match your search.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {filteredServices.map((service) => (
+                              <div
+                                key={service.id}
+                                className="grid grid-cols-1 sm:grid-cols-6 gap-2 p-4 bg-muted/30 rounded-xl border border-border items-center"
+                              >
+                                <div className="font-medium truncate sm:col-span-1">{service.name}</div>
+                                <div className="sm:col-span-1">
+                                  <Badge variant="secondary" className="text-xs">{service.category || 'Uncategorized'}</Badge>
+                                </div>
+                                <div className="text-sm text-muted-foreground sm:col-span-1">
+                                  {service.duration ? `${service.duration} min` : '—'}
+                                </div>
+                                <div className="font-semibold sm:col-span-1">${service.price}</div>
+                                <div className="sm:col-span-1">
+                                  {(service as any).is_online !== false ? (
+                                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">Online</Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="text-xs">Offline</Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center justify-end gap-2 sm:col-span-1">
+                                  <Button variant="outline" size="icon" onClick={() => guard(() => toast.info('Edit service coming soon'))} disabled={!allowModals}>
+                                    <Settings className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="outline" size="icon" onClick={() => guard(() => toast.info('Archive service coming soon'))} disabled={!allowModals}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    {/* Category Breakdown sidebar */}
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader>
+                        <CardTitle>Category Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {services.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">No services yet.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {Object.entries(
+                              services.reduce((acc, s) => {
+                                const cat = s.category || "Uncategorized";
+                                acc[cat] = (acc[cat] || 0) + 1;
+                                return acc;
+                              }, {} as Record<string, number>)
+                            ).map(([category, count]) => (
+                              <div key={category} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                <span className="text-sm font-medium">{category}</span>
+                                <Badge variant="secondary">{count as number} service{(count as number) !== 1 ? "s" : ""}</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
 
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle className="text-base">Service Summary</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Total Services</span>
-                      <span className="text-lg font-bold">{services.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Categories</span>
-                      <span className="text-lg font-bold">{new Set(services.map(s => s.category)).size}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Avg. per Category</span>
-                      <span className="text-lg font-bold">
-                        {(() => {
-                          const catCount = new Set(services.map(s => s.category)).size;
-                          return catCount > 0 ? (services.length / catCount).toFixed(1) : "0";
-                        })()}
-                      </span>
-                    </div>
-                    {services.length > 0 && (
-                      <div className="pt-2">
-                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Recently Added</h4>
-                        {services.slice(0, 3).map(s => (
-                          <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
-                            <span className="font-medium">{s.name}</span>
-                            <span className="text-muted-foreground ml-2">${s.price}</span>
+                  {/* Insight cards */}
+                  <div className={sectionInsightGridClass}>
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader>
+                        <CardTitle className="text-base">Pricing Overview</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Lowest Price</span>
+                            <span className="text-lg font-bold">
+                              {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
+                            </span>
                           </div>
-                        ))}
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Highest Price</span>
+                            <span className="text-lg font-bold">
+                              {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Average Price</span>
+                            <span className="text-lg font-bold">
+                              {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Total Revenue Potential</span>
+                            <span className="text-lg font-bold">
+                              ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader>
+                        <CardTitle className="text-base">Top Categories</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {(() => {
+                            const catCounts = services.reduce((acc, s) => {
+                              const cat = s.category || "Uncategorized";
+                              acc[cat] = (acc[cat] || 0) + 1;
+                              return acc;
+                            }, {} as Record<string, number>);
+                            const sorted = Object.entries(catCounts).sort(([, a], [, b]) => (b as number) - (a as number));
+                            return sorted.length > 0 ? sorted.slice(0, 5).map(([cat, count], i) => (
+                              <div key={cat} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-muted-foreground">#{i + 1}</span>
+                                  <span className="text-sm font-medium">{cat}</span>
+                                </div>
+                                <Badge variant="outline">{count as number}</Badge>
+                              </div>
+                            )) : (
+                              <p className="text-sm text-muted-foreground">No categories yet</p>
+                            );
+                          })()}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader>
+                        <CardTitle className="text-base">Service Summary</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Total Services</span>
+                            <span className="text-lg font-bold">{services.length}</span>
+                          </div>
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Categories</span>
+                            <span className="text-lg font-bold">{new Set(services.map(s => s.category)).size}</span>
+                          </div>
+                          <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                            <span className="text-sm font-medium">Avg. per Category</span>
+                            <span className="text-lg font-bold">
+                              {(() => {
+                                const catCount = new Set(services.map(s => s.category)).size;
+                                return catCount > 0 ? (services.length / catCount).toFixed(1) : "0";
+                              })()}
+                            </span>
+                          </div>
+                          {services.length > 0 && (
+                            <div className="pt-2">
+                              <h4 className="text-xs font-medium text-muted-foreground mb-2">Recently Added</h4>
+                              {services.slice(0, 3).map(s => (
+                                <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
+                                  <span className="font-medium">{s.name}</span>
+                                  <span className="text-muted-foreground ml-2">${s.price}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </>
+              )}
+
+              {/* ============ TAB: PRICING RULES ============ */}
+              {serviceTab === 'pricing' && (
+                <>
+                  <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                    <h3 className="text-lg font-semibold">Pricing Rules</h3>
+                    <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Add pricing rule coming soon'))} disabled={!allowModals}>
+                      <DollarSign className="h-4 w-4 mr-2" />
+                      Add Rule
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <DollarSign className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm">Fixed Price</h4>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">One set price applies to all providers for this service.</p>
+                        <Badge variant="secondary">{services.length} services</Badge>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="h-9 w-9 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                            <Settings className="h-5 w-5 text-orange-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm">Provider Pricing</h4>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">Each provider sets their own fee for the service.</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">0 services</Badge>
+                          <Button size="sm" variant="outline" onClick={() => toast.info('Variable pricing coming soon')}>Enable</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="h-9 w-9 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                            <CreditCard className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm">Deposit Requirements</h4>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">Require a deposit % or fixed amount upfront for specific services.</p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary">0 rules active</Badge>
+                          <Button size="sm" variant="outline" onClick={() => toast.info('Deposit rules coming soon')}>Configure</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card className="rounded-xl">
+                    <CardHeader>
+                      <CardTitle>Service Price List</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {services.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-6">No services yet.</p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-border text-left">
+                                <th className="pb-2 font-medium text-muted-foreground">Service</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Category</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Duration</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Price</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Type</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Deposit</th>
+                                <th className="pb-2 font-medium text-muted-foreground"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {services.map(s => (
+                                <tr key={s.id} className="border-b border-border/50">
+                                  <td className="py-3 font-medium">{s.name}</td>
+                                  <td className="py-3"><Badge variant="secondary" className="text-xs">{s.category || 'Uncategorized'}</Badge></td>
+                                  <td className="py-3 text-muted-foreground">{s.duration ? `${s.duration} min` : '—'}</td>
+                                  <td className="py-3 font-semibold">${s.price}</td>
+                                  <td className="py-3"><Badge variant="outline" className="text-xs">Fixed</Badge></td>
+                                  <td className="py-3"><Badge variant="secondary" className="text-xs">None</Badge></td>
+                                  <td className="py-3 text-right">
+                                    <Button variant="ghost" size="sm" onClick={() => guard(() => toast.info('Edit price coming soon'))} disabled={!allowModals}>Edit</Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-4">To set provider-specific fees, go to the Providers section → select a provider → Procedures tab.</p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ============ TAB: CATEGORIES ============ */}
+              {serviceTab === 'categories' && (
+                <>
+                  <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                    <h3 className="text-lg font-semibold">Service Categories</h3>
+                  </div>
+
+                  <Card className="rounded-xl mb-6">
+                    <CardHeader>
+                      <CardTitle className="text-base">Create Category</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex gap-3 items-center flex-wrap">
+                        <input
+                          type="text"
+                          placeholder="e.g. Consultation, Diagnostics…"
+                          className="px-3 py-2 border border-border rounded-lg bg-background text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                        <div className="flex gap-2">
+                          {catColorsTW.map((c, i) => (
+                            <button key={i} className={`h-7 w-7 rounded-full ${c} border-2 border-background ring-1 ring-border hover:ring-primary transition-all`} />
+                          ))}
+                        </div>
+                        <Button size="sm" onClick={() => guard(() => toast.info('Save category coming soon'))} disabled={!allowModals}>Add</Button>
                       </div>
-                    )}
+                      <p className="text-xs text-muted-foreground mt-3">Set a consistent naming convention so reports are clean (e.g. "Diagnostics: Blood Work", "Diagnostics: Imaging").</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-xl mb-6">
+                    <CardHeader>
+                      <CardTitle className="text-base">Your Categories</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {uniqueCategories.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">No categories yet. Add one above.</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {uniqueCategories.map((cat, i) => {
+                            const count = services.filter(s => s.category === cat).length;
+                            return (
+                              <div key={cat} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                <div className="flex items-center gap-3">
+                                  <div className={`h-3 w-3 rounded-full ${catColorsTW[i % catColorsTW.length]}`} />
+                                  <span className="text-sm font-medium">{cat}</span>
+                                  <Badge variant="secondary" className="text-xs">{count} service{count !== 1 ? 's' : ''}</Badge>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant="ghost" size="sm" onClick={() => toast.info('Rename coming soon')}>Rename</Button>
+                                  {count === 0 && (
+                                    <Button variant="ghost" size="sm" className="text-destructive" onClick={() => toast.info('Delete coming soon')}>Delete</Button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card className="rounded-xl">
+                    <CardHeader>
+                      <CardTitle className="text-base">Uncategorized Services</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {(() => {
+                        const uncatCount = services.filter(s => !s.category || s.category === '').length;
+                        return uncatCount > 0 ? (
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">{uncatCount} service{uncatCount !== 1 ? 's' : ''} without a category.</p>
+                            <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Bulk assign coming soon'))} disabled={!allowModals}>Assign Category</Button>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">All services are categorized.</p>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {/* ============ TAB: ANALYTICS ============ */}
+              {serviceTab === 'analytics' && (
+                <>
+                  {/* KPI */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold">{services.length}</div>
+                        <p className="text-sm text-muted-foreground">Total Services</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold">{services.filter(s => (s as any).is_online !== false).length}</div>
+                        <p className="text-sm text-muted-foreground">Active (Online)</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold">{new Set(services.map(s => s.category)).size}</div>
+                        <p className="text-sm text-muted-foreground">Categories</p>
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardContent className="pt-6">
+                        <div className="text-2xl font-bold">
+                          {services.length > 0 ? `$${Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)}` : '$0'}
+                        </div>
+                        <p className="text-sm text-muted-foreground">Avg Price</p>
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+
+                  {/* Charts */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <Card className="rounded-xl">
+                      <CardHeader>
+                        <CardTitle className="text-base">Services by Category</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {services.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-6">No services yet.</p>
+                        ) : (
+                          <ResponsiveContainer width="100%" height={220}>
+                            <BarChart data={Object.entries(services.reduce((acc, s) => { acc[s.category || 'Other'] = (acc[s.category || 'Other'] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([name, count]) => ({ name, count }))}>
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                              <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 11 }} />
+                              <YAxis className="text-xs" tick={{ fontSize: 11 }} />
+                              <Tooltip />
+                              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="rounded-xl">
+                      <CardHeader>
+                        <CardTitle className="text-base">Price Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {services.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-6">No services yet.</p>
+                        ) : (
+                          <div className="space-y-4">
+                            {[
+                              { label: '$0–50', min: 0, max: 50 },
+                              { label: '$51–100', min: 51, max: 100 },
+                              { label: '$101–200', min: 101, max: 200 },
+                              { label: '$200+', min: 201, max: Infinity },
+                            ].map(bucket => {
+                              const count = services.filter(s => (s.price || 0) >= bucket.min && (s.price || 0) <= bucket.max).length;
+                              const pct = services.length > 0 ? (count / services.length) * 100 : 0;
+                              return (
+                                <div key={bucket.label}>
+                                  <div className="flex justify-between text-sm mb-1">
+                                    <span className="font-medium">{bucket.label}</span>
+                                    <span className="text-muted-foreground">{count} service{count !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Most Booked Services */}
+                  <Card className="rounded-xl mb-6">
+                    <CardHeader>
+                      <CardTitle className="text-base">Most Booked Services (by Appointment Data)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {(() => {
+                        const appts = appointments || [];
+                        const bookingMap: Record<string, number> = {};
+                        appts.forEach((a: any) => {
+                          const svcName = a.service_name || a.service || a.appointment_type || '';
+                          if (svcName) bookingMap[svcName] = (bookingMap[svcName] || 0) + 1;
+                        });
+                        const ranked = services
+                          .map(s => ({ ...s, bookings: bookingMap[s.name] || 0 }))
+                          .sort((a, b) => b.bookings - a.bookings)
+                          .slice(0, 10);
+                        if (ranked.length === 0 || ranked.every(r => r.bookings === 0)) {
+                          return <p className="text-sm text-muted-foreground text-center py-4">No appointment data available yet.</p>;
+                        }
+                        return (
+                          <div className="space-y-2">
+                            {ranked.filter(r => r.bookings > 0).map((r, i) => (
+                              <div key={r.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xs font-bold text-muted-foreground w-6">#{i + 1}</span>
+                                  <span className="text-sm font-medium">{r.name}</span>
+                                  <Badge variant="secondary" className="text-xs">{r.category || 'Other'}</Badge>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  <span className="text-sm text-muted-foreground">{r.bookings} bookings</span>
+                                  <span className="text-sm font-semibold">${(r.bookings * (r.price || 0)).toLocaleString()}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+
+                  {/* Zero-booking services */}
+                  <Card className="rounded-xl">
+                    <CardHeader>
+                      <CardTitle className="text-base">Services with No Recent Bookings</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {(() => {
+                        const appts = appointments || [];
+                        const bookedNames = new Set<string>();
+                        appts.forEach((a: any) => {
+                          const svcName = a.service_name || a.service || a.appointment_type || '';
+                          if (svcName) bookedNames.add(svcName);
+                        });
+                        const zeroBooking = services.filter(s => !bookedNames.has(s.name));
+                        if (zeroBooking.length === 0) {
+                          return <p className="text-sm text-muted-foreground text-center py-4">All services have recent bookings. Great!</p>;
+                        }
+                        return (
+                          <>
+                            <div className="space-y-2">
+                              {zeroBooking.map(s => (
+                                <div key={s.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium">{s.name}</span>
+                                    <Badge variant="secondary" className="text-xs">{s.category || 'Other'}</Badge>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-sm font-semibold">${s.price}</span>
+                                    <Button variant="ghost" size="sm" onClick={() => guard(() => toast.info('Archive coming soon'))} disabled={!allowModals}>Archive</Button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-3">Consider archiving services with no bookings to keep your catalog clean.</p>
+                          </>
+                        );
+                      })()}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
           </SectionWrapper>
         );
+      }
 
       case "staff":
         return (
