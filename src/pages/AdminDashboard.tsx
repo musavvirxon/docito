@@ -208,6 +208,13 @@ const AdminDashboard = () => {
   const [providerStatusFilter, setProviderStatusFilter] = useState('all');
   const [providerSpecialtyFilter, setProviderSpecialtyFilter] = useState('all');
 
+  // Patient section state
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [patientTab, setPatientTab] = useState<'overview' | 'appointments' | 'billing' | 'documents' | 'notes' | 'activity'>('overview');
+  const [patientSearch, setPatientSearch] = useState('');
+  const [patientStatusFilter, setPatientStatusFilter] = useState('all');
+  const [patientProviderFilter, setPatientProviderFilter] = useState('all');
+
   const billing = usePracticeInsights({
     action: "billing",
     practiceId: practice?.id || "",
