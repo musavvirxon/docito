@@ -1966,7 +1966,7 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {['all', 'upcoming', 'completed', 'cancelled'].map(f => (
-                          <Button key={f} variant={apptFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setApptFilter(f)} className="capitalize">{f}</Button>
+                          <Button key={f} variant={patientApptFilter === f ? 'default' : 'outline'} size="sm" onClick={() => setPatientApptFilter(f)} className="capitalize">{f}</Button>
                         ))}
                       </div>
                       {filtered.length === 0 ? (
