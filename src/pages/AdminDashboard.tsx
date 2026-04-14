@@ -931,9 +931,25 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                       <div className="flex gap-2 flex-wrap shrink-0">
-                        <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Edit provider coming soon'))} disabled={!allowModals}>Edit</Button>
-                        <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Suspend coming soon'))} disabled={!allowModals}>Suspend</Button>
-                        <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Message coming soon'))} disabled={!allowModals}>
+                        <Button variant="outline" size="sm" onClick={() => guard(async () => {
+                          const name = prompt('Edit provider name:', selectedProvider.name);
+                          if (name && name !== selectedProvider.name) {
+                            const { error } = await (supabase as any).from('doctors').update({ full_name: name }).eq('id', selectedProvider.id);
+                            if (error) { toast.error(error.message); return; }
+                            toast.success('Provider updated');
+                            refreshData();
+                          }
+                        })} disabled={!allowModals}>Edit</Button>
+                        <Button variant="outline" size="sm" onClick={() => guard(async () => {
+                          if (!confirm(`Suspend ${selectedProvider.name}?`)) return;
+                          const { error } = await (supabase as any).from('doctors').update({ is_verified: false }).eq('id', selectedProvider.id);
+                          if (error) { toast.error(error.message); return; }
+                          toast.success('Provider suspended');
+                          refreshData();
+                        })} disabled={!allowModals}>Suspend</Button>
+                        <Button variant="outline" size="sm" onClick={() => guard(() => {
+                          navigate(`/dashboard/messages`);
+                        })} disabled={!allowModals}>
                           <MessageCircle className="h-4 w-4 mr-1" /> Message
                         </Button>
                       </div>
