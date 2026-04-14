@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import {
   Sidebar,
@@ -256,6 +257,19 @@ const AdminDashboard = () => {
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
   const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services'>('overview');
+  const [settingsTab, setSettingsTab] = useState<'clinic' | 'booking' | 'notifications' | 'branding' | 'security' | 'data'>('clinic');
+  const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>({
+    new_booking_email: true, new_booking_inapp: true,
+    cancellation_email: true, cancellation_inapp: true,
+    payment_email: true, payment_inapp: true,
+    no_show_email: false, no_show_inapp: true,
+    new_review_email: true, new_review_inapp: true,
+  });
+  const [bookingSettings, setBookingSettings] = useState({
+    onlineBookingEnabled: true, bookingWindowDays: 60, minNoticeHours: 2,
+    cancellationNoticeHours: 24, autoConfirm: false, waitlistEnabled: false,
+    maxPerDay: 0, bufferMinutes: 10,
+  });
 
   const billing = usePracticeInsights({
     action: "billing",
