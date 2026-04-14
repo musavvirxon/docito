@@ -62,17 +62,23 @@ import {
   Clock,
   CreditCard,
   DollarSign,
+  Download,
   Eye,
   FileText,
   Filter,
   Loader2,
+  Lock,
   Mail,
   MapPin,
   MessageCircle,
+  Percent,
   Phone,
+  Plus,
+  Sliders,
   Star,
   Settings,
   Stethoscope,
+  Trash2,
   TrendingUp,
   UserPlus,
   Users,
@@ -226,6 +232,20 @@ const AdminDashboard = () => {
   const [serviceSearch, setServiceSearch] = useState('');
   const [serviceCategoryFilter, setServiceCategoryFilter] = useState('all');
   const [selectedServiceId, setSelectedServiceId] = useState<any>(null);
+
+  // Finance section state
+  const [financeTab, setFinanceTab] = useState<'overview' | 'ledger' | 'compensation' | 'recurring' | 'categories' | 'export'>('overview');
+  const [ledgerSearch, setLedgerSearch] = useState('');
+  const [ledgerTypeFilter, setLedgerTypeFilter] = useState<'all' | 'income' | 'expense' | 'payroll'>('all');
+  const [ledgerCategoryFilter, setLedgerCategoryFilter] = useState('all');
+  const [ledgerFrom, setLedgerFrom] = useState('');
+  const [ledgerTo, setLedgerTo] = useState('');
+  const [financeEntries, setFinanceEntries] = useState<any[]>([]);
+  const [financeCategories, setFinanceCategories] = useState<string[]>([]);
+  const [compensationProfiles, setCompensationProfiles] = useState<any[]>([]);
+  const [recurringRules, setRecurringRules] = useState<any[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryColor, setNewCategoryColor] = useState('blue');
 
   const billing = usePracticeInsights({
     action: "billing",
