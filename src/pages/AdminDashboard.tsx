@@ -270,6 +270,7 @@ const AdminDashboard = () => {
     cancellationNoticeHours: 24, autoConfirm: false, waitlistEnabled: false,
     maxPerDay: 0, bufferMinutes: 10,
   });
+  const [selectedBrandColor, setSelectedBrandColor] = useState(0);
 
   const billing = usePracticeInsights({
     action: "billing",
