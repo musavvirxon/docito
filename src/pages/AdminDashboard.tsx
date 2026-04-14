@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import {
   Sidebar,
@@ -256,6 +257,20 @@ const AdminDashboard = () => {
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
   const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services'>('overview');
+  const [settingsTab, setSettingsTab] = useState<'clinic' | 'booking' | 'notifications' | 'branding' | 'security' | 'data'>('clinic');
+  const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>({
+    new_booking_email: true, new_booking_inapp: true,
+    cancellation_email: true, cancellation_inapp: true,
+    payment_email: true, payment_inapp: true,
+    no_show_email: false, no_show_inapp: true,
+    new_review_email: true, new_review_inapp: true,
+  });
+  const [bookingSettings, setBookingSettings] = useState({
+    onlineBookingEnabled: true, bookingWindowDays: 60, minNoticeHours: 2,
+    cancellationNoticeHours: 24, autoConfirm: false, waitlistEnabled: false,
+    maxPerDay: 0, bufferMinutes: 10,
+  });
+  const [selectedBrandColor, setSelectedBrandColor] = useState(0);
 
   const billing = usePracticeInsights({
     action: "billing",
@@ -4473,21 +4488,402 @@ const AdminDashboard = () => {
         );
       }
 
-      case "settings":
+      case "settings": {
+        const settingsTabs = [
+          { key: 'clinic' as const, label: 'Clinic Profile' },
+          { key: 'booking' as const, label: 'Booking' },
+          { key: 'notifications' as const, label: 'Notifications' },
+          { key: 'branding' as const, label: 'Branding' },
+          { key: 'security' as const, label: 'Security' },
+          { key: 'data' as const, label: 'Data' },
+        ];
+        const notifEvents = [
+          { label: 'New Booking', inapp: 'new_booking_inapp', email: 'new_booking_email' },
+          { label: 'Cancellation', inapp: 'cancellation_inapp', email: 'cancellation_email' },
+          { label: 'Payment Received', inapp: 'payment_inapp', email: 'payment_email' },
+          { label: 'No-show', inapp: 'no_show_inapp', email: 'no_show_email' },
+          { label: 'New Review', inapp: 'new_review_inapp', email: 'new_review_email' },
+        ];
+        const brandColors = [
+          { name: 'Blue', color: 'hsl(220, 70%, 50%)' },
+          { name: 'Green', color: 'hsl(142, 70%, 40%)' },
+          { name: 'Purple', color: 'hsl(270, 70%, 50%)' },
+          { name: 'Orange', color: 'hsl(25, 90%, 50%)' },
+          { name: 'Red', color: 'hsl(0, 70%, 50%)' },
+          { name: 'Pink', color: 'hsl(330, 70%, 55%)' },
+          { name: 'Teal', color: 'hsl(175, 70%, 40%)' },
+          { name: 'Yellow', color: 'hsl(45, 90%, 50%)' },
+        ];
+        
+
+        const ToggleBtn = ({ checked, onChange, disabled: dis }: { checked: boolean; onChange: () => void; disabled?: boolean }) => (
+          <button type="button" onClick={onChange} disabled={dis} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-muted'}`}>
+            <span className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        );
+
+        let memberSince = '—';
+        try { if (practice?.created_at) memberSince = format(new Date(practice.created_at), 'MMM dd, yyyy'); } catch {}
+
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
-              {practice?.id ? (
-                <EntitySettingsPage entityType="clinic" entityId={practice.id} heading={t("admin.settings.title", { defaultValue: "Clinic Settings" })} />
-              ) : (
-                <div className="text-center py-10 text-muted-foreground">
-                  <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <h2 className="text-2xl font-bold">{t("admin.settings.title", { defaultValue: "Settings" })}</h2>
+                <Button onClick={() => guard(() => toast.success('Settings saved'))} disabled={!allowModals}>
+                  <CheckCircle className="h-4 w-4 mr-2" /> Save Changes
+                </Button>
+              </div>
+
+              {/* Tab bar */}
+              <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
+                {settingsTabs.map(tab => (
+                  <Button key={tab.key} variant="ghost" onClick={() => setSettingsTab(tab.key)}
+                    className={`rounded-none whitespace-nowrap ${settingsTab === tab.key ? 'border-b-2 border-primary font-medium' : ''}`}>
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+
+              {/* ========== CLINIC PROFILE ========== */}
+              {settingsTab === 'clinic' && (
+                <>
+                  {!practice?.id ? (
+                    <div className="text-center py-10 text-muted-foreground">
+                      <Settings className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">{t("admin.staff.noStaff", { defaultValue: "No practice linked" })}</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader><CardTitle>Clinic Information</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div><label className="text-sm font-medium text-muted-foreground">Clinic Name</label><Input defaultValue={practice?.name || ''} /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Phone</label><Input defaultValue={practice?.phone || ''} /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Email</label><Input defaultValue={practice?.email || ''} /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Website</label><Input defaultValue={practice?.website || ''} /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Address</label><Input defaultValue={practice?.address || ''} /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Tax ID</label><Input placeholder="Tax / Registration number" /></div>
+                          </div>
+                          <div><label className="text-sm font-medium text-muted-foreground">Description</label><Textarea defaultValue={practice?.description || ''} rows={3} /></div>
+                          <Button onClick={() => guard(() => toast.success('Clinic info saved'))} disabled={!allowModals}>Save</Button>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader><CardTitle>Social Media</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <div><label className="text-sm font-medium text-muted-foreground">Instagram</label><Input placeholder="https://instagram.com/..." /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Facebook</label><Input placeholder="https://facebook.com/..." /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">LinkedIn</label><Input placeholder="https://linkedin.com/..." /></div>
+                            <div><label className="text-sm font-medium text-muted-foreground">Twitter / X</label><Input placeholder="https://x.com/..." /></div>
+                          </div>
+                          <Button onClick={() => guard(() => toast.success('Social links saved'))} disabled={!allowModals}>Save</Button>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader><CardTitle>Practice Details</CardTitle></CardHeader>
+                        <CardContent className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-muted-foreground">Practice ID:</span>
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{practice?.id}</code>
+                            <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(practice.id); toast.success('Copied'); }}>Copy</Button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-muted-foreground">Verification:</span>
+                            <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-muted-foreground">Member Since:</span>
+                            <span className="text-sm">{memberSince}</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* ========== BOOKING ========== */}
+              {settingsTab === 'booking' && (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader><CardTitle>Online Booking</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Enable Online Booking</span>
+                        <ToggleBtn checked={bookingSettings.onlineBookingEnabled} onChange={() => guard(() => setBookingSettings(p => ({...p, onlineBookingEnabled: !p.onlineBookingEnabled})))} disabled={!allowModals} />
+                      </div>
+                      {bookingSettings.onlineBookingEnabled
+                        ? <Badge className="bg-primary/10 text-primary">Online booking active</Badge>
+                        : <Badge variant="outline" className="text-amber-600 border-amber-300">Patients cannot book online</Badge>}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Booking Rules</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      {[
+                        { label: 'Booking Window', desc: 'How many days ahead patients can book', field: 'bookingWindowDays' as const, unit: 'days' },
+                        { label: 'Minimum Notice', desc: 'Minimum hours before appointment', field: 'minNoticeHours' as const, unit: 'hours' },
+                        { label: 'Cancellation Policy', desc: 'Minimum notice to cancel', field: 'cancellationNoticeHours' as const, unit: 'hours' },
+                        { label: 'Buffer Time', desc: 'Gap between appointments', field: 'bufferMinutes' as const, unit: 'minutes' },
+                        { label: 'Max per Day', desc: '0 = unlimited', field: 'maxPerDay' as const, unit: '' },
+                      ].map(r => (
+                        <div key={r.field} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div><p className="font-medium text-sm">{r.label}</p><p className="text-xs text-muted-foreground">{r.desc}</p></div>
+                          <div className="flex items-center gap-2">
+                            <Input type="number" className="w-24" value={bookingSettings[r.field]} onChange={e => guard(() => setBookingSettings(p => ({...p, [r.field]: parseInt(e.target.value)||0})))} disabled={!allowModals} />
+                            {r.unit && <span className="text-sm text-muted-foreground">{r.unit}</span>}
+                          </div>
+                        </div>
+                      ))}
+                      <Button onClick={() => guard(() => toast.success('Booking rules saved'))} disabled={!allowModals}>Save Rules</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Confirmation & Waitlist</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div><p className="font-medium text-sm">Auto-confirm appointments</p><p className="text-xs text-muted-foreground">Confirmed immediately without manual review</p></div>
+                        <ToggleBtn checked={bookingSettings.autoConfirm} onChange={() => guard(() => setBookingSettings(p => ({...p, autoConfirm: !p.autoConfirm})))} disabled={!allowModals} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div><p className="font-medium text-sm">Enable waitlist</p><p className="text-xs text-muted-foreground">Allow patients to join a waitlist when slots are full</p></div>
+                        <ToggleBtn checked={bookingSettings.waitlistEnabled} onChange={() => guard(() => setBookingSettings(p => ({...p, waitlistEnabled: !p.waitlistEnabled})))} disabled={!allowModals} />
+                      </div>
+                      <Button onClick={() => guard(() => toast.success('Settings saved'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* ========== NOTIFICATIONS ========== */}
+              {settingsTab === 'notifications' && (
+                <div className="space-y-6">
+                  <p className="text-sm text-muted-foreground">Configure which events send notifications and through which channels.</p>
+
+                  <Card>
+                    <CardHeader><CardTitle>Notification Events</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead><tr className="border-b border-border"><th className="text-left py-2 font-medium">Event</th><th className="text-center py-2 font-medium">In-App</th><th className="text-center py-2 font-medium">Email</th></tr></thead>
+                          <tbody>
+                            {notifEvents.map(ev => (
+                              <tr key={ev.label} className="border-b border-border/50">
+                                <td className="py-3">{ev.label}</td>
+                                <td className="text-center py-3"><ToggleBtn checked={notifSettings[ev.inapp]} onChange={() => guard(() => setNotifSettings(p => ({...p, [ev.inapp]: !p[ev.inapp]})))} disabled={!allowModals} /></td>
+                                <td className="text-center py-3"><ToggleBtn checked={notifSettings[ev.email]} onChange={() => guard(() => setNotifSettings(p => ({...p, [ev.email]: !p[ev.email]})))} disabled={!allowModals} /></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <Button className="mt-4" onClick={() => guard(() => toast.success('Notification preferences saved'))} disabled={!allowModals}>Save Preferences</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Patient Appointment Reminders</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">Send reminder</span>
+                        <Input type="number" className="w-20" defaultValue={24} disabled={!allowModals} />
+                        <span className="text-sm text-muted-foreground">hours before appointment</span>
+                      </div>
+                      <div className="flex items-center justify-between"><span className="text-sm">Send via Email</span><ToggleBtn checked={true} onChange={() => {}} disabled={!allowModals} /></div>
+                      <div className="flex items-center justify-between"><span className="text-sm">Send via SMS</span><ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} /></div>
+                      <Button onClick={() => guard(() => toast.success('Reminder settings saved'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Admin Alerts</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-sm font-medium">Daily revenue summary email</p><p className="text-xs text-muted-foreground">Receive a daily summary of revenue and appointments</p></div>
+                        <ToggleBtn checked={true} onChange={() => {}} disabled={!allowModals} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-sm font-medium">Weekly performance digest</p><p className="text-xs text-muted-foreground">Weekly email with key performance metrics</p></div>
+                        <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">Alert me if daily revenue drops below</span>
+                        <span className="text-sm font-medium">$</span>
+                        <Input type="number" className="w-24" defaultValue={100} disabled={!allowModals} />
+                      </div>
+                      <Button onClick={() => guard(() => toast.success('Alert settings saved'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* ========== BRANDING ========== */}
+              {settingsTab === 'branding' && (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader><CardTitle>Clinic Logo</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center"><Building2 className="h-8 w-8 text-muted-foreground" /></div>
+                        <div><p className="text-sm text-muted-foreground">No logo uploaded</p><Button size="sm" variant="outline" className="mt-2" onClick={() => guard(() => toast.info('Logo upload coming soon'))} disabled={!allowModals}>Upload Logo</Button></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Used on invoices, emails, and your booking page.</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Brand Color</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">Primary color used on your patient-facing booking page.</p>
+                      <div className="flex gap-3 flex-wrap">
+                        {brandColors.map((c, i) => (
+                          <button key={c.name} onClick={() => setSelectedBrandColor(i)} className={`w-8 h-8 rounded-full border-2 transition-transform ${selectedBrandColor === i ? 'border-foreground scale-110' : 'border-transparent'}`} style={{ backgroundColor: c.color }} title={c.name} />
+                        ))}
+                      </div>
+                      <p className="text-sm text-muted-foreground">Selected: {brandColors[selectedBrandColor].name}</p>
+                      <Button onClick={() => guard(() => toast.success('Brand color saved'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Patient Booking Page</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">docito.com/</span>
+                        <Input defaultValue={practice?.slug || practice?.id?.slice(0, 8) || ''} disabled={!allowModals} />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={() => guard(() => toast.info('Custom URL coming soon'))} disabled={!allowModals}>Save URL</Button>
+                        <Button size="sm" variant="outline" onClick={() => toast.info('Preview coming soon')}>Preview Booking Page</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Email Customization</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div><label className="text-sm font-medium text-muted-foreground">Email Header</label><Input defaultValue={practice?.name || 'Your Clinic'} disabled={!allowModals} /></div>
+                      <div><label className="text-sm font-medium text-muted-foreground">Footer Text</label><Textarea placeholder="e.g. Thank you for choosing us." rows={2} disabled={!allowModals} /></div>
+                      <div><label className="text-sm font-medium text-muted-foreground">Signature</label><Input placeholder="e.g. The [Clinic Name] Team" disabled={!allowModals} /></div>
+                      <Button onClick={() => guard(() => toast.success('Email template saved'))} disabled={!allowModals}>Save Template</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* ========== SECURITY ========== */}
+              {settingsTab === 'security' && (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader><CardTitle>Authentication</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-sm font-medium">Require 2FA for all admins</p><p className="text-xs text-muted-foreground">Add an extra layer of security</p></div>
+                        <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-sm font-medium">Session timeout</p><p className="text-xs text-muted-foreground">Auto-logout after inactivity</p></div>
+                        <select className="border border-input rounded-md px-3 py-1.5 text-sm bg-background" disabled={!allowModals}>
+                          <option>15 minutes</option><option>30 minutes</option><option selected>1 hour</option><option>4 hours</option><option>Never</option>
+                        </select>
+                      </div>
+                      <Button onClick={() => guard(() => toast.success('Security settings saved'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Recent Login Activity</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex justify-between py-1.5 border-b border-border/50"><span>This device — just now</span><span>Tashkent, UZ</span></div>
+                        <div className="flex justify-between py-1.5 border-b border-border/50"><span>Chrome on Windows — 2 days ago</span><span>—</span></div>
+                        <div className="flex justify-between py-1.5"><span>Mobile Safari — 5 days ago</span><span>—</span></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Full login history coming in a future update.</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Password Policy</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">Minimum length</span>
+                        <Input type="number" className="w-20" defaultValue={8} disabled={!allowModals} />
+                        <span className="text-sm text-muted-foreground">characters</span>
+                      </div>
+                      <div className="flex items-center justify-between"><span className="text-sm">Require uppercase</span><ToggleBtn checked={true} onChange={() => {}} disabled={!allowModals} /></div>
+                      <div className="flex items-center justify-between"><span className="text-sm">Require numbers</span><ToggleBtn checked={true} onChange={() => {}} disabled={!allowModals} /></div>
+                      <div className="flex items-center justify-between"><span className="text-sm">Require special characters</span><ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} /></div>
+                      <Button onClick={() => guard(() => toast.info('Password policy coming soon'))} disabled={!allowModals}>Save Policy</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* ========== DATA ========== */}
+              {settingsTab === 'data' && (
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader><CardTitle>Export Clinic Data</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">Download a full backup of your clinic data including patients, appointments, finance, and staff.</p>
+                      <Button onClick={() => guard(() => toast.info('Full export coming soon'))} disabled={!allowModals}><Download className="h-4 w-4 mr-2" /> Export All Data (ZIP)</Button>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                        {['Patients CSV', 'Appointments CSV', 'Finance CSV', 'Staff CSV'].map(label => (
+                          <Button key={label} size="sm" variant="outline" onClick={() => guard(() => toast.info('Export coming soon'))} disabled={!allowModals}>{label}</Button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Data Retention</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">Keep inactive patient records for</span>
+                        <select className="border border-input rounded-md px-3 py-1.5 text-sm bg-background" disabled={!allowModals}>
+                          <option>1 year</option><option>2 years</option><option selected>5 years</option><option>Forever</option>
+                        </select>
+                      </div>
+                      <Button onClick={() => guard(() => toast.info('Retention policy coming soon'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle>Compliance & Consent</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div><p className="text-sm font-medium">Show consent checkbox on patient booking form</p><p className="text-xs text-muted-foreground">Required in EU jurisdictions. Adds a consent checkbox to the booking form.</p></div>
+                        <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => toast.info('Audit log coming soon')}>View full audit log</Button>
+                      <Button onClick={() => guard(() => toast.info('Compliance settings coming soon'))} disabled={!allowModals}>Save</Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-destructive/50">
+                    <CardHeader><CardTitle className="text-destructive">Danger Zone</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">Permanently deletes this practice and all associated data. This cannot be undone.</p>
+                      <Button variant="destructive" onClick={() => guard(() => { if (confirm('Are you absolutely sure? This cannot be undone.')) toast.error('Delete practice coming soon'); })} disabled={!allowModals}>
+                        <Trash2 className="h-4 w-4 mr-2" /> Delete Practice
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               )}
             </div>
           </SectionWrapper>
         );
+      }
 
       default:
         return null;
