@@ -994,7 +994,15 @@ const AdminDashboard = () => {
                               </div>
                             ))}
                           </div>
-                          <Button variant="outline" className="mt-4" onClick={() => toast.info('Edit coming soon')}>Edit Info</Button>
+                          <Button variant="outline" className="mt-4" onClick={() => guard(async () => {
+                            const bio = prompt('Edit bio:', selectedProvider.bio || '');
+                            if (bio !== null) {
+                              const { error } = await (supabase as any).from('doctors').update({ bio }).eq('id', selectedProvider.id);
+                              if (error) { toast.error(error.message); return; }
+                              toast.success('Provider info updated');
+                              refreshData();
+                            }
+                          })}>Edit Info</Button>
                         </CardContent>
                       </Card>
                       {/* Quick Stats */}
