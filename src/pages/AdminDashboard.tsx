@@ -4071,128 +4071,406 @@ const AdminDashboard = () => {
         );
       }
 
-      case "analytics":
+      case "analytics": {
+        const analyticsTabs = [
+          { key: 'overview' as const, label: 'Overview' },
+          { key: 'appointments' as const, label: 'Appointments' },
+          { key: 'providers' as const, label: 'Providers' },
+          { key: 'patients' as const, label: 'Patients' },
+          { key: 'financial' as const, label: 'Financial' },
+          { key: 'services' as const, label: 'Services' },
+        ];
+
+        const completedAppts = appointments.filter((a: any) => a.status === 'completed').length;
+        const cancelledAppts = appointments.filter((a: any) => a.status === 'cancelled').length;
+        const noShowAppts = appointments.filter((a: any) => a.status === 'no_show' || a.status === 'no-show').length;
+
+        const apptsByMonth: Record<string, number> = {};
+        try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) apptsByMonth[m] = (apptsByMonth[m] || 0) + 1; }); } catch {}
+        const apptMonthData = Object.entries(apptsByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, value]) => ({ date, value }));
+
+        const statusBreakdown: Record<string, number> = {};
+        appointments.forEach((a: any) => { const s = a.status || 'unknown'; statusBreakdown[s] = (statusBreakdown[s] || 0) + 1; });
+        const statusColors: Record<string, string> = { completed: 'bg-green-500', pending: 'bg-yellow-500', confirmed: 'bg-blue-500', cancelled: 'bg-destructive', 'no_show': 'bg-orange-500', 'no-show': 'bg-orange-500' };
+
+        const hourBuckets: number[] = new Array(24).fill(0);
+        try { appointments.forEach((a: any) => { if (a.start_time) { const h = parseInt(a.start_time.split(':')[0], 10); if (!isNaN(h) && h >= 0 && h < 24) hourBuckets[h]++; } }); } catch {}
+
+        const cancellationByMonth: Record<string, { total: number; cancelled: number }> = {};
+        try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) { if (!cancellationByMonth[m]) cancellationByMonth[m] = { total: 0, cancelled: 0 }; cancellationByMonth[m].total++; if (a.status === 'cancelled' || a.status === 'no_show' || a.status === 'no-show') cancellationByMonth[m].cancelled++; } }); } catch {}
+        const cancellationRateData = Object.entries(cancellationByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, d]) => ({ date, rate: d.total > 0 ? Math.round(d.cancelled / d.total * 100) : 0 }));
+
+        const bookingSources: Record<string, number> = {};
+        appointments.forEach((a: any) => { const src = (a as any).source || (a as any).booking_source || 'Unknown'; bookingSources[src] = (bookingSources[src] || 0) + 1; });
+
+        const providerStats = doctors.map((d: any) => {
+          const pAppts = appointments.filter((a: any) => a.doctor_name === d.name || a.doctor_id === d.id);
+          const comp = pAppts.filter((a: any) => a.status === 'completed').length;
+          const canc = pAppts.filter((a: any) => a.status === 'cancelled').length;
+          const uPatients = new Set(pAppts.map((a: any) => a.patient_id || a.patient_name)).size;
+          return { name: d.name || d.full_name || 'Unknown', specialty: d.specialty || '—', total: pAppts.length, completed: comp, cancelled: canc, completionRate: pAppts.length > 0 ? Math.round(comp / pAppts.length * 100) : 0, cancellationRate: pAppts.length > 0 ? Math.round(canc / pAppts.length * 100) : 0, uniquePatients: uPatients, rating: d.rating || d.average_rating || '—' };
+        }).sort((a, b) => b.total - a.total);
+        const maxProvAppts = Math.max(...providerStats.map(p => p.total), 1);
+
+        const now90 = new Date(); now90.setDate(now90.getDate() - 90);
+        let activePatients = 0; let inactivePatientsCount = 0;
+        try { patients.forEach((p: any) => { const lv = p.last_visit || p.updated_at; if (lv && new Date(lv) >= now90) activePatients++; else inactivePatientsCount++; }); } catch { inactivePatientsCount = patients.length; }
+        const avgVisits = appointments.length > 0 && patients.length > 0 ? (appointments.length / patients.length).toFixed(1) : '0';
+
+        const patientsByMonth: Record<string, number> = {};
+        try { patients.forEach((p: any) => { const m = (p.created_at || '').slice(0, 7); if (m) patientsByMonth[m] = (patientsByMonth[m] || 0) + 1; }); } catch {}
+        const patientMonthsSorted = Object.entries(patientsByMonth).sort(([a],[b]) => a.localeCompare(b));
+        let runningTotal = 0;
+        const patientGrowthData = patientMonthsSorted.map(([date, count]) => { runningTotal += count; return { date, count: runningTotal }; });
+
+        const genderBreakdown: Record<string, number> = {};
+        patients.forEach((p: any) => { const g = p.gender || 'Unknown'; genderBreakdown[g] = (genderBreakdown[g] || 0) + 1; });
+
+        const ageBuckets: Record<string, number> = { '0–17': 0, '18–35': 0, '36–50': 0, '51–65': 0, '65+': 0 };
+        try { const nowDate = new Date(); patients.forEach((p: any) => { const dob = p.date_of_birth || p.dob; if (dob) { const age = Math.floor((nowDate.getTime() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)); if (age <= 17) ageBuckets['0–17']++; else if (age <= 35) ageBuckets['18–35']++; else if (age <= 50) ageBuckets['36–50']++; else if (age <= 65) ageBuckets['51–65']++; else ageBuckets['65+']++; } }); } catch {}
+
+        const inactivePatientsList = (() => { try { return patients.filter((p: any) => { const lv = p.last_visit || p.updated_at; return !lv || new Date(lv) < now90; }).slice(0, 10); } catch { return []; } })();
+        const totalInactive = (() => { try { return patients.filter((p: any) => { const lv = p.last_visit || p.updated_at; return !lv || new Date(lv) < now90; }).length; } catch { return 0; } })();
+
+        const patientVisitCounts: Record<string, { name: string; provider: string; count: number; lastVisit: string }> = {};
+        appointments.forEach((a: any) => { const key = a.patient_id || a.patient_name || 'Unknown'; if (!patientVisitCounts[key]) patientVisitCounts[key] = { name: a.patient_name || key, provider: a.doctor_name || '—', count: 0, lastVisit: '' }; patientVisitCounts[key].count++; const d = a.appointment_date || a.created_at || ''; if (d > patientVisitCounts[key].lastVisit) patientVisitCounts[key].lastVisit = d; });
+        const topPatients = Object.values(patientVisitCounts).sort((a, b) => b.count - a.count).slice(0, 10);
+
+        const billingData: any = billing.data || {};
+        const totalRevCents = billingData?.summary?.totalRevenueCents ?? 0;
+        const pendingCents = billingData?.summary?.pendingCents ?? 0;
+        const refundCents = billingData?.summary?.refundCents ?? 0;
+        const txCount = billingData?.summary?.transactionCount ?? 0;
+        const txList: any[] = billingData?.transactions || [];
+
+        const revByMonth: Record<string, number> = {};
+        try { txList.forEach((tx: any) => { const m = (tx.created_at || '').slice(0, 7); if (m) revByMonth[m] = (revByMonth[m] || 0) + ((tx.amount_cents || tx.amount || 0) / 100); }); } catch {}
+        const revTrendData = Object.entries(revByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, amount]) => ({ date, amount: Math.round(amount * 100) / 100 }));
+
+        const payMethodBreakdown: Record<string, { count: number; total: number }> = {};
+        txList.forEach((tx: any) => { const m = tx.payment_method || 'Unknown'; if (!payMethodBreakdown[m]) payMethodBreakdown[m] = { count: 0, total: 0 }; payMethodBreakdown[m].count++; payMethodBreakdown[m].total += (tx.amount_cents || tx.amount || 0) / 100; });
+
+        const serviceBookings: Record<string, number> = {};
+        services.forEach((s: any) => { const count = appointments.filter((a: any) => a.service_name === s.name || a.service === s.name || (a as any).procedure_name === s.name).length; serviceBookings[s.name || s.id] = count; });
+        const mostBooked = Object.entries(serviceBookings).sort(([,a],[,b]) => b - a);
+        const serviceCats = new Set(services.map((s: any) => s.category).filter(Boolean));
+        const zeroBookingServices = services.filter((s: any) => (serviceBookings[s.name || s.id] || 0) === 0);
+        const catServiceCounts: Record<string, number> = {};
+        services.forEach((s: any) => { const c = s.category || 'Uncategorized'; catServiceCounts[c] = (catServiceCounts[c] || 0) + 1; });
+        const catChartData = Object.entries(catServiceCounts).map(([category, count]) => ({ category, count }));
+
         return (
           <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
             <div className={sectionShellClass}>
-            <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-xl font-semibold">{t("adminAnalytics.title")}</h2>
-              <div className="flex gap-2 flex-wrap">
-                {practice?.id && (
-                  <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />
-                )}
-                <Button variant={analyticsRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("7d"))}>
-                  7D
-                </Button>
-                <Button
-                  variant={analyticsRange === "30d" ? "default" : "outline"}
-                  onClick={() => guard(() => setAnalyticsRange("30d"))}
-                >
-                  30D
-                </Button>
-                <Button
-                  variant={analyticsRange === "90d" ? "default" : "outline"}
-                  onClick={() => guard(() => setAnalyticsRange("90d"))}
-                >
-                  90D
-                </Button>
-                <Button variant="outline" onClick={() => guard(() => analytics.refetch())}>
-                  {t("adminAnalytics.refresh")}
-                </Button>
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <h2 className="text-xl font-semibold">{t("adminAnalytics.title")}</h2>
+                <div className="flex gap-2 flex-wrap">
+                  {practice?.id && <BranchSelector practiceId={practice.id} value={branchFilter} onChange={setBranchFilter} />}
+                  <Button variant={analyticsRange === "7d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("7d"))}>7D</Button>
+                  <Button variant={analyticsRange === "30d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("30d"))}>30D</Button>
+                  <Button variant={analyticsRange === "90d" ? "default" : "outline"} onClick={() => guard(() => setAnalyticsRange("90d"))}>90D</Button>
+                  <Button variant="outline" onClick={() => guard(() => analytics.refetch())}>{t("adminAnalytics.refresh")}</Button>
+                </div>
               </div>
-            </div>
 
-            <div className={sectionMainGridClass}>
-              <Card className="rounded-xl lg:col-span-8 min-w-0">
-                <CardHeader>
-                  <CardTitle>{t("adminAnalytics.dailyTrend")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {analytics.loading ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>{t("adminAnalytics.loading")}</span>
-                    </div>
-                  ) : analytics.error ? (
-                    <p className="text-sm text-destructive">{analytics.error}</p>
-                  ) : !(analytics.data as any)?.trend?.length ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                      <p>{t("adminAnalytics.noData")}</p>
-                    </div>
-                  ) : (
-                    <div className="h-72">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={(analytics.data as any).trend as DailyTrendPoint[]}>
-                          <defs>
-                            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="currentColor" stopOpacity={0.25} />
-                              <stop offset="95%" stopColor="currentColor" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="date" />
-                          <YAxis />
-                          <Tooltip />
-                          <Area type="monotone" dataKey="value" stroke="currentColor" fillOpacity={1} fill="url(#colorValue)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
+                {analyticsTabs.map(tab => (
+                  <Button key={tab.key} variant="ghost" size="sm" className={`rounded-none ${analyticsTab === tab.key ? 'border-b-2 border-primary font-medium' : ''}`} onClick={() => setAnalyticsTab(tab.key)}>{tab.label}</Button>
+                ))}
+              </div>
 
-              <Card className="rounded-xl lg:col-span-4 min-w-0">
-                <CardHeader>
-                  <CardTitle>{t("adminAnalytics.summary")}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {analytics.loading ? (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>{t("adminAnalytics.loading")}</span>
-                    </div>
-                  ) : analytics.error ? (
-                    <p className="text-sm text-destructive">{analytics.error}</p>
-                  ) : analytics.data ? (
-                    (() => {
-                      const a: any = analytics.data;
-                      return (
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span>{t("adminAnalytics.appointments")}</span>
-                            <span className="font-semibold">{a.summary?.appointments ?? 0}</span>
+              {analyticsTab === 'overview' && (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {[
+                      { label: t("adminAnalytics.appointments"), value: (analytics.data as any)?.summary?.appointments ?? appointments.length },
+                      { label: t("adminAnalytics.uniquePatients"), value: (analytics.data as any)?.summary?.patients ?? patients.length },
+                      { label: t("adminAnalytics.providers"), value: (analytics.data as any)?.summary?.providers ?? doctors.filter((d: any) => d.status === 'active').length },
+                      { label: t("adminAnalytics.locations"), value: (analytics.data as any)?.summary?.locations ?? locations.length },
+                    ].map((kpi, i) => (
+                      <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p>{analytics.loading ? <Loader2 className="h-4 w-4 animate-spin mt-1" /> : <p className="text-2xl font-bold">{kpi.value}</p>}</CardContent></Card>
+                    ))}
+                  </div>
+                  <div className={sectionMainGridClass}>
+                    <Card className="rounded-xl lg:col-span-8 min-w-0">
+                      <CardHeader><CardTitle>{t("adminAnalytics.dailyTrend")}</CardTitle></CardHeader>
+                      <CardContent>
+                        {analytics.loading ? (
+                          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>{t("adminAnalytics.loading")}</span></div>
+                        ) : analytics.error ? (
+                          <p className="text-sm text-destructive">{analytics.error}</p>
+                        ) : !(analytics.data as any)?.trend?.length ? (
+                          <div className="text-center py-8 text-muted-foreground"><TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>{t("adminAnalytics.noData")}</p></div>
+                        ) : (
+                          <div className="h-72">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={(analytics.data as any).trend as DailyTrendPoint[]}>
+                                <defs><linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="currentColor" stopOpacity={0.25} /><stop offset="95%" stopColor="currentColor" stopOpacity={0} /></linearGradient></defs>
+                                <CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip />
+                                <Area type="monotone" dataKey="value" stroke="currentColor" fillOpacity={1} fill="url(#colorValue)" />
+                              </AreaChart>
+                            </ResponsiveContainer>
                           </div>
-                          <div className="flex justify-between">
-                            <span>{t("adminAnalytics.uniquePatients")}</span>
-                            <span className="font-semibold">{a.summary?.patients ?? 0}</span>
+                        )}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader><CardTitle>{t("adminAnalytics.summary")}</CardTitle></CardHeader>
+                      <CardContent>
+                        {analytics.loading ? (
+                          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>{t("adminAnalytics.loading")}</span></div>
+                        ) : analytics.error ? (
+                          <p className="text-sm text-destructive">{analytics.error}</p>
+                        ) : analytics.data ? (() => { const a: any = analytics.data; return (
+                          <div className="space-y-3">
+                            <div className="flex justify-between"><span>{t("adminAnalytics.appointments")}</span><span className="font-semibold">{a.summary?.appointments ?? 0}</span></div>
+                            <div className="flex justify-between"><span>{t("adminAnalytics.uniquePatients")}</span><span className="font-semibold">{a.summary?.patients ?? 0}</span></div>
+                            <div className="flex justify-between"><span>{t("adminAnalytics.providers")}</span><span className="font-semibold">{a.summary?.providers ?? 0}</span></div>
+                            <div className="flex justify-between"><span>{t("adminAnalytics.locations")}</span><span className="font-semibold">{a.summary?.locations ?? 0}</span></div>
+                            <div className="pt-2 text-xs text-muted-foreground">{t("adminAnalytics.range")}: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}</div>
+                            <div className="pt-2 text-xs text-muted-foreground">Range: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}</div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>{t("adminAnalytics.providers")}</span>
-                            <span className="font-semibold">{a.summary?.providers ?? 0}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>{t("adminAnalytics.locations")}</span>
-                            <span className="font-semibold">{a.summary?.locations ?? 0}</span>
-                          </div>
-                          <div className="pt-2 text-xs text-muted-foreground">
-                            {t("adminAnalytics.range")}: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}
-                          </div>
-                          <div className="pt-2 text-xs text-muted-foreground">
-                            Range: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}
-                          </div>
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    <p className="text-sm text-muted-foreground">{t("adminAnalytics.noData")}</p>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        ); })() : <p className="text-sm text-muted-foreground">{t("adminAnalytics.noData")}</p>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card className="rounded-xl mt-6">
+                    <CardHeader><CardTitle className="flex items-center justify-between"><span>{t("admin.overview.advancedFinancialMetrics")}</span><Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>{t("adminBilling.refresh")}</Button></CardTitle></CardHeader>
+                    <CardContent><AdvancedFinancialMetrics metrics={advancedMetrics} revenue={0} onUpdateInputs={() => {}} /></CardContent>
+                  </Card>
+                </>
+              )}
+
+              {analyticsTab === 'appointments' && (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {[{ label: 'Total', value: appointments.length }, { label: 'Completed', value: completedAppts }, { label: 'Cancelled', value: cancelledAppts }, { label: 'No-show', value: noShowAppts }].map((kpi, i) => (
+                      <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold">{kpi.value}</p></CardContent></Card>
+                    ))}
+                  </div>
+                  <div className={sectionMainGridClass}>
+                    <Card className="rounded-xl lg:col-span-8 min-w-0">
+                      <CardHeader><CardTitle>{t("adminAnalytics.dailyTrend")}</CardTitle></CardHeader>
+                      <CardContent>
+                        {(analytics.data as any)?.trend?.length ? (
+                          <div className="h-64"><ResponsiveContainer width="100%" height="100%"><AreaChart data={(analytics.data as any).trend as DailyTrendPoint[]}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
+                        ) : apptMonthData.length > 0 ? (
+                          <div className="h-64"><ResponsiveContainer width="100%" height="100%"><AreaChart data={apptMonthData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
+                        ) : <div className="text-center py-8 text-muted-foreground"><TrendingUp className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>{t("adminAnalytics.noData")}</p></div>}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl lg:col-span-4 min-w-0">
+                      <CardHeader><CardTitle>Booking Source</CardTitle></CardHeader>
+                      <CardContent>
+                        {Object.keys(bookingSources).length > 0 ? (
+                          <div className="space-y-3">{Object.entries(bookingSources).sort(([,a],[,b]) => b - a).map(([src, count]) => (<div key={src}><div className="flex justify-between text-sm mb-1"><span>{src}</span><span className="font-medium">{count}</span></div><Progress value={appointments.length > 0 ? (count / appointments.length) * 100 : 0} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No booking source data.</p>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card className="rounded-xl mt-4">
+                    <CardHeader><CardTitle>Appointment Status Breakdown</CardTitle></CardHeader>
+                    <CardContent>
+                      {Object.keys(statusBreakdown).length > 0 ? (
+                        <div className="space-y-3">{Object.entries(statusBreakdown).sort(([,a],[,b]) => b - a).map(([status, count]) => (<div key={status}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{status.replace('_', ' ')}</span><span className="font-medium">{count} ({appointments.length > 0 ? Math.round(count / appointments.length * 100) : 0}%)</span></div><div className="h-2 rounded-full bg-secondary overflow-hidden"><div className={`h-full rounded-full ${statusColors[status] || 'bg-primary'}`} style={{ width: `${appointments.length > 0 ? (count / appointments.length) * 100 : 0}%` }} /></div></div>))}</div>
+                      ) : <p className="text-sm text-muted-foreground">No appointment data.</p>}
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl mt-4">
+                    <CardHeader><CardTitle>Busiest Hours</CardTitle></CardHeader>
+                    <CardContent>
+                      {hourBuckets.some(v => v > 0) ? (
+                        <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2">{hourBuckets.map((count, h) => { const bg = count === 0 ? 'bg-muted/20' : count <= 2 ? 'bg-primary/20' : count <= 5 ? 'bg-primary/40' : 'bg-primary/70'; const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h-12}pm`; return <div key={h} className={`${bg} rounded-md p-2 text-center text-xs`}><div className="font-medium">{label}</div><div>{count}</div></div>; })}</div>
+                      ) : <p className="text-sm text-muted-foreground">No appointment time data available.</p>}
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl mt-4">
+                    <CardHeader><CardTitle>Cancellation & No-show Rate</CardTitle></CardHeader>
+                    <CardContent>
+                      {cancellationRateData.length > 1 ? (
+                        <div className="h-52"><ResponsiveContainer width="100%" height="100%"><AreaChart data={cancellationRateData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis unit="%" /><Tooltip /><Area type="monotone" dataKey="rate" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
+                      ) : <p className="text-sm text-muted-foreground">Insufficient data to show cancellation trends.</p>}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {analyticsTab === 'providers' && (
+                <>
+                  <Card className="rounded-xl mb-4">
+                    <CardHeader><CardTitle>Provider Performance</CardTitle></CardHeader>
+                    <CardContent>
+                      {providerStats.length > 0 ? (
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Specialty</th><th className="pb-2 font-medium">Total</th><th className="pb-2 font-medium">Completed</th><th className="pb-2 font-medium">Patients</th><th className="pb-2 font-medium">Completion</th><th className="pb-2 font-medium">Cancel %</th><th className="pb-2 font-medium">Rating</th></tr></thead><tbody>{providerStats.map((p, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.name}</td><td className="py-2 text-muted-foreground">{p.specialty}</td><td className="py-2">{p.total}</td><td className="py-2">{p.completed}</td><td className="py-2">{p.uniquePatients}</td><td className="py-2"><Badge variant="secondary" className="bg-green-100 text-green-800">{p.completionRate}%</Badge></td><td className="py-2"><Badge variant="secondary" className="bg-red-100 text-red-800">{p.cancellationRate}%</Badge></td><td className="py-2">{p.rating}</td></tr>))}</tbody></table></div>
+                      ) : <div className="text-center py-8 text-muted-foreground"><Stethoscope className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No provider data yet.</p></div>}
+                    </CardContent>
+                  </Card>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Provider Utilization</CardTitle></CardHeader>
+                      <CardContent>
+                        {providerStats.length > 0 ? (
+                          <div className="space-y-3">{providerStats.map((p, i) => { const util = Math.round((p.total / maxProvAppts) * 100); const barColor = util < 30 ? 'bg-destructive' : util < 70 ? 'bg-yellow-500' : 'bg-green-500'; return (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{p.name}</span><span className="font-medium">{util}%</span></div><div className="h-2 rounded-full bg-secondary overflow-hidden"><div className={`h-full rounded-full ${barColor}`} style={{ width: `${util}%` }} /></div></div>); })}</div>
+                        ) : <p className="text-sm text-muted-foreground">No data.</p>}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Top Providers by Volume</CardTitle></CardHeader>
+                      <CardContent>
+                        {providerStats.length > 0 ? (
+                          <div className="space-y-3">{providerStats.slice(0, 5).map((p, i) => (<div key={i} className="flex items-center gap-3"><div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{p.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</div><div className="flex-1 min-w-0"><p className="font-medium text-sm truncate">{p.name}</p><p className="text-xs text-muted-foreground">{p.specialty}</p></div><Badge variant="secondary">{p.total}</Badge></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No providers yet.</p>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card className="rounded-xl">
+                    <CardHeader><CardTitle>Provider Comparison</CardTitle></CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">Select two providers to compare side-by-side.</p>
+                      <div className="flex gap-4 flex-wrap mb-4">
+                        <select className="border rounded-md px-3 py-2 text-sm bg-background" defaultValue=""><option value="" disabled>Select Provider A</option>{doctors.map((d: any, i: number) => <option key={i} value={d.name || d.full_name}>{d.name || d.full_name}</option>)}</select>
+                        <select className="border rounded-md px-3 py-2 text-sm bg-background" defaultValue=""><option value="" disabled>Select Provider B</option>{doctors.map((d: any, i: number) => <option key={i} value={d.name || d.full_name}>{d.name || d.full_name}</option>)}</select>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Select two providers to compare.</p>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {analyticsTab === 'patients' && (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {[{ label: 'Total Patients', value: patients.length }, { label: 'Active (90d)', value: activePatients }, { label: 'Inactive (90d+)', value: inactivePatientsCount }, { label: 'Avg Visits', value: avgVisits }].map((kpi, i) => (
+                      <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold">{kpi.value}</p></CardContent></Card>
+                    ))}
+                  </div>
+                  <Card className="rounded-xl mb-4">
+                    <CardHeader><CardTitle>Patient Growth</CardTitle></CardHeader>
+                    <CardContent>
+                      {patientGrowthData.length > 0 ? (
+                        <div className="h-56"><ResponsiveContainer width="100%" height="100%"><AreaChart data={patientGrowthData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
+                      ) : <div className="text-center py-8 text-muted-foreground"><Users className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No patient data yet.</p></div>}
+                    </CardContent>
+                  </Card>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Gender Breakdown</CardTitle></CardHeader>
+                      <CardContent>
+                        {Object.keys(genderBreakdown).length > 0 ? (
+                          <div className="space-y-3">{Object.entries(genderBreakdown).sort(([,a],[,b]) => b - a).map(([g, count]) => (<div key={g}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{g}</span><span className="font-medium">{count}</span></div><Progress value={patients.length > 0 ? (count / patients.length) * 100 : 0} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No gender data available.</p>}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Age Distribution</CardTitle></CardHeader>
+                      <CardContent>
+                        {Object.values(ageBuckets).some(v => v > 0) ? (
+                          <div className="space-y-3">{Object.entries(ageBuckets).map(([bucket, count]) => (<div key={bucket}><div className="flex justify-between text-sm mb-1"><span>{bucket}</span><span className="font-medium">{count}</span></div><Progress value={patients.length > 0 ? (count / patients.length) * 100 : 0} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No DOB data available.</p>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card className="rounded-xl mb-4">
+                    <CardHeader><CardTitle>Inactive Patients (90+ days)</CardTitle></CardHeader>
+                    <CardContent>
+                      {inactivePatientsList.length > 0 ? (
+                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => toast.info('Re-engage coming soon')}>Re-engage</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
+                      ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>No inactive patients. Great retention!</p></div>}
+                    </CardContent>
+                  </Card>
+                  <Card className="rounded-xl">
+                    <CardHeader><CardTitle>Top Patients by Visits</CardTitle></CardHeader>
+                    <CardContent>
+                      {topPatients.length > 0 ? (
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">Patient</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Visits</th><th className="pb-2 font-medium">Last Visit</th></tr></thead><tbody>{topPatients.map((p, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{p.name}</td><td className="py-2 text-muted-foreground">{p.provider}</td><td className="py-2"><Badge variant="secondary">{p.count}</Badge></td><td className="py-2 text-muted-foreground">{(() => { try { return p.lastVisit ? format(new Date(p.lastVisit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td></tr>))}</tbody></table></div>
+                      ) : <p className="text-sm text-muted-foreground">No appointment data yet.</p>}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {analyticsTab === 'financial' && (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {[{ label: 'Total Revenue', value: `$${(totalRevCents / 100).toFixed(2)}` }, { label: 'Pending', value: `$${(pendingCents / 100).toFixed(2)}`, color: 'text-yellow-600' }, { label: 'Refunds', value: `$${(refundCents / 100).toFixed(2)}`, color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
+                      <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p>{billing.loading ? <Loader2 className="h-4 w-4 animate-spin mt-1" /> : <p className={`text-2xl font-bold ${(kpi as any).color || ''}`}>{kpi.value}</p>}</CardContent></Card>
+                    ))}
+                  </div>
+                  <Card className="rounded-xl mb-4">
+                    <CardHeader><CardTitle>Revenue Trend</CardTitle></CardHeader>
+                    <CardContent>
+                      {revTrendData.length > 0 ? (
+                        <div className="h-60"><ResponsiveContainer width="100%" height="100%"><AreaChart data={revTrendData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="amount" stroke="hsl(142, 76%, 36%)" fill="hsl(142, 76%, 36%)" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
+                      ) : <div className="text-center py-8 text-muted-foreground"><DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No revenue data yet.</p></div>}
+                    </CardContent>
+                  </Card>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Revenue by Provider</CardTitle></CardHeader>
+                      <CardContent>
+                        {doctors.length > 0 ? (
+                          <div className="space-y-3">{doctors.map((d: any, i: number) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name || d.full_name || 'Unknown'}</span><span className="font-medium">$0.00</span></div><Progress value={0} className="h-2" /></div>))}<p className="text-xs text-muted-foreground mt-2">Revenue per provider breakdown will populate with billing data.</p></div>
+                        ) : <p className="text-sm text-muted-foreground">No providers.</p>}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Payment Method Breakdown</CardTitle></CardHeader>
+                      <CardContent>
+                        {Object.keys(payMethodBreakdown).length > 0 ? (
+                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · ${data.total.toFixed(2)}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No transaction data.</p>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <Card className="rounded-xl">
+                    <CardHeader><CardTitle>Average Revenue per Appointment</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="text-center py-4"><p className="text-4xl font-bold">${appointments.length > 0 ? ((totalRevCents / 100) / appointments.length).toFixed(2) : '0.00'}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
+                      {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center">Insufficient data to calculate.</p>}
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+
+              {analyticsTab === 'services' && (
+                <>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    {[{ label: 'Total Services', value: services.length }, { label: 'Most Booked', value: mostBooked.length > 0 ? mostBooked[0][0] : '—' }, { label: 'Categories', value: serviceCats.size }, { label: 'Zero Bookings', value: zeroBookingServices.length }].map((kpi, i) => (
+                      <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold truncate">{kpi.value}</p></CardContent></Card>
+                    ))}
+                  </div>
+                  <Card className="rounded-xl mb-4">
+                    <CardHeader><CardTitle>Most Booked Services</CardTitle></CardHeader>
+                    <CardContent>
+                      {mostBooked.length > 0 ? (
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">Service</th><th className="pb-2 font-medium">Category</th><th className="pb-2 font-medium">Bookings</th><th className="pb-2 font-medium">Est. Revenue</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">${((svc as any)?.price || (svc as any)?.cost || 0) * count}</td></tr>); })}</tbody></table></div>
+                      ) : <p className="text-sm text-muted-foreground">No booking data available yet.</p>}
+                    </CardContent>
+                  </Card>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>Services by Category</CardTitle></CardHeader>
+                      <CardContent>
+                        {catChartData.length > 0 ? (
+                          <div className="h-56"><ResponsiveContainer width="100%" height="100%"><BarChart data={catChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="category" /><YAxis /><Tooltip /><Bar dataKey="count" fill="hsl(var(--primary))" radius={[4,4,0,0]} /></BarChart></ResponsiveContainer></div>
+                        ) : <p className="text-sm text-muted-foreground">No services data.</p>}
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle>No Recent Bookings</CardTitle></CardHeader>
+                      <CardContent>
+                        {zeroBookingServices.length > 0 ? (
+                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">${s.price || s.cost || 0}</span></div></div><Button size="sm" variant="outline" onClick={() => toast.info('Review service coming soon')}>Review</Button></div>))}</div>
+                        ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>All services have bookings!</p></div>}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </>
+              )}
             </div>
           </SectionWrapper>
         );
+      }
 
       case "settings":
         return (
