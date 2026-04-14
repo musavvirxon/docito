@@ -274,6 +274,81 @@ const AdminDashboard = () => {
     maxPerDay: 0, bufferMinutes: 10,
   });
   const [selectedBrandColor, setSelectedBrandColor] = useState(0);
+  const [patientNoteText, setPatientNoteText] = useState('');
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+  const [editingServicePrice, setEditingServicePrice] = useState('');
+
+  // Entity settings hook
+  const entitySettings = useEntitySettings('practice', practice?.id || null);
+
+  // Finance hooks
+  const financeEntriesHook = useFinanceEntries({ entityType: 'practice', entityId: practice?.id || '' });
+  const financeCategoriesHook = useFinanceCategories({ entityType: 'practice', entityId: practice?.id || '' });
+
+  // Load settings into local state on mount
+  useEffect(() => {
+    if (entitySettings.settings) {
+      const s = entitySettings.settings as any;
+      const payload = s.payload || s;
+      if (payload.booking) {
+        setBookingSettings(prev => ({ ...prev, ...payload.booking }));
+      }
+      if (payload.notification_prefs) {
+        setNotifSettings(prev => ({ ...prev, ...payload.notification_prefs }));
+      }
+      if (payload.branding?.colorIndex !== undefined) {
+        setSelectedBrandColor(payload.branding.colorIndex);
+      }
+    }
+  }, [entitySettings.settings]);
+
+  // Load finance entries from hook into local state
+  useEffect(() => {
+    if (financeEntriesHook.rows.length > 0) {
+      setFinanceEntries(financeEntriesHook.rows.map((r: any) => ({
+        id: r.id,
+        date: r.occurred_at,
+        type: r.entry_type,
+        currency: r.currency || 'USD',
+        amount: (r.amount_cents || 0) / 100,
+        category: r.category_id || '',
+        reference: r.metadata?.reference || '',
+        description: r.description || '',
+        created_at: r.occurred_at,
+      })));
+    }
+  }, [financeEntriesHook.rows]);
+
+  // Load finance categories from hook
+  useEffect(() => {
+    if (financeCategoriesHook.categories.length > 0) {
+      setFinanceCategories(financeCategoriesHook.categories.map((c: any) => c.name));
+    }
+  }, [financeCategoriesHook.categories]);
+
+  // CSV download helper
+  const downloadCSV = (filename: string, headers: string[], rows: string[][]) => {
+    const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded ${filename}`);
+  };
+
+  // Save settings helper
+  const saveEntitySettings = async (section: string, data: Record<string, any>) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      await entitySettings.saveSettings({ ...current, [section]: data });
+      toast.success('Settings saved');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save settings');
+    }
+  };
 
   const billing = usePracticeInsights({
     action: "billing",
