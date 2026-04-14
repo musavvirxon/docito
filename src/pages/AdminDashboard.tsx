@@ -254,6 +254,7 @@ const AdminDashboard = () => {
   const [ledgerFormCategory, setLedgerFormCategory] = useState('');
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
+  const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services'>('overview');
 
   const billing = usePracticeInsights({
     action: "billing",
