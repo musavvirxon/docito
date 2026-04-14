@@ -216,6 +216,11 @@ const AdminDashboard = () => {
   const [patientProviderFilter, setPatientProviderFilter] = useState('all');
   const [patientApptFilter, setPatientApptFilter] = useState('all');
 
+  // Billing section state
+  const [billingTab, setBillingTab] = useState<'overview' | 'invoices' | 'transactions' | 'insurance' | 'settings'>('overview');
+  const [invoiceSearch, setInvoiceSearch] = useState('');
+  const [invoiceStatusFilter, setInvoiceStatusFilter] = useState('all');
+
   const billing = usePracticeInsights({
     action: "billing",
     practiceId: practice?.id || "",
