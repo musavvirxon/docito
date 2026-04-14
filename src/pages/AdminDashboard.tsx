@@ -51,6 +51,9 @@ import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import BranchSelector from "@/components/shared/BranchSelector";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
 import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeInsights";
+import { useEntitySettings } from "@/hooks/useEntitySettings";
+import { useFinanceEntries } from "@/hooks/useFinanceEntries";
+import { useFinanceCategories } from "@/hooks/useFinanceCategories";
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
