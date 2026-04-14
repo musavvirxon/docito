@@ -604,7 +604,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{t("admin.overview.recentAppointments")}</span>
-                    <Button variant="outline" size="sm" onClick={() => guard(() => toast.info("View all (coming soon)"))}>
+                    <Button variant="outline" size="sm" onClick={() => guard(() => { setActiveSection('analytics'); setAnalyticsTab('appointments'); })}>
                       {t("admin.overview.viewAll")}
                     </Button>
                   </CardTitle>
