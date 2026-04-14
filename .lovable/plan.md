@@ -1,55 +1,72 @@
 
 
-## Plan: Build Full Services Section with 4-Tab Navigation
+## Plan: Build Full Finance Section with 6-Tab Navigation
 
 **Single file:** `src/pages/AdminDashboard.tsx`
 
-### 1. Add recharts imports
-Add `Bar, BarChart` to the existing recharts import on line 53 (needed for Analytics tab's category chart).
-
-### 2. Add 4 new state variables (after line 222)
+### 1. Add 12 new state variables (after line 228)
 ```tsx
-const [serviceTab, setServiceTab] = useState<'catalog' | 'pricing' | 'categories' | 'analytics'>('catalog');
-const [serviceSearch, setServiceSearch] = useState('');
-const [serviceCategoryFilter, setServiceCategoryFilter] = useState('all');
-const [selectedServiceId, setSelectedServiceId] = useState<any>(null);
+// Finance section state
+const [financeTab, setFinanceTab] = useState<'overview' | 'ledger' | 'compensation' | 'recurring' | 'categories' | 'export'>('overview');
+const [ledgerSearch, setLedgerSearch] = useState('');
+const [ledgerTypeFilter, setLedgerTypeFilter] = useState<'all' | 'income' | 'expense' | 'payroll'>('all');
+const [ledgerCategoryFilter, setLedgerCategoryFilter] = useState('all');
+const [ledgerFrom, setLedgerFrom] = useState('');
+const [ledgerTo, setLedgerTo] = useState('');
+const [financeEntries, setFinanceEntries] = useState<any[]>([]);
+const [financeCategories, setFinanceCategories] = useState<string[]>([]);
+const [compensationProfiles, setCompensationProfiles] = useState<any[]>([]);
+const [recurringRules, setRecurringRules] = useState<any[]>([]);
+const [newCategoryName, setNewCategoryName] = useState('');
+const [newCategoryColor, setNewCategoryColor] = useState('blue');
 ```
 
-### 3. Replace `case "services":` block (lines 1325–1550)
-Replace entirely with a tabbed layout inside SectionWrapper.
+### 2. Replace `case "finances":` block (lines 3509–3516)
+Remove `<FinanceManagementSection>` render. Replace with full 6-tab layout inside the existing SectionWrapper.
 
-**Header + KPI cards:** Kept as-is (title, add button with guard/allowModals, 4 stat cards).
+**Header:** "Finance" title + "Export CSV" button with guard/allowModals.
 
-**Tab bar:** 4 tabs (Catalog, Pricing Rules, Categories, Analytics) controlled by `serviceTab`.
+**Tab bar:** 6 tabs (Overview, Ledger, Compensation, Recurring, Categories, Export) controlled by `financeTab`.
 
-**Tab: Catalog**
-- NEW filters row: search input + category dropdown (derived from services)
-- Service list card (lg:col-span-8) with filtered rows — each row shows name, category badge, duration, price, online/offline badge, Edit + Archive buttons with guard()
-- Existing Category Breakdown sidebar card (lg:col-span-4) — preserved
-- Existing 3 insight cards (Pricing Overview, Top Categories, Service Summary) — preserved
-- Existing empty state with t() keys preserved
+**Tab: Overview**
+- 4 KPI cards: Income, Expenses (red), Net (green/red), Entries count
+- Income vs Expenses AreaChart (recharts) — group entries by month, two Area lines
+- Two-column row: Expense Breakdown by Category (dots + progress bars) + Recent Entries (last 8, sorted desc)
 
-**Tab: Pricing Rules**
-- 3 info cards (Fixed Pricing, Variable/Provider Pricing, Deposit Rules) — placeholder with toast actions
-- Service Price List table: all services with columns for Name, Category, Duration, Price, Type badge, Deposit badge, Edit button
-- Note linking to Providers → Procedures tab
+**Tab: Ledger**
+- Filters row: From/To date inputs, type buttons (All/Income/Expense/Payroll), category dropdown, search input
+- 4 summary stat cards (Entries, Income, Expenses, Net)
+- Collapsible "Add Entry" form with date, type, currency, amount, category, reference, description fields — adds to local `financeEntries` state
+- Full entries table with type badges, delete button via guard()
+- Empty/filter states
+
+**Tab: Compensation**
+- 3 pay type info cards (Salary/Hourly/Percentage)
+- Compensation profiles list from `compensationProfiles` with Run Payout / Edit buttons
+- "Run Payroll" card with date range inputs
+- All actions → toast.info placeholders
+
+**Tab: Recurring**
+- Status summary cards (Due Rules, Active Rules)
+- Recurring rules table from `recurringRules` with schedule badges, status, Edit/Pause/Delete
+- "Run Due Rules" card with date input
+- "Recent Runs" card — placeholder empty state
 
 **Tab: Categories**
-- Create Category inline form: name input + 5 color preset circles + Add button
-- Current categories card: derived from `services`, showing dot + name + count + rename/delete buttons
-- Uncategorized services card with count and bulk-assign button
+- Create category inline form: name input + 5 color circle buttons + Add button (adds to local state)
+- Your Categories card: list derived from `financeCategories` with entry counts and conditional delete
+- Empty states
 
-**Tab: Analytics**
-- 4 KPI cards (Total, Active/Online, Categories, Avg Price)
-- BarChart (recharts) for services-by-category distribution
-- Price Distribution card with horizontal progress bars ($0-50, $51-100, $101-200, $200+)
-- Most Booked Services card: join services with appointments, rank top 10 by booking count
-- Zero-Booking Services card: services with no matching appointments, with Archive button
+**Tab: Export**
+- 3 export cards: Ledger Export (with date/type/category filters), Recurring Runs Export, Payroll Export
+- All export buttons → toast.info placeholders
 
 ### Technical notes
-- Only new import: `Bar, BarChart` from recharts (line 53)
-- All existing t("admin.services.*") keys preserved
-- guard() and disabled={!allowModals} on all action buttons
+- AreaChart, Area already imported from recharts (line 53)
+- Icons needed: Lock, Clock, Percent, TrendingUp, DollarSign, Users — most already imported; Lock/Percent may need adding to lucide import
+- All data is local state — no Supabase calls
+- guard() and disabled={!allowModals} on all mutation buttons
+- Date operations wrapped in try/catch
 - Uses sectionShellClass, sectionMainGridClass, sectionInsightGridClass
 - No new files or packages
 
