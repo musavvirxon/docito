@@ -246,6 +246,14 @@ const AdminDashboard = () => {
   const [recurringRules, setRecurringRules] = useState<any[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('blue');
+  const [ledgerAddOpen, setLedgerAddOpen] = useState(false);
+  const [ledgerFormDate, setLedgerFormDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  const [ledgerFormType, setLedgerFormType] = useState<'expense' | 'income' | 'payroll'>('expense');
+  const [ledgerFormCurrency, setLedgerFormCurrency] = useState('USD');
+  const [ledgerFormAmount, setLedgerFormAmount] = useState('');
+  const [ledgerFormCategory, setLedgerFormCategory] = useState('');
+  const [ledgerFormRef, setLedgerFormRef] = useState('');
+  const [ledgerFormDesc, setLedgerFormDesc] = useState('');
 
   const billing = usePracticeInsights({
     action: "billing",
@@ -3688,25 +3696,15 @@ const AdminDashboard = () => {
               )}
 
               {/* ===== LEDGER TAB ===== */}
-              {financeTab === 'ledger' && (() => {
-                const [addOpen, setAddOpen] = useState(false);
-                const [fDate, setFDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-                const [fType, setFType] = useState<'expense' | 'income' | 'payroll'>('expense');
-                const [fCurrency, setFCurrency] = useState('USD');
-                const [fAmount, setFAmount] = useState('');
-                const [fCategory, setFCategory] = useState('');
-                const [fRef, setFRef] = useState('');
-                const [fDesc, setFDesc] = useState('');
-
-                return (
+              {financeTab === 'ledger' && (
                   <>
                     {/* Filters */}
                     <div className="flex flex-wrap gap-3 mb-4">
                       <Input type="date" className="w-36" value={ledgerFrom} onChange={e => setLedgerFrom(e.target.value)} />
                       <Input type="date" className="w-36" value={ledgerTo} onChange={e => setLedgerTo(e.target.value)} />
                       <div className="flex gap-1">
-                        {(['all', 'income', 'expense', 'payroll'] as const).map(t => (
-                          <Button key={t} size="sm" variant={ledgerTypeFilter === t ? 'default' : 'outline'} onClick={() => setLedgerTypeFilter(t)}>{t.charAt(0).toUpperCase() + t.slice(1)}</Button>
+                        {(['all', 'income', 'expense', 'payroll'] as const).map(tp => (
+                          <Button key={tp} size="sm" variant={ledgerTypeFilter === tp ? 'default' : 'outline'} onClick={() => setLedgerTypeFilter(tp)}>{tp.charAt(0).toUpperCase() + tp.slice(1)}</Button>
                         ))}
                       </div>
                       <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={ledgerCategoryFilter} onChange={e => setLedgerCategoryFilter(e.target.value)}>
@@ -3726,37 +3724,37 @@ const AdminDashboard = () => {
 
                     {/* Add Entry */}
                     <Card className="mb-6">
-                      <CardHeader className="cursor-pointer" onClick={() => setAddOpen(!addOpen)}>
+                      <CardHeader className="cursor-pointer" onClick={() => setLedgerAddOpen(!ledgerAddOpen)}>
                         <CardTitle className="flex items-center justify-between text-base">
                           <span className="flex items-center gap-2"><Plus className="h-4 w-4" /> Add Entry</span>
-                          <span className="text-xs text-muted-foreground">{addOpen ? 'Collapse' : 'Expand'}</span>
+                          <span className="text-xs text-muted-foreground">{ledgerAddOpen ? 'Collapse' : 'Expand'}</span>
                         </CardTitle>
                       </CardHeader>
-                      {addOpen && (
+                      {ledgerAddOpen && (
                         <CardContent>
                           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                            <Input type="date" value={fDate} onChange={e => setFDate(e.target.value)} />
-                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={fType} onChange={e => setFType(e.target.value as any)}>
+                            <Input type="date" value={ledgerFormDate} onChange={e => setLedgerFormDate(e.target.value)} />
+                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={ledgerFormType} onChange={e => setLedgerFormType(e.target.value as any)}>
                               <option value="expense">Expense</option>
                               <option value="income">Income</option>
                               <option value="payroll">Payroll</option>
                             </select>
-                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={fCurrency} onChange={e => setFCurrency(e.target.value)}>
+                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={ledgerFormCurrency} onChange={e => setLedgerFormCurrency(e.target.value)}>
                               <option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="UZS">UZS</option>
                             </select>
-                            <Input type="number" placeholder="Amount" value={fAmount} onChange={e => setFAmount(e.target.value)} />
+                            <Input type="number" placeholder="Amount" value={ledgerFormAmount} onChange={e => setLedgerFormAmount(e.target.value)} />
                           </div>
                           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
-                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={fCategory} onChange={e => setFCategory(e.target.value)}>
+                            <select className="border border-border rounded-md px-3 py-1 text-sm bg-background" value={ledgerFormCategory} onChange={e => setLedgerFormCategory(e.target.value)}>
                               <option value="">Select category</option>
                               {financeCategories.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
-                            <Input placeholder="Reference (optional)" value={fRef} onChange={e => setFRef(e.target.value)} />
-                            <Input placeholder="Description (optional)" value={fDesc} onChange={e => setFDesc(e.target.value)} />
+                            <Input placeholder="Reference (optional)" value={ledgerFormRef} onChange={e => setLedgerFormRef(e.target.value)} />
+                            <Input placeholder="Description (optional)" value={ledgerFormDesc} onChange={e => setLedgerFormDesc(e.target.value)} />
                           </div>
                           <Button disabled={!allowModals} onClick={() => guard(() => {
-                            setFinanceEntries(prev => [...prev, { id: Date.now().toString(), date: fDate, type: fType, currency: fCurrency, amount: parseFloat(fAmount) || 0, category: fCategory, reference: fRef, description: fDesc, created_at: new Date().toISOString() }]);
-                            setFAmount(''); setFRef(''); setFDesc('');
+                            setFinanceEntries(prev => [...prev, { id: Date.now().toString(), date: ledgerFormDate, type: ledgerFormType, currency: ledgerFormCurrency, amount: parseFloat(ledgerFormAmount) || 0, category: ledgerFormCategory, reference: ledgerFormRef, description: ledgerFormDesc, created_at: new Date().toISOString() }]);
+                            setLedgerFormAmount(''); setLedgerFormRef(''); setLedgerFormDesc('');
                             toast.success('Entry added');
                           })}>Add entry</Button>
                         </CardContent>
@@ -3803,8 +3801,7 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                   </>
-                );
-              })()}
+              )}
 
               {/* ===== COMPENSATION TAB ===== */}
               {financeTab === 'compensation' && (
