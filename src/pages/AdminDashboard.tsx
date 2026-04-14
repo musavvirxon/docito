@@ -4513,7 +4513,7 @@ const AdminDashboard = () => {
           { name: 'Teal', color: 'hsl(175, 70%, 40%)' },
           { name: 'Yellow', color: 'hsl(45, 90%, 50%)' },
         ];
-        const [selectedColor, setSelectedColor] = useState(0);
+        
 
         const ToggleBtn = ({ checked, onChange, disabled: dis }: { checked: boolean; onChange: () => void; disabled?: boolean }) => (
           <button type="button" onClick={onChange} disabled={dis} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-muted'}`}>
