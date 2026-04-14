@@ -1322,7 +1322,7 @@ const AdminDashboard = () => {
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold">Documents & Credentials</h3>
-                      <Button variant="outline" onClick={() => guard(() => toast.info('Upload coming soon'))} disabled={!allowModals}>
+                      <Button variant="outline" onClick={() => guard(() => toast.info('File upload requires the attachments storage bucket.'))} disabled={!allowModals}>
                         <FileText className="h-4 w-4 mr-2" /> Upload Document
                       </Button>
                     </div>
@@ -3547,7 +3547,10 @@ const AdminDashboard = () => {
                 <>
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">All Transactions</h3>
-                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Export coming soon'))}>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => (() => {
+                        downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
+                          financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
+                      })())}>
                       Export CSV
                     </Button>
                   </div>
@@ -3867,7 +3870,10 @@ const AdminDashboard = () => {
               {/* Header */}
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <h2 className="text-xl font-semibold">Finance</h2>
-                <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Export coming soon'))}>
+                <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => (() => {
+                        downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
+                          financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
+                      })())}>
                   <Download className="h-4 w-4 mr-2" /> Export CSV
                 </Button>
               </div>
@@ -4376,7 +4382,10 @@ const AdminDashboard = () => {
                           {financeCategories.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
-                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Export coming soon'))}>
+                      <Button disabled={!allowModals} onClick={() => guard(() => (() => {
+                        downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
+                          financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
+                      })())}>
                         <Download className="h-4 w-4 mr-2" /> Export CSV
                       </Button>
                       <p className="text-xs text-muted-foreground mt-3">Export monthly ranges and share with your accountant. Filters help isolate payroll vs supplies vs utilities.</p>
@@ -4390,7 +4399,10 @@ const AdminDashboard = () => {
                         <Input type="date" className="w-44" />
                         <Input type="date" className="w-44" />
                       </div>
-                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Export recurring runs coming soon'))}>
+                      <Button disabled={!allowModals} onClick={() => guard(() => (() => {
+                        downloadCSV('recurring.csv', ['Name', 'Amount', 'Frequency'],
+                          recurringRules.map((r: any) => [r.name || '', String((r.amount_cents || 0) / 100), r.frequency || '']));
+                      })())}>
                         <Download className="h-4 w-4 mr-2" /> Export CSV
                       </Button>
                       <p className="text-xs text-muted-foreground mt-3">Exports rule runs + linked created entries for auditing and analytics.</p>
@@ -4405,7 +4417,10 @@ const AdminDashboard = () => {
                           <option>This Month</option><option>Last Month</option><option>Custom</option>
                         </select>
                       </div>
-                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Export payroll coming soon'))}>
+                      <Button disabled={!allowModals} onClick={() => guard(() => (() => {
+                        downloadCSV('payroll.csv', ['Name', 'Amount', 'Period'],
+                          compensationProfiles.map((p: any) => [p.display_name || '', String((p.amount_cents || 0) / 100), p.pay_period || '']));
+                      })())}>
                         <Download className="h-4 w-4 mr-2" /> Export CSV
                       </Button>
                     </CardContent>
