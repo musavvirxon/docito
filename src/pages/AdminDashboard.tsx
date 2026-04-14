@@ -4745,10 +4745,10 @@ const AdminDashboard = () => {
                       <p className="text-sm text-muted-foreground">Primary color used on your patient-facing booking page.</p>
                       <div className="flex gap-3 flex-wrap">
                         {brandColors.map((c, i) => (
-                          <button key={c.name} onClick={() => setSelectedColor(i)} className={`w-8 h-8 rounded-full border-2 transition-transform ${selectedColor === i ? 'border-foreground scale-110' : 'border-transparent'}`} style={{ backgroundColor: c.color }} title={c.name} />
+                          <button key={c.name} onClick={() => setSelectedBrandColor(i)} className={`w-8 h-8 rounded-full border-2 transition-transform ${selectedBrandColor === i ? 'border-foreground scale-110' : 'border-transparent'}`} style={{ backgroundColor: c.color }} title={c.name} />
                         ))}
                       </div>
-                      <p className="text-sm text-muted-foreground">Selected: {brandColors[selectedColor].name}</p>
+                      <p className="text-sm text-muted-foreground">Selected: {brandColors[selectedBrandColor].name}</p>
                       <Button onClick={() => guard(() => toast.success('Brand color saved'))} disabled={!allowModals}>Save</Button>
                     </CardContent>
                   </Card>
