@@ -3835,7 +3835,7 @@ const AdminDashboard = () => {
                       <CardContent>
                         {Object.keys(claimsByInsurer).length > 0 ? (
                           <div className="space-y-3">
-                            {Object.entries(claimsByInsurer).map(([ins, data]) => (
+                            {Object.entries(claimsByInsurer).map(([ins, data]: [string, any]) => (
                               <div key={ins} className="flex items-center justify-between py-1.5 border-b border-border/30">
                                 <span className="text-sm font-medium">{ins}</span>
                                 <div className="flex items-center gap-3">
