@@ -1,40 +1,40 @@
 
 
-## Plan: Enhance Insurance Tab in Billing Section
+## Plan: Add Custom Reports Tab to Analytics Section
 
 **File:** `src/pages/AdminDashboard.tsx`
 
-### 1. Add 7 new state variables (after line ~261, alongside other billing state)
+### 1. Update analyticsTab type (line 269)
+Add `'reports'` to the union type.
 
+### 2. Add 8 new state variables (after line ~271)
+`reportMetrics`, `reportFrom`, `reportTo`, `reportProvider`, `reportService`, `reportBranch`, `reportGenerated`, `reportLoading` as specified.
+
+### 3. Add "Reports" to analyticsTabs array (line 4621, after services)
 ```tsx
-const [insurers, setInsurers] = useState<string[]>([]);
-const [newInsurerName, setNewInsurerName] = useState('');
-const [claims, setClaims] = useState<any[]>([]);
-const [claimStatusFilter, setClaimStatusFilter] = useState('all');
-const [claimSearch, setClaimSearch] = useState('');
-const [addClaimOpen, setAddClaimOpen] = useState(false);
-const [claimForm, setClaimForm] = useState({
-  patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '',
-});
+{ key: 'reports' as const, label: 'Reports' },
 ```
 
-### 2. Replace insurance tab content (lines 3631–3706)
+### 4. Add Reports tab content (after line 5009, before `</div></SectionWrapper>`)
+Insert the full Reports tab block containing:
 
-Replace the entire `billingTab === 'insurance'` block with the full implementation containing:
-
-- **Header**: Title + "Submit Claim" button opening inline form
-- **Inline Add Claim card**: 2-col form with patient autocomplete (datalist), insurer select from `insurers`, service select from `services`, amount, date, notes. Submit adds to local `claims` state.
-- **4 KPI cards**: Submitted / Approved (green) / Pending (yellow) / Rejected (red) — derived from `claims`
-- **Filters row**: Search input + status filter buttons (All/Submitted/Approved/Pending/Rejected)
-- **Claims table**: Filtered by search + status. Columns: Patient, Insurer badge, Service, Amount, Date (try/catch formatted), Status badge (color-coded), Actions (Approve/Reject/Delete)
-- **Empty state**: Shield icon + "Submit Claim" button
-- **Two-column analytics row**: Claims by Status (colored bars with percentages) + Claims by Insurer (grouped counts and totals)
-- **Accepted Insurers card**: Inline add form + list with remove buttons + preset quick-add row (SOGAZ, Alfa Insurance, etc.)
+- **Header**: "Custom Reports" title + "Schedule Report" button (coming soon toast)
+- **Report Builder card**: 
+  - Step 1: 12 metric toggle buttons with Select All / Clear
+  - Step 2: 5 filter controls (from date, to date, provider select, service select, branch select)
+  - Generate button with 800ms simulated loading, builds report rows from filtered `appointments` data
+- **Generated Report card** (conditional on `reportGenerated !== null`):
+  - Period label, Export CSV button, Clear button
+  - Active filter pills with X to clear
+  - Results table: Metric / Value / Unit with zebra striping
+  - Summary bar: total metrics count, filters applied, generation timestamp
+- **Scheduled Reports card**: Empty state with calendar icon and coming-soon button
 
 ### Technical notes
-- All data is local state only — no Supabase calls
+- All data local state — no Supabase calls
 - `guard()` + `disabled={!allowModals}` on all actions
-- Date formatting wrapped in try/catch
 - Uses existing `Card`, `Badge`, `Button`, `Input`, `Textarea` components
+- `billing` cast as `any` for summary access
 - No new files or packages
+- No changes to other analytics tabs
 
