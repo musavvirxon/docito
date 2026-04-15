@@ -266,7 +266,15 @@ const AdminDashboard = () => {
   const [ledgerFormCategory, setLedgerFormCategory] = useState('');
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
-  const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services'>('overview');
+  const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services' | 'reports'>('overview');
+  const [reportMetrics, setReportMetrics] = useState<string[]>([]);
+  const [reportFrom, setReportFrom] = useState('');
+  const [reportTo, setReportTo] = useState('');
+  const [reportProvider, setReportProvider] = useState('all');
+  const [reportService, setReportService] = useState('all');
+  const [reportBranch, setReportBranch] = useState('all');
+  const [reportGenerated, setReportGenerated] = useState<any[] | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'clinic' | 'booking' | 'notifications' | 'branding' | 'security' | 'data'>('clinic');
   const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>({
     new_booking_email: true, new_booking_inapp: true,
@@ -4619,6 +4627,7 @@ const AdminDashboard = () => {
           { key: 'patients' as const, label: 'Patients' },
           { key: 'financial' as const, label: 'Financial' },
           { key: 'services' as const, label: 'Services' },
+          { key: 'reports' as const, label: 'Reports' },
         ];
 
         const completedAppts = appointments.filter((a: any) => a.status === 'completed').length;
