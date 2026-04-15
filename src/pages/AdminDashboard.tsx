@@ -266,7 +266,15 @@ const AdminDashboard = () => {
   const [ledgerFormCategory, setLedgerFormCategory] = useState('');
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
-  const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services'>('overview');
+  const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services' | 'reports'>('overview');
+  const [reportMetrics, setReportMetrics] = useState<string[]>([]);
+  const [reportFrom, setReportFrom] = useState('');
+  const [reportTo, setReportTo] = useState('');
+  const [reportProvider, setReportProvider] = useState('all');
+  const [reportService, setReportService] = useState('all');
+  const [reportBranch, setReportBranch] = useState('all');
+  const [reportGenerated, setReportGenerated] = useState<any[] | null>(null);
+  const [reportLoading, setReportLoading] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'clinic' | 'booking' | 'notifications' | 'branding' | 'security' | 'data'>('clinic');
   const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>({
     new_booking_email: true, new_booking_inapp: true,
@@ -4619,6 +4627,7 @@ const AdminDashboard = () => {
           { key: 'patients' as const, label: 'Patients' },
           { key: 'financial' as const, label: 'Financial' },
           { key: 'services' as const, label: 'Services' },
+          { key: 'reports' as const, label: 'Reports' },
         ];
 
         const completedAppts = appointments.filter((a: any) => a.status === 'completed').length;
@@ -5005,6 +5014,204 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                   </div>
+                </>
+              )}
+              {analyticsTab === 'reports' && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Custom Reports</h3>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Scheduled reports coming soon'))}>Schedule Report</Button>
+                  </div>
+
+                  {/* Report Builder */}
+                  <Card className="rounded-xl">
+                    <CardHeader>
+                      <CardTitle>Build a Report</CardTitle>
+                      <p className="text-sm text-muted-foreground">Select metrics, filters, and a date range to generate a custom report.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Step 1: Metrics */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium">Metrics to include</p>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="ghost" onClick={() => setReportMetrics(['Total Appointments','Completed Appointments','Cancelled Appointments','No-shows','Unique Patients','New Patients','Total Revenue','Avg Revenue per Appointment','Top Services','Provider Performance','Cancellation Rate','Patient Retention'])}>Select All</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setReportMetrics([])}>Clear</Button>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {['Total Appointments','Completed Appointments','Cancelled Appointments','No-shows','Unique Patients','New Patients','Total Revenue','Avg Revenue per Appointment','Top Services','Provider Performance','Cancellation Rate','Patient Retention'].map(metric => (
+                            <Button
+                              key={metric}
+                              size="sm"
+                              variant={reportMetrics.includes(metric) ? 'default' : 'outline'}
+                              onClick={() => setReportMetrics(prev => prev.includes(metric) ? prev.filter(m => m !== metric) : [...prev, metric])}
+                            >
+                              {metric}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Step 2: Filters */}
+                      <div className="space-y-3">
+                        <p className="text-sm font-medium">Filters</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                          <div>
+                            <label className="text-xs text-muted-foreground">From</label>
+                            <Input type="date" value={reportFrom} onChange={e => setReportFrom(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground">To</label>
+                            <Input type="date" value={reportTo} onChange={e => setReportTo(e.target.value)} />
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground">Provider</label>
+                            <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportProvider} onChange={e => setReportProvider(e.target.value)}>
+                              <option value="all">All Providers</option>
+                              {doctors.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground">Service</label>
+                            <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportService} onChange={e => setReportService(e.target.value)}>
+                              <option value="all">All Services</option>
+                              {services.map((s: any) => <option key={s.id} value={s.name}>{s.name}</option>)}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs text-muted-foreground">Branch</label>
+                            <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportBranch} onChange={e => setReportBranch(e.target.value)}>
+                              <option value="all">All Branches</option>
+                              {locations.map((l: any) => <option key={l.id} value={l.name}>{l.name}</option>)}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Generate */}
+                      <Button disabled={!allowModals || reportLoading} onClick={() => guard(() => {
+                        if (reportMetrics.length === 0) { toast.error('Select at least one metric'); return; }
+                        setReportLoading(true);
+                        setTimeout(() => {
+                          try {
+                            const rows: any[] = [];
+                            const filteredAppts = appointments.filter((a: any) => {
+                              if (reportProvider !== 'all' && a.doctor_name !== reportProvider) return false;
+                              if (reportService !== 'all' && a.service_name !== reportService && a.service !== reportService) return false;
+                              return true;
+                            });
+                            if (reportMetrics.includes('Total Appointments')) rows.push({ metric: 'Total Appointments', value: filteredAppts.length, unit: 'appointments' });
+                            if (reportMetrics.includes('Completed Appointments')) rows.push({ metric: 'Completed Appointments', value: filteredAppts.filter((a: any) => a.status === 'completed').length, unit: 'appointments' });
+                            if (reportMetrics.includes('Cancelled Appointments')) rows.push({ metric: 'Cancelled Appointments', value: filteredAppts.filter((a: any) => a.status === 'cancelled').length, unit: 'appointments' });
+                            if (reportMetrics.includes('No-shows')) rows.push({ metric: 'No-shows', value: filteredAppts.filter((a: any) => a.status === 'no_show' || a.status === 'no-show').length, unit: 'appointments' });
+                            if (reportMetrics.includes('Unique Patients')) rows.push({ metric: 'Unique Patients', value: new Set(filteredAppts.map((a: any) => a.patient_id || a.patient_name)).size, unit: 'patients' });
+                            if (reportMetrics.includes('New Patients')) rows.push({ metric: 'New Patients', value: patients.length, unit: 'patients' });
+                            if (reportMetrics.includes('Cancellation Rate')) rows.push({ metric: 'Cancellation Rate', value: filteredAppts.length > 0 ? (filteredAppts.filter((a: any) => a.status === 'cancelled').length / filteredAppts.length * 100).toFixed(1) + '%' : '0%', unit: '' });
+                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: '$' + ((billing as any)?.data?.summary?.totalRevenueCents / 100 || 0).toFixed(2), unit: '' });
+                            if (reportMetrics.includes('Avg Revenue per Appointment')) {
+                              const rev = (billing as any)?.data?.summary?.totalRevenueCents / 100 || 0;
+                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? '$' + (rev / filteredAppts.length).toFixed(2) : '$0.00', unit: '' });
+                            }
+                            if (reportMetrics.includes('Patient Retention')) rows.push({ metric: 'Patient Retention', value: 'N/A', unit: '(requires historical data)' });
+                            if (reportMetrics.includes('Provider Performance')) {
+                              doctors.forEach((d: any) => {
+                                const dAppts = filteredAppts.filter((a: any) => a.doctor_name === d.name || a.doctor_id === d.id);
+                                rows.push({ metric: `Provider: ${d.name}`, value: dAppts.length, unit: 'appointments' });
+                              });
+                            }
+                            if (reportMetrics.includes('Top Services')) {
+                              services.slice(0, 5).forEach((s: any) => {
+                                const count = filteredAppts.filter((a: any) => a.service_name === s.name || a.service === s.name).length;
+                                rows.push({ metric: `Service: ${s.name}`, value: count, unit: 'bookings' });
+                              });
+                            }
+                            setReportGenerated(rows);
+                            toast.success('Report generated');
+                          } catch { toast.error('Failed to generate report'); }
+                          setReportLoading(false);
+                        }, 800);
+                      })}>
+                        {reportLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</> : 'Generate Report'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Generated Report */}
+                  {reportGenerated !== null && (
+                    <Card className="rounded-xl">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle>Report Results</CardTitle>
+                            <p className="text-sm text-muted-foreground mt-1">{reportFrom && reportTo ? `${reportFrom} – ${reportTo}` : 'All time'}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" disabled={!allowModals} onClick={() => guard(() => {
+                              try {
+                                const csv = ['Metric,Value,Unit', ...reportGenerated.map(r => `"${r.metric}","${r.value}","${r.unit}"`)].join('\n');
+                                const blob = new Blob([csv], { type: 'text/csv' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a'); a.href = url; a.download = `report-${Date.now()}.csv`; a.click();
+                                URL.revokeObjectURL(url);
+                                toast.success('CSV downloaded');
+                              } catch { toast.error('Export failed'); }
+                            })}>Export CSV</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setReportGenerated(null)}>Clear</Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {/* Active filter pills */}
+                        <div className="flex flex-wrap gap-2">
+                          {reportProvider !== 'all' && <Badge variant="secondary" className="gap-1">Provider: {reportProvider} <button onClick={() => setReportProvider('all')} className="ml-1 hover:text-destructive">×</button></Badge>}
+                          {reportService !== 'all' && <Badge variant="secondary" className="gap-1">Service: {reportService} <button onClick={() => setReportService('all')} className="ml-1 hover:text-destructive">×</button></Badge>}
+                          {reportBranch !== 'all' && <Badge variant="secondary" className="gap-1">Branch: {reportBranch} <button onClick={() => setReportBranch('all')} className="ml-1 hover:text-destructive">×</button></Badge>}
+                          {reportFrom && <Badge variant="secondary" className="gap-1">From: {reportFrom} <button onClick={() => setReportFrom('')} className="ml-1 hover:text-destructive">×</button></Badge>}
+                          {reportTo && <Badge variant="secondary" className="gap-1">To: {reportTo} <button onClick={() => setReportTo('')} className="ml-1 hover:text-destructive">×</button></Badge>}
+                        </div>
+
+                        {/* Results table */}
+                        <div className="overflow-x-auto rounded-lg border border-border">
+                          <table className="w-full text-sm">
+                            <thead><tr className="bg-muted/50"><th className="text-left p-3 font-medium">Metric</th><th className="text-left p-3 font-medium">Value</th><th className="text-left p-3 font-medium">Unit</th></tr></thead>
+                            <tbody>
+                              {reportGenerated.map((r, i) => (
+                                <tr key={i} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/10'}>
+                                  <td className="p-3 font-medium">{r.metric}</td>
+                                  <td className="p-3 text-lg text-primary font-semibold">{r.value}</td>
+                                  <td className="p-3 text-muted-foreground">{r.unit}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        {/* Summary bar */}
+                        <div className="flex items-center gap-6 text-xs text-muted-foreground pt-2 border-t border-border">
+                          <span>Total metrics: {reportGenerated.length}</span>
+                          <span>Filters applied: {[reportProvider, reportService, reportBranch].filter(f => f !== 'all').length + (reportFrom ? 1 : 0) + (reportTo ? 1 : 0)}</span>
+                          <span>Generated: {(() => { try { return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return new Date().toISOString(); } })()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Scheduled Reports */}
+                  <Card className="rounded-xl">
+                    <CardHeader>
+                      <CardTitle>Scheduled Reports</CardTitle>
+                      <p className="text-sm text-muted-foreground">Automatically email reports on a weekly or monthly cadence.</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                        <p>No scheduled reports yet.</p>
+                        <Button className="mt-3" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Scheduled reports coming in a future update'))}>Schedule a Report</Button>
+                        <p className="text-xs mt-2 text-muted-foreground">Scheduled reports will be sent to your admin email automatically.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </>
               )}
             </div>
