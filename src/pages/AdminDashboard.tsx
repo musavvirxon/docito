@@ -522,16 +522,16 @@ const AdminDashboard = () => {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">Providers</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Invite doctors and review incoming applications.</p>
+                    <p className="text-sm font-medium">{t("admin.setup.providers")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.providersDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">Operations</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Run staff, services, locations, appointments, and patients.</p>
+                    <p className="text-sm font-medium">{t("admin.setup.operations")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.operationsDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">Finance</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Track billing, revenue, and settings once your practice is active.</p>
+                    <p className="text-sm font-medium">{t("admin.setup.finance")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.financeDesc")}</p>
                   </div>
                 </div>
 
