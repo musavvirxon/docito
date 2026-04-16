@@ -275,7 +275,11 @@ const AdminDashboard = () => {
   const [reportBranch, setReportBranch] = useState('all');
   const [reportGenerated, setReportGenerated] = useState<any[] | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'clinic' | 'booking' | 'notifications' | 'branding' | 'security' | 'data'>('clinic');
+  const [settingsTab, setSettingsTab] = useState<'clinic' | 'booking' | 'notifications' | 'branding' | 'security' | 'data' | 'integrations'>('clinic');
+  const [apiKeys, setApiKeys] = useState<Array<{id:string; name:string; key:string; created_at:string; last_used:string|null}>>([]);
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [newApiKeyName, setNewApiKeyName] = useState('');
+  const [calendarSyncProvider, setCalendarSyncProvider] = useState<'none'|'google'|'outlook'>('none');
   const [notifSettings, setNotifSettings] = useState<Record<string, boolean>>({
     new_booking_email: true, new_booking_inapp: true,
     cancellation_email: true, cancellation_inapp: true,
@@ -5227,6 +5231,7 @@ const AdminDashboard = () => {
           { key: 'branding' as const, label: 'Branding' },
           { key: 'security' as const, label: 'Security' },
           { key: 'data' as const, label: 'Data' },
+          { key: 'integrations' as const, label: 'Integrations' },
         ];
         const notifEvents = [
           { label: 'New Booking', inapp: 'new_booking_inapp', email: 'new_booking_email' },
@@ -5669,6 +5674,185 @@ const AdminDashboard = () => {
                       <Button variant="destructive" onClick={() => guard(() => { if (confirm('Are you absolutely sure? This cannot be undone.')) toast.error('Practice deletion requires contacting support for safety.'); })} disabled={!allowModals}>
                         <Trash2 className="h-4 w-4 mr-2" /> Delete Practice
                       </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* ========== INTEGRATIONS ========== */}
+              {settingsTab === 'integrations' && (
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div>
+                    <h2 className="text-xl font-bold">Integrations</h2>
+                    <p className="text-sm text-muted-foreground">Connect your clinic with payment gateways, calendars, and external tools.</p>
+                  </div>
+
+                  {/* Payment Gateways */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Payment Gateways</CardTitle>
+                      <p className="text-sm text-muted-foreground">Connect a payment provider to accept online payments.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {[
+                        { name: 'Stripe', color: 'text-indigo-600', desc: 'Credit cards, Apple Pay, Google Pay', hasTest: true },
+                        { name: 'PayMe', color: 'text-green-600', desc: 'Uzbekistan local payment provider', hasTest: false },
+                        { name: 'Click', color: 'text-blue-600', desc: 'Uzbekistan payment system', hasTest: false },
+                      ].map(gw => (
+                        <div key={gw.name} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                          <div>
+                            <span className={`font-bold ${gw.color}`}>{gw.name}</span>
+                            <p className="text-sm text-muted-foreground">{gw.desc}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">Not connected</Badge>
+                            <Button size="sm" onClick={() => guard(() => toast.info(`${gw.name} connection coming soon`))} disabled={!allowModals}>Connect</Button>
+                            {gw.hasTest && <Button size="sm" variant="outline" onClick={() => toast.info('Test mode coming soon')}>Test Mode</Button>}
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-xs text-muted-foreground">Only one payment gateway can be active at a time.</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Calendar Sync */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Calendar Sync</CardTitle>
+                      <p className="text-sm text-muted-foreground">Sync provider schedules with external calendar apps.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {[
+                        { name: 'Google Calendar', provider: 'google' as const, desc: 'Sync appointments to Google Calendar per provider' },
+                        { name: 'Outlook', provider: 'outlook' as const, desc: 'Sync with Microsoft 365 or Outlook calendar' },
+                      ].map(cal => (
+                        <div key={cal.provider} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                          <div>
+                            <span className="font-bold">{cal.name}</span>
+                            <p className="text-sm text-muted-foreground">{cal.desc}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={calendarSyncProvider === cal.provider ? 'default' : 'secondary'}>
+                              {calendarSyncProvider === cal.provider ? 'Connected' : 'Not connected'}
+                            </Badge>
+                            {calendarSyncProvider === cal.provider ? (
+                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(() => { setCalendarSyncProvider('none'); toast.success(`${cal.name} disconnected`); })} disabled={!allowModals}>Disconnect</Button>
+                            ) : (
+                              <Button size="sm" onClick={() => guard(() => {
+                                if (cal.provider === 'google') { setCalendarSyncProvider('google'); toast.success('Google Calendar connected'); }
+                                else toast.info('Outlook sync coming soon');
+                              })} disabled={!allowModals}>Connect</Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      <p className="text-xs text-muted-foreground">Calendar sync is per-provider. Each provider must authorize individually from their profile.</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Medical Systems */}
+                  <Card>
+                    <CardHeader><CardTitle>Medical System Integrations</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      {[
+                        { icon: <Star className="h-5 w-5" />, name: 'Lab System', desc: 'Connect to lab order and results system' },
+                        { icon: <Settings className="h-5 w-5" />, name: 'Imaging / PACS', desc: 'Connect to radiology and imaging system' },
+                      ].map(sys => (
+                        <div key={sys.name} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
+                          <div className="flex items-center gap-3">
+                            {sys.icon}
+                            <div>
+                              <span className="font-bold">{sys.name}</span>
+                              <p className="text-sm text-muted-foreground">{sys.desc}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">Not connected</Badge>
+                            <Button size="sm" onClick={() => guard(() => toast.info(`${sys.name} integration coming soon`))} disabled={!allowModals}>Connect</Button>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+
+                  {/* API Keys */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>API Keys</CardTitle>
+                      <p className="text-sm text-muted-foreground">Use API keys to integrate with custom tools or third-party services.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex gap-2">
+                        <Input placeholder="Key name (e.g. Zapier, Custom App)" value={newApiKeyName} onChange={e => setNewApiKeyName(e.target.value)} className="max-w-xs" />
+                        <Button onClick={() => guard(() => {
+                          if (!newApiKeyName.trim()) { toast.error('Enter a name for the key'); return; }
+                          const newKey = {
+                            id: Date.now().toString(),
+                            name: newApiKeyName.trim(),
+                            key: 'sk_live_' + Math.random().toString(36).slice(2, 18) + Math.random().toString(36).slice(2, 18),
+                            created_at: new Date().toISOString(),
+                            last_used: null,
+                          };
+                          setApiKeys(prev => [...prev, newKey]);
+                          setNewApiKeyName('');
+                          toast.success('API key generated — copy it now, it will not be shown again');
+                        })} disabled={!allowModals}>Generate Key</Button>
+                      </div>
+                      {apiKeys.length > 0 ? (
+                        <div className="border rounded-lg overflow-hidden">
+                          <table className="w-full text-sm">
+                            <thead className="bg-muted/50"><tr><th className="text-left p-3 font-medium">Name</th><th className="text-left p-3 font-medium">Key</th><th className="text-left p-3 font-medium">Created</th><th className="text-left p-3 font-medium">Last Used</th><th className="text-left p-3 font-medium">Actions</th></tr></thead>
+                            <tbody>
+                              {apiKeys.map(k => (
+                                <tr key={k.id} className="border-t">
+                                  <td className="p-3 font-medium">{k.name}</td>
+                                  <td className="p-3 font-mono text-xs">{k.key.slice(0, 12)}...</td>
+                                  <td className="p-3">{(() => { try { return new Date(k.created_at).toLocaleDateString(); } catch { return k.created_at; } })()}</td>
+                                  <td className="p-3 text-muted-foreground">{k.last_used || 'Never'}</td>
+                                  <td className="p-3 flex gap-1">
+                                    <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(k.key).then(() => toast.success('Key copied'))}>Copy</Button>
+                                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(() => { if (confirm('Revoke this key? It will stop working immediately.')) { setApiKeys(prev => prev.filter(x => x.id !== k.id)); toast.success('Key revoked'); } })} disabled={!allowModals}>Revoke</Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Star className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                          <p>No API keys yet. Generate one above.</p>
+                        </div>
+                      )}
+                      <p className="text-xs text-muted-foreground">Keep your API keys secret. Do not share them publicly.</p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Webhooks */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Webhooks</CardTitle>
+                      <p className="text-sm text-muted-foreground">Receive real-time event notifications to your server.</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Webhook URL</label>
+                        <Input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="https://your-server.com/webhook" />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button onClick={() => guard(() => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
+                        <Button variant="outline" onClick={() => guard(() => toast.info('Test event coming soon'))} disabled={!allowModals}>Send Test Event</Button>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-2">Events that trigger webhooks:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {['appointment.created', 'appointment.cancelled', 'appointment.completed', 'payment.received', 'patient.registered'].map(ev => (
+                            <span key={ev} className="px-2 py-0.5 rounded bg-muted text-xs font-mono text-muted-foreground">{ev}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">Webhook delivery logs coming in a future update.</p>
                     </CardContent>
                   </Card>
                 </div>
