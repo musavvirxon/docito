@@ -522,16 +522,16 @@ const AdminDashboard = () => {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">Providers</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Invite doctors and review incoming applications.</p>
+                    <p className="text-sm font-medium">{t("admin.setup.providers")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.providersDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">Operations</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Run staff, services, locations, appointments, and patients.</p>
+                    <p className="text-sm font-medium">{t("admin.setup.operations")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.operationsDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">Finance</p>
-                    <p className="mt-2 text-sm text-muted-foreground">Track billing, revenue, and settings once your practice is active.</p>
+                    <p className="text-sm font-medium">{t("admin.setup.finance")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.financeDesc")}</p>
                   </div>
                 </div>
 
@@ -550,18 +550,18 @@ const AdminDashboard = () => {
             <div className="grid gap-6 lg:col-span-4 lg:grid-rows-2">
               <Card className="rounded-2xl h-full">
                 <CardHeader>
-                  <CardTitle className="text-base">Providers</CardTitle>
+                  <CardTitle className="text-base">{t("admin.setup.providers")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">Invite doctors and review incoming applications from professionals who want to join your practice.</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.setup.providersCardDesc")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-2xl h-full">
                 <CardHeader>
-                  <CardTitle className="text-base">Operations</CardTitle>
+                  <CardTitle className="text-base">{t("admin.setup.operations")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">Manage staff, services, locations, appointments, patients, billing, and settings from one workspace.</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.setup.operationsCardDesc")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -599,7 +599,7 @@ const AdminDashboard = () => {
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">{error}</p>
               <Button onClick={refreshData} className="w-full">
-                Retry
+                {t("admin.error.retry")}
               </Button>
             </CardContent>
           </Card>
@@ -899,13 +899,13 @@ const AdminDashboard = () => {
           : new Set();
 
         const providerTabs: Array<{ key: typeof providerTab; label: string }> = [
-          { key: 'overview', label: 'Overview' },
-          { key: 'calendar', label: 'Calendar' },
-          { key: 'patients', label: 'Patients' },
-          { key: 'analytics', label: 'Analytics' },
-          { key: 'procedures', label: 'Procedures' },
-          { key: 'reviews', label: 'Reviews' },
-          { key: 'documents', label: 'Documents' },
+          { key: 'overview', label: t("admin.providers.tabs.overview") },
+          { key: 'calendar', label: t("admin.providers.tabs.calendar") },
+          { key: 'patients', label: t("admin.providers.tabs.patients") },
+          { key: 'analytics', label: t("admin.providers.tabs.analytics") },
+          { key: 'procedures', label: t("admin.providers.tabs.procedures") },
+          { key: 'reviews', label: t("admin.providers.tabs.reviews") },
+          { key: 'documents', label: t("admin.providers.tabs.documents") },
         ];
 
         // PROFILE VIEW
