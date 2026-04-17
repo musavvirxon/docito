@@ -3749,9 +3749,11 @@ const AdminDashboard = () => {
                           <label className="text-sm font-medium text-muted-foreground">Notes (optional)</label>
                           <Textarea value={claimForm.notes} onChange={e => setClaimForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Additional notes…" />
                         </div>
-                        <Button disabled={!allowModals} onClick={() => guard(() => {
+                        <Button disabled={!allowModals} onClick={() => guard(async () => {
                           if (!claimForm.patient_name || !claimForm.insurer || !claimForm.amount) { toast.error('Patient, insurer, and amount are required'); return; }
-                          setClaims(prev => [...prev, { id: Date.now().toString(), ...claimForm, submitted_date: claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd'), status: 'submitted', created_at: new Date().toISOString() }]);
+                          const next = [...claims, { id: Date.now().toString(), ...claimForm, submitted_date: claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd'), status: 'submitted', created_at: new Date().toISOString() }];
+                          setClaims(next);
+                          await persistInsurance({ claims: next });
                           setClaimForm({ patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '' });
                           setAddClaimOpen(false);
                           toast.success('Claim submitted');
