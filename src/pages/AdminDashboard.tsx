@@ -3830,9 +3830,9 @@ const AdminDashboard = () => {
                                     <td className="py-2.5"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[c.status] || ''}`}>{c.status}</span></td>
                                     <td className="py-2.5">
                                       <div className="flex gap-1">
-                                        {c.status !== 'approved' && <Button size="sm" variant="outline" className="h-7 text-xs text-green-700 border-green-300 hover:bg-green-50" disabled={!allowModals} onClick={() => guard(() => setClaims(prev => prev.map(x => x.id === c.id ? { ...x, status: 'approved' } : x)))}>Approve</Button>}
-                                        {c.status !== 'rejected' && <Button size="sm" variant="outline" className="h-7 text-xs text-red-700 border-red-300 hover:bg-red-50" disabled={!allowModals} onClick={() => guard(() => setClaims(prev => prev.map(x => x.id === c.id ? { ...x, status: 'rejected' } : x)))}>Reject</Button>}
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!allowModals} onClick={() => guard(() => setClaims(prev => prev.filter(x => x.id !== c.id)))}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>
+                                        {c.status !== 'approved' && <Button size="sm" variant="outline" className="h-7 text-xs text-green-700 border-green-300 hover:bg-green-50" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.map(x => x.id === c.id ? { ...x, status: 'approved' } : x); setClaims(next); await persistInsurance({ claims: next }); })}>Approve</Button>}
+                                        {c.status !== 'rejected' && <Button size="sm" variant="outline" className="h-7 text-xs text-red-700 border-red-300 hover:bg-red-50" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.map(x => x.id === c.id ? { ...x, status: 'rejected' } : x); setClaims(next); await persistInsurance({ claims: next }); })}>Reject</Button>}
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.filter(x => x.id !== c.id); setClaims(next); await persistInsurance({ claims: next }); })}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>
                                       </div>
                                     </td>
                                   </tr>
