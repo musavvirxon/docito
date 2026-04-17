@@ -239,6 +239,23 @@ const AdminDashboard = () => {
   const [addClaimOpen, setAddClaimOpen] = useState(false);
   const [claimForm, setClaimForm] = useState({ patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '' });
 
+  // Audit logs viewer
+  const [auditLogsOpen, setAuditLogsOpen] = useState(false);
+  const [auditLogsRows, setAuditLogsRows] = useState<any[]>([]);
+  const [auditLogsLoading, setAuditLogsLoading] = useState(false);
+  const loadAuditLogs = useCallback(async () => {
+    setAuditLogsLoading(true);
+    try {
+      const { data, error } = await (supabase as any).from('audit_logs').select('id, action, actor_email, entity_type, entity_id, details, created_at').order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      setAuditLogsRows(data || []);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to load audit logs');
+    } finally {
+      setAuditLogsLoading(false);
+    }
+  }, []);
+
   // Services section state
   const [serviceTab, setServiceTab] = useState<'catalog' | 'pricing' | 'categories' | 'analytics'>('catalog');
   const [serviceSearch, setServiceSearch] = useState('');
