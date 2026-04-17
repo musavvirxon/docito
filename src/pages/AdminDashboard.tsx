@@ -5868,7 +5868,7 @@ const AdminDashboard = () => {
                         <Input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="https://your-server.com/webhook" />
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => guard(() => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
+                        <Button onClick={() => guard(async () => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } await persistIntegrations({ webhook_url: webhookUrl }); toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
                         <Button variant="outline" onClick={() => guard(() => toast.info('Test event coming soon'))} disabled={!allowModals}>Send Test Event</Button>
                       </div>
                       <div>
