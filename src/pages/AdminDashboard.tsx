@@ -312,14 +312,30 @@ const AdminDashboard = () => {
       if (payload.booking) {
         setBookingSettings(prev => ({ ...prev, ...payload.booking }));
       }
-      if (payload.notification_prefs) {
-        setNotifSettings(prev => ({ ...prev, ...payload.notification_prefs }));
+      if (payload.notification_prefs || s.notification_prefs) {
+        setNotifSettings(prev => ({ ...prev, ...(payload.notification_prefs || s.notification_prefs) }));
       }
       if (payload.branding?.colorIndex !== undefined) {
         setSelectedBrandColor(payload.branding.colorIndex);
       }
+      const integrations = s.integrations || payload.integrations || {};
+      if (Array.isArray(integrations.api_keys)) setApiKeys(integrations.api_keys);
+      if (typeof integrations.webhook_url === 'string') setWebhookUrl(integrations.webhook_url);
+      if (integrations.calendar_sync_provider === 'google' || integrations.calendar_sync_provider === 'outlook' || integrations.calendar_sync_provider === 'none') {
+        setCalendarSyncProvider(integrations.calendar_sync_provider);
+      }
     }
   }, [entitySettings.settings]);
+
+  // Persist integrations to entity_settings
+  const persistIntegrations = useCallback(async (patch: Record<string, any>) => {
+    try {
+      const current = (entitySettings.settings as any)?.integrations || {};
+      await entitySettings.saveSettings({ integrations: { ...current, ...patch } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save integration settings');
+    }
+  }, [entitySettings]);
 
   // Load finance entries from hook into local state
   useEffect(() => {
