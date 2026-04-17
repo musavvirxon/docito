@@ -5753,11 +5753,20 @@ const AdminDashboard = () => {
                               {calendarSyncProvider === cal.provider ? 'Connected' : 'Not connected'}
                             </Badge>
                             {calendarSyncProvider === cal.provider ? (
-                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(() => { setCalendarSyncProvider('none'); toast.success(`${cal.name} disconnected`); })} disabled={!allowModals}>Disconnect</Button>
+                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(async () => {
+                                setCalendarSyncProvider('none');
+                                await persistIntegrations({ calendar_sync_provider: 'none' });
+                                toast.success(`${cal.name} disconnected`);
+                              })} disabled={!allowModals}>Disconnect</Button>
                             ) : (
-                              <Button size="sm" onClick={() => guard(() => {
-                                if (cal.provider === 'google') { setCalendarSyncProvider('google'); toast.success('Google Calendar connected'); }
-                                else toast.info('Outlook sync coming soon');
+                              <Button size="sm" onClick={() => guard(async () => {
+                                if (cal.provider === 'google') {
+                                  setCalendarSyncProvider('google');
+                                  await persistIntegrations({ calendar_sync_provider: 'google' });
+                                  toast.success('Google Calendar connected');
+                                } else {
+                                  toast.info('Outlook sync coming soon');
+                                }
                               })} disabled={!allowModals}>Connect</Button>
                             )}
                           </div>
