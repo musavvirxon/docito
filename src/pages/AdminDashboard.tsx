@@ -3903,14 +3903,14 @@ const AdminDashboard = () => {
                     <CardContent>
                       <div className="flex gap-2 mb-4">
                         <Input value={newInsurerName} onChange={e => setNewInsurerName(e.target.value)} placeholder="Insurer name…" className="max-w-xs" />
-                        <Button size="sm" disabled={!allowModals} onClick={() => guard(() => { if (newInsurerName.trim()) { setInsurers(prev => [...prev, newInsurerName.trim()]); setNewInsurerName(''); toast.success('Insurer added'); } })}>Add</Button>
+                        <Button size="sm" disabled={!allowModals} onClick={() => guard(async () => { if (newInsurerName.trim() && !insurers.includes(newInsurerName.trim())) { const next = [...insurers, newInsurerName.trim()]; setInsurers(next); await persistInsurance({ insurers: next }); setNewInsurerName(''); toast.success('Insurer added'); } })}>Add</Button>
                       </div>
                       {insurers.length > 0 ? (
                         <div className="space-y-2 mb-4">
                           {insurers.map(ins => (
                             <div key={ins} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/40">
                               <span className="text-sm font-medium">{ins}</span>
-                              <Button size="sm" variant="ghost" className="h-7 text-xs text-red-600" disabled={!allowModals} onClick={() => guard(() => setInsurers(prev => prev.filter(i => i !== ins)))}>Remove</Button>
+                              <Button size="sm" variant="ghost" className="h-7 text-xs text-red-600" disabled={!allowModals} onClick={() => guard(async () => { const next = insurers.filter(i => i !== ins); setInsurers(next); await persistInsurance({ insurers: next }); })}>Remove</Button>
                             </div>
                           ))}
                         </div>
@@ -3920,7 +3920,7 @@ const AdminDashboard = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs text-muted-foreground">Quick add:</span>
                         {presetInsurers.map(name => (
-                          <Button key={name} size="sm" variant="outline" className="h-7 text-xs" disabled={!allowModals} onClick={() => guard(() => { if (!insurers.includes(name)) setInsurers(prev => [...prev, name]); })}>{name}</Button>
+                          <Button key={name} size="sm" variant="outline" className="h-7 text-xs" disabled={!allowModals} onClick={() => guard(async () => { if (!insurers.includes(name)) { const next = [...insurers, name]; setInsurers(next); await persistInsurance({ insurers: next }); } })}>{name}</Button>
                         ))}
                       </div>
                     </CardContent>
