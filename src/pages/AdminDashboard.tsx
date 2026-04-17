@@ -239,6 +239,23 @@ const AdminDashboard = () => {
   const [addClaimOpen, setAddClaimOpen] = useState(false);
   const [claimForm, setClaimForm] = useState({ patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '' });
 
+  // Audit logs viewer
+  const [auditLogsOpen, setAuditLogsOpen] = useState(false);
+  const [auditLogsRows, setAuditLogsRows] = useState<any[]>([]);
+  const [auditLogsLoading, setAuditLogsLoading] = useState(false);
+  const loadAuditLogs = useCallback(async () => {
+    setAuditLogsLoading(true);
+    try {
+      const { data, error } = await (supabase as any).from('audit_logs').select('id, action, actor_email, entity_type, entity_id, details, created_at').order('created_at', { ascending: false }).limit(100);
+      if (error) throw error;
+      setAuditLogsRows(data || []);
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to load audit logs');
+    } finally {
+      setAuditLogsLoading(false);
+    }
+  }, []);
+
   // Services section state
   const [serviceTab, setServiceTab] = useState<'catalog' | 'pricing' | 'categories' | 'analytics'>('catalog');
   const [serviceSearch, setServiceSearch] = useState('');
@@ -324,8 +341,23 @@ const AdminDashboard = () => {
       if (integrations.calendar_sync_provider === 'google' || integrations.calendar_sync_provider === 'outlook' || integrations.calendar_sync_provider === 'none') {
         setCalendarSyncProvider(integrations.calendar_sync_provider);
       }
+      // Insurance hydration
+      const insurance = payload.insurance || s.insurance || {};
+      if (Array.isArray(insurance.insurers)) setInsurers(insurance.insurers);
+      if (Array.isArray(insurance.claims)) setClaims(insurance.claims);
     }
   }, [entitySettings.settings]);
+
+  // Persist insurance (insurers + claims) to entity_settings.insurance
+  const persistInsurance = useCallback(async (patch: { insurers?: string[]; claims?: any[] }) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      const currentInsurance = current.insurance || {};
+      await entitySettings.saveSettings({ ...current, insurance: { ...currentInsurance, ...patch } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save insurance data');
+    }
+  }, [entitySettings]);
 
   // Persist integrations to entity_settings
   const persistIntegrations = useCallback(async (patch: Record<string, any>) => {
@@ -3734,9 +3766,11 @@ const AdminDashboard = () => {
                           <label className="text-sm font-medium text-muted-foreground">Notes (optional)</label>
                           <Textarea value={claimForm.notes} onChange={e => setClaimForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Additional notes…" />
                         </div>
-                        <Button disabled={!allowModals} onClick={() => guard(() => {
+                        <Button disabled={!allowModals} onClick={() => guard(async () => {
                           if (!claimForm.patient_name || !claimForm.insurer || !claimForm.amount) { toast.error('Patient, insurer, and amount are required'); return; }
-                          setClaims(prev => [...prev, { id: Date.now().toString(), ...claimForm, submitted_date: claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd'), status: 'submitted', created_at: new Date().toISOString() }]);
+                          const next = [...claims, { id: Date.now().toString(), ...claimForm, submitted_date: claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd'), status: 'submitted', created_at: new Date().toISOString() }];
+                          setClaims(next);
+                          await persistInsurance({ claims: next });
                           setClaimForm({ patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '' });
                           setAddClaimOpen(false);
                           toast.success('Claim submitted');
@@ -3813,9 +3847,9 @@ const AdminDashboard = () => {
                                     <td className="py-2.5"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[c.status] || ''}`}>{c.status}</span></td>
                                     <td className="py-2.5">
                                       <div className="flex gap-1">
-                                        {c.status !== 'approved' && <Button size="sm" variant="outline" className="h-7 text-xs text-green-700 border-green-300 hover:bg-green-50" disabled={!allowModals} onClick={() => guard(() => setClaims(prev => prev.map(x => x.id === c.id ? { ...x, status: 'approved' } : x)))}>Approve</Button>}
-                                        {c.status !== 'rejected' && <Button size="sm" variant="outline" className="h-7 text-xs text-red-700 border-red-300 hover:bg-red-50" disabled={!allowModals} onClick={() => guard(() => setClaims(prev => prev.map(x => x.id === c.id ? { ...x, status: 'rejected' } : x)))}>Reject</Button>}
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!allowModals} onClick={() => guard(() => setClaims(prev => prev.filter(x => x.id !== c.id)))}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>
+                                        {c.status !== 'approved' && <Button size="sm" variant="outline" className="h-7 text-xs text-green-700 border-green-300 hover:bg-green-50" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.map(x => x.id === c.id ? { ...x, status: 'approved' } : x); setClaims(next); await persistInsurance({ claims: next }); })}>Approve</Button>}
+                                        {c.status !== 'rejected' && <Button size="sm" variant="outline" className="h-7 text-xs text-red-700 border-red-300 hover:bg-red-50" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.map(x => x.id === c.id ? { ...x, status: 'rejected' } : x); setClaims(next); await persistInsurance({ claims: next }); })}>Reject</Button>}
+                                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.filter(x => x.id !== c.id); setClaims(next); await persistInsurance({ claims: next }); })}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>
                                       </div>
                                     </td>
                                   </tr>
@@ -3886,14 +3920,14 @@ const AdminDashboard = () => {
                     <CardContent>
                       <div className="flex gap-2 mb-4">
                         <Input value={newInsurerName} onChange={e => setNewInsurerName(e.target.value)} placeholder="Insurer name…" className="max-w-xs" />
-                        <Button size="sm" disabled={!allowModals} onClick={() => guard(() => { if (newInsurerName.trim()) { setInsurers(prev => [...prev, newInsurerName.trim()]); setNewInsurerName(''); toast.success('Insurer added'); } })}>Add</Button>
+                        <Button size="sm" disabled={!allowModals} onClick={() => guard(async () => { if (newInsurerName.trim() && !insurers.includes(newInsurerName.trim())) { const next = [...insurers, newInsurerName.trim()]; setInsurers(next); await persistInsurance({ insurers: next }); setNewInsurerName(''); toast.success('Insurer added'); } })}>Add</Button>
                       </div>
                       {insurers.length > 0 ? (
                         <div className="space-y-2 mb-4">
                           {insurers.map(ins => (
                             <div key={ins} className="flex items-center justify-between py-1.5 px-3 rounded-lg bg-muted/40">
                               <span className="text-sm font-medium">{ins}</span>
-                              <Button size="sm" variant="ghost" className="h-7 text-xs text-red-600" disabled={!allowModals} onClick={() => guard(() => setInsurers(prev => prev.filter(i => i !== ins)))}>Remove</Button>
+                              <Button size="sm" variant="ghost" className="h-7 text-xs text-red-600" disabled={!allowModals} onClick={() => guard(async () => { const next = insurers.filter(i => i !== ins); setInsurers(next); await persistInsurance({ insurers: next }); })}>Remove</Button>
                             </div>
                           ))}
                         </div>
@@ -3903,7 +3937,7 @@ const AdminDashboard = () => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs text-muted-foreground">Quick add:</span>
                         {presetInsurers.map(name => (
-                          <Button key={name} size="sm" variant="outline" className="h-7 text-xs" disabled={!allowModals} onClick={() => guard(() => { if (!insurers.includes(name)) setInsurers(prev => [...prev, name]); })}>{name}</Button>
+                          <Button key={name} size="sm" variant="outline" className="h-7 text-xs" disabled={!allowModals} onClick={() => guard(async () => { if (!insurers.includes(name)) { const next = [...insurers, name]; setInsurers(next); await persistInsurance({ insurers: next }); } })}>{name}</Button>
                         ))}
                       </div>
                     </CardContent>
@@ -5676,7 +5710,36 @@ const AdminDashboard = () => {
                         <div><p className="text-sm font-medium">Show consent checkbox on patient booking form</p><p className="text-xs text-muted-foreground">Required in EU jurisdictions. Adds a consent checkbox to the booking form.</p></div>
                         <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => toast.info('Audit logs are available in the Supabase dashboard.')}>View full audit log</Button>
+                      <Button size="sm" variant="outline" onClick={() => guard(async () => { setAuditLogsOpen(true); if (auditLogsRows.length === 0) await loadAuditLogs(); })} disabled={!allowModals}>View full audit log</Button>
+                      {auditLogsOpen && (
+                        <Card className="mt-3 border-border/60">
+                          <CardHeader className="flex flex-row items-center justify-between py-3">
+                            <CardTitle className="text-sm">Audit Log (last 100 events)</CardTitle>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="ghost" onClick={() => loadAuditLogs()} disabled={auditLogsLoading}>{auditLogsLoading ? 'Loading…' : 'Refresh'}</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setAuditLogsOpen(false)}>Close</Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <div className="max-h-96 overflow-auto">
+                              <table className="w-full text-xs">
+                                <thead className="bg-muted/50 sticky top-0"><tr className="border-b"><th className="text-left p-2 font-medium">When</th><th className="text-left p-2 font-medium">Actor</th><th className="text-left p-2 font-medium">Action</th><th className="text-left p-2 font-medium">Entity</th></tr></thead>
+                                <tbody>
+                                  {auditLogsRows.length === 0 && !auditLogsLoading && (<tr><td colSpan={4} className="p-4 text-center text-muted-foreground">No audit log entries.</td></tr>)}
+                                  {auditLogsRows.map(row => (
+                                    <tr key={row.id} className="border-b border-border/40 hover:bg-muted/30">
+                                      <td className="p-2 text-muted-foreground whitespace-nowrap">{(() => { try { return format(new Date(row.created_at), 'MMM dd, HH:mm'); } catch { return row.created_at; } })()}</td>
+                                      <td className="p-2">{row.actor_email || '—'}</td>
+                                      <td className="p-2 font-mono">{row.action}</td>
+                                      <td className="p-2 text-muted-foreground">{row.entity_type ? `${row.entity_type}${row.entity_id ? `:${String(row.entity_id).slice(0, 8)}` : ''}` : '—'}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                       <Button onClick={() => guard(async () => {
                             await saveEntitySettings('data', { compliance_configured: true });
                           })} disabled={!allowModals}>Save</Button>
