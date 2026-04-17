@@ -5810,7 +5810,7 @@ const AdminDashboard = () => {
                     <CardContent className="space-y-4">
                       <div className="flex gap-2">
                         <Input placeholder="Key name (e.g. Zapier, Custom App)" value={newApiKeyName} onChange={e => setNewApiKeyName(e.target.value)} className="max-w-xs" />
-                        <Button onClick={() => guard(() => {
+                        <Button onClick={() => guard(async () => {
                           if (!newApiKeyName.trim()) { toast.error('Enter a name for the key'); return; }
                           const newKey = {
                             id: Date.now().toString(),
@@ -5819,8 +5819,10 @@ const AdminDashboard = () => {
                             created_at: new Date().toISOString(),
                             last_used: null,
                           };
-                          setApiKeys(prev => [...prev, newKey]);
+                          const next = [...apiKeys, newKey];
+                          setApiKeys(next);
                           setNewApiKeyName('');
+                          await persistIntegrations({ api_keys: next });
                           toast.success('API key generated — copy it now, it will not be shown again');
                         })} disabled={!allowModals}>Generate Key</Button>
                       </div>
