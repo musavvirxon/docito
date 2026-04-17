@@ -5839,7 +5839,7 @@ const AdminDashboard = () => {
                                   <td className="p-3 text-muted-foreground">{k.last_used || 'Never'}</td>
                                   <td className="p-3 flex gap-1">
                                     <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(k.key).then(() => toast.success('Key copied'))}>Copy</Button>
-                                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(() => { if (confirm('Revoke this key? It will stop working immediately.')) { setApiKeys(prev => prev.filter(x => x.id !== k.id)); toast.success('Key revoked'); } })} disabled={!allowModals}>Revoke</Button>
+                                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(async () => { if (confirm('Revoke this key? It will stop working immediately.')) { const next = apiKeys.filter(x => x.id !== k.id); setApiKeys(next); await persistIntegrations({ api_keys: next }); toast.success('Key revoked'); } })} disabled={!allowModals}>Revoke</Button>
                                   </td>
                                 </tr>
                               ))}
