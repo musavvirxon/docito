@@ -1,5 +1,5 @@
 // File: src/pages/AdminDashboard.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -312,14 +312,30 @@ const AdminDashboard = () => {
       if (payload.booking) {
         setBookingSettings(prev => ({ ...prev, ...payload.booking }));
       }
-      if (payload.notification_prefs) {
-        setNotifSettings(prev => ({ ...prev, ...payload.notification_prefs }));
+      if (payload.notification_prefs || s.notification_prefs) {
+        setNotifSettings(prev => ({ ...prev, ...(payload.notification_prefs || s.notification_prefs) }));
       }
       if (payload.branding?.colorIndex !== undefined) {
         setSelectedBrandColor(payload.branding.colorIndex);
       }
+      const integrations = s.integrations || payload.integrations || {};
+      if (Array.isArray(integrations.api_keys)) setApiKeys(integrations.api_keys);
+      if (typeof integrations.webhook_url === 'string') setWebhookUrl(integrations.webhook_url);
+      if (integrations.calendar_sync_provider === 'google' || integrations.calendar_sync_provider === 'outlook' || integrations.calendar_sync_provider === 'none') {
+        setCalendarSyncProvider(integrations.calendar_sync_provider);
+      }
     }
   }, [entitySettings.settings]);
+
+  // Persist integrations to entity_settings
+  const persistIntegrations = useCallback(async (patch: Record<string, any>) => {
+    try {
+      const current = (entitySettings.settings as any)?.integrations || {};
+      await entitySettings.saveSettings({ integrations: { ...current, ...patch } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save integration settings');
+    }
+  }, [entitySettings]);
 
   // Load finance entries from hook into local state
   useEffect(() => {
@@ -5737,11 +5753,20 @@ const AdminDashboard = () => {
                               {calendarSyncProvider === cal.provider ? 'Connected' : 'Not connected'}
                             </Badge>
                             {calendarSyncProvider === cal.provider ? (
-                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(() => { setCalendarSyncProvider('none'); toast.success(`${cal.name} disconnected`); })} disabled={!allowModals}>Disconnect</Button>
+                              <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(async () => {
+                                setCalendarSyncProvider('none');
+                                await persistIntegrations({ calendar_sync_provider: 'none' });
+                                toast.success(`${cal.name} disconnected`);
+                              })} disabled={!allowModals}>Disconnect</Button>
                             ) : (
-                              <Button size="sm" onClick={() => guard(() => {
-                                if (cal.provider === 'google') { setCalendarSyncProvider('google'); toast.success('Google Calendar connected'); }
-                                else toast.info('Outlook sync coming soon');
+                              <Button size="sm" onClick={() => guard(async () => {
+                                if (cal.provider === 'google') {
+                                  setCalendarSyncProvider('google');
+                                  await persistIntegrations({ calendar_sync_provider: 'google' });
+                                  toast.success('Google Calendar connected');
+                                } else {
+                                  toast.info('Outlook sync coming soon');
+                                }
                               })} disabled={!allowModals}>Connect</Button>
                             )}
                           </div>
@@ -5785,7 +5810,7 @@ const AdminDashboard = () => {
                     <CardContent className="space-y-4">
                       <div className="flex gap-2">
                         <Input placeholder="Key name (e.g. Zapier, Custom App)" value={newApiKeyName} onChange={e => setNewApiKeyName(e.target.value)} className="max-w-xs" />
-                        <Button onClick={() => guard(() => {
+                        <Button onClick={() => guard(async () => {
                           if (!newApiKeyName.trim()) { toast.error('Enter a name for the key'); return; }
                           const newKey = {
                             id: Date.now().toString(),
@@ -5794,8 +5819,10 @@ const AdminDashboard = () => {
                             created_at: new Date().toISOString(),
                             last_used: null,
                           };
-                          setApiKeys(prev => [...prev, newKey]);
+                          const next = [...apiKeys, newKey];
+                          setApiKeys(next);
                           setNewApiKeyName('');
+                          await persistIntegrations({ api_keys: next });
                           toast.success('API key generated — copy it now, it will not be shown again');
                         })} disabled={!allowModals}>Generate Key</Button>
                       </div>
@@ -5812,7 +5839,7 @@ const AdminDashboard = () => {
                                   <td className="p-3 text-muted-foreground">{k.last_used || 'Never'}</td>
                                   <td className="p-3 flex gap-1">
                                     <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(k.key).then(() => toast.success('Key copied'))}>Copy</Button>
-                                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(() => { if (confirm('Revoke this key? It will stop working immediately.')) { setApiKeys(prev => prev.filter(x => x.id !== k.id)); toast.success('Key revoked'); } })} disabled={!allowModals}>Revoke</Button>
+                                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => guard(async () => { if (confirm('Revoke this key? It will stop working immediately.')) { const next = apiKeys.filter(x => x.id !== k.id); setApiKeys(next); await persistIntegrations({ api_keys: next }); toast.success('Key revoked'); } })} disabled={!allowModals}>Revoke</Button>
                                   </td>
                                 </tr>
                               ))}
@@ -5841,7 +5868,7 @@ const AdminDashboard = () => {
                         <Input value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} placeholder="https://your-server.com/webhook" />
                       </div>
                       <div className="flex gap-2">
-                        <Button onClick={() => guard(() => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
+                        <Button onClick={() => guard(async () => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } await persistIntegrations({ webhook_url: webhookUrl }); toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
                         <Button variant="outline" onClick={() => guard(() => toast.info('Test event coming soon'))} disabled={!allowModals}>Send Test Event</Button>
                       </div>
                       <div>
