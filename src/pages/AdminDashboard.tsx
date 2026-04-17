@@ -5710,7 +5710,36 @@ const AdminDashboard = () => {
                         <div><p className="text-sm font-medium">Show consent checkbox on patient booking form</p><p className="text-xs text-muted-foreground">Required in EU jurisdictions. Adds a consent checkbox to the booking form.</p></div>
                         <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => toast.info('Audit logs are available in the Supabase dashboard.')}>View full audit log</Button>
+                      <Button size="sm" variant="outline" onClick={() => guard(async () => { setAuditLogsOpen(true); if (auditLogsRows.length === 0) await loadAuditLogs(); })} disabled={!allowModals}>View full audit log</Button>
+                      {auditLogsOpen && (
+                        <Card className="mt-3 border-border/60">
+                          <CardHeader className="flex flex-row items-center justify-between py-3">
+                            <CardTitle className="text-sm">Audit Log (last 100 events)</CardTitle>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="ghost" onClick={() => loadAuditLogs()} disabled={auditLogsLoading}>{auditLogsLoading ? 'Loading…' : 'Refresh'}</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setAuditLogsOpen(false)}>Close</Button>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <div className="max-h-96 overflow-auto">
+                              <table className="w-full text-xs">
+                                <thead className="bg-muted/50 sticky top-0"><tr className="border-b"><th className="text-left p-2 font-medium">When</th><th className="text-left p-2 font-medium">Actor</th><th className="text-left p-2 font-medium">Action</th><th className="text-left p-2 font-medium">Entity</th></tr></thead>
+                                <tbody>
+                                  {auditLogsRows.length === 0 && !auditLogsLoading && (<tr><td colSpan={4} className="p-4 text-center text-muted-foreground">No audit log entries.</td></tr>)}
+                                  {auditLogsRows.map(row => (
+                                    <tr key={row.id} className="border-b border-border/40 hover:bg-muted/30">
+                                      <td className="p-2 text-muted-foreground whitespace-nowrap">{(() => { try { return format(new Date(row.created_at), 'MMM dd, HH:mm'); } catch { return row.created_at; } })()}</td>
+                                      <td className="p-2">{row.actor_email || '—'}</td>
+                                      <td className="p-2 font-mono">{row.action}</td>
+                                      <td className="p-2 text-muted-foreground">{row.entity_type ? `${row.entity_type}${row.entity_id ? `:${String(row.entity_id).slice(0, 8)}` : ''}` : '—'}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
                       <Button onClick={() => guard(async () => {
                             await saveEntitySettings('data', { compliance_configured: true });
                           })} disabled={!allowModals}>Save</Button>
