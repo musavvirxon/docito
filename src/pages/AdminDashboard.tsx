@@ -324,8 +324,23 @@ const AdminDashboard = () => {
       if (integrations.calendar_sync_provider === 'google' || integrations.calendar_sync_provider === 'outlook' || integrations.calendar_sync_provider === 'none') {
         setCalendarSyncProvider(integrations.calendar_sync_provider);
       }
+      // Insurance hydration
+      const insurance = payload.insurance || s.insurance || {};
+      if (Array.isArray(insurance.insurers)) setInsurers(insurance.insurers);
+      if (Array.isArray(insurance.claims)) setClaims(insurance.claims);
     }
   }, [entitySettings.settings]);
+
+  // Persist insurance (insurers + claims) to entity_settings.insurance
+  const persistInsurance = useCallback(async (patch: { insurers?: string[]; claims?: any[] }) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      const currentInsurance = current.insurance || {};
+      await entitySettings.saveSettings({ ...current, insurance: { ...currentInsurance, ...patch } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save insurance data');
+    }
+  }, [entitySettings]);
 
   // Persist integrations to entity_settings
   const persistIntegrations = useCallback(async (patch: Record<string, any>) => {
