@@ -446,8 +446,29 @@ const AdminDashboard = () => {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Downloaded ${filename}`);
   };
+
+  // Persist scheduled reports to entity_settings.payload.reports.schedules
+  const persistReportSchedules = useCallback(async (next: typeof reportSchedules) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      const reports = current.reports || {};
+      await entitySettings.saveSettings({ ...current, reports: { ...reports, schedules: next } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save scheduled reports');
+    }
+  }, [entitySettings, reportSchedules]);
+
+  // Persist invoice template under billing.invoice_template
+  const persistInvoiceTemplate = useCallback(async (tpl: typeof invoiceTemplate) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      const billing = current.billing || current.billing_prefs || {};
+      await entitySettings.saveSettings({ ...current, billing: { ...billing, invoice_template: tpl } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save invoice template');
+    }
+  }, [entitySettings]);
 
   // Save settings helper
   const saveEntitySettings = async (section: string, data: Record<string, any>) => {
@@ -4065,8 +4086,19 @@ const AdminDashboard = () => {
                       <div className="border-2 border-dashed border-border rounded-xl h-[200px] flex items-center justify-center text-muted-foreground">
                         <p>Invoice preview will show a formatted version of your invoice template.</p>
                       </div>
-                      <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Invoice template customization is under development.'))}>
-                        Customize Template
+                      <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
+                        const header = prompt(tA('billing.invoices.headerPrompt', 'Invoice header text (clinic name, tagline):'), invoiceTemplate.header);
+                        if (header === null) return;
+                        const footer = prompt(tA('billing.invoices.footerPrompt', 'Invoice footer text (thank-you note, terms):'), invoiceTemplate.footer);
+                        if (footer === null) return;
+                        const accent = prompt(tA('billing.invoices.accentPrompt', 'Accent color (hex, e.g. #0ea5e9):'), invoiceTemplate.accent_color);
+                        if (accent === null) return;
+                        const next = { ...invoiceTemplate, header, footer, accent_color: accent };
+                        setInvoiceTemplate(next);
+                        await persistInvoiceTemplate(next);
+                        toast.success(tA('billing.invoices.templateSaved', 'Invoice template saved'));
+                      })}>
+                        {tA('billing.invoices.customizeTemplate', 'Customize Template')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -4437,8 +4469,36 @@ const AdminDashboard = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm">${(p.amount || 0).toFixed(2)}</span>
-                            <Button size="sm" variant="outline" onClick={() => toast.info('Payout processing requires admin approval. Contact support.')}>Run Payout</Button>
-                            <Button size="sm" variant="ghost" onClick={() => toast.info('Editing compensation profiles coming in next update.')}>Edit</Button>
+                            <Button size="sm" variant="outline" onClick={() => guard(async () => {
+                              try {
+                                const periodEnd = new Date();
+                                const periodStart = new Date(); periodStart.setDate(periodStart.getDate() - 30);
+                                const amountCents = Math.round((p.amount || 0) * 100);
+                                const { error } = await (supabase as any).from('compensation_payouts').insert({
+                                  compensation_profile_id: p.id,
+                                  user_id: p.user_id || '00000000-0000-0000-0000-000000000000',
+                                  entity_type: 'practice', entity_id: practice?.id,
+                                  calculated_amount_cents: amountCents, final_amount_cents: amountCents,
+                                  currency: p.currency || 'USD',
+                                  period_start: periodStart.toISOString().slice(0,10),
+                                  period_end: periodEnd.toISOString().slice(0,10),
+                                  status: 'pending',
+                                });
+                                if (error) throw error;
+                                toast.success(tA('finance.payroll.payoutQueued', 'Payout queued for approval'));
+                              } catch (e: any) { toast.error(e?.message || 'Payout failed'); }
+                            })}>{tA('finance.payroll.runPayout', 'Run Payout')}</Button>
+                            <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                              const newAmount = prompt(tA('finance.compensation.amountPrompt', 'New amount ($):'), String(p.amount ?? 0));
+                              if (newAmount === null) return;
+                              const cents = Math.round(parseFloat(newAmount) * 100);
+                              if (Number.isNaN(cents)) { toast.error('Invalid amount'); return; }
+                              try {
+                                const { error } = await (supabase as any).from('staff_compensation_profiles').update({ amount_cents: cents }).eq('id', p.id);
+                                if (error) throw error;
+                                toast.success(tA('finance.compensation.updated', 'Compensation updated'));
+                              } catch (e: any) { toast.error(e?.message || 'Update failed'); }
+                            })}>{tA('common.edit', 'Edit')}</Button>
                           </div>
                         </div>
                       )) : (
