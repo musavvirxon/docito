@@ -1,6 +1,6 @@
 // File: src/lib/api/referral-api.ts
 import { supabase } from '@/integrations/supabase/client';
-import i18n from '@/i18n';
+import i18n from '@/i18n/config';
 import type { Referral, ReferralEntityType, ReferralType } from '@/hooks/useReferrals';
 
 type DownloadReferralPdfArgs = {

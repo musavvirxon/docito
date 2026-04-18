@@ -1,6 +1,6 @@
 // Prescription PDF download — locale follows the UI language.
 import { supabase } from '@/integrations/supabase/client';
-import i18n from '@/i18n';
+import i18n from '@/i18n/config';
 
 const SUPPORTED_LOCALES = new Set([
   'en', 'ru', 'uz', 'tr', 'ar', 'ja', 'ko', 'zh', 'es', 'pt', 'de',
