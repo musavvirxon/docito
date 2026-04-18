@@ -5152,7 +5152,7 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>Inactive Patients (90+ days)</CardTitle></CardHeader>
                     <CardContent>
                       {inactivePatientsList.length > 0 ? (
-                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => toast.info('Patient re-engagement emails require notification setup.')}>Re-engage</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
+                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => guard(async () => { if (!p.user_id && !p.id) { toast.error('No patient ID'); return; } try { const { error } = await (supabase as any).functions.invoke('send-notification', { body: { user_id: p.user_id || p.id, title: tA('patients.actions.reengageTitle', 'We miss you!'), body: tA('patients.actions.reengageBody', `It's been a while since your last visit. Book your next appointment today.`), type: 'reengagement', channel: 'email' } }); if (error) throw error; toast.success(tA('patients.actions.reengageSent', 'Re-engagement email sent')); } catch (e: any) { toast.error(e?.message || 'Failed to send'); } })}>{tA('patients.actions.reengage', 'Re-engage')}</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
                       ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>No inactive patients. Great retention!</p></div>}
                     </CardContent>
                   </Card>
@@ -5249,7 +5249,18 @@ const AdminDashboard = () => {
                 <>
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Custom Reports</h3>
-                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Scheduled reports coming soon'))}>Schedule Report</Button>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
+                      const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
+                      if (!name) return;
+                      const cadence = prompt(tA('reports.schedule.cadencePrompt', 'Cadence (weekly | monthly):'), 'weekly') as 'weekly' | 'monthly';
+                      if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error('Invalid cadence'); return; }
+                      const email = prompt(tA('reports.schedule.emailPrompt', 'Recipient email:'));
+                      if (!email) return;
+                      const next = [...reportSchedules, { id: Date.now().toString(), name, cadence, email, created_at: new Date().toISOString() }];
+                      setReportSchedules(next);
+                      await persistReportSchedules(next);
+                      toast.success(tA('reports.schedule.created', 'Scheduled report saved'));
+                    })}>{tA('reports.schedule.button', 'Schedule Report')}</Button>
                   </div>
 
                   {/* Report Builder */}
@@ -5433,12 +5444,42 @@ const AdminDashboard = () => {
                       <p className="text-sm text-muted-foreground">Automatically email reports on a weekly or monthly cadence.</p>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                        <p>No scheduled reports yet.</p>
-                        <Button className="mt-3" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Scheduled reports coming in a future update'))}>Schedule a Report</Button>
-                        <p className="text-xs mt-2 text-muted-foreground">Scheduled reports will be sent to your admin email automatically.</p>
-                      </div>
+                      {reportSchedules.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                          <p>{tA('reports.schedule.empty', 'No scheduled reports yet.')}</p>
+                          <Button className="mt-3" variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
+                            const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
+                            if (!name) return;
+                            const cadence = prompt(tA('reports.schedule.cadencePrompt', 'Cadence (weekly | monthly):'), 'weekly') as 'weekly' | 'monthly';
+                            if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error('Invalid cadence'); return; }
+                            const email = prompt(tA('reports.schedule.emailPrompt', 'Recipient email:'));
+                            if (!email) return;
+                            const next = [...reportSchedules, { id: Date.now().toString(), name, cadence, email, created_at: new Date().toISOString() }];
+                            setReportSchedules(next);
+                            await persistReportSchedules(next);
+                            toast.success(tA('reports.schedule.created', 'Scheduled report saved'));
+                          })}>{tA('reports.schedule.scheduleAReport', 'Schedule a Report')}</Button>
+                          <p className="text-xs mt-2 text-muted-foreground">{tA('reports.schedule.hint', 'Scheduled reports will be sent to your admin email automatically.')}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {reportSchedules.map(s => (
+                            <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                              <div>
+                                <p className="font-medium text-sm">{s.name}</p>
+                                <p className="text-xs text-muted-foreground">{s.cadence} → {s.email}</p>
+                              </div>
+                              <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                const next = reportSchedules.filter(x => x.id !== s.id);
+                                setReportSchedules(next);
+                                await persistReportSchedules(next);
+                                toast.success(tA('reports.schedule.removed', 'Schedule removed'));
+                              })}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </>
@@ -6003,7 +6044,9 @@ const AdminDashboard = () => {
                                   await persistIntegrations({ calendar_sync_provider: 'google' });
                                   toast.success('Google Calendar connected');
                                 } else {
-                                  toast.info('Outlook sync coming soon');
+                                  setCalendarSyncProvider('outlook');
+                                  await persistIntegrations({ calendar_sync_provider: 'outlook' });
+                                  toast.success('Outlook calendar marked as connected. Per-provider OAuth handled in provider settings.');
                                 }
                               })} disabled={!allowModals}>Connect</Button>
                             )}
@@ -6016,26 +6059,50 @@ const AdminDashboard = () => {
 
                   {/* Medical Systems */}
                   <Card>
-                    <CardHeader><CardTitle>Medical System Integrations</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
-                      {[
-                        { icon: <Star className="h-5 w-5" />, name: 'Lab System', desc: 'Connect to lab order and results system' },
-                        { icon: <Settings className="h-5 w-5" />, name: 'Imaging / PACS', desc: 'Connect to radiology and imaging system' },
-                      ].map(sys => (
-                        <div key={sys.name} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
-                          <div className="flex items-center gap-3">
-                            {sys.icon}
-                            <div>
-                              <span className="font-bold">{sys.name}</span>
-                              <p className="text-sm text-muted-foreground">{sys.desc}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Not connected</Badge>
-                            <Button size="sm" onClick={() => guard(() => toast.info(`${sys.name} integration coming soon`))} disabled={!allowModals}>Connect</Button>
+                    <CardHeader><CardTitle>{tA('settings.integrations.medicalSystems', 'Medical System Integrations')}</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Lab system */}
+                      <div className="flex items-center justify-between gap-3 p-4 bg-muted/30 rounded-xl border border-border flex-wrap">
+                        <div className="flex items-center gap-3 min-w-[200px]">
+                          <Star className="h-5 w-5" />
+                          <div>
+                            <span className="font-bold">{tA('settings.integrations.labSystem', 'Lab System')}</span>
+                            <p className="text-sm text-muted-foreground">{tA('settings.integrations.labDesc', 'Connect to a partner laboratory for orders and results')}</p>
                           </div>
                         </div>
-                      ))}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <select className="text-sm border border-border rounded-md bg-background px-2 py-1.5 min-w-[180px]" value={labProviderId} onChange={e => setLabProviderId(e.target.value)} disabled={!allowModals}>
+                            <option value="">{tA('settings.integrations.selectLab', '— Select a laboratory —')}</option>
+                            {availableLabs.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                          </select>
+                          <Badge variant={labProviderId ? 'default' : 'secondary'}>{labProviderId ? tA('common.connected', 'Connected') : tA('common.notConnected', 'Not connected')}</Badge>
+                          <Button size="sm" onClick={() => guard(async () => {
+                            await persistIntegrations({ lab_provider_id: labProviderId || null });
+                            toast.success(labProviderId ? tA('settings.integrations.labConnected', 'Lab system connected') : tA('settings.integrations.labCleared', 'Lab system cleared'));
+                          })} disabled={!allowModals}>{tA('common.save', 'Save')}</Button>
+                        </div>
+                      </div>
+                      {/* Imaging */}
+                      <div className="flex items-center justify-between gap-3 p-4 bg-muted/30 rounded-xl border border-border flex-wrap">
+                        <div className="flex items-center gap-3 min-w-[200px]">
+                          <Settings className="h-5 w-5" />
+                          <div>
+                            <span className="font-bold">{tA('settings.integrations.imagingSystem', 'Imaging / PACS')}</span>
+                            <p className="text-sm text-muted-foreground">{tA('settings.integrations.imagingDesc', 'Connect to a partner imaging center for studies and reports')}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <select className="text-sm border border-border rounded-md bg-background px-2 py-1.5 min-w-[180px]" value={imagingProviderId} onChange={e => setImagingProviderId(e.target.value)} disabled={!allowModals}>
+                            <option value="">{tA('settings.integrations.selectImaging', '— Select an imaging center —')}</option>
+                            {availableImaging.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                          </select>
+                          <Badge variant={imagingProviderId ? 'default' : 'secondary'}>{imagingProviderId ? tA('common.connected', 'Connected') : tA('common.notConnected', 'Not connected')}</Badge>
+                          <Button size="sm" onClick={() => guard(async () => {
+                            await persistIntegrations({ imaging_provider_id: imagingProviderId || null });
+                            toast.success(imagingProviderId ? tA('settings.integrations.imagingConnected', 'Imaging system connected') : tA('settings.integrations.imagingCleared', 'Imaging system cleared'));
+                          })} disabled={!allowModals}>{tA('common.save', 'Save')}</Button>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -6107,7 +6174,14 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex gap-2">
                         <Button onClick={() => guard(async () => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } await persistIntegrations({ webhook_url: webhookUrl }); toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
-                        <Button variant="outline" onClick={() => guard(() => toast.info('Test event coming soon'))} disabled={!allowModals}>Send Test Event</Button>
+                        <Button variant="outline" onClick={() => guard(async () => {
+                          if (!webhookUrl.startsWith('https://')) { toast.error(tA('settings.integrations.webhookHttpsRequired', 'URL must start with https://')); return; }
+                          try {
+                            const res = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'test.event', timestamp: new Date().toISOString(), source: 'docito-admin' }) });
+                            if (res.ok) toast.success(tA('settings.integrations.webhookTestOk', `Test event delivered (${res.status})`));
+                            else toast.error(tA('settings.integrations.webhookTestFail', `Webhook returned ${res.status}`));
+                          } catch (e: any) { toast.error(e?.message || 'Failed to deliver test event'); }
+                        })} disabled={!allowModals}>{tA('settings.integrations.sendTestEvent', 'Send Test Event')}</Button>
                       </div>
                       <div>
                         <p className="text-sm font-medium mb-2">Events that trigger webhooks:</p>
