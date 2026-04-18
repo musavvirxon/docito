@@ -1,5 +1,6 @@
 // File: src/lib/api/referral-api.ts
 import { supabase } from '@/integrations/supabase/client';
+import i18n from '@/i18n/config';
 import type { Referral, ReferralEntityType, ReferralType } from '@/hooks/useReferrals';
 
 type DownloadReferralPdfArgs = {
@@ -8,20 +9,10 @@ type DownloadReferralPdfArgs = {
   fileName?: string;
 };
 
-function safeLocalStorageGet(key: string): string | null {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return null;
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
 function inferDashboardLocale(): string {
-  const fromI18n = safeLocalStorageGet('i18nextLng');
-  const fromDocito = safeLocalStorageGet('docito:locale') || safeLocalStorageGet('docito_locale');
+  const fromI18n = (i18n.language || '').toString();
   const nav = typeof navigator !== 'undefined' ? navigator.language : '';
-  return sanitizeLocale(fromDocito || fromI18n || nav || 'en');
+  return sanitizeLocale(fromI18n || nav || 'en');
 }
 
 function sanitizeLocale(input: string): string {

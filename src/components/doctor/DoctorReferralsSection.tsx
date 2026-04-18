@@ -206,8 +206,8 @@ function ReferralRow({
   onComplete: (id: string) => void;
   onViewDetails: (r: Referral) => void;
 }) {
-  const { profile } = useAuth();
-  const locale = (profile as any)?.language ?? undefined;
+  useAuth();
+  // PDF locale follows UI language (resolved inside downloadReferralPdf)
   const status = String(referral.status ?? "");
   const isValid = isReferralValid(referral);
   const patientName = getReferralPatientDisplayName(referral);
@@ -220,7 +220,7 @@ function ReferralRow({
 
   const handleDownload = async () => {
     try {
-      await downloadReferralPdf({ referralId: referral.id, locale });
+      await downloadReferralPdf({ referralId: referral.id });
     } catch (e: any) {
       toast.error(e?.message ?? "PDF download failed");
     }

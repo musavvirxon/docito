@@ -1,4 +1,4 @@
-// Prescription PDF download — locale follows the UI language.
+// Invoice PDF download — locale follows the UI language.
 import { supabase } from '@/integrations/supabase/client';
 import i18n from '@/i18n/config';
 
@@ -15,11 +15,7 @@ function resolveLocale(explicit?: string): string {
   return SUPPORTED_LOCALES.has(code) ? code : 'en';
 }
 
-export async function downloadPrescriptionPdf(
-  prescriptionId: string,
-  prescriptionNumber?: string,
-  locale?: string,
-): Promise<void> {
+export async function downloadInvoicePdf(invoiceId: string, fileName?: string, locale?: string): Promise<void> {
   const session = await supabase.auth.getSession();
   const token = session.data.session?.access_token;
   if (!token) throw new Error('Not authenticated');
@@ -29,7 +25,7 @@ export async function downloadPrescriptionPdf(
 
   const effectiveLocale = resolveLocale(locale);
 
-  const res = await fetch(`${supabaseUrl}/functions/v1/prescription-generate-pdf`, {
+  const res = await fetch(`${supabaseUrl}/functions/v1/invoice-generate-pdf`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +33,7 @@ export async function downloadPrescriptionPdf(
       'apikey': anonKey,
       'Accept': 'application/pdf',
     },
-    body: JSON.stringify({ prescription_id: prescriptionId, locale: effectiveLocale }),
+    body: JSON.stringify({ invoice_id: invoiceId, locale: effectiveLocale }),
   });
 
   if (!res.ok) {
@@ -49,14 +45,9 @@ export async function downloadPrescriptionPdf(
   const blobUrl = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = blobUrl;
-  a.download = `prescription-${(prescriptionNumber || prescriptionId.slice(0, 8)).replace(/\s+/g, '_')}.pdf`;
+  a.download = `${(fileName || `invoice-${invoiceId.slice(0, 8)}`).replace(/\s+/g, '_')}.pdf`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-}
-
-export async function downloadPatientProfilePdf(patientId: string, _patientName?: string): Promise<void> {
-  const { generateProfilePatientPDF } = await import('@/components/doctor/patients/PatientSummaryPDF');
-  await generateProfilePatientPDF(patientId, '');
 }
