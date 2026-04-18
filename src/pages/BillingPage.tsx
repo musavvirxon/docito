@@ -63,18 +63,18 @@ export default function BillingPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                Billing
+                {t('billing.title')}
               </CardTitle>
-              <CardDescription>Manage subscription, invoices, and payments.</CardDescription>
+              <CardDescription>{t('billing.manageDescription')}</CardDescription>
             </div>
 
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={actions.refetch} disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                Refresh
+                {t('billing.refresh')}
               </Button>
               <Button onClick={actions.openPortal} disabled={loading}>
-                Open Billing Portal
+                {t('billing.openPortal')}
               </Button>
             </div>
           </div>
@@ -90,8 +90,8 @@ export default function BillingPage() {
               <>
                 <span className="text-muted-foreground">•</span>
                 <span className="text-muted-foreground">
-                  Next invoice: {summary.nextInvoiceAmount}
-                  {summary.nextInvoiceDueAt ? ` due ${new Date(summary.nextInvoiceDueAt).toLocaleDateString()}` : ""}
+                  {t('billing.nextInvoice')}: {summary.nextInvoiceAmount}
+                  {summary.nextInvoiceDueAt ? ` ${t('billing.due').toLowerCase()} ${new Date(summary.nextInvoiceDueAt).toLocaleDateString()}` : ""}
                 </span>
               </>
             )}
@@ -108,7 +108,7 @@ export default function BillingPage() {
           ) : (
             <>
               <div className="space-y-3">
-                <div className="text-sm font-medium">Plans</div>
+                <div className="text-sm font-medium">{t('billing.plans')}</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {plans.map((p) => (
                     <Card key={p.id}>
@@ -125,7 +125,7 @@ export default function BillingPage() {
                           <span className="text-sm text-muted-foreground font-normal">/{p.interval}</span>
                         </div>
                         <Button className="w-full" onClick={() => actions.startCheckout(p.code)}>
-                          Choose {p.name}
+                          {t('billing.choose', { name: p.name })}
                         </Button>
                       </CardContent>
                     </Card>
@@ -134,9 +134,9 @@ export default function BillingPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="text-sm font-medium">Invoices</div>
+                <div className="text-sm font-medium">{t('billing.invoices')}</div>
                 {invoices.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No invoices yet.</div>
+                  <div className="text-sm text-muted-foreground">{t('billing.noInvoices')}</div>
                 ) : (
                   <div className="space-y-2">
                     {invoices.map((inv) => (
@@ -152,23 +152,21 @@ export default function BillingPage() {
                             </div>
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            Created {new Date(inv.created_at).toLocaleString()}
-                            {inv.due_at ? ` • Due ${new Date(inv.due_at).toLocaleDateString()}` : ""}
-                            {inv.paid_at ? ` • Paid ${new Date(inv.paid_at).toLocaleDateString()}` : ""}
+                            {t('billing.created')} {new Date(inv.created_at).toLocaleString()}
+                            {inv.due_at ? ` • ${t('billing.due')} ${new Date(inv.due_at).toLocaleDateString()}` : ""}
+                            {inv.paid_at ? ` • ${t('billing.paid')} ${new Date(inv.paid_at).toLocaleDateString()}` : ""}
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 justify-end">
                           {inv.hosted_invoice_url && (
                             <Button variant="outline" size="sm" onClick={() => window.open(inv.hosted_invoice_url!, "_blank")}>
-                              View <ExternalLink className="h-4 w-4 ml-2" />
+                              {t('billing.view')} <ExternalLink className="h-4 w-4 ml-2" />
                             </Button>
                           )}
-                          {inv.invoice_pdf_url && (
-                            <Button variant="outline" size="sm" onClick={() => window.open(inv.invoice_pdf_url!, "_blank")}>
-                              PDF <ExternalLink className="h-4 w-4 ml-2" />
-                            </Button>
-                          )}
+                          <Button variant="outline" size="sm" onClick={() => handleDownloadPdf(inv.id)}>
+                            {t('billing.pdf')} <Download className="h-4 w-4 ml-2" />
+                          </Button>
                         </div>
                       </div>
                     ))}

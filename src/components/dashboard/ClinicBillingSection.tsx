@@ -4,7 +4,10 @@ import { useBilling, type EntityType } from "@/hooks/useBilling";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, ExternalLink, RefreshCw } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, RefreshCw, Download } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { downloadInvoicePdf } from "@/lib/api/invoice-api";
+import { toast } from "sonner";
 
 function badgeVariant(status: string) {
   const s = String(status || "").toLowerCase();
