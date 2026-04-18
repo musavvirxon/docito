@@ -314,6 +314,20 @@ const AdminDashboard = () => {
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [editingServicePrice, setEditingServicePrice] = useState('');
 
+  // Schedules / templates / connectors / patient insurance overrides
+  const [reportSchedules, setReportSchedules] = useState<Array<{ id: string; name: string; cadence: 'weekly' | 'monthly'; email: string; created_at: string }>>([]);
+  const [invoiceTemplate, setInvoiceTemplate] = useState<{ header: string; footer: string; accent_color: string; show_logo: boolean }>({ header: '', footer: 'Thank you for your business.', accent_color: '#0ea5e9', show_logo: true });
+  const [labProviderId, setLabProviderId] = useState<string>('');
+  const [imagingProviderId, setImagingProviderId] = useState<string>('');
+  const [availableLabs, setAvailableLabs] = useState<Array<{ id: string; name: string }>>([]);
+  const [availableImaging, setAvailableImaging] = useState<Array<{ id: string; name: string }>>([]);
+  const [patientInsuranceMap, setPatientInsuranceMap] = useState<Record<string, { provider: string; policy: string; coverage: string }>>({});
+  const [payrollFrom, setPayrollFrom] = useState('');
+  const [payrollTo, setPayrollTo] = useState('');
+
+  // i18n: admin namespace (in addition to dashboard) for new keys
+  const { t: tA } = useTranslation('admin');
+
   // Entity settings hook
   const entitySettings = useEntitySettings('practice', practice?.id || null);
 
