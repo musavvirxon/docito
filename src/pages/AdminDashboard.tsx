@@ -359,8 +359,37 @@ const AdminDashboard = () => {
       const insurance = payload.insurance || s.insurance || {};
       if (Array.isArray(insurance.insurers)) setInsurers(insurance.insurers);
       if (Array.isArray(insurance.claims)) setClaims(insurance.claims);
+      if (insurance.patients && typeof insurance.patients === 'object') setPatientInsuranceMap(insurance.patients);
+      // Reports schedules
+      const reports = payload.reports || {};
+      if (Array.isArray(reports.schedules)) setReportSchedules(reports.schedules);
+      // Billing / invoice template
+      const billingPrefs = payload.billing || payload.billing_prefs || {};
+      if (billingPrefs.invoice_template && typeof billingPrefs.invoice_template === 'object') {
+        setInvoiceTemplate(prev => ({ ...prev, ...billingPrefs.invoice_template }));
+      }
+      // Medical system providers
+      if (typeof integrations.lab_provider_id === 'string') setLabProviderId(integrations.lab_provider_id);
+      if (typeof integrations.imaging_provider_id === 'string') setImagingProviderId(integrations.imaging_provider_id);
     }
   }, [entitySettings.settings]);
+
+  // Fetch available lab + imaging providers (practices filtered by entity_type)
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await (supabase as any)
+          .from('practices')
+          .select('id, name, entity_type')
+          .in('entity_type', ['laboratory', 'imaging_center'])
+          .order('name', { ascending: true });
+        if (data) {
+          setAvailableLabs(data.filter((p: any) => p.entity_type === 'laboratory'));
+          setAvailableImaging(data.filter((p: any) => p.entity_type === 'imaging_center'));
+        }
+      } catch { /* non-fatal */ }
+    })();
+  }, []);
 
   // Persist insurance (insurers + claims) to entity_settings.insurance
   const persistInsurance = useCallback(async (patch: { insurers?: string[]; claims?: any[] }) => {
@@ -2700,7 +2729,18 @@ const AdminDashboard = () => {
                               <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">—</p></div>
                             ))}
                           </div>
-                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Insurance editing is available from the patient\'s profile page.'))}>Edit Insurance</Button>
+                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(async () => {
+                            const provider = prompt(tA('patients.actions.insuranceProviderPrompt', 'Insurance provider:'), patientInsuranceMap[selectedPatient.id]?.provider || '');
+                            if (provider === null) return;
+                            const policy = prompt(tA('patients.actions.policyNumberPrompt', 'Policy / member number:'), patientInsuranceMap[selectedPatient.id]?.policy || '');
+                            if (policy === null) return;
+                            const coverage = prompt(tA('patients.actions.coveragePrompt', 'Coverage description:'), patientInsuranceMap[selectedPatient.id]?.coverage || '');
+                            if (coverage === null) return;
+                            const next = { ...patientInsuranceMap, [selectedPatient.id]: { provider, policy, coverage } };
+                            setPatientInsuranceMap(next);
+                            await persistInsurance({ ...(entitySettings.settings as any)?.payload?.insurance || {}, patients: next } as any);
+                            toast.success(tA('patients.actions.insuranceSaved', 'Insurance updated'));
+                          })}>{tA('patients.actions.editInsurance', 'Edit Insurance')}</Button>
                         </CardContent>
                       </Card>
                     </div>
