@@ -1,6 +1,6 @@
 // File: src/lib/api/treatment-plan-api.ts
 import { supabase } from "@/integrations/supabase/client";
-import i18n from "@/i18n";
+import i18n from "@/i18n/config";
 
 type Params = {
   treatmentPlanId: string;
