@@ -6,8 +6,10 @@ import { useBilling, type EntityType } from "@/hooks/useBilling";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CreditCard, ExternalLink, RefreshCw, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, CreditCard, ExternalLink, RefreshCw, CheckCircle2, XCircle, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { downloadInvoicePdf } from "@/lib/api/invoice-api";
+import { toast } from "sonner";
 
 function badgeVariant(status: string) {
   const s = String(status || "").toLowerCase();
@@ -18,7 +20,7 @@ function badgeVariant(status: string) {
 }
 
 export default function BillingPage() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('common');
   const { permissions } = useStaffContext();
   const [sp] = useSearchParams();
 
@@ -31,10 +33,18 @@ export default function BillingPage() {
   });
 
   const banner = useMemo(() => {
-    if (sp.get("success") === "1") return { icon: CheckCircle2, text: "Payment completed. Your subscription will update shortly." };
-    if (sp.get("canceled") === "1") return { icon: XCircle, text: "Checkout canceled." };
+    if (sp.get("success") === "1") return { icon: CheckCircle2, text: t('billing.paymentSuccess') };
+    if (sp.get("canceled") === "1") return { icon: XCircle, text: t('billing.paymentCanceled') };
     return null;
-  }, [sp]);
+  }, [sp, t]);
+
+  const handleDownloadPdf = async (invoiceId: string) => {
+    try {
+      await downloadInvoicePdf(invoiceId, `invoice-${invoiceId.slice(0, 8)}`);
+    } catch (e: any) {
+      toast.error(e?.message || t('billing.downloadFailed'));
+    }
+  };
 
   return (
     <div className="space-y-6">
