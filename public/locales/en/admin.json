@@ -904,5 +904,85 @@
     "custom": "Custom",
     "expense": "Expense",
     "payroll": "Payroll"
+  },
+  "common": {
+    "save": "Save", "cancel": "Cancel", "edit": "Edit", "delete": "Delete",
+    "connected": "Connected", "notConnected": "Not connected"
+  },
+  "patients": {
+    "actions": {
+      "editInsurance": "Edit Insurance",
+      "insuranceProviderPrompt": "Insurance provider:",
+      "policyNumberPrompt": "Policy / member number:",
+      "coveragePrompt": "Coverage description:",
+      "insuranceSaved": "Insurance updated",
+      "reengage": "Re-engage",
+      "reengageTitle": "We miss you!",
+      "reengageBody": "It's been a while since your last visit. Book your next appointment today.",
+      "reengageSent": "Re-engagement email sent"
+    },
+    "profile": {
+      "insuranceProvider": "Insurance Provider",
+      "policyNumber": "Policy Number",
+      "coverage": "Coverage"
+    }
+  },
+  "billing": {
+    "invoices": {
+      "customizeTemplate": "Customize Template",
+      "headerPrompt": "Invoice header text (clinic name, tagline):",
+      "footerPrompt": "Invoice footer text (thank-you note, terms):",
+      "accentPrompt": "Accent color (hex, e.g. #0ea5e9):",
+      "templateSaved": "Invoice template saved"
+    }
+  },
+  "finance": {
+    "payroll": {
+      "runPayout": "Run Payout",
+      "payoutQueued": "Payout queued for approval",
+      "calculateAndRun": "Calculate & Run",
+      "selectPeriod": "Select start and end dates",
+      "noProfiles": "No active compensation profiles found",
+      "runCreated": "Payroll run created",
+      "runHint": "Running payroll creates payout records for each active compensation profile."
+    },
+    "compensation": { "amountPrompt": "New amount ($):", "updated": "Compensation updated" },
+    "rules": {
+      "namePrompt": "Rule name:", "amountPrompt": "Amount ($):",
+      "updated": "Rule updated", "paused": "Rule paused", "resumed": "Rule resumed",
+      "pause": "Pause", "resume": "Resume", "deleted": "Rule deleted",
+      "confirmDelete": "Delete this recurring rule?",
+      "runDueNow": "Run due now", "runDueOk": "Generated entries from due rules"
+    }
+  },
+  "reports": {
+    "schedule": {
+      "button": "Schedule Report", "scheduleAReport": "Schedule a Report",
+      "namePrompt": "Schedule name (e.g. Weekly Revenue):",
+      "cadencePrompt": "Cadence (weekly | monthly):",
+      "emailPrompt": "Recipient email:",
+      "created": "Scheduled report saved", "removed": "Schedule removed",
+      "empty": "No scheduled reports yet.",
+      "hint": "Scheduled reports will be sent to your admin email automatically."
+    }
+  },
+  "settingsExt": {
+    "integrations": {
+      "medicalSystems": "Medical System Integrations",
+      "labSystem": "Lab System",
+      "labDesc": "Connect to a partner laboratory for orders and results",
+      "selectLab": "— Select a laboratory —",
+      "labConnected": "Lab system connected",
+      "labCleared": "Lab system cleared",
+      "imagingSystem": "Imaging / PACS",
+      "imagingDesc": "Connect to a partner imaging center for studies and reports",
+      "selectImaging": "— Select an imaging center —",
+      "imagingConnected": "Imaging system connected",
+      "imagingCleared": "Imaging system cleared",
+      "sendTestEvent": "Send Test Event",
+      "webhookHttpsRequired": "URL must start with https://",
+      "webhookTestOk": "Test event delivered",
+      "webhookTestFail": "Webhook test failed"
+    }
   }
 }

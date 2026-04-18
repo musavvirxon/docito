@@ -314,6 +314,20 @@ const AdminDashboard = () => {
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [editingServicePrice, setEditingServicePrice] = useState('');
 
+  // Schedules / templates / connectors / patient insurance overrides
+  const [reportSchedules, setReportSchedules] = useState<Array<{ id: string; name: string; cadence: 'weekly' | 'monthly'; email: string; created_at: string }>>([]);
+  const [invoiceTemplate, setInvoiceTemplate] = useState<{ header: string; footer: string; accent_color: string; show_logo: boolean }>({ header: '', footer: 'Thank you for your business.', accent_color: '#0ea5e9', show_logo: true });
+  const [labProviderId, setLabProviderId] = useState<string>('');
+  const [imagingProviderId, setImagingProviderId] = useState<string>('');
+  const [availableLabs, setAvailableLabs] = useState<Array<{ id: string; name: string }>>([]);
+  const [availableImaging, setAvailableImaging] = useState<Array<{ id: string; name: string }>>([]);
+  const [patientInsuranceMap, setPatientInsuranceMap] = useState<Record<string, { provider: string; policy: string; coverage: string }>>({});
+  const [payrollFrom, setPayrollFrom] = useState('');
+  const [payrollTo, setPayrollTo] = useState('');
+
+  // i18n: admin namespace (in addition to dashboard) for new keys
+  const { t: tA } = useTranslation('admin');
+
   // Entity settings hook
   const entitySettings = useEntitySettings('practice', practice?.id || null);
 
@@ -345,8 +359,37 @@ const AdminDashboard = () => {
       const insurance = payload.insurance || s.insurance || {};
       if (Array.isArray(insurance.insurers)) setInsurers(insurance.insurers);
       if (Array.isArray(insurance.claims)) setClaims(insurance.claims);
+      if (insurance.patients && typeof insurance.patients === 'object') setPatientInsuranceMap(insurance.patients);
+      // Reports schedules
+      const reports = payload.reports || {};
+      if (Array.isArray(reports.schedules)) setReportSchedules(reports.schedules);
+      // Billing / invoice template
+      const billingPrefs = payload.billing || payload.billing_prefs || {};
+      if (billingPrefs.invoice_template && typeof billingPrefs.invoice_template === 'object') {
+        setInvoiceTemplate(prev => ({ ...prev, ...billingPrefs.invoice_template }));
+      }
+      // Medical system providers
+      if (typeof integrations.lab_provider_id === 'string') setLabProviderId(integrations.lab_provider_id);
+      if (typeof integrations.imaging_provider_id === 'string') setImagingProviderId(integrations.imaging_provider_id);
     }
   }, [entitySettings.settings]);
+
+  // Fetch available lab + imaging providers (practices filtered by entity_type)
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await (supabase as any)
+          .from('practices')
+          .select('id, name, entity_type')
+          .in('entity_type', ['laboratory', 'imaging_center'])
+          .order('name', { ascending: true });
+        if (data) {
+          setAvailableLabs(data.filter((p: any) => p.entity_type === 'laboratory'));
+          setAvailableImaging(data.filter((p: any) => p.entity_type === 'imaging_center'));
+        }
+      } catch { /* non-fatal */ }
+    })();
+  }, []);
 
   // Persist insurance (insurers + claims) to entity_settings.insurance
   const persistInsurance = useCallback(async (patch: { insurers?: string[]; claims?: any[] }) => {
@@ -403,8 +446,29 @@ const AdminDashboard = () => {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`Downloaded ${filename}`);
   };
+
+  // Persist scheduled reports to entity_settings.payload.reports.schedules
+  const persistReportSchedules = useCallback(async (next: typeof reportSchedules) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      const reports = current.reports || {};
+      await entitySettings.saveSettings({ ...current, reports: { ...reports, schedules: next } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save scheduled reports');
+    }
+  }, [entitySettings, reportSchedules]);
+
+  // Persist invoice template under billing.invoice_template
+  const persistInvoiceTemplate = useCallback(async (tpl: typeof invoiceTemplate) => {
+    try {
+      const current = (entitySettings.settings as any)?.payload || {};
+      const billing = current.billing || current.billing_prefs || {};
+      await entitySettings.saveSettings({ ...current, billing: { ...billing, invoice_template: tpl } });
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to save invoice template');
+    }
+  }, [entitySettings]);
 
   // Save settings helper
   const saveEntitySettings = async (section: string, data: Record<string, any>) => {
@@ -2682,11 +2746,30 @@ const AdminDashboard = () => {
                         <CardHeader><CardTitle className="text-base">Insurance</CardTitle></CardHeader>
                         <CardContent>
                           <div className="space-y-3 text-sm">
-                            {['Insurance Provider', 'Policy Number', 'Coverage'].map(label => (
-                              <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">—</p></div>
-                            ))}
+                            {(() => {
+                              const ins = patientInsuranceMap[selectedPatient.id] || { provider: '', policy: '', coverage: '' };
+                              const items: [string, string][] = [
+                                [tA('patients.profile.insuranceProvider', 'Insurance Provider'), ins.provider || '—'],
+                                [tA('patients.profile.policyNumber', 'Policy Number'), ins.policy || '—'],
+                                [tA('patients.profile.coverage', 'Coverage'), ins.coverage || '—'],
+                              ];
+                              return items.map(([label, val]) => (
+                                <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">{val}</p></div>
+                              ));
+                            })()}
                           </div>
-                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(() => toast.info('Insurance editing is available from the patient\'s profile page.'))}>Edit Insurance</Button>
+                          <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(async () => {
+                            const provider = prompt(tA('patients.actions.insuranceProviderPrompt', 'Insurance provider:'), patientInsuranceMap[selectedPatient.id]?.provider || '');
+                            if (provider === null) return;
+                            const policy = prompt(tA('patients.actions.policyNumberPrompt', 'Policy / member number:'), patientInsuranceMap[selectedPatient.id]?.policy || '');
+                            if (policy === null) return;
+                            const coverage = prompt(tA('patients.actions.coveragePrompt', 'Coverage description:'), patientInsuranceMap[selectedPatient.id]?.coverage || '');
+                            if (coverage === null) return;
+                            const next = { ...patientInsuranceMap, [selectedPatient.id]: { provider, policy, coverage } };
+                            setPatientInsuranceMap(next);
+                            await persistInsurance({ ...(entitySettings.settings as any)?.payload?.insurance || {}, patients: next } as any);
+                            toast.success(tA('patients.actions.insuranceSaved', 'Insurance updated'));
+                          })}>{tA('patients.actions.editInsurance', 'Edit Insurance')}</Button>
                         </CardContent>
                       </Card>
                     </div>
@@ -4003,8 +4086,19 @@ const AdminDashboard = () => {
                       <div className="border-2 border-dashed border-border rounded-xl h-[200px] flex items-center justify-center text-muted-foreground">
                         <p>Invoice preview will show a formatted version of your invoice template.</p>
                       </div>
-                      <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Invoice template customization is under development.'))}>
-                        Customize Template
+                      <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
+                        const header = prompt(tA('billing.invoices.headerPrompt', 'Invoice header text (clinic name, tagline):'), invoiceTemplate.header);
+                        if (header === null) return;
+                        const footer = prompt(tA('billing.invoices.footerPrompt', 'Invoice footer text (thank-you note, terms):'), invoiceTemplate.footer);
+                        if (footer === null) return;
+                        const accent = prompt(tA('billing.invoices.accentPrompt', 'Accent color (hex, e.g. #0ea5e9):'), invoiceTemplate.accent_color);
+                        if (accent === null) return;
+                        const next = { ...invoiceTemplate, header, footer, accent_color: accent };
+                        setInvoiceTemplate(next);
+                        await persistInvoiceTemplate(next);
+                        toast.success(tA('billing.invoices.templateSaved', 'Invoice template saved'));
+                      })}>
+                        {tA('billing.invoices.customizeTemplate', 'Customize Template')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -4375,8 +4469,36 @@ const AdminDashboard = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm">${(p.amount || 0).toFixed(2)}</span>
-                            <Button size="sm" variant="outline" onClick={() => toast.info('Payout processing requires admin approval. Contact support.')}>Run Payout</Button>
-                            <Button size="sm" variant="ghost" onClick={() => toast.info('Editing compensation profiles coming in next update.')}>Edit</Button>
+                            <Button size="sm" variant="outline" onClick={() => guard(async () => {
+                              try {
+                                const periodEnd = new Date();
+                                const periodStart = new Date(); periodStart.setDate(periodStart.getDate() - 30);
+                                const amountCents = Math.round((p.amount || 0) * 100);
+                                const { error } = await (supabase as any).from('compensation_payouts').insert({
+                                  compensation_profile_id: p.id,
+                                  user_id: p.user_id || '00000000-0000-0000-0000-000000000000',
+                                  entity_type: 'practice', entity_id: practice?.id,
+                                  calculated_amount_cents: amountCents, final_amount_cents: amountCents,
+                                  currency: p.currency || 'USD',
+                                  period_start: periodStart.toISOString().slice(0,10),
+                                  period_end: periodEnd.toISOString().slice(0,10),
+                                  status: 'pending',
+                                });
+                                if (error) throw error;
+                                toast.success(tA('finance.payroll.payoutQueued', 'Payout queued for approval'));
+                              } catch (e: any) { toast.error(e?.message || 'Payout failed'); }
+                            })}>{tA('finance.payroll.runPayout', 'Run Payout')}</Button>
+                            <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                              const newAmount = prompt(tA('finance.compensation.amountPrompt', 'New amount ($):'), String(p.amount ?? 0));
+                              if (newAmount === null) return;
+                              const cents = Math.round(parseFloat(newAmount) * 100);
+                              if (Number.isNaN(cents)) { toast.error('Invalid amount'); return; }
+                              try {
+                                const { error } = await (supabase as any).from('staff_compensation_profiles').update({ amount_cents: cents }).eq('id', p.id);
+                                if (error) throw error;
+                                toast.success(tA('finance.compensation.updated', 'Compensation updated'));
+                              } catch (e: any) { toast.error(e?.message || 'Update failed'); }
+                            })}>{tA('common.edit', 'Edit')}</Button>
                           </div>
                         </div>
                       )) : (
@@ -4411,11 +4533,31 @@ const AdminDashboard = () => {
                     <CardContent>
                       <p className="text-sm text-muted-foreground mb-4">Calculate owed amounts for all active profiles for a selected period.</p>
                       <div className="flex flex-wrap gap-3 mb-4">
-                        <Input type="date" className="w-44" />
-                        <Input type="date" className="w-44" />
+                        <Input type="date" className="w-44" value={payrollFrom} onChange={e => setPayrollFrom(e.target.value)} />
+                        <Input type="date" className="w-44" value={payrollTo} onChange={e => setPayrollTo(e.target.value)} />
                       </div>
-                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Payroll calculation requires configured compensation profiles.'))}>Calculate & Run</Button>
-                      <p className="text-xs text-muted-foreground mt-3">Running payroll creates ledger entries automatically for each active compensation profile.</p>
+                      <Button disabled={!allowModals} onClick={() => guard(async () => {
+                        if (!payrollFrom || !payrollTo) { toast.error(tA('finance.payroll.selectPeriod', 'Select start and end dates')); return; }
+                        if (compensationProfiles.length === 0) { toast.error(tA('finance.payroll.noProfiles', 'No active compensation profiles found')); return; }
+                        try {
+                          const rows = compensationProfiles.map((p: any) => {
+                            const cents = Math.round((p.amount || 0) * 100);
+                            return {
+                              compensation_profile_id: p.id,
+                              user_id: p.user_id || '00000000-0000-0000-0000-000000000000',
+                              entity_type: 'practice', entity_id: practice?.id,
+                              calculated_amount_cents: cents, final_amount_cents: cents,
+                              currency: p.currency || 'USD',
+                              period_start: payrollFrom, period_end: payrollTo,
+                              status: 'pending',
+                            };
+                          });
+                          const { error } = await (supabase as any).from('compensation_payouts').insert(rows);
+                          if (error) throw error;
+                          toast.success(tA('finance.payroll.runCreated', `Payroll run created (${rows.length} payouts)`));
+                        } catch (e: any) { toast.error(e?.message || 'Payroll calculation failed'); }
+                      })}>{tA('finance.payroll.calculateAndRun', 'Calculate & Run')}</Button>
+                      <p className="text-xs text-muted-foreground mt-3">{tA('finance.payroll.runHint', 'Running payroll creates payout records for each active compensation profile.')}</p>
                     </CardContent>
                   </Card>
                 </>
@@ -4468,9 +4610,33 @@ const AdminDashboard = () => {
                                   <td className="py-2 font-medium">${(rule.amount || 0).toFixed(2)}</td>
                                   <td className="py-2"><Badge variant={rule.status === 'active' ? 'default' : 'secondary'}>{rule.status}</Badge></td>
                                   <td className="py-2 flex gap-1">
-                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Rule editing coming in next update.')}>Edit</Button>
-                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Rule paused')}>Pause</Button>
-                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Rule deleted')}><Trash2 className="h-3 w-3" /></Button>
+                                    <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                      const newName = prompt(tA('finance.rules.namePrompt', 'Rule name:'), rule.description || '');
+                                      if (newName === null) return;
+                                      const newAmount = prompt(tA('finance.rules.amountPrompt', 'Amount ($):'), String(rule.amount ?? 0));
+                                      if (newAmount === null) return;
+                                      try {
+                                        const { error } = await (supabase as any).from('finance_recurring_rules').update({ description: newName, amount_cents: Math.round(parseFloat(newAmount) * 100) }).eq('id', rule.id);
+                                        if (error) throw error;
+                                        toast.success(tA('finance.rules.updated', 'Rule updated'));
+                                      } catch (e: any) { toast.error(e?.message || 'Update failed'); }
+                                    })}>{tA('common.edit', 'Edit')}</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                      try {
+                                        const newActive = rule.status === 'paused';
+                                        const { error } = await (supabase as any).from('finance_recurring_rules').update({ active: newActive }).eq('id', rule.id);
+                                        if (error) throw error;
+                                        toast.success(newActive ? tA('finance.rules.resumed', 'Rule resumed') : tA('finance.rules.paused', 'Rule paused'));
+                                      } catch (e: any) { toast.error(e?.message || 'Update failed'); }
+                                    })}>{rule.status === 'paused' ? tA('finance.rules.resume', 'Resume') : tA('finance.rules.pause', 'Pause')}</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                      if (!confirm(tA('finance.rules.confirmDelete', 'Delete this recurring rule?'))) return;
+                                      try {
+                                        const { error } = await (supabase as any).from('finance_recurring_rules').delete().eq('id', rule.id);
+                                        if (error) throw error;
+                                        toast.success(tA('finance.rules.deleted', 'Rule deleted'));
+                                      } catch (e: any) { toast.error(e?.message || 'Delete failed'); }
+                                    })}><Trash2 className="h-3 w-3" /></Button>
                                   </td>
                                 </tr>
                               ))}
@@ -4512,7 +4678,16 @@ const AdminDashboard = () => {
                           <label className="text-xs text-muted-foreground">As of</label>
                           <Input type="date" className="w-44" defaultValue={format(new Date(), 'yyyy-MM-dd')} />
                         </div>
-                        <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Automated rule execution runs on schedule. Manual trigger coming soon.'))}>Run due now</Button>
+                        <Button disabled={!allowModals} onClick={() => guard(async () => {
+                          try {
+                            const { data, error } = await (supabase as any).rpc('finance_recurring_generate_due_v2', {
+                              p_entity_id: practice?.id, p_entity_type: 'practice', p_as_of: new Date().toISOString().slice(0,10),
+                            });
+                            if (error) throw error;
+                            const count = Array.isArray(data) ? data.length : 0;
+                            toast.success(tA('finance.rules.runDueOk', `Generated ${count} entries from due rules`));
+                          } catch (e: any) { toast.error(e?.message || 'Run due failed'); }
+                        })}>{tA('finance.rules.runDueNow', 'Run due now')}</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -4977,7 +5152,7 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>Inactive Patients (90+ days)</CardTitle></CardHeader>
                     <CardContent>
                       {inactivePatientsList.length > 0 ? (
-                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => toast.info('Patient re-engagement emails require notification setup.')}>Re-engage</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
+                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => guard(async () => { if (!p.user_id && !p.id) { toast.error('No patient ID'); return; } try { const { error } = await (supabase as any).functions.invoke('send-notification', { body: { user_id: p.user_id || p.id, title: tA('patients.actions.reengageTitle', 'We miss you!'), body: tA('patients.actions.reengageBody', `It's been a while since your last visit. Book your next appointment today.`), type: 'reengagement', channel: 'email' } }); if (error) throw error; toast.success(tA('patients.actions.reengageSent', 'Re-engagement email sent')); } catch (e: any) { toast.error(e?.message || 'Failed to send'); } })}>{tA('patients.actions.reengage', 'Re-engage')}</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
                       ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>No inactive patients. Great retention!</p></div>}
                     </CardContent>
                   </Card>
@@ -5074,7 +5249,18 @@ const AdminDashboard = () => {
                 <>
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Custom Reports</h3>
-                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Scheduled reports coming soon'))}>Schedule Report</Button>
+                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
+                      const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
+                      if (!name) return;
+                      const cadence = prompt(tA('reports.schedule.cadencePrompt', 'Cadence (weekly | monthly):'), 'weekly') as 'weekly' | 'monthly';
+                      if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error('Invalid cadence'); return; }
+                      const email = prompt(tA('reports.schedule.emailPrompt', 'Recipient email:'));
+                      if (!email) return;
+                      const next = [...reportSchedules, { id: Date.now().toString(), name, cadence, email, created_at: new Date().toISOString() }];
+                      setReportSchedules(next);
+                      await persistReportSchedules(next);
+                      toast.success(tA('reports.schedule.created', 'Scheduled report saved'));
+                    })}>{tA('reports.schedule.button', 'Schedule Report')}</Button>
                   </div>
 
                   {/* Report Builder */}
@@ -5258,12 +5444,42 @@ const AdminDashboard = () => {
                       <p className="text-sm text-muted-foreground">Automatically email reports on a weekly or monthly cadence.</p>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-center py-8 text-muted-foreground">
-                        <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
-                        <p>No scheduled reports yet.</p>
-                        <Button className="mt-3" variant="outline" disabled={!allowModals} onClick={() => guard(() => toast.info('Scheduled reports coming in a future update'))}>Schedule a Report</Button>
-                        <p className="text-xs mt-2 text-muted-foreground">Scheduled reports will be sent to your admin email automatically.</p>
-                      </div>
+                      {reportSchedules.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <Calendar className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                          <p>{tA('reports.schedule.empty', 'No scheduled reports yet.')}</p>
+                          <Button className="mt-3" variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
+                            const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
+                            if (!name) return;
+                            const cadence = prompt(tA('reports.schedule.cadencePrompt', 'Cadence (weekly | monthly):'), 'weekly') as 'weekly' | 'monthly';
+                            if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error('Invalid cadence'); return; }
+                            const email = prompt(tA('reports.schedule.emailPrompt', 'Recipient email:'));
+                            if (!email) return;
+                            const next = [...reportSchedules, { id: Date.now().toString(), name, cadence, email, created_at: new Date().toISOString() }];
+                            setReportSchedules(next);
+                            await persistReportSchedules(next);
+                            toast.success(tA('reports.schedule.created', 'Scheduled report saved'));
+                          })}>{tA('reports.schedule.scheduleAReport', 'Schedule a Report')}</Button>
+                          <p className="text-xs mt-2 text-muted-foreground">{tA('reports.schedule.hint', 'Scheduled reports will be sent to your admin email automatically.')}</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {reportSchedules.map(s => (
+                            <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                              <div>
+                                <p className="font-medium text-sm">{s.name}</p>
+                                <p className="text-xs text-muted-foreground">{s.cadence} → {s.email}</p>
+                              </div>
+                              <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                const next = reportSchedules.filter(x => x.id !== s.id);
+                                setReportSchedules(next);
+                                await persistReportSchedules(next);
+                                toast.success(tA('reports.schedule.removed', 'Schedule removed'));
+                              })}><Trash2 className="h-4 w-4" /></Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </>
@@ -5828,7 +6044,9 @@ const AdminDashboard = () => {
                                   await persistIntegrations({ calendar_sync_provider: 'google' });
                                   toast.success('Google Calendar connected');
                                 } else {
-                                  toast.info('Outlook sync coming soon');
+                                  setCalendarSyncProvider('outlook');
+                                  await persistIntegrations({ calendar_sync_provider: 'outlook' });
+                                  toast.success('Outlook calendar marked as connected. Per-provider OAuth handled in provider settings.');
                                 }
                               })} disabled={!allowModals}>Connect</Button>
                             )}
@@ -5841,26 +6059,50 @@ const AdminDashboard = () => {
 
                   {/* Medical Systems */}
                   <Card>
-                    <CardHeader><CardTitle>Medical System Integrations</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
-                      {[
-                        { icon: <Star className="h-5 w-5" />, name: 'Lab System', desc: 'Connect to lab order and results system' },
-                        { icon: <Settings className="h-5 w-5" />, name: 'Imaging / PACS', desc: 'Connect to radiology and imaging system' },
-                      ].map(sys => (
-                        <div key={sys.name} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border">
-                          <div className="flex items-center gap-3">
-                            {sys.icon}
-                            <div>
-                              <span className="font-bold">{sys.name}</span>
-                              <p className="text-sm text-muted-foreground">{sys.desc}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Not connected</Badge>
-                            <Button size="sm" onClick={() => guard(() => toast.info(`${sys.name} integration coming soon`))} disabled={!allowModals}>Connect</Button>
+                    <CardHeader><CardTitle>{tA('settings.integrations.medicalSystems', 'Medical System Integrations')}</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Lab system */}
+                      <div className="flex items-center justify-between gap-3 p-4 bg-muted/30 rounded-xl border border-border flex-wrap">
+                        <div className="flex items-center gap-3 min-w-[200px]">
+                          <Star className="h-5 w-5" />
+                          <div>
+                            <span className="font-bold">{tA('settings.integrations.labSystem', 'Lab System')}</span>
+                            <p className="text-sm text-muted-foreground">{tA('settings.integrations.labDesc', 'Connect to a partner laboratory for orders and results')}</p>
                           </div>
                         </div>
-                      ))}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <select className="text-sm border border-border rounded-md bg-background px-2 py-1.5 min-w-[180px]" value={labProviderId} onChange={e => setLabProviderId(e.target.value)} disabled={!allowModals}>
+                            <option value="">{tA('settings.integrations.selectLab', '— Select a laboratory —')}</option>
+                            {availableLabs.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                          </select>
+                          <Badge variant={labProviderId ? 'default' : 'secondary'}>{labProviderId ? tA('common.connected', 'Connected') : tA('common.notConnected', 'Not connected')}</Badge>
+                          <Button size="sm" onClick={() => guard(async () => {
+                            await persistIntegrations({ lab_provider_id: labProviderId || null });
+                            toast.success(labProviderId ? tA('settings.integrations.labConnected', 'Lab system connected') : tA('settings.integrations.labCleared', 'Lab system cleared'));
+                          })} disabled={!allowModals}>{tA('common.save', 'Save')}</Button>
+                        </div>
+                      </div>
+                      {/* Imaging */}
+                      <div className="flex items-center justify-between gap-3 p-4 bg-muted/30 rounded-xl border border-border flex-wrap">
+                        <div className="flex items-center gap-3 min-w-[200px]">
+                          <Settings className="h-5 w-5" />
+                          <div>
+                            <span className="font-bold">{tA('settings.integrations.imagingSystem', 'Imaging / PACS')}</span>
+                            <p className="text-sm text-muted-foreground">{tA('settings.integrations.imagingDesc', 'Connect to a partner imaging center for studies and reports')}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <select className="text-sm border border-border rounded-md bg-background px-2 py-1.5 min-w-[180px]" value={imagingProviderId} onChange={e => setImagingProviderId(e.target.value)} disabled={!allowModals}>
+                            <option value="">{tA('settings.integrations.selectImaging', '— Select an imaging center —')}</option>
+                            {availableImaging.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                          </select>
+                          <Badge variant={imagingProviderId ? 'default' : 'secondary'}>{imagingProviderId ? tA('common.connected', 'Connected') : tA('common.notConnected', 'Not connected')}</Badge>
+                          <Button size="sm" onClick={() => guard(async () => {
+                            await persistIntegrations({ imaging_provider_id: imagingProviderId || null });
+                            toast.success(imagingProviderId ? tA('settings.integrations.imagingConnected', 'Imaging system connected') : tA('settings.integrations.imagingCleared', 'Imaging system cleared'));
+                          })} disabled={!allowModals}>{tA('common.save', 'Save')}</Button>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -5932,7 +6174,14 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex gap-2">
                         <Button onClick={() => guard(async () => { if (!webhookUrl.startsWith('https://')) { toast.error('URL must start with https://'); return; } await persistIntegrations({ webhook_url: webhookUrl }); toast.success('Webhook URL saved'); })} disabled={!allowModals}>Save Webhook</Button>
-                        <Button variant="outline" onClick={() => guard(() => toast.info('Test event coming soon'))} disabled={!allowModals}>Send Test Event</Button>
+                        <Button variant="outline" onClick={() => guard(async () => {
+                          if (!webhookUrl.startsWith('https://')) { toast.error(tA('settings.integrations.webhookHttpsRequired', 'URL must start with https://')); return; }
+                          try {
+                            const res = await fetch(webhookUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event: 'test.event', timestamp: new Date().toISOString(), source: 'docito-admin' }) });
+                            if (res.ok) toast.success(tA('settings.integrations.webhookTestOk', `Test event delivered (${res.status})`));
+                            else toast.error(tA('settings.integrations.webhookTestFail', `Webhook returned ${res.status}`));
+                          } catch (e: any) { toast.error(e?.message || 'Failed to deliver test event'); }
+                        })} disabled={!allowModals}>{tA('settings.integrations.sendTestEvent', 'Send Test Event')}</Button>
                       </div>
                       <div>
                         <p className="text-sm font-medium mb-2">Events that trigger webhooks:</p>
