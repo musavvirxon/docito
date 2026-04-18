@@ -43,8 +43,8 @@ export function ReferralList({
   onPublishSlots,
   onComplete,
 }: Props) {
-  const { profile } = useAuth();
-  const locale = (profile as any)?.language || (profile as any)?.locale || undefined;
+  useAuth();
+  // PDF locale follows UI language (resolved inside downloadReferralPdf)
 
   if (loading) {
     return <div className="text-sm text-muted-foreground">Loading referrals...</div>;
@@ -58,7 +58,7 @@ export function ReferralList({
 
   const handleDownload = async (referralId: string) => {
     try {
-      await downloadReferralPdf({ referralId, locale });
+      await downloadReferralPdf({ referralId });
     } catch (e: any) {
       console.error("downloadReferralPdf error:", e);
     }
