@@ -2725,9 +2725,17 @@ const AdminDashboard = () => {
                         <CardHeader><CardTitle className="text-base">Insurance</CardTitle></CardHeader>
                         <CardContent>
                           <div className="space-y-3 text-sm">
-                            {['Insurance Provider', 'Policy Number', 'Coverage'].map(label => (
-                              <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">—</p></div>
-                            ))}
+                            {(() => {
+                              const ins = patientInsuranceMap[selectedPatient.id] || { provider: '', policy: '', coverage: '' };
+                              const items: [string, string][] = [
+                                [tA('patients.profile.insuranceProvider', 'Insurance Provider'), ins.provider || '—'],
+                                [tA('patients.profile.policyNumber', 'Policy Number'), ins.policy || '—'],
+                                [tA('patients.profile.coverage', 'Coverage'), ins.coverage || '—'],
+                              ];
+                              return items.map(([label, val]) => (
+                                <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">{val}</p></div>
+                              ));
+                            })()}
                           </div>
                           <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(async () => {
                             const provider = prompt(tA('patients.actions.insuranceProviderPrompt', 'Insurance provider:'), patientInsuranceMap[selectedPatient.id]?.provider || '');
