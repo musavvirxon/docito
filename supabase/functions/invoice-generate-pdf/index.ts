@@ -27,7 +27,7 @@ import {
   DOCITO_LOGO_PNG_BASE64,
   DOCITO_LOGO_FULL_PNG_BASE64,
   DOCITO_FONT_TTF_BASE64,
-} from "../prescription-generate-pdf/assets.ts";
+} from "./assets.ts";
 
 type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt" | "de";
 
