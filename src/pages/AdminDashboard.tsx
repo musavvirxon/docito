@@ -4533,11 +4533,31 @@ const AdminDashboard = () => {
                     <CardContent>
                       <p className="text-sm text-muted-foreground mb-4">Calculate owed amounts for all active profiles for a selected period.</p>
                       <div className="flex flex-wrap gap-3 mb-4">
-                        <Input type="date" className="w-44" />
-                        <Input type="date" className="w-44" />
+                        <Input type="date" className="w-44" value={payrollFrom} onChange={e => setPayrollFrom(e.target.value)} />
+                        <Input type="date" className="w-44" value={payrollTo} onChange={e => setPayrollTo(e.target.value)} />
                       </div>
-                      <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Payroll calculation requires configured compensation profiles.'))}>Calculate & Run</Button>
-                      <p className="text-xs text-muted-foreground mt-3">Running payroll creates ledger entries automatically for each active compensation profile.</p>
+                      <Button disabled={!allowModals} onClick={() => guard(async () => {
+                        if (!payrollFrom || !payrollTo) { toast.error(tA('finance.payroll.selectPeriod', 'Select start and end dates')); return; }
+                        if (compensationProfiles.length === 0) { toast.error(tA('finance.payroll.noProfiles', 'No active compensation profiles found')); return; }
+                        try {
+                          const rows = compensationProfiles.map((p: any) => {
+                            const cents = Math.round((p.amount || 0) * 100);
+                            return {
+                              compensation_profile_id: p.id,
+                              user_id: p.user_id || '00000000-0000-0000-0000-000000000000',
+                              entity_type: 'practice', entity_id: practice?.id,
+                              calculated_amount_cents: cents, final_amount_cents: cents,
+                              currency: p.currency || 'USD',
+                              period_start: payrollFrom, period_end: payrollTo,
+                              status: 'pending',
+                            };
+                          });
+                          const { error } = await (supabase as any).from('compensation_payouts').insert(rows);
+                          if (error) throw error;
+                          toast.success(tA('finance.payroll.runCreated', `Payroll run created (${rows.length} payouts)`));
+                        } catch (e: any) { toast.error(e?.message || 'Payroll calculation failed'); }
+                      })}>{tA('finance.payroll.calculateAndRun', 'Calculate & Run')}</Button>
+                      <p className="text-xs text-muted-foreground mt-3">{tA('finance.payroll.runHint', 'Running payroll creates payout records for each active compensation profile.')}</p>
                     </CardContent>
                   </Card>
                 </>
@@ -4590,9 +4610,33 @@ const AdminDashboard = () => {
                                   <td className="py-2 font-medium">${(rule.amount || 0).toFixed(2)}</td>
                                   <td className="py-2"><Badge variant={rule.status === 'active' ? 'default' : 'secondary'}>{rule.status}</Badge></td>
                                   <td className="py-2 flex gap-1">
-                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Rule editing coming in next update.')}>Edit</Button>
-                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Rule paused')}>Pause</Button>
-                                    <Button size="sm" variant="ghost" onClick={() => toast.info('Rule deleted')}><Trash2 className="h-3 w-3" /></Button>
+                                    <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                      const newName = prompt(tA('finance.rules.namePrompt', 'Rule name:'), rule.description || '');
+                                      if (newName === null) return;
+                                      const newAmount = prompt(tA('finance.rules.amountPrompt', 'Amount ($):'), String(rule.amount ?? 0));
+                                      if (newAmount === null) return;
+                                      try {
+                                        const { error } = await (supabase as any).from('finance_recurring_rules').update({ description: newName, amount_cents: Math.round(parseFloat(newAmount) * 100) }).eq('id', rule.id);
+                                        if (error) throw error;
+                                        toast.success(tA('finance.rules.updated', 'Rule updated'));
+                                      } catch (e: any) { toast.error(e?.message || 'Update failed'); }
+                                    })}>{tA('common.edit', 'Edit')}</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                      try {
+                                        const newActive = rule.status === 'paused';
+                                        const { error } = await (supabase as any).from('finance_recurring_rules').update({ active: newActive }).eq('id', rule.id);
+                                        if (error) throw error;
+                                        toast.success(newActive ? tA('finance.rules.resumed', 'Rule resumed') : tA('finance.rules.paused', 'Rule paused'));
+                                      } catch (e: any) { toast.error(e?.message || 'Update failed'); }
+                                    })}>{rule.status === 'paused' ? tA('finance.rules.resume', 'Resume') : tA('finance.rules.pause', 'Pause')}</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                      if (!confirm(tA('finance.rules.confirmDelete', 'Delete this recurring rule?'))) return;
+                                      try {
+                                        const { error } = await (supabase as any).from('finance_recurring_rules').delete().eq('id', rule.id);
+                                        if (error) throw error;
+                                        toast.success(tA('finance.rules.deleted', 'Rule deleted'));
+                                      } catch (e: any) { toast.error(e?.message || 'Delete failed'); }
+                                    })}><Trash2 className="h-3 w-3" /></Button>
                                   </td>
                                 </tr>
                               ))}
@@ -4634,7 +4678,16 @@ const AdminDashboard = () => {
                           <label className="text-xs text-muted-foreground">As of</label>
                           <Input type="date" className="w-44" defaultValue={format(new Date(), 'yyyy-MM-dd')} />
                         </div>
-                        <Button disabled={!allowModals} onClick={() => guard(() => toast.info('Automated rule execution runs on schedule. Manual trigger coming soon.'))}>Run due now</Button>
+                        <Button disabled={!allowModals} onClick={() => guard(async () => {
+                          try {
+                            const { data, error } = await (supabase as any).rpc('finance_recurring_generate_due_v2', {
+                              p_entity_id: practice?.id, p_entity_type: 'practice', p_as_of: new Date().toISOString().slice(0,10),
+                            });
+                            if (error) throw error;
+                            const count = Array.isArray(data) ? data.length : 0;
+                            toast.success(tA('finance.rules.runDueOk', `Generated ${count} entries from due rules`));
+                          } catch (e: any) { toast.error(e?.message || 'Run due failed'); }
+                        })}>{tA('finance.rules.runDueNow', 'Run due now')}</Button>
                       </div>
                     </CardContent>
                   </Card>
