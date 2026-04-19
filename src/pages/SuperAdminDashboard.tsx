@@ -46,12 +46,14 @@ import DocumentVerificationLookup from "@/components/super-admin/DocumentVerific
 import FinanceSourcesMapping from "@/components/super-admin/FinanceSourcesMapping";
 import BlogStudioSection from "@/components/super-admin/blog/BlogStudioSection";
 import LandingCMSSection from "@/components/super-admin/LandingCMSSection";
+import SupportInbox from "@/components/super-admin/SupportInbox";
 
 const SUPER_ADMIN_SECTIONS = [
   "dashboard",
   "blogStudio",
   "landingCMS",
   "feedback",
+  "supportInbox",
   "ecosystem",
   "verifications",
   "documentVerification",
@@ -338,6 +340,20 @@ const SuperAdminDashboard = () => {
               {dashboardToolbar}
             </div>
             <FeedbackInboxLink onClick={() => {}} />
+          </div>
+        );
+
+      case "supportInbox":
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h1 className="text-3xl font-bold text-foreground">Support Inbox</h1>
+                <p className="text-muted-foreground">Contact form messages and admin video booking requests.</p>
+              </div>
+              {dashboardToolbar}
+            </div>
+            <SupportInbox />
           </div>
         );
 
