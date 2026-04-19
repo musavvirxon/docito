@@ -1,12 +1,23 @@
 {
   "hero": {
-    "title": "Bize Ulaşın",
-    "subtitle": "Sorularınız mı var? Yardımcı olmak için buradayız. Aşağıdaki yöntemlerden herhangi biriyle bize ulaşın."
+    "title": "Get in Touch",
+    "subtitle": "Have questions? We're here to help. Reach out to us through any of the methods below."
   },
   "methods": {
     "email": {
-      "title": "Bize E-posta Gönderin",
-      "description": "Bize istediğiniz zaman e-posta gönderin"
+      "title": "Email Us",
+      "value": "Reach our team by email",
+      "description": "We respond within 24 hours."
+    },
+    "whatsapp": {
+      "title": "Call us on WhatsApp",
+      "value": "Voice & video on WhatsApp",
+      "description": "Tap to open a chat with our team."
+    },
+    "sendMessage": {
+      "title": "Send us a message",
+      "value": "We reply within 24 hours",
+      "description": "Use the form below — it goes straight to our admin team."
     },
     "phone": {
       "title": "Bizi Arayın",
@@ -23,62 +34,63 @@
     }
   },
   "form": {
-    "title": "Bize Mesaj Gönderin",
+    "title": "Send us a Message",
+    "validationError": "Please check your inputs",
     "fields": {
       "name": {
-        "label": "Tam Ad",
-        "placeholder": "Ahmet Yılmaz"
+        "label": "Full Name",
+        "placeholder": "John Doe"
       },
       "email": {
-        "label": "E-posta",
-        "placeholder": "ahmet@ornek.com"
+        "label": "Email",
+        "placeholder": "john@example.com"
       },
       "phone": {
-        "label": "Telefon (İsteğe bağlı)",
-        "placeholder": "+90 555 123 4567"
+        "label": "Phone (Optional)",
+        "placeholder": "+1 (555) 123-4567"
       },
       "category": {
-        "label": "Kategori",
+        "label": "Category",
         "options": {
-          "general": "Genel Soru",
-          "technical": "Teknik Destek",
-          "billing": "Fatura Sorusu",
-          "partnership": "Ortaklık Fırsatı",
-          "feedback": "Geri Bildirim"
+          "general": "General Inquiry",
+          "technical": "Technical Support",
+          "billing": "Billing Question",
+          "partnership": "Partnership Opportunity",
+          "feedback": "Feedback"
         }
       },
       "subject": {
-        "label": "Konu",
-        "placeholder": "Nasıl yardımcı olabiliriz?"
+        "label": "Subject",
+        "placeholder": "How can we help?"
       },
       "message": {
-        "label": "Mesaj",
-        "placeholder": "Sorgunuz hakkında daha fazla bilgi verin..."
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
       }
     },
-    "submit": "Mesaj Gönder",
-    "sending": "Gönderiliyor...",
-    "successTitle": "Mesaj başarıyla gönderildi!",
-    "successDescription": "Size kısa sürede geri döneceğiz."
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "Our admin team has received your message and will get back to you soon."
   },
   "faq": {
-    "title": "Sıkça Sorulan Sorular",
+    "title": "Frequently Asked Questions",
     "questions": {
       "hours": {
-        "question": "Destek saatleriniz nedir?",
-        "answer": "Destek ekibimiz canlı sohbet ve e-posta yoluyla 7/24 hizmetinizdedir. Telefon desteği Pazartesi-Cuma, 08:00-18:00 EST saatleri arasında mevcuttur."
+        "question": "What are your support hours?",
+        "answer": "Our team responds to messages 7 days a week. WhatsApp replies are typically within a few hours."
       },
       "response": {
-        "question": "Ne kadar hızlı yanıt alacağım?",
-        "answer": "Genellikle mesai saatleri içinde tüm sorulara 2-4 saat içinde ve mesai saatleri dışında gelen mesajlara 24 saat içinde yanıt veriyoruz."
+        "question": "How quickly will I get a response?",
+        "answer": "We typically respond to all inquiries within 24 hours."
       },
       "emergency": {
-        "question": "Acil destek sunuyor musunuz?",
-        "answer": "Evet! Acil teknik sorunlar veya acil durumlar için lütfen +1 (555) 123-4567 numaralı yardım hattımızı arayın ve anında yardım için 1'e basın."
+        "question": "Do you offer emergency support?",
+        "answer": "For urgent matters, please contact us via WhatsApp for the fastest response."
       },
       "demo": {
-        "question": "Demo planlayabilir miyim?",
-        "answer": "Kesinlikle! Ana sayfamızdaki 'Demo Planla' düğmesine tıklayın veya mesajınızda bahsedin, size özel bir gösteri ayarlayacağız."
+        "question": "Can I schedule a demo?",
+        "answer": "Yes — visit the Support page and request a video call with our team."
       }
     }
   },

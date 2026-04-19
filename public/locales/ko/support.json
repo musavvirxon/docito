@@ -1,62 +1,111 @@
 {
   "hero": {
-    "title": "도움을 드리겠습니다",
-    "subtitle": "필요할 때 필요한 지원을 받으세요. 저희 팀은 24시간 연중무휴로 여러분을 도와드립니다."
+    "title": "We're Here to Help",
+    "subtitle": "Get the support you need, when you need it. Our team is available to assist you."
   },
-  "contactSupport": "지원팀에 문의",
-  "selfServiceResources": "셀프 서비스 리소스",
+  "contactSupport": "Contact Support",
+  "selfServiceResources": "Self-Service Resources",
   "options": {
+    "whatsapp": {
+      "title": "WhatsApp",
+      "description": "Voice or chat with us on WhatsApp",
+      "availability": "Fast replies, 7 days a week",
+      "action": "Open WhatsApp"
+    },
+    "callUs": {
+      "title": "Call Us",
+      "description": "Speak directly with a support representative",
+      "availability": "Mon-Fri 8AM-6PM",
+      "action": "Call Now"
+    },
+    "emailSupport": {
+      "title": "Email Support",
+      "description": "Send us a detailed message",
+      "availability": "Response within 24 hours",
+      "action": "Send Email"
+    },
+    "videoCall": {
+      "title": "Video Call",
+      "description": "Schedule a video call with our admin team",
+      "availability": "By appointment",
+      "action": "Schedule Call"
+    },
+    "community": {
+      "title": "Community",
+      "description": "Join our Discord community for help and discussion",
+      "availability": "Active 24/7",
+      "action": "Join Discord"
+    },
     "liveChat": {
       "title": "실시간 채팅",
       "description": "실시간으로 지원팀과 채팅하세요",
       "availability": "연중무휴 이용 가능",
       "action": "채팅 시작"
-    },
-    "callUs": {
-      "title": "전화 문의",
-      "description": "지원 담당자와 직접 통화하세요",
-      "availability": "월-금 8:00-18:00 EST",
-      "action": "지금 전화"
-    },
-    "emailSupport": {
-      "title": "이메일 지원",
-      "description": "자세한 메시지를 보내주세요",
-      "availability": "24시간 이내 응답",
-      "action": "이메일 보내기"
-    },
-    "videoCall": {
-      "title": "영상 통화",
-      "description": "팀과의 영상 통화 예약",
-      "availability": "예약제",
-      "action": "통화 예약"
     }
   },
   "resources": {
     "helpCenter": {
-      "title": "고객 지원 센터",
-      "description": "포괄적인 지식 베이스를 탐색하세요"
+      "title": "Help Center",
+      "description": "Browse our comprehensive knowledge base"
     },
     "faqs": {
-      "title": "자주 묻는 질문",
-      "description": "일반적인 질문에 대한 답변 찾기"
+      "title": "FAQs",
+      "description": "Find answers to common questions"
     },
     "documentation": {
-      "title": "문서",
-      "description": "기술 가이드 및 문서"
+      "title": "Documentation",
+      "description": "Technical guides and documentation"
     },
     "videoTutorials": {
-      "title": "비디오 튜토리얼",
-      "description": "단계별 튜토리얼 시청"
+      "title": "Video Tutorials",
+      "description": "Watch step-by-step tutorials"
     }
   },
   "systemStatus": {
-    "title": "모든 시스템 정상 작동",
-    "message": "99.9% 가동 시간 • 마지막 업데이트: 2분 전",
-    "viewStatus": "상태 페이지 보기"
+    "title": "All Systems Operational",
+    "message": "99.9% uptime • Last updated: 2 minutes ago",
+    "viewStatus": "View Status Page"
   },
   "emergency": {
-    "title": "의료 응급 상황?",
-    "message": "의료 응급 상황이 발생한 경우 119에 전화하거나 즉시 가까운 응급실을 방문하십시오.",
-    "warning": "Docito는 응급 의료 상황에 사용할 수 없습니다."
+    "title": "Medical Emergency?",
+    "message": "If you're experiencing a medical emergency, please call your local emergency number or visit your nearest emergency room immediately.",
+    "warning": "Docito is not for emergency medical situations."
+  },
+  "videoBookingDialog": {
+    "title": "Book a video call with our team",
+    "description": "Pick a preferred time and we'll confirm via email with a meeting link.",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "topic": "Topic",
+    "preferredAt": "Preferred time",
+    "alternateAt": "Alternate time",
+    "notes": "Notes",
+    "timezoneNotice": "Times will be interpreted in your local timezone:",
+    "submit": "Request booking",
+    "invalidInput": "Please complete all required fields",
+    "successTitle": "Request submitted",
+    "successDescription": "Track your booking on the status page."
+  },
+  "videoStatus": {
+    "title": "Video Call Booking Status",
+    "subtitle": "Track the status of your booking with the admin team.",
+    "notFound": "Booking not found. Please check your link.",
+    "back": "Back to Support",
+    "requestedOn": "Requested",
+    "preferredTime": "Preferred time",
+    "alternateTime": "Alternate time",
+    "confirmedAt": "Confirmed at",
+    "completedAt": "Completed at",
+    "cancelledAt": "Cancelled at",
+    "meetingLink": "Meeting link",
+    "joinMeeting": "Join meeting",
+    "adminNotes": "Notes from our team",
+    "statuses": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
   }
 }

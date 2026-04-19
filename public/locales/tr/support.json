@@ -1,62 +1,111 @@
 {
   "hero": {
-    "title": "Yardım İçin Buradayız",
-    "subtitle": "İhtiyacınız olduğunda ihtiyacınız olan desteği alın. Ekibimiz size yardımcı olmak için 7/24 burada."
+    "title": "We're Here to Help",
+    "subtitle": "Get the support you need, when you need it. Our team is available to assist you."
   },
-  "contactSupport": "Destek İle İletişime Geçin",
-  "selfServiceResources": "Self Servis Kaynakları",
+  "contactSupport": "Contact Support",
+  "selfServiceResources": "Self-Service Resources",
   "options": {
+    "whatsapp": {
+      "title": "WhatsApp",
+      "description": "Voice or chat with us on WhatsApp",
+      "availability": "Fast replies, 7 days a week",
+      "action": "Open WhatsApp"
+    },
+    "callUs": {
+      "title": "Call Us",
+      "description": "Speak directly with a support representative",
+      "availability": "Mon-Fri 8AM-6PM",
+      "action": "Call Now"
+    },
+    "emailSupport": {
+      "title": "Email Support",
+      "description": "Send us a detailed message",
+      "availability": "Response within 24 hours",
+      "action": "Send Email"
+    },
+    "videoCall": {
+      "title": "Video Call",
+      "description": "Schedule a video call with our admin team",
+      "availability": "By appointment",
+      "action": "Schedule Call"
+    },
+    "community": {
+      "title": "Community",
+      "description": "Join our Discord community for help and discussion",
+      "availability": "Active 24/7",
+      "action": "Join Discord"
+    },
     "liveChat": {
       "title": "Canlı Sohbet",
       "description": "Destek ekibimizle gerçek zamanlı sohbet edin",
       "availability": "7/24 Erişilebilir",
       "action": "Sohbet Başlat"
-    },
-    "callUs": {
-      "title": "Bizi Arayın",
-      "description": "Bir destek temsilcisiyle doğrudan konuşun",
-      "availability": "Pzt-Cum 8:00-18:00 EST",
-      "action": "Şimdi Ara"
-    },
-    "emailSupport": {
-      "title": "E-posta Desteği",
-      "description": "Bize ayrıntılı bir mesaj gönderin",
-      "availability": "24 saat içinde yanıt",
-      "action": "E-posta Gönder"
-    },
-    "videoCall": {
-      "title": "Video Görüşme",
-      "description": "Ekibimizle bir video görüşmesi planlayın",
-      "availability": "Randevuya göre",
-      "action": "Görüşme Planla"
     }
   },
   "resources": {
     "helpCenter": {
-      "title": "Yardım Merkezi",
-      "description": "Kapsamlı bilgi tabanımıza göz atın"
+      "title": "Help Center",
+      "description": "Browse our comprehensive knowledge base"
     },
     "faqs": {
-      "title": "SSS",
-      "description": "Sık sorulan soruların cevaplarını bulun"
+      "title": "FAQs",
+      "description": "Find answers to common questions"
     },
     "documentation": {
-      "title": "Dokümantasyon",
-      "description": "Teknik kılavuzlar ve dokümantasyon"
+      "title": "Documentation",
+      "description": "Technical guides and documentation"
     },
     "videoTutorials": {
-      "title": "Video Eğitimler",
-      "description": "Adım adım eğitimler izleyin"
+      "title": "Video Tutorials",
+      "description": "Watch step-by-step tutorials"
     }
   },
   "systemStatus": {
-    "title": "Tüm Sistemler Çalışıyor",
-    "message": "%99,9 çalışma süresi • Son güncelleme: 2 dakika önce",
-    "viewStatus": "Durum Sayfasını Görüntüle"
+    "title": "All Systems Operational",
+    "message": "99.9% uptime • Last updated: 2 minutes ago",
+    "viewStatus": "View Status Page"
   },
   "emergency": {
-    "title": "Tıbbi Acil Durum mu?",
-    "message": "Tıbbi bir acil durum yaşıyorsanız, lütfen 112'yi arayın veya en yakın acil servisi hemen ziyaret edin.",
-    "warning": "Docito acil tıbbi durumlar için değildir."
+    "title": "Medical Emergency?",
+    "message": "If you're experiencing a medical emergency, please call your local emergency number or visit your nearest emergency room immediately.",
+    "warning": "Docito is not for emergency medical situations."
+  },
+  "videoBookingDialog": {
+    "title": "Book a video call with our team",
+    "description": "Pick a preferred time and we'll confirm via email with a meeting link.",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "topic": "Topic",
+    "preferredAt": "Preferred time",
+    "alternateAt": "Alternate time",
+    "notes": "Notes",
+    "timezoneNotice": "Times will be interpreted in your local timezone:",
+    "submit": "Request booking",
+    "invalidInput": "Please complete all required fields",
+    "successTitle": "Request submitted",
+    "successDescription": "Track your booking on the status page."
+  },
+  "videoStatus": {
+    "title": "Video Call Booking Status",
+    "subtitle": "Track the status of your booking with the admin team.",
+    "notFound": "Booking not found. Please check your link.",
+    "back": "Back to Support",
+    "requestedOn": "Requested",
+    "preferredTime": "Preferred time",
+    "alternateTime": "Alternate time",
+    "confirmedAt": "Confirmed at",
+    "completedAt": "Completed at",
+    "cancelledAt": "Cancelled at",
+    "meetingLink": "Meeting link",
+    "joinMeeting": "Join meeting",
+    "adminNotes": "Notes from our team",
+    "statuses": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
   }
 }

@@ -1,62 +1,111 @@
 {
   "hero": {
-    "title": "Biz Yordam Berish Uchun Shu Yerdamiz",
-    "subtitle": "Kerakli paytda kerakli yordamni oling. Bizning jamoamiz sizga yordam berish uchun 24/7 mavjud."
+    "title": "We're Here to Help",
+    "subtitle": "Get the support you need, when you need it. Our team is available to assist you."
   },
-  "contactSupport": "Qo'llab-quvvatlashga Murojaat Qiling",
-  "selfServiceResources": "O'z-o'ziga Xizmat Ko'rsatish Resurslari",
+  "contactSupport": "Contact Support",
+  "selfServiceResources": "Self-Service Resources",
   "options": {
+    "whatsapp": {
+      "title": "WhatsApp",
+      "description": "Voice or chat with us on WhatsApp",
+      "availability": "Fast replies, 7 days a week",
+      "action": "Open WhatsApp"
+    },
+    "callUs": {
+      "title": "Call Us",
+      "description": "Speak directly with a support representative",
+      "availability": "Mon-Fri 8AM-6PM",
+      "action": "Call Now"
+    },
+    "emailSupport": {
+      "title": "Email Support",
+      "description": "Send us a detailed message",
+      "availability": "Response within 24 hours",
+      "action": "Send Email"
+    },
+    "videoCall": {
+      "title": "Video Call",
+      "description": "Schedule a video call with our admin team",
+      "availability": "By appointment",
+      "action": "Schedule Call"
+    },
+    "community": {
+      "title": "Community",
+      "description": "Join our Discord community for help and discussion",
+      "availability": "Active 24/7",
+      "action": "Join Discord"
+    },
     "liveChat": {
       "title": "Jonli Suhbat",
       "description": "Qo'llab-quvvatlash jamoamiz bilan real vaqtda suhbatlashing",
       "availability": "24/7 Mavjud",
       "action": "Suhbatni Boshlash"
-    },
-    "callUs": {
-      "title": "Bizga Qo'ng'iroq Qiling",
-      "description": "Qo'llab-quvvatlash vakili bilan to'g'ridan-to'g'ri gaplashing",
-      "availability": "Dush-Jum 8:00-18:00 EST",
-      "action": "Hozir Qo'ng'iroq Qiling"
-    },
-    "emailSupport": {
-      "title": "Elektron Pochta Yordami",
-      "description": "Bizga batafsil xabar yuboring",
-      "availability": "24 soat ichida javob",
-      "action": "Elektron Pochta Yuborish"
-    },
-    "videoCall": {
-      "title": "Video Qo'ng'iroq",
-      "description": "Jamoamiz bilan video qo'ng'iroqni rejalashtiring",
-      "availability": "Tayinlangan vaqt bo'yicha",
-      "action": "Qo'ng'iroqni Rejalashtirish"
     }
   },
   "resources": {
     "helpCenter": {
-      "title": "Yordam Markazi",
-      "description": "Bizning keng bilimlar bazamizni ko'rib chiqing"
+      "title": "Help Center",
+      "description": "Browse our comprehensive knowledge base"
     },
     "faqs": {
-      "title": "Ko'p So'raladigan Savollar",
-      "description": "Umumiy savollarga javoblarni toping"
+      "title": "FAQs",
+      "description": "Find answers to common questions"
     },
     "documentation": {
-      "title": "Hujjatlar",
-      "description": "Texnik qo'llanmalar va hujjatlar"
+      "title": "Documentation",
+      "description": "Technical guides and documentation"
     },
     "videoTutorials": {
-      "title": "Video Darsliklar",
-      "description": "Qadam-baqadam darsliklarni tomosha qiling"
+      "title": "Video Tutorials",
+      "description": "Watch step-by-step tutorials"
     }
   },
   "systemStatus": {
-    "title": "Barcha Tizimlar Ishlayapti",
-    "message": "99,9% ishlash vaqti • Oxirgi yangilanish: 2 daqiqa oldin",
-    "viewStatus": "Holat Sahifasini Ko'rish"
+    "title": "All Systems Operational",
+    "message": "99.9% uptime • Last updated: 2 minutes ago",
+    "viewStatus": "View Status Page"
   },
   "emergency": {
-    "title": "Tibbiy Favqulodda Holat?",
-    "message": "Agar tibbiy favqulodda holatni boshdan kechirayotgan bo'lsangiz, iltimos 103 ga qo'ng'iroq qiling yoki darhol eng yaqin shoshilinch tibbiy yordam bo'limiga tashrif buyuring.",
-    "warning": "Docito favqulodda tibbiy holatlar uchun emas."
+    "title": "Medical Emergency?",
+    "message": "If you're experiencing a medical emergency, please call your local emergency number or visit your nearest emergency room immediately.",
+    "warning": "Docito is not for emergency medical situations."
+  },
+  "videoBookingDialog": {
+    "title": "Book a video call with our team",
+    "description": "Pick a preferred time and we'll confirm via email with a meeting link.",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "topic": "Topic",
+    "preferredAt": "Preferred time",
+    "alternateAt": "Alternate time",
+    "notes": "Notes",
+    "timezoneNotice": "Times will be interpreted in your local timezone:",
+    "submit": "Request booking",
+    "invalidInput": "Please complete all required fields",
+    "successTitle": "Request submitted",
+    "successDescription": "Track your booking on the status page."
+  },
+  "videoStatus": {
+    "title": "Video Call Booking Status",
+    "subtitle": "Track the status of your booking with the admin team.",
+    "notFound": "Booking not found. Please check your link.",
+    "back": "Back to Support",
+    "requestedOn": "Requested",
+    "preferredTime": "Preferred time",
+    "alternateTime": "Alternate time",
+    "confirmedAt": "Confirmed at",
+    "completedAt": "Completed at",
+    "cancelledAt": "Cancelled at",
+    "meetingLink": "Meeting link",
+    "joinMeeting": "Join meeting",
+    "adminNotes": "Notes from our team",
+    "statuses": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
   }
 }
