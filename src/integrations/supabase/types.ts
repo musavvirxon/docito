@@ -149,6 +149,78 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_video_bookings: {
+        Row: {
+          admin_notes: string | null
+          alternate_at: string | null
+          assigned_to: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          email: string
+          id: string
+          language: string | null
+          meeting_link: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          preferred_at: string
+          public_token: string
+          status: string
+          timezone: string | null
+          topic: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          alternate_at?: string | null
+          assigned_to?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          language?: string | null
+          meeting_link?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          preferred_at: string
+          public_token?: string
+          status?: string
+          timezone?: string | null
+          topic: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          alternate_at?: string | null
+          assigned_to?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          language?: string | null
+          meeting_link?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_at?: string
+          public_token?: string
+          status?: string
+          timezone?: string | null
+          topic?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       appointment_clinical_item_templates: {
         Row: {
           created_at: string | null
@@ -7964,6 +8036,60 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          admin_notes: string | null
+          assigned_to: string | null
+          category: string
+          created_at: string
+          email: string
+          id: string
+          language: string | null
+          message: string
+          name: string
+          page_path: string | null
+          phone: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          email: string
+          id?: string
+          language?: string | null
+          message: string
+          name: string
+          page_path?: string | null
+          phone?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          assigned_to?: string | null
+          category?: string
+          created_at?: string
+          email?: string
+          id?: string
+          language?: string | null
+          message?: string
+          name?: string
+          page_path?: string | null
+          phone?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       test_catalog: {
         Row: {
           category: string
@@ -10251,6 +10377,22 @@ export type Database = {
       generate_invoice_number: { Args: never; Returns: string }
       generate_video_room_id: { Args: never; Returns: string }
       get_admin_practice_ids: { Args: { _user_id: string }; Returns: string[] }
+      get_admin_video_booking_status: {
+        Args: { _token: string }
+        Returns: {
+          admin_notes: string
+          alternate_at: string
+          cancelled_at: string
+          completed_at: string
+          confirmed_at: string
+          created_at: string
+          id: string
+          meeting_link: string
+          preferred_at: string
+          status: string
+          topic: string
+        }[]
+      }
       get_doctor_monthly_trends: {
         Args: { p_doctor_id: string; p_months?: number }
         Returns: {
