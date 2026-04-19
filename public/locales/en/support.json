@@ -1,21 +1,21 @@
 {
   "hero": {
     "title": "We're Here to Help",
-    "subtitle": "Get the support you need, when you need it. Our team is available 24/7 to assist you."
+    "subtitle": "Get the support you need, when you need it. Our team is available to assist you."
   },
   "contactSupport": "Contact Support",
   "selfServiceResources": "Self-Service Resources",
   "options": {
-    "liveChat": {
-      "title": "Live Chat",
-      "description": "Chat with our support team in real-time",
-      "availability": "Available 24/7",
-      "action": "Start Chat"
+    "whatsapp": {
+      "title": "WhatsApp",
+      "description": "Voice or chat with us on WhatsApp",
+      "availability": "Fast replies, 7 days a week",
+      "action": "Open WhatsApp"
     },
     "callUs": {
       "title": "Call Us",
       "description": "Speak directly with a support representative",
-      "availability": "Mon-Fri 8AM-6PM EST",
+      "availability": "Mon-Fri 8AM-6PM",
       "action": "Call Now"
     },
     "emailSupport": {
@@ -26,28 +26,22 @@
     },
     "videoCall": {
       "title": "Video Call",
-      "description": "Schedule a video call with our team",
+      "description": "Schedule a video call with our admin team",
       "availability": "By appointment",
       "action": "Schedule Call"
+    },
+    "community": {
+      "title": "Community",
+      "description": "Join our Discord community for help and discussion",
+      "availability": "Active 24/7",
+      "action": "Join Discord"
     }
   },
   "resources": {
-    "helpCenter": {
-      "title": "Help Center",
-      "description": "Browse our comprehensive knowledge base"
-    },
-    "faqs": {
-      "title": "FAQs",
-      "description": "Find answers to common questions"
-    },
-    "documentation": {
-      "title": "Documentation",
-      "description": "Technical guides and documentation"
-    },
-    "videoTutorials": {
-      "title": "Video Tutorials",
-      "description": "Watch step-by-step tutorials"
-    }
+    "helpCenter": { "title": "Help Center", "description": "Browse our comprehensive knowledge base" },
+    "faqs": { "title": "FAQs", "description": "Find answers to common questions" },
+    "documentation": { "title": "Documentation", "description": "Technical guides and documentation" },
+    "videoTutorials": { "title": "Video Tutorials", "description": "Watch step-by-step tutorials" }
   },
   "systemStatus": {
     "title": "All Systems Operational",
@@ -56,7 +50,44 @@
   },
   "emergency": {
     "title": "Medical Emergency?",
-    "message": "If you're experiencing a medical emergency, please call 911 or visit your nearest emergency room immediately.",
+    "message": "If you're experiencing a medical emergency, please call your local emergency number or visit your nearest emergency room immediately.",
     "warning": "Docito is not for emergency medical situations."
+  },
+  "videoBookingDialog": {
+    "title": "Book a video call with our team",
+    "description": "Pick a preferred time and we'll confirm via email with a meeting link.",
+    "name": "Full name",
+    "email": "Email",
+    "phone": "Phone (optional)",
+    "topic": "Topic",
+    "preferredAt": "Preferred time",
+    "alternateAt": "Alternate time",
+    "notes": "Notes",
+    "timezoneNotice": "Times will be interpreted in your local timezone:",
+    "submit": "Request booking",
+    "invalidInput": "Please complete all required fields",
+    "successTitle": "Request submitted",
+    "successDescription": "Track your booking on the status page."
+  },
+  "videoStatus": {
+    "title": "Video Call Booking Status",
+    "subtitle": "Track the status of your booking with the admin team.",
+    "notFound": "Booking not found. Please check your link.",
+    "back": "Back to Support",
+    "requestedOn": "Requested",
+    "preferredTime": "Preferred time",
+    "alternateTime": "Alternate time",
+    "confirmedAt": "Confirmed at",
+    "completedAt": "Completed at",
+    "cancelledAt": "Cancelled at",
+    "meetingLink": "Meeting link",
+    "joinMeeting": "Join meeting",
+    "adminNotes": "Notes from our team",
+    "statuses": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
   }
 }
