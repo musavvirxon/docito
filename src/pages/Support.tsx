@@ -1,35 +1,32 @@
+import { useState } from 'react';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
-import { 
-  HelpCircle, MessageSquare, Book, Phone, Mail, 
-  Video, FileText, Clock, ArrowRight 
+import {
+  HelpCircle, MessageSquare, Book, Mail,
+  Video, FileText, Clock, ArrowRight, MessageCircle, Hash
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SupportIllustration } from '@/components/Visuals/illustrations';
+import AdminVideoBookingDialog from '@/components/support/AdminVideoBookingDialog';
+
+const WHATSAPP_URL = 'https://wa.me/qr/O5HYYPMF52NBD1';
+const DISCORD_URL = 'https://discord.gg/ZAKe8hTeX';
 
 export default function Support() {
   const navigate = useNavigate();
-  const { t } = useTranslation(['common', 'support']);
+  const { t, i18n } = useTranslation(['common', 'support']);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const supportOptions = [
     {
-      icon: MessageSquare,
-      title: t('support:options.liveChat.title'),
-      description: t('support:options.liveChat.description'),
-      availability: t('support:options.liveChat.availability'),
-      action: t('support:options.liveChat.action'),
-      color: 'from-blue-500 to-indigo-600',
-      onClick: () => alert('Live chat would open here')
-    },
-    {
-      icon: Phone,
-      title: t('support:options.callUs.title'),
-      description: t('support:options.callUs.description'),
-      availability: t('support:options.callUs.availability'),
-      action: t('support:options.callUs.action'),
-      color: 'from-green-500 to-teal-600',
-      onClick: () => window.open('tel:+15551234567')
+      icon: MessageCircle,
+      title: t('support:options.whatsapp.title', { defaultValue: 'WhatsApp' }),
+      description: t('support:options.whatsapp.description', { defaultValue: 'Voice or chat with us on WhatsApp' }),
+      availability: t('support:options.whatsapp.availability', { defaultValue: 'Fast replies, 7 days a week' }),
+      action: t('support:options.whatsapp.action', { defaultValue: 'Open WhatsApp' }),
+      color: 'from-green-500 to-emerald-600',
+      onClick: () => window.open(WHATSAPP_URL, '_blank', 'noopener,noreferrer'),
     },
     {
       icon: Mail,
@@ -38,7 +35,7 @@ export default function Support() {
       availability: t('support:options.emailSupport.availability'),
       action: t('support:options.emailSupport.action'),
       color: 'from-purple-500 to-pink-600',
-      onClick: () => navigate('/contact')
+      onClick: () => navigate(`/${i18n.language}/contact`),
     },
     {
       icon: Video,
@@ -47,35 +44,24 @@ export default function Support() {
       availability: t('support:options.videoCall.availability'),
       action: t('support:options.videoCall.action'),
       color: 'from-orange-500 to-red-600',
-      onClick: () => navigate('/contact')
-    }
+      onClick: () => setBookingOpen(true),
+    },
+    {
+      icon: Hash,
+      title: t('support:options.community.title', { defaultValue: 'Community' }),
+      description: t('support:options.community.description', { defaultValue: 'Join our Discord community for help and discussion' }),
+      availability: t('support:options.community.availability', { defaultValue: 'Active 24/7' }),
+      action: t('support:options.community.action', { defaultValue: 'Join Discord' }),
+      color: 'from-indigo-500 to-violet-600',
+      onClick: () => window.open(DISCORD_URL, '_blank', 'noopener,noreferrer'),
+    },
   ];
 
   const resources = [
-    {
-      icon: Book,
-      title: t('support:resources.helpCenter.title'),
-      description: t('support:resources.helpCenter.description'),
-      link: '/help-center'
-    },
-    {
-      icon: HelpCircle,
-      title: t('support:resources.faqs.title'),
-      description: t('support:resources.faqs.description'),
-      link: '/faqs'
-    },
-    {
-      icon: FileText,
-      title: t('support:resources.documentation.title'),
-      description: t('support:resources.documentation.description'),
-      link: '/legal'
-    },
-    {
-      icon: Video,
-      title: t('support:resources.videoTutorials.title'),
-      description: t('support:resources.videoTutorials.description'),
-      link: '/help-center'
-    }
+    { icon: Book, title: t('support:resources.helpCenter.title'), description: t('support:resources.helpCenter.description'), link: '/help-center' },
+    { icon: HelpCircle, title: t('support:resources.faqs.title'), description: t('support:resources.faqs.description'), link: '/faqs' },
+    { icon: FileText, title: t('support:resources.documentation.title'), description: t('support:resources.documentation.description'), link: '/legal' },
+    { icon: Video, title: t('support:resources.videoTutorials.title'), description: t('support:resources.videoTutorials.description'), link: '/help-center' },
   ];
 
   return (
@@ -87,9 +73,7 @@ export default function Support() {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-6">{t('support:hero.title')}</h1>
-              <p className="text-xl text-primary-foreground/80 max-w-xl">
-                {t('support:hero.subtitle')}
-              </p>
+              <p className="text-xl text-primary-foreground/80 max-w-xl">{t('support:hero.subtitle')}</p>
             </div>
             <div className="hidden md:flex justify-center">
               <SupportIllustration className="w-full max-w-sm" />
@@ -142,37 +126,28 @@ export default function Support() {
       <div className="container mx-auto px-4 py-16">
         <div className="bg-red-500/10 rounded-2xl p-12 text-center border border-red-500/20">
           <h2 className="text-3xl font-bold text-foreground mb-4">{t('support:emergency.title')}</h2>
-          <p className="text-xl text-muted-foreground mb-6">
-            {t('support:emergency.message')}
-          </p>
-          <p className="text-red-600 dark:text-red-400 font-semibold text-lg">
-            {t('support:emergency.warning')}
-          </p>
+          <p className="text-xl text-muted-foreground mb-6">{t('support:emergency.message')}</p>
+          <p className="text-red-600 dark:text-red-400 font-semibold text-lg">{t('support:emergency.warning')}</p>
         </div>
       </div>
 
       <ModernFooter />
+      <AdminVideoBookingDialog open={bookingOpen} onOpenChange={setBookingOpen} />
     </div>
   );
 }
 
 function SupportOptionCard({ option }: any) {
   const Icon = option.icon;
-
   return (
     <div className="bg-card rounded-xl p-6 shadow-lg hover:shadow-xl transition-all border border-border hover:border-primary">
       <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${option.color} flex items-center justify-center mb-4`}>
         <Icon className="w-7 h-7 text-white" />
       </div>
-
       <h3 className="text-xl font-bold text-foreground mb-2">{option.title}</h3>
       <p className="text-sm text-muted-foreground mb-3">{option.description}</p>
       <p className="text-xs text-muted-foreground mb-4">{option.availability}</p>
-
-      <button
-        onClick={option.onClick}
-        className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold flex items-center justify-center gap-2"
-      >
+      <button onClick={option.onClick} className="w-full px-4 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-semibold flex items-center justify-center gap-2">
         {option.action}
         <ArrowRight className="w-4 h-4" />
       </button>
@@ -183,12 +158,8 @@ function SupportOptionCard({ option }: any) {
 function ResourceCard({ resource, navigate }: any) {
   const Icon = resource.icon;
   const { t } = useTranslation('common');
-
   return (
-    <div
-      onClick={() => navigate(resource.link)}
-      className="bg-accent rounded-xl p-6 hover:bg-accent/80 cursor-pointer transition-all border border-border hover:border-primary group"
-    >
+    <div onClick={() => navigate(resource.link)} className="bg-accent rounded-xl p-6 hover:bg-accent/80 cursor-pointer transition-all border border-border hover:border-primary group">
       <Icon className="w-8 h-8 text-primary mb-3 group-hover:scale-110 transition-transform" />
       <h3 className="text-lg font-bold text-foreground mb-2">{resource.title}</h3>
       <p className="text-sm text-muted-foreground mb-3">{resource.description}</p>

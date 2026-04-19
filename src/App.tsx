@@ -50,6 +50,7 @@ const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
 const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
+const AdminVideoBookingStatus = lazy(() => import("@/pages/AdminVideoBookingStatus"));
 
 const LabDashboardPage = lazy(() => import("@/pages/lab/LabDashboardPage"));
 const PharmacyDashboardPage = lazy(() => import("@/pages/pharmacy/PharmacyDashboardPage"));
@@ -190,6 +191,7 @@ export default function App() {
                     <Route path="help" element={<HelpCenter />} />
                     <Route path="help-center" element={<HelpCenter />} />
                     <Route path="support" element={<Support />} />
+                    <Route path="admin-video-status/:token" element={<AdminVideoBookingStatus />} />
                     <Route path="legal" element={<Legal />} />
                     <Route path="legal/:slug" element={<LegalDetail />} />
                     <Route path="cookies" element={<CookiePolicy />} />
@@ -290,6 +292,7 @@ export default function App() {
                   <Route path="help" element={<HelpCenter />} />
                   <Route path="help-center" element={<HelpCenter />} />
                   <Route path="support" element={<Support />} />
+                  <Route path="admin-video-status/:token" element={<AdminVideoBookingStatus />} />
                   <Route path="legal" element={<Legal />} />
                   <Route path="legal/:slug" element={<LegalDetail />} />
                   <Route path="cookies" element={<CookiePolicy />} />

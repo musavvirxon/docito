@@ -1,12 +1,23 @@
 {
   "hero": {
-    "title": "Biz bilan bog'laning",
-    "subtitle": "Savollaringiz bormi? Biz yordam berish uchun shu yerdamiz. Quyidagi usullardan birortasi orqali biz bilan bog'laning."
+    "title": "Get in Touch",
+    "subtitle": "Have questions? We're here to help. Reach out to us through any of the methods below."
   },
   "methods": {
     "email": {
-      "title": "Bizga email yuboring",
-      "description": "Bizga istalgan vaqtda email yuboring"
+      "title": "Email Us",
+      "value": "Reach our team by email",
+      "description": "We respond within 24 hours."
+    },
+    "whatsapp": {
+      "title": "Call us on WhatsApp",
+      "value": "Voice & video on WhatsApp",
+      "description": "Tap to open a chat with our team."
+    },
+    "sendMessage": {
+      "title": "Send us a message",
+      "value": "We reply within 24 hours",
+      "description": "Use the form below — it goes straight to our admin team."
     },
     "phone": {
       "title": "Bizga qo'ng'iroq qiling",
@@ -23,62 +34,63 @@
     }
   },
   "form": {
-    "title": "Bizga xabar yuboring",
+    "title": "Send us a Message",
+    "validationError": "Please check your inputs",
     "fields": {
       "name": {
-        "label": "To'liq ism",
-        "placeholder": "Sardor Karimov"
+        "label": "Full Name",
+        "placeholder": "John Doe"
       },
       "email": {
         "label": "Email",
-        "placeholder": "sardor@misol.uz"
+        "placeholder": "john@example.com"
       },
       "phone": {
-        "label": "Telefon (Ixtiyoriy)",
-        "placeholder": "+998 90 123 45 67"
+        "label": "Phone (Optional)",
+        "placeholder": "+1 (555) 123-4567"
       },
       "category": {
-        "label": "Kategoriya",
+        "label": "Category",
         "options": {
-          "general": "Umumiy so'rov",
-          "technical": "Texnik yordam",
-          "billing": "Hisob-kitob savoli",
-          "partnership": "Hamkorlik imkoniyati",
-          "feedback": "Fikr-mulohaza"
+          "general": "General Inquiry",
+          "technical": "Technical Support",
+          "billing": "Billing Question",
+          "partnership": "Partnership Opportunity",
+          "feedback": "Feedback"
         }
       },
       "subject": {
-        "label": "Mavzu",
-        "placeholder": "Qanday yordam bera olamiz?"
+        "label": "Subject",
+        "placeholder": "How can we help?"
       },
       "message": {
-        "label": "Xabar",
-        "placeholder": "So'rovingiz haqida ko'proq ma'lumot bering..."
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
       }
     },
-    "submit": "Xabar yuborish",
-    "sending": "Yuborilmoqda...",
-    "successTitle": "Xabar muvaffaqiyatli yuborildi!",
-    "successDescription": "Tez orada sizga javob beramiz."
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "Our admin team has received your message and will get back to you soon."
   },
   "faq": {
-    "title": "Ko'p so'raladigan savollar",
+    "title": "Frequently Asked Questions",
     "questions": {
       "hours": {
-        "question": "Sizning yordam soatlaringiz qanday?",
-        "answer": "Bizning yordam jamoamiz jonli chat va email orqali 24/7 mavjud. Telefon yordami Dushanba-Juma, 8:00 dan 18:00 gacha EST vaqtida mavjud."
+        "question": "What are your support hours?",
+        "answer": "Our team responds to messages 7 days a week. WhatsApp replies are typically within a few hours."
       },
       "response": {
-        "question": "Qanchalik tez javob olaman?",
-        "answer": "Biz odatda ish soatlarida barcha so'rovlarga 2-4 soat ichida va ish soatlaridan tashqarida olingan xabarlarga 24 soat ichida javob beramiz."
+        "question": "How quickly will I get a response?",
+        "answer": "We typically respond to all inquiries within 24 hours."
       },
       "emergency": {
-        "question": "Shoshilinch yordam taklif qilasizmi?",
-        "answer": "Ha! Shoshilinch texnik muammolar yoki favqulodda vaziyatlar uchun bizning issiq liniyamizga +1 (555) 123-4567 raqamiga qo'ng'iroq qiling va zudlik bilan yordam uchun 1 ni bosing."
+        "question": "Do you offer emergency support?",
+        "answer": "For urgent matters, please contact us via WhatsApp for the fastest response."
       },
       "demo": {
-        "question": "Demo rejalashtirishim mumkinmi?",
-        "answer": "Albatta! Bosh sahifamizdagi 'Demo rejalashtirish' tugmasini bosing yoki xabaringizda eslatib o'ting, va biz shaxsiy namoyish tashkil qilamiz."
+        "question": "Can I schedule a demo?",
+        "answer": "Yes — visit the Support page and request a video call with our team."
       }
     }
   },

@@ -1,12 +1,23 @@
 {
   "hero": {
-    "title": "Entre em Contato",
-    "subtitle": "Tem perguntas? Estamos aqui para ajudar. Entre em contato conosco através de qualquer um dos métodos abaixo."
+    "title": "Get in Touch",
+    "subtitle": "Have questions? We're here to help. Reach out to us through any of the methods below."
   },
   "methods": {
     "email": {
-      "title": "Envie-nos um Email",
-      "description": "Envie-nos um e-mail a qualquer momento"
+      "title": "Email Us",
+      "value": "Reach our team by email",
+      "description": "We respond within 24 hours."
+    },
+    "whatsapp": {
+      "title": "Call us on WhatsApp",
+      "value": "Voice & video on WhatsApp",
+      "description": "Tap to open a chat with our team."
+    },
+    "sendMessage": {
+      "title": "Send us a message",
+      "value": "We reply within 24 hours",
+      "description": "Use the form below — it goes straight to our admin team."
     },
     "phone": {
       "title": "Ligue para nós",
@@ -23,62 +34,63 @@
     }
   },
   "form": {
-    "title": "Envie-nos uma Mensagem",
+    "title": "Send us a Message",
+    "validationError": "Please check your inputs",
     "fields": {
       "name": {
-        "label": "Nome Completo",
-        "placeholder": "João Silva"
+        "label": "Full Name",
+        "placeholder": "John Doe"
       },
       "email": {
         "label": "Email",
-        "placeholder": "joao@exemplo.com"
+        "placeholder": "john@example.com"
       },
       "phone": {
-        "label": "Telefone (Opcional)",
-        "placeholder": "+55 11 98765-4321"
+        "label": "Phone (Optional)",
+        "placeholder": "+1 (555) 123-4567"
       },
       "category": {
-        "label": "Categoria",
+        "label": "Category",
         "options": {
-          "general": "Consulta Geral",
-          "technical": "Suporte Técnico",
-          "billing": "Pergunta de Cobrança",
-          "partnership": "Oportunidade de Parceria",
+          "general": "General Inquiry",
+          "technical": "Technical Support",
+          "billing": "Billing Question",
+          "partnership": "Partnership Opportunity",
           "feedback": "Feedback"
         }
       },
       "subject": {
-        "label": "Assunto",
-        "placeholder": "Como podemos ajudar?"
+        "label": "Subject",
+        "placeholder": "How can we help?"
       },
       "message": {
-        "label": "Mensagem",
-        "placeholder": "Conte-nos mais sobre sua consulta..."
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
       }
     },
-    "submit": "Enviar Mensagem",
-    "sending": "Enviando...",
-    "successTitle": "Mensagem enviada com sucesso!",
-    "successDescription": "Entraremos em contato em breve."
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "Our admin team has received your message and will get back to you soon."
   },
   "faq": {
-    "title": "Perguntas Frequentes",
+    "title": "Frequently Asked Questions",
     "questions": {
       "hours": {
-        "question": "Quais são seus horários de suporte?",
-        "answer": "Nossa equipe de suporte está disponível 24/7 via chat ao vivo e e-mail. O suporte telefônico está disponível de segunda a sexta-feira, das 8h às 18h EST."
+        "question": "What are your support hours?",
+        "answer": "Our team responds to messages 7 days a week. WhatsApp replies are typically within a few hours."
       },
       "response": {
-        "question": "Quão rápido receberei uma resposta?",
-        "answer": "Normalmente respondemos a todas as consultas dentro de 2-4 horas durante o horário comercial e dentro de 24 horas para mensagens recebidas fora do horário comercial."
+        "question": "How quickly will I get a response?",
+        "answer": "We typically respond to all inquiries within 24 hours."
       },
       "emergency": {
-        "question": "Vocês oferecem suporte de emergência?",
-        "answer": "Sim! Para problemas técnicos urgentes ou emergências, ligue para nossa linha direta no +1 (555) 123-4567 e pressione 1 para assistência imediata."
+        "question": "Do you offer emergency support?",
+        "answer": "For urgent matters, please contact us via WhatsApp for the fastest response."
       },
       "demo": {
-        "question": "Posso agendar uma demonstração?",
-        "answer": "Absolutamente! Clique no botão 'Agendar Demo' em nossa página inicial ou mencione-o em sua mensagem, e configuraremos uma demonstração personalizada."
+        "question": "Can I schedule a demo?",
+        "answer": "Yes — visit the Support page and request a video call with our team."
       }
     }
   },

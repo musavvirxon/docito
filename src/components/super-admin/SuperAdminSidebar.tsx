@@ -41,6 +41,7 @@ const navItems = [
   { id: "blogStudio", label: "Blog Studio", icon: BookOpenText },
   { id: "landingCMS", label: "Landing Page", icon: LayoutGrid },
   { id: "feedback", label: "Feedback Inbox", icon: Inbox },
+  { id: "supportInbox", label: "Support Inbox", icon: Inbox },
   { id: "ecosystem", label: "Ecosystem", icon: LayoutGrid },
   { id: "verifications", label: "Verifications", icon: ShieldCheck },
   { id: "documentVerification", label: "Document Verification", icon: QrCode },

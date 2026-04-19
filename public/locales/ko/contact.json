@@ -1,12 +1,23 @@
 {
   "hero": {
-    "title": "문의하기",
-    "subtitle": "궁금한 점이 있으신가요? 도와드리겠습니다. 아래 방법 중 하나로 문의해 주세요."
+    "title": "Get in Touch",
+    "subtitle": "Have questions? We're here to help. Reach out to us through any of the methods below."
   },
   "methods": {
     "email": {
-      "title": "이메일 문의",
-      "description": "언제든지 이메일을 보내주세요"
+      "title": "Email Us",
+      "value": "Reach our team by email",
+      "description": "We respond within 24 hours."
+    },
+    "whatsapp": {
+      "title": "Call us on WhatsApp",
+      "value": "Voice & video on WhatsApp",
+      "description": "Tap to open a chat with our team."
+    },
+    "sendMessage": {
+      "title": "Send us a message",
+      "value": "We reply within 24 hours",
+      "description": "Use the form below — it goes straight to our admin team."
     },
     "phone": {
       "title": "전화 문의",
@@ -23,62 +34,63 @@
     }
   },
   "form": {
-    "title": "메시지 보내기",
+    "title": "Send us a Message",
+    "validationError": "Please check your inputs",
     "fields": {
       "name": {
-        "label": "이름",
-        "placeholder": "홍길동"
+        "label": "Full Name",
+        "placeholder": "John Doe"
       },
       "email": {
-        "label": "이메일",
-        "placeholder": "hong@example.com"
+        "label": "Email",
+        "placeholder": "john@example.com"
       },
       "phone": {
-        "label": "전화번호 (선택사항)",
-        "placeholder": "+82 10-1234-5678"
+        "label": "Phone (Optional)",
+        "placeholder": "+1 (555) 123-4567"
       },
       "category": {
-        "label": "카테고리",
+        "label": "Category",
         "options": {
-          "general": "일반 문의",
-          "technical": "기술 지원",
-          "billing": "청구 관련 질문",
-          "partnership": "파트너십 기회",
-          "feedback": "피드백"
+          "general": "General Inquiry",
+          "technical": "Technical Support",
+          "billing": "Billing Question",
+          "partnership": "Partnership Opportunity",
+          "feedback": "Feedback"
         }
       },
       "subject": {
-        "label": "제목",
-        "placeholder": "어떻게 도와드릴까요?"
+        "label": "Subject",
+        "placeholder": "How can we help?"
       },
       "message": {
-        "label": "메시지",
-        "placeholder": "문의 내용을 자세히 알려주세요..."
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
       }
     },
-    "submit": "메시지 전송",
-    "sending": "전송 중...",
-    "successTitle": "메시지가 성공적으로 전송되었습니다!",
-    "successDescription": "곧 연락드리겠습니다."
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "Our admin team has received your message and will get back to you soon."
   },
   "faq": {
-    "title": "자주 묻는 질문",
+    "title": "Frequently Asked Questions",
     "questions": {
       "hours": {
-        "question": "지원 시간은 어떻게 되나요?",
-        "answer": "지원팀은 실시간 채팅과 이메일을 통해 연중무휴 24시간 이용 가능합니다. 전화 지원은 월요일~금요일, 오전 8시~오후 6시(EST)에 이용하실 수 있습니다."
+        "question": "What are your support hours?",
+        "answer": "Our team responds to messages 7 days a week. WhatsApp replies are typically within a few hours."
       },
       "response": {
-        "question": "얼마나 빨리 답변을 받을 수 있나요?",
-        "answer": "일반적으로 업무 시간 중 모든 문의에 2-4시간 이내에 답변드리며, 업무 시간 외에 받은 메시지는 24시간 이내에 답변드립니다."
+        "question": "How quickly will I get a response?",
+        "answer": "We typically respond to all inquiries within 24 hours."
       },
       "emergency": {
-        "question": "긴급 지원을 제공하나요?",
-        "answer": "네! 긴급 기술 문제나 응급 상황의 경우 핫라인 +1 (555) 123-4567로 전화하여 1번을 눌러 즉시 지원을 받으실 수 있습니다."
+        "question": "Do you offer emergency support?",
+        "answer": "For urgent matters, please contact us via WhatsApp for the fastest response."
       },
       "demo": {
-        "question": "데모를 예약할 수 있나요?",
-        "answer": "물론입니다! 홈페이지의 '데모 예약' 버튼을 클릭하거나 메시지에 언급해 주시면 맞춤형 시연을 준비해 드리겠습니다."
+        "question": "Can I schedule a demo?",
+        "answer": "Yes — visit the Support page and request a video call with our team."
       }
     }
   },

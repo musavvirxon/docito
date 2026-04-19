@@ -1,12 +1,23 @@
 {
   "hero": {
-    "title": "お問い合わせ",
-    "subtitle": "ご質問はありますか？お手伝いいたします。以下のいずれかの方法でお問い合わせください。"
+    "title": "Get in Touch",
+    "subtitle": "Have questions? We're here to help. Reach out to us through any of the methods below."
   },
   "methods": {
     "email": {
-      "title": "メールでお問い合わせ",
-      "description": "いつでもメールをお送りください"
+      "title": "Email Us",
+      "value": "Reach our team by email",
+      "description": "We respond within 24 hours."
+    },
+    "whatsapp": {
+      "title": "Call us on WhatsApp",
+      "value": "Voice & video on WhatsApp",
+      "description": "Tap to open a chat with our team."
+    },
+    "sendMessage": {
+      "title": "Send us a message",
+      "value": "We reply within 24 hours",
+      "description": "Use the form below — it goes straight to our admin team."
     },
     "phone": {
       "title": "お電話でお問い合わせ",
@@ -23,62 +34,63 @@
     }
   },
   "form": {
-    "title": "メッセージを送信",
+    "title": "Send us a Message",
+    "validationError": "Please check your inputs",
     "fields": {
       "name": {
-        "label": "お名前",
-        "placeholder": "山田太郎"
+        "label": "Full Name",
+        "placeholder": "John Doe"
       },
       "email": {
-        "label": "メールアドレス",
-        "placeholder": "yamada@example.com"
+        "label": "Email",
+        "placeholder": "john@example.com"
       },
       "phone": {
-        "label": "電話番号（任意）",
-        "placeholder": "+81 90-1234-5678"
+        "label": "Phone (Optional)",
+        "placeholder": "+1 (555) 123-4567"
       },
       "category": {
-        "label": "カテゴリー",
+        "label": "Category",
         "options": {
-          "general": "一般的なお問い合わせ",
-          "technical": "技術サポート",
-          "billing": "請求に関する質問",
-          "partnership": "パートナーシップの機会",
-          "feedback": "フィードバック"
+          "general": "General Inquiry",
+          "technical": "Technical Support",
+          "billing": "Billing Question",
+          "partnership": "Partnership Opportunity",
+          "feedback": "Feedback"
         }
       },
       "subject": {
-        "label": "件名",
-        "placeholder": "どのようにお手伝いできますか？"
+        "label": "Subject",
+        "placeholder": "How can we help?"
       },
       "message": {
-        "label": "メッセージ",
-        "placeholder": "お問い合わせの詳細をお聞かせください..."
+        "label": "Message",
+        "placeholder": "Tell us more about your inquiry..."
       }
     },
-    "submit": "メッセージを送信",
-    "sending": "送信中...",
-    "successTitle": "メッセージが正常に送信されました！",
-    "successDescription": "すぐにご連絡いたします。"
+    "submit": "Send Message",
+    "sending": "Sending...",
+    "successTitle": "Message sent successfully!",
+    "successDescription": "Our admin team has received your message and will get back to you soon."
   },
   "faq": {
-    "title": "よくある質問",
+    "title": "Frequently Asked Questions",
     "questions": {
       "hours": {
-        "question": "サポート時間は？",
-        "answer": "サポートチームは、ライブチャットとメールで24時間年中無休でご利用いただけます。電話サポートは月曜日～金曜日の午前8時～午後6時（EST）にご利用いただけます。"
+        "question": "What are your support hours?",
+        "answer": "Our team responds to messages 7 days a week. WhatsApp replies are typically within a few hours."
       },
       "response": {
-        "question": "どのくらいで返信がもらえますか？",
-        "answer": "営業時間内のお問い合わせには通常2～4時間以内に、営業時間外に受信したメッセージには24時間以内に返信いたします。"
+        "question": "How quickly will I get a response?",
+        "answer": "We typically respond to all inquiries within 24 hours."
       },
       "emergency": {
-        "question": "緊急サポートはありますか？",
-        "answer": "はい！緊急の技術的問題や緊急事態の場合は、ホットライン +1 (555) 123-4567 にお電話いただき、1を押すと即座にサポートが受けられます。"
+        "question": "Do you offer emergency support?",
+        "answer": "For urgent matters, please contact us via WhatsApp for the fastest response."
       },
       "demo": {
-        "question": "デモの予約はできますか？",
-        "answer": "もちろんです！ホームページの「デモを予約」ボタンをクリックするか、メッセージでお知らせください。パーソナライズされたデモンストレーションを設定いたします。"
+        "question": "Can I schedule a demo?",
+        "answer": "Yes — visit the Support page and request a video call with our team."
       }
     }
   },
