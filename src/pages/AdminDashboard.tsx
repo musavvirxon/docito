@@ -208,6 +208,7 @@ const AdminDashboard = () => {
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [importPatientsOpen, setImportPatientsOpen] = useState(false);
 
   const [billingRange, setBillingRange] = useState<"7d" | "30d" | "90d">("30d");
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
