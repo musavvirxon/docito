@@ -6336,6 +6336,14 @@ const AdminDashboard = () => {
         <ViewRequirementsModal open={requirementsOpen} onOpenChange={setRequirementsOpen} />
 
         <VerificationSuccessModal open={verificationModalOpen} onOpenChange={setVerificationModalOpen} practiceName={practice?.name || ""} />
+
+        <AdminImportPatientsDialog
+          isOpen={importPatientsOpen}
+          onClose={() => setImportPatientsOpen(false)}
+          onSuccess={() => refreshData()}
+          practiceId={practice?.id}
+          doctors={doctors}
+        />
       </div>
     </SidebarProvider>
   );
