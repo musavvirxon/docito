@@ -18,5 +18,63 @@
     "completed": "Завершено",
     "noAppointments": "Приемы не найдены",
     "viewDetails": "Просмотреть детали"
+  },
+  "import": {
+    "title": "Импорт пациентов",
+    "description": "Массовый импорт пациентов в клинику из файла Excel или CSV.",
+    "fileStructure": "Требуемая структура файла:",
+    "requiredColumns": "Обязательные колонки",
+    "optionalColumns": "Необязательные колонки",
+    "downloadTemplate": "Скачать шаблон",
+    "templateHint": "Готовый Excel-шаблон со всеми колонками",
+    "templateDownloaded": "Шаблон загружен",
+    "uploadHint": "Нажмите для загрузки или перетащите файл",
+    "fileTypes": "Excel (.xlsx, .xls) или CSV",
+    "defaultProvider": "Врач по умолчанию",
+    "defaultProviderPlaceholder": "Выберите врача",
+    "defaultProviderHint": "Все импортированные пациенты будут привязаны к этому врачу, если для строки не указан doctor_email.",
+    "doctorEmailHint": "привязать строку к конкретному врачу",
+    "noDoctors": "Нет доступных врачей",
+    "success": "Успешно импортировано {{count}} пациентов",
+    "preview": {
+      "valid": "{{count}} корректных",
+      "invalid": "{{count}} с ошибками",
+      "invalidNotice": "{{count}} строк(и) содержат ошибки и будут пропущены.",
+      "status": "Статус",
+      "name": "Имя",
+      "dob": "Дата рожд.",
+      "phone": "Телефон",
+      "errors": "Ошибки"
+    },
+    "actions": {
+      "back": "Назад",
+      "import": "Импортировать {{count}} пациентов",
+      "importing": "Импорт...",
+      "close": "Закрыть"
+    },
+    "complete": {
+      "title": "Импорт завершён!",
+      "message": "Успешно импортировано {{count}} пациентов"
+    },
+    "errors": {
+      "nameRequired": "Полное имя обязательно",
+      "dobRequired": "Дата рождения обязательна",
+      "phoneRequired": "Телефон обязателен",
+      "dateFormat": "Формат даты должен быть YYYY-MM-DD",
+      "invalidDate": "Неверная дата",
+      "futureDate": "Дата не может быть в будущем",
+      "phoneFormat": "Неверный формат телефона",
+      "emailFormat": "Неверный формат email",
+      "gender": "Пол должен быть male, female или other",
+      "doctorNotFound": "Email врача не найден, и врач по умолчанию не выбран",
+      "doctorRequired": "Необходимо выбрать врача по умолчанию",
+      "selectDefaultFirst": "Перед загрузкой выберите врача по умолчанию",
+      "fileType": "Загрузите файл Excel (.xlsx, .xls) или CSV",
+      "empty": "Файл пуст",
+      "missingColumns": "Отсутствуют обязательные колонки: {{cols}}",
+      "readFailed": "Не удалось прочитать файл",
+      "noValid": "Нет корректных строк для импорта",
+      "importFailed": "Не удалось импортировать пациентов"
+    }
   }
 }
