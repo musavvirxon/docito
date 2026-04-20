@@ -40,6 +40,7 @@ import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
+import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -207,6 +208,7 @@ const AdminDashboard = () => {
   const [createClinicOpen, setCreateClinicOpen] = useState(false);
   const [requirementsOpen, setRequirementsOpen] = useState(false);
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [importPatientsOpen, setImportPatientsOpen] = useState(false);
 
   const [billingRange, setBillingRange] = useState<"7d" | "30d" | "90d">("30d");
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
@@ -2987,12 +2989,21 @@ const AdminDashboard = () => {
             <div className={sectionShellClass}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <h2 className="text-xl font-semibold">{t("admin.patients.title")}</h2>
-              <Button variant="outline" onClick={() => guard(() => {
-                downloadCSV('patients.csv', ['Name', 'Phone', 'Email', 'Gender', 'Status', 'Created'], 
-                  patients.map((p: any) => [p.name || p.full_name || '', p.phone || '', p.email || '', p.gender || '', p.status || '', p.created_at || '']));
-              })}>
-                {t("admin.patients.export")}
-              </Button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  disabled={!allowModals || !practice?.id}
+                  onClick={() => guard(() => setImportPatientsOpen(true))}
+                >
+                  {t("admin.patients.import", "Import Patients")}
+                </Button>
+                <Button variant="outline" onClick={() => guard(() => {
+                  downloadCSV('patients.csv', ['Name', 'Phone', 'Email', 'Gender', 'Status', 'Created'],
+                    patients.map((p: any) => [p.name || p.full_name || '', p.phone || '', p.email || '', p.gender || '', p.status || '', p.created_at || '']));
+                })}>
+                  {t("admin.patients.export")}
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
@@ -6325,6 +6336,14 @@ const AdminDashboard = () => {
         <ViewRequirementsModal open={requirementsOpen} onOpenChange={setRequirementsOpen} />
 
         <VerificationSuccessModal open={verificationModalOpen} onOpenChange={setVerificationModalOpen} practiceName={practice?.name || ""} />
+
+        <AdminImportPatientsDialog
+          isOpen={importPatientsOpen}
+          onClose={() => setImportPatientsOpen(false)}
+          onSuccess={() => refreshData()}
+          practiceId={practice?.id}
+          doctors={doctors}
+        />
       </div>
     </SidebarProvider>
   );

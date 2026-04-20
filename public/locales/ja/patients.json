@@ -18,5 +18,63 @@
     "completed": "完了",
     "noAppointments": "予約が見つかりません",
     "viewDetails": "詳細を表示"
+  },
+  "import": {
+    "title": "患者をインポート",
+    "description": "ExcelまたはCSVファイルから患者を一括インポートします。",
+    "fileStructure": "必要なファイル構造:",
+    "requiredColumns": "必須列",
+    "optionalColumns": "任意列",
+    "downloadTemplate": "テンプレートをダウンロード",
+    "templateHint": "全列を含む整形済みExcelテンプレート",
+    "templateDownloaded": "テンプレートをダウンロードしました",
+    "uploadHint": "クリックしてアップロード、またはドラッグ＆ドロップ",
+    "fileTypes": "Excel (.xlsx, .xls) または CSV",
+    "defaultProvider": "既定の担当医",
+    "defaultProviderPlaceholder": "担当医を選択",
+    "defaultProviderHint": "行ごとに doctor_email が指定されない限り、すべての患者はこの担当医に割り当てられます。",
+    "doctorEmailHint": "行を特定の担当医に割り当てる",
+    "noDoctors": "利用可能な担当医がいません",
+    "success": "{{count}}人の患者をインポートしました",
+    "preview": {
+      "valid": "{{count}} 件 有効",
+      "invalid": "{{count}} 件 無効",
+      "invalidNotice": "{{count}} 行にエラーがあるためスキップされます。",
+      "status": "状態",
+      "name": "氏名",
+      "dob": "生年月日",
+      "phone": "電話",
+      "errors": "エラー"
+    },
+    "actions": {
+      "back": "戻る",
+      "import": "{{count}}人をインポート",
+      "importing": "インポート中...",
+      "close": "閉じる"
+    },
+    "complete": {
+      "title": "インポート完了！",
+      "message": "{{count}}人の患者をインポートしました"
+    },
+    "errors": {
+      "nameRequired": "氏名は必須です",
+      "dobRequired": "生年月日は必須です",
+      "phoneRequired": "電話番号は必須です",
+      "dateFormat": "日付はYYYY-MM-DD形式で入力してください",
+      "invalidDate": "無効な日付です",
+      "futureDate": "未来の日付は使用できません",
+      "phoneFormat": "電話番号の形式が無効です",
+      "emailFormat": "メールアドレスの形式が無効です",
+      "gender": "性別は male、female、other のいずれか",
+      "doctorNotFound": "担当医のメールが見つからず、既定も未選択です",
+      "doctorRequired": "既定の担当医を選択してください",
+      "selectDefaultFirst": "アップロード前に既定の担当医を選択してください",
+      "fileType": "Excel (.xlsx, .xls) または CSV ファイルをアップロードしてください",
+      "empty": "ファイルが空です",
+      "missingColumns": "必須列が不足: {{cols}}",
+      "readFailed": "ファイルの読み込みに失敗しました",
+      "noValid": "インポートできる有効な行がありません",
+      "importFailed": "患者のインポートに失敗しました"
+    }
   }
 }

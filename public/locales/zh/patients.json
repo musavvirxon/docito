@@ -18,5 +18,63 @@
     "completed": "已完成",
     "noAppointments": "未找到预约",
     "viewDetails": "查看详情"
+  },
+  "import": {
+    "title": "导入患者",
+    "description": "通过 Excel 或 CSV 文件批量导入患者。",
+    "fileStructure": "必需的文件结构：",
+    "requiredColumns": "必填列",
+    "optionalColumns": "可选列",
+    "downloadTemplate": "下载模板",
+    "templateHint": "包含所有列的预格式化 Excel 模板",
+    "templateDownloaded": "模板已下载",
+    "uploadHint": "点击上传或拖放文件",
+    "fileTypes": "Excel (.xlsx, .xls) 或 CSV",
+    "defaultProvider": "默认医生",
+    "defaultProviderPlaceholder": "选择医生",
+    "defaultProviderHint": "除非每行指定 doctor_email，否则所有导入的患者都将分配给该医生。",
+    "doctorEmailHint": "将该行分配给特定医生",
+    "noDoctors": "没有可用的医生",
+    "success": "成功导入 {{count}} 位患者",
+    "preview": {
+      "valid": "{{count}} 有效",
+      "invalid": "{{count}} 无效",
+      "invalidNotice": "{{count}} 行存在错误，将被跳过。",
+      "status": "状态",
+      "name": "姓名",
+      "dob": "出生日期",
+      "phone": "电话",
+      "errors": "错误"
+    },
+    "actions": {
+      "back": "返回",
+      "import": "导入 {{count}} 位患者",
+      "importing": "导入中...",
+      "close": "关闭"
+    },
+    "complete": {
+      "title": "导入完成！",
+      "message": "成功导入 {{count}} 位患者"
+    },
+    "errors": {
+      "nameRequired": "需要全名",
+      "dobRequired": "需要出生日期",
+      "phoneRequired": "需要电话",
+      "dateFormat": "日期必须为 YYYY-MM-DD",
+      "invalidDate": "无效日期",
+      "futureDate": "日期不能是未来",
+      "phoneFormat": "电话格式无效",
+      "emailFormat": "邮箱格式无效",
+      "gender": "性别必须为 male、female 或 other",
+      "doctorNotFound": "未找到医生邮箱且未选择默认医生",
+      "doctorRequired": "必须选择默认医生",
+      "selectDefaultFirst": "上传前请先选择默认医生",
+      "fileType": "请上传 Excel (.xlsx, .xls) 或 CSV 文件",
+      "empty": "文件为空",
+      "missingColumns": "缺少必填列：{{cols}}",
+      "readFailed": "读取文件失败",
+      "noValid": "没有有效的行可导入",
+      "importFailed": "导入患者失败"
+    }
   }
 }

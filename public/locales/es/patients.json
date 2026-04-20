@@ -18,5 +18,63 @@
     "completed": "Completado",
     "noAppointments": "No se encontraron citas",
     "viewDetails": "Ver Detalles"
+  },
+  "import": {
+    "title": "Importar Pacientes",
+    "description": "Importe pacientes al consultorio desde un archivo Excel o CSV.",
+    "fileStructure": "Estructura requerida del archivo:",
+    "requiredColumns": "Columnas obligatorias",
+    "optionalColumns": "Columnas opcionales",
+    "downloadTemplate": "Descargar Plantilla",
+    "templateHint": "Plantilla Excel preformateada con todas las columnas",
+    "templateDownloaded": "Plantilla descargada",
+    "uploadHint": "Haga clic para subir o arrastre y suelte",
+    "fileTypes": "Excel (.xlsx, .xls) o CSV",
+    "defaultProvider": "Proveedor Predeterminado",
+    "defaultProviderPlaceholder": "Seleccione un proveedor",
+    "defaultProviderHint": "Todos los pacientes importados se asignarán a este proveedor a menos que se indique doctor_email por fila.",
+    "doctorEmailHint": "asignar la fila a un proveedor específico",
+    "noDoctors": "No hay proveedores disponibles",
+    "success": "Se importaron {{count}} pacientes correctamente",
+    "preview": {
+      "valid": "{{count}} Válidos",
+      "invalid": "{{count}} Inválidos",
+      "invalidNotice": "{{count}} fila(s) tienen errores y serán omitidas.",
+      "status": "Estado",
+      "name": "Nombre",
+      "dob": "F. Nac.",
+      "phone": "Teléfono",
+      "errors": "Errores"
+    },
+    "actions": {
+      "back": "Atrás",
+      "import": "Importar {{count}} Pacientes",
+      "importing": "Importando...",
+      "close": "Cerrar"
+    },
+    "complete": {
+      "title": "¡Importación Completa!",
+      "message": "Se importaron {{count}} pacientes correctamente"
+    },
+    "errors": {
+      "nameRequired": "El nombre completo es obligatorio",
+      "dobRequired": "La fecha de nacimiento es obligatoria",
+      "phoneRequired": "El teléfono es obligatorio",
+      "dateFormat": "La fecha debe estar en formato YYYY-MM-DD",
+      "invalidDate": "Fecha inválida",
+      "futureDate": "La fecha no puede ser futura",
+      "phoneFormat": "Formato de teléfono inválido",
+      "emailFormat": "Formato de correo inválido",
+      "gender": "El género debe ser male, female u other",
+      "doctorNotFound": "Correo del proveedor no encontrado y sin predeterminado",
+      "doctorRequired": "Debe seleccionarse un proveedor predeterminado",
+      "selectDefaultFirst": "Seleccione un proveedor predeterminado antes de subir",
+      "fileType": "Suba un archivo Excel (.xlsx, .xls) o CSV",
+      "empty": "El archivo está vacío",
+      "missingColumns": "Faltan columnas obligatorias: {{cols}}",
+      "readFailed": "Error al leer el archivo",
+      "noValid": "No hay filas válidas para importar",
+      "importFailed": "Error al importar pacientes"
+    }
   }
 }

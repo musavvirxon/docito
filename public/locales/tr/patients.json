@@ -18,5 +18,63 @@
     "completed": "Tamamlandı",
     "noAppointments": "Randevu bulunamadı",
     "viewDetails": "Detayları Görüntüle"
+  },
+  "import": {
+    "title": "Hastaları İçe Aktar",
+    "description": "Excel veya CSV dosyasından kliniğe toplu hasta aktarın.",
+    "fileStructure": "Gerekli dosya yapısı:",
+    "requiredColumns": "Zorunlu sütunlar",
+    "optionalColumns": "Opsiyonel sütunlar",
+    "downloadTemplate": "Şablonu İndir",
+    "templateHint": "Tüm sütunları içeren önceden biçimlendirilmiş Excel şablonu",
+    "templateDownloaded": "Şablon indirildi",
+    "uploadHint": "Yüklemek için tıklayın veya sürükleyip bırakın",
+    "fileTypes": "Excel (.xlsx, .xls) veya CSV",
+    "defaultProvider": "Varsayılan Sağlayıcı",
+    "defaultProviderPlaceholder": "Bir sağlayıcı seçin",
+    "defaultProviderHint": "doctor_email satır bazında belirtilmedikçe tüm aktarılan hastalar bu sağlayıcıya atanır.",
+    "doctorEmailHint": "satırı belirli bir sağlayıcıya ata",
+    "noDoctors": "Sağlayıcı yok",
+    "success": "{{count}} hasta başarıyla aktarıldı",
+    "preview": {
+      "valid": "{{count}} Geçerli",
+      "invalid": "{{count}} Geçersiz",
+      "invalidNotice": "{{count}} satırda hata var ve atlanacak.",
+      "status": "Durum",
+      "name": "Ad",
+      "dob": "Doğum",
+      "phone": "Telefon",
+      "errors": "Hatalar"
+    },
+    "actions": {
+      "back": "Geri",
+      "import": "{{count}} Hastayı Aktar",
+      "importing": "Aktarılıyor...",
+      "close": "Kapat"
+    },
+    "complete": {
+      "title": "Aktarım Tamamlandı!",
+      "message": "{{count}} hasta başarıyla aktarıldı"
+    },
+    "errors": {
+      "nameRequired": "Ad soyad zorunludur",
+      "dobRequired": "Doğum tarihi zorunludur",
+      "phoneRequired": "Telefon zorunludur",
+      "dateFormat": "Tarih YYYY-AA-GG biçiminde olmalı",
+      "invalidDate": "Geçersiz tarih",
+      "futureDate": "Tarih gelecekte olamaz",
+      "phoneFormat": "Geçersiz telefon biçimi",
+      "emailFormat": "Geçersiz e-posta biçimi",
+      "gender": "Cinsiyet male, female veya other olmalı",
+      "doctorNotFound": "Sağlayıcı e-postası bulunamadı ve varsayılan seçili değil",
+      "doctorRequired": "Varsayılan bir sağlayıcı seçilmelidir",
+      "selectDefaultFirst": "Yüklemeden önce varsayılan bir sağlayıcı seçin",
+      "fileType": "Lütfen Excel (.xlsx, .xls) veya CSV dosyası yükleyin",
+      "empty": "Dosya boş",
+      "missingColumns": "Eksik zorunlu sütunlar: {{cols}}",
+      "readFailed": "Dosya okunamadı",
+      "noValid": "Aktarılacak geçerli satır yok",
+      "importFailed": "Hastalar aktarılamadı"
+    }
   }
 }

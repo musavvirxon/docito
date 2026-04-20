@@ -18,5 +18,63 @@
     "completed": "Yakunlangan",
     "noAppointments": "Qabullar topilmadi",
     "viewDetails": "Tafsilotlarni ko'rish"
+  },
+  "import": {
+    "title": "Bemorlarni import qilish",
+    "description": "Excel yoki CSV fayldan bemorlarni klinikaga ommaviy import qiling.",
+    "fileStructure": "Talab qilinadigan fayl tuzilishi:",
+    "requiredColumns": "Majburiy ustunlar",
+    "optionalColumns": "Ixtiyoriy ustunlar",
+    "downloadTemplate": "Shablonni yuklab olish",
+    "templateHint": "Barcha ustunlarga ega tayyor Excel shabloni",
+    "templateDownloaded": "Shablon yuklab olindi",
+    "uploadHint": "Yuklash uchun bosing yoki sudrab tashlang",
+    "fileTypes": "Excel (.xlsx, .xls) yoki CSV",
+    "defaultProvider": "Standart shifokor",
+    "defaultProviderPlaceholder": "Shifokorni tanlang",
+    "defaultProviderHint": "Agar qatorda doctor_email ko'rsatilmasa, barcha bemorlar shu shifokorga biriktiriladi.",
+    "doctorEmailHint": "qatorni muayyan shifokorga biriktirish",
+    "noDoctors": "Shifokorlar mavjud emas",
+    "success": "{{count}} ta bemor muvaffaqiyatli import qilindi",
+    "preview": {
+      "valid": "{{count}} ta yaroqli",
+      "invalid": "{{count}} ta xato",
+      "invalidNotice": "{{count}} qatorda xatolar bor va o'tkazib yuboriladi.",
+      "status": "Holat",
+      "name": "Ism",
+      "dob": "Tug'ilgan",
+      "phone": "Telefon",
+      "errors": "Xatolar"
+    },
+    "actions": {
+      "back": "Orqaga",
+      "import": "{{count}} ta bemorni import qilish",
+      "importing": "Import qilinmoqda...",
+      "close": "Yopish"
+    },
+    "complete": {
+      "title": "Import yakunlandi!",
+      "message": "{{count}} ta bemor muvaffaqiyatli import qilindi"
+    },
+    "errors": {
+      "nameRequired": "To'liq ism majburiy",
+      "dobRequired": "Tug'ilgan sana majburiy",
+      "phoneRequired": "Telefon majburiy",
+      "dateFormat": "Sana YYYY-MM-DD formatida bo'lishi kerak",
+      "invalidDate": "Noto'g'ri sana",
+      "futureDate": "Sana kelajakda bo'lishi mumkin emas",
+      "phoneFormat": "Telefon formati noto'g'ri",
+      "emailFormat": "Email formati noto'g'ri",
+      "gender": "Jins male, female yoki other bo'lishi kerak",
+      "doctorNotFound": "Shifokor emaili topilmadi va standart tanlanmagan",
+      "doctorRequired": "Standart shifokorni tanlash kerak",
+      "selectDefaultFirst": "Yuklashdan oldin standart shifokorni tanlang",
+      "fileType": "Iltimos, Excel (.xlsx, .xls) yoki CSV faylini yuklang",
+      "empty": "Fayl bo'sh",
+      "missingColumns": "Majburiy ustunlar yo'q: {{cols}}",
+      "readFailed": "Faylni o'qib bo'lmadi",
+      "noValid": "Import uchun yaroqli qatorlar yo'q",
+      "importFailed": "Bemorlarni import qilishda xato"
+    }
   }
 }

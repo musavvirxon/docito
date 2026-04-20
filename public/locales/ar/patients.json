@@ -18,5 +18,63 @@
     "completed": "مكتمل",
     "noAppointments": "لم يتم العثور على مواعيد",
     "viewDetails": "عرض التفاصيل"
+  },
+  "import": {
+    "title": "استيراد المرضى",
+    "description": "استيراد المرضى دفعة واحدة من ملف Excel أو CSV.",
+    "fileStructure": "بنية الملف المطلوبة:",
+    "requiredColumns": "الأعمدة المطلوبة",
+    "optionalColumns": "الأعمدة الاختيارية",
+    "downloadTemplate": "تنزيل القالب",
+    "templateHint": "قالب Excel منسق مسبقاً مع جميع الأعمدة",
+    "templateDownloaded": "تم تنزيل القالب",
+    "uploadHint": "انقر للرفع أو اسحب وأفلت",
+    "fileTypes": "Excel (.xlsx, .xls) أو CSV",
+    "defaultProvider": "مقدم الرعاية الافتراضي",
+    "defaultProviderPlaceholder": "اختر مقدم الرعاية",
+    "defaultProviderHint": "سيتم تعيين جميع المرضى المستوردين لهذا الطبيب ما لم يتم تحديد doctor_email لكل صف.",
+    "doctorEmailHint": "تعيين الصف لطبيب محدد",
+    "noDoctors": "لا يوجد أطباء متاحون",
+    "success": "تم استيراد {{count}} مريضاً بنجاح",
+    "preview": {
+      "valid": "{{count}} صالح",
+      "invalid": "{{count}} غير صالح",
+      "invalidNotice": "{{count}} صف به أخطاء وسيتم تخطيه.",
+      "status": "الحالة",
+      "name": "الاسم",
+      "dob": "تاريخ الميلاد",
+      "phone": "الهاتف",
+      "errors": "الأخطاء"
+    },
+    "actions": {
+      "back": "رجوع",
+      "import": "استيراد {{count}} مريض",
+      "importing": "جارٍ الاستيراد...",
+      "close": "إغلاق"
+    },
+    "complete": {
+      "title": "اكتمل الاستيراد!",
+      "message": "تم استيراد {{count}} مريضاً بنجاح"
+    },
+    "errors": {
+      "nameRequired": "الاسم الكامل مطلوب",
+      "dobRequired": "تاريخ الميلاد مطلوب",
+      "phoneRequired": "الهاتف مطلوب",
+      "dateFormat": "يجب أن يكون التاريخ بصيغة YYYY-MM-DD",
+      "invalidDate": "تاريخ غير صالح",
+      "futureDate": "لا يمكن أن يكون التاريخ في المستقبل",
+      "phoneFormat": "صيغة الهاتف غير صالحة",
+      "emailFormat": "صيغة البريد غير صالحة",
+      "gender": "يجب أن يكون الجنس male أو female أو other",
+      "doctorNotFound": "بريد الطبيب غير موجود ولم يتم اختيار الافتراضي",
+      "doctorRequired": "يجب اختيار طبيب افتراضي",
+      "selectDefaultFirst": "يرجى اختيار طبيب افتراضي قبل الرفع",
+      "fileType": "يرجى رفع ملف Excel (.xlsx, .xls) أو CSV",
+      "empty": "الملف فارغ",
+      "missingColumns": "أعمدة مطلوبة مفقودة: {{cols}}",
+      "readFailed": "فشل قراءة الملف",
+      "noValid": "لا توجد صفوف صالحة للاستيراد",
+      "importFailed": "فشل استيراد المرضى"
+    }
   }
 }

@@ -18,5 +18,63 @@
     "completed": "Abgeschlossen",
     "noAppointments": "Keine Termine gefunden",
     "viewDetails": "Details anzeigen"
+  },
+  "import": {
+    "title": "Patienten importieren",
+    "description": "Importieren Sie Patienten aus einer Excel- oder CSV-Datei in die Praxis.",
+    "fileStructure": "Erforderliche Dateistruktur:",
+    "requiredColumns": "Pflichtspalten",
+    "optionalColumns": "Optionale Spalten",
+    "downloadTemplate": "Vorlage herunterladen",
+    "templateHint": "Vorformatierte Excel-Vorlage mit allen Spalten",
+    "templateDownloaded": "Vorlage heruntergeladen",
+    "uploadHint": "Klicken zum Hochladen oder hierher ziehen",
+    "fileTypes": "Excel (.xlsx, .xls) oder CSV",
+    "defaultProvider": "Standard-Behandler",
+    "defaultProviderPlaceholder": "Behandler auswählen",
+    "defaultProviderHint": "Alle importierten Patienten werden diesem Behandler zugewiesen, sofern kein doctor_email pro Zeile angegeben ist.",
+    "doctorEmailHint": "Zeile einem bestimmten Behandler zuweisen",
+    "noDoctors": "Keine Behandler verfügbar",
+    "success": "{{count}} Patienten erfolgreich importiert",
+    "preview": {
+      "valid": "{{count}} gültig",
+      "invalid": "{{count}} ungültig",
+      "invalidNotice": "{{count}} Zeile(n) haben Fehler und werden übersprungen.",
+      "status": "Status",
+      "name": "Name",
+      "dob": "Geb.",
+      "phone": "Telefon",
+      "errors": "Fehler"
+    },
+    "actions": {
+      "back": "Zurück",
+      "import": "{{count}} Patienten importieren",
+      "importing": "Importiere...",
+      "close": "Schließen"
+    },
+    "complete": {
+      "title": "Import abgeschlossen!",
+      "message": "{{count}} Patienten erfolgreich importiert"
+    },
+    "errors": {
+      "nameRequired": "Vollständiger Name ist erforderlich",
+      "dobRequired": "Geburtsdatum ist erforderlich",
+      "phoneRequired": "Telefon ist erforderlich",
+      "dateFormat": "Datum muss YYYY-MM-DD sein",
+      "invalidDate": "Ungültiges Datum",
+      "futureDate": "Datum darf nicht in der Zukunft liegen",
+      "phoneFormat": "Ungültiges Telefonformat",
+      "emailFormat": "Ungültiges E-Mail-Format",
+      "gender": "Geschlecht muss male, female oder other sein",
+      "doctorNotFound": "Behandler-E-Mail nicht gefunden und kein Standard ausgewählt",
+      "doctorRequired": "Ein Standard-Behandler muss ausgewählt werden",
+      "selectDefaultFirst": "Bitte vor dem Hochladen einen Standard-Behandler auswählen",
+      "fileType": "Bitte eine Excel- (.xlsx, .xls) oder CSV-Datei hochladen",
+      "empty": "Datei ist leer",
+      "missingColumns": "Fehlende Pflichtspalten: {{cols}}",
+      "readFailed": "Datei konnte nicht gelesen werden",
+      "noValid": "Keine gültigen Zeilen zum Import",
+      "importFailed": "Import fehlgeschlagen"
+    }
   }
 }
