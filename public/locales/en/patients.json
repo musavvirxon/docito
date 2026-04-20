@@ -18,5 +18,63 @@
     "completed": "Completed",
     "noAppointments": "No appointments found",
     "viewDetails": "View Details"
+  },
+  "import": {
+    "title": "Import Patients",
+    "description": "Bulk import patients into the practice from an Excel or CSV file.",
+    "fileStructure": "Required file structure:",
+    "requiredColumns": "Required columns",
+    "optionalColumns": "Optional columns",
+    "downloadTemplate": "Download Template",
+    "templateHint": "Pre-formatted Excel template with all columns",
+    "templateDownloaded": "Template downloaded",
+    "uploadHint": "Click to upload or drag and drop",
+    "fileTypes": "Excel (.xlsx, .xls) or CSV",
+    "defaultProvider": "Default Provider",
+    "defaultProviderPlaceholder": "Select a provider",
+    "defaultProviderHint": "All imported patients will be assigned to this provider unless a doctor_email is provided per row.",
+    "doctorEmailHint": "assign row to a specific provider",
+    "noDoctors": "No providers available",
+    "success": "Successfully imported {{count}} patients",
+    "preview": {
+      "valid": "{{count}} Valid",
+      "invalid": "{{count}} Invalid",
+      "invalidNotice": "{{count}} row(s) have errors and will be skipped.",
+      "status": "Status",
+      "name": "Name",
+      "dob": "DOB",
+      "phone": "Phone",
+      "errors": "Errors"
+    },
+    "actions": {
+      "back": "Back",
+      "import": "Import {{count}} Patients",
+      "importing": "Importing...",
+      "close": "Close"
+    },
+    "complete": {
+      "title": "Import Complete!",
+      "message": "Successfully imported {{count}} patients"
+    },
+    "errors": {
+      "nameRequired": "Full name is required",
+      "dobRequired": "Date of birth is required",
+      "phoneRequired": "Phone is required",
+      "dateFormat": "Date must be YYYY-MM-DD",
+      "invalidDate": "Invalid date",
+      "futureDate": "Date cannot be in the future",
+      "phoneFormat": "Invalid phone format",
+      "emailFormat": "Invalid email format",
+      "gender": "Gender must be male, female or other",
+      "doctorNotFound": "Provider email not found and no default selected",
+      "doctorRequired": "A default provider must be selected",
+      "selectDefaultFirst": "Please select a default provider before uploading",
+      "fileType": "Please upload an Excel (.xlsx, .xls) or CSV file",
+      "empty": "File is empty",
+      "missingColumns": "Missing required columns: {{cols}}",
+      "readFailed": "Failed to read file",
+      "noValid": "No valid rows to import",
+      "importFailed": "Failed to import patients"
+    }
   }
 }

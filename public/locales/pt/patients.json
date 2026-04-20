@@ -18,5 +18,63 @@
     "completed": "Concluído",
     "noAppointments": "Nenhuma consulta encontrada",
     "viewDetails": "Ver Detalhes"
+  },
+  "import": {
+    "title": "Importar Pacientes",
+    "description": "Importe pacientes em massa para a clínica a partir de um arquivo Excel ou CSV.",
+    "fileStructure": "Estrutura de arquivo necessária:",
+    "requiredColumns": "Colunas obrigatórias",
+    "optionalColumns": "Colunas opcionais",
+    "downloadTemplate": "Baixar Modelo",
+    "templateHint": "Modelo Excel pré-formatado com todas as colunas",
+    "templateDownloaded": "Modelo baixado",
+    "uploadHint": "Clique para enviar ou arraste e solte",
+    "fileTypes": "Excel (.xlsx, .xls) ou CSV",
+    "defaultProvider": "Profissional Padrão",
+    "defaultProviderPlaceholder": "Selecione um profissional",
+    "defaultProviderHint": "Todos os pacientes importados serão atribuídos a este profissional, exceto quando doctor_email for indicado por linha.",
+    "doctorEmailHint": "atribuir linha a um profissional específico",
+    "noDoctors": "Nenhum profissional disponível",
+    "success": "{{count}} pacientes importados com sucesso",
+    "preview": {
+      "valid": "{{count}} Válidos",
+      "invalid": "{{count}} Inválidos",
+      "invalidNotice": "{{count}} linha(s) com erros serão ignoradas.",
+      "status": "Status",
+      "name": "Nome",
+      "dob": "Nasc.",
+      "phone": "Telefone",
+      "errors": "Erros"
+    },
+    "actions": {
+      "back": "Voltar",
+      "import": "Importar {{count}} Pacientes",
+      "importing": "Importando...",
+      "close": "Fechar"
+    },
+    "complete": {
+      "title": "Importação Concluída!",
+      "message": "{{count}} pacientes importados com sucesso"
+    },
+    "errors": {
+      "nameRequired": "Nome completo é obrigatório",
+      "dobRequired": "Data de nascimento é obrigatória",
+      "phoneRequired": "Telefone é obrigatório",
+      "dateFormat": "Data deve estar no formato YYYY-MM-DD",
+      "invalidDate": "Data inválida",
+      "futureDate": "A data não pode ser no futuro",
+      "phoneFormat": "Formato de telefone inválido",
+      "emailFormat": "Formato de e-mail inválido",
+      "gender": "Gênero deve ser male, female ou other",
+      "doctorNotFound": "E-mail do profissional não encontrado e sem padrão selecionado",
+      "doctorRequired": "Um profissional padrão deve ser selecionado",
+      "selectDefaultFirst": "Selecione um profissional padrão antes de enviar",
+      "fileType": "Envie um arquivo Excel (.xlsx, .xls) ou CSV",
+      "empty": "Arquivo vazio",
+      "missingColumns": "Colunas obrigatórias ausentes: {{cols}}",
+      "readFailed": "Falha ao ler o arquivo",
+      "noValid": "Sem linhas válidas para importar",
+      "importFailed": "Falha ao importar pacientes"
+    }
   }
 }

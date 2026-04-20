@@ -18,5 +18,63 @@
     "completed": "완료됨",
     "noAppointments": "예약을 찾을 수 없습니다",
     "viewDetails": "세부 정보 보기"
+  },
+  "import": {
+    "title": "환자 가져오기",
+    "description": "Excel 또는 CSV 파일에서 환자를 일괄 가져옵니다.",
+    "fileStructure": "필요한 파일 구조:",
+    "requiredColumns": "필수 열",
+    "optionalColumns": "선택 열",
+    "downloadTemplate": "템플릿 다운로드",
+    "templateHint": "모든 열을 포함한 사전 포맷된 Excel 템플릿",
+    "templateDownloaded": "템플릿이 다운로드되었습니다",
+    "uploadHint": "클릭하여 업로드하거나 파일을 끌어다 놓으세요",
+    "fileTypes": "Excel (.xlsx, .xls) 또는 CSV",
+    "defaultProvider": "기본 진료자",
+    "defaultProviderPlaceholder": "진료자 선택",
+    "defaultProviderHint": "행별로 doctor_email이 지정되지 않은 경우 모든 가져온 환자는 이 진료자에게 배정됩니다.",
+    "doctorEmailHint": "행을 특정 진료자에게 배정",
+    "noDoctors": "사용 가능한 진료자 없음",
+    "success": "{{count}}명의 환자를 성공적으로 가져왔습니다",
+    "preview": {
+      "valid": "{{count}}개 유효",
+      "invalid": "{{count}}개 무효",
+      "invalidNotice": "{{count}}개 행에 오류가 있어 건너뜁니다.",
+      "status": "상태",
+      "name": "이름",
+      "dob": "생년월일",
+      "phone": "전화",
+      "errors": "오류"
+    },
+    "actions": {
+      "back": "뒤로",
+      "import": "{{count}}명 가져오기",
+      "importing": "가져오는 중...",
+      "close": "닫기"
+    },
+    "complete": {
+      "title": "가져오기 완료!",
+      "message": "{{count}}명의 환자를 성공적으로 가져왔습니다"
+    },
+    "errors": {
+      "nameRequired": "전체 이름이 필요합니다",
+      "dobRequired": "생년월일이 필요합니다",
+      "phoneRequired": "전화번호가 필요합니다",
+      "dateFormat": "날짜는 YYYY-MM-DD 형식이어야 합니다",
+      "invalidDate": "잘못된 날짜",
+      "futureDate": "날짜는 미래일 수 없습니다",
+      "phoneFormat": "잘못된 전화 형식",
+      "emailFormat": "잘못된 이메일 형식",
+      "gender": "성별은 male, female 또는 other여야 합니다",
+      "doctorNotFound": "진료자 이메일을 찾을 수 없고 기본값이 없습니다",
+      "doctorRequired": "기본 진료자를 선택해야 합니다",
+      "selectDefaultFirst": "업로드 전에 기본 진료자를 선택하세요",
+      "fileType": "Excel (.xlsx, .xls) 또는 CSV 파일을 업로드하세요",
+      "empty": "파일이 비어 있습니다",
+      "missingColumns": "필수 열 누락: {{cols}}",
+      "readFailed": "파일을 읽지 못했습니다",
+      "noValid": "가져올 유효한 행이 없습니다",
+      "importFailed": "환자 가져오기에 실패했습니다"
+    }
   }
 }
