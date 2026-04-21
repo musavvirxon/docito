@@ -283,6 +283,12 @@ const EnhancedCreateTreatmentPlanModal = ({
       setSelectedPatientSource(null);
       setDaySlots([]);
       setLoadingDaySlots(false);
+      setMedicationsEnabled(false);
+      setMedications([]);
+      setReferralsEnabled(false);
+      setReferrals([]);
+      setTestsEnabled(false);
+      setTests([]);
       setHolidayDates([]);
       setDayMeta(null);
     }
@@ -661,7 +667,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
-      const { data: planData, error: planError } = await supabase
+      const { data: planData, error: planError } = await (supabase as any)
         .from("treatment_plans")
         .insert({
           doctor_id: doctorData.id,
@@ -670,9 +676,12 @@ const EnhancedCreateTreatmentPlanModal = ({
           title: values.title,
           notes: values.description,
           status: "draft",
-          total_cost: totalCost, // ✅ includes tooth multipliers
+          total_cost: totalCost,
           priority: values.priority ?? "medium",
           expires_at: expiresAt,
+          medications: medicationsEnabled ? medications.filter((m) => m.name?.trim()) : [],
+          referrals: referralsEnabled ? referrals.filter((r) => r.specialty?.trim()) : [],
+          tests: testsEnabled ? tests.filter((t) => t.test_name?.trim()) : [],
         })
         .select()
         .single();
