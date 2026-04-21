@@ -10630,6 +10630,10 @@ export type Database = {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: boolean
       }
+      is_doctor_applicant_for_user: {
+        Args: { _doctor_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_practice_staff: {
         Args: { p_practice_id: string; p_user_id: string }
         Returns: boolean
