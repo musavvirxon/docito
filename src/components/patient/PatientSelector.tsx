@@ -28,6 +28,8 @@ interface PatientSelectorProps {
   placeholder?: string;
   className?: string;
   required?: boolean;
+  /** When false, hides "Add new patient" affordances. Defaults to true. */
+  allowCreate?: boolean;
 }
 
 const PatientSelector = ({
@@ -36,6 +38,7 @@ const PatientSelector = ({
   placeholder = "Search by name, email, or phone",
   className = "",
   required = false,
+  allowCreate = true,
 }: PatientSelectorProps) => {
   const { user } = useAuth();
 
@@ -191,18 +194,20 @@ const PatientSelector = ({
           className={`pl-10 pr-12 ${required && !value ? "border-destructive" : ""}`}
         />
 
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowCreateModal(true)}
-            className="h-7 w-7 p-0"
-            title="Add new patient"
-          >
-            <UserPlus className="w-4 h-4" />
-          </Button>
-        </div>
+        {allowCreate && (
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowCreateModal(true)}
+              className="h-7 w-7 p-0"
+              title="Add new patient"
+            >
+              <UserPlus className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {required && !value && (
@@ -228,16 +233,18 @@ const PatientSelector = ({
               ) : filteredPatients.length === 0 ? (
                 <div className="p-4 text-center">
                   <p className="text-muted-foreground mb-3">No patients found</p>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setShowCreateModal(true);
-                      setShowDropdown(false);
-                    }}
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Add New Patient
-                  </Button>
+                  {allowCreate && (
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setShowCreateModal(true);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add New Patient
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="py-1">
@@ -281,23 +288,25 @@ const PatientSelector = ({
         </Card>
       )}
 
-      <CreatePatientModal
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
-        onSuccess={(newDoctorPatient) => {
-          const p: Patient = {
-            id: newDoctorPatient.id,
-            name: newDoctorPatient.full_name,
-            phone: newDoctorPatient.phone,
-            email: newDoctorPatient.email ?? undefined,
-            date_of_birth: newDoctorPatient.date_of_birth,
-            created_at: newDoctorPatient.created_at,
-            source: "doctor_added",
-          };
-          setDoctorPatients((prev) => [p, ...prev]);
-          handleSelect(p);
-        }}
-      />
+      {allowCreate && (
+        <CreatePatientModal
+          open={showCreateModal}
+          onOpenChange={setShowCreateModal}
+          onSuccess={(newDoctorPatient) => {
+            const p: Patient = {
+              id: newDoctorPatient.id,
+              name: newDoctorPatient.full_name,
+              phone: newDoctorPatient.phone,
+              email: newDoctorPatient.email ?? undefined,
+              date_of_birth: newDoctorPatient.date_of_birth,
+              created_at: newDoctorPatient.created_at,
+              source: "doctor_added",
+            };
+            setDoctorPatients((prev) => [p, ...prev]);
+            handleSelect(p);
+          }}
+        />
+      )}
 
       {showDropdown && (
         <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />

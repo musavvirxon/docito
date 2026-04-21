@@ -14,7 +14,6 @@ import { format } from "date-fns";
 import { CalendarPlus, User } from "lucide-react";
 
 import PatientSelector, { type Patient } from "@/components/patient/PatientSelector";
-import CreatePatientModal, { type DoctorPatientRow } from "@/components/patient/CreatePatientModal";
 import { useProcedures } from "@/hooks/useProcedures";
 
 interface ManualBookAppointmentModalProps {
@@ -67,7 +66,6 @@ const ManualBookAppointmentModal = ({
   const [loading, setLoading] = useState(false);
 
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-  const [createPatientOpen, setCreatePatientOpen] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -264,34 +262,12 @@ const ManualBookAppointmentModal = ({
                 )}
               </div>
             ) : (
-              <>
-                <PatientSelector value={selectedPatient?.id} required onSelect={(p) => setSelectedPatient(p)} />
-
-                <Button
-                  type="button"
-                  variant="link"
-                  className="p-0 h-auto text-primary"
-                  onClick={() => setCreatePatientOpen(true)}
-                >
-                  Add New Patient
-                </Button>
-
-                <CreatePatientModal
-                  open={createPatientOpen}
-                  onOpenChange={setCreatePatientOpen}
-                  onSuccess={(newDoctorPatient: DoctorPatientRow) => {
-                    setSelectedPatient({
-                      id: newDoctorPatient.id,
-                      name: newDoctorPatient.full_name,
-                      phone: newDoctorPatient.phone,
-                      email: newDoctorPatient.email ?? undefined,
-                      date_of_birth: newDoctorPatient.date_of_birth,
-                      created_at: newDoctorPatient.created_at,
-                      source: "doctor_added",
-                    });
-                  }}
-                />
-              </>
+              <PatientSelector
+                value={selectedPatient?.id}
+                required
+                allowCreate={false}
+                onSelect={(p) => setSelectedPatient(p)}
+              />
             )}
           </div>
 

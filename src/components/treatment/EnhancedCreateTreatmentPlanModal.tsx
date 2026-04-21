@@ -27,6 +27,15 @@ import ToothSelector from "@/components/procedure/ToothSelector";
 import { EnhancedDentalChart } from "@/components/dental/EnhancedDentalChart";
 import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
 import { cn } from "@/lib/utils";
+import {
+  MedicationsSection,
+  ReferralsSection,
+  TestsSection,
+  type MedicationItem,
+  type ReferralItem,
+  type TestItem,
+} from "./PlanSideSections";
+import { Switch } from "@/components/ui/switch";
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
 
@@ -95,6 +104,7 @@ interface ProcedureItem {
   notes?: string;
   tooth_numbers?: number[];
   cost?: number; // ✅ UNIT cost override (per tooth if tooth_based)
+  follow_up_required?: boolean;
 }
 
 interface AvailabilitySlot {
@@ -141,6 +151,14 @@ const EnhancedCreateTreatmentPlanModal = ({
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
   const [totalCost, setTotalCost] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
+
+  // ✅ NEW: Medications / Referrals / Tests sections
+  const [medicationsEnabled, setMedicationsEnabled] = useState(false);
+  const [medications, setMedications] = useState<MedicationItem[]>([]);
+  const [referralsEnabled, setReferralsEnabled] = useState(false);
+  const [referrals, setReferrals] = useState<ReferralItem[]>([]);
+  const [testsEnabled, setTestsEnabled] = useState(false);
+  const [tests, setTests] = useState<TestItem[]>([]);
 
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
   const [selectedPatientSource, setSelectedPatientSource] = useState<"registered" | "doctor_added" | null>(null);
@@ -265,6 +283,12 @@ const EnhancedCreateTreatmentPlanModal = ({
       setSelectedPatientSource(null);
       setDaySlots([]);
       setLoadingDaySlots(false);
+      setMedicationsEnabled(false);
+      setMedications([]);
+      setReferralsEnabled(false);
+      setReferrals([]);
+      setTestsEnabled(false);
+      setTests([]);
       setHolidayDates([]);
       setDayMeta(null);
     }
@@ -643,7 +667,7 @@ const EnhancedCreateTreatmentPlanModal = ({
         ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
         : null;
 
-      const { data: planData, error: planError } = await supabase
+      const { data: planData, error: planError } = await (supabase as any)
         .from("treatment_plans")
         .insert({
           doctor_id: doctorData.id,
@@ -652,9 +676,12 @@ const EnhancedCreateTreatmentPlanModal = ({
           title: values.title,
           notes: values.description,
           status: "draft",
-          total_cost: totalCost, // ✅ includes tooth multipliers
+          total_cost: totalCost,
           priority: values.priority ?? "medium",
           expires_at: expiresAt,
+          medications: medicationsEnabled ? medications.filter((m) => m.name?.trim()) : [],
+          referrals: referralsEnabled ? referrals.filter((r) => r.specialty?.trim()) : [],
+          tests: testsEnabled ? tests.filter((t) => t.test_name?.trim()) : [],
         })
         .select()
         .single();
@@ -717,6 +744,10 @@ const EnhancedCreateTreatmentPlanModal = ({
 
             priority: item.priority ?? "medium",
             appointment_id: appointmentId,
+
+            // ✅ NEW: follow-up tracking
+            follow_up_required: !!item.follow_up_required,
+            follow_up_appointment_id: item.follow_up_required && appointmentId ? null : null,
           });
         }
 

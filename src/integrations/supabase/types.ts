@@ -9038,6 +9038,10 @@ export type Database = {
           cost: number | null
           created_at: string | null
           duration_minutes: number | null
+          follow_up_appointment_id: string | null
+          follow_up_notes: string | null
+          follow_up_required: boolean
+          follow_up_skipped_at: string | null
           id: string
           notes: string | null
           priority: string | null
@@ -9055,6 +9059,10 @@ export type Database = {
           cost?: number | null
           created_at?: string | null
           duration_minutes?: number | null
+          follow_up_appointment_id?: string | null
+          follow_up_notes?: string | null
+          follow_up_required?: boolean
+          follow_up_skipped_at?: string | null
           id?: string
           notes?: string | null
           priority?: string | null
@@ -9072,6 +9080,10 @@ export type Database = {
           cost?: number | null
           created_at?: string | null
           duration_minutes?: number | null
+          follow_up_appointment_id?: string | null
+          follow_up_notes?: string | null
+          follow_up_required?: boolean
+          follow_up_skipped_at?: string | null
           id?: string
           notes?: string | null
           priority?: string | null
@@ -9102,6 +9114,20 @@ export type Database = {
             columns: ["consent_form_id"]
             isOneToOne: false
             referencedRelation: "consent_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_procedures_follow_up_appointment_id_fkey"
+            columns: ["follow_up_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treatment_plan_procedures_follow_up_appointment_id_fkey"
+            columns: ["follow_up_appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
             referencedColumns: ["id"]
           },
           {
@@ -9187,11 +9213,14 @@ export type Database = {
           estimated_duration_weeks: number | null
           expires_at: string | null
           id: string
+          medications: Json
           notes: string | null
           patient_id: string | null
           priority: string | null
           published_at: string | null
+          referrals: Json
           status: Database["public"]["Enums"]["treatment_plan_status"] | null
+          tests: Json
           title: string
           total_cost: number | null
           updated_at: string | null
@@ -9205,11 +9234,14 @@ export type Database = {
           estimated_duration_weeks?: number | null
           expires_at?: string | null
           id?: string
+          medications?: Json
           notes?: string | null
           patient_id?: string | null
           priority?: string | null
           published_at?: string | null
+          referrals?: Json
           status?: Database["public"]["Enums"]["treatment_plan_status"] | null
+          tests?: Json
           title: string
           total_cost?: number | null
           updated_at?: string | null
@@ -9223,11 +9255,14 @@ export type Database = {
           estimated_duration_weeks?: number | null
           expires_at?: string | null
           id?: string
+          medications?: Json
           notes?: string | null
           patient_id?: string | null
           priority?: string | null
           published_at?: string | null
+          referrals?: Json
           status?: Database["public"]["Enums"]["treatment_plan_status"] | null
+          tests?: Json
           title?: string
           total_cost?: number | null
           updated_at?: string | null

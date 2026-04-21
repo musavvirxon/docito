@@ -1,13 +1,20 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  CheckCircle2, 
-  Clock, 
-  XCircle, 
-  AlertCircle, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  CheckCircle2,
+  Clock,
+  XCircle,
+  AlertCircle,
   FileText,
   User,
   Briefcase,
@@ -19,10 +26,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useDoctorVerificationStatus } from "@/hooks/useDoctorVerificationStatus";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DoctorProfileVerificationSection } from "@/components/settings/DoctorProfileVerificationSection";
 
 export const DoctorVerificationStatusCard = () => {
   const navigate = useNavigate();
   const { verificationStatus, loading } = useDoctorVerificationStatus();
+  const [verificationOpen, setVerificationOpen] = useState(false);
 
   if (loading) {
     return (
@@ -39,22 +48,25 @@ export const DoctorVerificationStatusCard = () => {
 
   if (!verificationStatus) {
     return (
-      <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-500">
-            <AlertCircle className="h-5 w-5" />
-            Verification Not Started
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-yellow-600 dark:text-yellow-400">
-            You haven't submitted your verification application yet. Complete your profile and submit for verification to start accepting patients.
-          </p>
-          <Button onClick={() => navigate('/profile')} className="w-full">
-            Complete Verification in Profile
-          </Button>
-        </CardContent>
-      </Card>
+      <>
+        <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-500">
+              <AlertCircle className="h-5 w-5" />
+              Verification Not Started
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-yellow-600 dark:text-yellow-400">
+              You haven't submitted your verification application yet. Complete your profile and submit for verification to start accepting patients.
+            </p>
+            <Button onClick={() => setVerificationOpen(true)} className="w-full">
+              Complete Verification
+            </Button>
+          </CardContent>
+        </Card>
+        <VerificationDialog open={verificationOpen} onOpenChange={setVerificationOpen} />
+      </>
     );
   }
 
@@ -342,13 +354,20 @@ export const DoctorVerificationStatusCard = () => {
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
-        {verificationStatus.status === 'declined' && (
-            <Button onClick={() => navigate('/profile')} className="flex-1">
-              Update Profile & Resubmit
+          {verificationStatus.status === 'declined' && (
+            <Button onClick={() => setVerificationOpen(true)} className="flex-1">
+              Update & Resubmit
             </Button>
           )}
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
+            onClick={() => setVerificationOpen(true)}
+            className="flex-1"
+          >
+            Open Verification
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => navigate('/profile')}
             className="flex-1"
           >
@@ -362,6 +381,26 @@ export const DoctorVerificationStatusCard = () => {
           {verificationStatus.reviewed_at && ` • Reviewed on ${new Date(verificationStatus.reviewed_at).toLocaleDateString()}`}
         </p>
       </CardContent>
+      <VerificationDialog open={verificationOpen} onOpenChange={setVerificationOpen} />
     </Card>
+  );
+};
+
+const VerificationDialog = ({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+}) => {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Doctor Verification</DialogTitle>
+        </DialogHeader>
+        <DoctorProfileVerificationSection />
+      </DialogContent>
+    </Dialog>
   );
 };
