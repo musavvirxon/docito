@@ -744,6 +744,10 @@ const EnhancedCreateTreatmentPlanModal = ({
 
             priority: item.priority ?? "medium",
             appointment_id: appointmentId,
+
+            // ✅ NEW: follow-up tracking
+            follow_up_required: !!item.follow_up_required,
+            follow_up_appointment_id: item.follow_up_required && appointmentId ? null : null,
           });
         }
 
