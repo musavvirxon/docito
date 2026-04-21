@@ -354,13 +354,20 @@ export const DoctorVerificationStatusCard = () => {
 
         {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
-        {verificationStatus.status === 'declined' && (
-            <Button onClick={() => navigate('/profile')} className="flex-1">
-              Update Profile & Resubmit
+          {verificationStatus.status === 'declined' && (
+            <Button onClick={() => setVerificationOpen(true)} className="flex-1">
+              Update & Resubmit
             </Button>
           )}
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
+            onClick={() => setVerificationOpen(true)}
+            className="flex-1"
+          >
+            Open Verification
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => navigate('/profile')}
             className="flex-1"
           >
@@ -374,6 +381,26 @@ export const DoctorVerificationStatusCard = () => {
           {verificationStatus.reviewed_at && ` • Reviewed on ${new Date(verificationStatus.reviewed_at).toLocaleDateString()}`}
         </p>
       </CardContent>
+      <VerificationDialog open={verificationOpen} onOpenChange={setVerificationOpen} />
     </Card>
+  );
+};
+
+const VerificationDialog = ({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (next: boolean) => void;
+}) => {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Doctor Verification</DialogTitle>
+        </DialogHeader>
+        <DoctorProfileVerificationSection />
+      </DialogContent>
+    </Dialog>
   );
 };
