@@ -1274,6 +1274,22 @@ Please review and confirm the treatment plan in your dashboard.
                     />
                   </div>
 
+                  {/* Follow-up toggle */}
+                  <div className="flex items-start justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Requires follow-up appointment</p>
+                      <p className="text-xs text-muted-foreground">
+                        If on, the doctor will be prompted to book a follow-up before finishing the appointment for this procedure.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={!!currentProcedure.follow_up_required}
+                      onCheckedChange={(v) =>
+                        setCurrentProcedure((prev) => ({ ...prev, follow_up_required: !!v }))
+                      }
+                    />
+                  </div>
+
                   {/* Pricing preview */}
                   {currentProcedure.procedure_id && (
                     <Card className="bg-primary/5 border-primary/20">
