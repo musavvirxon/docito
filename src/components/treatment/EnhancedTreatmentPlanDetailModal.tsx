@@ -521,10 +521,11 @@ const EnhancedTreatmentPlanDetailModal = ({
           </DialogHeader>
 
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="procedures">Procedures ({procedures.length})</TabsTrigger>
               <TabsTrigger value="medications">Medications ({medications.length})</TabsTrigger>
+              <TabsTrigger value="sections">Sections</TabsTrigger>
               <TabsTrigger value="files">Files</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
