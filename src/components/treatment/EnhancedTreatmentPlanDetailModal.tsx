@@ -45,6 +45,14 @@ import TreatmentPlanTemplatesModal from "./TreatmentPlanTemplatesModal";
 import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 import { useTranslation } from "react-i18next";
 import { downloadTreatmentPlanPdf } from "@/lib/api/treatment-plan-api";
+import {
+  MedicationsSection,
+  ReferralsSection,
+  TestsSection,
+  type MedicationItem,
+  type ReferralItem,
+  type TestItem,
+} from "./PlanSideSections";
 
 interface TreatmentPlan {
   id: string;
@@ -118,13 +126,67 @@ const EnhancedTreatmentPlanDetailModal = ({
   const [showMedicationModal, setShowMedicationModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
 
+  // Plan-level side sections (stored in treatment_plans JSONB columns)
+  const [planMedicationsEnabled, setPlanMedicationsEnabled] = useState(false);
+  const [planMedications, setPlanMedications] = useState<MedicationItem[]>([]);
+  const [referralsEnabled, setReferralsEnabled] = useState(false);
+  const [referrals, setReferrals] = useState<ReferralItem[]>([]);
+  const [testsEnabled, setTestsEnabled] = useState(false);
+  const [tests, setTests] = useState<TestItem[]>([]);
+  const [savingSections, setSavingSections] = useState(false);
+
   useEffect(() => {
     if (open) {
       fetchProcedures();
       fetchMedications();
+      fetchPlanSections();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, treatmentPlan.id]);
+
+  const fetchPlanSections = async () => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from("treatment_plans")
+        .select("medications, referrals, tests")
+        .eq("id", treatmentPlan.id)
+        .maybeSingle();
+      if (error) throw error;
+      const meds = Array.isArray(data?.medications) ? (data.medications as MedicationItem[]) : [];
+      const refs = Array.isArray(data?.referrals) ? (data.referrals as ReferralItem[]) : [];
+      const tsts = Array.isArray(data?.tests) ? (data.tests as TestItem[]) : [];
+      setPlanMedications(meds);
+      setReferrals(refs);
+      setTests(tsts);
+      setPlanMedicationsEnabled(meds.length > 0);
+      setReferralsEnabled(refs.length > 0);
+      setTestsEnabled(tsts.length > 0);
+    } catch (e: any) {
+      console.error("Failed to load plan sections:", e);
+    }
+  };
+
+  const handleSaveSections = async () => {
+    setSavingSections(true);
+    try {
+      const payload: any = {
+        medications: planMedicationsEnabled ? planMedications.filter((m) => m.name?.trim()) : [],
+        referrals: referralsEnabled ? referrals.filter((r) => r.specialty?.trim()) : [],
+        tests: testsEnabled ? tests.filter((t) => t.test_name?.trim()) : [],
+      };
+      const { error } = await (supabase as any)
+        .from("treatment_plans")
+        .update(payload)
+        .eq("id", treatmentPlan.id);
+      if (error) throw error;
+      toast.success("Plan sections saved");
+      onUpdate();
+    } catch (e: any) {
+      toast.error("Failed to save: " + e.message);
+    } finally {
+      setSavingSections(false);
+    }
+  };
 
   const fetchProcedures = async () => {
     try {
@@ -459,10 +521,11 @@ const EnhancedTreatmentPlanDetailModal = ({
           </DialogHeader>
 
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="procedures">Procedures ({procedures.length})</TabsTrigger>
               <TabsTrigger value="medications">Medications ({medications.length})</TabsTrigger>
+              <TabsTrigger value="sections">Sections</TabsTrigger>
               <TabsTrigger value="files">Files</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
@@ -804,6 +867,41 @@ const EnhancedTreatmentPlanDetailModal = ({
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Sections Tab (Medications / Referrals / Tests) */}
+            <TabsContent value="sections" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Plan sections</CardTitle>
+                    <Button onClick={handleSaveSections} disabled={savingSections} size="sm">
+                      <Save className="w-4 h-4 mr-2" />
+                      {savingSections ? "Saving…" : "Save changes"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <MedicationsSection
+                    enabled={planMedicationsEnabled}
+                    onEnabledChange={setPlanMedicationsEnabled}
+                    items={planMedications}
+                    onChange={setPlanMedications}
+                  />
+                  <ReferralsSection
+                    enabled={referralsEnabled}
+                    onEnabledChange={setReferralsEnabled}
+                    items={referrals}
+                    onChange={setReferrals}
+                  />
+                  <TestsSection
+                    enabled={testsEnabled}
+                    onEnabledChange={setTestsEnabled}
+                    items={tests}
+                    onChange={setTests}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>

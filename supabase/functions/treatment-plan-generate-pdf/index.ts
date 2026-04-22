@@ -161,6 +161,13 @@ const I18N: Record<Locale, Record<string, string>> = {
     endDate: "End Date",
     medicationStatus: "Status",
     consentForms: "Consent Forms",
+    referrals: "Referrals",
+    tests: "Tests / Lab orders",
+    referredTo: "Referred to",
+    reason: "Reason",
+    urgency: "Urgency",
+    type: "Type",
+    priority: "Priority",
     consentTitle: "Title",
     consentStatus: "Status",
     signedAt: "Signed At",
@@ -1105,6 +1112,7 @@ async function generateTreatmentPlanPdf(params: {
     cost: string | null;
     toothNumbers: number[];
     notes: string | null;
+    hasConsent?: boolean;
   }>;
 
   medications: Array<{
@@ -1122,6 +1130,21 @@ async function generateTreatmentPlanPdf(params: {
     status: string | null;
     signedAt: string | null;
     content: string | null;
+  }>;
+
+  referrals?: Array<{
+    specialty: string;
+    referred_to?: string | null;
+    reason?: string | null;
+    urgency?: string | null;
+    notes?: string | null;
+  }>;
+
+  tests?: Array<{
+    test_name: string;
+    test_type?: string | null;
+    priority?: string | null;
+    clinical_notes?: string | null;
   }>;
 
   attachments: Array<{
@@ -1438,12 +1461,12 @@ async function generateTreatmentPlanPdf(params: {
     // - If dentist: Tooth No. FIRST, then Procedure
     // - If not dentist: omit tooth column entirely
     const headers = showTeeth
-      ? ["toothNo", "procedure", "estimatedVisits", "cost", "procedureNotes"]
-      : ["procedure", "estimatedVisits", "cost", "procedureNotes"];
+      ? ["toothNo", "procedure", "estimatedVisits", "cost", "consentStatus", "procedureNotes"]
+      : ["procedure", "estimatedVisits", "cost", "consentStatus", "procedureNotes"];
 
     const colWidths = showTeeth
-      ? [72, 230, 80, 70, totalW - (72 + 230 + 80 + 70)]
-      : [250, 90, 80, totalW - (250 + 90 + 80)];
+      ? [60, 200, 60, 60, 50, totalW - (60 + 200 + 60 + 60 + 50)]
+      : [220, 70, 70, 50, totalW - (220 + 70 + 70 + 50)];
 
     ensureSpace(34);
 
@@ -1503,11 +1526,12 @@ async function generateTreatmentPlanPdf(params: {
       const procStr = `${idx + 1}. ${safeText(p.name, "—")}`;
       const visitsStr = visitsLabelFromName(procStr);
       const costStr = safeText(p.cost, "—");
+      const consentStr = p.hasConsent ? "Yes" : "No";
       const notesStr = safeText(p.notes, "");
 
       const rowData = showTeeth
-        ? [teethStr, procStr, visitsStr, costStr, notesStr]
-        : [procStr, visitsStr, costStr, notesStr];
+        ? [teethStr, procStr, visitsStr, costStr, consentStr, notesStr]
+        : [procStr, visitsStr, costStr, consentStr, notesStr];
 
       let rx = tableX + 8;
       const rowSize = 8.5;
@@ -1665,7 +1689,45 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
-  // Attachments
+  // Referrals
+  if (params.referrals && params.referrals.length > 0) {
+    y -= 6;
+    drawSection("referrals" as any);
+    for (let i = 0; i < params.referrals.length; i++) {
+      const r = params.referrals[i];
+      ensureSpace(60);
+      const head = formatForLocale(params.locale, `${i + 1}. ${safeText(r.specialty, "—")}`);
+      page.drawText(head, { x: margin, y, size: 11, font, color: textDark });
+      y -= 14;
+      if (r.referred_to) drawKV("referredTo" as any, r.referred_to);
+      if (r.reason) drawKV("reason" as any, r.reason);
+      if (r.urgency) drawKV("urgency" as any, r.urgency);
+      if (r.notes) drawKV("notes", r.notes);
+      y -= 6;
+      page.drawLine({ start: { x: margin, y }, end: { x: W - margin, y }, thickness: 0.8, color: borderLight });
+      y -= 12;
+    }
+  }
+
+  // Tests / Lab orders
+  if (params.tests && params.tests.length > 0) {
+    y -= 6;
+    drawSection("tests" as any);
+    for (let i = 0; i < params.tests.length; i++) {
+      const tt = params.tests[i];
+      ensureSpace(60);
+      const head = formatForLocale(params.locale, `${i + 1}. ${safeText(tt.test_name, "—")}`);
+      page.drawText(head, { x: margin, y, size: 11, font, color: textDark });
+      y -= 14;
+      if (tt.test_type) drawKV("type" as any, tt.test_type);
+      if (tt.priority) drawKV("priority" as any, tt.priority);
+      if (tt.clinical_notes) drawKV("notes", tt.clinical_notes);
+      y -= 6;
+      page.drawLine({ start: { x: margin, y }, end: { x: W - margin, y }, thickness: 0.8, color: borderLight });
+      y -= 12;
+    }
+  }
+
   y -= 6;
   drawSection("attachments");
   if (!params.attachments.length) {
@@ -2035,6 +2097,12 @@ serve(async (req: Request) => {
   const consentsRaw = await safeSelectAll(serviceClient, "consent_forms", (q) =>
     q.eq("treatment_plan_id", planId).order("created_at", { ascending: true })
   );
+
+  const planHasConsent = (consentsRaw || []).length > 0;
+
+  // Plan-level extra sections (medications/referrals/tests stored as JSONB on treatment_plans)
+  const planReferrals = Array.isArray((plan as any)?.referrals) ? (plan as any).referrals : [];
+  const planTests = Array.isArray((plan as any)?.tests) ? (plan as any).tests : [];
 
   const consentForms = consentsRaw.map((c) => {
     const rawContent = asString((c as any)?.content);

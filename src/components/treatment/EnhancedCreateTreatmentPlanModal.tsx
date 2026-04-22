@@ -1274,6 +1274,22 @@ Please review and confirm the treatment plan in your dashboard.
                     />
                   </div>
 
+                  {/* Follow-up toggle */}
+                  <div className="flex items-start justify-between gap-3 rounded-lg border bg-muted/30 p-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-medium">Requires follow-up appointment</p>
+                      <p className="text-xs text-muted-foreground">
+                        If on, the doctor will be prompted to book a follow-up before finishing the appointment for this procedure.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={!!currentProcedure.follow_up_required}
+                      onCheckedChange={(v) =>
+                        setCurrentProcedure((prev) => ({ ...prev, follow_up_required: !!v }))
+                      }
+                    />
+                  </div>
+
                   {/* Pricing preview */}
                   {currentProcedure.procedure_id && (
                     <Card className="bg-primary/5 border-primary/20">
@@ -1340,6 +1356,11 @@ Please review and confirm the treatment plan in your dashboard.
 
                               <Badge variant="secondary">{formatDuration(Number(item.duration_minutes || 30))}</Badge>
                               {item.priority && <Badge className={priorityColors[item.priority]}>{item.priority}</Badge>}
+                              {item.follow_up_required && (
+                                <Badge variant="outline" className="border-primary/40 text-primary">
+                                  Follow-up required
+                                </Badge>
+                              )}
                             </div>
 
                             {item.tooth_numbers && item.tooth_numbers.length > 0 && (
@@ -1407,6 +1428,39 @@ Please review and confirm the treatment plan in your dashboard.
                     </AlertDescription>
                   </Alert>
                 )}
+              </div>
+            )}
+
+            {!saveAsTemplate && (
+              <div className="space-y-4">
+                <Separator />
+                <div>
+                  <h3 className="font-semibold text-lg">Additional plan items</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Toggle on the sections you'd like to include in this treatment plan. They appear in the patient PDF.
+                  </p>
+                </div>
+
+                <MedicationsSection
+                  enabled={medicationsEnabled}
+                  onEnabledChange={setMedicationsEnabled}
+                  items={medications}
+                  onChange={setMedications}
+                />
+
+                <ReferralsSection
+                  enabled={referralsEnabled}
+                  onEnabledChange={setReferralsEnabled}
+                  items={referrals}
+                  onChange={setReferrals}
+                />
+
+                <TestsSection
+                  enabled={testsEnabled}
+                  onEnabledChange={setTestsEnabled}
+                  items={tests}
+                  onChange={setTests}
+                />
               </div>
             )}
 
