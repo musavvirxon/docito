@@ -1105,6 +1105,7 @@ async function generateTreatmentPlanPdf(params: {
     cost: string | null;
     toothNumbers: number[];
     notes: string | null;
+    hasConsent?: boolean;
   }>;
 
   medications: Array<{
@@ -1122,6 +1123,21 @@ async function generateTreatmentPlanPdf(params: {
     status: string | null;
     signedAt: string | null;
     content: string | null;
+  }>;
+
+  referrals?: Array<{
+    specialty: string;
+    referred_to?: string | null;
+    reason?: string | null;
+    urgency?: string | null;
+    notes?: string | null;
+  }>;
+
+  tests?: Array<{
+    test_name: string;
+    test_type?: string | null;
+    priority?: string | null;
+    clinical_notes?: string | null;
   }>;
 
   attachments: Array<{
