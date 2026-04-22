@@ -1,5 +1,6 @@
 // src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -132,6 +133,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   initialTemplateData,
 }: EnhancedCreateTreatmentPlanModalProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation("dashboard");
   const { procedures } = useProcedures();
   const { profile } = useDoctorProfile();
 
