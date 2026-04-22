@@ -1431,6 +1431,39 @@ Please review and confirm the treatment plan in your dashboard.
               </div>
             )}
 
+            {!saveAsTemplate && (
+              <div className="space-y-4">
+                <Separator />
+                <div>
+                  <h3 className="font-semibold text-lg">Additional plan items</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Toggle on the sections you'd like to include in this treatment plan. They appear in the patient PDF.
+                  </p>
+                </div>
+
+                <MedicationsSection
+                  enabled={medicationsEnabled}
+                  onEnabledChange={setMedicationsEnabled}
+                  items={medications}
+                  onChange={setMedications}
+                />
+
+                <ReferralsSection
+                  enabled={referralsEnabled}
+                  onEnabledChange={setReferralsEnabled}
+                  items={referrals}
+                  onChange={setReferrals}
+                />
+
+                <TestsSection
+                  enabled={testsEnabled}
+                  onEnabledChange={setTestsEnabled}
+                  items={tests}
+                  onChange={setTests}
+                />
+              </div>
+            )}
+
             {!saveAsTemplate && watchedPatientId && (
               <Alert>
                 <Info className="h-4 w-4" />
