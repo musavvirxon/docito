@@ -1062,7 +1062,16 @@
       "notesSaveError": "Failed to save notes",
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
-      "dentalProceduresLoadError": "Failed to load dental procedures"
+      "dentalProceduresLoadError": "Failed to load dental procedures",
+      "followUp": {
+        "title": "Pending follow-up appointments",
+        "description": "The following procedures require a follow-up that has not been booked yet:",
+        "choose": "You can book the follow-up now or skip it and finish the appointment.",
+        "cancel": "Cancel",
+        "skip": "Skip & finish",
+        "book": "Book follow-up",
+        "skipError": "Failed to skip follow-ups"
+      }
     },
     "procedureLibrary": {
       "title": "My Procedure Library",
@@ -1614,7 +1623,7 @@
       "sent": "Sent",
       "expires": "Expires",
       "resend": "Resend Invitation",
-    "cancel": "Cancel Invitation"
+      "cancel": "Cancel Invitation"
     }
   },
   "topNav": {
