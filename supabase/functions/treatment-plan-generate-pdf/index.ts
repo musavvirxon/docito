@@ -161,6 +161,13 @@ const I18N: Record<Locale, Record<string, string>> = {
     endDate: "End Date",
     medicationStatus: "Status",
     consentForms: "Consent Forms",
+    referrals: "Referrals",
+    tests: "Tests / Lab orders",
+    referredTo: "Referred to",
+    reason: "Reason",
+    urgency: "Urgency",
+    type: "Type",
+    priority: "Priority",
     consentTitle: "Title",
     consentStatus: "Status",
     signedAt: "Signed At",
@@ -2090,6 +2097,12 @@ serve(async (req: Request) => {
   const consentsRaw = await safeSelectAll(serviceClient, "consent_forms", (q) =>
     q.eq("treatment_plan_id", planId).order("created_at", { ascending: true })
   );
+
+  const planHasConsent = (consentsRaw || []).length > 0;
+
+  // Plan-level extra sections (medications/referrals/tests stored as JSONB on treatment_plans)
+  const planReferrals = Array.isArray((plan as any)?.referrals) ? (plan as any).referrals : [];
+  const planTests = Array.isArray((plan as any)?.tests) ? (plan as any).tests : [];
 
   const consentForms = consentsRaw.map((c) => {
     const rawContent = asString((c as any)?.content);
