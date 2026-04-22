@@ -1277,9 +1277,14 @@ Please review and confirm the treatment plan in your dashboard.
                   {/* Follow-up toggle */}
                   <div className="flex items-start justify-between gap-3 rounded-lg border bg-muted/30 p-3">
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">Requires follow-up appointment</p>
+                      <p className="text-sm font-medium">
+                        {t("doctor.treatmentPlan.followUpRequired", "Requires follow-up appointment")}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        If on, the doctor will be prompted to book a follow-up before finishing the appointment for this procedure.
+                        {t(
+                          "doctor.treatmentPlan.followUpHint",
+                          "If on, doctor will be prompted to book a follow-up before finishing the appointment."
+                        )}
                       </p>
                     </div>
                     <Switch
