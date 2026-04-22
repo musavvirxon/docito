@@ -1454,12 +1454,12 @@ async function generateTreatmentPlanPdf(params: {
     // - If dentist: Tooth No. FIRST, then Procedure
     // - If not dentist: omit tooth column entirely
     const headers = showTeeth
-      ? ["toothNo", "procedure", "estimatedVisits", "cost", "procedureNotes"]
-      : ["procedure", "estimatedVisits", "cost", "procedureNotes"];
+      ? ["toothNo", "procedure", "estimatedVisits", "cost", "consentStatus", "procedureNotes"]
+      : ["procedure", "estimatedVisits", "cost", "consentStatus", "procedureNotes"];
 
     const colWidths = showTeeth
-      ? [72, 230, 80, 70, totalW - (72 + 230 + 80 + 70)]
-      : [250, 90, 80, totalW - (250 + 90 + 80)];
+      ? [60, 200, 60, 60, 50, totalW - (60 + 200 + 60 + 60 + 50)]
+      : [220, 70, 70, 50, totalW - (220 + 70 + 70 + 50)];
 
     ensureSpace(34);
 
