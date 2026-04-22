@@ -120,6 +120,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [showVideoRoom, setShowVideoRoom] = useState(false);
   const [videoConsultation, setVideoConsultation] = useState<VideoConsultation | null>(null);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [pendingFollowUps, setPendingFollowUps] = useState<Array<{ id: string; procedure_name: string }>>([]);
+  const [followUpGateOpen, setFollowUpGateOpen] = useState(false);
 
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
