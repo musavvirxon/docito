@@ -556,7 +556,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     [endConsultation, videoConsultation?.id]
   );
 
-  const handleEndSession = useCallback(async () => {
+  const finalizeEndSession = useCallback(async () => {
     if (!session?.id) return;
     try {
       setIsEnding(true);
@@ -585,6 +585,82 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       setIsEnding(false);
     }
   }, [appointment?.id, navigate, session?.id, sessionNotes, t]);
+
+  const checkPendingFollowUps = useCallback(async () => {
+    if (!appointment?.doctor_id) return [] as Array<{ id: string; procedure_name: string }>;
+    const patientId = appointment.patient_id || appointment.doctor_patient_id;
+    if (!patientId) return [];
+
+    try {
+      // Find treatment plans for this doctor + patient
+      const planQuery = supabase
+        .from('treatment_plans')
+        .select('id')
+        .eq('doctor_id', appointment.doctor_id);
+
+      const { data: plans } = appointment.patient_id
+        ? await planQuery.eq('patient_id', appointment.patient_id)
+        : await planQuery.eq('doctor_patient_id', appointment.doctor_patient_id as string);
+
+      const planIds = (plans || []).map((p: any) => p.id);
+      if (planIds.length === 0) return [];
+
+      const { data: rows } = await supabase
+        .from('treatment_plan_procedures')
+        .select('id, procedure_name, follow_up_required, follow_up_appointment_id, follow_up_skipped_at')
+        .in('treatment_plan_id', planIds)
+        .eq('follow_up_required', true)
+        .is('follow_up_appointment_id', null)
+        .is('follow_up_skipped_at', null);
+
+      return (rows || []).map((r: any) => ({
+        id: r.id as string,
+        procedure_name: (r.procedure_name as string) || '—',
+      }));
+    } catch (err) {
+      console.error('Error checking follow-ups:', err);
+      return [];
+    }
+  }, [appointment?.doctor_id, appointment?.patient_id, appointment?.doctor_patient_id]);
+
+  const handleEndSession = useCallback(async () => {
+    if (!session?.id) return;
+    const pending = await checkPendingFollowUps();
+    if (pending.length > 0) {
+      setPendingFollowUps(pending);
+      setFollowUpGateOpen(true);
+      return;
+    }
+    await finalizeEndSession();
+  }, [session?.id, checkPendingFollowUps, finalizeEndSession]);
+
+  const handleSkipFollowUps = useCallback(async () => {
+    try {
+      const ids = pendingFollowUps.map((p) => p.id);
+      if (ids.length > 0) {
+        await supabase
+          .from('treatment_plan_procedures')
+          .update({ follow_up_skipped_at: new Date().toISOString() })
+          .in('id', ids);
+      }
+      setFollowUpGateOpen(false);
+      setPendingFollowUps([]);
+      await finalizeEndSession();
+    } catch (err) {
+      console.error('Error skipping follow-ups:', err);
+      toast.error(t('doctor.session.followUp.skipError', 'Failed to skip follow-ups'));
+    }
+  }, [pendingFollowUps, finalizeEndSession, t]);
+
+  const handleBookFollowUp = useCallback(() => {
+    setFollowUpGateOpen(false);
+    const patientId = appointment?.patient_id || appointment?.doctor_patient_id;
+    if (patientId) {
+      navigate(`/doctor-dashboard?tab=calendar&book=1&patient=${patientId}`);
+    } else {
+      navigate('/doctor-dashboard?tab=calendar');
+    }
+  }, [appointment?.patient_id, appointment?.doctor_patient_id, navigate]);
 
   const handleSaveNotes = useCallback(async () => {
     if (!session?.id) return;
