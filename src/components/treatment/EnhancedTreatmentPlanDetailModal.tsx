@@ -45,6 +45,14 @@ import TreatmentPlanTemplatesModal from "./TreatmentPlanTemplatesModal";
 import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 import { useTranslation } from "react-i18next";
 import { downloadTreatmentPlanPdf } from "@/lib/api/treatment-plan-api";
+import {
+  MedicationsSection,
+  ReferralsSection,
+  TestsSection,
+  type MedicationItem,
+  type ReferralItem,
+  type TestItem,
+} from "./PlanSideSections";
 
 interface TreatmentPlan {
   id: string;
