@@ -1083,6 +1083,59 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           </ResizablePanel>
         </ResizablePanelGroup>
       </main>
+
+      <AlertDialog open={followUpGateOpen} onOpenChange={setFollowUpGateOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('doctor.session.followUp.title', 'Pending follow-up appointments')}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  {t(
+                    'doctor.session.followUp.description',
+                    'The following procedures require a follow-up that has not been booked yet:'
+                  )}
+                </p>
+                <ul className="list-disc pl-5 text-sm text-foreground">
+                  {pendingFollowUps.map((p) => (
+                    <li key={p.id}>{p.procedure_name}</li>
+                  ))}
+                </ul>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    'doctor.session.followUp.choose',
+                    'You can book the follow-up now or skip it and finish the appointment.'
+                  )}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel>
+              {t('doctor.session.followUp.cancel', 'Cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleSkipFollowUps();
+              }}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              {t('doctor.session.followUp.skip', 'Skip & finish')}
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleBookFollowUp();
+              }}
+            >
+              {t('doctor.session.followUp.book', 'Book follow-up')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
