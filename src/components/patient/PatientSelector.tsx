@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Search, User, Mail, Phone, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +42,7 @@ const PatientSelector = ({
   allowCreate = true,
 }: PatientSelectorProps) => {
   const { user } = useAuth();
-
-  const [doctorId, setDoctorId] = useState<string | null>(null);
+  const { t } = useTranslation("dashboard");
 
   const [registeredPatients, setRegisteredPatients] = useState<Patient[]>([]);
   const [doctorPatients, setDoctorPatients] = useState<Patient[]>([]);
@@ -242,7 +242,7 @@ const PatientSelector = ({
                       }}
                     >
                       <UserPlus className="w-4 h-4 mr-2" />
-                      Add New Patient
+                      {t("doctor.booking.addNewPatient", "Add New Patient")}
                     </Button>
                   )}
                 </div>
