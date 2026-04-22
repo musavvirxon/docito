@@ -1194,7 +1194,8 @@
     },
     "booking": {
       "existingPatientOnly": "Search and select an existing patient",
-      "noNewPatient": "New patients must be added from the Patients section before booking."
+      "noNewPatient": "New patients must be added from the Patients section before booking.",
+      "addNewPatient": "Add New Patient"
     },
     "treatmentPlan": {
       "followUpRequired": "Requires follow-up appointment",
@@ -1202,6 +1203,10 @@
       "sectionsTab": "Sections",
       "sectionsSaved": "Sections updated",
       "sectionsSaveError": "Failed to update sections"
+    },
+    "common": {
+      "saving": "Saving…",
+      "saveChanges": "Save changes"
     }
   },
   "superAdmin": {
