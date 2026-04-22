@@ -29,6 +29,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useVideoConsultation, type VideoConsultation } from '@/hooks/useVideoConsultation';
@@ -110,6 +120,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [showVideoRoom, setShowVideoRoom] = useState(false);
   const [videoConsultation, setVideoConsultation] = useState<VideoConsultation | null>(null);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [pendingFollowUps, setPendingFollowUps] = useState<Array<{ id: string; procedure_name: string }>>([]);
+  const [followUpGateOpen, setFollowUpGateOpen] = useState(false);
 
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
@@ -544,7 +556,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     [endConsultation, videoConsultation?.id]
   );
 
-  const handleEndSession = useCallback(async () => {
+  const finalizeEndSession = useCallback(async () => {
     if (!session?.id) return;
     try {
       setIsEnding(true);
@@ -573,6 +585,82 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       setIsEnding(false);
     }
   }, [appointment?.id, navigate, session?.id, sessionNotes, t]);
+
+  const checkPendingFollowUps = useCallback(async () => {
+    if (!appointment?.doctor_id) return [] as Array<{ id: string; procedure_name: string }>;
+    const patientId = appointment.patient_id || appointment.doctor_patient_id;
+    if (!patientId) return [];
+
+    try {
+      // Find treatment plans for this doctor + patient
+      const planQuery = supabase
+        .from('treatment_plans')
+        .select('id')
+        .eq('doctor_id', appointment.doctor_id);
+
+      const { data: plans } = appointment.patient_id
+        ? await planQuery.eq('patient_id', appointment.patient_id)
+        : await planQuery.eq('doctor_patient_id', appointment.doctor_patient_id as string);
+
+      const planIds = (plans || []).map((p: any) => p.id);
+      if (planIds.length === 0) return [];
+
+      const { data: rows } = await supabase
+        .from('treatment_plan_procedures')
+        .select('id, procedure_name, follow_up_required, follow_up_appointment_id, follow_up_skipped_at')
+        .in('treatment_plan_id', planIds)
+        .eq('follow_up_required', true)
+        .is('follow_up_appointment_id', null)
+        .is('follow_up_skipped_at', null);
+
+      return (rows || []).map((r: any) => ({
+        id: r.id as string,
+        procedure_name: (r.procedure_name as string) || '—',
+      }));
+    } catch (err) {
+      console.error('Error checking follow-ups:', err);
+      return [];
+    }
+  }, [appointment?.doctor_id, appointment?.patient_id, appointment?.doctor_patient_id]);
+
+  const handleEndSession = useCallback(async () => {
+    if (!session?.id) return;
+    const pending = await checkPendingFollowUps();
+    if (pending.length > 0) {
+      setPendingFollowUps(pending);
+      setFollowUpGateOpen(true);
+      return;
+    }
+    await finalizeEndSession();
+  }, [session?.id, checkPendingFollowUps, finalizeEndSession]);
+
+  const handleSkipFollowUps = useCallback(async () => {
+    try {
+      const ids = pendingFollowUps.map((p) => p.id);
+      if (ids.length > 0) {
+        await supabase
+          .from('treatment_plan_procedures')
+          .update({ follow_up_skipped_at: new Date().toISOString() })
+          .in('id', ids);
+      }
+      setFollowUpGateOpen(false);
+      setPendingFollowUps([]);
+      await finalizeEndSession();
+    } catch (err) {
+      console.error('Error skipping follow-ups:', err);
+      toast.error(t('doctor.session.followUp.skipError', 'Failed to skip follow-ups'));
+    }
+  }, [pendingFollowUps, finalizeEndSession, t]);
+
+  const handleBookFollowUp = useCallback(() => {
+    setFollowUpGateOpen(false);
+    const patientId = appointment?.patient_id || appointment?.doctor_patient_id;
+    if (patientId) {
+      navigate(`/doctor-dashboard?tab=calendar&book=1&patient=${patientId}`);
+    } else {
+      navigate('/doctor-dashboard?tab=calendar');
+    }
+  }, [appointment?.patient_id, appointment?.doctor_patient_id, navigate]);
 
   const handleSaveNotes = useCallback(async () => {
     if (!session?.id) return;
@@ -995,6 +1083,59 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           </ResizablePanel>
         </ResizablePanelGroup>
       </main>
+
+      <AlertDialog open={followUpGateOpen} onOpenChange={setFollowUpGateOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('doctor.session.followUp.title', 'Pending follow-up appointments')}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  {t(
+                    'doctor.session.followUp.description',
+                    'The following procedures require a follow-up that has not been booked yet:'
+                  )}
+                </p>
+                <ul className="list-disc pl-5 text-sm text-foreground">
+                  {pendingFollowUps.map((p) => (
+                    <li key={p.id}>{p.procedure_name}</li>
+                  ))}
+                </ul>
+                <p className="text-sm text-muted-foreground">
+                  {t(
+                    'doctor.session.followUp.choose',
+                    'You can book the follow-up now or skip it and finish the appointment.'
+                  )}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel>
+              {t('doctor.session.followUp.cancel', 'Cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleSkipFollowUps();
+              }}
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              {t('doctor.session.followUp.skip', 'Skip & finish')}
+            </AlertDialogAction>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleBookFollowUp();
+              }}
+            >
+              {t('doctor.session.followUp.book', 'Book follow-up')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

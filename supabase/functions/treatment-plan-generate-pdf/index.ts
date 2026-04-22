@@ -2203,6 +2203,7 @@ serve(async (req: Request) => {
       name: formatForLocale(locale, p.name),
       notes: p.notes ? formatForLocale(locale, p.notes) : null,
       status: p.status ? formatForLocale(locale, p.status) : null,
+      hasConsent: planHasConsent,
     })),
 
     medications: medications.map((m) => ({
@@ -2219,6 +2220,21 @@ serve(async (req: Request) => {
       title: formatForLocale(locale, c.title),
       status: c.status ? formatForLocale(locale, c.status) : null,
       content: c.content ? formatForLocale(locale, c.content) : null,
+    })),
+
+    referrals: (planReferrals || []).map((r: any) => ({
+      specialty: formatForLocale(locale, asString(r?.specialty) || "—"),
+      referred_to: r?.referred_to ? formatForLocale(locale, asString(r.referred_to) || "") : null,
+      reason: r?.reason ? formatForLocale(locale, asString(r.reason) || "") : null,
+      urgency: r?.urgency ? formatForLocale(locale, asString(r.urgency) || "") : null,
+      notes: r?.notes ? formatForLocale(locale, asString(r.notes) || "") : null,
+    })),
+
+    tests: (planTests || []).map((tt: any) => ({
+      test_name: formatForLocale(locale, asString(tt?.test_name) || "—"),
+      test_type: tt?.test_type ? formatForLocale(locale, asString(tt.test_type) || "") : null,
+      priority: tt?.priority ? formatForLocale(locale, asString(tt.priority) || "") : null,
+      clinical_notes: tt?.clinical_notes ? formatForLocale(locale, asString(tt.clinical_notes) || "") : null,
     })),
 
     attachments: attachments.map((a) => ({

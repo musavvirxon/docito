@@ -1062,7 +1062,16 @@
       "notesSaveError": "Failed to save notes",
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
-      "dentalProceduresLoadError": "Failed to load dental procedures"
+      "dentalProceduresLoadError": "Failed to load dental procedures",
+      "followUp": {
+        "title": "Pending follow-up appointments",
+        "description": "The following procedures require a follow-up that has not been booked yet:",
+        "choose": "You can book the follow-up now or skip it and finish the appointment.",
+        "cancel": "Cancel",
+        "skip": "Skip & finish",
+        "book": "Book follow-up",
+        "skipError": "Failed to skip follow-ups"
+      }
     },
     "procedureLibrary": {
       "title": "My Procedure Library",
@@ -1120,6 +1129,84 @@
       "cancel": "Cancel",
       "noDescription": "No description available",
       "loadingError": "Failed to load clinics."
+    },
+    "planSections": {
+      "toggle": {
+        "on": "On",
+        "off": "Off"
+      },
+      "medications": {
+        "title": "Medications",
+        "empty": "No medications added.",
+        "itemLabel": "Medication {{n}}",
+        "name": "Name *",
+        "namePh": "e.g. Amoxicillin",
+        "dosage": "Dosage",
+        "dosagePh": "e.g. 500 mg",
+        "frequency": "Frequency",
+        "frequencyPh": "e.g. 3x/day",
+        "duration": "Duration",
+        "durationPh": "e.g. 7 days",
+        "notes": "Notes",
+        "notesPh": "Additional instructions…",
+        "add": "Add medication"
+      },
+      "referrals": {
+        "title": "Referrals",
+        "empty": "No referrals added.",
+        "itemLabel": "Referral {{n}}",
+        "specialty": "Specialty *",
+        "specialtyPh": "e.g. Endodontics",
+        "referredTo": "Referred to (optional)",
+        "referredToPh": "Doctor or clinic name",
+        "reason": "Reason",
+        "reasonPh": "Brief reason",
+        "urgency": "Urgency",
+        "routine": "Routine",
+        "urgent": "Urgent",
+        "notes": "Notes",
+        "notesPh": "Additional context…",
+        "add": "Add referral"
+      },
+      "tests": {
+        "title": "Tests / Lab orders",
+        "empty": "No tests added.",
+        "itemLabel": "Test {{n}}",
+        "name": "Test name *",
+        "namePh": "e.g. CBC, Panoramic X-Ray",
+        "type": "Type",
+        "typeLab": "Lab",
+        "typeImaging": "Imaging",
+        "typeOther": "Other",
+        "priority": "Priority",
+        "routine": "Routine",
+        "urgent": "Urgent",
+        "stat": "STAT",
+        "clinicalNotes": "Clinical notes",
+        "clinicalNotesPh": "Indication, special instructions…",
+        "add": "Add test"
+      }
+    },
+    "verificationDialog": {
+      "title": "Provider Verification",
+      "description": "Submit your credentials for review.",
+      "close": "Close"
+    },
+    "booking": {
+      "existingPatientOnly": "Search and select an existing patient",
+      "noNewPatient": "New patients must be added from the Patients section before booking.",
+      "addNewPatient": "Add New Patient"
+    },
+    "treatmentPlan": {
+      "followUpRequired": "Requires follow-up appointment",
+      "followUpHint": "If on, doctor will be prompted to book a follow-up before finishing the appointment.",
+      "sectionsTab": "Sections",
+      "sectionsSaved": "Sections updated",
+      "sectionsSaveError": "Failed to update sections"
+    },
+    "common": {
+      "saving": "Saving…",
+      "saveChanges": "Save changes"
     }
   },
   "superAdmin": {
@@ -1614,7 +1701,7 @@
       "sent": "Sent",
       "expires": "Expires",
       "resend": "Resend Invitation",
-    "cancel": "Cancel Invitation"
+      "cancel": "Cancel Invitation"
     }
   },
   "topNav": {

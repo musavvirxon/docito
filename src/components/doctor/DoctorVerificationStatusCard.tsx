@@ -393,11 +393,14 @@ const VerificationDialog = ({
   open: boolean;
   onOpenChange: (next: boolean) => void;
 }) => {
+  const { t } = useTranslation('dashboard');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Doctor Verification</DialogTitle>
+          <DialogTitle>
+            {t('doctor.verificationDialog.title', 'Provider Verification')}
+          </DialogTitle>
         </DialogHeader>
         <DoctorProfileVerificationSection />
       </DialogContent>

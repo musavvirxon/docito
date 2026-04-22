@@ -1,5 +1,6 @@
 // src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx
 import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -132,6 +133,7 @@ const EnhancedCreateTreatmentPlanModal = ({
   initialTemplateData,
 }: EnhancedCreateTreatmentPlanModalProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation("dashboard");
   const { procedures } = useProcedures();
   const { profile } = useDoctorProfile();
 
@@ -1277,9 +1279,14 @@ Please review and confirm the treatment plan in your dashboard.
                   {/* Follow-up toggle */}
                   <div className="flex items-start justify-between gap-3 rounded-lg border bg-muted/30 p-3">
                     <div className="space-y-0.5">
-                      <p className="text-sm font-medium">Requires follow-up appointment</p>
+                      <p className="text-sm font-medium">
+                        {t("doctor.treatmentPlan.followUpRequired", "Requires follow-up appointment")}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        If on, the doctor will be prompted to book a follow-up before finishing the appointment for this procedure.
+                        {t(
+                          "doctor.treatmentPlan.followUpHint",
+                          "If on, doctor will be prompted to book a follow-up before finishing the appointment."
+                        )}
                       </p>
                     </div>
                     <Switch
