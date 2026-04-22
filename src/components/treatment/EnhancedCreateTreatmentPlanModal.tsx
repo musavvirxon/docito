@@ -1356,6 +1356,11 @@ Please review and confirm the treatment plan in your dashboard.
 
                               <Badge variant="secondary">{formatDuration(Number(item.duration_minutes || 30))}</Badge>
                               {item.priority && <Badge className={priorityColors[item.priority]}>{item.priority}</Badge>}
+                              {item.follow_up_required && (
+                                <Badge variant="outline" className="border-primary/40 text-primary">
+                                  Follow-up required
+                                </Badge>
+                              )}
                             </div>
 
                             {item.tooth_numbers && item.tooth_numbers.length > 0 && (
