@@ -119,7 +119,7 @@ const EnhancedTreatmentPlanDetailModal = ({
   treatmentPlan,
   onUpdate,
 }: EnhancedTreatmentPlanDetailModalProps) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation("dashboard");
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [showAddProcedureModal, setShowAddProcedureModal] = useState(false);
@@ -525,7 +525,7 @@ const EnhancedTreatmentPlanDetailModal = ({
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="procedures">Procedures ({procedures.length})</TabsTrigger>
               <TabsTrigger value="medications">Medications ({medications.length})</TabsTrigger>
-              <TabsTrigger value="sections">Sections</TabsTrigger>
+              <TabsTrigger value="sections">{t("doctor.treatmentPlan.sectionsTab", "Sections")}</TabsTrigger>
               <TabsTrigger value="files">Files</TabsTrigger>
               <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
@@ -876,10 +876,12 @@ const EnhancedTreatmentPlanDetailModal = ({
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Plan sections</CardTitle>
+                    <CardTitle>{t("doctor.treatmentPlan.sectionsTab", "Sections")}</CardTitle>
                     <Button onClick={handleSaveSections} disabled={savingSections} size="sm">
                       <Save className="w-4 h-4 mr-2" />
-                      {savingSections ? "Saving…" : "Save changes"}
+                      {savingSections
+                        ? t("doctor.common.saving", "Saving…")
+                        : t("doctor.common.saveChanges", "Save changes")}
                     </Button>
                   </div>
                 </CardHeader>
