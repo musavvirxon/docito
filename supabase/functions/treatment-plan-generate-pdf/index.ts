@@ -1682,7 +1682,45 @@ async function generateTreatmentPlanPdf(params: {
     }
   }
 
-  // Attachments
+  // Referrals
+  if (params.referrals && params.referrals.length > 0) {
+    y -= 6;
+    drawSection("referrals" as any);
+    for (let i = 0; i < params.referrals.length; i++) {
+      const r = params.referrals[i];
+      ensureSpace(60);
+      const head = formatForLocale(params.locale, `${i + 1}. ${safeText(r.specialty, "—")}`);
+      page.drawText(head, { x: margin, y, size: 11, font, color: textDark });
+      y -= 14;
+      if (r.referred_to) drawKV("referredTo" as any, r.referred_to);
+      if (r.reason) drawKV("reason" as any, r.reason);
+      if (r.urgency) drawKV("urgency" as any, r.urgency);
+      if (r.notes) drawKV("notes", r.notes);
+      y -= 6;
+      page.drawLine({ start: { x: margin, y }, end: { x: W - margin, y }, thickness: 0.8, color: borderLight });
+      y -= 12;
+    }
+  }
+
+  // Tests / Lab orders
+  if (params.tests && params.tests.length > 0) {
+    y -= 6;
+    drawSection("tests" as any);
+    for (let i = 0; i < params.tests.length; i++) {
+      const tt = params.tests[i];
+      ensureSpace(60);
+      const head = formatForLocale(params.locale, `${i + 1}. ${safeText(tt.test_name, "—")}`);
+      page.drawText(head, { x: margin, y, size: 11, font, color: textDark });
+      y -= 14;
+      if (tt.test_type) drawKV("type" as any, tt.test_type);
+      if (tt.priority) drawKV("priority" as any, tt.priority);
+      if (tt.clinical_notes) drawKV("notes", tt.clinical_notes);
+      y -= 6;
+      page.drawLine({ start: { x: margin, y }, end: { x: W - margin, y }, thickness: 0.8, color: borderLight });
+      y -= 12;
+    }
+  }
+
   y -= 6;
   drawSection("attachments");
   if (!params.attachments.length) {
