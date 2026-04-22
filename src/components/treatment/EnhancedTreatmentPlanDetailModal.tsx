@@ -871,6 +871,41 @@ const EnhancedTreatmentPlanDetailModal = ({
               </Card>
             </TabsContent>
 
+            {/* Sections Tab (Medications / Referrals / Tests) */}
+            <TabsContent value="sections" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Plan sections</CardTitle>
+                    <Button onClick={handleSaveSections} disabled={savingSections} size="sm">
+                      <Save className="w-4 h-4 mr-2" />
+                      {savingSections ? "Saving…" : "Save changes"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <MedicationsSection
+                    enabled={planMedicationsEnabled}
+                    onEnabledChange={setPlanMedicationsEnabled}
+                    items={planMedications}
+                    onChange={setPlanMedications}
+                  />
+                  <ReferralsSection
+                    enabled={referralsEnabled}
+                    onEnabledChange={setReferralsEnabled}
+                    items={referrals}
+                    onChange={setReferrals}
+                  />
+                  <TestsSection
+                    enabled={testsEnabled}
+                    onEnabledChange={setTestsEnabled}
+                    items={tests}
+                    onChange={setTests}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Files Tab */}
             <TabsContent value="files">
               <FileAttachmentSection
