@@ -44,6 +44,8 @@ const PatientSelector = ({
   const { user } = useAuth();
   const { t } = useTranslation("dashboard");
 
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+
   const [registeredPatients, setRegisteredPatients] = useState<Patient[]>([]);
   const [doctorPatients, setDoctorPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
