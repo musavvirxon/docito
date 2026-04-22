@@ -1519,11 +1519,12 @@ async function generateTreatmentPlanPdf(params: {
       const procStr = `${idx + 1}. ${safeText(p.name, "—")}`;
       const visitsStr = visitsLabelFromName(procStr);
       const costStr = safeText(p.cost, "—");
+      const consentStr = p.hasConsent ? "Yes" : "No";
       const notesStr = safeText(p.notes, "");
 
       const rowData = showTeeth
-        ? [teethStr, procStr, visitsStr, costStr, notesStr]
-        : [procStr, visitsStr, costStr, notesStr];
+        ? [teethStr, procStr, visitsStr, costStr, consentStr, notesStr]
+        : [procStr, visitsStr, costStr, consentStr, notesStr];
 
       let rx = tableX + 8;
       const rowSize = 8.5;
