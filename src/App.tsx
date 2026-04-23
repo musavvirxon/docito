@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useParams, Outlet, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { languages } from "@/i18n/config";
@@ -126,16 +127,18 @@ export default function App() {
       <HelmetProvider>
         <ThemeProvider>
           <AuthProvider>
-            <Suspense fallback={<PageLoader />}>
-              <RouteErrorBoundary>
-                <Routes>
-                  <Route element={<PublicLayout />}>
-                    <Route path="*" element={<LandingPage />} />
-                  </Route>
-                </Routes>
-              </RouteErrorBoundary>
-            </Suspense>
-            <Toaster position="top-right" richColors />
+            <CurrencyProvider>
+              <Suspense fallback={<PageLoader />}>
+                <RouteErrorBoundary>
+                  <Routes>
+                    <Route element={<PublicLayout />}>
+                      <Route path="*" element={<LandingPage />} />
+                    </Route>
+                  </Routes>
+                </RouteErrorBoundary>
+              </Suspense>
+              <Toaster position="top-right" richColors />
+            </CurrencyProvider>
           </AuthProvider>
         </ThemeProvider>
       </HelmetProvider>
@@ -146,7 +149,8 @@ export default function App() {
     <HelmetProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Suspense fallback={<PageLoader />}>
+          <CurrencyProvider>
+            <Suspense fallback={<PageLoader />}>
             <RouteErrorBoundary>
               <Routes>
                 <Route path=":lang" element={<LanguageWrapper />}>
@@ -354,7 +358,8 @@ export default function App() {
             </RouteErrorBoundary>
           </Suspense>
 
-          <Toaster position="top-right" richColors />
+            <Toaster position="top-right" richColors />
+          </CurrencyProvider>
         </AuthProvider>
       </ThemeProvider>
     </HelmetProvider>
