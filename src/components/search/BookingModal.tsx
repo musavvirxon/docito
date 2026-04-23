@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { getBookingPath } from '@/lib/booking';
 
 interface BookingModalProps {
   doctor: any;
@@ -18,7 +19,7 @@ export function BookingModal({ doctor, open, onOpenChange, isLoggedIn, onLoginRe
       return;
     }
     // Navigate to full booking flow
-    window.location.href = `/book/${doctor.id}`;
+    window.location.href = getBookingPath(doctor.id);
   };
 
   return (

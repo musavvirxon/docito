@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.livekit-token]
 verify_jwt = false
+
+[functions.fx-rates-refresh]
+verify_jwt = false
+
+[functions.appointment-summary-pdf]
+verify_jwt = false
