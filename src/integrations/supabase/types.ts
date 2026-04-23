@@ -727,6 +727,63 @@ export type Database = {
           },
         ]
       }
+      appointment_summary_documents: {
+        Row: {
+          appointment_id: string
+          created_at: string
+          display_currency: string | null
+          doctor_id: string | null
+          document_url: string | null
+          entity_id: string | null
+          entity_type: string | null
+          generated_by: string | null
+          id: string
+          patient_id: string | null
+          verification_code: string
+        }
+        Insert: {
+          appointment_id: string
+          created_at?: string
+          display_currency?: string | null
+          doctor_id?: string | null
+          document_url?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          generated_by?: string | null
+          id?: string
+          patient_id?: string | null
+          verification_code: string
+        }
+        Update: {
+          appointment_id?: string
+          created_at?: string
+          display_currency?: string | null
+          doctor_id?: string | null
+          document_url?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          generated_by?: string | null
+          id?: string
+          patient_id?: string | null
+          verification_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_summary_documents_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_summary_documents_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           appointment_date: string
@@ -3503,6 +3560,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fx_rates: {
+        Row: {
+          base: string
+          fetched_at: string
+          id: string
+          quote: string
+          rate: number
+          source: string
+        }
+        Insert: {
+          base?: string
+          fetched_at?: string
+          id?: string
+          quote: string
+          rate: number
+          source?: string
+        }
+        Update: {
+          base?: string
+          fetched_at?: string
+          id?: string
+          quote?: string
+          rate?: number
+          source?: string
+        }
+        Relationships: []
       }
       google_calendar_sync: {
         Row: {
@@ -6958,6 +7042,7 @@ export type Database = {
           language: string | null
           notification_settings: Json | null
           phone: string | null
+          preferred_currency: string
           privacy_settings: Json | null
           profile_visibility: string | null
           role: Database["public"]["Enums"]["user_role"]
@@ -6982,6 +7067,7 @@ export type Database = {
           language?: string | null
           notification_settings?: Json | null
           phone?: string | null
+          preferred_currency?: string
           privacy_settings?: Json | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -7006,6 +7092,7 @@ export type Database = {
           language?: string | null
           notification_settings?: Json | null
           phone?: string | null
+          preferred_currency?: string
           privacy_settings?: Json | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"]
@@ -8087,6 +8174,33 @@ export type Database = {
           subject?: string
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      supported_currencies: {
+        Row: {
+          code: string
+          created_at: string
+          is_active: boolean
+          locale: string
+          name: string
+          symbol: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          is_active?: boolean
+          locale?: string
+          name: string
+          symbol: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          is_active?: boolean
+          locale?: string
+          name?: string
+          symbol?: string
         }
         Relationships: []
       }
