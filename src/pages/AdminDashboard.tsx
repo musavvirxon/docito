@@ -41,6 +41,7 @@ import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsMo
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
+import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
