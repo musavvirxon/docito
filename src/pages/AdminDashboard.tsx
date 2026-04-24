@@ -41,6 +41,7 @@ import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsMo
 import VerificationSuccessModal from "@/components/dashboard/VerificationSuccessModal";
 import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
+import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -1217,11 +1218,30 @@ const AdminDashboard = () => {
                           return (
                             <div className="space-y-2">
                               {upcoming.map(a => (
-                                <div key={a.id} className="grid grid-cols-4 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span>{a.appointment_date} {a.start_time}</span>
                                   <span className="truncate">{a.patient_name || 'Unknown'}</span>
                                   <span className="truncate">{a.service_name || '—'}</span>
                                   <Badge variant="outline" className="w-fit">{a.status}</Badge>
+                                  <MedicalCardDownloadButton
+                                    practice={practice}
+                                    locations={locations}
+                                    data={{
+                                      patientName: a.patient_name || '',
+                                      gender: '',
+                                      age: '',
+                                      dob: '',
+                                      phone: '',
+                                      profession: '',
+                                      address: '',
+                                      appointmentDate: a.appointment_date || '',
+                                      diagnosis: (a as any).diagnosis || a.service_name || '',
+                                      doctorName: selectedProvider?.name || '',
+                                      serviceName: a.service_name || '',
+                                      clinicName: practice?.name || '',
+                                      clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                    }}
+                                  />
                                 </div>
                               ))}
                             </div>
@@ -2821,7 +2841,30 @@ const AdminDashboard = () => {
                                     <td className="p-3">{a.doctor_name || '—'}</td>
                                     <td className="p-3">{a.service_name || a.appointment_type || '—'}</td>
                                     <td className="p-3"><Badge variant="outline" className="capitalize">{a.status}</Badge></td>
-                                    <td className="p-3"><Button variant="ghost" size="sm" onClick={() => toast.info(`Appointment on ${a.appointment_date || a.date || '—'} — ${a.status}`)}><Eye className="h-4 w-4" /></Button></td>
+                                    <td className="p-3">
+                                      <div className="flex items-center gap-1">
+                                        <Button variant="ghost" size="sm" onClick={() => toast.info(`Appointment on ${a.appointment_date || a.date || '—'} — ${a.status}`)}><Eye className="h-4 w-4" /></Button>
+                                        <MedicalCardDownloadButton
+                                          practice={practice}
+                                          locations={locations}
+                                          data={{
+                                            patientName: selectedPatient?.name || '',
+                                            gender: selectedPatient?.gender || '',
+                                            age: selectedPatient?.age || '',
+                                            dob: selectedPatient?.date_of_birth || (selectedPatient as any)?.dob || '',
+                                            phone: selectedPatient?.phone || '',
+                                            profession: (selectedPatient as any)?.profession || '',
+                                            address: (selectedPatient as any)?.address || '',
+                                            appointmentDate: a.appointment_date || a.date || '',
+                                            diagnosis: (a as any).diagnosis || a.service_name || a.appointment_type || '',
+                                            doctorName: a.doctor_name || '',
+                                            serviceName: a.service_name || a.appointment_type || '',
+                                            clinicName: practice?.name || '',
+                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                          }}
+                                        />
+                                      </div>
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
@@ -3664,13 +3707,27 @@ const AdminDashboard = () => {
                                       <Badge variant={isPaid ? 'default' : isPend ? 'outline' : 'secondary'}>{tx.status}</Badge>
                                     </td>
                                     <td className="py-3">
-                                      <div className="flex gap-1">
+                                      <div className="flex gap-1 items-center">
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info(`Invoice ${String(tx.id || '').slice(-8)} — ${fmtCents(tx.amount_cents || 0)} — ${tx.status}`))}>
                                           <Eye className="h-3 w-3" />
                                         </Button>
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success('Invoice email queued'))}>
                                           <Mail className="h-3 w-3" />
                                         </Button>
+                                        <MedicalCardDownloadButton
+                                          practice={practice}
+                                          locations={locations}
+                                          data={{
+                                            patientName: tx?.metadata?.patient_name || tx?.metadata?.customer_name || '',
+                                            gender: '', age: '', dob: '', phone: '', profession: '', address: '',
+                                            appointmentDate: tx?.created_at ? (() => { try { return format(new Date(tx.created_at), 'yyyy-MM-dd'); } catch { return ''; } })() : '',
+                                            diagnosis: tx?.metadata?.service_name || '',
+                                            doctorName: tx?.metadata?.doctor_name || '',
+                                            serviceName: tx?.metadata?.service_name || '',
+                                            clinicName: practice?.name || '',
+                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                          }}
+                                        />
                                       </div>
                                     </td>
                                   </tr>
