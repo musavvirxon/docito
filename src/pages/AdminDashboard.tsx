@@ -1218,11 +1218,30 @@ const AdminDashboard = () => {
                           return (
                             <div className="space-y-2">
                               {upcoming.map(a => (
-                                <div key={a.id} className="grid grid-cols-4 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span>{a.appointment_date} {a.start_time}</span>
                                   <span className="truncate">{a.patient_name || 'Unknown'}</span>
                                   <span className="truncate">{a.service_name || '—'}</span>
                                   <Badge variant="outline" className="w-fit">{a.status}</Badge>
+                                  <MedicalCardDownloadButton
+                                    practice={practice}
+                                    locations={locations}
+                                    data={{
+                                      patientName: a.patient_name || '',
+                                      gender: '',
+                                      age: '',
+                                      dob: '',
+                                      phone: '',
+                                      profession: '',
+                                      address: '',
+                                      appointmentDate: a.appointment_date || '',
+                                      diagnosis: (a as any).diagnosis || a.service_name || '',
+                                      doctorName: selectedProvider?.name || '',
+                                      serviceName: a.service_name || '',
+                                      clinicName: practice?.name || '',
+                                      clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                    }}
+                                  />
                                 </div>
                               ))}
                             </div>
