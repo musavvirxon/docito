@@ -2841,7 +2841,30 @@ const AdminDashboard = () => {
                                     <td className="p-3">{a.doctor_name || '—'}</td>
                                     <td className="p-3">{a.service_name || a.appointment_type || '—'}</td>
                                     <td className="p-3"><Badge variant="outline" className="capitalize">{a.status}</Badge></td>
-                                    <td className="p-3"><Button variant="ghost" size="sm" onClick={() => toast.info(`Appointment on ${a.appointment_date || a.date || '—'} — ${a.status}`)}><Eye className="h-4 w-4" /></Button></td>
+                                    <td className="p-3">
+                                      <div className="flex items-center gap-1">
+                                        <Button variant="ghost" size="sm" onClick={() => toast.info(`Appointment on ${a.appointment_date || a.date || '—'} — ${a.status}`)}><Eye className="h-4 w-4" /></Button>
+                                        <MedicalCardDownloadButton
+                                          practice={practice}
+                                          locations={locations}
+                                          data={{
+                                            patientName: selectedPatient?.name || '',
+                                            gender: selectedPatient?.gender || '',
+                                            age: selectedPatient?.age || '',
+                                            dob: selectedPatient?.date_of_birth || (selectedPatient as any)?.dob || '',
+                                            phone: selectedPatient?.phone || '',
+                                            profession: (selectedPatient as any)?.profession || '',
+                                            address: (selectedPatient as any)?.address || '',
+                                            appointmentDate: a.appointment_date || a.date || '',
+                                            diagnosis: (a as any).diagnosis || a.service_name || a.appointment_type || '',
+                                            doctorName: a.doctor_name || '',
+                                            serviceName: a.service_name || a.appointment_type || '',
+                                            clinicName: practice?.name || '',
+                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                          }}
+                                        />
+                                      </div>
+                                    </td>
                                   </tr>
                                 ))}
                               </tbody>
