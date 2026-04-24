@@ -27,6 +27,7 @@ import {
 import AccountBillingSection from "@/components/profile/AccountBillingSection";
 import AccountAnalyticsSection from "@/components/profile/AccountAnalyticsSection";
 import AccountSettingsSection from "@/components/profile/AccountSettingsSection";
+import CurrencyPreferenceCard from "@/components/profile/CurrencyPreferenceCard";
 import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
 import { getPrimaryRole, type AppRole } from "@/lib/rbac";
 
@@ -270,6 +271,7 @@ export default function ProfilePage() {
             </Card>
           </div>
 
+          <CurrencyPreferenceCard />
           <AccountSettingsSection />
         </TabsContent>
 
