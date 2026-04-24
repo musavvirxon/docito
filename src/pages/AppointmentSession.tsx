@@ -774,10 +774,29 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
               </Button>
             )}
 
+            {appointmentId && (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const { downloadAppointmentSummaryPdf } = await import('@/lib/api/appointment-summary-api');
+                    await downloadAppointmentSummaryPdf(appointmentId);
+                    toast.success(t('doctor.session.summary.downloaded', 'Summary PDF downloaded'));
+                  } catch (e: any) {
+                    toast.error(e?.message || t('doctor.session.summary.failed', 'Failed to download summary'));
+                  }
+                }}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                {t('doctor.session.summary.button', 'Summary PDF')}
+              </Button>
+            )}
+
             {session && (
               <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
                 {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-                End Session
+                {t('doctor.session.end', 'End Session')}
               </Button>
             )}
           </div>
