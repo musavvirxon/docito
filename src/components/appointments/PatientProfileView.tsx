@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   User, Phone, Mail, MapPin, Calendar, Clock, Pill, FileText,
   AlertTriangle, Activity, Stethoscope, Image, TestTube, Heart,
-  ChevronRight, ArrowLeft, Loader2, Download
+  ChevronRight, ArrowLeft, Loader2, Download, Wallet, ShieldCheck, BarChart3,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,12 +18,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
+import { downloadAppointmentSummaryPdf } from '@/lib/api/appointment-summary-api';
+import PatientEntityHistoryPanel from '@/components/appointments/PatientEntityHistoryPanel';
+import type { ViewerEntityType } from '@/hooks/usePatientEntityHistory';
 
 interface PatientProfileViewProps {
   patientId: string;
   patientType: 'registered' | 'direct';
   onBack?: () => void;
   compact?: boolean;
+  /** Viewer entity scope — enables Billing/Insurance/Analytics/Activity tabs. */
+  viewerEntity?: { type: ViewerEntityType; id: string };
 }
 
 interface PatientData {
@@ -84,6 +89,7 @@ export const PatientProfileView = ({
   patientType,
   onBack,
   compact = false,
+  viewerEntity,
 }: PatientProfileViewProps) => {
   const { t } = useTranslation('dashboard');
   const [loading, setLoading] = useState(true);
@@ -93,7 +99,21 @@ export const PatientProfileView = ({
   const [imagingResults, setImagingResults] = useState<ImagingResult[]>([]);
   const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
+  const [downloadingSummary, setDownloadingSummary] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const handleDownloadSummary = useCallback(async (apptId: string) => {
+    setDownloadingSummary(apptId);
+    try {
+      await downloadAppointmentSummaryPdf(apptId);
+      toast.success(t('patientProfile.summary.downloaded', 'Appointment summary downloaded'));
+    } catch (err: any) {
+      toast.error(err?.message || t('patientProfile.summary.failed', 'Failed to download summary'));
+    } finally {
+      setDownloadingSummary(null);
+    }
+  }, [t]);
+
 
   const fetchPatientData = useCallback(async () => {
     setLoading(true);
