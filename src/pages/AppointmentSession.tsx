@@ -19,6 +19,7 @@ import {
   RefreshCw,
   CircleDot,
   DollarSign,
+  Download,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
