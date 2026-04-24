@@ -574,17 +574,17 @@ export const PatientProfileView = ({
                 {appointments.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No appointment history</p>
+                    <p>{t('patientProfile.appointments.empty', 'No appointment history')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {appointments.map((appt) => (
-                      <div 
-                        key={appt.id} 
+                      <div
+                        key={appt.id}
                         className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-start justify-between">
-                          <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
                             <p className="font-medium">
                               {format(new Date(appt.appointment_date), 'EEEE, MMMM d, yyyy')}
                             </p>
@@ -598,9 +598,24 @@ export const PatientProfileView = ({
                               </Badge>
                             )}
                           </div>
-                          <Badge variant="outline" className="capitalize">
-                            {appt.status}
-                          </Badge>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Badge variant="outline" className="capitalize">
+                              {appt.status}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={downloadingSummary === appt.id}
+                              onClick={() => handleDownloadSummary(appt.id)}
+                              title={t('patientProfile.summary.button', 'Download summary')}
+                            >
+                              {downloadingSummary === appt.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                         {appt.notes && (
                           <p className="text-sm text-muted-foreground mt-2 pt-2 border-t">
