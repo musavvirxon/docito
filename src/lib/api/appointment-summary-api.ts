@@ -1,8 +1,27 @@
 import { supabase } from '@/integrations/supabase/client';
+import i18n from '@/i18n/config';
 
 interface DownloadOptions {
   displayCurrency?: string;
   language?: string;
+  fileName?: string;
+}
+
+function resolveDisplayCurrency(explicit?: string): string | undefined {
+  if (explicit) return explicit;
+  if (typeof window !== 'undefined') {
+    try {
+      const pref = window.localStorage.getItem('preferred_currency');
+      if (pref) return pref;
+    } catch {
+      /* noop */
+    }
+  }
+  return undefined;
+}
+
+function resolveLanguage(explicit?: string): string {
+  return (explicit || i18n.language || 'en').toString().toLowerCase().split(/[-_]/)[0];
 }
 
 /**
@@ -16,8 +35,8 @@ export async function downloadAppointmentSummaryPdf(
   const { data, error } = await supabase.functions.invoke('appointment-summary-pdf', {
     body: {
       appointment_id: appointmentId,
-      display_currency: options.displayCurrency,
-      language: options.language,
+      display_currency: resolveDisplayCurrency(options.displayCurrency),
+      language: resolveLanguage(options.language),
     },
   });
 
@@ -33,10 +52,13 @@ export async function downloadAppointmentSummaryPdf(
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
 
-  // Trigger browser download
+  const fileName = (options.fileName || `appointment-summary-${appointmentId.slice(0, 8)}`)
+    .replace(/[^\w.\-]+/g, '_')
+    .slice(0, 120);
+
   const link = document.createElement('a');
   link.href = url;
-  link.download = `appointment-summary-${appointmentId.slice(0, 8)}.pdf`;
+  link.download = `${fileName}.pdf`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

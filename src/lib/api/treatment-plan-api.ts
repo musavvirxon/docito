@@ -6,6 +6,7 @@ type Params = {
   treatmentPlanId: string;
   locale?: string;
   fileName?: string;
+  displayCurrency?: string;
 };
 
 const SUPPORTED_LOCALES = new Set([
@@ -21,6 +22,19 @@ function resolveLocale(explicit?: string): string {
   return SUPPORTED_LOCALES.has(code) ? code : "en";
 }
 
+function resolveDisplayCurrency(explicit?: string): string | undefined {
+  if (explicit) return explicit;
+  if (typeof window !== "undefined") {
+    try {
+      const pref = window.localStorage.getItem("preferred_currency");
+      if (pref) return pref;
+    } catch {
+      /* noop */
+    }
+  }
+  return undefined;
+}
+
 const sanitizeFileName = (name: string): string => {
   return String(name || "document")
     .replace(/[^\w.\-]+/g, "_")
@@ -29,7 +43,7 @@ const sanitizeFileName = (name: string): string => {
 };
 
 export async function downloadTreatmentPlanPdf(params: Params) {
-  const { treatmentPlanId, locale, fileName } = params;
+  const { treatmentPlanId, locale, fileName, displayCurrency } = params;
 
   const session = await supabase.auth.getSession();
   const token = session.data.session?.access_token;
@@ -39,6 +53,7 @@ export async function downloadTreatmentPlanPdf(params: Params) {
   const anonKey = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd3dwamR0Z3N4emNzbnJ4dXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTI4MTUsImV4cCI6MjA3MzM2ODgxNX0.YEjg25_0LlzWQoh-SIk-kq_mxcvUoyhODSQ__4DJfSw";
 
   const effectiveLocale = resolveLocale(locale);
+  const effectiveCurrency = resolveDisplayCurrency(displayCurrency);
 
   const res = await fetch(`${supabaseUrl}/functions/v1/treatment-plan-generate-pdf`, {
     method: "POST",
@@ -48,7 +63,11 @@ export async function downloadTreatmentPlanPdf(params: Params) {
       "apikey": anonKey,
       "Accept": "application/pdf",
     },
-    body: JSON.stringify({ treatment_plan_id: treatmentPlanId, locale: effectiveLocale }),
+    body: JSON.stringify({
+      treatment_plan_id: treatmentPlanId,
+      locale: effectiveLocale,
+      display_currency: effectiveCurrency,
+    }),
   });
 
   if (!res.ok) {

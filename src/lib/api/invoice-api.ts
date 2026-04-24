@@ -1,4 +1,4 @@
-// Invoice PDF download — locale follows the UI language.
+// Invoice PDF download — locale follows the UI language, currency follows the viewer's preference.
 import { supabase } from '@/integrations/supabase/client';
 import i18n from '@/i18n/config';
 
@@ -15,7 +15,25 @@ function resolveLocale(explicit?: string): string {
   return SUPPORTED_LOCALES.has(code) ? code : 'en';
 }
 
-export async function downloadInvoicePdf(invoiceId: string, fileName?: string, locale?: string): Promise<void> {
+function resolveDisplayCurrency(explicit?: string): string | undefined {
+  if (explicit) return explicit;
+  if (typeof window !== 'undefined') {
+    try {
+      const pref = window.localStorage.getItem('preferred_currency');
+      if (pref) return pref;
+    } catch {
+      /* noop */
+    }
+  }
+  return undefined;
+}
+
+export async function downloadInvoicePdf(
+  invoiceId: string,
+  fileName?: string,
+  locale?: string,
+  displayCurrency?: string,
+): Promise<void> {
   const session = await supabase.auth.getSession();
   const token = session.data.session?.access_token;
   if (!token) throw new Error('Not authenticated');
@@ -24,6 +42,7 @@ export async function downloadInvoicePdf(invoiceId: string, fileName?: string, l
   const anonKey = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd3dwamR0Z3N4emNzbnJ4dXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTI4MTUsImV4cCI6MjA3MzM2ODgxNX0.YEjg25_0LlzWQoh-SIk-kq_mxcvUoyhODSQ__4DJfSw';
 
   const effectiveLocale = resolveLocale(locale);
+  const effectiveCurrency = resolveDisplayCurrency(displayCurrency);
 
   const res = await fetch(`${supabaseUrl}/functions/v1/invoice-generate-pdf`, {
     method: 'POST',
@@ -33,7 +52,11 @@ export async function downloadInvoicePdf(invoiceId: string, fileName?: string, l
       'apikey': anonKey,
       'Accept': 'application/pdf',
     },
-    body: JSON.stringify({ invoice_id: invoiceId, locale: effectiveLocale }),
+    body: JSON.stringify({
+      invoice_id: invoiceId,
+      locale: effectiveLocale,
+      display_currency: effectiveCurrency,
+    }),
   });
 
   if (!res.ok) {

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   User, Phone, Mail, MapPin, Calendar, Clock, Pill, FileText,
   AlertTriangle, Activity, Stethoscope, Image, TestTube, Heart,
-  ChevronRight, ArrowLeft, Loader2, Download
+  ChevronRight, ArrowLeft, Loader2, Download, Wallet, ShieldCheck, BarChart3,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,12 +18,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
+import { downloadAppointmentSummaryPdf } from '@/lib/api/appointment-summary-api';
+import PatientEntityHistoryPanel from '@/components/appointments/PatientEntityHistoryPanel';
+import type { ViewerEntityType } from '@/hooks/usePatientEntityHistory';
 
 interface PatientProfileViewProps {
   patientId: string;
   patientType: 'registered' | 'direct';
   onBack?: () => void;
   compact?: boolean;
+  /** Viewer entity scope — enables Billing/Insurance/Analytics/Activity tabs. */
+  viewerEntity?: { type: ViewerEntityType; id: string };
 }
 
 interface PatientData {
@@ -84,6 +89,7 @@ export const PatientProfileView = ({
   patientType,
   onBack,
   compact = false,
+  viewerEntity,
 }: PatientProfileViewProps) => {
   const { t } = useTranslation('dashboard');
   const [loading, setLoading] = useState(true);
@@ -93,7 +99,21 @@ export const PatientProfileView = ({
   const [imagingResults, setImagingResults] = useState<ImagingResult[]>([]);
   const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
   const [downloadingPdf, setDownloadingPdf] = useState<string | null>(null);
+  const [downloadingSummary, setDownloadingSummary] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
+
+  const handleDownloadSummary = useCallback(async (apptId: string) => {
+    setDownloadingSummary(apptId);
+    try {
+      await downloadAppointmentSummaryPdf(apptId);
+      toast.success(t('patientProfile.summary.downloaded', 'Appointment summary downloaded'));
+    } catch (err: any) {
+      toast.error(err?.message || t('patientProfile.summary.failed', 'Failed to download summary'));
+    } finally {
+      setDownloadingSummary(null);
+    }
+  }, [t]);
+
 
   const fetchPatientData = useCallback(async () => {
     setLoading(true);
@@ -362,33 +382,70 @@ export const PatientProfileView = ({
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="h-4 w-4" />
-            Overview
+            {t('patientProfile.tabs.overview', 'Overview')}
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-2">
             <FileText className="h-4 w-4" />
-            Medical History
+            {t('patientProfile.tabs.history', 'Medical History')}
           </TabsTrigger>
           <TabsTrigger value="appointments" className="gap-2">
             <Calendar className="h-4 w-4" />
-            Appointments
+            {t('patientProfile.tabs.appointments', 'Appointments')}
           </TabsTrigger>
           {patientType === 'registered' && (
             <>
               <TabsTrigger value="prescriptions" className="gap-2">
                 <Pill className="h-4 w-4" />
-                Prescriptions
+                {t('patientProfile.tabs.prescriptions', 'Prescriptions')}
               </TabsTrigger>
               <TabsTrigger value="labs" className="gap-2">
                 <TestTube className="h-4 w-4" />
-                Lab Results
+                {t('patientProfile.tabs.labs', 'Lab Results')}
               </TabsTrigger>
               <TabsTrigger value="imaging" className="gap-2">
                 <Image className="h-4 w-4" />
-                Imaging
+                {t('patientProfile.tabs.imaging', 'Imaging')}
+              </TabsTrigger>
+            </>
+          )}
+          {viewerEntity && (
+            <>
+              <TabsTrigger value="billing" className="gap-2">
+                <Wallet className="h-4 w-4" />
+                {t('patientProfile.tabs.billing', 'Billing')}
+              </TabsTrigger>
+              <TabsTrigger value="insurance" className="gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                {t('patientProfile.tabs.insurance', 'Insurance')}
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                {t('patientProfile.tabs.analytics', 'Analytics')}
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="gap-2">
+                <Activity className="h-4 w-4" />
+                {t('patientProfile.tabs.activity', 'Activity')}
               </TabsTrigger>
             </>
           )}
         </TabsList>
+
+        {viewerEntity && (
+          <>
+            <TabsContent value="billing" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="billing" />
+            </TabsContent>
+            <TabsContent value="insurance" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="insurance" />
+            </TabsContent>
+            <TabsContent value="analytics" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="analytics" />
+            </TabsContent>
+            <TabsContent value="activity" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="activity" />
+            </TabsContent>
+          </>
+        )}
 
         <TabsContent value="overview" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -517,17 +574,17 @@ export const PatientProfileView = ({
                 {appointments.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No appointment history</p>
+                    <p>{t('patientProfile.appointments.empty', 'No appointment history')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {appointments.map((appt) => (
-                      <div 
-                        key={appt.id} 
+                      <div
+                        key={appt.id}
                         className="p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-start justify-between">
-                          <div>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
                             <p className="font-medium">
                               {format(new Date(appt.appointment_date), 'EEEE, MMMM d, yyyy')}
                             </p>
@@ -541,9 +598,24 @@ export const PatientProfileView = ({
                               </Badge>
                             )}
                           </div>
-                          <Badge variant="outline" className="capitalize">
-                            {appt.status}
-                          </Badge>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Badge variant="outline" className="capitalize">
+                              {appt.status}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={downloadingSummary === appt.id}
+                              onClick={() => handleDownloadSummary(appt.id)}
+                              title={t('patientProfile.summary.button', 'Download summary')}
+                            >
+                              {downloadingSummary === appt.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                         {appt.notes && (
                           <p className="text-sm text-muted-foreground mt-2 pt-2 border-t">
