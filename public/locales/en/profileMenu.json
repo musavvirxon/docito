@@ -14,6 +14,17 @@
     "signOut": "Sign out",
     "loading": "Loading…",
 
+    "currency": {
+      "title": "Currency",
+      "description": "Choose the currency used to display all amounts across treatment plans, appointments, billing and finance analytics.",
+      "label": "Display currency",
+      "preview": "Preview",
+      "note": "Source amounts in other currencies are converted automatically using daily ECB exchange rates.",
+      "saved": "Currency preference updated",
+      "failed": "Could not update currency",
+      "saving": "Saving…"
+    },
+
     "nameLabels": {
       "clinicName": "Clinic name",
       "labName": "Lab name",

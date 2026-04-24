@@ -2059,5 +2059,45 @@
     "status": "Verification",
     "verify": "Start Verification",
     "verified": "Verified"
+  },
+  "patientProfile": {
+    "tabs": {
+      "overview": "Overview",
+      "history": "Medical History",
+      "appointments": "Appointments",
+      "prescriptions": "Prescriptions",
+      "labs": "Lab Results",
+      "imaging": "Imaging",
+      "billing": "Billing",
+      "insurance": "Insurance",
+      "analytics": "Analytics",
+      "activity": "Activity"
+    },
+    "appointments": { "empty": "No appointment history" },
+    "billing": { "empty": "No billing records with this patient" },
+    "insurance": { "empty": "No insurance records on file with this entity" },
+    "activity": { "empty": "No activity yet" },
+    "analytics": {
+      "totalSpend": "Total spend",
+      "outstanding": "Outstanding",
+      "visits": "Completed visits",
+      "lastVisit": "Last / next visit",
+      "next": "Next"
+    },
+    "summary": {
+      "button": "Download summary",
+      "downloaded": "Appointment summary downloaded",
+      "failed": "Failed to download summary"
+    }
+  },
+  "doctor": {
+    "session": {
+      "end": "End Session",
+      "summary": {
+        "button": "Summary PDF",
+        "downloaded": "Summary PDF downloaded",
+        "failed": "Failed to download summary"
+      }
+    }
   }
 }
