@@ -382,33 +382,70 @@ export const PatientProfileView = ({
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="h-4 w-4" />
-            Overview
+            {t('patientProfile.tabs.overview', 'Overview')}
           </TabsTrigger>
           <TabsTrigger value="history" className="gap-2">
             <FileText className="h-4 w-4" />
-            Medical History
+            {t('patientProfile.tabs.history', 'Medical History')}
           </TabsTrigger>
           <TabsTrigger value="appointments" className="gap-2">
             <Calendar className="h-4 w-4" />
-            Appointments
+            {t('patientProfile.tabs.appointments', 'Appointments')}
           </TabsTrigger>
           {patientType === 'registered' && (
             <>
               <TabsTrigger value="prescriptions" className="gap-2">
                 <Pill className="h-4 w-4" />
-                Prescriptions
+                {t('patientProfile.tabs.prescriptions', 'Prescriptions')}
               </TabsTrigger>
               <TabsTrigger value="labs" className="gap-2">
                 <TestTube className="h-4 w-4" />
-                Lab Results
+                {t('patientProfile.tabs.labs', 'Lab Results')}
               </TabsTrigger>
               <TabsTrigger value="imaging" className="gap-2">
                 <Image className="h-4 w-4" />
-                Imaging
+                {t('patientProfile.tabs.imaging', 'Imaging')}
+              </TabsTrigger>
+            </>
+          )}
+          {viewerEntity && (
+            <>
+              <TabsTrigger value="billing" className="gap-2">
+                <Wallet className="h-4 w-4" />
+                {t('patientProfile.tabs.billing', 'Billing')}
+              </TabsTrigger>
+              <TabsTrigger value="insurance" className="gap-2">
+                <ShieldCheck className="h-4 w-4" />
+                {t('patientProfile.tabs.insurance', 'Insurance')}
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                {t('patientProfile.tabs.analytics', 'Analytics')}
+              </TabsTrigger>
+              <TabsTrigger value="activity" className="gap-2">
+                <Activity className="h-4 w-4" />
+                {t('patientProfile.tabs.activity', 'Activity')}
               </TabsTrigger>
             </>
           )}
         </TabsList>
+
+        {viewerEntity && (
+          <>
+            <TabsContent value="billing" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="billing" />
+            </TabsContent>
+            <TabsContent value="insurance" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="insurance" />
+            </TabsContent>
+            <TabsContent value="analytics" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="analytics" />
+            </TabsContent>
+            <TabsContent value="activity" className="mt-4">
+              <PatientEntityHistoryPanel patientId={patientId} entityType={viewerEntity.type} entityId={viewerEntity.id} variant="activity" />
+            </TabsContent>
+          </>
+        )}
 
         <TabsContent value="overview" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
