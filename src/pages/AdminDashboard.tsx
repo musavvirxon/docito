@@ -3707,13 +3707,27 @@ const AdminDashboard = () => {
                                       <Badge variant={isPaid ? 'default' : isPend ? 'outline' : 'secondary'}>{tx.status}</Badge>
                                     </td>
                                     <td className="py-3">
-                                      <div className="flex gap-1">
+                                      <div className="flex gap-1 items-center">
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info(`Invoice ${String(tx.id || '').slice(-8)} — ${fmtCents(tx.amount_cents || 0)} — ${tx.status}`))}>
                                           <Eye className="h-3 w-3" />
                                         </Button>
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success('Invoice email queued'))}>
                                           <Mail className="h-3 w-3" />
                                         </Button>
+                                        <MedicalCardDownloadButton
+                                          practice={practice}
+                                          locations={locations}
+                                          data={{
+                                            patientName: tx?.metadata?.patient_name || tx?.metadata?.customer_name || '',
+                                            gender: '', age: '', dob: '', phone: '', profession: '', address: '',
+                                            appointmentDate: tx?.created_at ? (() => { try { return format(new Date(tx.created_at), 'yyyy-MM-dd'); } catch { return ''; } })() : '',
+                                            diagnosis: tx?.metadata?.service_name || '',
+                                            doctorName: tx?.metadata?.doctor_name || '',
+                                            serviceName: tx?.metadata?.service_name || '',
+                                            clinicName: practice?.name || '',
+                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                          }}
+                                        />
                                       </div>
                                     </td>
                                   </tr>
