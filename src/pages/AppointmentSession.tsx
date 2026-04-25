@@ -51,6 +51,7 @@ import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator'
 import { useAuth } from '@/contexts/AuthContext';
 import type { Diagnosis } from '@/components/visit/types';
 import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
+import { PatientFinanceSection } from '@/components/PatientFinanceSection';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -922,6 +923,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
+                    {/* Patient Finance */}
+                    <PatientFinanceSection
+                      compact
+                      patientName={appointment?.patient_name || ''}
+                      payments={[]}
+                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
+                      onAddPayment={() => toast.info('Record payment coming soon')}
+                    />
+
                     {/* Session Notes */}
                     <Card>
                       <CardHeader className="pb-2">
@@ -1066,7 +1076,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsContent>
                   )}
 
-                  <TabsContent value="notes" className="mt-0">
+                  <TabsContent value="notes" className="mt-0 space-y-4">
+                    <PatientFinanceSection
+                      compact
+                      patientName={appointment?.patient_name || ''}
+                      payments={[]}
+                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
+                      onAddPayment={() => toast.info('Record payment coming soon')}
+                    />
                     <Card>
                       <CardContent className="pt-6">
                         <Textarea
