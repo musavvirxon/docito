@@ -51,6 +51,8 @@ import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator'
 import { useAuth } from '@/contexts/AuthContext';
 import type { Diagnosis } from '@/components/visit/types';
 import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
+import { PatientFinanceSection } from '@/components/PatientFinanceSection';
+import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -775,16 +777,32 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
               </Button>
             )}
 
-            {appointmentId && (
+            {appointmentId && appointment && (
               <Button
                 variant="outline"
-                onClick={async () => {
+                onClick={() => {
                   try {
-                    const { downloadAppointmentSummaryPdf } = await import('@/lib/api/appointment-summary-api');
-                    await downloadAppointmentSummaryPdf(appointmentId);
+                    generateAppointmentPdf(
+                      {
+                        clinicName: '',
+                        clinicAddress: '',
+                        patientName: appointment.patient_name || '',
+                        phone: appointment.patient_phone || '',
+                        appointmentDate: appointment.appointment_date || '',
+                        appointmentTime: appointment.start_time || '',
+                        diagnosis: '',
+                        complaints: '',
+                        treatment: sessionNotes,
+                        serviceName: appointment.appointment_type || '',
+                        doctorName: '',
+                        doctorSpecialty: doctorSpecialty || '',
+                        notes: appointment.notes || '',
+                      },
+                      'ru',
+                    );
                     toast.success(t('doctor.session.summary.downloaded', 'Summary PDF downloaded'));
-                  } catch (e: any) {
-                    toast.error(e?.message || t('doctor.session.summary.failed', 'Failed to download summary'));
+                  } catch {
+                    toast.error(t('doctor.session.summary.failed', 'Failed to generate PDF'));
                   }
                 }}
                 className="gap-2"
@@ -921,6 +939,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Patient Finance */}
+                    <PatientFinanceSection
+                      compact
+                      patientName={appointment?.patient_name || ''}
+                      payments={[]}
+                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
+                      onAddPayment={() => toast.info('Record payment coming soon')}
+                    />
 
                     {/* Session Notes */}
                     <Card>
@@ -1066,7 +1093,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsContent>
                   )}
 
-                  <TabsContent value="notes" className="mt-0">
+                  <TabsContent value="notes" className="mt-0 space-y-4">
+                    <PatientFinanceSection
+                      compact
+                      patientName={appointment?.patient_name || ''}
+                      payments={[]}
+                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
+                      onAddPayment={() => toast.info('Record payment coming soon')}
+                    />
                     <Card>
                       <CardContent className="pt-6">
                         <Textarea

@@ -42,6 +42,7 @@ import VerificationSuccessModal from "@/components/dashboard/VerificationSuccess
 import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
+import { PatientFinanceSection } from "@/components/PatientFinanceSection";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -2794,6 +2795,13 @@ const AdminDashboard = () => {
                           })}>{tA('patients.actions.editInsurance', 'Edit Insurance')}</Button>
                         </CardContent>
                       </Card>
+                      <PatientFinanceSection
+                        compact
+                        patientName={selectedPatient?.name || ''}
+                        payments={payments || []}
+                        onCreateInvoice={() => guard(() => toast.info('Create invoice coming soon'))}
+                        disabled={!allowModals}
+                      />
                     </div>
                   </div>
                 )}
@@ -2885,6 +2893,12 @@ const AdminDashboard = () => {
 
                 {patientTab === 'billing' && (
                   <div className="space-y-6">
+                    <PatientFinanceSection
+                      patientName={selectedPatient?.name || ''}
+                      payments={payments || []}
+                      onCreateInvoice={() => guard(() => toast.info('Create invoice coming soon'))}
+                      disabled={!allowModals}
+                    />
                     <div className="flex items-center justify-between flex-wrap gap-3">
                       <h3 className="text-base font-semibold">Billing & Payments</h3>
                       <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {

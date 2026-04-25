@@ -450,7 +450,10 @@
       "today": "Today's Appointment",
       "upcoming": "Next Appointment",
       "noAppointments": "No upcoming appointments",
-      "scheduleEmpty": "Your schedule is clear"
+      "scheduleEmpty": "Your schedule is clear",
+      "upcomingCount": "Upcoming Count",
+      "viewAll": "View All",
+      "viewDetails": "View Details"
     },
     "appointmentDetails": {
       "title": "Appointment Details",
@@ -458,7 +461,27 @@
       "time": "Time",
       "status": "Status",
       "notes": "Notes",
-      "viewPatient": "View Patient Details"
+      "viewPatient": "View Patient Details",
+      "addDiagnosis": "Add diagnosis",
+      "addDiagnosisBtn": "Add",
+      "customDiagnosis": "Custom diagnosis",
+      "diagnosesTitle": "Diagnoses",
+      "diagnosisCode": "ICD-10 (optional)",
+      "diagnosisCodePlaceholder": "e.g. I10",
+      "diagnosisName": "Diagnosis",
+      "diagnosisNamePlaceholder": "e.g. Hypertension",
+      "diagnosisNotes": "Notes",
+      "diagnosisNotesPlaceholder": "Optional notes, rationale, plan...",
+      "inPerson": "In-Person",
+      "loadingDiagnosis": "Loading...",
+      "message": "Message Patient",
+      "noDiagnoses": "No diagnoses added yet.",
+      "schedule": "Schedule Follow-up",
+      "selectDiagnosis": "Select from library or add custom",
+      "selectedDiagnosis": "Selected",
+      "type": "Type",
+      "videoCall": "Start Video Call",
+      "videoConsultation": "Video Consultation"
     },
     "patientDetails": {
       "overview": "Overview",
@@ -478,7 +501,19 @@
       "noRecords": "No medical records found",
       "noMedications": "No medications found",
       "noTreatments": "No treatment plans found",
-      "noHistory": "No appointment history found"
+      "noHistory": "No appointment history found",
+      "allergies": "Allergies",
+      "basicInfo": "Basic Information",
+      "bloodType": "Blood Type",
+      "bmi": "BMI",
+      "currentMedications": "Current Medications",
+      "doctor": "Doctor",
+      "emergencyContact": "Emergency Contact",
+      "healthMetrics": "Health Metrics",
+      "height": "Height",
+      "medicalHistory": "Medical History",
+      "noMedicalRecords": "No medical records found",
+      "weight": "Weight"
     },
     "quickActions": {
       "title": "Quick Actions",
@@ -608,7 +643,45 @@
       "viewMode": "View Mode",
       "day": "Day",
       "week": "Week",
-      "month": "Month"
+      "month": "Month",
+      "addNote": "Add Note",
+      "addPrescription": "Add Prescription",
+      "appointmentType": "Type",
+      "cancel": "Cancel",
+      "cancelSuccess": "Appointment cancelled successfully",
+      "close": "Close",
+      "details": "Details",
+      "markComplete": "Mark Complete",
+      "notes": "Notes",
+      "patient": "Patient",
+      "procedure": "Procedure",
+      "reschedule": "Reschedule",
+      "sendMessage": "Send Message",
+      "startVisit": "Start Visit",
+      "today": "Today",
+      "addAppointment": "Add Appointment",
+      "appointmentsStillVisible": "Appointments are still shown here if they exist.",
+      "cancelConfirm": "Are you sure you want to cancel this appointment?",
+      "cancelConfirmTitle": "Cancel Appointment",
+      "cancelReason": "Cancellation reason (optional)",
+      "chat": "Chat",
+      "confirmCancel": "Yes, Cancel",
+      "dayOff": "This day is not configured as a working day in your schedule settings.",
+      "filters": "Filters",
+      "home": "Home Visit",
+      "inPerson": "In-Person",
+      "keepAppointment": "Keep Appointment",
+      "nextAppointment": "Next Appointment",
+      "noWorkingHours": "No Working Hours",
+      "notConfigured": "Working hours are not configured for this day.",
+      "off": "Off",
+      "patientMissing": "Patient information not available.",
+      "scheduleHealth": "Schedule Health",
+      "searchPlaceholder": "Search patient or notes...",
+      "showBuffers": "Show buffers",
+      "status": "Status",
+      "upcomingToday": "Upcoming Today",
+      "video": "Video"
     },
     "schedule": {
       "title": "Schedule Settings",
@@ -628,7 +701,23 @@
       "addHoliday": "Add Holiday",
       "selectDate": "Select date",
       "noHolidays": "No holidays set",
-      "removeHoliday": "Remove"
+      "removeHoliday": "Remove",
+      "addDayOff": "Add Day Off",
+      "breakName": "Break Name",
+      "bufferTimeDesc": "Buffer Time Desc",
+      "copyMondayToWeekdays": "Copy Monday To Weekdays",
+      "disableWeekends": "Disable Weekends",
+      "error": "Error",
+      "holidaysTitle": "Holidays Title",
+      "minutes": "Minutes",
+      "quickActions": "Quick Actions",
+      "saveFailed": "Save Failed",
+      "scheduleCopied": "Schedule Copied",
+      "scheduleCopiedDesc": "Schedule Copied Desc",
+      "scheduleUpdated": "Schedule Updated",
+      "scheduleUpdatedDesc": "Schedule Updated Desc",
+      "weekendsDisabled": "Weekends Disabled",
+      "weekendsDisabledDesc": "Weekends Disabled Desc"
     },
     "title": "Doctor Dashboard",
     "navigation": {
@@ -689,11 +778,22 @@
       "publishPlan": "Publish Plan",
       "deletePlan": "Delete Plan",
       "loading": "Loading treatment plans...",
-      "unknownPatient": "Unknown Patient"
+      "unknownPatient": "Unknown Patient",
+      "deleteConfirm": "Delete Confirm",
+      "deleteFailed": "Delete Failed",
+      "deleteSuccess": "Delete Success"
     },
     "settings": {
       "title": "Settings",
-      "account": "Account",
+      "account": {
+        "description": "Description",
+        "email": "Email",
+        "language": "Language",
+        "phone": "Phone",
+        "saveChanges": "Save Changes",
+        "timezone": "Timezone",
+        "title": "Title"
+      },
       "notifications": "Notifications",
       "calendar": "Calendar",
       "security": "Security",
@@ -743,7 +843,21 @@
       "pushNotificationsDesc": "Manage in-app push notifications",
       "enablePush": "Enable Push Notifications",
       "enablePushDesc": "Receive real-time notifications in the app",
-      "calendarIntegration": "Calendar Integration",
+      "calendarIntegration": {
+        "appleCalendar": "Apple Calendar",
+        "connected": "Connected",
+        "description": "Sync your appointments with external calendars",
+        "googleCalendar": "Google Calendar",
+        "notConnected": "Not connected",
+        "outlookCalendar": "Outlook Calendar",
+        "syncSettings": {
+          "disconnect": "You can disconnect at any time",
+          "noImport": "External calendar events won",
+          "realTime": "Appointments will be synced in real-time",
+          "title": "Sync Settings"
+        },
+        "title": "Calendar Integration"
+      },
       "calendarIntegrationDesc": "Sync appointments with your calendar",
       "googleCalendar": "Google Calendar",
       "googleCalendarDesc": "Sync with Google Calendar",
@@ -760,7 +874,11 @@
         "est": "Eastern Time (EST)",
         "cst": "Central Time (CST)",
         "mst": "Mountain Time (MST)",
-        "pst": "Pacific Time (PST)"
+        "pst": "Pacific Time (PST)",
+        "central": "Central",
+        "eastern": "Eastern",
+        "mountain": "Mountain",
+        "pacific": "Pacific"
       },
       "languages": {
         "en": "English",
@@ -802,7 +920,62 @@
       "enterNewPassword": "Enter new password (min. 8 characters)",
       "confirmNewPassword": "Confirm new password",
       "activityType": "activity type",
-      "ip": "IP"
+      "ip": "IP",
+      "description": "Description",
+      "notificationPreferences": {
+        "description": "Description",
+        "email": {
+          "bookings": "Bookings",
+          "bookingsDesc": "Bookings Desc",
+          "cancellations": "Cancellations",
+          "cancellationsDesc": "Cancellations Desc",
+          "reminders": "Reminders",
+          "remindersDesc": "Reminders Desc",
+          "title": "Title"
+        },
+        "push": {
+          "browser": "Browser",
+          "browserDesc": "Browser Desc",
+          "title": "Title"
+        },
+        "save": "Save Notification Preferences",
+        "sms": {
+          "bookings": "Bookings",
+          "bookingsDesc": "Bookings Desc",
+          "cancellations": "Cancellations",
+          "cancellationsDesc": "Cancellations Desc",
+          "reminders": "Reminders",
+          "remindersDesc": "Reminders Desc",
+          "title": "Title"
+        },
+        "title": "Title"
+      },
+      "privacy": {
+        "description": "Description",
+        "marketingCommunications": "Marketing Communications",
+        "marketingCommunicationsDesc": "Marketing Communications Desc",
+        "profileVisibility": "Profile Visibility",
+        "profileVisibilityDesc": "Profile Visibility Desc",
+        "saveSettings": "Save Privacy Settings",
+        "shareAnalytics": "Share Analytics",
+        "shareAnalyticsDesc": "Share Analytics Desc",
+        "title": "Title"
+      },
+      "tabs": {
+        "calendar": "Calendar",
+        "general": "General",
+        "notifications": "Notifications",
+        "security": "Security"
+      },
+      "timezoneHint": "Timezone Hint",
+      "toast": {
+        "accountError": "Account Error",
+        "accountSuccess": "Account Success",
+        "notificationsError": "Notifications Error",
+        "notificationsSuccess": "Notifications Success",
+        "privacyError": "Privacy Error",
+        "privacySuccess": "Privacy Success"
+      }
     },
     "performance": {
       "performanceLevel": "Performance Level",
@@ -880,7 +1053,188 @@
       "min": "min",
       "serviceName": "Service Name",
       "avgDurationLabel": "Avg. Duration",
-      "completedLabel": "Completed"
+      "completedLabel": "Completed",
+      "advancedFinancial": {
+        "configureInputs": "Configure Inputs",
+        "description": "Description",
+        "insights": {
+          "cacToLtvHealthy": "Cac To Ltv Healthy",
+          "cacToLtvNeedsImprovement": "Cac To Ltv Needs Improvement",
+          "netProfitBelowAvg": "Net Profit Below Avg",
+          "netProfitStrong": "Net Profit Strong",
+          "roasExcellent": "Roas Excellent",
+          "roasNeedsOptimization": "Roas Needs Optimization",
+          "workingCapitalHealthy": "Working Capital Healthy",
+          "workingCapitalTight": "Working Capital Tight"
+        },
+        "keyInsightsTitle": "Key Insights Title",
+        "metrics": {
+          "adRevenueCost": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "breakEvenUnits": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "cac": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "cacToLtv": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "ebitda": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "grossProfitMargin": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "ltv": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "netProfitMargin": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "revenueRunRate": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "roas": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "roi": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "workingCapital": {
+            "description": "Description",
+            "title": "Title"
+          },
+          "workingCapitalRatio": {
+            "description": "Description",
+            "title": "Title"
+          }
+        },
+        "title": "Title"
+      },
+      "dataRefreshed": "Data Refreshed",
+      "description": "Description",
+      "errorLoading": "Error Loading",
+      "export": "Export",
+      "exportComingSoon": "Export Coming Soon",
+      "loading": "Loading",
+      "newAchievement": "New Achievement",
+      "notAvailable": "Not Available",
+      "overview": {
+        "activeDays": "Active Days",
+        "appointmentTrends": "Appointment Trends",
+        "avgDailyPatients": "Avg Daily Patients",
+        "avgDuration": "Avg Duration",
+        "basedOn": "Based On",
+        "cancellationRate": "Cancellation Rate",
+        "cancelled": "Cancelled",
+        "completed": "Completed",
+        "completionRate": "Completion Rate",
+        "completionRateLabel": "Completion Rate Label",
+        "dailyBreakdown": "Daily Breakdown",
+        "daysWithAppointments": "Days With Appointments",
+        "inSelectedPeriod": "In Selected Period",
+        "noShowRate": "No Show Rate",
+        "noShows": "No Shows",
+        "patientsPerDay": "Patients Per Day",
+        "perAppointment": "Per Appointment",
+        "performanceLevel": "Performance Level",
+        "performanceMetrics": "Performance Metrics",
+        "total": "Total",
+        "totalAppointments": "Total Appointments"
+      },
+      "refresh": "Refresh",
+      "reviews": {
+        "allReviews": "All Reviews",
+        "basedOnReviews": "Based On Reviews",
+        "excellent": "Excellent",
+        "helpful": "Helpful",
+        "noReviewsFilter": "No Reviews Filter",
+        "overallRating": "Overall Rating",
+        "positiveReviews": "Positive Reviews",
+        "ratingTrend": "Rating Trend",
+        "reply": "Reply",
+        "reviewInsights": "Review Insights",
+        "vsLastMonth": "Vs Last Month",
+        "withComments": "With Comments"
+      },
+      "services": {
+        "allCategories": "All Categories",
+        "avgDuration": "Avg Duration",
+        "bestConversion": "Best Conversion",
+        "bestSeller": "Best Seller",
+        "bookings": "Bookings",
+        "category": "Category",
+        "completed": "Completed",
+        "completion": "Completion",
+        "completionRate": "Completion Rate",
+        "highestRevenue": "Highest Revenue",
+        "minutes": "Minutes",
+        "mostBooked": "Most Booked",
+        "mostBookedSort": "Most Booked Sort",
+        "noServicesFound": "No Services Found",
+        "popular": "Popular",
+        "revenue": "Revenue",
+        "revenueByService": "Revenue By Service",
+        "revenueUsd": "Revenue Usd",
+        "sortBy": "Sort By",
+        "standard": "Standard",
+        "topPerforming": "Top Performing",
+        "totalBookings": "Total Bookings"
+      },
+      "tabs": {
+        "advanced": "Advanced",
+        "overview": "Overview",
+        "reviews": "Reviews",
+        "services": "Services",
+        "trends": "Trends"
+      },
+      "title": "Title",
+      "trends": {
+        "aiRecommendations": "Ai Recommendations",
+        "appointmentTrends": "Appointment Trends",
+        "appointmentsTrending": "Appointments Trending",
+        "bestTime": "Best Time",
+        "bookings": "Bookings",
+        "building": "Building",
+        "dailyBreakdown": "Daily Breakdown",
+        "focusOnRetention": "Focus On Retention",
+        "focusOnRetentionDesc": "Focus On Retention Desc",
+        "growthTrend": "Growth Trend",
+        "highCancellations": "High Cancellations",
+        "highCancellationsDesc": "High Cancellations Desc",
+        "insightsToImprove": "Insights To Improve",
+        "keyInsights": "Key Insights",
+        "newPatients": "New Patients",
+        "newVsReturning": "New Vs Returning",
+        "patientLoyalty": "Patient Loyalty",
+        "patientRetention": "Patient Retention",
+        "patientTypeDistribution": "Patient Type Distribution",
+        "peakBookingTimes": "Peak Booking Times",
+        "peakDemandAt": "Peak Demand At",
+        "peakTimeDesc": "Peak Time Desc",
+        "peakTimeIdentified": "Peak Time Identified",
+        "popularTimeSlots": "Popular Time Slots",
+        "returning": "Returning",
+        "stable": "Stable",
+        "strong": "Strong",
+        "strongRetention": "Strong Retention",
+        "strongRetentionDesc": "Strong Retention Desc",
+        "upward": "Upward"
+      },
+      "tryAgain": "Try Again"
     },
     "financialStats": {
       "title": "Financial Statistics",
@@ -908,7 +1262,8 @@
         "payoutInfo": "Payout Information",
         "payoutsProcessed": "Payouts Processed",
         "nextPayout": "Next Payout",
-        "platformCommission": "Platform Commission"
+        "platformCommission": "Platform Commission",
+        "tbd": "Tbd"
       },
       "chart": {
         "title": "Earnings Over Time",
@@ -916,7 +1271,9 @@
         "bar": "Bar",
         "noData": "No financial data available yet",
         "completeToSee": "Complete appointments to see earnings history",
-        "earnings": "Earnings ($)"
+        "earnings": "Earnings ($)",
+        "earningsLabel": "Earnings Label",
+        "noDataDesc": "No Data Desc"
       },
       "services": {
         "title": "Earnings by Service/Procedure",
@@ -925,7 +1282,8 @@
         "totalRevenue": "Total Revenue",
         "avgRevenue": "Avg Revenue",
         "avgDuration": "Avg Duration",
-        "noData": "No service earnings data available"
+        "noData": "No service earnings data available",
+        "minutes": "Minutes"
       },
       "payouts": {
         "title": "Payout History",
@@ -934,7 +1292,8 @@
         "status": "Status",
         "date": "Date",
         "paymentMethod": "Payment Method",
-        "noRecords": "No payout records available"
+        "noRecords": "No payout records available",
+        "noData": "No Data"
       },
       "pending": {
         "title": "Pending Payments",
@@ -947,7 +1306,9 @@
         "action": "Action",
         "markPaid": "Mark Paid",
         "noPayments": "No pending payments",
-        "markedPaid": "Payment marked as received"
+        "markedPaid": "Payment marked as received",
+        "noData": "No Data",
+        "paymentMarked": "Payment Marked"
       },
       "insights": {
         "mostProfitable": "Most Profitable Service",
@@ -960,6 +1321,14 @@
         "good": "Good",
         "needsImprovement": "Needs Improvement",
         "busiestDays": "Busiest Days (Revenue)"
+      },
+      "tabs": {
+        "advancedKPIs": "Advanced KPIs",
+        "byService": "By Service",
+        "earningsChart": "Earnings Chart",
+        "insights": "Insights",
+        "payouts": "Payouts",
+        "pending": "Pending"
       }
     },
     "profile": {
@@ -1051,11 +1420,12 @@
       "editService": "Edit Service"
     },
     "session": {
-      "notFoundTitle": "Session Not Found",
-      "notFoundBody": "This appointment session could not be loaded.",
-      "backToDashboard": "Back to Dashboard",
-      "loadError": "Failed to load appointment session",
+      "end": "End Session",
       "loading": "Loading appointment session...",
+      "loadError": "Failed to load appointment session",
+      "notFoundTitle": "Appointment Not Found",
+      "notFoundBody": "This appointment could not be loaded.",
+      "backToDashboard": "Go Back",
       "ended": "Session ended",
       "endError": "Failed to end session",
       "notesSaved": "Notes saved",
@@ -1063,10 +1433,25 @@
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
       "dentalProceduresLoadError": "Failed to load dental procedures",
+      "tabSession": "Session",
+      "tabVideo": "Video",
+      "tabDiagnoses": "Diagnoses",
+      "tabDental": "Dental",
+      "tabPrescriptions": "Rx",
+      "tabNotes": "Notes",
+      "quickActions": "Quick Actions",
+      "videoConsultation": "Video Consultation",
+      "videoConsultationDesc": "Start or join the video call for this appointment.",
+      "startVideo": "Start Video",
+      "joinVideo": "Join Video",
+      "endVideo": "End Video",
+      "summary": {
+        "button": "Summary PDF",
+        "downloaded": "Summary PDF downloaded",
+        "failed": "Failed to download summary"
+      },
       "followUp": {
         "title": "Pending follow-up appointments",
-        "description": "The following procedures require a follow-up that has not been booked yet:",
-        "choose": "You can book the follow-up now or skip it and finish the appointment.",
         "cancel": "Cancel",
         "skip": "Skip & finish",
         "book": "Book follow-up",
@@ -1128,7 +1513,9 @@
       "pending": "Pending",
       "cancel": "Cancel",
       "noDescription": "No description available",
-      "loadingError": "Failed to load clinics."
+      "loadingError": "Failed to load clinics.",
+      "failedToLoad": "Failed To Load",
+      "tryAgain": "Try Again"
     },
     "planSections": {
       "toggle": {
@@ -1207,6 +1594,70 @@
     "common": {
       "saving": "Saving…",
       "saveChanges": "Save changes"
+    },
+    "diagnoses": {
+      "activeHelp": "Inactive diagnoses stay in your library but won",
+      "activeLabel": "Active",
+      "activeShort": "Active",
+      "add": "Add",
+      "addTitle": "Add Diagnosis",
+      "assigned": "Assigned",
+      "assignedByClinic": "Assigned by clinic",
+      "assignedDesc": "Diagnoses provided by your clinic.",
+      "assignedTitle": "Assigned Diagnoses",
+      "cancel": "Cancel",
+      "codeLabel": "ICD-10 Code (optional)",
+      "codePlaceholder": "e.g. I10",
+      "confirmDelete": "Delete this diagnosis from your library?",
+      "descriptionLabel": "Notes / Description",
+      "descriptionPlaceholder": "Typical findings, workup, plan...",
+      "editTitle": "Edit Diagnosis",
+      "empty": "No diagnoses yet.",
+      "emptyHelp": "Add your first diagnosis to reuse it in appointments.",
+      "inactive": "Inactive",
+      "libraryTitle": "Diagnosis Library",
+      "new": "New",
+      "noneAssigned": "No assigned diagnoses",
+      "search": "Search diagnoses...",
+      "tagsLabel": "Tags (comma-separated)",
+      "tagsPlaceholder": "e.g. cardiology, chronic",
+      "titleLabel": "Diagnosis",
+      "titlePlaceholder": "e.g. Hypertension",
+      "update": "Update"
+    },
+    "verificationStatusCard": {
+      "completeButton": "Complete Verification",
+      "declineReasonLabel": "Reason for decline:",
+      "docTypes": {
+        "medicalLicense": "Medical License",
+        "professionalId": "Professional ID"
+      },
+      "fields": {
+        "experience": "Experience",
+        "languages": "Languages Spoken",
+        "license": "License Number",
+        "location": "Location",
+        "name": "Name",
+        "specialty": "Specialty"
+      },
+      "notStartedTitle": "Verification Not Started",
+      "openVerification": "Open Verification",
+      "reviewedOn": "Reviewed on",
+      "statusApprovedDescription": "Congratulations! Your profile has been verified. You can now accept patients.",
+      "statusApprovedTitle": "Verification Approved",
+      "statusDeclinedDescription": "Your application was declined. Please review the feedback and resubmit.",
+      "statusDeclinedTitle": "Verification Declined",
+      "statusPendingDescription": "Your application is under review. We will notify you once it has been reviewed.",
+      "statusPendingTitle": "Verification Pending",
+      "statusResubmittedDescription": "Your updated application is being reviewed. We will get back to you shortly.",
+      "statusResubmittedTitle": "Resubmitted for Review",
+      "statusUnknownDescription": "Status not recognized.",
+      "statusUnknownTitle": "Unknown Status",
+      "submittedInformation": "Submitted Information",
+      "submittedOn": "Submitted on",
+      "updateResubmit": "Update & Resubmit",
+      "uploadedDocuments": "Uploaded Documents",
+      "viewFullProfile": "View Full Profile"
     }
   },
   "superAdmin": {
@@ -2100,10 +2551,18 @@
       "analytics": "Analytics",
       "activity": "Activity"
     },
-    "appointments": { "empty": "No appointment history" },
-    "billing": { "empty": "No billing records with this patient" },
-    "insurance": { "empty": "No insurance records on file with this entity" },
-    "activity": { "empty": "No activity yet" },
+    "appointments": {
+      "empty": "No appointment history"
+    },
+    "billing": {
+      "empty": "No billing records with this patient"
+    },
+    "insurance": {
+      "empty": "No insurance records on file with this entity"
+    },
+    "activity": {
+      "empty": "No activity yet"
+    },
     "analytics": {
       "totalSpend": "Total spend",
       "outstanding": "Outstanding",
@@ -2115,47 +2574,6 @@
       "button": "Download summary",
       "downloaded": "Appointment summary downloaded",
       "failed": "Failed to download summary"
-    }
-  },
-  "doctor": {
-    "session": {
-      "end": "End Session",
-      "loading": "Loading appointment session...",
-      "loadError": "Failed to load appointment session",
-      "notFoundTitle": "Appointment Not Found",
-      "notFoundBody": "This appointment could not be loaded.",
-      "backToDashboard": "Go Back",
-      "ended": "Session ended",
-      "endError": "Failed to end session",
-      "notesSaved": "Notes saved",
-      "notesSaveError": "Failed to save notes",
-      "videoRequiresRegistered": "Video calls require a registered patient",
-      "videoStartError": "Failed to start video consultation",
-      "dentalProceduresLoadError": "Failed to load dental procedures",
-      "tabSession": "Session",
-      "tabVideo": "Video",
-      "tabDiagnoses": "Diagnoses",
-      "tabDental": "Dental",
-      "tabPrescriptions": "Rx",
-      "tabNotes": "Notes",
-      "quickActions": "Quick Actions",
-      "videoConsultation": "Video Consultation",
-      "videoConsultationDesc": "Start or join the video call for this appointment.",
-      "startVideo": "Start Video",
-      "joinVideo": "Join Video",
-      "endVideo": "End Video",
-      "summary": {
-        "button": "Summary PDF",
-        "downloaded": "Summary PDF downloaded",
-        "failed": "Failed to download summary"
-      },
-      "followUp": {
-        "title": "Pending follow-up appointments",
-        "cancel": "Cancel",
-        "skip": "Skip & finish",
-        "book": "Book follow-up",
-        "skipError": "Failed to skip follow-ups"
-      }
     }
   }
 }
