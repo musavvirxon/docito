@@ -145,7 +145,7 @@ serve(async (req) => {
     // Fetch appointment
     const { data: appt } = await admin
       .from("appointments")
-      .select("*, doctor:doctor_id(id, specialty, profile_id), patient:patient_id(*)")
+      .select("*")
       .eq("id", body.appointment_id)
       .maybeSingle();
 

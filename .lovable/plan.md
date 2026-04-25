@@ -1,81 +1,62 @@
-## Goal
+## 1. Fix "Summary PDF" failure in Appointment Session
 
-Add a client-side generator for the official Uzbekistan stomatology medical card (Form 043/u) in both Russian and Uzbek as downloadable `.pdf` files, exposed via a download button that only appears for Uzbekistan-based clinics.
+`src/pages/AppointmentSession.tsx` (line 783) calls the edge function `appointment-summary-pdf`, which is broken because:
 
-## 1. Dependency
+- It selects `doctors.profile_id` and uses it for authorisation, but the `doctors` table only has `user_id` (no `profile_id` column) → query fails / authorisation always fails.
+- `String.fromCharCode(...pdfBytes)` blows the call stack on PDFs > ~64 KB.
+- The function may not be redeployed since the bug was introduced.
 
-- Add `docx` (`^9.0.0`) to `package.json`. Pure client-side — no edge function, no DB, no server calls.
+**Fix in `supabase/functions/appointment-summary-pdf/index.ts`**:
 
-## 2. New file: `src/utils/generateMedicalCard043u.ts`
+- Replace every `profile_id` reference with `user_id`:
+  - `select("id, profile_id")` → `select("id, user_id")`
+  - `(doctorRow as any).profile_id === user.id` → `(doctorRow as any).user_id === user.id`
+  - The `profiles` lookup `eq("user_id", profile_id)` becomes `eq("user_id", doctorRow.user_id)`.
+- Replace `btoa(String.fromCharCode(...pdfBytes))` with a chunked encoder that walks the `Uint8Array` in 0x8000-byte slices.
+- Wrap the `appointment_summary_documents` insert in a try/catch so an audit-log failure never aborts the response.
+- Re-deploy `appointment-summary-pdf`.
 
-Exports:
+No DB migrations.
 
-- `MedicalCardData` interface (patient, appointment, clinic fields).
-- `generateMedicalCard043uRussian(data) → Promise<Blob>`
-- `generateMedicalCard043uUzbek(data) → Promise<Blob>`
+## 2. Rename popup CTA & add Finance section
 
-Internal helpers (Times New Roman, A4, 0.5″ margins):
+The "patient and appointment details popup" is `AppointmentQuickPreview.tsx` (the dialog that opens on appointment click).
 
-- `t()`, `p()`, `centerP()` text/paragraph builders.
-- `linesTable(n)` — bordered fill-in lines.
-- `toothChart()` — 4-row, 17-column dental chart (Yuqori/Quyi rows with thick midline border between teeth 1-1).
-- `visitTable()` — treatment diary table (Date / Tooth / Diagnosis / Signature).
+**`src/components/doctor/calendar/AppointmentQuickPreview.tsx`**
 
-Document layout (3 pages, identical structure RU and UZ, only labels differ):
+- Change the dental-chart button label from `tp("openDentalChart")` → `tp("appointmentSession")` ("Appointment Session"). Keep the click target (`/appointment-session/${id}?tab=dental`) and the `Stethoscope` icon, and show it for all doctors (not just dentists) — user wants this to be the standard entry to the session.
+- Add a new collapsible **Finance** section above the action buttons, visible only when the viewer is the doctor or clinic staff (skip for patients):
+  - Reads `payments` (by `appointment_id`) and `billing_transactions` (by `appointment_id`) for that appointment, plus `patient_insurance` (by `patient_id`) for the active card.
+  - Computes: total billed, total paid, outstanding balance, prior patient balance (sum of unpaid `billing_transactions` for the same patient across other appointments), and any discount lines (`transaction_type = 'discount'` or negative-amount entries).
+  - Inline form to **record a new payment** that inserts into `payments` with: `amount`, `payment_method` (cash, card, insurance, bank_transfer, other), `notes`, `status='completed'`, `paid_at=now()`. After insert, refresh totals.
+  - Action chips: **Mark fully paid**, **Apply discount** (opens small dialog with amount + reason → inserts a `billing_transactions` row with `transaction_type='discount'`).
+  - Show insurance summary line if `patient_insurance` row exists (provider name, member id, copay).
 
-1. Page 1: Ministry header → clinic name/address → title → patient info box → diagnosis → complaints → past illnesses → development → external exam → oral exam legend → tooth chart → bite → mucosa → x-ray.
-2. Page 2: Treatment plan + visit diary table.
-3. Page 3: Continuation diary + epicrisis + treating doctor signature + footer.
+All amounts use the existing `useCurrency` hook for display formatting; raw values stay in their stored currency.
 
-Use the exact templates from the user spec. Cast `height.rule: 'exact'/'atLeast'` as `any` (known docx-js typing issue).
+## 3. English translations for doctor dashboard
 
-## 3. New file: `src/components/MedicalCardDownloadButton.tsx`
+Audit `public/locales/en/dashboard.json` for missing keys referenced by:
+- `src/pages/AppointmentSession.tsx` (every `t('doctor.session.*')` call — Session/Diagnoses/Dental/Rx/Notes tab labels, Quick Actions, header buttons).
+- `src/components/doctor/calendar/AppointmentQuickPreview.tsx` (`tp("appointmentSession")`, finance subsection labels).
+- `src/components/doctor/calendar/AppointmentModal.tsx` (`tm(...)` keys already partly localised — fill any remaining hardcoded English fallbacks).
 
-Props: `{ data: MedicalCardData, practice, locations }`.
+Add the missing keys (English values only) under existing namespaces:
+- `appointmentPreview.appointmentSession`, `appointmentPreview.finance.*` (totalBilled, totalPaid, outstanding, priorBalance, discount, insurance, recordPayment, paymentMethod, cash, card, insuranceMethod, bankTransfer, other, markFullyPaid, applyDiscount, reason, amount).
+- `doctor.session.*` for hard-coded strings (Quick Actions, Session, Diagnoses, Dental, Rx, Notes, Video Consultation, Start/Join Video, End Video, End Session, etc.).
 
-Logic:
+Only English (`public/locales/en/dashboard.json`) — other locales already exist and aren't part of this task.
 
-- `isUzbekistanClinic(practice, locations)` checks `practice.country`, `practice.address`, `practice.phone` (`+998` prefix), and every `locations[*].address/country/city` against an Uzbek keyword list (uzbekistan, o'zbekiston, tashkent, samarkand, bukhara, namangan, andijan, fergana, nukus, qarshi, termiz, etc.).
-- Returns `null` when not Uzbekistan — no UI for non-UZ clinics.
-- Renders a primary button with a chevron that toggles a custom dropdown (no Popover dep) with two options: 🇺🇿 O'zbek tilida and 🇷🇺 На русском языке.
-- On click: calls the matching generator, creates an object URL, downloads as `043u_{patientName}_{RU|UZ}.docx`, shows a localized sonner toast, revokes URL.
-- Backdrop overlay closes the dropdown on outside click.
-- Uses existing `Button`, `lucide-react` icons (`FileText`, `Loader2`, `ChevronDown`), and `sonner` toast — all already in the project.
+## Files touched
 
-## 4. Wire into `src/pages/AdminDashboard.tsx`
+- `supabase/functions/appointment-summary-pdf/index.ts` (fix + redeploy)
+- `src/components/doctor/calendar/AppointmentQuickPreview.tsx` (label rename + finance panel)
+- `src/components/appointments/AppointmentFinancePanel.tsx` (new — finance UI)
+- `src/hooks/useAppointmentFinance.ts` (new — totals + mutations)
+- `public/locales/en/dashboard.json` (new keys)
 
-Import `MedicalCardDownloadButton` once at the top.
+## Out of scope
 
-Mount in three places (button hidden automatically for non-UZ clinics):
-
-a. **Providers → Provider Profile → Calendar tab**, end of each upcoming appointment row. Data uses `appt.patient_name`, `appt.appointment_date`, `appt.diagnosis || appt.service_name`, `selectedProvider?.name`, `practice?.name`, `practice?.address || locations[0]?.address`.
-
-b. **Patients → Patient Profile → Appointments tab**, end of each appointment row. Data pulls richer patient fields from `selectedPatient` (`gender`, `age`, `date_of_birth`, `phone`, `profession`, `address`).
-
-c. **Billing → Invoices tab** action column, alongside View/Send. Data pulls from `tx.metadata` (`patient_name`, `service_name`, `doctor_name`) and `tx.created_at`.
-
-I will locate each exact insertion point in `AdminDashboard.tsx` by searching for the existing render blocks (calendar appointment row, patient appointments tab, invoices action column) and append the button without altering surrounding structure.
-
-## 5. No changes to
-
-- Hooks, contexts, Supabase schema, edge functions, RLS, i18n namespaces (button labels are bilingual literals — Russian/Uzbek — by design).
-- `useAdminDashboard` already exposes `practice`, `locations`, `appointments`, `patients`, `doctors`.
-
-## Files
-
-**Created**
-
-- `src/utils/generateMedicalCard043u.ts`
-- `src/components/MedicalCardDownloadButton.tsx`
-
-**Edited**
-
-- `package.json` (+ `docx` dep)
-- `src/pages/AdminDashboard.tsx` (import + 3 button mounts)
-
-## Notes / Risks
-
-- `docx` v9 adds ~200KB gzip to the bundle. Acceptable since AdminDashboard is already a heavy admin route; can be code-split later if needed.
-- The Uzbekistan keyword check is intentionally permissive (substring match, case-insensitive). False positives (e.g., a clinic literally named "Tashkent" abroad) are highly unlikely; the +998 phone prefix is the strongest signal.
-- Generator is fully synchronous in build; `Packer.toBlob` is async. Loading state shown on the button during generation.
-- No translations added: the dropdown items, button label "043/u Tibbiy karta", and toasts are bilingual fixed strings — appropriate because the feature is Uzbekistan-only and serves staff who read RU/UZ.
+- No new tables/migrations.
+- No changes to non-English locale files.
+- No changes to the patient-side preview.
