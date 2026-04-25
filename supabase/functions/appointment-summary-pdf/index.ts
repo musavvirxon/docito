@@ -145,7 +145,7 @@ serve(async (req) => {
     // Fetch appointment
     const { data: appt } = await admin
       .from("appointments")
-      .select("*, doctor:doctor_id(id, specialty, profile_id), patient:patient_id(*)")
+      .select("*")
       .eq("id", body.appointment_id)
       .maybeSingle();
 
@@ -159,9 +159,9 @@ serve(async (req) => {
     // Authorisation: user must be the patient, the doctor, or staff of the facility
     const isPatient = appt.patient_id === user.id;
     const { data: doctorRow } = appt.doctor_id
-      ? await admin.from("doctors").select("id, profile_id").eq("id", appt.doctor_id).maybeSingle()
+      ? await admin.from("doctors").select("id, user_id").eq("id", appt.doctor_id).maybeSingle()
       : { data: null };
-    const isDoctor = !!doctorRow && (doctorRow as any).profile_id === user.id;
+    const isDoctor = !!doctorRow && (doctorRow as any).user_id === user.id;
 
     if (!isPatient && !isDoctor) {
       // Allow if user is admin/staff of the appointment's practice
@@ -187,7 +187,7 @@ serve(async (req) => {
       admin.from("appointment_clinical_items").select("title, description, item_type, cost").eq("appointment_id", body.appointment_id),
       admin.from("prescriptions").select("id, prescription_number, status, created_at").eq("appointment_id", body.appointment_id).limit(20),
       admin.from("billing_transactions").select("amount, currency, status, description, transaction_type").eq("appointment_id", body.appointment_id),
-      doctorRow ? admin.from("profiles").select("full_name").eq("user_id", (doctorRow as any).profile_id).maybeSingle() : Promise.resolve({ data: null }),
+      doctorRow ? admin.from("profiles").select("full_name").eq("user_id", (doctorRow as any).user_id).maybeSingle() : Promise.resolve({ data: null }),
       appt.patient_id ? admin.from("profiles").select("full_name, email").eq("user_id", appt.patient_id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
 
@@ -351,18 +351,28 @@ serve(async (req) => {
       x: margin, y, size: 8, font, color: rgb(0.55, 0.55, 0.6),
     });
 
-    // Audit log
-    await admin.from("appointment_summary_documents").insert({
-      appointment_id: body.appointment_id,
-      verification_code: verificationCode,
-      generated_by: user.id,
-      patient_id: appt.patient_id,
-      doctor_id: appt.doctor_id,
-      display_currency: displayCurrency,
-    });
+    // Audit log (best-effort, never block response)
+    try {
+      await admin.from("appointment_summary_documents").insert({
+        appointment_id: body.appointment_id,
+        verification_code: verificationCode,
+        generated_by: user.id,
+        patient_id: appt.patient_id,
+        doctor_id: appt.doctor_id,
+        display_currency: displayCurrency,
+      });
+    } catch (auditErr) {
+      console.error("audit log insert failed:", auditErr);
+    }
 
     const pdfBytes = await pdfDoc.save();
-    const base64 = btoa(String.fromCharCode(...pdfBytes));
+    // Chunked base64 encoding to avoid call-stack overflow on large PDFs
+    let binary = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < pdfBytes.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(null, Array.from(pdfBytes.subarray(i, i + CHUNK)) as any);
+    }
+    const base64 = btoa(binary);
 
     return new Response(
       JSON.stringify({ pdf_base64: base64, verification_code: verificationCode }),
