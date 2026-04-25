@@ -187,7 +187,7 @@ serve(async (req) => {
       admin.from("appointment_clinical_items").select("title, description, item_type, cost").eq("appointment_id", body.appointment_id),
       admin.from("prescriptions").select("id, prescription_number, status, created_at").eq("appointment_id", body.appointment_id).limit(20),
       admin.from("billing_transactions").select("amount, currency, status, description, transaction_type").eq("appointment_id", body.appointment_id),
-      doctorRow ? admin.from("profiles").select("full_name").eq("user_id", (doctorRow as any).profile_id).maybeSingle() : Promise.resolve({ data: null }),
+      doctorRow ? admin.from("profiles").select("full_name").eq("user_id", (doctorRow as any).user_id).maybeSingle() : Promise.resolve({ data: null }),
       appt.patient_id ? admin.from("profiles").select("full_name, email").eq("user_id", appt.patient_id).maybeSingle() : Promise.resolve({ data: null }),
     ]);
 
