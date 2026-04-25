@@ -53,7 +53,7 @@ export function MedicalCardDownloadButton({ data, practice, locations }: Props) 
       const a = document.createElement('a');
       a.href = url;
       const safeName = (data.patientName || 'bemor').replace(/\s+/g, '_');
-      a.download = `043u_${safeName}_${lang === 'ru' ? 'RU' : 'UZ'}.docx`;
+      a.download = `043u_${safeName}_${lang === 'ru' ? 'RU' : 'UZ'}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
