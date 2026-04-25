@@ -35,6 +35,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMessageAction } from "@/hooks/useMessageAction";
 import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
 import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
+import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
 import type { CalendarAppointment } from "./types";
 
 interface AppointmentQuickPreviewProps {
@@ -493,19 +494,24 @@ const AppointmentQuickPreview = memo(
               {tp("downloadSummary") === "appointmentPreview.downloadSummary" ? "Download Summary" : tp("downloadSummary")}
             </Button>
 
-            {isDentist && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  navigate(`/appointment-session/${appointment.id}?tab=dental`);
-                  onClose();
-                }}
-                className="w-full gap-2"
-              >
-                <Stethoscope className="h-4 w-4" />
-                {tp("openDentalChart")}
-              </Button>
+            {!isPatient && appointment?.id && (
+              <AppointmentFinancePanel
+                appointmentId={appointment.id}
+                patientId={appointment.patient_id || undefined}
+              />
             )}
+
+            <Button
+              variant="secondary"
+              onClick={() => {
+                navigate(`/appointment-session/${appointment.id}${isDentist ? "?tab=dental" : ""}`);
+                onClose();
+              }}
+              className="w-full gap-2"
+            >
+              <Stethoscope className="h-4 w-4" />
+              {tp("appointmentSession") === "appointmentPreview.appointmentSession" ? "Appointment Session" : tp("appointmentSession")}
+            </Button>
           </div>
 
           <Separator />
