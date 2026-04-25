@@ -1051,11 +1051,12 @@
       "editService": "Edit Service"
     },
     "session": {
-      "notFoundTitle": "Session Not Found",
-      "notFoundBody": "This appointment session could not be loaded.",
-      "backToDashboard": "Back to Dashboard",
-      "loadError": "Failed to load appointment session",
+      "end": "End Session",
       "loading": "Loading appointment session...",
+      "loadError": "Failed to load appointment session",
+      "notFoundTitle": "Appointment Not Found",
+      "notFoundBody": "This appointment could not be loaded.",
+      "backToDashboard": "Go Back",
       "ended": "Session ended",
       "endError": "Failed to end session",
       "notesSaved": "Notes saved",
@@ -1063,10 +1064,25 @@
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
       "dentalProceduresLoadError": "Failed to load dental procedures",
+      "tabSession": "Session",
+      "tabVideo": "Video",
+      "tabDiagnoses": "Diagnoses",
+      "tabDental": "Dental",
+      "tabPrescriptions": "Rx",
+      "tabNotes": "Notes",
+      "quickActions": "Quick Actions",
+      "videoConsultation": "Video Consultation",
+      "videoConsultationDesc": "Start or join the video call for this appointment.",
+      "startVideo": "Start Video",
+      "joinVideo": "Join Video",
+      "endVideo": "End Video",
+      "summary": {
+        "button": "Summary PDF",
+        "downloaded": "Summary PDF downloaded",
+        "failed": "Failed to download summary"
+      },
       "followUp": {
         "title": "Pending follow-up appointments",
-        "description": "The following procedures require a follow-up that has not been booked yet:",
-        "choose": "You can book the follow-up now or skip it and finish the appointment.",
         "cancel": "Cancel",
         "skip": "Skip & finish",
         "book": "Book follow-up",
@@ -2100,10 +2116,18 @@
       "analytics": "Analytics",
       "activity": "Activity"
     },
-    "appointments": { "empty": "No appointment history" },
-    "billing": { "empty": "No billing records with this patient" },
-    "insurance": { "empty": "No insurance records on file with this entity" },
-    "activity": { "empty": "No activity yet" },
+    "appointments": {
+      "empty": "No appointment history"
+    },
+    "billing": {
+      "empty": "No billing records with this patient"
+    },
+    "insurance": {
+      "empty": "No insurance records on file with this entity"
+    },
+    "activity": {
+      "empty": "No activity yet"
+    },
     "analytics": {
       "totalSpend": "Total spend",
       "outstanding": "Outstanding",
@@ -2115,47 +2139,6 @@
       "button": "Download summary",
       "downloaded": "Appointment summary downloaded",
       "failed": "Failed to download summary"
-    }
-  },
-  "doctor": {
-    "session": {
-      "end": "End Session",
-      "loading": "Loading appointment session...",
-      "loadError": "Failed to load appointment session",
-      "notFoundTitle": "Appointment Not Found",
-      "notFoundBody": "This appointment could not be loaded.",
-      "backToDashboard": "Go Back",
-      "ended": "Session ended",
-      "endError": "Failed to end session",
-      "notesSaved": "Notes saved",
-      "notesSaveError": "Failed to save notes",
-      "videoRequiresRegistered": "Video calls require a registered patient",
-      "videoStartError": "Failed to start video consultation",
-      "dentalProceduresLoadError": "Failed to load dental procedures",
-      "tabSession": "Session",
-      "tabVideo": "Video",
-      "tabDiagnoses": "Diagnoses",
-      "tabDental": "Dental",
-      "tabPrescriptions": "Rx",
-      "tabNotes": "Notes",
-      "quickActions": "Quick Actions",
-      "videoConsultation": "Video Consultation",
-      "videoConsultationDesc": "Start or join the video call for this appointment.",
-      "startVideo": "Start Video",
-      "joinVideo": "Join Video",
-      "endVideo": "End Video",
-      "summary": {
-        "button": "Summary PDF",
-        "downloaded": "Summary PDF downloaded",
-        "failed": "Failed to download summary"
-      },
-      "followUp": {
-        "title": "Pending follow-up appointments",
-        "cancel": "Cancel",
-        "skip": "Skip & finish",
-        "book": "Book follow-up",
-        "skipError": "Failed to skip follow-ups"
-      }
     }
   }
 }
