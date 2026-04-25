@@ -351,18 +351,28 @@ serve(async (req) => {
       x: margin, y, size: 8, font, color: rgb(0.55, 0.55, 0.6),
     });
 
-    // Audit log
-    await admin.from("appointment_summary_documents").insert({
-      appointment_id: body.appointment_id,
-      verification_code: verificationCode,
-      generated_by: user.id,
-      patient_id: appt.patient_id,
-      doctor_id: appt.doctor_id,
-      display_currency: displayCurrency,
-    });
+    // Audit log (best-effort, never block response)
+    try {
+      await admin.from("appointment_summary_documents").insert({
+        appointment_id: body.appointment_id,
+        verification_code: verificationCode,
+        generated_by: user.id,
+        patient_id: appt.patient_id,
+        doctor_id: appt.doctor_id,
+        display_currency: displayCurrency,
+      });
+    } catch (auditErr) {
+      console.error("audit log insert failed:", auditErr);
+    }
 
     const pdfBytes = await pdfDoc.save();
-    const base64 = btoa(String.fromCharCode(...pdfBytes));
+    // Chunked base64 encoding to avoid call-stack overflow on large PDFs
+    let binary = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < pdfBytes.length; i += CHUNK) {
+      binary += String.fromCharCode.apply(null, Array.from(pdfBytes.subarray(i, i + CHUNK)) as any);
+    }
+    const base64 = btoa(binary);
 
     return new Response(
       JSON.stringify({ pdf_base64: base64, verification_code: verificationCode }),
