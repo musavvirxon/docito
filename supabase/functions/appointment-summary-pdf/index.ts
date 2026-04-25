@@ -159,9 +159,9 @@ serve(async (req) => {
     // Authorisation: user must be the patient, the doctor, or staff of the facility
     const isPatient = appt.patient_id === user.id;
     const { data: doctorRow } = appt.doctor_id
-      ? await admin.from("doctors").select("id, profile_id").eq("id", appt.doctor_id).maybeSingle()
+      ? await admin.from("doctors").select("id, user_id").eq("id", appt.doctor_id).maybeSingle()
       : { data: null };
-    const isDoctor = !!doctorRow && (doctorRow as any).profile_id === user.id;
+    const isDoctor = !!doctorRow && (doctorRow as any).user_id === user.id;
 
     if (!isPatient && !isDoctor) {
       // Allow if user is admin/staff of the appointment's practice
