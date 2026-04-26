@@ -1,5 +1,14 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import {
+  Room,
+  RoomEvent,
+  Track,
+  ConnectionState,
+  type RemoteTrackPublication,
+  type LocalTrackPublication,
+  type RemoteParticipant,
+  type LocalParticipant,
+} from 'livekit-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,17 +28,6 @@ import {
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
-
-let lkModule: any = null;
-const getLivekit = async () => {
-  if (lkModule) return lkModule;
-  try {
-    lkModule = await import('livekit-client');
-    return lkModule;
-  } catch {
-    return null;
-  }
-};
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
@@ -62,29 +60,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<string>('connecting');
 
-  // Attach a track to a video element
-  const attachTrack = useCallback(
-    (
-      publication: RemoteTrackPublication | LocalTrackPublication,
-      targetRef: React.RefObject<HTMLVideoElement | null>,
-    ) => {
-      const track = publication.track;
-      if (!track || !targetRef.current) return;
-      const el = track.attach();
-      if (el instanceof HTMLVideoElement) {
-        targetRef.current.srcObject = el.srcObject;
-      }
-    },
-    [],
-  );
-
-  // Update participant count from room
   const updateParticipantCount = useCallback(() => {
     if (!roomRef.current) return;
-    setParticipantCount(roomRef.current.numParticipants + 1); // +1 for local
+    setParticipantCount(roomRef.current.numParticipants + 1);
   }, []);
 
-  // Handle remote tracks
   const handleTrackSubscribed = useCallback(
     (
       track: Track,
@@ -109,7 +89,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           }
         }
       }
-      // Audio tracks auto-attach
       if (track.kind === Track.Kind.Audio) {
         const audioEl = track.attach();
         document.body.appendChild(audioEl);
@@ -118,18 +97,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     [],
   );
 
-  const handleTrackUnsubscribed = useCallback(
-    (track: Track) => {
-      track.detach().forEach((el) => el.remove());
-      if (track.source === Track.Source.ScreenShare) {
-        setIsScreenSharing(false);
-        if (screenShareRef.current) {
-          screenShareRef.current.srcObject = null;
-        }
+  const handleTrackUnsubscribed = useCallback((track: Track) => {
+    track.detach().forEach((el) => el.remove());
+    if (track.source === Track.Source.ScreenShare) {
+      setIsScreenSharing(false);
+      if (screenShareRef.current) {
+        screenShareRef.current.srcObject = null;
       }
-    },
-    [],
-  );
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -141,7 +117,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
     const connect = async () => {
       try {
-        // Get LiveKit token from edge function
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData?.session?.access_token;
         if (!token) {
@@ -166,7 +141,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
         const { token: livekitToken, url: livekitUrl } = resp.data;
 
-        // Set up event handlers
         room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
         room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
         room.on(RoomEvent.ParticipantConnected, updateParticipantCount);
@@ -182,11 +156,13 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           }
         });
 
-        // Attach local video when published
         room.on(
           RoomEvent.LocalTrackPublished,
-          (pub: LocalTrackPublication, participant: LocalParticipant) => {
-            if (pub.track?.kind === Track.Kind.Video && pub.track.source === Track.Source.Camera) {
+          (pub: LocalTrackPublication, _participant: LocalParticipant) => {
+            if (
+              pub.track?.kind === Track.Kind.Video &&
+              pub.track.source === Track.Source.Camera
+            ) {
               if (localVideoRef.current) {
                 const el = pub.track.attach();
                 if (el instanceof HTMLVideoElement) {
@@ -197,10 +173,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           },
         );
 
-        // Connect to room
         await room.connect(livekitUrl, livekitToken);
-
-        // Enable camera + mic
         await room.localParticipant.enableCameraAndMicrophone();
 
         if (mounted) {
@@ -277,7 +250,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   return (
     <div ref={containerRef} className="flex flex-col h-full bg-background">
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
           <Badge variant={connectionStatus === 'connected' ? 'default' : 'secondary'}>
@@ -299,7 +271,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         </div>
       </div>
 
-      {/* Video Container */}
       <div className="flex-1 relative bg-black">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
@@ -310,7 +281,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </div>
         )}
 
-        {/* Remote video (main) */}
         <video
           ref={remoteVideoRef}
           autoPlay
@@ -318,7 +288,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           className="w-full h-full object-cover"
         />
 
-        {/* Screen share overlay */}
         {isScreenSharing && (
           <video
             ref={screenShareRef}
@@ -328,19 +297,17 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           />
         )}
 
-        {/* Local video (PiP) */}
         <div className="absolute bottom-4 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-border shadow-lg z-10">
           <video
             ref={localVideoRef}
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover mirror"
+            className="w-full h-full object-cover"
             style={{ transform: 'scaleX(-1)' }}
           />
         </div>
 
-        {/* Notes Panel */}
         {showNotes && userRole === 'doctor' && (
           <div className="absolute right-4 top-4 w-80 z-20">
             <Card className="p-4 bg-card/95 backdrop-blur">
@@ -356,7 +323,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         )}
       </div>
 
-      {/* Controls */}
       <div className="p-4 border-t border-border bg-card">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <Button
