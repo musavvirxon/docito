@@ -920,6 +920,109 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   <TabsContent value="session" className="mt-0 space-y-4">
+                    {/* TYPE-SPECIFIC FEATURE CARD (FIX 3) */}
+                    {(() => {
+                      const apptType = String(appointment?.appointment_type || '').toLowerCase();
+                      if (apptType === 'video') {
+                        return (
+                          <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                              <Video className="h-4 w-4" /> Video Consultation
+                            </p>
+                            <div className="flex gap-2 flex-wrap">
+                              <Button size="sm" onClick={startOrJoinVideo}>
+                                {videoConsultation && canJoinExistingVideo ? 'Join Video Call' : 'Start Video Call'}
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => toast.info('Copy link coming soon')}>
+                                Copy Link
+                              </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Ensure patient has the meeting link before starting.
+                            </p>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'in_person' || apptType === 'in-person') {
+                        return (
+                          <div className="rounded-xl border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 p-4">
+                            <p className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
+                              <MapPin className="h-4 w-4" /> In-Person Visit
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Room / Chair: ___________ &nbsp;&nbsp; Check-in:{' '}
+                              <span className="font-medium">{(appointment as any)?.check_in_time || 'Not checked in'}</span>
+                            </p>
+                            <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={() => toast.info('Check-in coming soon')}>
+                              Mark Checked In
+                            </Button>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'home_visit' || apptType === 'home-visit' || apptType === 'home') {
+                        const addr = (appointment as any)?.patient?.address || (appointment as any)?.address || '';
+                        return (
+                          <div className="rounded-xl border border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-orange-700 dark:text-orange-300 flex items-center gap-2">
+                              <Home className="h-4 w-4" /> Home Visit
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Address: <span className="font-medium">{addr || '—'}</span>
+                            </p>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => window.open(`https://maps.google.com?q=${encodeURIComponent(addr)}`, '_blank')}>
+                                Open in Maps
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => toast.info('Travel log coming soon')}>
+                                Log Travel Time
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'follow_up' || apptType === 'follow-up') {
+                        return (
+                          <div className="rounded-xl border border-purple-200 bg-purple-50 dark:bg-purple-950/20 dark:border-purple-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                              <RefreshCw className="h-4 w-4" /> Follow-up
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Previous visit:{' '}
+                              <span className="font-medium">
+                                {(appointment as any)?.previous_appointment_date || '—'}
+                              </span>
+                            </p>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => toast.info('View previous visit coming soon')}>
+                                View Previous Notes
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => toast.info('Schedule next follow-up coming soon')}>
+                                Schedule Next Follow-up
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'message' || apptType === 'messaging') {
+                        return (
+                          <div className="rounded-xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-950/20 dark:border-indigo-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
+                              <MessageSquare className="h-4 w-4" /> Message Consultation
+                            </p>
+                            <Button size="sm" onClick={() => toast.info('Open chat coming soon')}>Open Chat Thread</Button>
+                            <p className="text-xs text-muted-foreground">
+                              Async consultation — respond at your convenience.
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
                     {/* Quick Actions */}
                     <Card>
                       <CardHeader className="pb-2">
