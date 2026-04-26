@@ -1,0 +1,208 @@
+import { useCallback, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+export type ProcedureStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled';
+
+export interface UnifiedProcedure {
+  id: string;
+  source: 'dental' | 'general';
+  name: string;
+  status: ProcedureStatus;
+  cost: number | null;
+  notes: string | null;
+  toothNumbers: number[];
+  procedureId: string | null;
+  performedAt: string | null;
+  createdAt: string;
+}
+
+export interface AddProcedureInput {
+  name: string;
+  procedureId?: string | null;
+  status?: ProcedureStatus;
+  cost?: number | null;
+  notes?: string | null;
+  toothNumbers?: number[];
+}
+
+interface Params {
+  appointmentId?: string;
+  doctorId?: string;
+  patientId?: string | null;
+  doctorPatientId?: string | null;
+}
+
+export function useAppointmentProcedures({
+  appointmentId,
+  doctorId,
+  patientId,
+  doctorPatientId,
+}: Params) {
+  const [items, setItems] = useState<UnifiedProcedure[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!appointmentId) return;
+    setLoading(true);
+    try {
+      const [dentalRes, generalRes] = await Promise.all([
+        supabase
+          .from('tooth_procedure_history')
+          .select('id,procedure_id,procedure_name,tooth_numbers,status,cost,notes,performed_at,created_at')
+          .eq('appointment_id', appointmentId)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('appointment_procedures')
+          .select('id,procedure_id,procedure_notes,estimated_cost,status,created_at,procedure:procedures(name)')
+          .eq('appointment_id', appointmentId)
+          .order('created_at', { ascending: false }),
+      ]);
+
+      const dental: UnifiedProcedure[] = ((dentalRes.data as any[]) || []).map((r) => ({
+        id: r.id,
+        source: 'dental',
+        name: r.procedure_name || 'Procedure',
+        status: (r.status as ProcedureStatus) || 'planned',
+        cost: r.cost == null ? null : Number(r.cost),
+        notes: r.notes || null,
+        toothNumbers: Array.isArray(r.tooth_numbers) ? r.tooth_numbers : [],
+        procedureId: r.procedure_id || null,
+        performedAt: r.performed_at || null,
+        createdAt: r.created_at,
+      }));
+
+      const general: UnifiedProcedure[] = ((generalRes.data as any[]) || []).map((r) => ({
+        id: r.id,
+        source: 'general',
+        name: r.procedure?.name || 'Procedure',
+        status: (r.status as ProcedureStatus) || 'planned',
+        cost: r.estimated_cost == null ? null : Number(r.estimated_cost),
+        notes: r.procedure_notes || null,
+        toothNumbers: [],
+        procedureId: r.procedure_id || null,
+        performedAt: null,
+        createdAt: r.created_at,
+      }));
+
+      setItems(
+        [...dental, ...general].sort(
+          (a, b) => +new Date(b.createdAt) - +new Date(a.createdAt),
+        ),
+      );
+    } catch (err) {
+      console.error('Error loading appointment procedures:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [appointmentId]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const addProcedure = useCallback(
+    async (input: AddProcedureInput) => {
+      if (!appointmentId || !doctorId) {
+        toast.error('Missing appointment or doctor context');
+        return;
+      }
+      const teeth = input.toothNumbers || [];
+
+      try {
+        if (teeth.length > 0) {
+          const targetPatient = patientId || null;
+          if (!targetPatient) {
+            toast.error('Tooth procedures require a registered patient');
+            return;
+          }
+          const { error } = await supabase.from('tooth_procedure_history').insert({
+            appointment_id: appointmentId,
+            doctor_id: doctorId,
+            patient_id: targetPatient,
+            procedure_id: input.procedureId || null,
+            procedure_name: input.name,
+            tooth_numbers: teeth,
+            status: input.status || 'planned',
+            cost: input.cost ?? null,
+            notes: input.notes || null,
+            performed_at: input.status === 'completed' ? new Date().toISOString() : null,
+          } as any);
+          if (error) throw error;
+        } else {
+          const { data: authUser } = await supabase.auth.getUser();
+          const { error } = await supabase.from('appointment_procedures').insert({
+            appointment_id: appointmentId,
+            procedure_id: input.procedureId || null,
+            procedure_notes: input.notes || input.name,
+            estimated_cost: input.cost ?? null,
+            status: input.status || 'planned',
+            prescribed_by: authUser?.user?.id || doctorId,
+            prescribed_at: new Date().toISOString(),
+          } as any);
+          if (error) throw error;
+        }
+
+        toast.success('Procedure added');
+        await refresh();
+      } catch (err: any) {
+        console.error('Add procedure failed', err);
+        toast.error(err?.message || 'Failed to add procedure');
+      }
+    },
+    [appointmentId, doctorId, patientId, refresh],
+  );
+
+  const updateStatus = useCallback(
+    async (item: UnifiedProcedure, status: ProcedureStatus) => {
+      try {
+        if (item.source === 'dental') {
+          await supabase
+            .from('tooth_procedure_history')
+            .update({
+              status,
+              performed_at: status === 'completed' ? new Date().toISOString() : null,
+            })
+            .eq('id', item.id);
+        } else {
+          await supabase
+            .from('appointment_procedures')
+            .update({ status })
+            .eq('id', item.id);
+        }
+        await refresh();
+      } catch (err) {
+        console.error('Update procedure status failed', err);
+        toast.error('Failed to update procedure');
+      }
+    },
+    [refresh],
+  );
+
+  const removeProcedure = useCallback(
+    async (item: UnifiedProcedure) => {
+      try {
+        const table = item.source === 'dental' ? 'tooth_procedure_history' : 'appointment_procedures';
+        await supabase.from(table).delete().eq('id', item.id);
+        await refresh();
+        toast.success('Procedure removed');
+      } catch (err) {
+        console.error('Remove procedure failed', err);
+        toast.error('Failed to remove procedure');
+      }
+    },
+    [refresh],
+  );
+
+  const totalCost = items.reduce((s, i) => s + (i.cost || 0), 0);
+
+  return {
+    items,
+    loading,
+    totalCost,
+    refresh,
+    addProcedure,
+    updateStatus,
+    removeProcedure,
+  };
+}

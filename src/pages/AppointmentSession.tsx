@@ -54,9 +54,12 @@ import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator'
 import { useAuth } from '@/contexts/AuthContext';
 import type { Diagnosis } from '@/components/visit/types';
 import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
-import { PatientFinanceSection } from '@/components/PatientFinanceSection';
+import { AppointmentFinancePanel } from '@/components/appointments/AppointmentFinancePanel';
+import { AppointmentProceduresPanel } from '@/components/appointments/AppointmentProceduresPanel';
+import { useAppointmentProcedures } from '@/hooks/useAppointmentProcedures';
+import { useAppointmentFinance } from '@/hooks/useAppointmentFinance';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
-import { useDoctorServices } from '@/hooks/useDoctorServices';
+import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateAppointmentConversation';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -134,10 +137,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
-  // FIX 2: Procedures section local state
-  const [procedures, setProcedures] = useState<string[]>([]);
-  const [procInput, setProcInput] = useState('');
-  const { services } = useDoctorServices();
+  // Hooks for procedures + finance (used by panels and the summary PDF)
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -933,7 +933,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                               <Button size="sm" onClick={startOrJoinVideo}>
                                 {videoConsultation && canJoinExistingVideo ? 'Join Video Call' : 'Start Video Call'}
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => toast.info('Copy link coming soon')}>
+                              <Button size="sm" variant="outline" onClick={() => {
+                                const link = `${window.location.origin}/video-call/${videoConsultation?.id || appointment.id}`;
+                                navigator.clipboard?.writeText(link);
+                                toast.success('Video link copied');
+                              }}>
                                 Copy Link
                               </Button>
                             </div>
@@ -953,7 +957,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                               Room / Chair: ___________ &nbsp;&nbsp; Check-in:{' '}
                               <span className="font-medium">{(appointment as any)?.check_in_time || 'Not checked in'}</span>
                             </p>
-                            <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={() => toast.info('Check-in coming soon')}>
+                            <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={async () => {
+                              try {
+                                await supabase.from('appointments').update({ check_in_time: new Date().toISOString() } as any).eq('id', appointment.id);
+                                toast.success('Patient checked in');
+                                fetchSessionData();
+                              } catch { toast.error('Check-in failed'); }
+                            }}>
                               Mark Checked In
                             </Button>
                           </div>
@@ -1013,7 +1023,25 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
                               <MessageSquare className="h-4 w-4" /> Message Consultation
                             </p>
-                            <Button size="sm" onClick={() => toast.info('Open chat coming soon')}>Open Chat Thread</Button>
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                if (!appointment) return;
+                                const conv = await getOrCreateAppointmentConversation({
+                                  appointmentId: appointment.id,
+                                  doctorUserId: appointment.doctor_id,
+                                  patientUserId: appointment.patient_id,
+                                  patientName: appointment.patient_name,
+                                });
+                                if (conv) {
+                                  navigate(`/messages?c=${conv}`);
+                                } else {
+                                  toast.error('Cannot open chat — patient must be a registered user');
+                                }
+                              }}
+                            >
+                              Open Chat Thread
+                            </Button>
                             <p className="text-xs text-muted-foreground">
                               Async consultation — respond at your convenience.
                             </p>
@@ -1064,84 +1092,26 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
-                    {/* Procedures (FIX 2) */}
-                    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
-                      <span className="text-sm font-semibold flex items-center gap-2">
-                        <Stethoscope className="h-4 w-4 text-muted-foreground" /> Procedures
-                      </span>
-                      <div className="flex gap-2">
-                        <input
-                          className="flex-1 h-8 text-sm border border-border rounded-md px-3 bg-background"
-                          placeholder="Add procedure (e.g. Scaling, Extraction, Filling…)"
-                          value={procInput}
-                          onChange={(e) => setProcInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && procInput.trim()) {
-                              setProcedures((p) => [...p, procInput.trim()]);
-                              setProcInput('');
-                            }
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 text-xs"
-                          onClick={() => {
-                            if (procInput.trim()) {
-                              setProcedures((p) => [...p, procInput.trim()]);
-                              setProcInput('');
-                            }
-                          }}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      {procedures.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                          {procedures.map((proc, i) => (
-                            <span key={i} className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-full">
-                              {proc}
-                              <button
-                                onClick={() => setProcedures((p) => p.filter((_, j) => j !== i))}
-                                className="text-muted-foreground hover:text-destructive ml-1"
-                                aria-label="Remove procedure"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">No procedures added yet.</p>
-                      )}
-                      {services && services.length > 0 && (
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Quick add from services:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {services.slice(0, 8).map((s) => (
-                              <button
-                                key={s.id}
-                                onClick={() => {
-                                  if (!procedures.includes(s.name)) setProcedures((p) => [...p, s.name]);
-                                }}
-                                className="text-xs border border-border rounded px-2 py-0.5 hover:bg-muted"
-                              >
-                                + {s.name}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* Procedures (real, persisted) */}
+                    {appointment && (
+                      <AppointmentProceduresPanel
+                        appointmentId={appointment.id}
+                        doctorId={appointment.doctor_id}
+                        patientId={appointment.patient_id}
+                        doctorPatientId={appointment.doctor_patient_id}
+                        isDentist={isDentist}
+                      />
+                    )}
 
-                    {/* Patient Finance */}
-                    <PatientFinanceSection
-                      compact
-                      patientName={appointment?.patient_name || ''}
-                      payments={[]}
-                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
-                      onAddPayment={() => toast.info('Record payment coming soon')}
-                    />
+                    {/* Patient Finance (real, persisted) */}
+                    {appointment && (
+                      <AppointmentFinancePanel
+                        appointmentId={appointment.id}
+                        patientId={appointment.patient_id}
+                        patientName={appointment.patient_name || ''}
+                        appointmentDate={appointment.appointment_date}
+                      />
+                    )}
 
                     {/* Session Notes */}
                     <Card>
@@ -1288,13 +1258,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   <TabsContent value="notes" className="mt-0 space-y-4">
-                    <PatientFinanceSection
-                      compact
-                      patientName={appointment?.patient_name || ''}
-                      payments={[]}
-                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
-                      onAddPayment={() => toast.info('Record payment coming soon')}
-                    />
+                    {appointment && (
+                      <AppointmentFinancePanel
+                        appointmentId={appointment.id}
+                        patientId={appointment.patient_id}
+                        patientName={appointment.patient_name || ''}
+                        appointmentDate={appointment.appointment_date}
+                      />
+                    )}
                     <Card>
                       <CardContent className="pt-6">
                         <Textarea
