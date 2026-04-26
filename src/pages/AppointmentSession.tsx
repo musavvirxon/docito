@@ -752,7 +752,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const returnDate = sessionStorage.getItem('calendarReturnDate');
+                const returnView = sessionStorage.getItem('calendarReturnView') || 'week';
+                sessionStorage.removeItem('calendarReturnDate');
+                sessionStorage.removeItem('calendarReturnView');
+                navigate('/doctor-dashboard?section=calendar', {
+                  state: { returnDate, returnView },
+                });
+              }}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
 
