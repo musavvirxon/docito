@@ -933,7 +933,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                               <Button size="sm" onClick={startOrJoinVideo}>
                                 {videoConsultation && canJoinExistingVideo ? 'Join Video Call' : 'Start Video Call'}
                               </Button>
-                              <Button size="sm" variant="outline" onClick={() => toast.info('Copy link coming soon')}>
+                              <Button size="sm" variant="outline" onClick={() => {
+                                const link = `${window.location.origin}/video-call/${videoConsultation?.id || appointment.id}`;
+                                navigator.clipboard?.writeText(link);
+                                toast.success('Video link copied');
+                              }}>
                                 Copy Link
                               </Button>
                             </div>
@@ -953,7 +957,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                               Room / Chair: ___________ &nbsp;&nbsp; Check-in:{' '}
                               <span className="font-medium">{(appointment as any)?.check_in_time || 'Not checked in'}</span>
                             </p>
-                            <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={() => toast.info('Check-in coming soon')}>
+                            <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={async () => {
+                              try {
+                                await supabase.from('appointments').update({ check_in_time: new Date().toISOString() } as any).eq('id', appointment.id);
+                                toast.success('Patient checked in');
+                                fetchSessionData();
+                              } catch { toast.error('Check-in failed'); }
+                            }}>
                               Mark Checked In
                             </Button>
                           </div>
