@@ -496,6 +496,8 @@ const AppointmentQuickPreview = memo(
               <AppointmentFinancePanel
                 appointmentId={appointment.id}
                 patientId={appointment.patient_id || undefined}
+                patientName={appointment.patient_name || ''}
+                appointmentDate={appointment.appointment_date}
               />
             )}
 
