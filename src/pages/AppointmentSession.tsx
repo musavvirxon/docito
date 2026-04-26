@@ -1230,13 +1230,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   <TabsContent value="notes" className="mt-0 space-y-4">
-                    <PatientFinanceSection
-                      compact
-                      patientName={appointment?.patient_name || ''}
-                      payments={[]}
-                      onCreateInvoice={() => toast.info('Create invoice coming soon')}
-                      onAddPayment={() => toast.info('Record payment coming soon')}
-                    />
+                    {appointment && (
+                      <AppointmentFinancePanel
+                        appointmentId={appointment.id}
+                        patientId={appointment.patient_id}
+                        patientName={appointment.patient_name || ''}
+                        appointmentDate={appointment.appointment_date}
+                      />
+                    )}
                     <Card>
                       <CardContent className="pt-6">
                         <Textarea
