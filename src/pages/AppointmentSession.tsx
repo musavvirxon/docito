@@ -20,6 +20,9 @@ import {
   CircleDot,
   DollarSign,
   Download,
+  MapPin,
+  Home,
+  MessageSquare,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +56,7 @@ import type { Diagnosis } from '@/components/visit/types';
 import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
 import { PatientFinanceSection } from '@/components/PatientFinanceSection';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
+import { useDoctorServices } from '@/hooks/useDoctorServices';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
