@@ -1064,6 +1064,76 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
+                    {/* Procedures (FIX 2) */}
+                    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                      <span className="text-sm font-semibold flex items-center gap-2">
+                        <Stethoscope className="h-4 w-4 text-muted-foreground" /> Procedures
+                      </span>
+                      <div className="flex gap-2">
+                        <input
+                          className="flex-1 h-8 text-sm border border-border rounded-md px-3 bg-background"
+                          placeholder="Add procedure (e.g. Scaling, Extraction, Filling…)"
+                          value={procInput}
+                          onChange={(e) => setProcInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && procInput.trim()) {
+                              setProcedures((p) => [...p, procInput.trim()]);
+                              setProcInput('');
+                            }
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs"
+                          onClick={() => {
+                            if (procInput.trim()) {
+                              setProcedures((p) => [...p, procInput.trim()]);
+                              setProcInput('');
+                            }
+                          }}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      {procedures.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {procedures.map((proc, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-full">
+                              {proc}
+                              <button
+                                onClick={() => setProcedures((p) => p.filter((_, j) => j !== i))}
+                                className="text-muted-foreground hover:text-destructive ml-1"
+                                aria-label="Remove procedure"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">No procedures added yet.</p>
+                      )}
+                      {services && services.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Quick add from services:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {services.slice(0, 8).map((s) => (
+                              <button
+                                key={s.id}
+                                onClick={() => {
+                                  if (!procedures.includes(s.name)) setProcedures((p) => [...p, s.name]);
+                                }}
+                                className="text-xs border border-border rounded px-2 py-0.5 hover:bg-muted"
+                              >
+                                + {s.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     {/* Patient Finance */}
                     <PatientFinanceSection
                       compact
