@@ -137,10 +137,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
 
-  // FIX 2: Procedures section local state
-  const [procedures, setProcedures] = useState<string[]>([]);
-  const [procInput, setProcInput] = useState('');
-  const { services } = useDoctorServices();
+  // Hooks for procedures + finance (used by panels and the summary PDF)
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
