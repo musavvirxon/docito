@@ -101,6 +101,21 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     };
   }, [user?.id]);
 
+  // FIX 4: Restore calendar date/view when navigating back from appointment session
+  useEffect(() => {
+    const state = (location?.state as any) || null;
+    if (state?.returnDate) {
+      try {
+        const d = new Date(state.returnDate);
+        if (!Number.isNaN(d.getTime())) setSelectedDate(d);
+      } catch {
+        // ignore
+      }
+      if (state?.returnView) setView(state.returnView as CalendarView);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Deep-link follow-up booking:
   // Supported formats:
   // 1) /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=<patientId>&patientType=registered|direct
