@@ -20,6 +20,9 @@ import {
   CircleDot,
   DollarSign,
   Download,
+  MapPin,
+  Home,
+  MessageSquare,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +56,7 @@ import type { Diagnosis } from '@/components/visit/types';
 import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
 import { PatientFinanceSection } from '@/components/PatientFinanceSection';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
+import { useDoctorServices } from '@/hooks/useDoctorServices';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -129,6 +133,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
+
+  // FIX 2: Procedures section local state
+  const [procedures, setProcedures] = useState<string[]>([]);
+  const [procInput, setProcInput] = useState('');
+  const { services } = useDoctorServices();
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -743,7 +752,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                const returnDate = sessionStorage.getItem('calendarReturnDate');
+                const returnView = sessionStorage.getItem('calendarReturnView') || 'week';
+                sessionStorage.removeItem('calendarReturnDate');
+                sessionStorage.removeItem('calendarReturnView');
+                navigate('/doctor-dashboard?section=calendar', {
+                  state: { returnDate, returnView },
+                });
+              }}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
 
@@ -899,6 +920,109 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   <TabsContent value="session" className="mt-0 space-y-4">
+                    {/* TYPE-SPECIFIC FEATURE CARD (FIX 3) */}
+                    {(() => {
+                      const apptType = String(appointment?.appointment_type || '').toLowerCase();
+                      if (apptType === 'video') {
+                        return (
+                          <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                              <Video className="h-4 w-4" /> Video Consultation
+                            </p>
+                            <div className="flex gap-2 flex-wrap">
+                              <Button size="sm" onClick={startOrJoinVideo}>
+                                {videoConsultation && canJoinExistingVideo ? 'Join Video Call' : 'Start Video Call'}
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => toast.info('Copy link coming soon')}>
+                                Copy Link
+                              </Button>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Ensure patient has the meeting link before starting.
+                            </p>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'in_person' || apptType === 'in-person') {
+                        return (
+                          <div className="rounded-xl border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 p-4">
+                            <p className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
+                              <MapPin className="h-4 w-4" /> In-Person Visit
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Room / Chair: ___________ &nbsp;&nbsp; Check-in:{' '}
+                              <span className="font-medium">{(appointment as any)?.check_in_time || 'Not checked in'}</span>
+                            </p>
+                            <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={() => toast.info('Check-in coming soon')}>
+                              Mark Checked In
+                            </Button>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'home_visit' || apptType === 'home-visit' || apptType === 'home') {
+                        const addr = (appointment as any)?.patient?.address || (appointment as any)?.address || '';
+                        return (
+                          <div className="rounded-xl border border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-orange-700 dark:text-orange-300 flex items-center gap-2">
+                              <Home className="h-4 w-4" /> Home Visit
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Address: <span className="font-medium">{addr || '—'}</span>
+                            </p>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => window.open(`https://maps.google.com?q=${encodeURIComponent(addr)}`, '_blank')}>
+                                Open in Maps
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => toast.info('Travel log coming soon')}>
+                                Log Travel Time
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'follow_up' || apptType === 'follow-up') {
+                        return (
+                          <div className="rounded-xl border border-purple-200 bg-purple-50 dark:bg-purple-950/20 dark:border-purple-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2">
+                              <RefreshCw className="h-4 w-4" /> Follow-up
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Previous visit:{' '}
+                              <span className="font-medium">
+                                {(appointment as any)?.previous_appointment_date || '—'}
+                              </span>
+                            </p>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => toast.info('View previous visit coming soon')}>
+                                View Previous Notes
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs h-7"
+                                onClick={() => toast.info('Schedule next follow-up coming soon')}>
+                                Schedule Next Follow-up
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (apptType === 'message' || apptType === 'messaging') {
+                        return (
+                          <div className="rounded-xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-950/20 dark:border-indigo-800 p-4 space-y-2">
+                            <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
+                              <MessageSquare className="h-4 w-4" /> Message Consultation
+                            </p>
+                            <Button size="sm" onClick={() => toast.info('Open chat coming soon')}>Open Chat Thread</Button>
+                            <p className="text-xs text-muted-foreground">
+                              Async consultation — respond at your convenience.
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
                     {/* Quick Actions */}
                     <Card>
                       <CardHeader className="pb-2">
@@ -939,6 +1063,76 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         </div>
                       </CardContent>
                     </Card>
+
+                    {/* Procedures (FIX 2) */}
+                    <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                      <span className="text-sm font-semibold flex items-center gap-2">
+                        <Stethoscope className="h-4 w-4 text-muted-foreground" /> Procedures
+                      </span>
+                      <div className="flex gap-2">
+                        <input
+                          className="flex-1 h-8 text-sm border border-border rounded-md px-3 bg-background"
+                          placeholder="Add procedure (e.g. Scaling, Extraction, Filling…)"
+                          value={procInput}
+                          onChange={(e) => setProcInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && procInput.trim()) {
+                              setProcedures((p) => [...p, procInput.trim()]);
+                              setProcInput('');
+                            }
+                          }}
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs"
+                          onClick={() => {
+                            if (procInput.trim()) {
+                              setProcedures((p) => [...p, procInput.trim()]);
+                              setProcInput('');
+                            }
+                          }}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      {procedures.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {procedures.map((proc, i) => (
+                            <span key={i} className="inline-flex items-center gap-1 text-xs bg-muted px-2 py-1 rounded-full">
+                              {proc}
+                              <button
+                                onClick={() => setProcedures((p) => p.filter((_, j) => j !== i))}
+                                className="text-muted-foreground hover:text-destructive ml-1"
+                                aria-label="Remove procedure"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">No procedures added yet.</p>
+                      )}
+                      {services && services.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Quick add from services:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {services.slice(0, 8).map((s) => (
+                              <button
+                                key={s.id}
+                                onClick={() => {
+                                  if (!procedures.includes(s.name)) setProcedures((p) => [...p, s.name]);
+                                }}
+                                className="text-xs border border-border rounded px-2 py-0.5 hover:bg-muted"
+                              >
+                                + {s.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Patient Finance */}
                     <PatientFinanceSection

@@ -6,8 +6,7 @@ export type AppointmentType =
   | 'messaging'
   | 'follow_up'
   | 'in-person'
-  | 'home'
-  | 'chat';
+  | 'home';
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'canceled' | 'no_show';
 

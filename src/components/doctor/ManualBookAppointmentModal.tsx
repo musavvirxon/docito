@@ -28,7 +28,7 @@ interface ManualBookAppointmentModalProps {
   // ✅ Follow-up flow
   preselectedPatient?: Patient | null;
   followupOfAppointmentId?: string | null;
-  forceAppointmentType?: "in_person" | "video" | "home_visit" | "follow_up" | "messaging" | "chat";
+  forceAppointmentType?: "in_person" | "video" | "home_visit" | "follow_up" | "messaging";
 }
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
@@ -323,7 +323,6 @@ const ManualBookAppointmentModal = ({
                 <SelectItem value="home_visit">Home visit</SelectItem>
                 <SelectItem value="follow_up">Follow-up</SelectItem>
                 <SelectItem value="messaging">Messaging</SelectItem>
-                <SelectItem value="chat">Chat</SelectItem>
               </SelectContent>
             </Select>
           </div>

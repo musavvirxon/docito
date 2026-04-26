@@ -101,6 +101,21 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
     };
   }, [user?.id]);
 
+  // FIX 4: Restore calendar date/view when navigating back from appointment session
+  useEffect(() => {
+    const state = (location?.state as any) || null;
+    if (state?.returnDate) {
+      try {
+        const d = new Date(state.returnDate);
+        if (!Number.isNaN(d.getTime())) setSelectedDate(d);
+      } catch {
+        // ignore
+      }
+      if (state?.returnView) setView(state.returnView as CalendarView);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Deep-link follow-up booking:
   // Supported formats:
   // 1) /doctor-dashboard?section=calendar&followupOf=<appointmentId>&patient=<patientId>&patientType=registered|direct
@@ -234,16 +249,23 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   }, []);
 
   const handleAppointmentClick = useCallback((apt: CalendarAppointment) => {
+    // FIX 4: persist current calendar position so the session back button can return here
+    try {
+      sessionStorage.setItem('calendarReturnDate', apt.appointment_date || '');
+      sessionStorage.setItem('calendarReturnView', view || 'week');
+    } catch {
+      // ignore storage errors
+    }
     setSelectedAppointment(apt);
     setIsQuickPreviewOpen(true);
-  }, []);
+  }, [view]);
 
   const handleStartSession = useCallback(
     (apt: CalendarAppointment) => {
       const type = (apt.appointment_type || 'in_person') as string;
 
       // Start based on appointment type
-      if (type === 'messaging' || type === 'chat') {
+      if (type === 'messaging') {
         // Quick preview "Message" action handles navigation
         return;
       }
