@@ -1,249 +1,320 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { DollarSign, ChevronDown, ChevronUp, Loader2, Plus, Tag, CheckCheck, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { useAppointmentFinance, type PaymentMethod } from "@/hooks/useAppointmentFinance";
+import { useState } from 'react';
+import { CreditCard, DollarSign, CheckCircle, AlertCircle, Plus, Receipt, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useAppointmentFinance, type PaymentMethod } from '@/hooks/useAppointmentFinance';
+import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
+import { toast } from 'sonner';
 
 interface Props {
   appointmentId: string;
-  patientId?: string;
-  defaultOpen?: boolean;
+  patientId?: string | null;
+  patientName: string;
+  appointmentDate?: string;
+  doctorName?: string;
+  procedures?: Array<{ name: string; cost: number | null; toothNumbers?: number[] }>;
 }
 
-export function AppointmentFinancePanel({ appointmentId, patientId, defaultOpen = false }: Props) {
-  const { t } = useTranslation("dashboard");
-  const tf = (k: string, fb: string) => {
-    const v = t(`appointmentPreview.finance.${k}`);
-    return v === `appointmentPreview.finance.${k}` ? fb : v;
-  };
-  const [open, setOpen] = useState(defaultOpen);
-  const [amount, setAmount] = useState("");
-  const [method, setMethod] = useState<PaymentMethod>("cash");
-  const [notes, setNotes] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [discountOpen, setDiscountOpen] = useState(false);
-  const [discountAmount, setDiscountAmount] = useState("");
-  const [discountReason, setDiscountReason] = useState("");
+const fmt = (n: number, currency = 'USD') =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n || 0);
 
-  const {
-    loading,
-    payments,
-    insurance,
-    totalBilled,
-    totalPaid,
-    totalDiscounts,
-    outstanding,
-    priorBalance,
-    currency,
-    recordPayment,
-    applyDiscount,
-    markFullyPaid,
-  } = useAppointmentFinance(appointmentId, patientId);
+export function AppointmentFinancePanel({
+  appointmentId,
+  patientId,
+  patientName,
+  appointmentDate,
+  doctorName,
+  procedures = [],
+}: Props) {
+  const finance = useAppointmentFinance(appointmentId, patientId || undefined);
 
-  const fmt = (n: number) => {
+  const [payOpen, setPayOpen] = useState(false);
+  const [discOpen, setDiscOpen] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [method, setMethod] = useState<PaymentMethod>('cash');
+  const [notes, setNotes] = useState('');
+  const [discountAmt, setDiscountAmt] = useState('');
+  const [discountReason, setDiscountReason] = useState('');
+
+  const status =
+    finance.outstanding <= 0 && finance.totalBilled > 0
+      ? { label: 'Paid', variant: 'default' as const }
+      : finance.outstanding > 0
+        ? { label: 'Outstanding', variant: 'outline' as const }
+        : { label: 'No charges', variant: 'secondary' as const };
+
+  const handleRecordPayment = async () => {
+    const n = Number(amount);
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error('Enter a valid amount');
+      return;
+    }
     try {
-      return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
-    } catch {
-      return `${currency} ${n.toFixed(2)}`;
+      await finance.recordPayment({ amount: n, method, notes: notes || undefined });
+      setPayOpen(false);
+      setAmount('');
+      setNotes('');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to record payment');
     }
   };
 
-  const handleRecord = async () => {
-    const amt = parseFloat(amount);
-    if (!amt || amt <= 0) return;
-    setBusy(true);
+  const handleApplyDiscount = async () => {
+    const n = Number(discountAmt);
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error('Enter a valid discount');
+      return;
+    }
     try {
-      await recordPayment({ amount: amt, method, notes: notes || undefined });
-      setAmount("");
-      setNotes("");
-    } finally {
-      setBusy(false);
+      await finance.applyDiscount({ amount: n, reason: discountReason || undefined });
+      setDiscOpen(false);
+      setDiscountAmt('');
+      setDiscountReason('');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed to apply discount');
     }
   };
 
-  const handleDiscount = async () => {
-    const amt = parseFloat(discountAmount);
-    if (!amt || amt <= 0) return;
-    setBusy(true);
+  const handleMarkPaid = async () => {
     try {
-      await applyDiscount({ amount: amt, reason: discountReason || undefined });
-      setDiscountAmount("");
-      setDiscountReason("");
-      setDiscountOpen(false);
-    } finally {
-      setBusy(false);
+      await finance.markFullyPaid('cash');
+    } catch (e: any) {
+      toast.error(e?.message || 'Failed');
+    }
+  };
+
+  const handleInvoicePdf = () => {
+    try {
+      generateInvoicePdf({
+        invoiceNumber: `INV-${appointmentId.slice(0, 8).toUpperCase()}`,
+        patientName,
+        appointmentDate: appointmentDate || '',
+        doctorName: doctorName || '',
+        currency: finance.currency,
+        items: procedures.length
+          ? procedures.map((p) => ({
+              name: p.name + (p.toothNumbers?.length ? ` (Teeth ${p.toothNumbers.join(',')})` : ''),
+              amount: p.cost || 0,
+            }))
+          : [{ name: 'Consultation', amount: finance.totalBilled }],
+        totalBilled: finance.totalBilled,
+        totalDiscount: finance.totalDiscounts,
+        totalPaid: finance.totalPaid,
+        outstanding: finance.outstanding,
+        payments: finance.payments.map((p) => ({
+          date: p.paid_at || p.created_at,
+          method: p.payment_method || '—',
+          amount: Number(p.amount) || 0,
+        })),
+      });
+      toast.success('Invoice PDF generated');
+    } catch (e: any) {
+      console.error(e);
+      toast.error('Failed to generate invoice');
     }
   };
 
   return (
-    <div className="rounded-lg border bg-card">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium hover:bg-muted/50 transition-colors"
-      >
-        <span className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-primary" />
-          {tf("title", "Finance")}
-          {outstanding > 0 && (
-            <Badge variant="destructive" className="ml-1 h-5 px-1.5 text-xs">
-              {fmt(outstanding)}
-            </Badge>
-          )}
-        </span>
-        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      </button>
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" /> Patient Finance
+          </span>
+          <Badge variant={status.variant}>{status.label}</Badge>
+        </CardTitle>
+      </CardHeader>
 
-      {open && (
-        <div className="px-3 pb-3 space-y-3">
-          {loading ? (
-            <div className="flex items-center justify-center py-4">
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-md bg-muted/50 px-2 py-1.5">
-                  <div className="text-muted-foreground">{tf("totalBilled", "Billed")}</div>
-                  <div className="font-semibold">{fmt(totalBilled)}</div>
-                </div>
-                <div className="rounded-md bg-muted/50 px-2 py-1.5">
-                  <div className="text-muted-foreground">{tf("totalPaid", "Paid")}</div>
-                  <div className="font-semibold text-emerald-600">{fmt(totalPaid)}</div>
-                </div>
-                {totalDiscounts > 0 && (
-                  <div className="rounded-md bg-muted/50 px-2 py-1.5">
-                    <div className="text-muted-foreground">{tf("discount", "Discount")}</div>
-                    <div className="font-semibold">−{fmt(totalDiscounts)}</div>
-                  </div>
-                )}
-                <div className={`rounded-md px-2 py-1.5 ${outstanding > 0 ? "bg-destructive/10" : "bg-emerald-500/10"}`}>
-                  <div className="text-muted-foreground">{tf("outstanding", "Outstanding")}</div>
-                  <div className={`font-semibold ${outstanding > 0 ? "text-destructive" : "text-emerald-600"}`}>
-                    {fmt(outstanding)}
-                  </div>
-                </div>
-              </div>
-
-              {priorBalance > 0 && (
-                <div className="text-xs flex items-center justify-between rounded-md bg-amber-500/10 px-2 py-1.5">
-                  <span className="text-muted-foreground">{tf("priorBalance", "Prior balance")}</span>
-                  <span className="font-medium text-amber-700 dark:text-amber-400">{fmt(priorBalance)}</span>
-                </div>
-              )}
-
-              {insurance && (
-                <div className="text-xs flex items-center gap-2 rounded-md border px-2 py-1.5">
-                  <Shield className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-muted-foreground">{tf("insurance", "Insurance")}:</span>
-                  <span className="font-medium">{insurance.member_id || "—"}</span>
-                  {insurance.co_pay != null && (
-                    <span className="ml-auto">
-                      {tf("copay", "Copay")}: {fmt(Number(insurance.co_pay))}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              <Separator />
-
-              {/* Record payment */}
-              <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground">{tf("recordPayment", "Record payment")}</div>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="0.00"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                  <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
-                    <SelectTrigger className="h-8 w-[130px] text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">{tf("cash", "Cash")}</SelectItem>
-                      <SelectItem value="card">{tf("card", "Card")}</SelectItem>
-                      <SelectItem value="insurance">{tf("insuranceMethod", "Insurance")}</SelectItem>
-                      <SelectItem value="bank_transfer">{tf("bankTransfer", "Bank transfer")}</SelectItem>
-                      <SelectItem value="other">{tf("other", "Other")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Input
-                  placeholder={tf("notesOptional", "Notes (optional)")}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-8 text-sm"
-                />
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={handleRecord} disabled={busy || !amount} className="gap-1 flex-1">
-                    <Plus className="h-3.5 w-3.5" /> {tf("record", "Record")}
-                  </Button>
-                  {outstanding > 0 && (
-                    <Button size="sm" variant="secondary" onClick={() => markFullyPaid(method)} disabled={busy} className="gap-1">
-                      <CheckCheck className="h-3.5 w-3.5" /> {tf("markFullyPaid", "Mark fully paid")}
-                    </Button>
-                  )}
-                  <Button size="sm" variant="outline" onClick={() => setDiscountOpen((v) => !v)} disabled={busy} className="gap-1">
-                    <Tag className="h-3.5 w-3.5" /> {tf("applyDiscount", "Discount")}
-                  </Button>
-                </div>
-
-                {discountOpen && (
-                  <div className="space-y-2 rounded-md border p-2 bg-muted/30">
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      placeholder={tf("amount", "Amount")}
-                      value={discountAmount}
-                      onChange={(e) => setDiscountAmount(e.target.value)}
-                      className="h-8 text-sm"
-                    />
-                    <Input
-                      placeholder={tf("reason", "Reason")}
-                      value={discountReason}
-                      onChange={(e) => setDiscountReason(e.target.value)}
-                      className="h-8 text-sm"
-                    />
-                    <div className="flex gap-2 justify-end">
-                      <Button size="sm" variant="ghost" onClick={() => setDiscountOpen(false)}>
-                        {tf("cancel", "Cancel")}
-                      </Button>
-                      <Button size="sm" onClick={handleDiscount} disabled={busy || !discountAmount}>
-                        {tf("apply", "Apply")}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {payments.length > 0 && (
-                <>
-                  <Separator />
-                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
-                    <div className="text-xs font-medium text-muted-foreground">{tf("history", "Payment history")}</div>
-                    {payments.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between text-xs py-1">
-                        <span className="text-muted-foreground capitalize">
-                          {(p.payment_method || "—").replace(/_/g, " ")}
-                        </span>
-                        <span className="font-medium">{fmt(Number(p.amount) || 0)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          )}
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <Kpi label="Billed" value={fmt(finance.totalBilled, finance.currency)} icon={DollarSign} />
+          <Kpi label="Paid" value={fmt(finance.totalPaid, finance.currency)} icon={CheckCircle} tone="success" />
+          <Kpi
+            label="Discounts"
+            value={fmt(finance.totalDiscounts, finance.currency)}
+            icon={Receipt}
+          />
+          <Kpi
+            label="Outstanding"
+            value={fmt(finance.outstanding, finance.currency)}
+            icon={AlertCircle}
+            tone={finance.outstanding > 0 ? 'warn' : 'success'}
+          />
         </div>
-      )}
+
+        {finance.priorBalance > 0 && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+            Prior unpaid balance: <strong>{fmt(finance.priorBalance, finance.currency)}</strong>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
+            <Plus className="h-4 w-4" /> Record Payment
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setDiscOpen(true)}>
+            Apply Discount
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleMarkPaid}
+            disabled={finance.outstanding <= 0}
+          >
+            Mark Fully Paid
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleInvoicePdf} className="gap-1">
+            <FileText className="h-4 w-4" /> Invoice PDF
+          </Button>
+        </div>
+
+        {finance.payments.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground">Recent payments</p>
+            {finance.payments.slice(0, 5).map((p) => (
+              <div
+                key={p.id}
+                className="flex items-center justify-between text-xs rounded border px-2 py-1"
+              >
+                <span className="truncate">
+                  {p.payment_method || 'payment'}{' '}
+                  {p.paid_at ? `· ${new Date(p.paid_at).toLocaleDateString()}` : ''}
+                </span>
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="font-medium tabular-nums">
+                    {fmt(Number(p.amount) || 0, finance.currency)}
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">
+                    {p.status || 'completed'}
+                  </Badge>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+
+      {/* Record Payment Dialog */}
+      <Dialog open={payOpen} onOpenChange={setPayOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Record Payment</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <Label>Method</Label>
+              <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="card">Card</SelectItem>
+                  <SelectItem value="insurance">Insurance</SelectItem>
+                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPayOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRecordPayment}>Record</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Discount Dialog */}
+      <Dialog open={discOpen} onOpenChange={setDiscOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Apply Discount</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Amount</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={discountAmt}
+                onChange={(e) => setDiscountAmt(e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <Label>Reason</Label>
+              <Input
+                value={discountReason}
+                onChange={(e) => setDiscountReason(e.target.value)}
+                placeholder="Loyalty, promotion, etc."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setDiscOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleApplyDiscount}>Apply</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
+}
+
+function Kpi({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  icon: any;
+  tone?: 'success' | 'warn';
+}) {
+  const color =
+    tone === 'success' ? 'text-emerald-600' : tone === 'warn' ? 'text-amber-600' : 'text-foreground';
+  return (
+    <div className="rounded-md border bg-muted/30 p-2">
+      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+        <Icon className="h-3 w-3" /> {label}
+      </div>
+      <p className={`text-sm font-semibold tabular-nums ${color}`}>{value}</p>
     </div>
   );
 }
