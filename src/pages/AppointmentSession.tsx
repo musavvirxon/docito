@@ -54,9 +54,12 @@ import PrescriptionCreator from '@/components/prescriptions/PrescriptionCreator'
 import { useAuth } from '@/contexts/AuthContext';
 import type { Diagnosis } from '@/components/visit/types';
 import { isDentalSpecialty } from '@/lib/clinicalSpecialties';
-import { PatientFinanceSection } from '@/components/PatientFinanceSection';
+import { AppointmentFinancePanel } from '@/components/appointments/AppointmentFinancePanel';
+import { AppointmentProceduresPanel } from '@/components/appointments/AppointmentProceduresPanel';
+import { useAppointmentProcedures } from '@/hooks/useAppointmentProcedures';
+import { useAppointmentFinance } from '@/hooks/useAppointmentFinance';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
-import { useDoctorServices } from '@/hooks/useDoctorServices';
+import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateAppointmentConversation';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
