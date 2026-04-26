@@ -55,7 +55,6 @@ const typeIcons = {
   home_visit: Home,
   home: Home,
   messaging: MessageSquare,
-  chat: MessageSquare,
   follow_up: Activity,
 };
 
@@ -66,7 +65,6 @@ const typeI18nKeys: Record<string, string> = {
   home_visit: "homeVisit",
   home: "homeVisit",
   messaging: "messaging",
-  chat: "messaging",
   follow_up: "followUp",
 };
 

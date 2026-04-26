@@ -986,7 +986,7 @@ const requestedProcedureName = useMemo(() => {
                     <span className="text-sm text-muted-foreground">{t("doctor.calendar.appointmentType", "Type")}</span>
                     <p className="font-medium capitalize flex items-center gap-2">
                       {appointment.appointment_type === "video" && <Video className="h-4 w-4" />}
-                      {(appointment.appointment_type === "chat" || appointment.appointment_type === "messaging") && (
+                      {appointment.appointment_type === "messaging" && (
                         <MessageSquare className="h-4 w-4" />
                       )}
                       {appointment.appointment_type || "In-Person"}

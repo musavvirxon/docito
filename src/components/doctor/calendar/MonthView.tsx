@@ -202,7 +202,7 @@ const MonthView = memo(({
                         type === 'in-person' && 'bg-primary',
                         type === 'video' && 'bg-emerald-500',
                         type === 'home' && 'bg-amber-500',
-                        type === 'chat' && 'bg-purple-500'
+                        type === 'messaging' && 'bg-purple-500'
                       )}
                     />
                   ))}

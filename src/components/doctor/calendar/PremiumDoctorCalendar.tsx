@@ -243,7 +243,7 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
       const type = (apt.appointment_type || 'in_person') as string;
 
       // Start based on appointment type
-      if (type === 'messaging' || type === 'chat') {
+      if (type === 'messaging') {
         // Quick preview "Message" action handles navigation
         return;
       }

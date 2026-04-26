@@ -54,7 +54,7 @@ export const useCalendarData = ({ doctorId, selectedDate, view }: UseCalendarDat
     if (!t) return "in_person";
     if (t === "in-person") return "in_person";
     if (t === "home") return "home_visit";
-    if (t === "chat") return "messaging";
+    if (t === "chat") return "messaging"; // legacy data fallback only
     return t as AppointmentType;
   };
 

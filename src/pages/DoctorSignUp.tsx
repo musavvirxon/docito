@@ -1415,9 +1415,6 @@ const DoctorSignUp = () => {
                   }, {
                     id: "home-visit",
                     label: t('doctorSignup.appointmentTypes.homeVisit')
-                  }, {
-                    id: "chat",
-                    label: t('doctorSignup.appointmentTypes.chat')
                   }].map(type => <div key={type.id} className="flex items-center space-x-2">
                         <Checkbox 
                           id={type.id}

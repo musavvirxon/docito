@@ -21,7 +21,6 @@ const typeIcons: Record<AppointmentType, typeof Video> = {
   'video': Video,
   'home': Home,
   'home_visit': Home,
-  'chat': MessageSquare,
   'messaging': MessageSquare,
   'follow_up': User,
 };
