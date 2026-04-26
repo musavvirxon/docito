@@ -234,9 +234,16 @@ const PremiumDoctorCalendar = ({ doctorId: doctorIdProp, practiceId }: PremiumDo
   }, []);
 
   const handleAppointmentClick = useCallback((apt: CalendarAppointment) => {
+    // FIX 4: persist current calendar position so the session back button can return here
+    try {
+      sessionStorage.setItem('calendarReturnDate', apt.appointment_date || '');
+      sessionStorage.setItem('calendarReturnView', view || 'week');
+    } catch {
+      // ignore storage errors
+    }
     setSelectedAppointment(apt);
     setIsQuickPreviewOpen(true);
-  }, []);
+  }, [view]);
 
   const handleStartSession = useCallback(
     (apt: CalendarAppointment) => {
