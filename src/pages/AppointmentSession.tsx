@@ -1013,7 +1013,25 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
                               <MessageSquare className="h-4 w-4" /> Message Consultation
                             </p>
-                            <Button size="sm" onClick={() => toast.info('Open chat coming soon')}>Open Chat Thread</Button>
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                if (!appointment) return;
+                                const conv = await getOrCreateAppointmentConversation({
+                                  appointmentId: appointment.id,
+                                  doctorUserId: appointment.doctor_id,
+                                  patientUserId: appointment.patient_id,
+                                  patientName: appointment.patient_name,
+                                });
+                                if (conv) {
+                                  navigate(`/messages?c=${conv}`);
+                                } else {
+                                  toast.error('Cannot open chat — patient must be a registered user');
+                                }
+                              }}
+                            >
+                              Open Chat Thread
+                            </Button>
                             <p className="text-xs text-muted-foreground">
                               Async consultation — respond at your convenience.
                             </p>
