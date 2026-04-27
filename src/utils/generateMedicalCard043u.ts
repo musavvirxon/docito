@@ -350,7 +350,8 @@ function drawToothChart(
   yStart: number,
   width: number,
   upperLabel: string,
-  lowerLabel: string
+  lowerLabel: string,
+  findings: ToothFinding[] = [],
 ) {
   const labelW = 22;
   const cellsW = width - labelW;
@@ -371,6 +372,7 @@ function drawToothChart(
     doc.text(nums[i], cx, y + 3.5, { align: 'center' });
   }
   y += numRowH;
+  const upperY = y;
 
   // Upper teeth row
   doc.setFontSize(8);
@@ -379,6 +381,7 @@ function drawToothChart(
     doc.rect(x + labelW + i * cellW, y, cellW, rowH);
   }
   y += rowH;
+  const lowerY = y;
 
   // Lower teeth row
   doc.text(lowerLabel, x + labelW - 1, y + rowH / 2 + 1, { align: 'right' });
@@ -399,6 +402,23 @@ function drawToothChart(
   const midX = x + labelW + cellW * 8;
   doc.line(midX, yStart + numRowH, midX, yStart + numRowH + rowH * 2);
   doc.setLineWidth(0.2);
+
+  // ── Stamp diagnoses inside the cells ──────────────────
+  if (findings && findings.length > 0) {
+    doc.setFont(FONT_NAME, 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(180, 0, 0);
+    for (const f of findings) {
+      const cell = fdiToCell(f.tooth);
+      if (!cell) continue;
+      const code = (f.code || '').slice(0, 4);
+      if (!code) continue;
+      const cy = (cell.row === 0 ? upperY : lowerY) + rowH / 2 + 1.5;
+      const cx = x + labelW + cell.col * cellW + cellW / 2;
+      doc.text(code, cx, cy, { align: 'center' });
+    }
+    doc.setTextColor(0, 0, 0);
+  }
 }
 
 export async function generateMedicalCard043uRussian(data: MedicalCardData): Promise<Blob> {
