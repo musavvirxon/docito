@@ -30,6 +30,8 @@ export interface MedicalCardData {
   // Clinic
   clinicName: string;
   clinicAddress: string;
+  // Optional dental findings (rendered inside the chart cells)
+  toothFindings?: ToothFinding[];
 }
 
 const FONT_NAME = PDF_FONT_NAME;
