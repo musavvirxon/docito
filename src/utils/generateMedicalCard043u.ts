@@ -32,42 +32,7 @@ export interface MedicalCardData {
   clinicAddress: string;
 }
 
-const FONT_NAME = 'NotoSans';
-const FONT_REGULAR_URL =
-  'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans/files/noto-sans-cyrillic-400-normal.woff';
-const FONT_BOLD_URL =
-  'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans/files/noto-sans-cyrillic-700-normal.woff';
-
-// Use TTF (jsPDF requires TTF, not WOFF). Switch to ttf endpoints.
-const TTF_REGULAR_URL =
-  'https://fonts.gstatic.com/s/notosans/v36/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A99d.ttf';
-const TTF_BOLD_URL =
-  'https://fonts.gstatic.com/s/notosans/v36/o-0NIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjA-BFlVfE5Mh8nqKn7BqHe.ttf';
-
-let fontCache: { regular?: string; bold?: string } = {};
-
-async function fetchAsBase64(url: string): Promise<string> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Font fetch failed: ${url}`);
-  const buf = await res.arrayBuffer();
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)) as any);
-  }
-  return btoa(binary);
-}
-
-async function ensureUnicodeFont(doc: any) {
-  if (!fontCache.regular) fontCache.regular = await fetchAsBase64(TTF_REGULAR_URL);
-  if (!fontCache.bold) fontCache.bold = await fetchAsBase64(TTF_BOLD_URL);
-  doc.addFileToVFS(`${FONT_NAME}-Regular.ttf`, fontCache.regular!);
-  doc.addFont(`${FONT_NAME}-Regular.ttf`, FONT_NAME, 'normal');
-  doc.addFileToVFS(`${FONT_NAME}-Bold.ttf`, fontCache.bold!);
-  doc.addFont(`${FONT_NAME}-Bold.ttf`, FONT_NAME, 'bold');
-  doc.setFont(FONT_NAME, 'normal');
-}
+const FONT_NAME = PDF_FONT_NAME;
 
 type Strings = {
   ministry: string;
