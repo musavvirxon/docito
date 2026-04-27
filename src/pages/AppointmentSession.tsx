@@ -289,6 +289,22 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
       setDoctorSpecialty(appointmentData.doctor?.specialty || '');
 
+      // Doctor name + clinic info (for the Summary PDF header)
+      if (appointmentData.doctor_id) {
+        const { data: docProfile } = await supabase
+          .from('doctor_profiles_view')
+          .select('full_name, practice_name, practice_address')
+          .eq('id', appointmentData.doctor_id)
+          .maybeSingle();
+        if (docProfile) {
+          setDoctorName((docProfile as any).full_name || '');
+          setClinicInfo({
+            name: (docProfile as any).practice_name || '',
+            address: (docProfile as any).practice_address || '',
+          });
+        }
+      }
+
       // If video appointment, preload existing consultation (if any)
       if (appointmentData.appointment_type === 'video') {
         const { data: existingConsultation } = await supabase
