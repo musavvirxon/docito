@@ -1,7 +1,17 @@
 // Medical Card 043/u — PDF generator (RU + UZ)
 // Uses jsPDF + jspdf-autotable, dynamically imported to keep bundle small.
-// A Unicode TTF (Noto Sans) is fetched on first use to support Cyrillic and
-// Uzbek diacritics (apostrophes, etc.) which jsPDF's built-in fonts cannot render.
+// Unicode font (Noto Sans) loading lives in `pdfUnicodeFont.ts` and is shared
+// with the appointment-summary PDF generator.
+
+import {
+  ensureUnicodeFont,
+  PDF_FONT_NAME,
+  fdiToCell,
+  procedureToToothCode,
+  type ToothFinding,
+} from './pdfUnicodeFont';
+
+export type { ToothFinding } from './pdfUnicodeFont';
 
 export interface MedicalCardData {
   // Patient
