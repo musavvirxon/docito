@@ -1,70 +1,60 @@
 ## Problem analysis
 
-There are **two** 043/u PDF generators in the project:
+Two issues to fix:
 
-1. `src/utils/generateMedicalCard043u.ts` — used by **MedicalCardDownloadButton** in AdminDashboard. This one already loads a Unicode TTF (Noto Sans) and renders Cyrillic/Uzbek correctly, but the dental chart is **always blank** (no diagnoses/teeth filled in).
-2. `src/utils/generateAppointmentPdf.ts` — used by the **"Summary PDF" button** in `AppointmentSession.tsx` (line 806). This is the one the user is downloading.
+### 1. Summary PDF download fails
 
-### Why the appointment Summary PDF shows "unreadable signs"
+Network logs show the **bold** Noto Sans TTF returns **404** from `fonts.gstatic.com`:
 
-`generateAppointmentPdf.ts` calls `doc.setFont('helvetica', …)` everywhere and writes Russian + Uzbek labels (`Министерство…`, `O'zbekiston…`, `Ҳҳ`, `ёЁ`, `'`). jsPDF's built-in Helvetica is **WinAnsi/Latin-1 only** — every Cyrillic character and every smart-quote/apostrophe is replaced by a placeholder rectangle ("ununderstandable signs"). That's the entire root cause of the gibberish.
+```
+GET …/o-0NIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjA-BFlVfE5Mh8nqKn7BqHe.ttf  →  404
+```
 
-### Why the dental chart is empty
+`ensureUnicodeFont()` in `src/utils/pdfUnicodeFont.ts` throws on the failed fetch, the outer `try/catch` shows `toast.error('Failed to generate PDF')`, and no PDF is produced. The regular weight URL also returns truncated/garbled bytes that won't always parse cleanly.
 
-Both generators draw an **empty** 32-cell tooth grid. None of them pull diagnoses from `tooth_procedure_history` / `appointment_procedures`, so even when the doctor has marked teeth in the session, nothing shows up on the printed chart.
+The gstatic URLs are not stable — Google rotates the hashed paths. We need a versioned, reliable mirror.
 
-Additionally, the AppointmentSession button passes mostly empty strings (`clinicName: ''`, `doctorName: ''`, `diagnosis: ''`) — it doesn't fetch the real clinic/doctor/diagnosis/finance data before generating.
+### 2. Dental tab needs procedure selection alongside the chart
+
+Right now `TabsContent value="dental"` shows:
+- A read-only "Dental Procedures (This Appointment)" list (legacy)
+- The editable `EnhancedDentalChart`
+
+But it does **not** include the new `AppointmentProceduresPanel` (with "Add Procedure" modal that has tooth selection). The user wants procedure selection paired with the chart inside the dental tab.
+
+There is also a noisy console warning: `ProcedureModal` (from `EnhancedDentalChart`) is a function component being given a `ref`. Easy fix.
 
 ---
 
 ## Fix plan
 
-### 1. Add Unicode font support to `generateAppointmentPdf.ts`
-Reuse the same Noto Sans TTF loader pattern that already works in `generateMedicalCard043u.ts`:
-- Extract the font-loading code into a shared helper `src/utils/pdfUnicodeFont.ts` (export `ensureUnicodeFont(doc)`, cache the base64 across calls).
-- Update `generateMedicalCard043u.ts` to import from the shared helper.
-- In `generateAppointmentPdf.ts`: convert the function to `async`, call `await ensureUnicodeFont(doc)` once, and replace every `doc.setFont('helvetica', …)` with `doc.setFont('NotoSans', …)`.
+### Fix A — Reliable Unicode font URLs
+In `src/utils/pdfUnicodeFont.ts`:
+- Replace the two `gstatic.com` URLs with the **notofonts.github.io** TTFs hosted on jsDelivr (verified 200 OK + CORS + full Latin/Cyrillic/Cyrillic-ext coverage including `ў` and `'`).
+- Keep a `raw.githubusercontent.com` fallback for the rare jsDelivr outage.
+- `loadFonts()` tries each URL in order; first success wins.
+- If both fail, log a clear error and proceed with jsPDF's built-in `helvetica` so the PDF still downloads (Latin only, but better than no file).
 
-### 2. Render the actual dental chart with diagnoses
-Add a new param `toothFindings?: Array<{ tooth: number; code: string; label?: string }>` to both generators.
+### Fix B — Add procedure selection to the dental tab
+In `src/pages/AppointmentSession.tsx`, inside the `dental` tab:
+- Mount `<AppointmentProceduresPanel ... isDentist />` above the `EnhancedDentalChart`. This brings in the "Add Procedure" button + modal that already supports tooth selection (FDI picker) and persists to `tooth_procedure_history`.
+- Keep the existing read-only "Dental Procedures (This Appointment)" card below the chart for the historical feed.
+- Reorder so the new panel is the **primary** action area at the top.
 
-In the `drawToothChart` routines:
-- Map FDI tooth numbers (11–18, 21–28, 31–38, 41–48) to the correct cell on the chart.
-- Inside each cell, stamp the short condition code (С, П, К, Pt, Имп, etc.) using the legend already printed above the chart.
-- Draw a small dot/diagonal stroke for "missing" (О / Y).
-- Tooltip the long diagnosis as a numbered footnote under the chart so dentists see the full text.
+### Fix C — Silence the ProcedureModal ref warning
+`src/components/dental/ProcedureModal.tsx` is wrapped by Radix Dialog which forwards a ref. Wrap the component declaration in `React.forwardRef<HTMLDivElement, Props>(...)` (or, simpler, ensure the modal does not accept a `ref` prop by name — typically just removing whatever forwarder is calling it). Quick fix: convert the function component to `forwardRef` and forward the ref to the outer wrapper.
 
-### 3. Wire real data into the AppointmentSession Summary button
-In `src/pages/AppointmentSession.tsx`:
-- Pull the existing `useAppointmentProcedures({ appointmentId })` data (already loaded for the Procedures tab).
-- Pull `practice` info via existing context (clinicName, clinicAddress).
-- Pull doctor name/specialty from the session's doctor profile.
-- Pull diagnosis text from the appointment record (`appointment.diagnosis` / chief complaint).
-- Pull finance totals from `useAppointmentFinance` (already imported elsewhere).
-- Map procedures → `toothFindings` using a tiny dictionary:
-  - `caries` → `С` / `K`
-  - `filling` → `П` / `Pl`
-  - `crown` → `К` / `T`
-  - `extraction` → `О` / `Y`
-  - `implant` → `Имп`
-  - `root_canal` → `Р` / `P`
-  - default → first letter of procedure name.
-
-### 4. Language picker
-Replace the hard-coded `'ru'` argument in the Summary button with a small dropdown (RU / UZ) — same pattern as `MedicalCardDownloadButton`.
-
-### 5. QA checklist
-- Generate RU and UZ PDFs from a real appointment with at least 3 marked teeth.
-- Convert pages to images and inspect: no black squares, all Cyrillic/Uzbek text legible, tooth codes appear in the correct cells, finance totals filled in, doctor + clinic + diagnosis present.
+### QA
+- Click "043/у RU" and "043/u UZ" in the appointment session header → both download a PDF.
+- Inspect first page: Cyrillic and Uzbek text legible, no black squares.
+- Dental tab → "Add Procedure" → tooth selector appears → pick teeth → save → row appears in both the panel and the read-only list and is shaded on the chart.
+- React DevTools console: no more `ProcedureModal` ref warning.
 
 ## Files
 
-**Created**
-- `src/utils/pdfUnicodeFont.ts` — shared Noto Sans loader
-
 **Edited**
-- `src/utils/generateAppointmentPdf.ts` — async + Unicode font + chart rendering + new `toothFindings` param
-- `src/utils/generateMedicalCard043u.ts` — use shared loader + render `toothFindings`
-- `src/pages/AppointmentSession.tsx` — pass real clinic/doctor/diagnosis/finance/procedures data; add RU/UZ picker
+- `src/utils/pdfUnicodeFont.ts` — switch font URLs to jsDelivr `notofonts.github.io` TTFs with retry + graceful fallback
+- `src/pages/AppointmentSession.tsx` — add `AppointmentProceduresPanel` to the dental tab, above the chart
+- `src/components/dental/ProcedureModal.tsx` — `forwardRef` to silence Radix warning
 
 No DB migrations, no new packages.
