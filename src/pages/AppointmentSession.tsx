@@ -136,8 +136,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
+  const [doctorName, setDoctorName] = useState<string>('');
+  const [clinicInfo, setClinicInfo] = useState<{ name: string; address: string }>({ name: '', address: '' });
+  const [pdfDownloading, setPdfDownloading] = useState<'ru' | 'uz' | null>(null);
 
   // Hooks for procedures + finance (used by panels and the summary PDF)
+  const { items: unifiedProcedures } = useAppointmentProcedures({
+    appointmentId,
+    doctorId: appointment?.doctor_id,
+    patientId: appointment?.patient_id || null,
+    doctorPatientId: appointment?.doctor_patient_id || null,
+  });
+  const finance = useAppointmentFinance(appointmentId, appointment?.patient_id || undefined);
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
