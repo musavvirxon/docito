@@ -1,4 +1,13 @@
 import jsPDF from 'jspdf';
+import {
+  ensureUnicodeFont,
+  PDF_FONT_NAME,
+  fdiToCell,
+  procedureToToothCode,
+  type ToothFinding,
+} from './pdfUnicodeFont';
+
+export type { ToothFinding } from './pdfUnicodeFont';
 
 export interface AppointmentPdfData {
   clinicName: string;
@@ -22,21 +31,28 @@ export interface AppointmentPdfData {
   totalAmount?: number;
   amountPaid?: number;
   balance?: number;
+  currency?: string;
+  /** Optional dental findings rendered into the 32-tooth chart */
+  toothFindings?: ToothFinding[];
 }
 
-const fmtCur = (n?: number) =>
+const fmtCur = (n?: number, currency = 'USD') =>
   n != null
-    ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+    ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n)
     : '_____________';
 const v = (x?: string | number | null, fb = '______________________________') =>
   x != null && x !== '' ? String(x) : fb;
 
-export function generateAppointmentPdf(
+export async function generateAppointmentPdf(
   data: AppointmentPdfData,
   lang: 'ru' | 'uz' = 'ru',
-): void {
+): Promise<void> {
   try {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    // CRITICAL: jsPDF's built-in Helvetica only supports Latin-1, so any
+    // Cyrillic / Uzbek text would render as black squares without this.
+    await ensureUnicodeFont(doc);
+
     const W = 210;
     const M = 15;
     const CW = W - M * 2;
@@ -44,8 +60,9 @@ export function generateAppointmentPdf(
     const LH = 6;
     const SLH = 5;
     const ru = lang === 'ru';
+    const currency = data.currency || 'USD';
 
-    const font = (bold = false) => doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    const font = (bold = false) => doc.setFont(PDF_FONT_NAME, bold ? 'bold' : 'normal');
     const size = (s: number) => doc.setFontSize(s);
     const txt = (
       s: string,
@@ -164,9 +181,9 @@ export function generateAppointmentPdf(
     size(8);
     font(false);
     doc.text(
-      (ru ? 'Пол: ' : 'Жинси: ') +
+      (ru ? 'Пол: ' : 'Jinsi: ') +
         v(data.gender, '__') +
-        (ru ? '  Возраст: ' : '  Йоши: ') +
+        (ru ? '  Возраст: ' : '  Yoshi: ') +
         v(data.age, '__') +
         (ru ? '  Дата рождения: ' : "  Tug'ilgan: ") +
         v(data.dob, '__________') +
@@ -237,9 +254,11 @@ export function generateAppointmentPdf(
     font(true);
     nums.forEach((n, i) => doc.text(n, cx + i * cw + cw / 2, y, { align: 'center' }));
     y += 3;
+    const upperY = y;
     nums.forEach((_, i) => doc.rect(cx + i * cw, y, cw, ch));
     ln(cx + cw * 8, y - 4, cx + cw * 8, y + ch * 2 + 4, 0.8);
     y += ch;
+    const lowerY = y;
     nums.forEach((_, i) => doc.rect(cx + i * cw, y, cw, ch));
     y += ch;
     size(7);
@@ -249,7 +268,43 @@ export function generateAppointmentPdf(
     font(false);
     doc.text(ru ? 'Верхняя' : 'Yuqori', M + 2, y - 12);
     doc.text(ru ? 'Нижняя' : 'Quyi', M + 2, y - 6);
+
+    // Stamp the diagnoses inside the matching cells
+    const findings = (data.toothFindings || []).map((f) => ({
+      ...f,
+      code: f.code || procedureToToothCode(f.label, lang),
+    }));
+    if (findings.length > 0) {
+      font(true);
+      size(6.5);
+      doc.setTextColor(180, 0, 0);
+      for (const f of findings) {
+        const cell = fdiToCell(f.tooth);
+        if (!cell) continue;
+        const code = (f.code || '').slice(0, 4);
+        if (!code) continue;
+        const xx = cx + cell.col * cw + cw / 2;
+        const yy = (cell.row === 0 ? upperY : lowerY) + ch / 2 + 1;
+        doc.text(code, xx, yy, { align: 'center' });
+      }
+      doc.setTextColor(0, 0, 0);
+    }
     y += 10;
+
+    // Footnote list of long descriptions
+    if (findings.length > 0) {
+      const footnotes = findings
+        .filter((f) => f.label)
+        .map((f) => `${f.tooth} — ${f.label}`)
+        .join('   •   ');
+      if (footnotes) {
+        size(6.5);
+        font(false);
+        const w = doc.splitTextToSize(footnotes, CW);
+        doc.text(w, M, y);
+        y += w.length * 3 + 2;
+      }
+    }
 
     // ─ BITE & MUCOSA ─────────────────────────────────
     fldLine(ru ? 'Прикус: ' : 'Tishlar tutashuvi: ', '', M, y, CW / 2);
@@ -293,6 +348,30 @@ export function generateAppointmentPdf(
     );
     y += LH;
 
+    // Procedures table from findings
+    if (findings.length > 0) {
+      y = secTitle(ru ? 'Выполненные процедуры:' : 'Bajarilgan protseduralar:', y);
+      size(8);
+      font(true);
+      doc.rect(M, y, 18, 6);
+      doc.rect(M + 18, y, CW - 18, 6);
+      doc.text(ru ? 'Зуб' : 'Tish', M + 9, y + 4, { align: 'center' });
+      doc.text(ru ? 'Описание' : 'Tavsif', M + 18 + 3, y + 4);
+      y += 6;
+      font(false);
+      for (const f of findings) {
+        const desc = f.label || f.code || '';
+        const lines = doc.splitTextToSize(desc, CW - 18 - 4) as string[];
+        const rowH = Math.max(6, lines.length * 4 + 2);
+        doc.rect(M, y, 18, rowH);
+        doc.rect(M + 18, y, CW - 18, rowH);
+        doc.text(String(f.tooth), M + 9, y + rowH / 2 + 1, { align: 'center' });
+        doc.text(lines, M + 18 + 3, y + 4);
+        y += rowH;
+      }
+      y += 4;
+    }
+
     y = secTitle(ru ? 'Описание лечения:' : 'Davolash tavsifi:', y);
     if (data.treatment) {
       size(8);
@@ -329,14 +408,14 @@ export function generateAppointmentPdf(
     y += 7;
     const rows = ru
       ? [
-          ['Итого к оплате:', fmtCur(data.totalAmount)],
-          ['Оплачено:', fmtCur(data.amountPaid)],
-          ['Остаток / Долг:', fmtCur(data.balance)],
+          ['Итого к оплате:', fmtCur(data.totalAmount, currency)],
+          ['Оплачено:', fmtCur(data.amountPaid, currency)],
+          ['Остаток / Долг:', fmtCur(data.balance, currency)],
         ]
       : [
-          ["To'lov summasi:", fmtCur(data.totalAmount)],
-          ["To'langan:", fmtCur(data.amountPaid)],
-          ['Qoldiq / Qarz:', fmtCur(data.balance)],
+          ["To'lov summasi:", fmtCur(data.totalAmount, currency)],
+          ["To'langan:", fmtCur(data.amountPaid, currency)],
+          ['Qoldiq / Qarz:', fmtCur(data.balance, currency)],
         ];
     const cw1 = 80;
     const cw2 = 60;

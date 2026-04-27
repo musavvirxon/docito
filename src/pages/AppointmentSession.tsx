@@ -136,8 +136,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [appointmentDentalProcedures, setAppointmentDentalProcedures] = useState<AppointmentDentalProcedureRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
+  const [doctorName, setDoctorName] = useState<string>('');
+  const [clinicInfo, setClinicInfo] = useState<{ name: string; address: string }>({ name: '', address: '' });
+  const [pdfDownloading, setPdfDownloading] = useState<'ru' | 'uz' | null>(null);
 
   // Hooks for procedures + finance (used by panels and the summary PDF)
+  const { items: unifiedProcedures } = useAppointmentProcedures({
+    appointmentId,
+    doctorId: appointment?.doctor_id,
+    patientId: appointment?.patient_id || null,
+    doctorPatientId: appointment?.doctor_patient_id || null,
+  });
+  const finance = useAppointmentFinance(appointmentId, appointment?.patient_id || undefined);
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -278,6 +288,22 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       });
 
       setDoctorSpecialty(appointmentData.doctor?.specialty || '');
+
+      // Doctor name + clinic info (for the Summary PDF header)
+      if (appointmentData.doctor_id) {
+        const { data: docProfile } = await supabase
+          .from('doctor_profiles_view')
+          .select('full_name, practice_name, practice_address')
+          .eq('id', appointmentData.doctor_id)
+          .maybeSingle();
+        if (docProfile) {
+          setDoctorName((docProfile as any).full_name || '');
+          setClinicInfo({
+            name: (docProfile as any).practice_name || '',
+            address: (docProfile as any).practice_address || '',
+          });
+        }
+      }
 
       // If video appointment, preload existing consultation (if any)
       if (appointmentData.appointment_type === 'video') {
@@ -798,40 +824,96 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
               </Button>
             )}
 
-            {appointmentId && appointment && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  try {
-                    generateAppointmentPdf(
-                      {
-                        clinicName: '',
-                        clinicAddress: '',
-                        patientName: appointment.patient_name || '',
-                        phone: appointment.patient_phone || '',
-                        appointmentDate: appointment.appointment_date || '',
-                        appointmentTime: appointment.start_time || '',
-                        diagnosis: '',
-                        complaints: '',
-                        treatment: sessionNotes,
-                        serviceName: appointment.appointment_type || '',
-                        doctorName: '',
-                        doctorSpecialty: doctorSpecialty || '',
-                        notes: appointment.notes || '',
-                      },
-                      'ru',
-                    );
-                    toast.success(t('doctor.session.summary.downloaded', 'Summary PDF downloaded'));
-                  } catch {
-                    toast.error(t('doctor.session.summary.failed', 'Failed to generate PDF'));
-                  }
-                }}
-                className="gap-2"
-              >
-                <Download className="h-4 w-4" />
-                {t('doctor.session.summary.button', 'Summary PDF')}
-              </Button>
-            )}
+            {appointmentId && appointment && (() => {
+              const downloadSummary = async (lang: 'ru' | 'uz') => {
+                if (pdfDownloading) return;
+                setPdfDownloading(lang);
+                try {
+                  // Build tooth findings from unified procedures (dental + general)
+                  const toothFindings = unifiedProcedures.flatMap((p) =>
+                    (p.toothNumbers || []).map((tooth) => ({
+                      tooth,
+                      label: p.notes ? `${p.name} — ${p.notes}` : p.name,
+                    })),
+                  );
+                  // Combine session notes + diagnosis text
+                  const diagnosisText = diagnoses
+                    .map((d: any) => d.name || d.code || d.description)
+                    .filter(Boolean)
+                    .join('; ');
+                  const treatmentText = [
+                    sessionNotes,
+                    unifiedProcedures
+                      .map((p) => `• ${p.name}${p.toothNumbers?.length ? ` (${p.toothNumbers.join(', ')})` : ''}`)
+                      .join('\n'),
+                  ]
+                    .filter(Boolean)
+                    .join('\n\n');
+
+                  await generateAppointmentPdf(
+                    {
+                      clinicName: clinicInfo.name,
+                      clinicAddress: clinicInfo.address,
+                      patientName: appointment.patient_name || '',
+                      phone: appointment.patient_phone || '',
+                      appointmentDate: appointment.appointment_date || '',
+                      appointmentTime: appointment.start_time || '',
+                      diagnosis: diagnosisText,
+                      complaints: '',
+                      treatment: treatmentText,
+                      serviceName: appointment.appointment_type || '',
+                      doctorName,
+                      doctorSpecialty: doctorSpecialty || '',
+                      notes: appointment.notes || '',
+                      totalAmount: finance.totalBilled,
+                      amountPaid: finance.totalPaid,
+                      balance: finance.outstanding,
+                      toothFindings,
+                    },
+                    lang,
+                  );
+                  toast.success(t('doctor.session.summary.downloaded', 'Summary PDF downloaded'));
+                } catch (err) {
+                  console.error('Summary PDF failed', err);
+                  toast.error(t('doctor.session.summary.failed', 'Failed to generate PDF'));
+                } finally {
+                  setPdfDownloading(null);
+                }
+              };
+              return (
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadSummary('ru')}
+                    disabled={!!pdfDownloading}
+                    className="gap-2"
+                  >
+                    {pdfDownloading === 'ru' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    043/у RU
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadSummary('uz')}
+                    disabled={!!pdfDownloading}
+                    className="gap-2"
+                  >
+                    {pdfDownloading === 'uz' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    043/u UZ
+                  </Button>
+                </div>
+              );
+            })()}
+
 
             {session && (
               <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">

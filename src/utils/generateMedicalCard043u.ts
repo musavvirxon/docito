@@ -1,7 +1,17 @@
 // Medical Card 043/u — PDF generator (RU + UZ)
 // Uses jsPDF + jspdf-autotable, dynamically imported to keep bundle small.
-// A Unicode TTF (Noto Sans) is fetched on first use to support Cyrillic and
-// Uzbek diacritics (apostrophes, etc.) which jsPDF's built-in fonts cannot render.
+// Unicode font (Noto Sans) loading lives in `pdfUnicodeFont.ts` and is shared
+// with the appointment-summary PDF generator.
+
+import {
+  ensureUnicodeFont,
+  PDF_FONT_NAME,
+  fdiToCell,
+  procedureToToothCode,
+  type ToothFinding,
+} from './pdfUnicodeFont';
+
+export type { ToothFinding } from './pdfUnicodeFont';
 
 export interface MedicalCardData {
   // Patient
@@ -20,44 +30,11 @@ export interface MedicalCardData {
   // Clinic
   clinicName: string;
   clinicAddress: string;
+  // Optional dental findings (rendered inside the chart cells)
+  toothFindings?: ToothFinding[];
 }
 
-const FONT_NAME = 'NotoSans';
-const FONT_REGULAR_URL =
-  'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans/files/noto-sans-cyrillic-400-normal.woff';
-const FONT_BOLD_URL =
-  'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans/files/noto-sans-cyrillic-700-normal.woff';
-
-// Use TTF (jsPDF requires TTF, not WOFF). Switch to ttf endpoints.
-const TTF_REGULAR_URL =
-  'https://fonts.gstatic.com/s/notosans/v36/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A99d.ttf';
-const TTF_BOLD_URL =
-  'https://fonts.gstatic.com/s/notosans/v36/o-0NIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjA-BFlVfE5Mh8nqKn7BqHe.ttf';
-
-let fontCache: { regular?: string; bold?: string } = {};
-
-async function fetchAsBase64(url: string): Promise<string> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Font fetch failed: ${url}`);
-  const buf = await res.arrayBuffer();
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)) as any);
-  }
-  return btoa(binary);
-}
-
-async function ensureUnicodeFont(doc: any) {
-  if (!fontCache.regular) fontCache.regular = await fetchAsBase64(TTF_REGULAR_URL);
-  if (!fontCache.bold) fontCache.bold = await fetchAsBase64(TTF_BOLD_URL);
-  doc.addFileToVFS(`${FONT_NAME}-Regular.ttf`, fontCache.regular!);
-  doc.addFont(`${FONT_NAME}-Regular.ttf`, FONT_NAME, 'normal');
-  doc.addFileToVFS(`${FONT_NAME}-Bold.ttf`, fontCache.bold!);
-  doc.addFont(`${FONT_NAME}-Bold.ttf`, FONT_NAME, 'bold');
-  doc.setFont(FONT_NAME, 'normal');
-}
+const FONT_NAME = PDF_FONT_NAME;
 
 type Strings = {
   ministry: string;
@@ -283,9 +260,28 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
   text(S.oralExam + ':', { size: 10, bold: true, gap: 1 });
   text(S.legend, { size: 7.5, gap: 2 });
 
-  // Tooth chart — 32 teeth with midline
-  drawToothChart(doc, margin, y, contentW, S.upper, S.lower);
+  // Tooth chart — 32 teeth with midline, populated with diagnoses
+  const lang: 'ru' | 'uz' = S === RU ? 'ru' : 'uz';
+  const findings = (data.toothFindings || []).map((f) => ({
+    ...f,
+    code: f.code || procedureToToothCode(f.label, lang),
+  }));
+  drawToothChart(doc, margin, y, contentW, S.upper, S.lower, findings);
   y += 36;
+
+  // Footnote list of long diagnoses (so the cell codes stay readable)
+  if (findings.length > 0) {
+    setFont(7.5, false);
+    const lines = findings
+      .filter((f) => f.label)
+      .map((f) => `${f.tooth} — ${f.label}`);
+    if (lines.length > 0) {
+      const wrapped = doc.splitTextToSize(lines.join('   •   '), contentW) as string[];
+      ensureSpace(wrapped.length * 3.4 + 2);
+      doc.text(wrapped, margin, y);
+      y += wrapped.length * 3.4 + 2;
+    }
+  }
 
   ensureSpace(40);
   text(`${S.bite}: ____________________________`, { size: 10 });
@@ -354,7 +350,8 @@ function drawToothChart(
   yStart: number,
   width: number,
   upperLabel: string,
-  lowerLabel: string
+  lowerLabel: string,
+  findings: ToothFinding[] = [],
 ) {
   const labelW = 22;
   const cellsW = width - labelW;
@@ -375,6 +372,7 @@ function drawToothChart(
     doc.text(nums[i], cx, y + 3.5, { align: 'center' });
   }
   y += numRowH;
+  const upperY = y;
 
   // Upper teeth row
   doc.setFontSize(8);
@@ -383,6 +381,7 @@ function drawToothChart(
     doc.rect(x + labelW + i * cellW, y, cellW, rowH);
   }
   y += rowH;
+  const lowerY = y;
 
   // Lower teeth row
   doc.text(lowerLabel, x + labelW - 1, y + rowH / 2 + 1, { align: 'right' });
@@ -403,6 +402,23 @@ function drawToothChart(
   const midX = x + labelW + cellW * 8;
   doc.line(midX, yStart + numRowH, midX, yStart + numRowH + rowH * 2);
   doc.setLineWidth(0.2);
+
+  // ── Stamp diagnoses inside the cells ──────────────────
+  if (findings && findings.length > 0) {
+    doc.setFont(FONT_NAME, 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(180, 0, 0);
+    for (const f of findings) {
+      const cell = fdiToCell(f.tooth);
+      if (!cell) continue;
+      const code = (f.code || '').slice(0, 4);
+      if (!code) continue;
+      const cy = (cell.row === 0 ? upperY : lowerY) + rowH / 2 + 1.5;
+      const cx = x + labelW + cell.col * cellW + cellW / 2;
+      doc.text(code, cx, cy, { align: 'center' });
+    }
+    doc.setTextColor(0, 0, 0);
+  }
 }
 
 export async function generateMedicalCard043uRussian(data: MedicalCardData): Promise<Blob> {
