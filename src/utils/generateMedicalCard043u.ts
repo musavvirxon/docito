@@ -260,9 +260,28 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
   text(S.oralExam + ':', { size: 10, bold: true, gap: 1 });
   text(S.legend, { size: 7.5, gap: 2 });
 
-  // Tooth chart — 32 teeth with midline
-  drawToothChart(doc, margin, y, contentW, S.upper, S.lower);
+  // Tooth chart — 32 teeth with midline, populated with diagnoses
+  const lang: 'ru' | 'uz' = S === RU ? 'ru' : 'uz';
+  const findings = (data.toothFindings || []).map((f) => ({
+    ...f,
+    code: f.code || procedureToToothCode(f.label, lang),
+  }));
+  drawToothChart(doc, margin, y, contentW, S.upper, S.lower, findings);
   y += 36;
+
+  // Footnote list of long diagnoses (so the cell codes stay readable)
+  if (findings.length > 0) {
+    setFont(7.5, false);
+    const lines = findings
+      .filter((f) => f.label)
+      .map((f) => `${f.tooth} — ${f.label}`);
+    if (lines.length > 0) {
+      const wrapped = doc.splitTextToSize(lines.join('   •   '), contentW) as string[];
+      ensureSpace(wrapped.length * 3.4 + 2);
+      doc.text(wrapped, margin, y);
+      y += wrapped.length * 3.4 + 2;
+    }
+  }
 
   ensureSpace(40);
   text(`${S.bite}: ____________________________`, { size: 10 });
