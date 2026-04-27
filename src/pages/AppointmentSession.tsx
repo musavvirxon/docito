@@ -1230,6 +1230,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
                   {isDentist && (
                     <TabsContent value="dental" className="mt-0 space-y-4">
+                      {/* Add Procedure (with tooth selection) — primary action */}
+                      {appointment && (
+                        <AppointmentProceduresPanel
+                          appointmentId={appointment.id}
+                          doctorId={appointment.doctor_id}
+                          patientId={appointment.patient_id}
+                          doctorPatientId={appointment.doctor_patient_id}
+                          isDentist={isDentist}
+                        />
+                      )}
+
+                      {/* Editable dental chart */}
+                      <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={true} />
+
+                      {/* Legacy: read-only history of dental procedures for this appointment */}
                       <Card>
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm flex items-center justify-between">
@@ -1324,8 +1339,6 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           </div>
                         </CardContent>
                       </Card>
-
-                      <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={true} />
                     </TabsContent>
                   )}
 
