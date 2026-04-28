@@ -435,6 +435,15 @@ const AddPatientModal = ({ isOpen, onClose, onSuccess }: AddPatientModalProps) =
                     rows={2}
                   />
                 </div>
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="profession">Profession</Label>
+                  <Input
+                    id="profession"
+                    value={formData.profession}
+                    onChange={(e) => updateField("profession", e.target.value)}
+                    placeholder="e.g. Teacher, Engineer"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="emergency_contact_name">Emergency Contact Name</Label>
                   <Input

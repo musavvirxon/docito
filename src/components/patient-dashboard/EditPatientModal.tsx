@@ -43,6 +43,7 @@ const patientSchema = z.object({
   phone: z.string().trim().max(20, "Phone must be less than 20 characters").optional(),
   email: z.string().trim().email("Invalid email").max(255).optional().or(z.literal("")),
   address: z.string().trim().max(500, "Address must be less than 500 characters").optional(),
+  profession: z.string().trim().max(255, "Profession must be less than 255 characters").optional(),
   emergency_contact_name: z.string().trim().max(100).optional(),
   emergency_contact_phone: z.string().trim().max(20).optional(),
   blood_group: z.string().optional(),
@@ -96,6 +97,7 @@ const EditPatientModal = ({
         phone: patient.phone || "",
         email: patient.email || "",
         address: patient.address || "",
+        profession: patient.profession || "",
         emergency_contact_name: patient.emergency_contact_name || "",
         emergency_contact_phone: patient.emergency_contact_phone || "",
         blood_group: patient.blood_group || "",
@@ -153,6 +155,7 @@ const EditPatientModal = ({
             phone: data.phone || null,
             email: data.email || null,
             address: data.address || null,
+            profession: data.profession || null,
             emergency_contact_name: data.emergency_contact_name || null,
             emergency_contact_phone: data.emergency_contact_phone || null,
             allergies: data.allergies || null,
@@ -176,6 +179,7 @@ const EditPatientModal = ({
             gender: data.gender as any || null,
             phone: data.phone || null,
             address: data.address || null,
+            profession: data.profession || null,
             avatar_url: avatarUrl,
             updated_at: new Date().toISOString(),
           })
@@ -362,6 +366,15 @@ const EditPatientModal = ({
                     {...register("address")}
                     placeholder="Enter full address"
                     rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profession">Profession</Label>
+                  <Input
+                    id="profession"
+                    {...register("profession")}
+                    placeholder="e.g. Teacher, Engineer"
                   />
                 </div>
 
