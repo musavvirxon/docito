@@ -881,16 +881,63 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     .filter(Boolean)
                     .join('\n\n');
 
+                  // Compute age from DOB
+                  let ageStr: string | undefined;
+                  let dobLabel: string | undefined;
+                  if (appointment.patient_dob) {
+                    const dob = new Date(appointment.patient_dob);
+                    if (!Number.isNaN(dob.getTime())) {
+                      const now = new Date();
+                      let a = now.getFullYear() - dob.getFullYear();
+                      const m = now.getMonth() - dob.getMonth();
+                      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) a--;
+                      if (a >= 0) ageStr = String(a);
+                      dobLabel = format(dob, 'dd.MM.yyyy');
+                    }
+                  }
+
+                  // Localized gender for the form
+                  const genderRaw = (appointment.patient_gender || '').toLowerCase();
+                  const genderLabel =
+                    lang === 'ru'
+                      ? genderRaw === 'male'
+                        ? 'муж'
+                        : genderRaw === 'female'
+                          ? 'жен'
+                          : appointment.patient_gender || ''
+                      : genderRaw === 'male'
+                        ? 'erkak'
+                        : genderRaw === 'female'
+                          ? 'ayol'
+                          : appointment.patient_gender || '';
+
+                  // Combine declared complaints from medical history / allergies
+                  const complaintsText = [
+                    appointment.patient_allergies
+                      ? `${lang === 'ru' ? 'Аллергии' : 'Allergiyalar'}: ${appointment.patient_allergies}`
+                      : '',
+                    appointment.patient_medical_history
+                      ? `${lang === 'ru' ? 'Анамнез' : 'Anamnez'}: ${appointment.patient_medical_history}`
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join('\n');
+
                   await generateAppointmentPdf(
                     {
                       clinicName: clinicInfo.name,
                       clinicAddress: clinicInfo.address,
                       patientName: appointment.patient_name || '',
+                      gender: genderLabel,
+                      age: ageStr,
+                      dob: dobLabel,
+                      address: appointment.patient_address || '',
+                      profession: appointment.patient_profession || '',
                       phone: appointment.patient_phone || '',
                       appointmentDate: appointment.appointment_date || '',
                       appointmentTime: appointment.start_time || '',
                       diagnosis: diagnosisText,
-                      complaints: '',
+                      complaints: complaintsText,
                       treatment: treatmentText,
                       serviceName: appointment.appointment_type || '',
                       doctorName,
@@ -899,6 +946,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       totalAmount: finance.totalBilled,
                       amountPaid: finance.totalPaid,
                       balance: finance.outstanding,
+                      currency: finance.currency,
                       toothFindings,
                     },
                     lang,
