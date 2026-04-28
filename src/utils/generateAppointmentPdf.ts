@@ -294,15 +294,15 @@ export async function generateAppointmentPdf(
       for (const f of findings) {
         const cell = fdiToCell(f.tooth);
         if (!cell) continue;
-        const code = (f.code || '').slice(0, 4);
+        const code = (f.code || '').slice(0, 3);
         if (!code) continue;
         const xx = cx + cell.col * cw + cw / 2;
-        const yy = (cell.row === 0 ? upperY : lowerY) + ch / 2 + 1;
+        const yy = (cell.row === 0 ? upperY : lowerY) + ch / 2 + 1.2;
         doc.text(code, xx, yy, { align: 'center' });
       }
       doc.setTextColor(0, 0, 0);
     }
-    y += 10;
+    y += 4;
 
     // Footnote list of long descriptions
     if (findings.length > 0) {
