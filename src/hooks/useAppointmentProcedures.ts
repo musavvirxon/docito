@@ -108,39 +108,80 @@ export function useAppointmentProcedures({
         return;
       }
       const teeth = input.toothNumbers || [];
+      const unitCost = input.cost == null ? null : Number(input.cost);
+      const totalCost =
+        unitCost == null ? null : Number((unitCost * Math.max(teeth.length, 1)).toFixed(2));
 
       try {
+        let createdRowId: string | null = null;
         if (teeth.length > 0) {
           const targetPatient = patientId || null;
           if (!targetPatient) {
             toast.error('Tooth procedures require a registered patient');
             return;
           }
-          const { error } = await supabase.from('tooth_procedure_history').insert({
-            appointment_id: appointmentId,
-            doctor_id: doctorId,
-            patient_id: targetPatient,
-            procedure_id: input.procedureId || null,
-            procedure_name: input.name,
-            tooth_numbers: teeth,
-            status: input.status || 'planned',
-            cost: input.cost ?? null,
-            notes: input.notes || null,
-            performed_at: input.status === 'completed' ? new Date().toISOString() : null,
-          } as any);
+          const { data: inserted, error } = await supabase
+            .from('tooth_procedure_history')
+            .insert({
+              appointment_id: appointmentId,
+              doctor_id: doctorId,
+              patient_id: targetPatient,
+              procedure_id: input.procedureId || null,
+              procedure_name: input.name,
+              tooth_numbers: teeth,
+              status: input.status || 'planned',
+              cost: totalCost,
+              notes: input.notes || null,
+              performed_at: input.status === 'completed' ? new Date().toISOString() : null,
+            } as any)
+            .select('id')
+            .single();
           if (error) throw error;
+          createdRowId = (inserted as any)?.id || null;
         } else {
           const { data: authUser } = await supabase.auth.getUser();
-          const { error } = await supabase.from('appointment_procedures').insert({
-            appointment_id: appointmentId,
-            procedure_id: input.procedureId || null,
-            procedure_notes: input.notes || input.name,
-            estimated_cost: input.cost ?? null,
-            status: input.status || 'planned',
-            prescribed_by: authUser?.user?.id || doctorId,
-            prescribed_at: new Date().toISOString(),
-          } as any);
+          const { data: inserted, error } = await supabase
+            .from('appointment_procedures')
+            .insert({
+              appointment_id: appointmentId,
+              procedure_id: input.procedureId || null,
+              procedure_notes: input.notes || input.name,
+              estimated_cost: totalCost,
+              status: input.status || 'planned',
+              prescribed_by: authUser?.user?.id || doctorId,
+              prescribed_at: new Date().toISOString(),
+            } as any)
+            .select('id')
+            .single();
           if (error) throw error;
+          createdRowId = (inserted as any)?.id || null;
+        }
+
+        // Auto-create billing transaction so finance reflects the charge
+        if (totalCost != null && totalCost > 0) {
+          const description = `${input.name}${teeth.length ? ` (Teeth ${teeth.slice().sort((a, b) => a - b).join(',')})` : ''}`;
+          const { error: billErr } = await supabase.from('billing_transactions').insert({
+            appointment_id: appointmentId,
+            entity_type: 'doctor',
+            entity_id: doctorId,
+            transaction_type: 'charge',
+            status: 'pending',
+            amount: Math.round(totalCost),
+            amount_cents: Math.round(totalCost * 100),
+            currency: 'usd',
+            description,
+            metadata: {
+              source: 'appointment_procedure',
+              source_table: teeth.length > 0 ? 'tooth_procedure_history' : 'appointment_procedures',
+              source_id: createdRowId,
+              unit_cost: unitCost,
+              tooth_count: Math.max(teeth.length, 1),
+              teeth,
+            },
+          } as any);
+          if (billErr) {
+            console.warn('Billing transaction insert failed', billErr);
+          }
         }
 
         toast.success('Procedure added');
@@ -184,6 +225,24 @@ export function useAppointmentProcedures({
       try {
         const table = item.source === 'dental' ? 'tooth_procedure_history' : 'appointment_procedures';
         await supabase.from(table).delete().eq('id', item.id);
+        // Best-effort cleanup of the matching auto-billed charge
+        if (appointmentId) {
+          try {
+            const { data: rows } = await supabase
+              .from('billing_transactions')
+              .select('id, metadata')
+              .eq('appointment_id', appointmentId)
+              .eq('transaction_type', 'charge');
+            const match = (rows || []).find(
+              (r: any) => r?.metadata?.source_id === item.id,
+            );
+            if (match) {
+              await supabase.from('billing_transactions').delete().eq('id', (match as any).id);
+            }
+          } catch (e) {
+            console.warn('Billing cleanup failed', e);
+          }
+        }
         await refresh();
         toast.success('Procedure removed');
       } catch (err) {
@@ -191,7 +250,7 @@ export function useAppointmentProcedures({
         toast.error('Failed to remove procedure');
       }
     },
-    [refresh],
+    [appointmentId, refresh],
   );
 
   const totalCost = items.reduce((s, i) => s + (i.cost || 0), 0);
