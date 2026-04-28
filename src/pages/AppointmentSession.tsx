@@ -1310,7 +1310,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
                   {isDentist && (
                     <TabsContent value="dental" className="mt-0 space-y-4">
-                      {/* Add Procedure (with tooth selection) — primary action */}
+                      {/* Inline (big) procedure adder — auto-bills via useAppointmentProcedures */}
+                      {appointment && (
+                        <DentalProcedurePicker
+                          onSubmit={async (input) => {
+                            const { addProcedure } = await import('@/hooks/useAppointmentProcedures').then(() => ({ addProcedure: null as any }));
+                            // We need the live addProcedure from the hook used above:
+                            await dentalAddProcedure(input);
+                          }}
+                        />
+                      )}
+
+                      {/* Existing procedures list (read/manage) */}
                       {appointment && (
                         <AppointmentProceduresPanel
                           appointmentId={appointment.id}
