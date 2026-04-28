@@ -60,6 +60,7 @@ import { useAppointmentProcedures } from '@/hooks/useAppointmentProcedures';
 import { useAppointmentFinance } from '@/hooks/useAppointmentFinance';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
 import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateAppointmentConversation';
+import { DentalProcedurePicker } from '@/components/appointments/DentalProcedurePicker';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
