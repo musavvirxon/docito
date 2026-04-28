@@ -1314,9 +1314,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       {appointment && (
                         <DentalProcedurePicker
                           onSubmit={async (input) => {
-                            const { addProcedure } = await import('@/hooks/useAppointmentProcedures').then(() => ({ addProcedure: null as any }));
-                            // We need the live addProcedure from the hook used above:
                             await dentalAddProcedure(input);
+                            await refreshProcedures();
                           }}
                         />
                       )}
