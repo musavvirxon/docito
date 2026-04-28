@@ -14,6 +14,7 @@ const AvailabilityPreview = lazy(() => import("@/components/doctor/public/Availa
 const ClinicAffiliationsSection = lazy(() => import("@/components/doctor/public/ClinicAffiliationsSection"));
 const ReviewsSection = lazy(() => import("@/components/doctor/public/ReviewsSection"));
 const TrustSection = lazy(() => import("@/components/doctor/public/TrustSection"));
+const ProceduresSection = lazy(() => import("@/components/doctor/public/ProceduresSection"));
 
 interface PublicDoctorProfile {
   id: string;
@@ -112,17 +113,26 @@ export default function DoctorPublicProfile() {
 
         setDoctor(doc as PublicDoctorProfile);
 
-        // Procedures (services)
+        // Procedures (services) — table uses dentist_id + default_cost/price
         const { data: proc, error: procErr } = await (supabase as any)
           .from("procedures")
-          .select("id, name, description, cost, duration_minutes, category")
-          .eq("doctor_id", doc.id)
+          .select("id, name, description, default_cost, price, duration_minutes, category")
+          .eq("dentist_id", doc.id)
           .eq("is_active", true)
           .order("created_at", { ascending: false })
           .limit(50);
 
         if (procErr) throw procErr;
-        setProcedures((proc || []) as Procedure[]);
+        setProcedures(
+          ((proc || []) as any[]).map((p) => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            cost: p.default_cost ?? p.price ?? 0,
+            duration_minutes: p.duration_minutes,
+            category: p.category,
+          })) as Procedure[],
+        );
 
         // Reviews
         const { data: rev, error: revErr } = await (supabase as any)
@@ -270,6 +280,10 @@ export default function DoctorPublicProfile() {
             services={procedures.map(p => ({ id: p.id, name: p.name, category: p.category || undefined }))}
             consultationTypes={doctor.consultation_types}
           />
+        </Suspense>
+
+        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+          <ProceduresSection procedures={procedures} />
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>

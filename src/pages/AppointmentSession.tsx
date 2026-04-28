@@ -60,6 +60,7 @@ import { useAppointmentProcedures } from '@/hooks/useAppointmentProcedures';
 import { useAppointmentFinance } from '@/hooks/useAppointmentFinance';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
 import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateAppointmentConversation';
+import { DentalProcedurePicker } from '@/components/appointments/DentalProcedurePicker';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -93,6 +94,12 @@ interface AppointmentData {
   patient_phone?: string;
   patient_email?: string;
   patient_avatar?: string;
+  patient_dob?: string;
+  patient_gender?: string;
+  patient_address?: string;
+  patient_profession?: string;
+  patient_allergies?: string;
+  patient_medical_history?: string;
 }
 
 interface AppointmentDentalProcedureRow {
@@ -141,7 +148,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [pdfDownloading, setPdfDownloading] = useState<'ru' | 'uz' | null>(null);
 
   // Hooks for procedures + finance (used by panels and the summary PDF)
-  const { items: unifiedProcedures } = useAppointmentProcedures({
+  const { items: unifiedProcedures, addProcedure: dentalAddProcedure, refresh: refreshProcedures } = useAppointmentProcedures({
     appointmentId,
     doctorId: appointment?.doctor_id,
     patientId: appointment?.patient_id || null,
@@ -249,13 +256,23 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             full_name,
             phone,
             email,
-            avatar_url
+            avatar_url,
+            date_of_birth,
+            gender,
+            address,
+            profession
           ),
           direct_patient:doctor_patients (
             id,
             full_name,
             phone,
-            email
+            email,
+            date_of_birth,
+            gender,
+            address,
+            profession,
+            allergies,
+            medical_history
           )
         `
         )
@@ -265,10 +282,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       if (apptError) throw apptError;
       if (!appointmentData) throw new Error('Appointment not found');
 
-      const patientName = appointmentData.patient?.full_name || appointmentData.direct_patient?.full_name || 'Patient';
-      const patientPhone = appointmentData.patient?.phone || appointmentData.direct_patient?.phone || '';
-      const patientEmail = appointmentData.patient?.email || appointmentData.direct_patient?.email || '';
-      const patientAvatar = appointmentData.patient?.avatar_url || '';
+      const reg = (appointmentData as any).patient || null;
+      const dir = (appointmentData as any).direct_patient || null;
+
+      const patientName = reg?.full_name || dir?.full_name || 'Patient';
+      const patientPhone = reg?.phone || dir?.phone || '';
+      const patientEmail = reg?.email || dir?.email || '';
+      const patientAvatar = reg?.avatar_url || '';
+      const patientDob = reg?.date_of_birth || dir?.date_of_birth || '';
+      const patientGender = reg?.gender || dir?.gender || '';
+      const patientAddress = reg?.address || dir?.address || '';
+      const patientProfession = reg?.profession || dir?.profession || '';
+      const patientAllergies = dir?.allergies || '';
+      const patientMedicalHistory = dir?.medical_history || '';
 
       setAppointment({
         id: appointmentData.id,
@@ -285,6 +311,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         patient_phone: patientPhone,
         patient_email: patientEmail,
         patient_avatar: patientAvatar,
+        patient_dob: patientDob,
+        patient_gender: patientGender,
+        patient_address: patientAddress,
+        patient_profession: patientProfession,
+        patient_allergies: patientAllergies,
+        patient_medical_history: patientMedicalHistory,
       });
 
       setDoctorSpecialty(appointmentData.doctor?.specialty || '');
@@ -850,16 +882,63 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     .filter(Boolean)
                     .join('\n\n');
 
+                  // Compute age from DOB
+                  let ageStr: string | undefined;
+                  let dobLabel: string | undefined;
+                  if (appointment.patient_dob) {
+                    const dob = new Date(appointment.patient_dob);
+                    if (!Number.isNaN(dob.getTime())) {
+                      const now = new Date();
+                      let a = now.getFullYear() - dob.getFullYear();
+                      const m = now.getMonth() - dob.getMonth();
+                      if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) a--;
+                      if (a >= 0) ageStr = String(a);
+                      dobLabel = format(dob, 'dd.MM.yyyy');
+                    }
+                  }
+
+                  // Localized gender for the form
+                  const genderRaw = (appointment.patient_gender || '').toLowerCase();
+                  const genderLabel =
+                    lang === 'ru'
+                      ? genderRaw === 'male'
+                        ? 'муж'
+                        : genderRaw === 'female'
+                          ? 'жен'
+                          : appointment.patient_gender || ''
+                      : genderRaw === 'male'
+                        ? 'erkak'
+                        : genderRaw === 'female'
+                          ? 'ayol'
+                          : appointment.patient_gender || '';
+
+                  // Combine declared complaints from medical history / allergies
+                  const complaintsText = [
+                    appointment.patient_allergies
+                      ? `${lang === 'ru' ? 'Аллергии' : 'Allergiyalar'}: ${appointment.patient_allergies}`
+                      : '',
+                    appointment.patient_medical_history
+                      ? `${lang === 'ru' ? 'Анамнез' : 'Anamnez'}: ${appointment.patient_medical_history}`
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join('\n');
+
                   await generateAppointmentPdf(
                     {
                       clinicName: clinicInfo.name,
                       clinicAddress: clinicInfo.address,
                       patientName: appointment.patient_name || '',
+                      gender: genderLabel,
+                      age: ageStr,
+                      dob: dobLabel,
+                      address: appointment.patient_address || '',
+                      profession: appointment.patient_profession || '',
                       phone: appointment.patient_phone || '',
                       appointmentDate: appointment.appointment_date || '',
                       appointmentTime: appointment.start_time || '',
                       diagnosis: diagnosisText,
-                      complaints: '',
+                      complaints: complaintsText,
                       treatment: treatmentText,
                       serviceName: appointment.appointment_type || '',
                       doctorName,
@@ -868,6 +947,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       totalAmount: finance.totalBilled,
                       amountPaid: finance.totalPaid,
                       balance: finance.outstanding,
+                      currency: finance.currency,
                       toothFindings,
                     },
                     lang,
@@ -1230,7 +1310,17 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
                   {isDentist && (
                     <TabsContent value="dental" className="mt-0 space-y-4">
-                      {/* Add Procedure (with tooth selection) — primary action */}
+                      {/* Inline (big) procedure adder — auto-bills via useAppointmentProcedures */}
+                      {appointment && (
+                        <DentalProcedurePicker
+                          onSubmit={async (input) => {
+                            await dentalAddProcedure(input);
+                            await refreshProcedures();
+                          }}
+                        />
+                      )}
+
+                      {/* Existing procedures list (read/manage) */}
                       {appointment && (
                         <AppointmentProceduresPanel
                           appointmentId={appointment.id}

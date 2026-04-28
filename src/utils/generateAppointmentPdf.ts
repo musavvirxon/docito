@@ -241,33 +241,46 @@ export async function generateAppointmentPdf(
     y += SLH;
 
     // ─ TOOTH CHART ────────────────────────────────────────
-    const cx = M + 9;
-    const cw = (CW - 11) / 16;
+    const cx = M + 11;
+    const cw = (CW - 13) / 16;
     const ch = 6;
     const nums = ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8'];
+
+    // Direction labels (above the chart, with their own row)
     size(6.5);
     font(false);
     doc.text(ru ? '← Правая' : "← O'ng", cx + cw * 3.5, y, { align: 'center' });
     doc.text(ru ? 'Левая →' : 'Chap →', cx + cw * 12.5, y, { align: 'center' });
-    y += 3;
+    y += 4;
+
+    // Top FDI numbers row
     size(7);
     font(true);
     nums.forEach((n, i) => doc.text(n, cx + i * cw + cw / 2, y, { align: 'center' }));
-    y += 3;
+    y += 2;
+
+    // Upper jaw cells
     const upperY = y;
-    nums.forEach((_, i) => doc.rect(cx + i * cw, y, cw, ch));
-    ln(cx + cw * 8, y - 4, cx + cw * 8, y + ch * 2 + 4, 0.8);
-    y += ch;
-    const lowerY = y;
-    nums.forEach((_, i) => doc.rect(cx + i * cw, y, cw, ch));
-    y += ch;
+    nums.forEach((_, i) => doc.rect(cx + i * cw, upperY, cw, ch));
+    // Lower jaw cells
+    const lowerY = upperY + ch;
+    nums.forEach((_, i) => doc.rect(cx + i * cw, lowerY, cw, ch));
+
+    // Vertical midline (between R/L)
+    ln(cx + cw * 8, upperY - 2, cx + cw * 8, lowerY + ch + 2, 0.8);
+
+    // Side labels — Upper / Lower — placed to the LEFT of cells, vertically centered on each row
+    size(6.5);
+    font(false);
+    doc.text(ru ? 'Верх' : 'Yuq', M, upperY + ch / 2 + 1.2, { align: 'left' });
+    doc.text(ru ? 'Низ' : 'Pas', M, lowerY + ch / 2 + 1.2, { align: 'left' });
+
+    // Bottom FDI numbers row (under the lower-jaw cells)
+    y = lowerY + ch + 3.5;
     size(7);
     font(true);
-    nums.forEach((n, i) => doc.text(n, cx + i * cw + cw / 2, y + 3, { align: 'center' }));
-    size(7);
-    font(false);
-    doc.text(ru ? 'Верхняя' : 'Yuqori', M + 2, y - 12);
-    doc.text(ru ? 'Нижняя' : 'Quyi', M + 2, y - 6);
+    nums.forEach((n, i) => doc.text(n, cx + i * cw + cw / 2, y, { align: 'center' }));
+    y += 2;
 
     // Stamp the diagnoses inside the matching cells
     const findings = (data.toothFindings || []).map((f) => ({
@@ -281,15 +294,15 @@ export async function generateAppointmentPdf(
       for (const f of findings) {
         const cell = fdiToCell(f.tooth);
         if (!cell) continue;
-        const code = (f.code || '').slice(0, 4);
+        const code = (f.code || '').slice(0, 3);
         if (!code) continue;
         const xx = cx + cell.col * cw + cw / 2;
-        const yy = (cell.row === 0 ? upperY : lowerY) + ch / 2 + 1;
+        const yy = (cell.row === 0 ? upperY : lowerY) + ch / 2 + 1.2;
         doc.text(code, xx, yy, { align: 'center' });
       }
       doc.setTextColor(0, 0, 0);
     }
-    y += 10;
+    y += 4;
 
     // Footnote list of long descriptions
     if (findings.length > 0) {
