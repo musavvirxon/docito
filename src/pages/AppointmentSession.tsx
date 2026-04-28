@@ -148,7 +148,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [pdfDownloading, setPdfDownloading] = useState<'ru' | 'uz' | null>(null);
 
   // Hooks for procedures + finance (used by panels and the summary PDF)
-  const { items: unifiedProcedures } = useAppointmentProcedures({
+  const { items: unifiedProcedures, addProcedure: dentalAddProcedure, refresh: refreshProcedures } = useAppointmentProcedures({
     appointmentId,
     doctorId: appointment?.doctor_id,
     patientId: appointment?.patient_id || null,
