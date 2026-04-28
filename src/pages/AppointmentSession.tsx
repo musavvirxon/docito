@@ -93,6 +93,12 @@ interface AppointmentData {
   patient_phone?: string;
   patient_email?: string;
   patient_avatar?: string;
+  patient_dob?: string;
+  patient_gender?: string;
+  patient_address?: string;
+  patient_profession?: string;
+  patient_allergies?: string;
+  patient_medical_history?: string;
 }
 
 interface AppointmentDentalProcedureRow {
@@ -249,13 +255,23 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             full_name,
             phone,
             email,
-            avatar_url
+            avatar_url,
+            date_of_birth,
+            gender,
+            address,
+            profession
           ),
           direct_patient:doctor_patients (
             id,
             full_name,
             phone,
-            email
+            email,
+            date_of_birth,
+            gender,
+            address,
+            profession,
+            allergies,
+            medical_history
           )
         `
         )
@@ -265,10 +281,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       if (apptError) throw apptError;
       if (!appointmentData) throw new Error('Appointment not found');
 
-      const patientName = appointmentData.patient?.full_name || appointmentData.direct_patient?.full_name || 'Patient';
-      const patientPhone = appointmentData.patient?.phone || appointmentData.direct_patient?.phone || '';
-      const patientEmail = appointmentData.patient?.email || appointmentData.direct_patient?.email || '';
-      const patientAvatar = appointmentData.patient?.avatar_url || '';
+      const reg = (appointmentData as any).patient || null;
+      const dir = (appointmentData as any).direct_patient || null;
+
+      const patientName = reg?.full_name || dir?.full_name || 'Patient';
+      const patientPhone = reg?.phone || dir?.phone || '';
+      const patientEmail = reg?.email || dir?.email || '';
+      const patientAvatar = reg?.avatar_url || '';
+      const patientDob = reg?.date_of_birth || dir?.date_of_birth || '';
+      const patientGender = reg?.gender || dir?.gender || '';
+      const patientAddress = reg?.address || dir?.address || '';
+      const patientProfession = reg?.profession || dir?.profession || '';
+      const patientAllergies = dir?.allergies || '';
+      const patientMedicalHistory = dir?.medical_history || '';
 
       setAppointment({
         id: appointmentData.id,
@@ -285,6 +310,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         patient_phone: patientPhone,
         patient_email: patientEmail,
         patient_avatar: patientAvatar,
+        patient_dob: patientDob,
+        patient_gender: patientGender,
+        patient_address: patientAddress,
+        patient_profession: patientProfession,
+        patient_allergies: patientAllergies,
+        patient_medical_history: patientMedicalHistory,
       });
 
       setDoctorSpecialty(appointmentData.doctor?.specialty || '');
