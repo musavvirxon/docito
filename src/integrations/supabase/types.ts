@@ -2373,6 +2373,7 @@ export type Database = {
           medical_history: string | null
           notes: string | null
           phone: string
+          profession: string | null
           profile_photo_url: string | null
           registration_date: string | null
           status: string | null
@@ -2395,6 +2396,7 @@ export type Database = {
           medical_history?: string | null
           notes?: string | null
           phone: string
+          profession?: string | null
           profile_photo_url?: string | null
           registration_date?: string | null
           status?: string | null
@@ -2417,6 +2419,7 @@ export type Database = {
           medical_history?: string | null
           notes?: string | null
           phone?: string
+          profession?: string | null
           profile_photo_url?: string | null
           registration_date?: string | null
           status?: string | null
@@ -7044,6 +7047,7 @@ export type Database = {
           phone: string | null
           preferred_currency: string
           privacy_settings: Json | null
+          profession: string | null
           profile_visibility: string | null
           role: Database["public"]["Enums"]["user_role"]
           timezone: string | null
@@ -7069,6 +7073,7 @@ export type Database = {
           phone?: string | null
           preferred_currency?: string
           privacy_settings?: Json | null
+          profession?: string | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           timezone?: string | null
@@ -7094,6 +7099,7 @@ export type Database = {
           phone?: string | null
           preferred_currency?: string
           privacy_settings?: Json | null
+          profession?: string | null
           profile_visibility?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           timezone?: string | null
