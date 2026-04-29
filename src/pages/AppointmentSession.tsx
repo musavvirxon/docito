@@ -132,6 +132,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [appointment, setAppointment] = useState<AppointmentData | null>(null);
   const [doctorSpecialty, setDoctorSpecialty] = useState<string>('');
   const [sessionNotes, setSessionNotes] = useState('');
+  // Structured clinical findings for the 043/u summary
+  const [clinicalFindings, setClinicalFindings] = useState({
+    complaint: '',
+    extraOralExam: '',
+    oralCavityCondition: '',
+    labXrayResults: '',
+    diagnosisText: '',
+  });
+  const [savingFindings, setSavingFindings] = useState(false);
   const [activeTab, setActiveTab] = useState<SessionTab>('session');
   const [isEnding, setIsEnding] = useState(false);
   const [showVideoRoom, setShowVideoRoom] = useState(false);
