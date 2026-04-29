@@ -3741,20 +3741,36 @@ const AdminDashboard = () => {
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success('Invoice email queued'))}>
                                           <Mail className="h-3 w-3" />
                                         </Button>
-                                        <MedicalCardDownloadButton
-                                          practice={practice}
-                                          locations={locations}
-                                          data={{
-                                            patientName: tx?.metadata?.patient_name || tx?.metadata?.customer_name || '',
-                                            gender: '', age: '', dob: '', phone: '', profession: '', address: '',
-                                            appointmentDate: tx?.created_at ? (() => { try { return format(new Date(tx.created_at), 'yyyy-MM-dd'); } catch { return ''; } })() : '',
-                                            diagnosis: tx?.metadata?.service_name || '',
-                                            doctorName: tx?.metadata?.doctor_name || '',
-                                            serviceName: tx?.metadata?.service_name || '',
-                                            clinicName: practice?.name || '',
-                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
-                                          }}
-                                        />
+                                        {(() => {
+                                          const pName = tx?.metadata?.patient_name || tx?.metadata?.customer_name || '';
+                                          const p: any = patients.find((pt: any) => pt.id === tx?.metadata?.patient_id || pt.name === pName) || {};
+                                          const dobVal = p.date_of_birth || (p as any).dob || '';
+                                          let ageVal: string | number = p.age || '';
+                                          if (!ageVal && dobVal) {
+                                            try { ageVal = Math.floor((Date.now() - new Date(dobVal).getTime()) / (365.25 * 24 * 60 * 60 * 1000)); } catch { /* noop */ }
+                                          }
+                                          return (
+                                            <MedicalCardDownloadButton
+                                              practice={practice}
+                                              locations={locations}
+                                              data={{
+                                                patientName: pName || p.name || '',
+                                                gender: p.gender || '',
+                                                age: ageVal,
+                                                dob: dobVal,
+                                                phone: p.phone || '',
+                                                profession: p.profession || '',
+                                                address: p.address || '',
+                                                appointmentDate: tx?.created_at ? (() => { try { return format(new Date(tx.created_at), 'yyyy-MM-dd'); } catch { return ''; } })() : '',
+                                                diagnosis: tx?.metadata?.service_name || '',
+                                                doctorName: tx?.metadata?.doctor_name || '',
+                                                serviceName: tx?.metadata?.service_name || '',
+                                                clinicName: practice?.name || '',
+                                                clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                              }}
+                                            />
+                                          );
+                                        })()}
                                       </div>
                                     </td>
                                   </tr>
