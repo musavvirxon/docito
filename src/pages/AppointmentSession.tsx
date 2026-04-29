@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import {
@@ -132,6 +133,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [appointment, setAppointment] = useState<AppointmentData | null>(null);
   const [doctorSpecialty, setDoctorSpecialty] = useState<string>('');
   const [sessionNotes, setSessionNotes] = useState('');
+  // Structured clinical findings for the 043/u summary
+  const [clinicalFindings, setClinicalFindings] = useState({
+    complaint: '',
+    extraOralExam: '',
+    oralCavityCondition: '',
+    labXrayResults: '',
+    diagnosisText: '',
+  });
+  const [savingFindings, setSavingFindings] = useState(false);
   const [activeTab, setActiveTab] = useState<SessionTab>('session');
   const [isEnding, setIsEnding] = useState(false);
   const [showVideoRoom, setShowVideoRoom] = useState(false);
@@ -238,6 +248,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       if (sessionData) {
         setSession(sessionData as SessionData);
         setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
+        const sd = (sessionData as any).specialty_data || {};
+        const cf = (sd && typeof sd === 'object' && sd.clinical_findings) || {};
+        setClinicalFindings({
+          complaint: cf.complaint || '',
+          extraOralExam: cf.extraOralExam || '',
+          oralCavityCondition: cf.oralCavityCondition || '',
+          labXrayResults: cf.labXrayResults || '',
+          diagnosisText: cf.diagnosisText || '',
+        });
       } else {
         setSession(null);
       }
@@ -748,6 +767,32 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     }
   }, [session?.id, sessionNotes, t]);
 
+  const handleSaveClinicalFindings = useCallback(async () => {
+    if (!session?.id) {
+      toast.error(t('doctor.session.findingsNoSession', 'Start the session before saving findings'));
+      return;
+    }
+    setSavingFindings(true);
+    try {
+      const existing = (session as any).specialty_data && typeof (session as any).specialty_data === 'object'
+        ? (session as any).specialty_data
+        : {};
+      const next = { ...existing, clinical_findings: clinicalFindings };
+      const { error } = await supabase
+        .from('appointment_sessions')
+        .update({ specialty_data: next })
+        .eq('id', session.id);
+      if (error) throw error;
+      setSession((prev) => (prev ? ({ ...prev, specialty_data: next } as any) : prev));
+      toast.success(t('doctor.session.findingsSaved', 'Clinical findings saved'));
+    } catch (err) {
+      console.error('Error saving clinical findings:', err);
+      toast.error(t('doctor.session.findingsSaveError', 'Failed to save clinical findings'));
+    } finally {
+      setSavingFindings(false);
+    }
+  }, [session, clinicalFindings, t]);
+
   const handleVideoEnd = useCallback(
     async (notes?: string) => {
       if (notes) setSessionNotes(notes);
@@ -912,8 +957,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           ? 'ayol'
                           : appointment.patient_gender || '';
 
-                  // Combine declared complaints from medical history / allergies
+                  // Combine declared complaints from medical history / allergies + structured complaint
                   const complaintsText = [
+                    clinicalFindings.complaint?.trim() || '',
                     appointment.patient_allergies
                       ? `${lang === 'ru' ? 'Аллергии' : 'Allergiyalar'}: ${appointment.patient_allergies}`
                       : '',
@@ -923,6 +969,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   ]
                     .filter(Boolean)
                     .join('\n');
+
+                  // Prefer the dentist's typed diagnosis over the structured diagnoses list when present
+                  const finalDiagnosis = clinicalFindings.diagnosisText?.trim() || diagnosisText;
 
                   await generateAppointmentPdf(
                     {
@@ -937,8 +986,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       phone: appointment.patient_phone || '',
                       appointmentDate: appointment.appointment_date || '',
                       appointmentTime: appointment.start_time || '',
-                      diagnosis: diagnosisText,
+                      diagnosis: finalDiagnosis,
                       complaints: complaintsText,
+                      externalExam: clinicalFindings.extraOralExam || '',
+                      oralCavity: clinicalFindings.oralCavityCondition || '',
+                      xrayLab: clinicalFindings.labXrayResults || '',
                       treatment: treatmentText,
                       serviceName: appointment.appointment_type || '',
                       doctorName,
@@ -1251,6 +1303,85 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             Lab Order
                           </Button>
                         </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Clinical Findings — feeds the 043/u summary PDF */}
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center justify-between">
+                          <span>Clinical Findings</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleSaveClinicalFindings}
+                            disabled={savingFindings || !session?.id}
+                          >
+                            {savingFindings ? 'Saving…' : 'Save'}
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Complaint</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.complaint}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, complaint: e.target.value }))
+                              }
+                              placeholder="Patient's chief complaint…"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Extra-oral examination</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.extraOralExam}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, extraOralExam: e.target.value }))
+                              }
+                              placeholder="Face, lymph nodes, TMJ…"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Condition of oral cavity</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.oralCavityCondition}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, oralCavityCondition: e.target.value }))
+                              }
+                              placeholder="Mucosa, gingiva, palate…"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Lab & X-ray results</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.labXrayResults}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, labXrayResults: e.target.value }))
+                              }
+                              placeholder="Imaging findings, lab values…"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Diagnosis (free text — overrides structured list in PDF)</Label>
+                          <Textarea
+                            rows={2}
+                            value={clinicalFindings.diagnosisText}
+                            onChange={(e) =>
+                              setClinicalFindings((s) => ({ ...s, diagnosisText: e.target.value }))
+                            }
+                            placeholder="Working diagnosis…"
+                          />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          These fields, together with procedures and billing on this page, are merged into the 043/u summary PDF.
+                        </p>
                       </CardContent>
                     </Card>
 

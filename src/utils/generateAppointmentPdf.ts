@@ -23,6 +23,12 @@ export interface AppointmentPdfData {
   appointmentTime?: string;
   diagnosis?: string;
   complaints?: string;
+  /** Doctor's external (extra-oral) examination notes */
+  externalExam?: string;
+  /** Oral cavity / mucosa / gingiva description */
+  oralCavity?: string;
+  /** X-ray + lab investigation summary */
+  xrayLab?: string;
   treatment?: string;
   serviceName?: string;
   doctorName: string;
@@ -219,13 +225,26 @@ export async function generateAppointmentPdf(
     }
     y = emptyLn(2, y);
 
+    // Helper: print provided text wrapped, or fall back to N blank lines
+    const textOrBlanks = (val: string | undefined, blanks: number, yy: number) => {
+      const v = (val || '').trim();
+      if (v) {
+        size(8);
+        font(false);
+        const w = doc.splitTextToSize(v, CW);
+        doc.text(w, M, yy);
+        return yy + w.length * SLH + 2;
+      }
+      return emptyLn(blanks, yy);
+    };
+
     y = secTitle(
       ru
         ? 'Данные объективного исследования. Внешний осмотр:'
         : "Ob'ektiv tekshiruv. Tashqi ko'rik:",
       y,
     );
-    y = emptyLn(2, y);
+    y = textOrBlanks(data.externalExam, 2, y);
 
     // ─ ORAL CAVITY ──────────────────────────────────────
     y = secTitle(ru ? 'Осмотр полости рта:' : "Og'iz bo'shlig'ini ko'rik:", y);
@@ -328,14 +347,14 @@ export async function generateAppointmentPdf(
         : "Og'iz bo'shlig'i shilliq qavati, milklar va tanglay holati:",
       y,
     );
-    y = emptyLn(2, y);
+    y = textOrBlanks(data.oralCavity, 2, y);
     y = secTitle(
       ru
         ? 'Данные рентгеновских и лабораторных исследований:'
         : "Rentgen va laboratoriya tekshiruvlari ma'lumotlari:",
       y,
     );
-    y = emptyLn(2, y);
+    y = textOrBlanks(data.xrayLab, 2, y);
 
     // ─ PAGE 2 ───────────────────────────────────────────────
     doc.addPage();

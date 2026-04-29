@@ -32,6 +32,7 @@ interface PatientProfile {
   phone?: string;
   email?: string;
   address?: string;
+  profession?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   blood_group?: string;
@@ -136,6 +137,7 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
             />
             <InfoRow label="Gender" value={profile.gender} />
             <InfoRow label="Nationality" value={profile.nationality} />
+            <InfoRow label="Profession" value={profile.profession} />
           </div>
         </div>
       </Section>

@@ -27,6 +27,7 @@ export interface AccountSettings {
   date_of_birth: string | null;
   gender: "male" | "female" | "other" | "prefer_not_to_say" | null;
   address: string | null;
+  profession: string | null;
   timezone: string;
   language: string;
 }
@@ -113,6 +114,7 @@ export const usePatientSettings = () => {
     date_of_birth: null,
     gender: null,
     address: null,
+    profession: null,
     timezone: "UTC",
     language: "en",
   });
@@ -127,6 +129,7 @@ export const usePatientSettings = () => {
       date_of_birth: (profile as any)?.date_of_birth || null,
       gender: (profile as any)?.gender || null,
       address: (profile as any)?.address || null,
+      profession: (profile as any)?.profession || null,
       timezone: (profile as any)?.timezone || "UTC",
       language: (profile as any)?.language || "en",
     } as AccountSettings;
