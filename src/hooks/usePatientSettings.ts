@@ -27,6 +27,7 @@ export interface AccountSettings {
   date_of_birth: string | null;
   gender: "male" | "female" | "other" | "prefer_not_to_say" | null;
   address: string | null;
+  profession: string | null;
   timezone: string;
   language: string;
 }
