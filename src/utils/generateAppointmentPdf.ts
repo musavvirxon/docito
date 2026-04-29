@@ -347,14 +347,14 @@ export async function generateAppointmentPdf(
         : "Og'iz bo'shlig'i shilliq qavati, milklar va tanglay holati:",
       y,
     );
-    y = emptyLn(2, y);
+    y = textOrBlanks(data.oralCavity, 2, y);
     y = secTitle(
       ru
         ? 'Данные рентгеновских и лабораторных исследований:'
         : "Rentgen va laboratoriya tekshiruvlari ma'lumotlari:",
       y,
     );
-    y = emptyLn(2, y);
+    y = textOrBlanks(data.xrayLab, 2, y);
 
     // ─ PAGE 2 ───────────────────────────────────────────────
     doc.addPage();
