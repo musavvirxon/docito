@@ -247,6 +247,15 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       if (sessionData) {
         setSession(sessionData as SessionData);
         setSessionNotes(typeof sessionData.notes === 'string' ? sessionData.notes : '');
+        const sd = (sessionData as any).specialty_data || {};
+        const cf = (sd && typeof sd === 'object' && sd.clinical_findings) || {};
+        setClinicalFindings({
+          complaint: cf.complaint || '',
+          extraOralExam: cf.extraOralExam || '',
+          oralCavityCondition: cf.oralCavityCondition || '',
+          labXrayResults: cf.labXrayResults || '',
+          diagnosisText: cf.diagnosisText || '',
+        });
       } else {
         setSession(null);
       }
