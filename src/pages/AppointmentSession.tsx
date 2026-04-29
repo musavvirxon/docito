@@ -1305,6 +1305,85 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
+                    {/* Clinical Findings — feeds the 043/u summary PDF */}
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm flex items-center justify-between">
+                          <span>Clinical Findings</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleSaveClinicalFindings}
+                            disabled={savingFindings || !session?.id}
+                          >
+                            {savingFindings ? 'Saving…' : 'Save'}
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Complaint</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.complaint}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, complaint: e.target.value }))
+                              }
+                              placeholder="Patient's chief complaint…"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Extra-oral examination</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.extraOralExam}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, extraOralExam: e.target.value }))
+                              }
+                              placeholder="Face, lymph nodes, TMJ…"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Condition of oral cavity</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.oralCavityCondition}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, oralCavityCondition: e.target.value }))
+                              }
+                              placeholder="Mucosa, gingiva, palate…"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs">Lab & X-ray results</Label>
+                            <Textarea
+                              rows={2}
+                              value={clinicalFindings.labXrayResults}
+                              onChange={(e) =>
+                                setClinicalFindings((s) => ({ ...s, labXrayResults: e.target.value }))
+                              }
+                              placeholder="Imaging findings, lab values…"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Diagnosis (free text — overrides structured list in PDF)</Label>
+                          <Textarea
+                            rows={2}
+                            value={clinicalFindings.diagnosisText}
+                            onChange={(e) =>
+                              setClinicalFindings((s) => ({ ...s, diagnosisText: e.target.value }))
+                            }
+                            placeholder="Working diagnosis…"
+                          />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          These fields, together with procedures and billing on this page, are merged into the 043/u summary PDF.
+                        </p>
+                      </CardContent>
+                    </Card>
+
                     {/* Procedures (real, persisted) */}
                     {appointment && (
                       <AppointmentProceduresPanel
