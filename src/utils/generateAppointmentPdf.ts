@@ -23,6 +23,12 @@ export interface AppointmentPdfData {
   appointmentTime?: string;
   diagnosis?: string;
   complaints?: string;
+  /** Doctor's external (extra-oral) examination notes */
+  externalExam?: string;
+  /** Oral cavity / mucosa / gingiva description */
+  oralCavity?: string;
+  /** X-ray + lab investigation summary */
+  xrayLab?: string;
   treatment?: string;
   serviceName?: string;
   doctorName: string;
