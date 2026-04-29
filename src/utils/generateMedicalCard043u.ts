@@ -115,8 +115,8 @@ const UZ: Strings = {
   ministry: "O'ZBEKISTON RESPUBLIKASI SOG'LIQNI SAQLASH VAZIRLIGI",
   institutionName: 'Muassasa nomi',
   institutionAddress: 'Muassasa manzili',
-  cardTitle: 'TIBBIY KARTA',
-  cardSubtitle: 'stomatologik bemorning',
+  cardTitle: 'STOMATOLOGIK BEMORNING',
+  cardSubtitle: 'tibbiy kartasi',
   formLine: 'Shakl N 043/u   |   Tibbiy hujjat',
   fillDate: "To'ldirilgan sana",
   fullName: 'Familiya, ism, sharif',
@@ -219,9 +219,10 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
     gap: 3,
   });
 
-  text(S.cardTitle, { size: 18, bold: true, align: 'center', gap: 1 });
-  text(S.cardSubtitle, { size: 12, bold: true, align: 'center', gap: 1 });
-  text(S.formLine, { size: 8, align: 'center', gap: 4 });
+  text(S.cardTitle, { size: 16, bold: true, align: 'center', gap: 3 });
+  text(S.cardSubtitle, { size: 12, bold: true, align: 'center', gap: 3 });
+  text(S.formLine, { size: 8, align: 'center', gap: 6 });
+  y += 2;
 
   // Patient info box (rendered with autoTable for clean borders)
   autoTable(doc, {
