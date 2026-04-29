@@ -225,13 +225,26 @@ export async function generateAppointmentPdf(
     }
     y = emptyLn(2, y);
 
+    // Helper: print provided text wrapped, or fall back to N blank lines
+    const textOrBlanks = (val: string | undefined, blanks: number, yy: number) => {
+      const v = (val || '').trim();
+      if (v) {
+        size(8);
+        font(false);
+        const w = doc.splitTextToSize(v, CW);
+        doc.text(w, M, yy);
+        return yy + w.length * SLH + 2;
+      }
+      return emptyLn(blanks, yy);
+    };
+
     y = secTitle(
       ru
         ? 'Данные объективного исследования. Внешний осмотр:'
         : "Ob'ektiv tekshiruv. Tashqi ko'rik:",
       y,
     );
-    y = emptyLn(2, y);
+    y = textOrBlanks(data.externalExam, 2, y);
 
     // ─ ORAL CAVITY ──────────────────────────────────────
     y = secTitle(ru ? 'Осмотр полости рта:' : "Og'iz bo'shlig'ini ko'rik:", y);
