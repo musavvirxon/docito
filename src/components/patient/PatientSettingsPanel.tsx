@@ -192,6 +192,40 @@ export const PatientSettingsPanel = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gender">
+                    {t("patient.settings.account.gender", { defaultValue: "Gender" })}
+                  </Label>
+                  <Select
+                    value={localAccount.gender || ""}
+                    onValueChange={(v) => handleAccountChange("gender" as any, v)}
+                  >
+                    <SelectTrigger id="gender" className="rounded-xl">
+                      <SelectValue placeholder={t("patient.settings.account.selectGender", { defaultValue: "Select gender" })} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">{t("patient.settings.account.male", { defaultValue: "Male" })}</SelectItem>
+                      <SelectItem value="female">{t("patient.settings.account.female", { defaultValue: "Female" })}</SelectItem>
+                      <SelectItem value="other">{t("patient.settings.account.other", { defaultValue: "Other" })}</SelectItem>
+                      <SelectItem value="prefer_not_to_say">{t("patient.settings.account.preferNotToSay", { defaultValue: "Prefer not to say" })}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profession">
+                    {t("patient.settings.account.profession", { defaultValue: "Profession" })}
+                  </Label>
+                  <Input
+                    id="profession"
+                    value={localAccount.profession || ""}
+                    onChange={(e) => handleAccountChange("profession" as any, e.target.value)}
+                    placeholder={t("patient.settings.account.professionPlaceholder", { defaultValue: "e.g. Teacher" })}
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="address">{t("patient.settings.account.address", { defaultValue: "Address" })}</Label>
                 <Input
