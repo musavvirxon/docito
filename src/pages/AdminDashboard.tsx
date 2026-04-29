@@ -1218,7 +1218,19 @@ const AdminDashboard = () => {
                           if (upcoming.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">No upcoming appointments</p>;
                           return (
                             <div className="space-y-2">
-                              {upcoming.map(a => (
+                              {upcoming.map(a => {
+                                const p: any = patients.find((pt: any) =>
+                                  (a.patient_id && pt.id === a.patient_id) ||
+                                  (a.patient_name && pt.name === a.patient_name)
+                                ) || {};
+                                const dobVal = p.date_of_birth || (p as any).dob || (a as any).patient_dob || '';
+                                let ageVal: string | number = p.age || '';
+                                if (!ageVal && dobVal) {
+                                  try {
+                                    ageVal = Math.floor((Date.now() - new Date(dobVal).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                                  } catch { /* noop */ }
+                                }
+                                return (
                                 <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span>{a.appointment_date} {a.start_time}</span>
                                   <span className="truncate">{a.patient_name || 'Unknown'}</span>
@@ -1228,13 +1240,13 @@ const AdminDashboard = () => {
                                     practice={practice}
                                     locations={locations}
                                     data={{
-                                      patientName: a.patient_name || '',
-                                      gender: '',
-                                      age: '',
-                                      dob: '',
-                                      phone: '',
-                                      profession: '',
-                                      address: '',
+                                      patientName: a.patient_name || p.name || '',
+                                      gender: p.gender || (a as any).patient_gender || '',
+                                      age: ageVal,
+                                      dob: dobVal,
+                                      phone: p.phone || (a as any).patient_phone || '',
+                                      profession: p.profession || (a as any).patient_profession || '',
+                                      address: p.address || (a as any).patient_address || '',
                                       appointmentDate: a.appointment_date || '',
                                       diagnosis: (a as any).diagnosis || a.service_name || '',
                                       doctorName: selectedProvider?.name || '',
@@ -1244,7 +1256,8 @@ const AdminDashboard = () => {
                                     }}
                                   />
                                 </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           );
                         })()}
@@ -3728,20 +3741,36 @@ const AdminDashboard = () => {
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success('Invoice email queued'))}>
                                           <Mail className="h-3 w-3" />
                                         </Button>
-                                        <MedicalCardDownloadButton
-                                          practice={practice}
-                                          locations={locations}
-                                          data={{
-                                            patientName: tx?.metadata?.patient_name || tx?.metadata?.customer_name || '',
-                                            gender: '', age: '', dob: '', phone: '', profession: '', address: '',
-                                            appointmentDate: tx?.created_at ? (() => { try { return format(new Date(tx.created_at), 'yyyy-MM-dd'); } catch { return ''; } })() : '',
-                                            diagnosis: tx?.metadata?.service_name || '',
-                                            doctorName: tx?.metadata?.doctor_name || '',
-                                            serviceName: tx?.metadata?.service_name || '',
-                                            clinicName: practice?.name || '',
-                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
-                                          }}
-                                        />
+                                        {(() => {
+                                          const pName = tx?.metadata?.patient_name || tx?.metadata?.customer_name || '';
+                                          const p: any = patients.find((pt: any) => pt.id === tx?.metadata?.patient_id || pt.name === pName) || {};
+                                          const dobVal = p.date_of_birth || (p as any).dob || '';
+                                          let ageVal: string | number = p.age || '';
+                                          if (!ageVal && dobVal) {
+                                            try { ageVal = Math.floor((Date.now() - new Date(dobVal).getTime()) / (365.25 * 24 * 60 * 60 * 1000)); } catch { /* noop */ }
+                                          }
+                                          return (
+                                            <MedicalCardDownloadButton
+                                              practice={practice}
+                                              locations={locations}
+                                              data={{
+                                                patientName: pName || p.name || '',
+                                                gender: p.gender || '',
+                                                age: ageVal,
+                                                dob: dobVal,
+                                                phone: p.phone || '',
+                                                profession: p.profession || '',
+                                                address: p.address || '',
+                                                appointmentDate: tx?.created_at ? (() => { try { return format(new Date(tx.created_at), 'yyyy-MM-dd'); } catch { return ''; } })() : '',
+                                                diagnosis: tx?.metadata?.service_name || '',
+                                                doctorName: tx?.metadata?.doctor_name || '',
+                                                serviceName: tx?.metadata?.service_name || '',
+                                                clinicName: practice?.name || '',
+                                                clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                              }}
+                                            />
+                                          );
+                                        })()}
                                       </div>
                                     </td>
                                   </tr>

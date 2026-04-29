@@ -1320,16 +1320,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         />
                       )}
 
-                      {/* Existing procedures list (read/manage) */}
-                      {appointment && (
-                        <AppointmentProceduresPanel
-                          appointmentId={appointment.id}
-                          doctorId={appointment.doctor_id}
-                          patientId={appointment.patient_id}
-                          doctorPatientId={appointment.doctor_patient_id}
-                          isDentist={isDentist}
-                        />
-                      )}
+                      {/* Procedures list (read/manage) is rendered in the main session view above to avoid duplication */}
 
                       {/* Editable dental chart */}
                       <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={true} />
