@@ -114,6 +114,7 @@ export const usePatientSettings = () => {
     date_of_birth: null,
     gender: null,
     address: null,
+    profession: null,
     timezone: "UTC",
     language: "en",
   });
@@ -128,6 +129,7 @@ export const usePatientSettings = () => {
       date_of_birth: (profile as any)?.date_of_birth || null,
       gender: (profile as any)?.gender || null,
       address: (profile as any)?.address || null,
+      profession: (profile as any)?.profession || null,
       timezone: (profile as any)?.timezone || "UTC",
       language: (profile as any)?.language || "en",
     } as AccountSettings;
