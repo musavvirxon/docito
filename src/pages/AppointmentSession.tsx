@@ -956,8 +956,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           ? 'ayol'
                           : appointment.patient_gender || '';
 
-                  // Combine declared complaints from medical history / allergies
+                  // Combine declared complaints from medical history / allergies + structured complaint
                   const complaintsText = [
+                    clinicalFindings.complaint?.trim() || '',
                     appointment.patient_allergies
                       ? `${lang === 'ru' ? 'Аллергии' : 'Allergiyalar'}: ${appointment.patient_allergies}`
                       : '',
@@ -967,6 +968,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   ]
                     .filter(Boolean)
                     .join('\n');
+
+                  // Prefer the dentist's typed diagnosis over the structured diagnoses list when present
+                  const finalDiagnosis = clinicalFindings.diagnosisText?.trim() || diagnosisText;
 
                   await generateAppointmentPdf(
                     {
@@ -981,8 +985,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       phone: appointment.patient_phone || '',
                       appointmentDate: appointment.appointment_date || '',
                       appointmentTime: appointment.start_time || '',
-                      diagnosis: diagnosisText,
+                      diagnosis: finalDiagnosis,
                       complaints: complaintsText,
+                      externalExam: clinicalFindings.extraOralExam || '',
+                      oralCavity: clinicalFindings.oralCavityCondition || '',
+                      xrayLab: clinicalFindings.labXrayResults || '',
                       treatment: treatmentText,
                       serviceName: appointment.appointment_type || '',
                       doctorName,
