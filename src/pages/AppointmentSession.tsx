@@ -766,6 +766,32 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     }
   }, [session?.id, sessionNotes, t]);
 
+  const handleSaveClinicalFindings = useCallback(async () => {
+    if (!session?.id) {
+      toast.error(t('doctor.session.findingsNoSession', 'Start the session before saving findings'));
+      return;
+    }
+    setSavingFindings(true);
+    try {
+      const existing = (session as any).specialty_data && typeof (session as any).specialty_data === 'object'
+        ? (session as any).specialty_data
+        : {};
+      const next = { ...existing, clinical_findings: clinicalFindings };
+      const { error } = await supabase
+        .from('appointment_sessions')
+        .update({ specialty_data: next })
+        .eq('id', session.id);
+      if (error) throw error;
+      setSession((prev) => (prev ? ({ ...prev, specialty_data: next } as any) : prev));
+      toast.success(t('doctor.session.findingsSaved', 'Clinical findings saved'));
+    } catch (err) {
+      console.error('Error saving clinical findings:', err);
+      toast.error(t('doctor.session.findingsSaveError', 'Failed to save clinical findings'));
+    } finally {
+      setSavingFindings(false);
+    }
+  }, [session, clinicalFindings, t]);
+
   const handleVideoEnd = useCallback(
     async (notes?: string) => {
       if (notes) setSessionNotes(notes);
