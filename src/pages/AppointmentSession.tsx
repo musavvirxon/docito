@@ -1429,8 +1429,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   </TabsContent>
 
                   <TabsContent value="diagnoses" className="mt-0 space-y-4">
-                    {isDentist && (
-                      <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={false} />
+                    {isDentist && patientId && (
+                      <ToothDiagnosisPicker patientId={patientId} />
                     )}
                     <DiagnosisTab
                       diagnoses={diagnoses}
@@ -1451,9 +1451,6 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           }}
                         />
                       )}
-
-                      {/* Multi-tooth diagnosis */}
-                      {patientId && <ToothDiagnosisPicker patientId={patientId} />}
 
                       {/* Procedures list (read/manage) is rendered in the main session view above to avoid duplication */}
 
