@@ -1453,9 +1453,6 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
                       {/* Procedures list (read/manage) is rendered in the main session view above to avoid duplication */}
 
-                      {/* Editable dental chart */}
-                      <EnhancedDentalChart patientId={patientId} appointmentId={appointment.id} isEditable={true} />
-
                       {/* Legacy: read-only history of dental procedures for this appointment */}
                       <Card>
                         <CardHeader className="pb-2">
