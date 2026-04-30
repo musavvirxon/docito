@@ -62,6 +62,7 @@ import { useAppointmentFinance } from '@/hooks/useAppointmentFinance';
 import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
 import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateAppointmentConversation';
 import { DentalProcedurePicker } from '@/components/appointments/DentalProcedurePicker';
+import { ToothDiagnosisPicker } from '@/components/appointments/ToothDiagnosisPicker';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -1450,6 +1451,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           }}
                         />
                       )}
+
+                      {/* Multi-tooth diagnosis */}
+                      {patientId && <ToothDiagnosisPicker patientId={patientId} />}
 
                       {/* Procedures list (read/manage) is rendered in the main session view above to avoid duplication */}
 
