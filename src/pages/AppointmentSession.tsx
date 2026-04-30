@@ -1452,6 +1452,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         />
                       )}
 
+                      {/* Multi-tooth diagnosis */}
+                      {patientId && <ToothDiagnosisPicker patientId={patientId} />}
+
                       {/* Procedures list (read/manage) is rendered in the main session view above to avoid duplication */}
 
                       {/* Legacy: read-only history of dental procedures for this appointment */}
