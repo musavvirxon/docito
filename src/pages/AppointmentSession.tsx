@@ -769,20 +769,41 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   }, [session?.id, sessionNotes, t]);
 
   const handleSaveClinicalFindings = useCallback(async () => {
-    if (!session?.id) {
-      toast.error(t('doctor.session.findingsNoSession', 'Start the session before saving findings'));
+    if (!appointmentId) {
+      toast.error(t('doctor.session.findingsNoSession', 'Appointment not loaded'));
       return;
     }
     setSavingFindings(true);
     try {
-      const existing = (session as any).specialty_data && typeof (session as any).specialty_data === 'object'
-        ? (session as any).specialty_data
-        : {};
+      let workingSession = session;
+
+      // Auto-create the session row if the doctor hasn't formally started yet,
+      // so saving findings always works.
+      if (!workingSession?.id) {
+        const { data: created, error: createErr } = await supabase
+          .from('appointment_sessions')
+          .insert({
+            appointment_id: appointmentId,
+            session_status: 'in_progress',
+            started_at: new Date().toISOString(),
+            specialty_data: {},
+          } as any)
+          .select('*')
+          .single();
+        if (createErr) throw createErr;
+        workingSession = created as SessionData;
+        setSession(workingSession);
+      }
+
+      const existing =
+        (workingSession as any).specialty_data && typeof (workingSession as any).specialty_data === 'object'
+          ? (workingSession as any).specialty_data
+          : {};
       const next = { ...existing, clinical_findings: clinicalFindings };
       const { error } = await supabase
         .from('appointment_sessions')
         .update({ specialty_data: next })
-        .eq('id', session.id);
+        .eq('id', workingSession.id);
       if (error) throw error;
       setSession((prev) => (prev ? ({ ...prev, specialty_data: next } as any) : prev));
       toast.success(t('doctor.session.findingsSaved', 'Clinical findings saved'));
@@ -792,7 +813,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     } finally {
       setSavingFindings(false);
     }
-  }, [session, clinicalFindings, t]);
+  }, [appointmentId, session, clinicalFindings, t]);
 
   const handleVideoEnd = useCallback(
     async (notes?: string) => {
@@ -1316,7 +1337,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             variant="ghost"
                             size="sm"
                             onClick={handleSaveClinicalFindings}
-                            disabled={savingFindings || !session?.id}
+                            disabled={savingFindings || !appointmentId}
                           >
                             {savingFindings ? 'Saving…' : 'Save'}
                           </Button>
@@ -1432,12 +1453,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     {isDentist && patientId && (
                       <ToothDiagnosisPicker patientId={patientId} />
                     )}
-                    <DiagnosisTab
-                      diagnoses={diagnoses}
-                      mode="current"
-                      onAddDiagnosis={handleAddDiagnosis}
-                      onRemoveDiagnosis={handleRemoveDiagnosis}
-                    />
+                    {!isDentist && (
+                      <DiagnosisTab
+                        diagnoses={diagnoses}
+                        mode="current"
+                        onAddDiagnosis={handleAddDiagnosis}
+                        onRemoveDiagnosis={handleRemoveDiagnosis}
+                      />
+                    )}
                   </TabsContent>
 
                   {isDentist && (
