@@ -126,7 +126,9 @@ export function useAppointmentProcedures({
               appointment_id: appointmentId,
               doctor_id: doctorId,
               patient_id: targetPatient,
-              procedure_id: input.procedureId || null,
+              // procedure_id intentionally omitted: it FKs to public.dental_procedures,
+              // while input.procedureId comes from the doctor's services library.
+              // The human-readable name is preserved in procedure_name.
               procedure_name: input.name,
               tooth_numbers: teeth,
               status: input.status || 'planned',
