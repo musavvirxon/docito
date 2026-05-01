@@ -146,7 +146,8 @@ export function useAppointmentProcedures({
             .from('appointment_procedures')
             .insert({
               appointment_id: appointmentId,
-              procedure_id: input.procedureId || null,
+              // procedure_id omitted: FKs to public.procedures and would fail
+              // for IDs sourced from the doctor's own services library.
               procedure_notes: input.notes || input.name,
               estimated_cost: totalCost,
               status: input.status || 'planned',
