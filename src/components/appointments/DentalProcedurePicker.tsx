@@ -29,15 +29,15 @@ interface Props {
  * Saving creates a `tooth_procedure_history` row and an auto-billed
  * `billing_transactions` charge (handled inside `useAppointmentProcedures.addProcedure`).
  */
-export function DentalProcedurePicker({ initialTeeth = [], onSubmit }: Props) {
+export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures = [], onRemove }: Props) {
   const { services, loading: loadingServices } = useDoctorServices();
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
   const [unitCost, setUnitCost] = useState<string>('');
   const [status, setStatus] = useState<ProcedureStatus>('planned');
-  const [notes, setNotes] = useState('');
   const [teeth, setTeeth] = useState<string[]>(initialTeeth.map(String));
   const [submitting, setSubmitting] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   // Sync incoming chart selection
   useEffect(() => {
