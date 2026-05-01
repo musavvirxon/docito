@@ -1407,17 +1407,6 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
-                    {/* Procedures (real, persisted) */}
-                    {appointment && (
-                      <AppointmentProceduresPanel
-                        appointmentId={appointment.id}
-                        doctorId={appointment.doctor_id}
-                        patientId={appointment.patient_id}
-                        doctorPatientId={appointment.doctor_patient_id}
-                        isDentist={isDentist}
-                      />
-                    )}
-
                     {/* Patient Finance (real, persisted) */}
                     {appointment && (
                       <AppointmentFinancePanel
