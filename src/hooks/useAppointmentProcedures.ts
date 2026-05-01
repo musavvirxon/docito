@@ -126,7 +126,9 @@ export function useAppointmentProcedures({
               appointment_id: appointmentId,
               doctor_id: doctorId,
               patient_id: targetPatient,
-              procedure_id: input.procedureId || null,
+              // procedure_id intentionally omitted: it FKs to public.dental_procedures,
+              // while input.procedureId comes from the doctor's services library.
+              // The human-readable name is preserved in procedure_name.
               procedure_name: input.name,
               tooth_numbers: teeth,
               status: input.status || 'planned',
@@ -144,7 +146,8 @@ export function useAppointmentProcedures({
             .from('appointment_procedures')
             .insert({
               appointment_id: appointmentId,
-              procedure_id: input.procedureId || null,
+              // procedure_id omitted: FKs to public.procedures and would fail
+              // for IDs sourced from the doctor's own services library.
               procedure_notes: input.notes || input.name,
               estimated_cost: totalCost,
               status: input.status || 'planned',
