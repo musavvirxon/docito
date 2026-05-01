@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -14,11 +14,13 @@ import {
 } from '@/components/ui/select';
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
-import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
+import type { AddProcedureInput, ProcedureStatus, UnifiedProcedure } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
   initialTeeth?: number[];
   onSubmit: (input: AddProcedureInput) => Promise<void> | void;
+  procedures?: UnifiedProcedure[];
+  onRemove?: (item: UnifiedProcedure) => Promise<void> | void;
 }
 
 /**
