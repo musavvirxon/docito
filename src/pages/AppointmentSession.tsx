@@ -159,7 +159,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [pdfDownloading, setPdfDownloading] = useState<'ru' | 'uz' | null>(null);
 
   // Hooks for procedures + finance (used by panels and the summary PDF)
-  const { items: unifiedProcedures, addProcedure: dentalAddProcedure, refresh: refreshProcedures } = useAppointmentProcedures({
+  const { items: unifiedProcedures, addProcedure: dentalAddProcedure, removeProcedure: dentalRemoveProcedure, refresh: refreshProcedures } = useAppointmentProcedures({
     appointmentId,
     doctorId: appointment?.doctor_id,
     patientId: appointment?.patient_id || null,
@@ -1443,12 +1443,23 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       <ToothDiagnosisPicker patientId={patientId} />
                     )}
                     {!isDentist && (
-                      <DiagnosisTab
-                        diagnoses={diagnoses}
-                        mode="current"
-                        onAddDiagnosis={handleAddDiagnosis}
-                        onRemoveDiagnosis={handleRemoveDiagnosis}
-                      />
+                      <>
+                        <DiagnosisTab
+                          diagnoses={diagnoses}
+                          mode="current"
+                          onAddDiagnosis={handleAddDiagnosis}
+                          onRemoveDiagnosis={handleRemoveDiagnosis}
+                        />
+                        {appointment && appointment.doctor_id && (
+                          <AppointmentProceduresPanel
+                            appointmentId={appointmentId!}
+                            doctorId={appointment.doctor_id}
+                            patientId={appointment.patient_id || null}
+                            doctorPatientId={appointment.doctor_patient_id || null}
+                            isDentist={false}
+                          />
+                        )}
+                      </>
                     )}
                   </TabsContent>
 
@@ -1457,6 +1468,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       {/* Inline (big) procedure adder — auto-bills via useAppointmentProcedures */}
                       {appointment && (
                         <DentalProcedurePicker
+                          procedures={unifiedProcedures}
+                          onRemove={async (item) => {
+                            await dentalRemoveProcedure(item);
+                            await refreshProcedures();
+                          }}
                           onSubmit={async (input) => {
                             await dentalAddProcedure(input);
                             await refreshProcedures();

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -14,11 +14,13 @@ import {
 } from '@/components/ui/select';
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
-import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
+import type { AddProcedureInput, ProcedureStatus, UnifiedProcedure } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
   initialTeeth?: number[];
   onSubmit: (input: AddProcedureInput) => Promise<void> | void;
+  procedures?: UnifiedProcedure[];
+  onRemove?: (item: UnifiedProcedure) => Promise<void> | void;
 }
 
 /**
@@ -27,15 +29,15 @@ interface Props {
  * Saving creates a `tooth_procedure_history` row and an auto-billed
  * `billing_transactions` charge (handled inside `useAppointmentProcedures.addProcedure`).
  */
-export function DentalProcedurePicker({ initialTeeth = [], onSubmit }: Props) {
+export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures = [], onRemove }: Props) {
   const { services, loading: loadingServices } = useDoctorServices();
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
   const [unitCost, setUnitCost] = useState<string>('');
   const [status, setStatus] = useState<ProcedureStatus>('planned');
-  const [notes, setNotes] = useState('');
   const [teeth, setTeeth] = useState<string[]>(initialTeeth.map(String));
   const [submitting, setSubmitting] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   // Sync incoming chart selection
   useEffect(() => {
@@ -68,7 +70,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit }: Props) {
     setProcedureId(null);
     setUnitCost('');
     setStatus('planned');
-    setNotes('');
     setTeeth([]);
   };
 
@@ -81,7 +82,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit }: Props) {
         procedureId,
         status,
         cost: unit > 0 ? unit : null,
-        notes: notes.trim() || null,
+        notes: null,
         toothNumbers: teeth.map((t) => Number(t)).filter(Number.isFinite),
       });
       reset();
@@ -168,9 +169,71 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit }: Props) {
           <ToothSelector selectedTeeth={teeth} onChange={setTeeth} />
         </div>
 
-        <div className="space-y-1.5">
-          <Label>Notes</Label>
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
+        <div className="space-y-2">
+          <Label className="flex items-center justify-between">
+            <span>Added Procedures</span>
+            <span className="text-xs text-muted-foreground font-normal">
+              {procedures.length} item{procedures.length === 1 ? '' : 's'} · Total{' '}
+              <span className="font-semibold text-foreground">
+                {fmtMoney(procedures.reduce((s, p) => s + (p.cost || 0), 0))}
+              </span>
+            </span>
+          </Label>
+          {procedures.length === 0 ? (
+            <p className="text-xs text-muted-foreground border rounded-md p-3">
+              No procedures added yet for this appointment.
+            </p>
+          ) : (
+            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+              {procedures.map((p) => (
+                <div
+                  key={`${p.source}-${p.id}`}
+                  className="flex items-center justify-between gap-2 p-2 rounded-md border bg-muted/30"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm truncate">{p.name}</span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {p.status.replace('_', ' ')}
+                      </Badge>
+                      {p.toothNumbers.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">
+                          Teeth: {p.toothNumbers.slice().sort((a, b) => a - b).join(', ')}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-sm font-semibold tabular-nums shrink-0">
+                    {fmtMoney(p.cost || 0)}
+                  </span>
+                  {onRemove && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 shrink-0"
+                      disabled={removingId === p.id}
+                      onClick={async () => {
+                        setRemovingId(p.id);
+                        try {
+                          await onRemove(p);
+                        } finally {
+                          setRemovingId(null);
+                        }
+                      }}
+                      aria-label="Remove procedure"
+                    >
+                      {removingId === p.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      )}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between border-t pt-3 gap-3 flex-wrap">
