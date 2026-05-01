@@ -70,7 +70,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
     setProcedureId(null);
     setUnitCost('');
     setStatus('planned');
-    setNotes('');
     setTeeth([]);
   };
 
@@ -83,7 +82,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
         procedureId,
         status,
         cost: unit > 0 ? unit : null,
-        notes: notes.trim() || null,
+        notes: null,
         toothNumbers: teeth.map((t) => Number(t)).filter(Number.isFinite),
       });
       reset();
