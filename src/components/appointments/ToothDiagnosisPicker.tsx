@@ -78,19 +78,18 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
         toast.error('Enter a diagnosis name');
         return null;
       }
-      // Save to library so it's reusable
+      // Save to library so it's reusable across future appointments
       if (addLibraryDiagnosis) {
         try {
-          await addLibraryDiagnosis({ title, description: diagnosisNotes.trim() || null });
+          await addLibraryDiagnosis({ title, description: null });
         } catch {
           // Non-fatal — still proceed with saving to tooth records
         }
       }
-      return diagnosisNotes.trim() ? `${title} — ${diagnosisNotes.trim()}` : title;
+      return title;
     }
     if (selectedDiagnosis) {
-      const base = selectedDiagnosis.title || '';
-      return diagnosisNotes.trim() ? `${base} — ${diagnosisNotes.trim()}` : base;
+      return selectedDiagnosis.title || '';
     }
     toast.error('Choose a diagnosis or add a new one');
     return null;
@@ -106,11 +105,14 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
 
     setSubmitting(true);
     try {
+      // Default status used when storing tooth_records — status field has been
+      // removed from the dentist UI; we record `caries` as a clinically-neutral
+      // marker that this tooth has an active diagnosis attached.
       const results = await Promise.all(
         teeth.map((t) => {
           const n = Number(t);
           const toothType = PRIMARY_SET.has(n) ? 'primary' : 'permanent';
-          return upsertToothRecord(n, toothType, status, diagnosisText);
+          return upsertToothRecord(n, toothType, 'caries', diagnosisText);
         }),
       );
       const ok = results.filter(Boolean).length;
@@ -125,11 +127,6 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
   };
 
   if (!isVerifiedDentist) return null;
-
-  const statusEntries = Object.entries(TOOTH_STATUS_CONFIG) as [
-    ToothStatus,
-    typeof TOOTH_STATUS_CONFIG[ToothStatus],
-  ][];
 
   return (
     <Card>
