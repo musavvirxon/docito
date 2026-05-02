@@ -63,6 +63,7 @@ import { generateAppointmentPdf } from '@/utils/generateAppointmentPdf';
 import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateAppointmentConversation';
 import { DentalProcedurePicker } from '@/components/appointments/DentalProcedurePicker';
 import { ToothDiagnosisPicker } from '@/components/appointments/ToothDiagnosisPicker';
+import { PatientClinicalHistoryList } from '@/components/appointments/PatientClinicalHistoryList';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -1457,6 +1458,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             patientId={appointment.patient_id || null}
                             doctorPatientId={appointment.doctor_patient_id || null}
                             isDentist={false}
+                          />
+                        )}
+                        {patientId && (
+                          <PatientClinicalHistoryList
+                            patientId={patientId}
+                            excludeAppointmentId={appointmentId}
                           />
                         )}
                       </>
