@@ -49,15 +49,36 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
     (async () => {
       setLoading(true);
       try {
-        const [diagRes, apptProcRes] = await Promise.all([
+        // 1. Get all of this patient's appointment ids first (used to scope
+        //    appointment_procedures, which has no direct patient_id column).
+        const { data: apptRows } = await supabase
+          .from('appointments')
+          .select('id, doctor_id')
+          .eq('patient_id', patientId)
+          .limit(500);
+        const apptIds = (apptRows || []).map((a: any) => a.id);
+        const apptDoctorMap: Record<string, string> = {};
+        for (const a of (apptRows || []) as any[]) {
+          apptDoctorMap[a.id] = a.doctor_id;
+        }
+
+        const [diagRes, apptProcRes, dentalProcRes] = await Promise.all([
           supabase
             .from('appointment_diagnoses')
             .select('id, diagnosis_title, icd10_code, notes, created_at, doctor_id, appointment_id')
             .eq('patient_id', patientId)
             .order('created_at', { ascending: false })
             .limit(100),
+          apptIds.length > 0
+            ? supabase
+                .from('appointment_procedures')
+                .select('id, procedure_notes, estimated_cost, status, created_at, appointment_id, prescribed_by')
+                .in('appointment_id', apptIds)
+                .order('created_at', { ascending: false })
+                .limit(100)
+            : Promise.resolve({ data: [] as any[] }),
           supabase
-            .from('appointment_procedures')
+            .from('tooth_procedure_history')
             .select('id, procedure_name, cost, status, created_at, doctor_id, appointment_id')
             .eq('patient_id', patientId)
             .order('created_at', { ascending: false })
