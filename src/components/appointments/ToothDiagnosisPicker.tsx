@@ -3,7 +3,6 @@ import { Stethoscope, Loader2, Plus, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -15,7 +14,8 @@ import {
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDentalChart } from '@/hooks/useDentalChart';
 import { useDoctorData } from '@/contexts/DoctorDataContext';
-import { TOOTH_STATUS_CONFIG, ToothStatus, PRIMARY_TEETH } from '@/components/dental/types';
+import { PRIMARY_TEETH } from '@/components/dental/types';
+import { PatientCurrentStateChart } from './PatientCurrentStateChart';
 import { toast } from 'sonner';
 
 interface Props {
@@ -54,10 +54,8 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
   }
 
   const [teeth, setTeeth] = useState<string[]>([]);
-  const [status, setStatus] = useState<ToothStatus>('caries');
   const [selectedDiagnosisId, setSelectedDiagnosisId] = useState<string>('');
   const [newDiagnosisTitle, setNewDiagnosisTitle] = useState('');
-  const [diagnosisNotes, setDiagnosisNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const selectedDiagnosis = useMemo(
@@ -71,8 +69,6 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
     setTeeth([]);
     setSelectedDiagnosisId('');
     setNewDiagnosisTitle('');
-    setDiagnosisNotes('');
-    setStatus('caries');
   };
 
   const resolveDiagnosisText = async (): Promise<string | null> => {
@@ -82,19 +78,18 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
         toast.error('Enter a diagnosis name');
         return null;
       }
-      // Save to library so it's reusable
+      // Save to library so it's reusable across future appointments
       if (addLibraryDiagnosis) {
         try {
-          await addLibraryDiagnosis({ title, description: diagnosisNotes.trim() || null });
+          await addLibraryDiagnosis({ title, description: null });
         } catch {
           // Non-fatal — still proceed with saving to tooth records
         }
       }
-      return diagnosisNotes.trim() ? `${title} — ${diagnosisNotes.trim()}` : title;
+      return title;
     }
     if (selectedDiagnosis) {
-      const base = selectedDiagnosis.title || '';
-      return diagnosisNotes.trim() ? `${base} — ${diagnosisNotes.trim()}` : base;
+      return selectedDiagnosis.title || '';
     }
     toast.error('Choose a diagnosis or add a new one');
     return null;
@@ -110,11 +105,14 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
 
     setSubmitting(true);
     try {
+      // Default status used when storing tooth_records — status field has been
+      // removed from the dentist UI; we record `caries` as a clinically-neutral
+      // marker that this tooth has an active diagnosis attached.
       const results = await Promise.all(
         teeth.map((t) => {
           const n = Number(t);
           const toothType = PRIMARY_SET.has(n) ? 'primary' : 'permanent';
-          return upsertToothRecord(n, toothType, status, diagnosisText);
+          return upsertToothRecord(n, toothType, 'caries', diagnosisText);
         }),
       );
       const ok = results.filter(Boolean).length;
@@ -129,11 +127,6 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
   };
 
   if (!isVerifiedDentist) return null;
-
-  const statusEntries = Object.entries(TOOTH_STATUS_CONFIG) as [
-    ToothStatus,
-    typeof TOOTH_STATUS_CONFIG[ToothStatus],
-  ][];
 
   return (
     <Card>
@@ -153,51 +146,33 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
           <ToothSelector selectedTeeth={teeth} onChange={setTeeth} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label>Tooth status</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as ToothStatus)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusEntries.map(([key, cfg]) => (
-                  <SelectItem key={key} value={key} className="capitalize">
-                    {cfg.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" /> Diagnosis *
-            </Label>
-            <Select
-              value={selectedDiagnosisId}
-              onValueChange={(v) => setSelectedDiagnosisId(v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose from your library…" />
-              </SelectTrigger>
-              <SelectContent>
-                {libraryDiagnoses.length === 0 && (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                    Your diagnosis library is empty
-                  </div>
-                )}
-                {libraryDiagnoses.map((d: any) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.title}
-                  </SelectItem>
-                ))}
-                <SelectItem value={NEW_DIAGNOSIS_VALUE}>
-                  + Add new diagnosis…
+        <div className="space-y-1.5">
+          <Label className="flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5" /> Diagnosis *
+          </Label>
+          <Select
+            value={selectedDiagnosisId}
+            onValueChange={(v) => setSelectedDiagnosisId(v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Choose from your library…" />
+            </SelectTrigger>
+            <SelectContent>
+              {libraryDiagnoses.length === 0 && (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  Your diagnosis library is empty
+                </div>
+              )}
+              {libraryDiagnoses.map((d: any) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {d.title}
                 </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              ))}
+              <SelectItem value={NEW_DIAGNOSIS_VALUE}>
+                + Add new diagnosis…
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isAddingNew && (
@@ -214,15 +189,8 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <Label>Notes (optional)</Label>
-          <Textarea
-            value={diagnosisNotes}
-            onChange={(e) => setDiagnosisNotes(e.target.value)}
-            rows={2}
-            placeholder="Additional notes for this tooth/teeth…"
-          />
-        </div>
+        {/* Read-only current state chart with full procedure & diagnosis history */}
+        <PatientCurrentStateChart patientId={patientId} />
 
         <div className="flex items-center justify-between border-t pt-3 gap-3 flex-wrap">
           <div className="text-sm text-muted-foreground">
