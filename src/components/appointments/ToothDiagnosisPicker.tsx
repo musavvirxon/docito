@@ -54,10 +54,8 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
   }
 
   const [teeth, setTeeth] = useState<string[]>([]);
-  const [status, setStatus] = useState<ToothStatus>('caries');
   const [selectedDiagnosisId, setSelectedDiagnosisId] = useState<string>('');
   const [newDiagnosisTitle, setNewDiagnosisTitle] = useState('');
-  const [diagnosisNotes, setDiagnosisNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const selectedDiagnosis = useMemo(
@@ -71,8 +69,6 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
     setTeeth([]);
     setSelectedDiagnosisId('');
     setNewDiagnosisTitle('');
-    setDiagnosisNotes('');
-    setStatus('caries');
   };
 
   const resolveDiagnosisText = async (): Promise<string | null> => {
