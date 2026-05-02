@@ -97,7 +97,17 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
           appointment_id: d.appointment_id,
         }));
 
-        const procList: ProcedureItem[] = (apptProcRes.data || []).map((p: any) => ({
+        const apptProcList: ProcedureItem[] = ((apptProcRes as any).data || []).map((p: any) => ({
+          id: p.id,
+          name: p.procedure_notes || 'Procedure',
+          cost: p.estimated_cost,
+          status: p.status,
+          created_at: p.created_at,
+          doctor_id: p.prescribed_by || apptDoctorMap[p.appointment_id] || null,
+          appointment_id: p.appointment_id,
+        }));
+
+        const dentalProcList: ProcedureItem[] = ((dentalProcRes as any).data || []).map((p: any) => ({
           id: p.id,
           name: p.procedure_name,
           cost: p.cost,
@@ -106,6 +116,10 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
           doctor_id: p.doctor_id,
           appointment_id: p.appointment_id,
         }));
+
+        const procList: ProcedureItem[] = [...apptProcList, ...dentalProcList].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
 
         const filteredDiag = excludeAppointmentId
           ? diagList.filter((d) => d.appointment_id !== excludeAppointmentId)
