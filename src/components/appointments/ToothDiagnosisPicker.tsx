@@ -146,51 +146,33 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
           <ToothSelector selectedTeeth={teeth} onChange={setTeeth} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label>Tooth status</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as ToothStatus)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusEntries.map(([key, cfg]) => (
-                  <SelectItem key={key} value={key} className="capitalize">
-                    {cfg.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" /> Diagnosis *
-            </Label>
-            <Select
-              value={selectedDiagnosisId}
-              onValueChange={(v) => setSelectedDiagnosisId(v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Choose from your library…" />
-              </SelectTrigger>
-              <SelectContent>
-                {libraryDiagnoses.length === 0 && (
-                  <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                    Your diagnosis library is empty
-                  </div>
-                )}
-                {libraryDiagnoses.map((d: any) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.title}
-                  </SelectItem>
-                ))}
-                <SelectItem value={NEW_DIAGNOSIS_VALUE}>
-                  + Add new diagnosis…
+        <div className="space-y-1.5">
+          <Label className="flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5" /> Diagnosis *
+          </Label>
+          <Select
+            value={selectedDiagnosisId}
+            onValueChange={(v) => setSelectedDiagnosisId(v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Choose from your library…" />
+            </SelectTrigger>
+            <SelectContent>
+              {libraryDiagnoses.length === 0 && (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  Your diagnosis library is empty
+                </div>
+              )}
+              {libraryDiagnoses.map((d: any) => (
+                <SelectItem key={d.id} value={d.id}>
+                  {d.title}
                 </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              ))}
+              <SelectItem value={NEW_DIAGNOSIS_VALUE}>
+                + Add new diagnosis…
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isAddingNew && (
@@ -207,15 +189,8 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
           </div>
         )}
 
-        <div className="space-y-1.5">
-          <Label>Notes (optional)</Label>
-          <Textarea
-            value={diagnosisNotes}
-            onChange={(e) => setDiagnosisNotes(e.target.value)}
-            rows={2}
-            placeholder="Additional notes for this tooth/teeth…"
-          />
-        </div>
+        {/* Read-only current state chart with full procedure & diagnosis history */}
+        <PatientCurrentStateChart patientId={patientId} />
 
         <div className="flex items-center justify-between border-t pt-3 gap-3 flex-wrap">
           <div className="text-sm text-muted-foreground">
