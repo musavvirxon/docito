@@ -3,7 +3,6 @@ import { Stethoscope, Loader2, Plus, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -15,7 +14,8 @@ import {
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDentalChart } from '@/hooks/useDentalChart';
 import { useDoctorData } from '@/contexts/DoctorDataContext';
-import { TOOTH_STATUS_CONFIG, ToothStatus, PRIMARY_TEETH } from '@/components/dental/types';
+import { PRIMARY_TEETH } from '@/components/dental/types';
+import { PatientCurrentStateChart } from './PatientCurrentStateChart';
 import { toast } from 'sonner';
 
 interface Props {
