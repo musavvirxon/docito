@@ -1116,6 +1116,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   {canManagePrescriptions && (
+                    <TabsTrigger value="treatmentPlan" className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Treatment Plan
+                    </TabsTrigger>
+                  )}
+
                     <TabsTrigger value="prescriptions" className="gap-2">
                       <Pill className="h-4 w-4" />
                       Rx
