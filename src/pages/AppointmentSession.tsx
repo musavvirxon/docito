@@ -1599,6 +1599,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   {canManagePrescriptions && (
+                    <TabsContent value="treatmentPlan" className="mt-0 space-y-4">
+                      {appointment && (
+                        <AppointmentTreatmentPlansSection
+                          doctorId={appointment.doctor_id}
+                          doctorAuthUserId={doctorAuthUserId}
+                          patientId={appointment.patient_id || null}
+                          doctorPatientId={appointment.doctor_patient_id || null}
+                          patientName={appointment.patient_name}
+                          canManage={isDentist}
+                        />
+                      )}
+                    </TabsContent>
+                  )}
+
+                  {canManagePrescriptions && (
                     <TabsContent value="prescriptions" className="mt-0">
                       <PrescriptionCreator
                         patientId={patientId}
