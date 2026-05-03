@@ -25,7 +25,7 @@ interface TreatmentPlanRow {
   doctor_patient_id: string | null;
   title: string;
   notes: string | null;
-  description: string | null;
+  description?: string | null;
   status: string;
   total_cost: number | null;
   created_at: string;
@@ -86,7 +86,7 @@ export function AppointmentTreatmentPlansSection({
 
       const { data, error } = await query;
       if (error) throw error;
-      setPlans((data || []) as TreatmentPlanRow[]);
+      setPlans(((data || []) as any[]) as TreatmentPlanRow[]);
     } catch (err: any) {
       console.error('Load treatment plans failed', err);
       toast.error(err?.message || 'Failed to load treatment plans');
