@@ -64,6 +64,7 @@ import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateA
 import { DentalProcedurePicker } from '@/components/appointments/DentalProcedurePicker';
 import { ToothDiagnosisPicker } from '@/components/appointments/ToothDiagnosisPicker';
 import { PatientClinicalHistoryList } from '@/components/appointments/PatientClinicalHistoryList';
+import { AppointmentTreatmentPlansSection } from '@/components/appointments/AppointmentTreatmentPlansSection';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -117,9 +118,9 @@ interface AppointmentDentalProcedureRow {
   doctor?: { full_name: string | null } | null;
 }
 
-type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'prescriptions' | 'notes';
+type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'treatmentPlan' | 'prescriptions' | 'notes';
 
-const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'prescriptions', 'notes'];
+const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'treatmentPlan', 'prescriptions', 'notes'];
 
 const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: AppointmentSessionPageProps) => {
   const { appointmentId: paramAppointmentId } = useParams();
