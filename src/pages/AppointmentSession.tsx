@@ -64,6 +64,7 @@ import { getOrCreateAppointmentConversation } from '@/lib/messaging/getOrCreateA
 import { DentalProcedurePicker } from '@/components/appointments/DentalProcedurePicker';
 import { ToothDiagnosisPicker } from '@/components/appointments/ToothDiagnosisPicker';
 import { PatientClinicalHistoryList } from '@/components/appointments/PatientClinicalHistoryList';
+import { AppointmentTreatmentPlansSection } from '@/components/appointments/AppointmentTreatmentPlansSection';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -117,9 +118,9 @@ interface AppointmentDentalProcedureRow {
   doctor?: { full_name: string | null } | null;
 }
 
-type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'prescriptions' | 'notes';
+type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'treatmentPlan' | 'prescriptions' | 'notes';
 
-const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'prescriptions', 'notes'];
+const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'treatmentPlan', 'prescriptions', 'notes'];
 
 const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: AppointmentSessionPageProps) => {
   const { appointmentId: paramAppointmentId } = useParams();
@@ -134,6 +135,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [session, setSession] = useState<SessionData | null>(null);
   const [appointment, setAppointment] = useState<AppointmentData | null>(null);
   const [doctorSpecialty, setDoctorSpecialty] = useState<string>('');
+  const [doctorAuthUserId, setDoctorAuthUserId] = useState<string | null>(null);
   const [sessionNotes, setSessionNotes] = useState('');
   // Structured clinical findings for the 043/u summary
   const [clinicalFindings, setClinicalFindings] = useState({
@@ -270,6 +272,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           *,
           doctor:doctors (
             id,
+            user_id,
             specialty
           ),
           patient:profiles (
@@ -341,6 +344,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       });
 
       setDoctorSpecialty(appointmentData.doctor?.specialty || '');
+      setDoctorAuthUserId((appointmentData.doctor as any)?.user_id || null);
 
       // Doctor name + clinic info (for the Summary PDF header)
       if (appointmentData.doctor_id) {
@@ -1086,7 +1090,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           <ResizablePanel defaultSize={65} minSize={50}>
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 mb-4">
+                <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
                     Session
@@ -1108,6 +1112,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <TabsTrigger value="dental" className="gap-2">
                       <Stethoscope className="h-4 w-4" />
                       Dental
+                    </TabsTrigger>
+                  )}
+
+                  {canManagePrescriptions && (
+                    <TabsTrigger value="treatmentPlan" className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Treatment Plan
                     </TabsTrigger>
                   )}
 
@@ -1584,6 +1595,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           </div>
                         </CardContent>
                       </Card>
+                    </TabsContent>
+                  )}
+
+                  {canManagePrescriptions && (
+                    <TabsContent value="treatmentPlan" className="mt-0 space-y-4">
+                      {appointment && (
+                        <AppointmentTreatmentPlansSection
+                          doctorId={appointment.doctor_id}
+                          doctorAuthUserId={doctorAuthUserId}
+                          patientId={appointment.patient_id || null}
+                          doctorPatientId={appointment.doctor_patient_id || null}
+                          patientName={appointment.patient_name}
+                          canManage={canManagePrescriptions}
+                        />
+                      )}
                     </TabsContent>
                   )}
 

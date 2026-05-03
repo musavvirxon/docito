@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
-import type { AddProcedureInput, ProcedureStatus, UnifiedProcedure } from '@/hooks/useAppointmentProcedures';
+import type { AddProcedureInput, UnifiedProcedure } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
   initialTeeth?: number[];
@@ -34,7 +34,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
   const [unitCost, setUnitCost] = useState<string>('');
-  const [status, setStatus] = useState<ProcedureStatus>('planned');
   const [teeth, setTeeth] = useState<string[]>(initialTeeth.map(String));
   const [submitting, setSubmitting] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -69,7 +68,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
     setName('');
     setProcedureId(null);
     setUnitCost('');
-    setStatus('planned');
     setTeeth([]);
   };
 
@@ -80,7 +78,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
       await onSubmit({
         name: name.trim(),
         procedureId,
-        status,
+        status: 'completed',
         cost: unit > 0 ? unit : null,
         notes: null,
         toothNumbers: teeth.map((t) => Number(t)).filter(Number.isFinite),
@@ -145,21 +143,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
         </div>
 
         <div className="space-y-1.5">
-          <Label>Status</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as ProcedureStatus)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="planned">Planned</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
           <Label>
             Teeth (FDI){' '}
             <span className="text-xs text-muted-foreground font-normal">
@@ -193,9 +176,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm truncate">{p.name}</span>
-                      <Badge variant="outline" className="text-[10px]">
-                        {p.status.replace('_', ' ')}
-                      </Badge>
                       {p.toothNumbers.length > 0 && (
                         <Badge variant="outline" className="text-[10px]">
                           Teeth: {p.toothNumbers.slice().sort((a, b) => a - b).join(', ')}

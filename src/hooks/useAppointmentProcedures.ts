@@ -131,10 +131,10 @@ export function useAppointmentProcedures({
               // The human-readable name is preserved in procedure_name.
               procedure_name: input.name,
               tooth_numbers: teeth,
-              status: input.status || 'planned',
+              status: 'completed',
               cost: totalCost,
               notes: input.notes || null,
-              performed_at: input.status === 'completed' ? new Date().toISOString() : null,
+              performed_at: new Date().toISOString(),
             } as any)
             .select('id')
             .single();
@@ -150,7 +150,7 @@ export function useAppointmentProcedures({
               // for IDs sourced from the doctor's own services library.
               procedure_notes: input.notes || input.name,
               estimated_cost: totalCost,
-              status: input.status || 'planned',
+              status: 'completed',
               prescribed_by: authUser?.user?.id || doctorId,
               prescribed_at: new Date().toISOString(),
             } as any)
