@@ -1607,7 +1607,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           patientId={appointment.patient_id || null}
                           doctorPatientId={appointment.doctor_patient_id || null}
                           patientName={appointment.patient_name}
-                          canManage={isDentist}
+                          canManage={canManagePrescriptions}
                         />
                       )}
                     </TabsContent>
