@@ -134,6 +134,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [session, setSession] = useState<SessionData | null>(null);
   const [appointment, setAppointment] = useState<AppointmentData | null>(null);
   const [doctorSpecialty, setDoctorSpecialty] = useState<string>('');
+  const [doctorAuthUserId, setDoctorAuthUserId] = useState<string | null>(null);
   const [sessionNotes, setSessionNotes] = useState('');
   // Structured clinical findings for the 043/u summary
   const [clinicalFindings, setClinicalFindings] = useState({
@@ -342,6 +343,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       });
 
       setDoctorSpecialty(appointmentData.doctor?.specialty || '');
+      setDoctorAuthUserId((appointmentData.doctor as any)?.user_id || null);
 
       // Doctor name + clinic info (for the Summary PDF header)
       if (appointmentData.doctor_id) {
