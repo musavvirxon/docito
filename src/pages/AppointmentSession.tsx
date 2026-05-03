@@ -270,6 +270,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           *,
           doctor:doctors (
             id,
+            user_id,
             specialty
           ),
           patient:profiles (
