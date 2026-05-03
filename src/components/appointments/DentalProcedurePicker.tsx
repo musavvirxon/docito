@@ -176,9 +176,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-sm truncate">{p.name}</span>
-                      <Badge variant="outline" className="text-[10px]">
-                        {p.status.replace('_', ' ')}
-                      </Badge>
                       {p.toothNumbers.length > 0 && (
                         <Badge variant="outline" className="text-[10px]">
                           Teeth: {p.toothNumbers.slice().sort((a, b) => a - b).join(', ')}
