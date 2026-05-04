@@ -1090,7 +1090,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           <ResizablePanel defaultSize={65} minSize={50}>
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-7 mb-4">
+                <TabsList className="flex w-full flex-wrap h-auto gap-1 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
                     Session
