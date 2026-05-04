@@ -1090,7 +1090,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
           <ResizablePanel defaultSize={65} minSize={50}>
             <div className="pr-4 h-full">
               <Tabs value={activeTab} onValueChange={handleTabChange} className="h-full flex flex-col">
-                <TabsList className="flex w-full flex-wrap h-auto gap-1 mb-4">
+                <TabsList className="!flex !h-auto w-full flex-wrap justify-start gap-1 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
                     Session
@@ -1624,14 +1624,6 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   )}
 
                   <TabsContent value="notes" className="mt-0 space-y-4">
-                    {appointment && (
-                      <AppointmentFinancePanel
-                        appointmentId={appointment.id}
-                        patientId={appointment.patient_id}
-                        patientName={appointment.patient_name || ''}
-                        appointmentDate={appointment.appointment_date}
-                      />
-                    )}
                     <Card>
                       <CardContent className="pt-6">
                         <Textarea
