@@ -20,6 +20,7 @@ import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
 interface Props {
   patientId: string;
   doctorId: string;
+  appointmentId?: string;
   onSuccess?: (prescriptionId: string) => void;
 }
 
