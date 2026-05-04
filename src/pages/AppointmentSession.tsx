@@ -424,7 +424,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
   const isVideoAppointment = appointment?.appointment_type === 'video';
   const isDentist = isDentalSpecialty(doctorSpecialty);
-  const canManagePrescriptions = !(allRoles || []).includes('patient');
+  // Show clinical management tabs (Treatment Plan / Rx) for the appointment's
+  // doctor, staff, or admin roles — not for the patient viewing their own visit.
+  const allRolesList = allRoles || [];
+  const isAppointmentDoctor = !!user?.id && !!doctorAuthUserId && user.id === doctorAuthUserId;
+  const hasClinicianRole = allRolesList.some((r) =>
+    ['doctor', 'staff', 'admin', 'clinic_admin', 'pharmacy_admin', 'lab_admin', 'imaging_admin', 'super_admin'].includes(r as string),
+  );
+  const canManagePrescriptions = isAppointmentDoctor || hasClinicianRole;
 
   // Ensure active tab remains valid when the appointment type changes
   useEffect(() => {
@@ -435,7 +442,10 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     if (!isDentist && activeTab === 'dental') {
       handleTabChange('session');
     }
-  }, [appointment, isVideoAppointment, isDentist, activeTab, handleTabChange]);
+    if (!canManagePrescriptions && (activeTab === 'treatmentPlan' || activeTab === 'prescriptions')) {
+      handleTabChange('session');
+    }
+  }, [appointment, isVideoAppointment, isDentist, canManagePrescriptions, activeTab, handleTabChange]);
 
   const formatMoney = useCallback((amount: number | null | undefined) => {
     const n = Number(amount ?? 0);
