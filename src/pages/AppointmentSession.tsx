@@ -1628,6 +1628,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       <PrescriptionCreator
                         patientId={patientId}
                         doctorId={appointment.doctor_id}
+                        appointmentId={appointmentId}
                         onSuccess={() => toast.success('Prescription created & PDF downloaded')}
                       />
                     </TabsContent>
