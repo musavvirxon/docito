@@ -196,6 +196,7 @@ export const usePrescriptions = (options?: { doctorId?: string; patientId?: stri
     items: PrescriptionItem[],
     refills: number = 0,
     notes?: string,
+    appointmentId?: string,
   ) => {
     try {
       const normalizedPatientId = patientId?.trim();
@@ -221,7 +222,8 @@ export const usePrescriptions = (options?: { doctorId?: string; patientId?: stri
         p_items: jsonItems,
         p_refills: refills,
         p_notes: notes?.trim() || null,
-      });
+        p_appointment_id: appointmentId?.trim() || null,
+      } as any);
 
       if (error) throw error;
 

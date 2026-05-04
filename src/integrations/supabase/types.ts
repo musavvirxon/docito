@@ -10320,16 +10320,28 @@ export type Database = {
         Args: { p_email: string; p_full_name: string; p_phone?: string }
         Returns: Json
       }
-      create_prescription: {
-        Args: {
-          p_doctor_id: string
-          p_items: Json
-          p_notes?: string
-          p_patient_id: string
-          p_refills?: number
-        }
-        Returns: Json
-      }
+      create_prescription:
+        | {
+            Args: {
+              p_doctor_id: string
+              p_items: Json
+              p_notes?: string
+              p_patient_id: string
+              p_refills?: number
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_appointment_id?: string
+              p_doctor_id: string
+              p_items: Json
+              p_notes?: string
+              p_patient_id: string
+              p_refills?: number
+            }
+            Returns: Json
+          }
       create_referral_notification: {
         Args: {
           p_message: string

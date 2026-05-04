@@ -20,6 +20,7 @@ import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
 interface Props {
   patientId: string;
   doctorId: string;
+  appointmentId?: string;
   onSuccess?: (prescriptionId: string) => void;
 }
 
@@ -45,7 +46,7 @@ const UNITS = [
   { value: 'patches', label: 'Patches' },
 ];
 
-export default function PrescriptionCreator({ patientId, doctorId, onSuccess }: Props) {
+export default function PrescriptionCreator({ patientId, doctorId, appointmentId, onSuccess }: Props) {
   const { createPrescription } = usePrescriptions();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -115,7 +116,8 @@ export default function PrescriptionCreator({ patientId, doctorId, onSuccess }: 
           instructions: item.instructions?.trim() || undefined,
         })) as PrescriptionItem[],
         refills,
-        notes || undefined
+        notes || undefined,
+        appointmentId,
       );
       
       if (prescriptionId && onSuccess) {
