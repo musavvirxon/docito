@@ -196,6 +196,7 @@ export const usePrescriptions = (options?: { doctorId?: string; patientId?: stri
     items: PrescriptionItem[],
     refills: number = 0,
     notes?: string,
+    appointmentId?: string,
   ) => {
     try {
       const normalizedPatientId = patientId?.trim();
