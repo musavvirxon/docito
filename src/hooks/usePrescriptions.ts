@@ -222,7 +222,8 @@ export const usePrescriptions = (options?: { doctorId?: string; patientId?: stri
         p_items: jsonItems,
         p_refills: refills,
         p_notes: notes?.trim() || null,
-      });
+        p_appointment_id: appointmentId?.trim() || null,
+      } as any);
 
       if (error) throw error;
 
