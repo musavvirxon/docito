@@ -46,7 +46,7 @@ const UNITS = [
   { value: 'patches', label: 'Patches' },
 ];
 
-export default function PrescriptionCreator({ patientId, doctorId, onSuccess }: Props) {
+export default function PrescriptionCreator({ patientId, doctorId, appointmentId, onSuccess }: Props) {
   const { createPrescription } = usePrescriptions();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
