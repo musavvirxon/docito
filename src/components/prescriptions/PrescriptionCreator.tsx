@@ -116,7 +116,8 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
           instructions: item.instructions?.trim() || undefined,
         })) as PrescriptionItem[],
         refills,
-        notes || undefined
+        notes || undefined,
+        appointmentId,
       );
       
       if (prescriptionId && onSuccess) {
