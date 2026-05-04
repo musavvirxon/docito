@@ -127,7 +127,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useTranslation('dashboard');
-  const { allRoles } = useAuth();
+  const { allRoles, user } = useAuth();
 
   const appointmentId = propAppointmentId || paramAppointmentId;
 
