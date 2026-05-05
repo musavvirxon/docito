@@ -1,49 +1,42 @@
-I found the Appointment Session page does contain code for Treatment Plan and Prescription tabs, but there are several blockers that can make them effectively invisible or unusable:
+I found the video room is still using an auto-start pattern and manually copying attached track streams into fixed `<video>` refs. That explains the current symptoms:
 
-1. The new tabs are gated behind `canManagePrescriptions`, which is currently based on `allRoles.includes('patient')`. If the logged-in user has both doctor and patient roles, the tabs are hidden even while they are acting as a doctor.
-2. The current route is loaded as an anonymous browser session in the debug preview, so the appointment query returns no appointment data. The app then stays on the loading/empty state and no tabs can be seen.
-3. Treatment plan creation is passing only a patient ID to the dashboard modal. For doctor-added patients, that ID is incorrectly treated as a registered `patient_id`, so plans may not be saved under the correct patient linkage.
-4. Prescription creation currently does not pass or persist `appointment_id`, so prescriptions made during an appointment are patient-level, not appointment-scoped.
-5. The Notes tab no longer has the finance panel, but there is still a duplicate finance panel inside the Session tab; I will ensure the Notes area stays notes-only.
+- Camera/microphone startup happens automatically after async token + room connection instead of a direct user gesture, which browsers often block or LiveKit can time out on.
+- The runtime error `publishing rejected as engine not connected within timeout` indicates media publishing is being attempted while LiveKit is not fully ready or after the connection failed.
+- Screenshare is toggled without robust connection/permission handling and without reliable local/remote track attachment cleanup.
+- The video room inside `/appointment-session/...` is placed inside a scroll area without a strong minimum height, so non-fullscreen mode can collapse into a small panel.
 
 Plan:
 
-1. Fix tab visibility and navigation
-   - Update `AppointmentSession.tsx` to use the active role / appointment doctor context instead of hiding tabs whenever `allRoles` contains `patient`.
-   - Treatment Plan and Prescription tabs will be visible as separate tabs for the doctor/staff appointment workspace.
-   - Keep dental-only gating only for the Dental tab.
-   - Make the tab bar layout robust with flex wrapping and explicit visible trigger styles.
+1. Rework `VideoRoom.tsx` connection and media startup
+   - Connect to LiveKit first, then explicitly mark the room as ready.
+   - Do not auto-enable camera/microphone inside `useEffect`.
+   - Show an in-room “Start camera & microphone” call-to-action after the room connects, so media access is triggered by a user click.
+   - Disable camera/mic/screenshare buttons until the room is connected.
+   - Add clear user-facing error messages for blocked permissions, missing devices, devices in use, insecure browser context, and LiveKit publish/connect failures.
 
-2. Make appointment tab URLs reliable
-   - Ensure `?tab=treatmentPlan` and `?tab=prescriptions` open their matching sections directly.
-   - If a user lands on a tab that is not available for their role/context, redirect to the nearest valid tab instead of silently showing no content.
+2. Make track rendering reliable
+   - Stop manually copying `srcObject` from temporary attached elements.
+   - Attach LiveKit tracks directly into stable local video, remote video, and screenshare containers.
+   - Clean up/detach tracks when unpublished, unsubscribed, disconnected, or when the component unmounts.
+   - Track local camera state, microphone state, and screen-share state from LiveKit events rather than assuming button clicks always succeeded.
 
-3. Scope Treatment Plans to this appointment’s patient
-   - Update `AppointmentTreatmentPlansSection` so it receives `appointmentId` and exact patient linkage.
-   - For registered patients, use `patient_id`.
-   - For doctor-added patients, use `doctor_patient_id`.
-   - Filter treatment plans to the appointment’s patient only, not all patients.
-   - Pass the correct preselected patient identity into the create-treatment-plan modal, and update the modal if needed so doctor-added patients are not accidentally saved as registered patients.
-   - Reuse the same treatment plan detail/create backend data and UI used by the doctor dashboard.
+3. Improve screenshare behavior
+   - Only allow screenshare once connected.
+   - Use `setScreenShareEnabled(true, { audio: true })` with a safe fallback to video-only when system/tab audio is not supported.
+   - Show a helpful message if the user cancels or the browser blocks screen sharing.
 
-4. Scope Prescriptions to this appointment
-   - Update `PrescriptionCreator` / `usePrescriptions` to accept `appointmentId`.
-   - Update the `create_prescription` RPC with an optional `p_appointment_id` argument and insert it into `prescriptions.appointment_id`.
-   - In Appointment Session, pass the current appointment ID so new prescriptions apply only to the patient in the current appointment.
-   - Optionally show an appointment-scoped prescription list in that tab after creation so the doctor can see what was created for this visit.
+4. Fix non-fullscreen sizing in the appointment session
+   - Give the video tab/content a viewport-aware minimum height.
+   - Make the `VideoRoom` itself fill a large usable area instead of inheriting a tiny scroll-area height.
+   - Adjust the video layout so the remote/screen feed is prominent and the local preview is responsive instead of always a fixed small box.
 
-5. Keep Notes clean
-   - Confirm the Notes tab only contains the session note editor.
-   - Remove any remaining patient finance block from the Notes section if present.
+5. Add resilience and safety
+   - Prevent blank-screen behavior by rendering an error panel inside the video room instead of leaving only an “Error” badge.
+   - Make “Leave” disconnect without ending the medical session, while “End Video” continues to finalize the consultation.
+   - Keep the existing Supabase token function authorization model unchanged unless a new backend error appears during testing.
 
-6. Align completed procedure billing
-   - Keep procedure creation as completed-only.
-   - Ensure only completed procedures count toward the appointment procedure total and billing charge.
-   - Ensure charge rows are tied to the created procedure and appointment so patient financial totals update correctly and can be cleaned up if the procedure is removed.
+Files expected to change:
+- `src/components/video/VideoRoom.tsx`
+- `src/pages/AppointmentSession.tsx`
 
-7. Validate after implementation
-   - Check the appointment page at a desktop viewport.
-   - Verify visible separate tabs: Session, Video when relevant, Diagnoses, Dental for dentists, Treatment Plan, Prescriptions, Notes.
-   - Verify direct navigation to `?tab=treatmentPlan` and `?tab=prescriptions` works.
-   - Verify Notes does not show Patient Finance.
-   - Verify treatment plans and prescriptions save with the appointment patient/appointment context.
+No database migration is needed for this fix.
