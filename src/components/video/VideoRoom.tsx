@@ -199,6 +199,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     };
   }, [
     consultation.id,
+    consultation.appointment_id,
     consultation.room_id,
     handleTrackSubscribed,
     handleTrackUnsubscribed,
