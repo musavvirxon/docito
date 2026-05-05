@@ -79,7 +79,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     el.style.height = '100%';
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
-    (el as HTMLMediaElement).playsInline = true;
+    el.setAttribute('playsinline', 'true');
     container.appendChild(el);
   };
 
