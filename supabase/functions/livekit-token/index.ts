@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
 
       const { data: appt, error: apptErr } = await adminClient
         .from("appointments")
-        .select("id, doctor_id, patient_id, video_room_id, clinic_id")
+        .select("id, doctor_id, patient_id, video_room_id, practice_id")
         .eq("id", appointmentId)
         .maybeSingle();
 
@@ -130,14 +130,15 @@ Deno.serve(async (req) => {
       const isDoctor = appt.doctor_id === user.id;
       const isPatient = appt.patient_id === user.id;
 
-      // Allow clinic staff/admin assigned to this appointment's clinic to join.
+      // Allow practice staff assigned to this appointment's practice to join.
       let isClinicMember = false;
-      if (!isDoctor && !isPatient && appt.clinic_id) {
+      if (!isDoctor && !isPatient && appt.practice_id) {
         const { data: staffRow } = await adminClient
           .from("clinic_staff")
           .select("id")
-          .eq("clinic_id", appt.clinic_id)
+          .eq("practice_id", appt.practice_id)
           .eq("user_id", user.id)
+          .eq("status", "active")
           .maybeSingle();
         isClinicMember = !!staffRow;
       }
