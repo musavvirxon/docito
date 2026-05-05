@@ -24,6 +24,7 @@ interface Props {
   doctorPatientId?: string | null;
   isDentist: boolean;
   initialTeeth?: number[];
+  onProceduresChanged?: () => void | Promise<void>;
 }
 
 const statusBadge = (s: ProcedureStatus) => {
@@ -55,6 +56,7 @@ export function AppointmentProceduresPanel({
   doctorPatientId,
   isDentist,
   initialTeeth,
+  onProceduresChanged,
 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [seedTeeth, setSeedTeeth] = useState<number[]>(initialTeeth || []);
@@ -128,6 +130,7 @@ export function AppointmentProceduresPanel({
         initialTeeth={seedTeeth}
         onSubmit={async (input) => {
           await addProcedure(input);
+          await onProceduresChanged?.();
         }}
       />
     </Card>
