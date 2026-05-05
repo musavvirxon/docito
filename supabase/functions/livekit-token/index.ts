@@ -127,8 +127,28 @@ Deno.serve(async (req) => {
         );
       }
 
-      const isDoctor = appt.doctor_id === user.id;
-      const isPatient = appt.patient_id === user.id;
+      // appt.doctor_id references doctors.id and appt.patient_id may reference
+      // a patient row id, not auth user id. Resolve user-id ownership.
+      let isDoctor = appt.doctor_id === user.id;
+      let isPatient = appt.patient_id === user.id;
+
+      if (!isDoctor && appt.doctor_id) {
+        const { data: doctorRow } = await adminClient
+          .from("doctors")
+          .select("user_id")
+          .eq("id", appt.doctor_id)
+          .maybeSingle();
+        if (doctorRow?.user_id === user.id) isDoctor = true;
+      }
+
+      if (!isPatient && !isDoctor && appt.patient_id) {
+        const { data: patientRow } = await adminClient
+          .from("profiles")
+          .select("user_id")
+          .eq("id", appt.patient_id)
+          .maybeSingle();
+        if (patientRow?.user_id === user.id) isPatient = true;
+      }
 
       // Allow practice staff assigned to this appointment's practice to join.
       let isClinicMember = false;
