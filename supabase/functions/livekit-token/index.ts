@@ -107,9 +107,13 @@ Deno.serve(async (req) => {
     let participantName = user.email || user.id;
 
     if (appointmentId) {
-      const { data: appt, error: apptErr } = await supabase
+      // Use service role to bypass RLS for the lookup; we authorize manually below.
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+      const { data: appt, error: apptErr } = await adminClient
         .from("appointments")
-        .select("id, doctor_id, patient_id, video_room_id")
+        .select("id, doctor_id, patient_id, video_room_id, practice_id")
         .eq("id", appointmentId)
         .maybeSingle();
 
@@ -126,7 +130,20 @@ Deno.serve(async (req) => {
       const isDoctor = appt.doctor_id === user.id;
       const isPatient = appt.patient_id === user.id;
 
-      if (!isDoctor && !isPatient) {
+      // Allow practice staff assigned to this appointment's practice to join.
+      let isClinicMember = false;
+      if (!isDoctor && !isPatient && appt.practice_id) {
+        const { data: staffRow } = await adminClient
+          .from("clinic_staff")
+          .select("id")
+          .eq("practice_id", appt.practice_id)
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+        isClinicMember = !!staffRow;
+      }
+
+      if (!isDoctor && !isPatient && !isClinicMember) {
         return new Response(
           JSON.stringify({ error: "Not a participant of this appointment" }),
           {
