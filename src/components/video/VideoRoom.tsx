@@ -127,7 +127,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
         const resp = await supabase.functions.invoke('livekit-token', {
           body: {
-            appointmentId: consultation.id,
+            appointmentId: consultation.appointment_id,
             roomId: consultation.room_id,
           },
         });
