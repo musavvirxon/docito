@@ -322,7 +322,7 @@ const DoctorDashboardContent = () => {
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">{t("doctor.stats.earnings")}</p>
-                      <p className="text-4xl font-bold tracking-tight">${(stats as any)?.totalEarnings || 0}</p>
+                      <p className="text-4xl font-bold tracking-tight">${(stats as any)?.totalRevenue || 0}</p>
                       <p className="text-xs text-muted-foreground">{t("doctor.stats.totalEarnings")}</p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">

@@ -7,6 +7,7 @@ import {
   type RemoteTrack,
   type RemoteTrackPublication,
   type LocalTrackPublication,
+  type LocalTrack,
   type RemoteParticipant,
   type Participant,
 } from 'livekit-client';
@@ -80,7 +81,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
     el.setAttribute('playsinline', 'true');
-    container.appendChild(el);
+    if (track.kind === Track.Kind.Video) {
+      container.replaceChildren(el);
+    } else {
+      container.appendChild(el);
+    }
   };
 
   const detachAll = (track: Track) => {
@@ -111,11 +116,14 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const handleLocalTrackPublished = useCallback((pub: LocalTrackPublication) => {
     if (!pub.track) return;
+    setMediaStarted(true);
     if (pub.track.kind === Track.Kind.Video) {
       if (pub.track.source === Track.Source.Camera) {
         attachInto(pub.track, localVideoContainer.current);
         setIsVideoOn(true);
       } else if (pub.track.source === Track.Source.ScreenShare) {
+        attachInto(pub.track, screenShareContainer.current);
+        setHasRemoteScreen(true);
         setIsScreenSharing(true);
       }
     } else if (pub.track.kind === Track.Kind.Audio) {
@@ -127,7 +135,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     if (!pub.track) return;
     detachAll(pub.track);
     if (pub.track.source === Track.Source.Camera) setIsVideoOn(false);
-    if (pub.track.source === Track.Source.ScreenShare) setIsScreenSharing(false);
+    if (pub.track.source === Track.Source.ScreenShare) {
+      setIsScreenSharing(false);
+      setHasRemoteScreen(false);
+    }
     if (pub.track.kind === Track.Kind.Audio) setIsAudioOn(false);
   }, []);
 
@@ -210,39 +221,62 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [consultation.appointment_id, consultation.room_id]);
 
-  /* ---------- Media gesture-driven start ---------- */
-  const startMedia = useCallback(async () => {
+  const explainMediaError = (err: any, fallback: string) => {
+    const name = err?.name || '';
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+      toast.error('Permission denied. Allow camera, microphone, or screen sharing in your browser settings.');
+    } else if (name === 'NotFoundError') {
+      toast.error('No matching camera or microphone was found on this device.');
+    } else if (name === 'NotReadableError') {
+      toast.error('The camera or microphone is already in use by another app.');
+    } else if (name === 'NotSupportedError' || name === 'SecurityError') {
+      toast.error('Media permissions require a secure HTTPS browser context.');
+    } else {
+      toast.error(err?.message || fallback);
+    }
+  };
+
+  const canUseMedia = () => {
     const room = roomRef.current;
     if (!room || room.state !== ConnectionState.Connected) {
       toast.error('Still connecting to the room. Try again in a second.');
-      return;
+      return null;
     }
     if (!navigator.mediaDevices?.getUserMedia) {
       toast.error('Your browser does not support camera/microphone access.');
-      return;
+      return null;
     }
     if (!window.isSecureContext) {
       toast.error('Camera and microphone require HTTPS.');
-      return;
+      return null;
     }
+    return room;
+  };
+
+  const publishTracks = async (tracks: LocalTrack[]) => {
+    const room = roomRef.current;
+    if (!room) return;
+    await Promise.all(tracks.map((track) => room.localParticipant.publishTrack(track)));
+  };
+
+  /* ---------- Media gesture-driven start ---------- */
+  const startMedia = useCallback(async () => {
+    const room = canUseMedia();
+    if (!room) return;
+
+    // Important: createTracks() invokes getUserMedia synchronously from this click handler.
+    const tracksPromise = room.localParticipant.createTracks({ audio: true, video: true });
 
     setStartingMedia(true);
     try {
-      await room.localParticipant.setMicrophoneEnabled(true);
-      await room.localParticipant.setCameraEnabled(true);
+      const tracks = await tracksPromise;
+      await publishTracks(tracks);
       setMediaStarted(true);
+      setIsAudioOn(true);
+      setIsVideoOn(true);
     } catch (err: any) {
       console.error('Media start error:', err);
-      const name = err?.name || '';
-      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-        toast.error('Permission denied. Allow camera and microphone in your browser settings.');
-      } else if (name === 'NotFoundError') {
-        toast.error('No camera or microphone found on this device.');
-      } else if (name === 'NotReadableError') {
-        toast.error('Camera or microphone is already in use by another app.');
-      } else {
-        toast.error(err?.message || 'Failed to start camera and microphone.');
-      }
+      explainMediaError(err, 'Failed to start camera and microphone.');
     } finally {
       setStartingMedia(false);
     }
@@ -250,27 +284,61 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const toggleAudio = useCallback(async () => {
     const room = roomRef.current;
-    if (!room || !mediaStarted) return;
-    try {
-      const next = !room.localParticipant.isMicrophoneEnabled;
-      await room.localParticipant.setMicrophoneEnabled(next);
-      setIsAudioOn(next);
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not toggle microphone.');
+    if (!room || room.state !== ConnectionState.Connected) {
+      toast.error('Still connecting to the room. Try again in a second.');
+      return;
     }
-  }, [mediaStarted]);
+    try {
+      const current = room.localParticipant.getTrackPublication(Track.Source.Microphone);
+      if (current?.track && !current.isMuted) {
+        await current.mute();
+        setIsAudioOn(false);
+        return;
+      }
+      if (current) {
+        await current.unmute();
+        setMediaStarted(true);
+        setIsAudioOn(true);
+        return;
+      }
+      const tracksPromise = room.localParticipant.createTracks({ audio: true, video: false });
+      const tracks = await tracksPromise;
+      await publishTracks(tracks);
+      setMediaStarted(true);
+      setIsAudioOn(true);
+    } catch (err: any) {
+      explainMediaError(err, 'Could not toggle microphone.');
+    }
+  }, []);
 
   const toggleVideo = useCallback(async () => {
     const room = roomRef.current;
-    if (!room || !mediaStarted) return;
-    try {
-      const next = !room.localParticipant.isCameraEnabled;
-      await room.localParticipant.setCameraEnabled(next);
-      setIsVideoOn(next);
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not toggle camera.');
+    if (!room || room.state !== ConnectionState.Connected) {
+      toast.error('Still connecting to the room. Try again in a second.');
+      return;
     }
-  }, [mediaStarted]);
+    try {
+      const current = room.localParticipant.getTrackPublication(Track.Source.Camera);
+      if (current?.track && !current.isMuted) {
+        await current.mute();
+        setIsVideoOn(false);
+        return;
+      }
+      if (current) {
+        await current.unmute();
+        setMediaStarted(true);
+        setIsVideoOn(true);
+        return;
+      }
+      const tracksPromise = room.localParticipant.createTracks({ audio: false, video: true });
+      const tracks = await tracksPromise;
+      await publishTracks(tracks);
+      setMediaStarted(true);
+      setIsVideoOn(true);
+    } catch (err: any) {
+      explainMediaError(err, 'Could not toggle camera.');
+    }
+  }, []);
 
   const toggleScreenShare = useCallback(async () => {
     const room = roomRef.current;
@@ -279,19 +347,38 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       return;
     }
     try {
-      const next = !room.localParticipant.isScreenShareEnabled;
-      try {
-        await room.localParticipant.setScreenShareEnabled(next, next ? { audio: true } : undefined);
-      } catch {
-        await room.localParticipant.setScreenShareEnabled(next);
+      const current = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+      if (current?.track) {
+        await room.localParticipant.unpublishTrack(current.track, true);
+        const audio = room.localParticipant.getTrackPublication(Track.Source.ScreenShareAudio);
+        if (audio?.track) await room.localParticipant.unpublishTrack(audio.track, true);
+        setIsScreenSharing(false);
+        setHasRemoteScreen(false);
+        return;
       }
-      setIsScreenSharing(next);
+
+      // Important: createScreenTracks() invokes getDisplayMedia synchronously from this click handler.
+      let tracksPromise = room.localParticipant.createScreenTracks({ audio: true });
+      let tracks: LocalTrack[];
+      try {
+        tracks = await tracksPromise;
+      } catch (err: any) {
+        if (err?.name !== 'NotAllowedError' && err?.name !== 'PermissionDeniedError') {
+          tracksPromise = room.localParticipant.createScreenTracks({ audio: false });
+          tracks = await tracksPromise;
+        } else {
+          throw err;
+        }
+      }
+      await publishTracks(tracks);
+      setIsScreenSharing(true);
+      setHasRemoteScreen(true);
     } catch (err: any) {
       console.error('Screen share error:', err);
       if (err?.name === 'NotAllowedError') {
         toast.error('Screen share was cancelled or not permitted.');
       } else {
-        toast.error(err?.message || 'Failed to start screen sharing.');
+        explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
   }, []);

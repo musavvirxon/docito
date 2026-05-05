@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity, MessageSquare, Video, CalendarPlus, Trash2 } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity, MessageSquare, Video, CalendarPlus, Trash2, DollarSign } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -107,6 +107,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const [currentTreatments, setCurrentTreatments] = useState<Treatment[]>([]);
   const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [appointmentAmountToBill, setAppointmentAmountToBill] = useState<number>(0);
 
   // Diagnoses
   const [dxLoading, setDxLoading] = useState(false);
@@ -281,7 +282,17 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const handleAppointmentClick = async (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setShowAppointmentModal(true);
-    await loadDiagnosisData(appointment);
+    const [{ data: charges }] = await Promise.all([
+      supabase
+        .from('billing_transactions')
+        .select('amount, amount_cents, transaction_type')
+        .eq('appointment_id', appointment.id),
+      loadDiagnosisData(appointment),
+    ]);
+    const total = ((charges as any[]) || [])
+      .filter((b) => !['discount', 'refund'].includes(String(b.transaction_type || '').toLowerCase()))
+      .reduce((sum, b) => sum + (b.amount_cents != null ? Number(b.amount_cents) / 100 : Number(b.amount) || 0), 0);
+    setAppointmentAmountToBill(total);
   };
 
   const handlePatientClick = async () => {
@@ -428,6 +439,15 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
                       <p className="mt-1">{selectedAppointment.notes}</p>
                     </div>
                   )}
+
+                  <div className="pt-4 border-t flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" /> Amount to be billed
+                    </p>
+                    <p className="font-semibold tabular-nums">
+                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(appointmentAmountToBill)}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 

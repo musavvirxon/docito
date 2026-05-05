@@ -1436,6 +1436,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         patientId={appointment.patient_id}
                         patientName={appointment.patient_name || ''}
                         appointmentDate={appointment.appointment_date}
+                        procedures={unifiedProcedures}
                       />
                     )}
 
@@ -1504,6 +1505,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           onSubmit={async (input) => {
                             await dentalAddProcedure(input);
                             await refreshProcedures();
+                            await finance.refresh();
                           }}
                         />
                       )}

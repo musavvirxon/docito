@@ -114,6 +114,7 @@ export function useAppointmentProcedures({
 
       try {
         let createdRowId: string | null = null;
+        const { data: authUser } = await supabase.auth.getUser();
         if (teeth.length > 0) {
           const targetPatient = patientId || null;
           if (!targetPatient) {
@@ -141,7 +142,6 @@ export function useAppointmentProcedures({
           if (error) throw error;
           createdRowId = (inserted as any)?.id || null;
         } else {
-          const { data: authUser } = await supabase.auth.getUser();
           const { data: inserted, error } = await supabase
             .from('appointment_procedures')
             .insert({
@@ -164,6 +164,7 @@ export function useAppointmentProcedures({
         if (totalCost != null && totalCost > 0) {
           const description = `${input.name}${teeth.length ? ` (Teeth ${teeth.slice().sort((a, b) => a - b).join(',')})` : ''}`;
           const { error: billErr } = await supabase.from('billing_transactions').insert({
+            user_id: patientId || doctorPatientId || authUser?.user?.id || doctorId,
             appointment_id: appointmentId,
             entity_type: 'doctor',
             entity_id: doctorId,
@@ -194,7 +195,7 @@ export function useAppointmentProcedures({
         toast.error(err?.message || 'Failed to add procedure');
       }
     },
-    [appointmentId, doctorId, patientId, refresh],
+    [appointmentId, doctorId, doctorPatientId, patientId, refresh],
   );
 
   const updateStatus = useCallback(

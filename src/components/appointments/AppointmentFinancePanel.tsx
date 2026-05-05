@@ -45,6 +45,8 @@ export function AppointmentFinancePanel({
   procedures = [],
 }: Props) {
   const finance = useAppointmentFinance(appointmentId, patientId || undefined);
+  const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
+  const amountToBill = Math.max(finance.totalBilled, procedureTotal);
 
   const [payOpen, setPayOpen] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
@@ -145,7 +147,7 @@ export function AppointmentFinancePanel({
 
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <Kpi label="Billed" value={fmt(finance.totalBilled, finance.currency)} icon={DollarSign} />
+          <Kpi label="Amount to bill" value={fmt(amountToBill, finance.currency)} icon={DollarSign} />
           <Kpi label="Paid" value={fmt(finance.totalPaid, finance.currency)} icon={CheckCircle} tone="success" />
           <Kpi
             label="Discounts"

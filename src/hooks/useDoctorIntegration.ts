@@ -406,7 +406,16 @@ export const useDoctorIntegration = () => {
         .eq("doctor_id", doctorProfile.id)
         .eq("status", "completed");
 
-      const revenue = (completed?.length || 0) * (doctorProfile.consultation_fee || 150);
+      const { data: billingRows } = await supabase
+        .from("billing_transactions")
+        .select("amount, amount_cents, transaction_type")
+        .eq("entity_type", "doctor")
+        .eq("entity_id", doctorProfile.id);
+
+      const billedRevenue = ((billingRows as any[]) || [])
+        .filter((b) => !["discount", "refund"].includes(String(b.transaction_type || "").toLowerCase()))
+        .reduce((sum, b) => sum + (b.amount_cents != null ? Number(b.amount_cents) / 100 : Number(b.amount) || 0), 0);
+      const revenue = billedRevenue || (completed?.length || 0) * (doctorProfile.consultation_fee || 150);
       const profileCompletion = calculateProfileCompletion(doctorProfile);
 
       setStats({
