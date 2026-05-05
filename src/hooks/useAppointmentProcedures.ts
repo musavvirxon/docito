@@ -195,7 +195,7 @@ export function useAppointmentProcedures({
         toast.error(err?.message || 'Failed to add procedure');
       }
     },
-    [appointmentId, doctorId, patientId, refresh],
+    [appointmentId, doctorId, doctorPatientId, patientId, refresh],
   );
 
   const updateStatus = useCallback(
