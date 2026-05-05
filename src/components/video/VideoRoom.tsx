@@ -284,27 +284,61 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const toggleAudio = useCallback(async () => {
     const room = roomRef.current;
-    if (!room || !mediaStarted) return;
-    try {
-      const next = !room.localParticipant.isMicrophoneEnabled;
-      await room.localParticipant.setMicrophoneEnabled(next);
-      setIsAudioOn(next);
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not toggle microphone.');
+    if (!room || room.state !== ConnectionState.Connected) {
+      toast.error('Still connecting to the room. Try again in a second.');
+      return;
     }
-  }, [mediaStarted]);
+    try {
+      const current = room.localParticipant.getTrackPublication(Track.Source.Microphone);
+      if (current?.track && !current.isMuted) {
+        await current.mute();
+        setIsAudioOn(false);
+        return;
+      }
+      if (current) {
+        await current.unmute();
+        setMediaStarted(true);
+        setIsAudioOn(true);
+        return;
+      }
+      const tracksPromise = room.localParticipant.createTracks({ audio: true, video: false });
+      const tracks = await tracksPromise;
+      await publishTracks(tracks);
+      setMediaStarted(true);
+      setIsAudioOn(true);
+    } catch (err: any) {
+      explainMediaError(err, 'Could not toggle microphone.');
+    }
+  }, []);
 
   const toggleVideo = useCallback(async () => {
     const room = roomRef.current;
-    if (!room || !mediaStarted) return;
-    try {
-      const next = !room.localParticipant.isCameraEnabled;
-      await room.localParticipant.setCameraEnabled(next);
-      setIsVideoOn(next);
-    } catch (err: any) {
-      toast.error(err?.message || 'Could not toggle camera.');
+    if (!room || room.state !== ConnectionState.Connected) {
+      toast.error('Still connecting to the room. Try again in a second.');
+      return;
     }
-  }, [mediaStarted]);
+    try {
+      const current = room.localParticipant.getTrackPublication(Track.Source.Camera);
+      if (current?.track && !current.isMuted) {
+        await current.mute();
+        setIsVideoOn(false);
+        return;
+      }
+      if (current) {
+        await current.unmute();
+        setMediaStarted(true);
+        setIsVideoOn(true);
+        return;
+      }
+      const tracksPromise = room.localParticipant.createTracks({ audio: false, video: true });
+      const tracks = await tracksPromise;
+      await publishTracks(tracks);
+      setMediaStarted(true);
+      setIsVideoOn(true);
+    } catch (err: any) {
+      explainMediaError(err, 'Could not toggle camera.');
+    }
+  }, []);
 
   const toggleScreenShare = useCallback(async () => {
     const room = roomRef.current;
@@ -313,19 +347,38 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       return;
     }
     try {
-      const next = !room.localParticipant.isScreenShareEnabled;
-      try {
-        await room.localParticipant.setScreenShareEnabled(next, next ? { audio: true } : undefined);
-      } catch {
-        await room.localParticipant.setScreenShareEnabled(next);
+      const current = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+      if (current?.track) {
+        await room.localParticipant.unpublishTrack(current.track, true);
+        const audio = room.localParticipant.getTrackPublication(Track.Source.ScreenShareAudio);
+        if (audio?.track) await room.localParticipant.unpublishTrack(audio.track, true);
+        setIsScreenSharing(false);
+        setHasRemoteScreen(false);
+        return;
       }
-      setIsScreenSharing(next);
+
+      // Important: createScreenTracks() invokes getDisplayMedia synchronously from this click handler.
+      let tracksPromise = room.localParticipant.createScreenTracks({ audio: true });
+      let tracks: LocalTrack[];
+      try {
+        tracks = await tracksPromise;
+      } catch (err: any) {
+        if (err?.name !== 'NotAllowedError' && err?.name !== 'PermissionDeniedError') {
+          tracksPromise = room.localParticipant.createScreenTracks({ audio: false });
+          tracks = await tracksPromise;
+        } else {
+          throw err;
+        }
+      }
+      await publishTracks(tracks);
+      setIsScreenSharing(true);
+      setHasRemoteScreen(true);
     } catch (err: any) {
       console.error('Screen share error:', err);
       if (err?.name === 'NotAllowedError') {
         toast.error('Screen share was cancelled or not permitted.');
       } else {
-        toast.error(err?.message || 'Failed to start screen sharing.');
+        explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
   }, []);
