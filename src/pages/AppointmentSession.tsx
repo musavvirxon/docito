@@ -1147,7 +1147,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
                 <ScrollArea className="flex-1 pr-2">
                   {isVideoAppointment && (
-                    <TabsContent value="video" className="mt-0 space-y-4">
+                    <TabsContent value="video" className="mt-0 space-y-4 min-h-[70vh]">
                       {showVideoRoom && videoConsultation ? (
                         <VideoRoom
                           consultation={videoConsultation}
