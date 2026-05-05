@@ -4,10 +4,11 @@ import {
   RoomEvent,
   Track,
   ConnectionState,
+  type RemoteTrack,
   type RemoteTrackPublication,
   type LocalTrackPublication,
   type RemoteParticipant,
-  type LocalParticipant,
+  type Participant,
 } from 'livekit-client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,9 +26,13 @@ import {
   Maximize,
   Minimize,
   Users,
+  AlertTriangle,
+  Loader2,
+  PlayCircle,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
@@ -37,91 +42,128 @@ interface VideoRoomProps {
   onLeave: () => void;
 }
 
+type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
+
 const VideoRoom: React.FC<VideoRoomProps> = ({
   consultation,
-  userName,
   userRole,
   onEnd,
   onLeave,
 }) => {
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const screenShareRef = useRef<HTMLVideoElement>(null);
+  const localVideoContainer = useRef<HTMLDivElement>(null);
+  const remoteVideoContainer = useRef<HTMLDivElement>(null);
+  const screenShareContainer = useRef<HTMLDivElement>(null);
+  const audioContainer = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const roomRef = useRef<Room | null>(null);
 
-  const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [mediaStarted, setMediaStarted] = useState(false);
+  const [startingMedia, setStartingMedia] = useState(false);
+  const [isAudioOn, setIsAudioOn] = useState(false);
+  const [isVideoOn, setIsVideoOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [hasRemoteScreen, setHasRemoteScreen] = useState(false);
+
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(consultation.notes || '');
   const [participantCount, setParticipantCount] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState<string>('connecting');
 
-  const updateParticipantCount = useCallback(() => {
-    if (!roomRef.current) return;
-    setParticipantCount(roomRef.current.numParticipants + 1);
-  }, []);
+  const attachInto = (track: Track, container: HTMLElement | null) => {
+    if (!container) return;
+    const el = track.attach();
+    el.style.width = '100%';
+    el.style.height = '100%';
+    el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
+    (el as HTMLMediaElement).autoplay = true;
+    (el as HTMLMediaElement).playsInline = true;
+    container.appendChild(el);
+  };
 
+  const detachAll = (track: Track) => {
+    track.detach().forEach((el) => el.remove());
+  };
+
+  /* ---------- LiveKit event handlers ---------- */
   const handleTrackSubscribed = useCallback(
-    (
-      track: Track,
-      publication: RemoteTrackPublication,
-      participant: RemoteParticipant,
-    ) => {
+    (track: RemoteTrack, _pub: RemoteTrackPublication, _p: RemoteParticipant) => {
       if (track.kind === Track.Kind.Video) {
         if (track.source === Track.Source.ScreenShare) {
-          if (screenShareRef.current) {
-            const el = track.attach();
-            if (el instanceof HTMLVideoElement) {
-              screenShareRef.current.srcObject = el.srcObject;
-            }
-          }
-          setIsScreenSharing(true);
+          setHasRemoteScreen(true);
+          attachInto(track, screenShareContainer.current);
         } else {
-          if (remoteVideoRef.current) {
-            const el = track.attach();
-            if (el instanceof HTMLVideoElement) {
-              remoteVideoRef.current.srcObject = el.srcObject;
-            }
-          }
+          attachInto(track, remoteVideoContainer.current);
         }
-      }
-      if (track.kind === Track.Kind.Audio) {
-        const audioEl = track.attach();
-        document.body.appendChild(audioEl);
+      } else if (track.kind === Track.Kind.Audio) {
+        attachInto(track, audioContainer.current);
       }
     },
     [],
   );
 
-  const handleTrackUnsubscribed = useCallback((track: Track) => {
-    track.detach().forEach((el) => el.remove());
-    if (track.source === Track.Source.ScreenShare) {
-      setIsScreenSharing(false);
-      if (screenShareRef.current) {
-        screenShareRef.current.srcObject = null;
+  const handleTrackUnsubscribed = useCallback((track: RemoteTrack) => {
+    detachAll(track);
+    if (track.source === Track.Source.ScreenShare) setHasRemoteScreen(false);
+  }, []);
+
+  const handleLocalTrackPublished = useCallback((pub: LocalTrackPublication) => {
+    if (!pub.track) return;
+    if (pub.track.kind === Track.Kind.Video) {
+      if (pub.track.source === Track.Source.Camera) {
+        attachInto(pub.track, localVideoContainer.current);
+        setIsVideoOn(true);
+      } else if (pub.track.source === Track.Source.ScreenShare) {
+        setIsScreenSharing(true);
       }
+    } else if (pub.track.kind === Track.Kind.Audio) {
+      setIsAudioOn(true);
     }
   }, []);
 
+  const handleLocalTrackUnpublished = useCallback((pub: LocalTrackPublication) => {
+    if (!pub.track) return;
+    detachAll(pub.track);
+    if (pub.track.source === Track.Source.Camera) setIsVideoOn(false);
+    if (pub.track.source === Track.Source.ScreenShare) setIsScreenSharing(false);
+    if (pub.track.kind === Track.Kind.Audio) setIsAudioOn(false);
+  }, []);
+
+  const updateParticipantCount = useCallback((_p?: Participant) => {
+    if (!roomRef.current) return;
+    setParticipantCount(roomRef.current.numParticipants + 1);
+  }, []);
+
+  /* ---------- Connect on mount ---------- */
   useEffect(() => {
     let mounted = true;
-    const room = new Room({
-      adaptiveStream: true,
-      dynacast: true,
-    });
+    const room = new Room({ adaptiveStream: true, dynacast: true });
     roomRef.current = room;
+
+    room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+    room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+    room.on(RoomEvent.LocalTrackPublished, handleLocalTrackPublished);
+    room.on(RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
+    room.on(RoomEvent.ParticipantConnected, updateParticipantCount);
+    room.on(RoomEvent.ParticipantDisconnected, updateParticipantCount);
+    room.on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
+      if (!mounted) return;
+      if (state === ConnectionState.Connected) setStatus('connected');
+      else if (state === ConnectionState.Reconnecting) setStatus('connecting');
+      else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+    });
 
     const connect = async () => {
       try {
+        setStatus('connecting');
+        setErrorMsg(null);
+
         const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData?.session?.access_token;
-        if (!token) {
-          setConnectionStatus('error');
-          setIsLoading(false);
+        if (!sessionData?.session?.access_token) {
+          setStatus('error');
+          setErrorMsg('You must be signed in to join the call.');
           return;
         }
 
@@ -133,59 +175,23 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         });
 
         if (resp.error || !resp.data?.token) {
-          console.error('Failed to get LiveKit token:', resp.error);
-          setConnectionStatus('error');
-          setIsLoading(false);
+          setStatus('error');
+          setErrorMsg(resp.error?.message || 'Failed to get video token');
           return;
         }
 
-        const { token: livekitToken, url: livekitUrl } = resp.data;
-
-        room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
-        room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
-        room.on(RoomEvent.ParticipantConnected, updateParticipantCount);
-        room.on(RoomEvent.ParticipantDisconnected, updateParticipantCount);
-        room.on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
-          if (!mounted) return;
-          if (state === ConnectionState.Connected) {
-            setConnectionStatus('connected');
-          } else if (state === ConnectionState.Disconnected) {
-            setConnectionStatus('disconnected');
-          } else if (state === ConnectionState.Reconnecting) {
-            setConnectionStatus('connecting');
-          }
-        });
-
-        room.on(
-          RoomEvent.LocalTrackPublished,
-          (pub: LocalTrackPublication, _participant: LocalParticipant) => {
-            if (
-              pub.track?.kind === Track.Kind.Video &&
-              pub.track.source === Track.Source.Camera
-            ) {
-              if (localVideoRef.current) {
-                const el = pub.track.attach();
-                if (el instanceof HTMLVideoElement) {
-                  localVideoRef.current.srcObject = el.srcObject;
-                }
-              }
-            }
-          },
-        );
-
-        await room.connect(livekitUrl, livekitToken);
-        await room.localParticipant.enableCameraAndMicrophone();
+        const { token, url } = resp.data;
+        await room.connect(url, token);
 
         if (mounted) {
-          setIsLoading(false);
-          setConnectionStatus('connected');
+          setStatus('connected');
           updateParticipantCount();
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('LiveKit connect error:', err);
         if (mounted) {
-          setConnectionStatus('error');
-          setIsLoading(false);
+          setStatus('error');
+          setErrorMsg(err?.message || 'Could not connect to the video room.');
         }
       }
     };
@@ -194,129 +200,240 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
     return () => {
       mounted = false;
-      room.disconnect(true);
+      try {
+        room.disconnect(true);
+      } catch {
+        /* noop */
+      }
       roomRef.current = null;
     };
-  }, [
-    consultation.id,
-    consultation.appointment_id,
-    consultation.room_id,
-    handleTrackSubscribed,
-    handleTrackUnsubscribed,
-    updateParticipantCount,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consultation.appointment_id, consultation.room_id]);
+
+  /* ---------- Media gesture-driven start ---------- */
+  const startMedia = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room || room.state !== ConnectionState.Connected) {
+      toast.error('Still connecting to the room. Try again in a second.');
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error('Your browser does not support camera/microphone access.');
+      return;
+    }
+    if (!window.isSecureContext) {
+      toast.error('Camera and microphone require HTTPS.');
+      return;
+    }
+
+    setStartingMedia(true);
+    try {
+      await room.localParticipant.setMicrophoneEnabled(true);
+      await room.localParticipant.setCameraEnabled(true);
+      setMediaStarted(true);
+    } catch (err: any) {
+      console.error('Media start error:', err);
+      const name = err?.name || '';
+      if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+        toast.error('Permission denied. Allow camera and microphone in your browser settings.');
+      } else if (name === 'NotFoundError') {
+        toast.error('No camera or microphone found on this device.');
+      } else if (name === 'NotReadableError') {
+        toast.error('Camera or microphone is already in use by another app.');
+      } else {
+        toast.error(err?.message || 'Failed to start camera and microphone.');
+      }
+    } finally {
+      setStartingMedia(false);
+    }
+  }, []);
 
   const toggleAudio = useCallback(async () => {
     const room = roomRef.current;
-    if (!room) return;
-    const enabled = room.localParticipant.isMicrophoneEnabled;
-    await room.localParticipant.setMicrophoneEnabled(!enabled);
-    setIsAudioMuted(enabled);
-  }, []);
+    if (!room || !mediaStarted) return;
+    try {
+      const next = !room.localParticipant.isMicrophoneEnabled;
+      await room.localParticipant.setMicrophoneEnabled(next);
+      setIsAudioOn(next);
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not toggle microphone.');
+    }
+  }, [mediaStarted]);
 
   const toggleVideo = useCallback(async () => {
     const room = roomRef.current;
-    if (!room) return;
-    const enabled = room.localParticipant.isCameraEnabled;
-    await room.localParticipant.setCameraEnabled(!enabled);
-    setIsVideoMuted(enabled);
-  }, []);
+    if (!room || !mediaStarted) return;
+    try {
+      const next = !room.localParticipant.isCameraEnabled;
+      await room.localParticipant.setCameraEnabled(next);
+      setIsVideoOn(next);
+    } catch (err: any) {
+      toast.error(err?.message || 'Could not toggle camera.');
+    }
+  }, [mediaStarted]);
 
   const toggleScreenShare = useCallback(async () => {
     const room = roomRef.current;
-    if (!room) return;
+    if (!room || room.state !== ConnectionState.Connected) {
+      toast.error('Connect to the room before sharing your screen.');
+      return;
+    }
     try {
-      const enabled = room.localParticipant.isScreenShareEnabled;
-      await room.localParticipant.setScreenShareEnabled(!enabled);
-      setIsScreenSharing(!enabled);
-    } catch (err) {
+      const next = !room.localParticipant.isScreenShareEnabled;
+      try {
+        await room.localParticipant.setScreenShareEnabled(next, next ? { audio: true } : undefined);
+      } catch {
+        await room.localParticipant.setScreenShareEnabled(next);
+      }
+      setIsScreenSharing(next);
+    } catch (err: any) {
       console.error('Screen share error:', err);
+      if (err?.name === 'NotAllowedError') {
+        toast.error('Screen share was cancelled or not permitted.');
+      } else {
+        toast.error(err?.message || 'Failed to start screen sharing.');
+      }
     }
   }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
+      containerRef.current?.requestFullscreen?.();
       setIsFullscreen(true);
     } else {
-      document.exitFullscreen();
+      document.exitFullscreen?.();
       setIsFullscreen(false);
     }
   };
 
   const handleEndCall = useCallback(() => {
-    roomRef.current?.disconnect(true);
+    try {
+      roomRef.current?.disconnect(true);
+    } catch {
+      /* noop */
+    }
     onEnd(notes);
   }, [notes, onEnd]);
 
+  const handleLeave = useCallback(() => {
+    try {
+      roomRef.current?.disconnect(true);
+    } catch {
+      /* noop */
+    }
+    onLeave();
+  }, [onLeave]);
+
+  /* ---------- Render ---------- */
   return (
-    <div ref={containerRef} className="flex flex-col h-full bg-background">
-      <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+    <div
+      ref={containerRef}
+      className="flex flex-col bg-background rounded-lg overflow-hidden border border-border w-full"
+      style={{ height: isFullscreen ? '100vh' : 'min(80vh, 900px)', minHeight: '560px' }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 border-b border-border bg-card">
         <div className="flex items-center gap-3">
-          <Badge variant={connectionStatus === 'connected' ? 'default' : 'secondary'}>
-            {connectionStatus === 'connected'
+          <Badge variant={status === 'connected' ? 'default' : 'secondary'}>
+            {status === 'connected'
               ? 'Live'
-              : connectionStatus === 'connecting'
-                ? 'Connecting...'
-                : 'Error'}
+              : status === 'connecting'
+                ? 'Connecting…'
+                : status === 'error'
+                  ? 'Error'
+                  : status === 'disconnected'
+                    ? 'Disconnected'
+                    : 'Idle'}
           </Badge>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs text-muted-foreground truncate max-w-[40ch]">
             Room: {consultation.room_id}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="gap-1">
-            <Users className="h-3 w-3" />
-            {participantCount}
-          </Badge>
-        </div>
+        <Badge variant="outline" className="gap-1">
+          <Users className="h-3 w-3" />
+          {participantCount}
+        </Badge>
       </div>
 
+      {/* Stage */}
       <div className="flex-1 relative bg-black">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-muted-foreground">Starting video call...</p>
+        {/* Remote camera */}
+        <div ref={remoteVideoContainer} className="absolute inset-0 w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover" />
+
+        {/* Remote screen-share overlay */}
+        <div
+          ref={screenShareContainer}
+          className={`absolute inset-0 w-full h-full bg-black [&>video]:w-full [&>video]:h-full [&>video]:object-contain ${hasRemoteScreen ? 'z-10' : 'hidden'}`}
+        />
+
+        {/* Hidden audio sink */}
+        <div ref={audioContainer} className="hidden" />
+
+        {/* Local PiP */}
+        <div className="absolute bottom-3 right-3 w-40 sm:w-56 aspect-video rounded-md overflow-hidden border border-border shadow-lg bg-muted z-20">
+          <div
+            ref={localVideoContainer}
+            className="w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover"
+            style={{ transform: 'scaleX(-1)' }}
+          />
+          {!isVideoOn && (
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+              Camera off
+            </div>
+          )}
+        </div>
+
+        {/* Connection / start overlays */}
+        {status === 'connecting' && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Connecting to video room…
             </div>
           </div>
         )}
 
-        <video
-          ref={remoteVideoRef}
-          autoPlay
-          playsInline
-          className="w-full h-full object-cover"
-        />
-
-        {isScreenSharing && (
-          <video
-            ref={screenShareRef}
-            autoPlay
-            playsInline
-            className="absolute inset-0 w-full h-full object-contain bg-black z-5"
-          />
+        {status === 'error' && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/90 p-4">
+            <Card className="p-6 max-w-md text-center space-y-3">
+              <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
+              <h4 className="font-medium">Could not join the call</h4>
+              <p className="text-sm text-muted-foreground">{errorMsg}</p>
+              <Button onClick={handleLeave} variant="outline">Leave</Button>
+            </Card>
+          </div>
         )}
 
-        <div className="absolute bottom-4 right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-border shadow-lg z-10">
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-            style={{ transform: 'scaleX(-1)' }}
-          />
-        </div>
+        {status === 'connected' && !mediaStarted && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/85 p-4">
+            <Card className="p-6 max-w-md text-center space-y-4">
+              <PlayCircle className="h-10 w-10 text-primary mx-auto" />
+              <div>
+                <h4 className="font-medium">Ready to join</h4>
+                <p className="text-sm text-muted-foreground">
+                  Your browser will ask for camera and microphone access.
+                </p>
+              </div>
+              <Button onClick={startMedia} disabled={startingMedia} className="gap-2">
+                {startingMedia ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Video className="h-4 w-4" />
+                )}
+                Start camera & microphone
+              </Button>
+            </Card>
+          </div>
+        )}
 
         {showNotes && userRole === 'doctor' && (
-          <div className="absolute right-4 top-4 w-80 z-20">
-            <Card className="p-4 bg-card/95 backdrop-blur">
-              <h4 className="font-medium mb-2">Consultation Notes</h4>
+          <div className="absolute right-3 top-3 w-72 z-20">
+            <Card className="p-3 bg-card/95 backdrop-blur">
+              <h4 className="font-medium mb-2 text-sm">Consultation Notes</h4>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about this consultation..."
+                placeholder="Add notes about this consultation…"
                 className="min-h-[120px] resize-none"
               />
             </Card>
@@ -324,47 +441,51 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         )}
       </div>
 
-      <div className="p-4 border-t border-border bg-card">
+      {/* Controls */}
+      <div className="p-3 border-t border-border bg-card">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <Button
-            variant={isAudioMuted ? 'destructive' : 'secondary'}
+            variant={!isAudioOn ? 'destructive' : 'secondary'}
             size="lg"
             onClick={toggleAudio}
-            className="rounded-full h-14 w-14"
+            disabled={!mediaStarted}
+            className="rounded-full h-12 w-12"
+            aria-label={isAudioOn ? 'Mute microphone' : 'Unmute microphone'}
           >
-            {isAudioMuted ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
+            {isAudioOn ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
           </Button>
 
           <Button
-            variant={isVideoMuted ? 'destructive' : 'secondary'}
+            variant={!isVideoOn ? 'destructive' : 'secondary'}
             size="lg"
             onClick={toggleVideo}
-            className="rounded-full h-14 w-14"
+            disabled={!mediaStarted}
+            className="rounded-full h-12 w-12"
+            aria-label={isVideoOn ? 'Turn off camera' : 'Turn on camera'}
           >
-            {isVideoMuted ? <VideoOff className="h-6 w-6" /> : <Video className="h-6 w-6" />}
+            {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
           </Button>
 
           <Button
             variant={isScreenSharing ? 'default' : 'secondary'}
             size="lg"
             onClick={toggleScreenShare}
-            className="rounded-full h-14 w-14"
+            disabled={status !== 'connected'}
+            className="rounded-full h-12 w-12"
+            aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
           >
-            {isScreenSharing ? (
-              <MonitorOff className="h-6 w-6" />
-            ) : (
-              <Monitor className="h-6 w-6" />
-            )}
+            {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
           </Button>
 
           {userRole === 'doctor' && (
             <Button
               variant={showNotes ? 'default' : 'secondary'}
               size="lg"
-              onClick={() => setShowNotes(!showNotes)}
-              className="rounded-full h-14 w-14"
+              onClick={() => setShowNotes((v) => !v)}
+              className="rounded-full h-12 w-12"
+              aria-label="Toggle notes"
             >
-              <MessageSquare className="h-6 w-6" />
+              <MessageSquare className="h-5 w-5" />
             </Button>
           )}
 
@@ -372,22 +493,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             variant="secondary"
             size="lg"
             onClick={toggleFullscreen}
-            className="rounded-full h-14 w-14"
+            className="rounded-full h-12 w-12"
+            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           >
-            {isFullscreen ? (
-              <Minimize className="h-6 w-6" />
-            ) : (
-              <Maximize className="h-6 w-6" />
-            )}
+            {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
           </Button>
 
           <Button
             variant="destructive"
             size="lg"
             onClick={handleEndCall}
-            className="rounded-full h-14 w-14 ml-4"
+            className="rounded-full h-12 w-12 ml-2"
+            aria-label="End call"
           >
-            <PhoneOff className="h-6 w-6" />
+            <PhoneOff className="h-5 w-5" />
           </Button>
         </div>
       </div>
