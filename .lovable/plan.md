@@ -1,42 +1,82 @@
-I found the video room is still using an auto-start pattern and manually copying attached track streams into fixed `<video>` refs. That explains the current symptoms:
+## Goals
 
-- Camera/microphone startup happens automatically after async token + room connection instead of a direct user gesture, which browsers often block or LiveKit can time out on.
-- The runtime error `publishing rejected as engine not connected within timeout` indicates media publishing is being attempted while LiveKit is not fully ready or after the connection failed.
-- Screenshare is toggled without robust connection/permission handling and without reliable local/remote track attachment cleanup.
-- The video room inside `/appointment-session/...` is placed inside a scroll area without a strong minimum height, so non-fullscreen mode can collapse into a small panel.
+1. Doctor sees patient's camera, patient sees doctor's camera (two-way video).
+2. Both sides see the other's screen share.
+3. Click any tile (own camera, remote camera, screen share) to make it the large stage; the rest become small thumbnails.
+4. Stop the call from crashing / "skipping incoming track after Room disconnected" / "createOffer with closed peer connection" errors.
 
-Plan:
+## Root causes
 
-1. Rework `VideoRoom.tsx` connection and media startup
-   - Connect to LiveKit first, then explicitly mark the room as ready.
-   - Do not auto-enable camera/microphone inside `useEffect`.
-   - Show an in-room “Start camera & microphone” call-to-action after the room connects, so media access is triggered by a user click.
-   - Disable camera/mic/screenshare buttons until the room is connected.
-   - Add clear user-facing error messages for blocked permissions, missing devices, devices in use, insecure browser context, and LiveKit publish/connect failures.
+- **Single remote slot**: `remoteVideoContainer` only shows ONE remote video at a time and gets overwritten. With multiple remote participants or when the remote republishes (camera re-toggle), the previous element is removed instead of tracked per-participant. Patient's camera shows because we attach into a single container; if the doctor publishes camera AFTER subscribing, the stage replaces only on unsubscribe events. We'll switch to a tile registry keyed by `participantSid + source`.
+- **No focus/swap UI**: Local PiP is a fixed bottom-right thumbnail; there is no way to enlarge it. Same for screen share — currently absolutely positioned with `z-10` always-on overlay rather than swappable.
+- **Crash on tab switch / unmount**: `useEffect` cleanup calls `room.disconnect(true)` synchronously while the connect promise is still in flight, leaving the PeerConnection in a half-closed state — hence "createOffer with closed peer connection" and "skipping incoming track after Room disconnected". We'll guard with a `cancelled` flag, await connect before disconnect, and remove all listeners before disconnecting.
+- **Track re-attach loops**: `LocalTrackPublished` re-attaches every time a track republishes (e.g. mute/unmute). We'll dedupe by replacing children only when the element actually changes, and detach old elements via `track.detach()` first.
 
-2. Make track rendering reliable
-   - Stop manually copying `srcObject` from temporary attached elements.
-   - Attach LiveKit tracks directly into stable local video, remote video, and screenshare containers.
-   - Clean up/detach tracks when unpublished, unsubscribed, disconnected, or when the component unmounts.
-   - Track local camera state, microphone state, and screen-share state from LiveKit events rather than assuming button clicks always succeeded.
+## Plan
 
-3. Improve screenshare behavior
-   - Only allow screenshare once connected.
-   - Use `setScreenShareEnabled(true, { audio: true })` with a safe fallback to video-only when system/tab audio is not supported.
-   - Show a helpful message if the user cancels or the browser blocks screen sharing.
+### 1. Track registry (src/components/video/VideoRoom.tsx)
 
-4. Fix non-fullscreen sizing in the appointment session
-   - Give the video tab/content a viewport-aware minimum height.
-   - Make the `VideoRoom` itself fill a large usable area instead of inheriting a tiny scroll-area height.
-   - Adjust the video layout so the remote/screen feed is prominent and the local preview is responsive instead of always a fixed small box.
+Replace the three fixed `ref` containers (`remoteVideoContainer`, `screenShareContainer`, `localVideoContainer`) with a `Map<string, HTMLDivElement>` keyed by tile id:
 
-5. Add resilience and safety
-   - Prevent blank-screen behavior by rendering an error panel inside the video room instead of leaving only an “Error” badge.
-   - Make “Leave” disconnect without ending the medical session, while “End Video” continues to finalize the consultation.
-   - Keep the existing Supabase token function authorization model unchanged unless a new backend error appears during testing.
+- `local:camera`
+- `local:screen`
+- `<participantSid>:camera`
+- `<participantSid>:screen`
 
-Files expected to change:
-- `src/components/video/VideoRoom.tsx`
-- `src/pages/AppointmentSession.tsx`
+Maintain `tiles: TileMeta[]` state (id, label, kind: 'camera'|'screen', isLocal, participantSid). Render every tile as a `<div ref={(el) => registerTile(id, el)}>`.
 
-No database migration is needed for this fix.
+Subscribe handlers (`TrackSubscribed`, `LocalTrackPublished`, `TrackUnsubscribed`, `LocalTrackUnpublished`, `ParticipantDisconnected`) push/pull tiles from the array and (re)attach the LiveKit track into the matching DOM node via a small `attachToTile(tileId, track)` helper.
+
+### 2. Click-to-focus stage layout
+
+```text
++-----------------------------+   +------+
+|                             |   | tile |
+|     FOCUSED TILE (big)      |   +------+
+|                             |   | tile |
+|                             |   +------+
++-----------------------------+   | tile |
+                                  +------+
+```
+
+- `focusedTileId` state defaults to first remote camera, falls back to first screen share, then local.
+- Big stage: render the focused tile full-area (`object-contain` for screen share, `object-cover` for camera).
+- Sidebar (or bottom strip on mobile): all other tiles as 16:9 thumbnails with `cursor-pointer`; clicking sets `focusedTileId`.
+- Local camera tile: mirror with `scaleX(-1)` only when it's NOT the focused tile bigger than ~480px (avoid mirrored screen capture).
+
+### 3. Connection lifecycle hardening
+
+In the connect `useEffect`:
+
+- Track a `cancelledRef`. In cleanup: `cancelledRef.current = true`, remove all `.on(...)` listeners with `room.removeAllListeners()`, then `await room.disconnect(true).catch(() => {})` only if `room.state !== Disconnected`.
+- Wrap connect in `try` and bail before `room.connect(...)` if `cancelledRef.current` flipped during token fetch.
+- On `RoomEvent.Disconnected` (not just `ConnectionStateChanged`), surface a toast and switch to a "Rejoin" button instead of leaving the user staring at a black screen.
+- Add a single 8-second connect timeout that calls `setStatus('error')` with a clear "Network or LiveKit unreachable" message rather than hanging.
+
+### 4. Subscribe to remote tracks proactively
+
+Set room options `{ adaptiveStream: true, dynacast: true, publishDefaults: { simulcast: true } }` and after connect, iterate `room.remoteParticipants` to attach any tracks that were already published before our subscribe handler bound (fixes the case where the doctor joins after the patient).
+
+### 5. Toggle handlers (already gesture-driven — small fixes only)
+
+- `toggleVideo` / `toggleAudio`: keep current `createTracks` call inside the click handler; do NOT `await` anything before it. Ensure we set `mediaStarted=true` even when the user only enables mic OR camera.
+- `toggleScreenShare`: on stop, also remove the `local:screen` tile from registry; if it was focused, switch focus back to `local:camera` or first remote.
+
+### 6. Misc UI
+
+- Remove the giant fixed local PiP; it becomes a normal tile.
+- Header keeps Live / Connecting / Disconnected badge plus participant count.
+- Notes panel for doctor unchanged.
+- Keep Apple-Tesla minimal styling (semantic tokens, no hard-coded colors).
+
+## Files to modify
+
+- `src/components/video/VideoRoom.tsx` — full rewrite of stage, tile registry, lifecycle.
+
+No DB changes, no edge function changes.
+
+## Out of scope
+
+- Audio output device picker.
+- Recording / transcription.
+- Bandwidth indicator.
