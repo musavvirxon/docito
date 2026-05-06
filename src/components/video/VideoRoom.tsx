@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import {
   Room,
   RoomEvent,
@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Loader2,
   PlayCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,18 +46,37 @@ interface VideoRoomProps {
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
 
+type TileKind = 'camera' | 'screen';
+
+interface TileMeta {
+  id: string;
+  label: string;
+  kind: TileKind;
+  isLocal: boolean;
+  participantSid: string;
+}
+
+const tileId = (participantSid: string, source: Track.Source): string | null => {
+  if (source === Track.Source.Camera) return `${participantSid}:camera`;
+  if (source === Track.Source.ScreenShare) return `${participantSid}:screen`;
+  return null;
+};
+
 const VideoRoom: React.FC<VideoRoomProps> = ({
   consultation,
   userRole,
   onEnd,
   onLeave,
 }) => {
-  const localVideoContainer = useRef<HTMLDivElement>(null);
-  const remoteVideoContainer = useRef<HTMLDivElement>(null);
-  const screenShareContainer = useRef<HTMLDivElement>(null);
-  const audioContainer = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const audioContainer = useRef<HTMLDivElement>(null);
   const roomRef = useRef<Room | null>(null);
+  const cancelledRef = useRef(false);
+
+  // tileId -> DOM node
+  const nodeRegistry = useRef<Map<string, HTMLDivElement>>(new Map());
+  // tileId -> Track (latest)
+  const trackRegistry = useRef<Map<string, Track>>(new Map());
 
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -66,115 +86,189 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [isAudioOn, setIsAudioOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [hasRemoteScreen, setHasRemoteScreen] = useState(false);
+
+  const [tiles, setTiles] = useState<TileMeta[]>([]);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(consultation.notes || '');
   const [participantCount, setParticipantCount] = useState(1);
+  const [reconnectKey, setReconnectKey] = useState(0);
 
-  const attachInto = (track: Track, container: HTMLElement | null) => {
-    if (!container) return;
+  /* ---------- attach helpers ---------- */
+  const attachTrackToNode = (track: Track, node: HTMLElement) => {
     const el = track.attach();
     el.style.width = '100%';
     el.style.height = '100%';
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
-    el.setAttribute('playsinline', 'true');
+    (el as HTMLMediaElement).playsInline = true;
     if (track.kind === Track.Kind.Video) {
-      container.replaceChildren(el);
+      // Replace any previous video element in the node
+      Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
+      node.appendChild(el);
     } else {
-      container.appendChild(el);
+      node.appendChild(el);
     }
   };
 
-  const detachAll = (track: Track) => {
-    track.detach().forEach((el) => el.remove());
+  const tryAttach = (id: string) => {
+    const track = trackRegistry.current.get(id);
+    const node = nodeRegistry.current.get(id);
+    if (track && node) attachTrackToNode(track, node);
   };
 
-  /* ---------- LiveKit event handlers ---------- */
-  const handleTrackSubscribed = useCallback(
-    (track: RemoteTrack, _pub: RemoteTrackPublication, _p: RemoteParticipant) => {
-      if (track.kind === Track.Kind.Video) {
-        if (track.source === Track.Source.ScreenShare) {
-          setHasRemoteScreen(true);
-          attachInto(track, screenShareContainer.current);
-        } else {
-          attachInto(track, remoteVideoContainer.current);
-        }
-      } else if (track.kind === Track.Kind.Audio) {
-        attachInto(track, audioContainer.current);
+  const registerNode = useCallback((id: string, el: HTMLDivElement | null) => {
+    if (el) {
+      nodeRegistry.current.set(id, el);
+      tryAttach(id);
+    } else {
+      nodeRegistry.current.delete(id);
+    }
+  }, []);
+
+  const upsertTile = (meta: TileMeta, track: Track) => {
+    trackRegistry.current.set(meta.id, track);
+    setTiles((prev) => {
+      if (prev.some((t) => t.id === meta.id)) return prev;
+      return [...prev, meta];
+    });
+    setFocusedId((cur) => cur ?? meta.id);
+    // attempt attach next tick (after node renders)
+    setTimeout(() => tryAttach(meta.id), 0);
+  };
+
+  const removeTile = (id: string) => {
+    const track = trackRegistry.current.get(id);
+    try {
+      track?.detach().forEach((el) => el.remove());
+    } catch {
+      /* noop */
+    }
+    trackRegistry.current.delete(id);
+    setTiles((prev) => prev.filter((t) => t.id !== id));
+    setFocusedId((cur) => (cur === id ? null : cur));
+  };
+
+  /* ---------- LiveKit handlers ---------- */
+  const handleRemoteTrack = useCallback(
+    (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
+      if (track.kind === Track.Kind.Audio) {
+        if (audioContainer.current) attachTrackToNode(track, audioContainer.current);
+        return;
       }
+      const id = tileId(p.sid, track.source);
+      if (!id) return;
+      const label =
+        track.source === Track.Source.ScreenShare
+          ? `${p.identity || 'Participant'} · Screen`
+          : p.identity || 'Participant';
+      upsertTile({ id, label, kind: track.source === Track.Source.ScreenShare ? 'screen' : 'camera', isLocal: false, participantSid: p.sid }, track);
     },
     [],
   );
 
-  const handleTrackUnsubscribed = useCallback((track: RemoteTrack) => {
-    detachAll(track);
-    if (track.source === Track.Source.ScreenShare) setHasRemoteScreen(false);
-  }, []);
+  const handleRemoteTrackGone = useCallback(
+    (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
+      const id = tileId(p.sid, track.source);
+      if (id) removeTile(id);
+    },
+    [],
+  );
 
-  const handleLocalTrackPublished = useCallback((pub: LocalTrackPublication) => {
-    if (!pub.track) return;
+  const handleLocalPublished = useCallback((pub: LocalTrackPublication) => {
+    const track = pub.track;
+    if (!track) return;
     setMediaStarted(true);
-    if (pub.track.kind === Track.Kind.Video) {
-      if (pub.track.source === Track.Source.Camera) {
-        attachInto(pub.track, localVideoContainer.current);
-        setIsVideoOn(true);
-      } else if (pub.track.source === Track.Source.ScreenShare) {
-        attachInto(pub.track, screenShareContainer.current);
-        setHasRemoteScreen(true);
-        setIsScreenSharing(true);
-      }
-    } else if (pub.track.kind === Track.Kind.Audio) {
+    if (track.kind === Track.Kind.Audio) {
       setIsAudioOn(true);
+      return;
     }
+    const sid = roomRef.current?.localParticipant.sid || 'local';
+    const id = tileId(sid, track.source);
+    if (!id) return;
+    if (track.source === Track.Source.Camera) setIsVideoOn(true);
+    if (track.source === Track.Source.ScreenShare) setIsScreenSharing(true);
+    upsertTile(
+      {
+        id,
+        label: track.source === Track.Source.ScreenShare ? 'You · Screen' : 'You',
+        kind: track.source === Track.Source.ScreenShare ? 'screen' : 'camera',
+        isLocal: true,
+        participantSid: sid,
+      },
+      track,
+    );
   }, []);
 
-  const handleLocalTrackUnpublished = useCallback((pub: LocalTrackPublication) => {
-    if (!pub.track) return;
-    detachAll(pub.track);
-    if (pub.track.source === Track.Source.Camera) setIsVideoOn(false);
-    if (pub.track.source === Track.Source.ScreenShare) {
-      setIsScreenSharing(false);
-      setHasRemoteScreen(false);
+  const handleLocalUnpublished = useCallback((pub: LocalTrackPublication) => {
+    const track = pub.track;
+    if (!track) return;
+    if (track.kind === Track.Kind.Audio) {
+      setIsAudioOn(false);
+      return;
     }
-    if (pub.track.kind === Track.Kind.Audio) setIsAudioOn(false);
+    const sid = roomRef.current?.localParticipant.sid || 'local';
+    const id = tileId(sid, track.source);
+    if (track.source === Track.Source.Camera) setIsVideoOn(false);
+    if (track.source === Track.Source.ScreenShare) setIsScreenSharing(false);
+    if (id) removeTile(id);
   }, []);
 
-  const updateParticipantCount = useCallback((_p?: Participant) => {
-    if (!roomRef.current) return;
-    setParticipantCount(roomRef.current.numParticipants + 1);
+  const handleParticipantGone = useCallback((p: Participant) => {
+    [Track.Source.Camera, Track.Source.ScreenShare].forEach((src) => {
+      const id = tileId(p.sid, src);
+      if (id) removeTile(id);
+    });
+    if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
   }, []);
 
-  /* ---------- Connect on mount ---------- */
+  const updateParticipantCount = useCallback(() => {
+    if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
+  }, []);
+
+  /* ---------- Connect lifecycle ---------- */
   useEffect(() => {
-    let mounted = true;
-    const room = new Room({ adaptiveStream: true, dynacast: true });
+    cancelledRef.current = false;
+    const room = new Room({
+      adaptiveStream: true,
+      dynacast: true,
+      publishDefaults: { simulcast: true },
+    });
     roomRef.current = room;
 
-    room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
-    room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
-    room.on(RoomEvent.LocalTrackPublished, handleLocalTrackPublished);
-    room.on(RoomEvent.LocalTrackUnpublished, handleLocalTrackUnpublished);
+    room.on(RoomEvent.TrackSubscribed, handleRemoteTrack);
+    room.on(RoomEvent.TrackUnsubscribed, handleRemoteTrackGone);
+    room.on(RoomEvent.LocalTrackPublished, handleLocalPublished);
+    room.on(RoomEvent.LocalTrackUnpublished, handleLocalUnpublished);
     room.on(RoomEvent.ParticipantConnected, updateParticipantCount);
-    room.on(RoomEvent.ParticipantDisconnected, updateParticipantCount);
+    room.on(RoomEvent.ParticipantDisconnected, handleParticipantGone);
     room.on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
-      if (!mounted) return;
+      if (cancelledRef.current) return;
       if (state === ConnectionState.Connected) setStatus('connected');
       else if (state === ConnectionState.Reconnecting) setStatus('connecting');
       else if (state === ConnectionState.Disconnected) setStatus('disconnected');
     });
 
-    const connect = async () => {
+    const timeout = window.setTimeout(() => {
+      if (!cancelledRef.current && room.state !== ConnectionState.Connected) {
+        setStatus('error');
+        setErrorMsg('Network or video service unreachable. Please retry.');
+      }
+    }, 12000);
+
+    (async () => {
       try {
         setStatus('connecting');
         setErrorMsg(null);
 
         const { data: sessionData } = await supabase.auth.getSession();
         if (!sessionData?.session?.access_token) {
-          setStatus('error');
-          setErrorMsg('You must be signed in to join the call.');
+          if (!cancelledRef.current) {
+            setStatus('error');
+            setErrorMsg('You must be signed in to join the call.');
+          }
           return;
         }
 
@@ -185,97 +279,100 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           },
         });
 
+        if (cancelledRef.current) return;
         if (resp.error || !resp.data?.token) {
           setStatus('error');
           setErrorMsg(resp.error?.message || 'Failed to get video token');
           return;
         }
 
-        const { token, url } = resp.data;
-        await room.connect(url, token);
-
-        if (mounted) {
-          setStatus('connected');
-          updateParticipantCount();
+        await room.connect(resp.data.url, resp.data.token);
+        if (cancelledRef.current) {
+          await room.disconnect(true).catch(() => {});
+          return;
         }
+
+        // Attach any tracks already present
+        room.remoteParticipants.forEach((p) => {
+          p.trackPublications.forEach((pub) => {
+            if (pub.track && pub.isSubscribed) {
+              handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
+            }
+          });
+        });
+
+        setStatus('connected');
+        updateParticipantCount();
       } catch (err: any) {
+        if (cancelledRef.current) return;
         console.error('LiveKit connect error:', err);
-        if (mounted) {
-          setStatus('error');
-          setErrorMsg(err?.message || 'Could not connect to the video room.');
-        }
+        setStatus('error');
+        setErrorMsg(err?.message || 'Could not connect to the video room.');
       }
-    };
-
-    connect();
+    })();
 
     return () => {
-      mounted = false;
+      cancelledRef.current = true;
+      window.clearTimeout(timeout);
       try {
-        room.disconnect(true);
+        room.removeAllListeners();
       } catch {
         /* noop */
+      }
+      // Detach all tracks first
+      trackRegistry.current.forEach((t) => {
+        try {
+          t.detach().forEach((el) => el.remove());
+        } catch {
+          /* noop */
+        }
+      });
+      trackRegistry.current.clear();
+      nodeRegistry.current.clear();
+      if (room.state !== ConnectionState.Disconnected) {
+        room.disconnect(true).catch(() => {});
       }
       roomRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [consultation.appointment_id, consultation.room_id]);
+  }, [consultation.appointment_id, consultation.room_id, reconnectKey]);
 
+  /* ---------- Media controls ---------- */
   const explainMediaError = (err: any, fallback: string) => {
     const name = err?.name || '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-      toast.error('Permission denied. Allow camera, microphone, or screen sharing in your browser settings.');
+      toast.error('Permission denied. Allow camera, microphone or screen sharing in your browser settings.');
     } else if (name === 'NotFoundError') {
       toast.error('No matching camera or microphone was found on this device.');
     } else if (name === 'NotReadableError') {
       toast.error('The camera or microphone is already in use by another app.');
-    } else if (name === 'NotSupportedError' || name === 'SecurityError') {
+    } else if (name === 'SecurityError' || name === 'NotSupportedError') {
       toast.error('Media permissions require a secure HTTPS browser context.');
     } else {
       toast.error(err?.message || fallback);
     }
   };
 
-  const canUseMedia = () => {
+  const requireConnected = () => {
     const room = roomRef.current;
     if (!room || room.state !== ConnectionState.Connected) {
-      toast.error('Still connecting to the room. Try again in a second.');
-      return null;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error('Your browser does not support camera/microphone access.');
-      return null;
-    }
-    if (!window.isSecureContext) {
-      toast.error('Camera and microphone require HTTPS.');
+      toast.error('Still connecting. Try again in a moment.');
       return null;
     }
     return room;
   };
 
-  const publishTracks = async (tracks: LocalTrack[]) => {
-    const room = roomRef.current;
-    if (!room) return;
-    await Promise.all(tracks.map((track) => room.localParticipant.publishTrack(track)));
-  };
-
-  /* ---------- Media gesture-driven start ---------- */
   const startMedia = useCallback(async () => {
-    const room = canUseMedia();
+    const room = requireConnected();
     if (!room) return;
-
-    // Important: createTracks() invokes getUserMedia synchronously from this click handler.
-    const tracksPromise = room.localParticipant.createTracks({ audio: true, video: true });
-
     setStartingMedia(true);
     try {
-      const tracks = await tracksPromise;
-      await publishTracks(tracks);
+      await room.localParticipant.setMicrophoneEnabled(true);
+      await room.localParticipant.setCameraEnabled(true);
       setMediaStarted(true);
       setIsAudioOn(true);
       setIsVideoOn(true);
     } catch (err: any) {
-      console.error('Media start error:', err);
       explainMediaError(err, 'Failed to start camera and microphone.');
     } finally {
       setStartingMedia(false);
@@ -283,105 +380,46 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   }, []);
 
   const toggleAudio = useCallback(async () => {
-    const room = roomRef.current;
-    if (!room || room.state !== ConnectionState.Connected) {
-      toast.error('Still connecting to the room. Try again in a second.');
-      return;
-    }
+    const room = requireConnected();
+    if (!room) return;
     try {
-      const current = room.localParticipant.getTrackPublication(Track.Source.Microphone);
-      if (current?.track && !current.isMuted) {
-        await current.mute();
-        setIsAudioOn(false);
-        return;
-      }
-      if (current) {
-        await current.unmute();
-        setMediaStarted(true);
-        setIsAudioOn(true);
-        return;
-      }
-      const tracksPromise = room.localParticipant.createTracks({ audio: true, video: false });
-      const tracks = await tracksPromise;
-      await publishTracks(tracks);
-      setMediaStarted(true);
-      setIsAudioOn(true);
+      const next = !isAudioOn;
+      await room.localParticipant.setMicrophoneEnabled(next);
+      setIsAudioOn(next);
+      if (next) setMediaStarted(true);
     } catch (err: any) {
       explainMediaError(err, 'Could not toggle microphone.');
     }
-  }, []);
+  }, [isAudioOn]);
 
   const toggleVideo = useCallback(async () => {
-    const room = roomRef.current;
-    if (!room || room.state !== ConnectionState.Connected) {
-      toast.error('Still connecting to the room. Try again in a second.');
-      return;
-    }
+    const room = requireConnected();
+    if (!room) return;
     try {
-      const current = room.localParticipant.getTrackPublication(Track.Source.Camera);
-      if (current?.track && !current.isMuted) {
-        await current.mute();
-        setIsVideoOn(false);
-        return;
-      }
-      if (current) {
-        await current.unmute();
-        setMediaStarted(true);
-        setIsVideoOn(true);
-        return;
-      }
-      const tracksPromise = room.localParticipant.createTracks({ audio: false, video: true });
-      const tracks = await tracksPromise;
-      await publishTracks(tracks);
-      setMediaStarted(true);
-      setIsVideoOn(true);
+      const next = !isVideoOn;
+      await room.localParticipant.setCameraEnabled(next);
+      setIsVideoOn(next);
+      if (next) setMediaStarted(true);
     } catch (err: any) {
       explainMediaError(err, 'Could not toggle camera.');
     }
-  }, []);
+  }, [isVideoOn]);
 
   const toggleScreenShare = useCallback(async () => {
-    const room = roomRef.current;
-    if (!room || room.state !== ConnectionState.Connected) {
-      toast.error('Connect to the room before sharing your screen.');
-      return;
-    }
+    const room = requireConnected();
+    if (!room) return;
     try {
-      const current = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
-      if (current?.track) {
-        await room.localParticipant.unpublishTrack(current.track, true);
-        const audio = room.localParticipant.getTrackPublication(Track.Source.ScreenShareAudio);
-        if (audio?.track) await room.localParticipant.unpublishTrack(audio.track, true);
-        setIsScreenSharing(false);
-        setHasRemoteScreen(false);
-        return;
-      }
-
-      // Important: createScreenTracks() invokes getDisplayMedia synchronously from this click handler.
-      let tracksPromise = room.localParticipant.createScreenTracks({ audio: true });
-      let tracks: LocalTrack[];
-      try {
-        tracks = await tracksPromise;
-      } catch (err: any) {
-        if (err?.name !== 'NotAllowedError' && err?.name !== 'PermissionDeniedError') {
-          tracksPromise = room.localParticipant.createScreenTracks({ audio: false });
-          tracks = await tracksPromise;
-        } else {
-          throw err;
-        }
-      }
-      await publishTracks(tracks);
-      setIsScreenSharing(true);
-      setHasRemoteScreen(true);
+      const next = !isScreenSharing;
+      await room.localParticipant.setScreenShareEnabled(next, { audio: true });
+      setIsScreenSharing(next);
     } catch (err: any) {
-      console.error('Screen share error:', err);
       if (err?.name === 'NotAllowedError') {
         toast.error('Screen share was cancelled or not permitted.');
       } else {
         explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
-  }, []);
+  }, [isScreenSharing]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -412,6 +450,36 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   }, [onLeave]);
 
   /* ---------- Render ---------- */
+  const focusedTile = useMemo(
+    () => tiles.find((t) => t.id === focusedId) ?? tiles[0] ?? null,
+    [tiles, focusedId],
+  );
+  const sideTiles = useMemo(
+    () => tiles.filter((t) => t.id !== focusedTile?.id),
+    [tiles, focusedTile],
+  );
+
+  const renderTile = (tile: TileMeta, opts: { large: boolean }) => {
+    const mirror = tile.isLocal && tile.kind === 'camera';
+    return (
+      <div
+        key={tile.id}
+        onClick={() => setFocusedId(tile.id)}
+        className={`relative ${opts.large ? 'w-full h-full' : 'w-full aspect-video'} bg-muted rounded-md overflow-hidden border border-border ${opts.large ? '' : 'cursor-pointer hover:border-primary/60 transition-colors'}`}
+      >
+        <div
+          ref={(el) => registerNode(tile.id, el)}
+          className="absolute inset-0 [&>video]:w-full [&>video]:h-full"
+          style={mirror ? { transform: 'scaleX(-1)' } : undefined}
+        />
+        <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
+          <span className="truncate">{tile.label}</span>
+          {tile.kind === 'screen' && <span className="text-primary">Screen</span>}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       ref={containerRef}
@@ -443,34 +511,40 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       </div>
 
       {/* Stage */}
-      <div className="flex-1 relative bg-black">
-        {/* Remote camera */}
-        <div ref={remoteVideoContainer} className="absolute inset-0 w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover" />
-
-        {/* Remote screen-share overlay */}
-        <div
-          ref={screenShareContainer}
-          className={`absolute inset-0 w-full h-full bg-black [&>video]:w-full [&>video]:h-full [&>video]:object-contain ${hasRemoteScreen ? 'z-10' : 'hidden'}`}
-        />
-
-        {/* Hidden audio sink */}
-        <div ref={audioContainer} className="hidden" />
-
-        {/* Local PiP */}
-        <div className="absolute bottom-3 right-3 w-40 sm:w-56 aspect-video rounded-md overflow-hidden border border-border shadow-lg bg-muted z-20">
-          <div
-            ref={localVideoContainer}
-            className="w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover"
-            style={{ transform: 'scaleX(-1)' }}
-          />
-          {!isVideoOn && (
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
-              Camera off
+      <div className="flex-1 relative bg-black flex">
+        {/* Focused tile */}
+        <div className="flex-1 relative p-2">
+          {focusedTile ? (
+            renderTile(focusedTile, { large: true })
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
+              Waiting for video…
             </div>
           )}
         </div>
 
-        {/* Connection / start overlays */}
+        {/* Side strip */}
+        {sideTiles.length > 0 && (
+          <div className="hidden md:flex w-44 lg:w-56 flex-col gap-2 p-2 overflow-y-auto bg-card/40">
+            {sideTiles.map((t) => renderTile(t, { large: false }))}
+          </div>
+        )}
+
+        {/* Mobile bottom strip */}
+        {sideTiles.length > 0 && (
+          <div className="md:hidden absolute bottom-2 left-2 right-2 flex gap-2 overflow-x-auto z-20">
+            {sideTiles.map((t) => (
+              <div key={t.id} className="w-32 shrink-0">
+                {renderTile(t, { large: false })}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Hidden audio sink */}
+        <div ref={audioContainer} className="hidden" />
+
+        {/* Overlays */}
         {status === 'connecting' && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80">
             <div className="flex items-center gap-3 text-muted-foreground">
@@ -486,7 +560,26 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
               <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
               <h4 className="font-medium">Could not join the call</h4>
               <p className="text-sm text-muted-foreground">{errorMsg}</p>
-              <Button onClick={handleLeave} variant="outline">Leave</Button>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={() => setReconnectKey((k) => k + 1)} className="gap-2">
+                  <RefreshCw className="h-4 w-4" /> Retry
+                </Button>
+                <Button onClick={handleLeave} variant="outline">Leave</Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {status === 'disconnected' && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/90 p-4">
+            <Card className="p-6 max-w-md text-center space-y-3">
+              <h4 className="font-medium">You were disconnected</h4>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={() => setReconnectKey((k) => k + 1)} className="gap-2">
+                  <RefreshCw className="h-4 w-4" /> Rejoin
+                </Button>
+                <Button onClick={handleLeave} variant="outline">Leave</Button>
+              </div>
             </Card>
           </div>
         )}
@@ -535,7 +628,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             variant={!isAudioOn ? 'destructive' : 'secondary'}
             size="lg"
             onClick={toggleAudio}
-            disabled={!mediaStarted}
+            disabled={status !== 'connected'}
             className="rounded-full h-12 w-12"
             aria-label={isAudioOn ? 'Mute microphone' : 'Unmute microphone'}
           >
@@ -546,7 +639,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             variant={!isVideoOn ? 'destructive' : 'secondary'}
             size="lg"
             onClick={toggleVideo}
-            disabled={!mediaStarted}
+            disabled={status !== 'connected'}
             className="rounded-full h-12 w-12"
             aria-label={isVideoOn ? 'Turn off camera' : 'Turn on camera'}
           >
