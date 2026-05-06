@@ -103,7 +103,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     el.style.height = '100%';
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
-    (el as HTMLMediaElement).playsInline = true;
+    el.setAttribute('playsinline', 'true');
     if (track.kind === Track.Kind.Video) {
       // Replace any previous video element in the node
       Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
