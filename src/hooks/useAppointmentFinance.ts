@@ -112,9 +112,15 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
   const recordPayment = useCallback(
     async ({ amount, method, notes }: { amount: number; method: PaymentMethod; notes?: string }) => {
       if (!appointmentId || !patientId) return;
+      const { data: appt } = await supabase
+        .from("appointments")
+        .select("practice_id")
+        .eq("id", appointmentId)
+        .maybeSingle();
       const { error } = await supabase.from("payments").insert({
         appointment_id: appointmentId,
         patient_id: patientId,
+        practice_id: (appt as any)?.practice_id || null,
         amount,
         payment_method: method,
         status: "completed",
