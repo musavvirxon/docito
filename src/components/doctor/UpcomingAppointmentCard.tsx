@@ -441,16 +441,15 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
                     </div>
                   )}
 
-                  <div className="pt-4 border-t flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" /> Amount to be billed
-                    </p>
-                    <p className="font-semibold tabular-nums">
-                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(appointmentAmountToBill)}
-                    </p>
-                  </div>
                 </CardContent>
               </Card>
+
+              <AppointmentFinancePanel
+                appointmentId={selectedAppointment.id}
+                patientId={selectedAppointment.patient_id || null}
+                patientName={selectedAppointment.patient_name || ""}
+                appointmentDate={selectedAppointment.appointment_date}
+              />
 
               {/* Quick Action Buttons */}
               <div className="flex flex-wrap gap-2 pt-4 border-t">
