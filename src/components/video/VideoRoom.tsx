@@ -184,7 +184,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const handleRemoteTrack = useCallback(
     (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
       if (track.kind === Track.Kind.Audio) {
-        if (audioContainer.current) attachTrackToNode(track, audioContainer.current);
+        if (audioContainer.current) attachTrackToNode(track, audioContainer.current, false);
         return;
       }
       const id = tileId(p.sid, track.source);
