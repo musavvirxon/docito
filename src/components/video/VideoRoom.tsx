@@ -109,31 +109,39 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [reconnectKey, setReconnectKey] = useState(0);
 
   /* ---------- attach helpers ---------- */
-  const attachTrackToNode = (track: Track, node: HTMLElement) => {
+  const attachTrackToNode = (track: Track, node: HTMLElement, isLocal: boolean) => {
     const el = track.attach();
     el.style.width = '100%';
     el.style.height = '100%';
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
     el.setAttribute('playsinline', 'true');
-    if (track.kind === Track.Kind.Video) {
-      // Replace any previous video element in the node
-      Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
-      node.appendChild(el);
-    } else {
-      node.appendChild(el);
+    // Always mute local playback (camera mic feedback / duplicate audio).
+    if (isLocal) {
+      try { (el as HTMLMediaElement).muted = true; } catch { /* noop */ }
     }
+    if (track.kind === Track.Kind.Video) {
+      Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
+    } else {
+      // Bug #8: prevent duplicate <audio> elements that cause echo.
+      Array.from(node.querySelectorAll('audio')).forEach((a) => a.remove());
+    }
+    node.appendChild(el);
   };
 
   const tryAttach = (id: string) => {
     const track = trackRegistry.current.get(id);
     const node = nodeRegistry.current.get(id);
-    if (track && node) attachTrackToNode(track, node);
+    if (track && node) {
+      attachTrackToNode(track, node, !!localTileRef.current.get(id));
+      pendingAttachRef.current.delete(id);
+    }
   };
 
   const registerNode = useCallback((id: string, el: HTMLDivElement | null) => {
     if (el) {
       nodeRegistry.current.set(id, el);
+      // Bug #2: drain pending attachment now that DOM node exists.
       tryAttach(id);
     } else {
       nodeRegistry.current.delete(id);
@@ -142,13 +150,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const upsertTile = (meta: TileMeta, track: Track) => {
     trackRegistry.current.set(meta.id, track);
+    localTileRef.current.set(meta.id, meta.isLocal);
+    pendingAttachRef.current.add(meta.id);
     setTiles((prev) => {
       if (prev.some((t) => t.id === meta.id)) return prev;
       return [...prev, meta];
     });
     setFocusedId((cur) => cur ?? meta.id);
-    // attempt attach next tick (after node renders)
-    setTimeout(() => tryAttach(meta.id), 0);
+    // If the node is already mounted (re-publish case), attach immediately.
+    tryAttach(meta.id);
   };
 
   const removeTile = (id: string) => {
@@ -159,9 +169,16 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       /* noop */
     }
     trackRegistry.current.delete(id);
+    localTileRef.current.delete(id);
+    pendingAttachRef.current.delete(id);
     setTiles((prev) => prev.filter((t) => t.id !== id));
     setFocusedId((cur) => (cur === id ? null : cur));
   };
+
+  // Safety net: after each tiles render, re-drain any pending attachments.
+  useEffect(() => {
+    pendingAttachRef.current.forEach((id) => tryAttach(id));
+  }, [tiles]);
 
   /* ---------- LiveKit handlers ---------- */
   const handleRemoteTrack = useCallback(
