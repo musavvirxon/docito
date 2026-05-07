@@ -77,6 +77,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const nodeRegistry = useRef<Map<string, HTMLDivElement>>(new Map());
   // tileId -> Track (latest)
   const trackRegistry = useRef<Map<string, Track>>(new Map());
+  // tileIds awaiting their DOM node to mount
+  const pendingAttachRef = useRef<Set<string>>(new Set());
+  // tileId -> isLocal (so attach can mute local elements)
+  const localTileRef = useRef<Map<string, boolean>>(new Map());
 
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,6 +90,14 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [isAudioOn, setIsAudioOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+
+  // Refs mirroring the booleans above to avoid stale closures in toggles.
+  const isAudioOnRef = useRef(false);
+  const isVideoOnRef = useRef(false);
+  const isScreenSharingRef = useRef(false);
+  useEffect(() => { isAudioOnRef.current = isAudioOn; }, [isAudioOn]);
+  useEffect(() => { isVideoOnRef.current = isVideoOn; }, [isVideoOn]);
+  useEffect(() => { isScreenSharingRef.current = isScreenSharing; }, [isScreenSharing]);
 
   const [tiles, setTiles] = useState<TileMeta[]>([]);
   const [focusedId, setFocusedId] = useState<string | null>(null);
