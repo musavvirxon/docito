@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { 
-  Video, 
-  Mic, 
-  MicOff, 
-  VideoOff, 
-  Clock, 
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Video,
+  Mic,
+  MicOff,
+  VideoOff,
+  Clock,
   User,
   Calendar,
   CheckCircle2,
@@ -33,58 +33,76 @@ const VideoWaitingRoom: React.FC<VideoWaitingRoomProps> = ({
 }) => {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [, setHasStream] = useState(false);
   const [deviceError, setDeviceError] = useState<string | null>(null);
-  const videoPreviewRef = React.useRef<HTMLVideoElement>(null);
+  const videoPreviewRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  const isOtherPartyWaiting = userRole === 'doctor' 
-    ? !!consultation.patient_joined_at 
+  const isOtherPartyWaiting = userRole === 'doctor'
+    ? !!consultation.patient_joined_at
     : !!consultation.doctor_joined_at;
 
+  const stopStream = () => {
+    const s = mediaStreamRef.current;
+    if (s) {
+      s.getTracks().forEach((t) => {
+        try { t.stop(); } catch { /* noop */ }
+      });
+      mediaStreamRef.current = null;
+    }
+    if (videoPreviewRef.current) {
+      try { videoPreviewRef.current.srcObject = null; } catch { /* noop */ }
+    }
+  };
+
   useEffect(() => {
-    const initMediaDevices = async () => {
+    let cancelled = false;
+    (async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
         });
-        setMediaStream(stream);
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        mediaStreamRef.current = stream;
         if (videoPreviewRef.current) {
           videoPreviewRef.current.srcObject = stream;
         }
+        setHasStream(true);
       } catch (error) {
         console.error('Error accessing media devices:', error);
-        setDeviceError('Unable to access camera/microphone. Please check permissions.');
+        if (!cancelled) {
+          setDeviceError('Unable to access camera/microphone. Please check permissions.');
+        }
       }
-    };
-
-    initMediaDevices();
+    })();
 
     return () => {
-      mediaStream?.getTracks().forEach(track => track.stop());
+      cancelled = true;
+      stopStream();
     };
   }, []);
 
   const toggleAudio = () => {
-    if (mediaStream) {
-      mediaStream.getAudioTracks().forEach(track => {
-        track.enabled = !isAudioEnabled;
-      });
-      setIsAudioEnabled(!isAudioEnabled);
-    }
+    const s = mediaStreamRef.current;
+    if (!s) return;
+    s.getAudioTracks().forEach((t) => { t.enabled = !isAudioEnabled; });
+    setIsAudioEnabled((v) => !v);
   };
 
   const toggleVideo = () => {
-    if (mediaStream) {
-      mediaStream.getVideoTracks().forEach(track => {
-        track.enabled = !isVideoEnabled;
-      });
-      setIsVideoEnabled(!isVideoEnabled);
-    }
+    const s = mediaStreamRef.current;
+    if (!s) return;
+    s.getVideoTracks().forEach((t) => { t.enabled = !isVideoEnabled; });
+    setIsVideoEnabled((v) => !v);
   };
 
   const handleJoin = () => {
-    mediaStream?.getTracks().forEach(track => track.stop());
+    // Free devices BEFORE VideoRoom mounts and re-acquires them.
+    stopStream();
     onJoin();
   };
 
