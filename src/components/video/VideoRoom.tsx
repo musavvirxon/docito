@@ -264,8 +264,25 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       adaptiveStream: true,
       dynacast: true,
       publishDefaults: { simulcast: true },
+      // Bug #11: more resilient reconnect than the 3-attempt default.
+      reconnectPolicy: {
+        nextRetryDelayInMs: (ctx) => Math.min(30000, 1000 * Math.pow(2, ctx.retryCount)),
+      } as any,
     });
     roomRef.current = room;
+
+    const reattachAll = () => {
+      // Re-subscribe remote tracks
+      room.remoteParticipants.forEach((p) => {
+        p.trackPublications.forEach((pub) => {
+          if (pub.track && pub.isSubscribed) {
+            handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
+          }
+        });
+      });
+      // Re-attach any local tracks we already track
+      trackRegistry.current.forEach((_t, id) => tryAttach(id));
+    };
 
     room.on(RoomEvent.TrackSubscribed, handleRemoteTrack);
     room.on(RoomEvent.TrackUnsubscribed, handleRemoteTrackGone);
@@ -278,6 +295,24 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       if (state === ConnectionState.Connected) setStatus('connected');
       else if (state === ConnectionState.Reconnecting) setStatus('connecting');
       else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+    });
+    // Bug #5: re-attach all tiles after a successful auto-reconnect.
+    room.on(RoomEvent.Reconnected, () => {
+      if (cancelledRef.current) return;
+      setStatus('connected');
+      reattachAll();
+    });
+    room.on(RoomEvent.Reconnecting, () => {
+      if (cancelledRef.current) return;
+      setStatus('connecting');
+    });
+    // Bug #6: surface device errors (unplug, permission revoked mid-call).
+    room.on(RoomEvent.MediaDevicesError, (err: Error) => {
+      explainMediaError(err, 'Media device error.');
+      // Reset toggle state so UI is consistent
+      setIsAudioOn(false);
+      setIsVideoOn(false);
+      setIsScreenSharing(false);
     });
 
     const timeout = window.setTimeout(() => {
