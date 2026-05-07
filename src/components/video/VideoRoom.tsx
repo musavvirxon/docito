@@ -77,6 +77,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const nodeRegistry = useRef<Map<string, HTMLDivElement>>(new Map());
   // tileId -> Track (latest)
   const trackRegistry = useRef<Map<string, Track>>(new Map());
+  // tileIds awaiting their DOM node to mount
+  const pendingAttachRef = useRef<Set<string>>(new Set());
+  // tileId -> isLocal (so attach can mute local elements)
+  const localTileRef = useRef<Map<string, boolean>>(new Map());
 
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -86,6 +90,14 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [isAudioOn, setIsAudioOn] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+
+  // Refs mirroring the booleans above to avoid stale closures in toggles.
+  const isAudioOnRef = useRef(false);
+  const isVideoOnRef = useRef(false);
+  const isScreenSharingRef = useRef(false);
+  useEffect(() => { isAudioOnRef.current = isAudioOn; }, [isAudioOn]);
+  useEffect(() => { isVideoOnRef.current = isVideoOn; }, [isVideoOn]);
+  useEffect(() => { isScreenSharingRef.current = isScreenSharing; }, [isScreenSharing]);
 
   const [tiles, setTiles] = useState<TileMeta[]>([]);
   const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -97,31 +109,39 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [reconnectKey, setReconnectKey] = useState(0);
 
   /* ---------- attach helpers ---------- */
-  const attachTrackToNode = (track: Track, node: HTMLElement) => {
+  const attachTrackToNode = (track: Track, node: HTMLElement, isLocal: boolean) => {
     const el = track.attach();
     el.style.width = '100%';
     el.style.height = '100%';
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
     el.setAttribute('playsinline', 'true');
-    if (track.kind === Track.Kind.Video) {
-      // Replace any previous video element in the node
-      Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
-      node.appendChild(el);
-    } else {
-      node.appendChild(el);
+    // Always mute local playback (camera mic feedback / duplicate audio).
+    if (isLocal) {
+      try { (el as HTMLMediaElement).muted = true; } catch { /* noop */ }
     }
+    if (track.kind === Track.Kind.Video) {
+      Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
+    } else {
+      // Bug #8: prevent duplicate <audio> elements that cause echo.
+      Array.from(node.querySelectorAll('audio')).forEach((a) => a.remove());
+    }
+    node.appendChild(el);
   };
 
   const tryAttach = (id: string) => {
     const track = trackRegistry.current.get(id);
     const node = nodeRegistry.current.get(id);
-    if (track && node) attachTrackToNode(track, node);
+    if (track && node) {
+      attachTrackToNode(track, node, !!localTileRef.current.get(id));
+      pendingAttachRef.current.delete(id);
+    }
   };
 
   const registerNode = useCallback((id: string, el: HTMLDivElement | null) => {
     if (el) {
       nodeRegistry.current.set(id, el);
+      // Bug #2: drain pending attachment now that DOM node exists.
       tryAttach(id);
     } else {
       nodeRegistry.current.delete(id);
@@ -130,13 +150,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const upsertTile = (meta: TileMeta, track: Track) => {
     trackRegistry.current.set(meta.id, track);
+    localTileRef.current.set(meta.id, meta.isLocal);
+    pendingAttachRef.current.add(meta.id);
     setTiles((prev) => {
       if (prev.some((t) => t.id === meta.id)) return prev;
       return [...prev, meta];
     });
     setFocusedId((cur) => cur ?? meta.id);
-    // attempt attach next tick (after node renders)
-    setTimeout(() => tryAttach(meta.id), 0);
+    // If the node is already mounted (re-publish case), attach immediately.
+    tryAttach(meta.id);
   };
 
   const removeTile = (id: string) => {
@@ -147,15 +169,22 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       /* noop */
     }
     trackRegistry.current.delete(id);
+    localTileRef.current.delete(id);
+    pendingAttachRef.current.delete(id);
     setTiles((prev) => prev.filter((t) => t.id !== id));
     setFocusedId((cur) => (cur === id ? null : cur));
   };
+
+  // Safety net: after each tiles render, re-drain any pending attachments.
+  useEffect(() => {
+    pendingAttachRef.current.forEach((id) => tryAttach(id));
+  }, [tiles]);
 
   /* ---------- LiveKit handlers ---------- */
   const handleRemoteTrack = useCallback(
     (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
       if (track.kind === Track.Kind.Audio) {
-        if (audioContainer.current) attachTrackToNode(track, audioContainer.current);
+        if (audioContainer.current) attachTrackToNode(track, audioContainer.current, false);
         return;
       }
       const id = tileId(p.sid, track.source);
@@ -235,8 +264,25 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       adaptiveStream: true,
       dynacast: true,
       publishDefaults: { simulcast: true },
+      // Bug #11: more resilient reconnect than the 3-attempt default.
+      reconnectPolicy: {
+        nextRetryDelayInMs: (ctx) => Math.min(30000, 1000 * Math.pow(2, ctx.retryCount)),
+      } as any,
     });
     roomRef.current = room;
+
+    const reattachAll = () => {
+      // Re-subscribe remote tracks
+      room.remoteParticipants.forEach((p) => {
+        p.trackPublications.forEach((pub) => {
+          if (pub.track && pub.isSubscribed) {
+            handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
+          }
+        });
+      });
+      // Re-attach any local tracks we already track
+      trackRegistry.current.forEach((_t, id) => tryAttach(id));
+    };
 
     room.on(RoomEvent.TrackSubscribed, handleRemoteTrack);
     room.on(RoomEvent.TrackUnsubscribed, handleRemoteTrackGone);
@@ -249,6 +295,24 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       if (state === ConnectionState.Connected) setStatus('connected');
       else if (state === ConnectionState.Reconnecting) setStatus('connecting');
       else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+    });
+    // Bug #5: re-attach all tiles after a successful auto-reconnect.
+    room.on(RoomEvent.Reconnected, () => {
+      if (cancelledRef.current) return;
+      setStatus('connected');
+      reattachAll();
+    });
+    room.on(RoomEvent.Reconnecting, () => {
+      if (cancelledRef.current) return;
+      setStatus('connecting');
+    });
+    // Bug #6: surface device errors (unplug, permission revoked mid-call).
+    room.on(RoomEvent.MediaDevicesError, (err: Error) => {
+      explainMediaError(err, 'Media device error.');
+      // Reset toggle state so UI is consistent
+      setIsAudioOn(false);
+      setIsVideoOn(false);
+      setIsScreenSharing(false);
     });
 
     const timeout = window.setTimeout(() => {
@@ -366,52 +430,80 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     const room = requireConnected();
     if (!room) return;
     setStartingMedia(true);
+    let micOk = false;
+    let camOk = false;
     try {
       await room.localParticipant.setMicrophoneEnabled(true);
-      await room.localParticipant.setCameraEnabled(true);
-      setMediaStarted(true);
+      micOk = true;
       setIsAudioOn(true);
+    } catch (err: any) {
+      explainMediaError(err, 'Failed to start microphone.');
+    }
+    try {
+      await room.localParticipant.setCameraEnabled(true);
+      camOk = true;
       setIsVideoOn(true);
     } catch (err: any) {
-      explainMediaError(err, 'Failed to start camera and microphone.');
-    } finally {
-      setStartingMedia(false);
+      explainMediaError(err, 'Failed to start camera.');
     }
+    if (micOk || camOk) setMediaStarted(true);
+    setStartingMedia(false);
   }, []);
 
   const toggleAudio = useCallback(async () => {
     const room = requireConnected();
     if (!room) return;
     try {
-      const next = !isAudioOn;
+      const next = !isAudioOnRef.current;
       await room.localParticipant.setMicrophoneEnabled(next);
+      isAudioOnRef.current = next;
       setIsAudioOn(next);
       if (next) setMediaStarted(true);
     } catch (err: any) {
       explainMediaError(err, 'Could not toggle microphone.');
     }
-  }, [isAudioOn]);
+  }, []);
 
   const toggleVideo = useCallback(async () => {
     const room = requireConnected();
     if (!room) return;
     try {
-      const next = !isVideoOn;
+      const next = !isVideoOnRef.current;
       await room.localParticipant.setCameraEnabled(next);
+      isVideoOnRef.current = next;
       setIsVideoOn(next);
       if (next) setMediaStarted(true);
     } catch (err: any) {
       explainMediaError(err, 'Could not toggle camera.');
     }
-  }, [isVideoOn]);
+  }, []);
 
   const toggleScreenShare = useCallback(async () => {
     const room = requireConnected();
     if (!room) return;
     try {
-      const next = !isScreenSharing;
+      const next = !isScreenSharingRef.current;
       await room.localParticipant.setScreenShareEnabled(next, { audio: true });
+      isScreenSharingRef.current = next;
       setIsScreenSharing(next);
+      // Bug #3: detect when the user stops sharing via the browser's native pill.
+      if (next) {
+        const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+        const t = pub?.track;
+        if (t) {
+          const onEnded = () => {
+            isScreenSharingRef.current = false;
+            setIsScreenSharing(false);
+            try { t.off('ended' as any, onEnded); } catch { /* noop */ }
+          };
+          try { t.on('ended' as any, onEnded); } catch { /* noop */ }
+          // Also listen to underlying MediaStreamTrack
+          const mst = (t as any).mediaStreamTrack as MediaStreamTrack | undefined;
+          if (mst) {
+            mst.addEventListener('ended', onEnded, { once: true });
+          }
+        }
+      }
     } catch (err: any) {
       if (err?.name === 'NotAllowedError') {
         toast.error('Screen share was cancelled or not permitted.');
@@ -419,7 +511,28 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
-  }, [isScreenSharing]);
+  }, []);
+
+  // Bug #10: when tab becomes visible again on mobile, republish dropped tracks.
+  useEffect(() => {
+    const onVisibility = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const room = roomRef.current;
+      if (!room || room.state !== ConnectionState.Connected) return;
+      try {
+        if (isAudioOnRef.current && !room.localParticipant.isMicrophoneEnabled) {
+          await room.localParticipant.setMicrophoneEnabled(true);
+        }
+        if (isVideoOnRef.current && !room.localParticipant.isCameraEnabled) {
+          await room.localParticipant.setCameraEnabled(true);
+        }
+      } catch (err: any) {
+        explainMediaError(err, 'Could not resume media after returning to the tab.');
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
