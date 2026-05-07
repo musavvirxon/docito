@@ -430,52 +430,80 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     const room = requireConnected();
     if (!room) return;
     setStartingMedia(true);
+    let micOk = false;
+    let camOk = false;
     try {
       await room.localParticipant.setMicrophoneEnabled(true);
-      await room.localParticipant.setCameraEnabled(true);
-      setMediaStarted(true);
+      micOk = true;
       setIsAudioOn(true);
+    } catch (err: any) {
+      explainMediaError(err, 'Failed to start microphone.');
+    }
+    try {
+      await room.localParticipant.setCameraEnabled(true);
+      camOk = true;
       setIsVideoOn(true);
     } catch (err: any) {
-      explainMediaError(err, 'Failed to start camera and microphone.');
-    } finally {
-      setStartingMedia(false);
+      explainMediaError(err, 'Failed to start camera.');
     }
+    if (micOk || camOk) setMediaStarted(true);
+    setStartingMedia(false);
   }, []);
 
   const toggleAudio = useCallback(async () => {
     const room = requireConnected();
     if (!room) return;
     try {
-      const next = !isAudioOn;
+      const next = !isAudioOnRef.current;
       await room.localParticipant.setMicrophoneEnabled(next);
+      isAudioOnRef.current = next;
       setIsAudioOn(next);
       if (next) setMediaStarted(true);
     } catch (err: any) {
       explainMediaError(err, 'Could not toggle microphone.');
     }
-  }, [isAudioOn]);
+  }, []);
 
   const toggleVideo = useCallback(async () => {
     const room = requireConnected();
     if (!room) return;
     try {
-      const next = !isVideoOn;
+      const next = !isVideoOnRef.current;
       await room.localParticipant.setCameraEnabled(next);
+      isVideoOnRef.current = next;
       setIsVideoOn(next);
       if (next) setMediaStarted(true);
     } catch (err: any) {
       explainMediaError(err, 'Could not toggle camera.');
     }
-  }, [isVideoOn]);
+  }, []);
 
   const toggleScreenShare = useCallback(async () => {
     const room = requireConnected();
     if (!room) return;
     try {
-      const next = !isScreenSharing;
+      const next = !isScreenSharingRef.current;
       await room.localParticipant.setScreenShareEnabled(next, { audio: true });
+      isScreenSharingRef.current = next;
       setIsScreenSharing(next);
+      // Bug #3: detect when the user stops sharing via the browser's native pill.
+      if (next) {
+        const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
+        const t = pub?.track;
+        if (t) {
+          const onEnded = () => {
+            isScreenSharingRef.current = false;
+            setIsScreenSharing(false);
+            try { t.off('ended' as any, onEnded); } catch { /* noop */ }
+          };
+          try { t.on('ended' as any, onEnded); } catch { /* noop */ }
+          // Also listen to underlying MediaStreamTrack
+          const mst = (t as any).mediaStreamTrack as MediaStreamTrack | undefined;
+          if (mst) {
+            mst.addEventListener('ended', onEnded, { once: true });
+          }
+        }
+      }
     } catch (err: any) {
       if (err?.name === 'NotAllowedError') {
         toast.error('Screen share was cancelled or not permitted.');
@@ -483,7 +511,28 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
-  }, [isScreenSharing]);
+  }, []);
+
+  // Bug #10: when tab becomes visible again on mobile, republish dropped tracks.
+  useEffect(() => {
+    const onVisibility = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const room = roomRef.current;
+      if (!room || room.state !== ConnectionState.Connected) return;
+      try {
+        if (isAudioOnRef.current && !room.localParticipant.isMicrophoneEnabled) {
+          await room.localParticipant.setMicrophoneEnabled(true);
+        }
+        if (isVideoOnRef.current && !room.localParticipant.isCameraEnabled) {
+          await room.localParticipant.setCameraEnabled(true);
+        }
+      } catch (err: any) {
+        explainMediaError(err, 'Could not resume media after returning to the tab.');
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
