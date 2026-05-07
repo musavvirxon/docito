@@ -1,82 +1,77 @@
-## Goals
+## Goal
 
-1. Doctor sees patient's camera, patient sees doctor's camera (two-way video).
-2. Both sides see the other's screen share.
-3. Click any tile (own camera, remote camera, screen share) to make it the large stage; the rest become small thumbnails.
-4. Stop the call from crashing / "skipping incoming track after Room disconnected" / "createOffer with closed peer connection" errors.
+Fix 12 bugs in the video call stack causing camera "in use" crashes, blank tiles, state desync, and silent disconnects. All changes are scoped to:
 
-## Root causes
+- `src/components/video/VideoWaitingRoom.tsx`
+- `src/components/video/VideoRoom.tsx`
+- `supabase/functions/livekit-token/index.ts`
 
-- **Single remote slot**: `remoteVideoContainer` only shows ONE remote video at a time and gets overwritten. With multiple remote participants or when the remote republishes (camera re-toggle), the previous element is removed instead of tracked per-participant. Patient's camera shows because we attach into a single container; if the doctor publishes camera AFTER subscribing, the stage replaces only on unsubscribe events. We'll switch to a tile registry keyed by `participantSid + source`.
-- **No focus/swap UI**: Local PiP is a fixed bottom-right thumbnail; there is no way to enlarge it. Same for screen share — currently absolutely positioned with `z-10` always-on overlay rather than swappable.
-- **Crash on tab switch / unmount**: `useEffect` cleanup calls `room.disconnect(true)` synchronously while the connect promise is still in flight, leaving the PeerConnection in a half-closed state — hence "createOffer with closed peer connection" and "skipping incoming track after Room disconnected". We'll guard with a `cancelled` flag, await connect before disconnect, and remove all listeners before disconnecting.
-- **Track re-attach loops**: `LocalTrackPublished` re-attaches every time a track republishes (e.g. mute/unmute). We'll dedupe by replacing children only when the element actually changes, and detach old elements via `track.detach()` first.
+No DB changes. No new dependencies.
 
-## Plan
+---
 
-### 1. Track registry (src/components/video/VideoRoom.tsx)
+## 1. `VideoWaitingRoom.tsx` — Bug #1 (camera in-use crash)
 
-Replace the three fixed `ref` containers (`remoteVideoContainer`, `screenShareContainer`, `localVideoContainer`) with a `Map<string, HTMLDivElement>` keyed by tile id:
+- Replace `mediaStream` state with `mediaStreamRef = useRef<MediaStream | null>(null)`. Keep `useState` only to drive UI re-render flags (`hasStream` boolean).
+- In the `useEffect` initializer: assign acquired stream to `mediaStreamRef.current`, attach to `<video>`, then set `hasStream(true)`.
+- Cleanup function reads from the ref (always fresh) and stops every track, then nulls the ref.
+- `handleJoin()` performs the same teardown synchronously before invoking `onJoin()` so `VideoRoom`'s `getUserMedia` finds the device free.
+- Toggle handlers read tracks from the ref.
 
-- `local:camera`
-- `local:screen`
-- `<participantSid>:camera`
-- `<participantSid>:screen`
+## 2. `VideoRoom.tsx` — Bugs #2–#11
 
-Maintain `tiles: TileMeta[]` state (id, label, kind: 'camera'|'screen', isLocal, participantSid). Render every tile as a `<div ref={(el) => registerTile(id, el)}>`.
+### Bug #2 — Pending-attach queue (blank tiles)
+- Add `pendingAttachRef = useRef<Set<string>>(new Set())`.
+- `upsertTile()` stores the track in `trackRegistry`, adds the id to `pendingAttachRef`, and schedules state update; **remove the `setTimeout(tryAttach, 0)`**.
+- `registerNode(id, el)` (already exists) — when `el` is non-null and `pendingAttachRef` contains `id`, call `tryAttach(id)` and delete from the set. This guarantees attachment runs after React commits the DOM.
+- Also re-run `tryAttach` from a `useLayoutEffect([tiles])` as a safety net.
 
-Subscribe handlers (`TrackSubscribed`, `LocalTrackPublished`, `TrackUnsubscribed`, `LocalTrackUnpublished`, `ParticipantDisconnected`) push/pull tiles from the array and (re)attach the LiveKit track into the matching DOM node via a small `attachToTile(tileId, track)` helper.
+### Bug #3 — Screen share stopped via browser UI
+- In `handleLocalUnpublished`, when `track.source === ScreenShare`, always set `setIsScreenSharing(false)`. Already partially handled — also subscribe to `RoomEvent.LocalTrackUnpublished` for the local participant explicitly and listen to the `Track.Event.Ended` event on the local screen-share track inside `toggleScreenShare()` to flip `isScreenSharing` immediately when the browser's "Stop sharing" button fires.
 
-### 2. Click-to-focus stage layout
+### Bug #4 — Stale closures in mic/camera toggles
+- Switch `isAudioOn`, `isVideoOn`, `isScreenSharing` to refs (`audioOnRef`, etc.) mirrored from state via a small `useEffect`. Toggle handlers read the ref to compute `next`, then call `setX(next)` and update the ref synchronously. Removes dependency on stale closure values.
 
-```text
-+-----------------------------+   +------+
-|                             |   | tile |
-|     FOCUSED TILE (big)      |   +------+
-|                             |   | tile |
-|                             |   +------+
-+-----------------------------+   | tile |
-                                  +------+
-```
+### Bug #5 — Re-attach after auto-reconnect
+- Add handler for `RoomEvent.Reconnected`: iterate `room.remoteParticipants` and re-invoke `handleRemoteTrack` for every subscribed publication; also re-attach local tracks (camera/screen) by calling `tryAttach` for each id in `trackRegistry`. Set `setStatus('connected')`.
+- Add handler for `RoomEvent.Reconnecting` → `setStatus('connecting')` (already covered via ConnectionStateChanged but be explicit).
 
-- `focusedTileId` state defaults to first remote camera, falls back to first screen share, then local.
-- Big stage: render the focused tile full-area (`object-contain` for screen share, `object-cover` for camera).
-- Sidebar (or bottom strip on mobile): all other tiles as 16:9 thumbnails with `cursor-pointer`; clicking sets `focusedTileId`.
-- Local camera tile: mirror with `scaleX(-1)` only when it's NOT the focused tile bigger than ~480px (avoid mirrored screen capture).
+### Bug #6 — `MediaDevicesError`
+- Add `room.on(RoomEvent.MediaDevicesError, (err) => explainMediaError(err, 'Media device error'))`. Also flip the affected toggle state off so the UI is consistent.
 
-### 3. Connection lifecycle hardening
+### Bug #7 — Partial `startMedia` failure
+- Rewrite `startMedia`: enable mic and camera independently inside separate try/catch blocks. Set `isAudioOn`/`isVideoOn` only after each succeeds. Set `mediaStarted = true` if at least one succeeded. Show a toast naming exactly which device failed.
 
-In the connect `useEffect`:
+### Bug #8 — Duplicate `<audio>` elements (echo)
+- In `attachTrackToNode`, when `track.kind === Audio`, remove existing `<audio>` children of the node before appending. Same pattern already used for `<video>`.
 
-- Track a `cancelledRef`. In cleanup: `cancelledRef.current = true`, remove all `.on(...)` listeners with `room.removeAllListeners()`, then `await room.disconnect(true).catch(() => {})` only if `room.state !== Disconnected`.
-- Wrap connect in `try` and bail before `room.connect(...)` if `cancelledRef.current` flipped during token fetch.
-- On `RoomEvent.Disconnected` (not just `ConnectionStateChanged`), surface a toast and switch to a "Rejoin" button instead of leaving the user staring at a black screen.
-- Add a single 8-second connect timeout that calls `setStatus('error')` with a clear "Network or LiveKit unreachable" message rather than hanging.
+### Bug #9 — Local video must be muted
+- In `attachTrackToNode`, if the attached element is `HTMLMediaElement` and the track belongs to the local participant (pass an `isLocal` flag through, or check `track instanceof LocalTrack`), set `el.muted = true`. Apply unconditionally for any local audio/video tile to prevent feedback.
 
-### 4. Subscribe to remote tracks proactively
+### Bug #10 — `visibilitychange` recovery on mobile
+- Add a top-level `useEffect` listening to `document.visibilitychange`. When tab becomes visible again and `roomRef.current` is connected but `isVideoOn`/`isAudioOn` ref is true while `localParticipant` has no published camera/mic track, call `setCameraEnabled(true)` / `setMicrophoneEnabled(true)` to republish.
 
-Set room options `{ adaptiveStream: true, dynacast: true, publishDefaults: { simulcast: true } }` and after connect, iterate `room.remoteParticipants` to attach any tracks that were already published before our subscribe handler bound (fixes the case where the doctor joins after the patient).
+### Bug #11 — `reconnectPolicy`
+- Pass a `reconnectPolicy` to the `Room` constructor with `maxRetries: 10` and an exponential `nextRetryDelayInMs` (e.g. `Math.min(30000, 1000 * 2 ** ctx.retryCount)`).
 
-### 5. Toggle handlers (already gesture-driven — small fixes only)
+## 3. `supabase/functions/livekit-token/index.ts` — Bug #12
 
-- `toggleVideo` / `toggleAudio`: keep current `createTracks` call inside the click handler; do NOT `await` anything before it. Ensure we set `mediaStarted=true` even when the user only enables mic OR camera.
-- `toggleScreenShare`: on stop, also remove the `local:screen` tile from registry; if it was focused, switch focus back to `local:camera` or first remote.
+- Change `exp: now + 3600` → `exp: now + 4 * 3600` (4 hours). Update the inline comment.
 
-### 6. Misc UI
-
-- Remove the giant fixed local PiP; it becomes a normal tile.
-- Header keeps Live / Connecting / Disconnected badge plus participant count.
-- Notes panel for doctor unchanged.
-- Keep Apple-Tesla minimal styling (semantic tokens, no hard-coded colors).
-
-## Files to modify
-
-- `src/components/video/VideoRoom.tsx` — full rewrite of stage, tile registry, lifecycle.
-
-No DB changes, no edge function changes.
+---
 
 ## Out of scope
 
-- Audio output device picker.
-- Recording / transcription.
-- Bandwidth indicator.
+- No UI restyling. No new buttons. Apple-Tesla minimal aesthetic preserved.
+- No changes to `useVideoConsultation` or finance/appointment code.
+- No DB migrations.
+
+## Verification
+
+1. Start preview. Open consultation as patient → waiting room shows preview → click Join → no "device in use" toast.
+2. Doctor and patient both publish camera + screen share simultaneously; all tiles render, click-to-focus works.
+3. Stop screen share via browser's native "Stop sharing" pill → button in UI flips back to inactive.
+4. Toggle mic 5× rapidly → state stays in sync (no stuck state).
+5. Throttle network in DevTools to force LiveKit reconnect → on recovery, all video tiles re-render.
+6. Background mobile tab > 30 s → return → camera resumes automatically.
+7. Run a 90-min idle session → token does not expire (was 60 min).

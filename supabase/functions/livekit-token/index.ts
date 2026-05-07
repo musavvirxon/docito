@@ -31,7 +31,7 @@ async function makeLivekitToken(
     name,
     iat: now,
     nbf: now,
-    exp: now + 3600, // 1 hour
+    exp: now + 4 * 3600, // 4 hours — long appointments must not silently drop
     video: {
       roomJoin: true,
       room: roomName,
