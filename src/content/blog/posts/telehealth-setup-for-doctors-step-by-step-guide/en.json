@@ -1,0 +1,688 @@
+{
+  "groupId": "telehealth-setup-for-doctors-step-by-step-guide",
+  "lang": "en",
+  "slug": "telehealth-setup-for-doctors-step-by-step-guide",
+  "status": "published",
+  "featured": true,
+  "coverImage": "/blog/telehealth-setup-for-doctors-step-by-step-guide/cover.webp",
+  "tags": [
+    "telehealth",
+    "virtual care",
+    "HIPAA",
+    "Medicare billing",
+    "EHR",
+    "practice management",
+    "telemedicine"
+  ],
+  "createdAt": "2026-05-06T00:00:00.000Z",
+  "updatedAt": "2026-05-06T00:00:00.000Z",
+  "publishedAt": "2026-05-06T00:00:00.000Z",
+  "title": "Telehealth Setup for Doctors: A Step-by-Step Guide",
+  "excerpt": "A complete step-by-step guide to launching telehealth at your practice — covering hardware, HIPAA-compliant platform selection, visit workflow, Medicare billing codes for 2026, and how to stop managing five disconnected tools.",
+  "seo": {
+    "metaTitle": "Telehealth Setup for Doctors: A Step-by-Step Guide (2026) | Docito",
+    "metaDescription": "Learn how to set up telehealth at your practice with this step-by-step guide for doctors. Covers hardware, HIPAA compliance, BAA requirements, 2026 Medicare billing codes, and integrated workflow best practices.",
+    "keywords": [
+      "telehealth setup for doctors",
+      "telemedicine setup guide",
+      "HIPAA compliant telehealth",
+      "Medicare telehealth billing 2026",
+      "telehealth platform for doctors",
+      "virtual care setup",
+      "telehealth checklist",
+      "BAA telehealth",
+      "telehealth billing codes",
+      "docito telehealth"
+    ],
+    "ogImage": "/blog/telehealth-setup-for-doctors-step-by-step-guide/cover.webp"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Many doctors who attempt to launch telehealth don't fail because the technology is hard. A common reason programs stall is that clinicians stitch together five tools that were never designed to work together: a consumer video app, a scheduling system, a separate EHR, a billing portal, and a manual prescription workflow. The result is a fragmented stack that creates more administrative work than it eliminates — and patients notice the gaps."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "This guide covers every layer of a working virtual care setup: the hardware and internet baseline you actually need, how to select a HIPAA-compliant platform with a proper Business Associate Agreement, how to build the full visit workflow from scheduling to post-visit billing, and how to code correctly under 2026 Medicare rules. Where it helps to show what integrated looks like in practice, "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " is used as a reference point — it bundles telehealth, EHR, scheduling, and ePrescriptions under one login, addressing the integration gaps that fragment most virtual care programs."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "By the end, you'll have a complete telemedicine setup checklist you can use to launch a new program or audit and upgrade an existing one."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Hardware and Internet Baseline"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Skipping the technical baseline is how doctors end up troubleshooting audio while a patient waits on screen. You don't need expensive broadcast equipment, but the wrong defaults will undermine patient trust in the first 30 seconds of a call. A grainy camera and echoing audio signal to patients that the visit isn't being taken seriously."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "What your computer, camera, and microphone actually need to do"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "For the computer itself, a processor from the last five to seven years is sufficient. RAM matters more than most clinicians expect: 8 GB is the working minimum for part-time telehealth, but 16 GB is the right call for full-time practice — especially when you're running an EHR, video platform, and browser tabs simultaneously."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "A 1080p external webcam is worth considering for any specialty where visual assessment matters — dermatology and wound care are clear examples. Built-in laptop cameras are acceptable for general medicine and behavioral health visits."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Audio is where most setups fall apart. A USB wired headset reduces echo and background noise more reliably than any built-in microphone, removing the variable of whatever acoustic environment you happen to be sitting in. Lighting is the cheapest upgrade with the biggest visual return: a small LED ring light positioned behind the webcam makes even a modest setup look professional on any screen."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          { "type": "text", "text": "Internet speed and network setup" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The working minimum per session is 15 Mbps download and 5 Mbps upload. A wired Ethernet connection on the provider side is strongly preferred over Wi-Fi since it removes the packet loss variability that causes freezing and audio drops mid-visit. Keep a mobile hotspot available as a backup for days when your primary connection has issues. Before each session, close all non-essential applications and browser tabs so your available bandwidth goes entirely to the call."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "How to Choose a HIPAA-Compliant Telehealth Platform"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The most expensive mistake in platform selection is choosing a consumer video tool and assuming HIPAA compliance is included. Standard consumer video applications do not meet HIPAA requirements for patient visits. Telehealth HIPAA compliance isn't a feature of the video technology itself — it's a contractual and technical obligation that has to be explicitly established with the vendor."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The BAA requirement and why it's non-negotiable"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "A Business Associate Agreement (BAA) is a signed contract between your practice and the software vendor confirming they handle protected health information (PHI) according to HIPAA's Security Rule. Without a signed BAA, using any platform for patient visits is a HIPAA violation regardless of how the video stream itself is encrypted. Some platforms provide a BAA on free tiers; others require a paid plan before a BAA is available."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Beyond the BAA, verify three security features before signing up:"
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Transport encryption (TLS 1.2 or higher in transit, encrypted at rest) — confirm with your vendor which model applies and how it meets the HIPAA Security Rule"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Multi-factor authentication for provider logins"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Audit logs that record session access"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "These three requirements are the floor, not the ceiling, for clinical-grade compliance."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "What to compare across platforms before you commit"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The most useful question to ask about any platform is whether it creates a new documentation step or eliminates one. Standalone telehealth tools may work well for solo practices starting out, but they operate separately from most EHRs — which means you're still toggling between systems to document and prescribe. Growing clinics need tighter workflow integration, where the video session, the chart, and the prescription all live in the same environment."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "All-in-one platforms can substantially reduce the integration burden. When video, scheduling, and EHR access are in one system, there's no data re-entry between intake and documentation, no separate login for post-visit prescriptions, and no disconnected billing step. "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito® is built around exactly this standard"
+          },
+          {
+            "type": "text",
+            "text": " — that's the benchmark worth measuring any platform against before you commit."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Building Your Telehealth Workflow Step by Step"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The remote visit experience spans five phases: scheduling, pre-visit intake, check-in, the encounter itself, and post-visit documentation with billing. Each phase has a role in making the virtual appointment feel as professional and complete as an in-person visit. Gaps in any one phase show up as patient confusion, billing errors, or documentation that's harder to reconstruct after the fact."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Scheduling, intake, and pre-visit prep"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Patients should receive an automated confirmation with a direct link to their video session, connection testing instructions, and a pre-visit intake form covering chief complaint, current medications, and any home vitals they can provide. Send this form at least 24 to 72 hours before the appointment so staff have time to review it before the visit — not during it. Verify insurance eligibility and telehealth authorization before the visit date, not on the morning of. That single habit prevents same-day billing surprises that delay reimbursement."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Running the virtual visit from check-in to documentation"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "A medical assistant or nurse should join the call five to ten minutes before the physician. Their role is to confirm patient identity, verify pharmacy preferences, review the intake form, and enter any reported home vitals into the chart. The physician then joins the existing session — which avoids making the patient reconnect to a new link mid-appointment. Document the visit as telehealth in the EHR in real time, note the modality (video or audio-only), and capture clinical findings during the encounter rather than reconstructing them afterward from memory."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Post-visit: follow-ups, prescriptions, and closing the loop"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "After the encounter, issue ePrescriptions directly through your platform or EHR to the patient's preferred pharmacy. Send a post-visit summary to the patient portal before closing the chart. Schedule any follow-up appointment before the patient exits the session — not via a callback the next day. Doing so is associated with lower no-show risk on return visits; the patient leaves with a confirmed date rather than a vague instruction to call back."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Inside "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": ", the ePrescription routes automatically to the pharmacy from the same dashboard where the visit was documented — no second login, no copy-paste between systems."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "HIPAA Compliance, Consent, and Medicare Billing in 2026"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Compliance is not a one-time setup task. In 2026, pandemic-era enforcement flexibilities are fully expired, and CMS has codified specific billing rules that affect how virtual visits are documented and reimbursed. Getting these wrong doesn't just mean a denied claim — it creates HIPAA liability that survives the billing cycle."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Patient consent and what your documentation must include"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Every patient needs explicit telehealth consent before their first virtual visit. The consent form must cover the nature of the service, privacy rights, risks of transmission, emergency procedures, and their right to request an in-person visit instead. Document the signed consent in the patient record. Re-obtain consent annually at minimum, and verify telehealth consent laws by state — California, Colorado, New York, and Texas have enacted telehealth consent laws that exceed federal HIPAA standards, requiring specific disclosure language or written documentation per encounter."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Medicare reimbursement and billing codes for 2026"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Medicare telehealth flexibilities run through December 31, 2027, covering both video and audio-only visits with no geographic restrictions on patient location. The 2026 Physician Fee Schedule introduced a physician presence requirement for specified services starting January 1, 2026."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "For billing, use standard E/M codes 99202–99205 for new patients and 99211–99215 for established patients. For audio-only visits, append modifier 93 to the same E/M codes when video is unavailable or not appropriate. Use Place of Service code 02 for telehealth provided outside the patient's home, and POS 10 for visits where the patient is in their home. Selecting the wrong place of service code is a frequent and entirely preventable cause of telehealth claim denials. Review CMS guidance annually, as payer-specific rules can vary."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Fixing Common Technical Problems Without Derailing the Visit"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Every clinician who runs a telehealth program encounters the same handful of failures: frozen video, dropped audio, a patient who can't find the link, or a camera quietly reassigned by an OS update. The goal isn't to prevent all technical failures — it's to recover in under two minutes without losing patient confidence."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          { "type": "text", "text": "Audio and video failures" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "When a patient reports no audio, start with microphone permissions in their device settings before assuming a platform problem. For video issues, a browser refresh in incognito mode resolves most permission conflicts caused by extensions or cached settings. The most effective prevention measure is sending patients a platform test link with their appointment confirmation so they can verify camera and audio access before the visit day — this eliminates the majority of first-visit technical failures."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Connection drops and your fallback plan"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Have the patient's phone number accessible in your workflow before every session — not stored three screens away in the chart. If video drops and can't be restored within roughly one to two minutes, call them directly and complete the visit as an audio-only telehealth encounter. Document the technical failure and the modality switch in your visit notes, since this directly affects which billing modifier applies to the claim. A documented modality switch is a legitimate billing scenario; an undocumented one is an audit risk."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Why Managing Five Separate Tools Defeats the Point of Telehealth"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The goal of a virtual care program is to make care delivery more efficient — not to migrate administrative complexity from paper to software tabs. Doctors who assemble a standalone video platform, a separate EHR, a third-party scheduling tool, an independent payment processor, and a disconnected ePrescription workflow often find they've built something harder to operate than their original in-person process."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          { "type": "text", "text": "The real cost of a disconnected stack" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "When your scheduling tool doesn't talk to your EHR, intake data gets re-entered by hand. When your video platform is separate from your documentation system, you're flipping between windows during the encounter instead of staying present with the patient. When ePrescriptions run through a different login, the post-visit workflow adds five minutes per patient. Across a full day of telehealth appointments, that friction adds up to hours of avoidable administrative work every week."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "What an integrated telehealth system looks like in practice"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " addresses this directly by bundling video consultations, EHR access, appointment scheduling, digital payments, and ePrescription routing under a single login. A doctor moves from the scheduled appointment directly into the video session, documents inside the same system, issues a prescription that routes automatically to the patient's pharmacy, and processes the co-pay without switching tools or re-entering data. That's the operational benchmark to hold any telehealth stack against when you're evaluating options — whether you're building from scratch or replacing a fragmented setup that isn't working."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Start with One Piece, Then Build from There"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "A working telehealth program has six components: the right hardware and internet baseline, a HIPAA-compliant platform with a signed BAA, a documented workflow from scheduling through billing, compliant patient consent, correct Medicare coding with the appropriate POS code, and a technical fallback plan for the inevitable dropped connection. None of these are individually difficult. The complexity lives in the gaps between disconnected tools."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Use this guide as your starting point: test your equipment today, review whether your current platform has a signed BAA on file, and draft or update your patient consent form to meet your state's requirements. You don't need to build everything at once — close the gaps one at a time, starting with whichever piece is weakest in your current setup."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Virtual care is no longer a specialty skill or a pandemic workaround. It's a standard component of modern practice. The doctors who build clean, integrated workflows now are the ones who won't be rebuilding a fragmented stack two years from now. "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Explore how Docito® brings every piece together at docito.app"
+          },
+          {
+            "type": "text",
+            "text": "."
+          }
+        ]
+      }
+    ]
+  }
+}
