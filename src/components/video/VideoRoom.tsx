@@ -598,39 +598,55 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const focusedInfo = slots.find((s) => s.id === focusedSlot)!;
   const sideInfos = slots.filter((s) => s.id !== focusedSlot);
 
-  // Each slot renders ONCE in the DOM and is positioned via CSS so toggling
-  // focus doesn't unmount the <video> element — preventing stream disturbance.
-  const renderSlot = (info: SlotInfo, isFocused: boolean) => (
-    <div
-      key={info.id}
-      onClick={() => !isFocused && setFocusedSlot(info.id)}
-      className={`relative bg-muted rounded-md overflow-hidden border border-border transition-all ${
-        isFocused
-          ? 'w-full h-full'
-          : 'w-full aspect-video cursor-pointer hover:border-primary/60'
-      }`}
-    >
+  // All 3 slots are siblings in ONE container so React never unmounts them
+  // when focus changes — only their CSS classes update. This is what stops
+  // the live stream from being "disturbed" on every UI action.
+  const slotPositionClass = (id: SlotId): string => {
+    const isFocused = id === focusedSlot;
+    if (isFocused) {
+      return 'absolute inset-2 md:right-[12rem] lg:right-[15rem] z-10';
+    }
+    // Side strip (desktop): stacked top-right
+    const sideIndex = sideInfos.findIndex((s) => s.id === id);
+    return [
+      // Mobile: bottom row
+      `absolute md:hidden bottom-2 ${sideIndex === 0 ? 'left-2' : 'left-[9rem]'} w-32 aspect-video z-20 cursor-pointer`,
+      // Desktop side strip
+      `md:absolute md:bottom-auto md:left-auto md:w-40 lg:w-52 md:aspect-video md:right-2 md:cursor-pointer md:z-10`,
+      sideIndex === 0 ? 'md:top-2' : 'md:top-[calc(2rem+8rem)] lg:top-[calc(2rem+10rem)]',
+    ].join(' ');
+  };
+
+  const renderSlot = (info: SlotInfo) => {
+    const isFocused = info.id === focusedSlot;
+    return (
       <div
-        ref={registerSlotNode(info.id)}
-        className="absolute inset-0 [&>video]:w-full [&>video]:h-full bg-black"
-        style={info.mirror && info.hasTrack ? { transform: 'scaleX(-1)' } : undefined}
-      />
-      {!info.hasTrack && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/80">
-          <div className="h-16 w-16 rounded-full bg-background/80 flex items-center justify-center">
-            {info.icon}
+        key={info.id}
+        onClick={() => !isFocused && setFocusedSlot(info.id)}
+        className={`${slotPositionClass(info.id)} bg-muted rounded-md overflow-hidden border border-border transition-all hover:border-primary/60`}
+      >
+        <div
+          ref={registerSlotNode(info.id)}
+          className="absolute inset-0 [&>video]:w-full [&>video]:h-full bg-black"
+          style={info.mirror && info.hasTrack ? { transform: 'scaleX(-1)' } : undefined}
+        />
+        {!info.hasTrack && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/80 p-2">
+            <div className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-background/80 flex items-center justify-center">
+              {info.icon}
+            </div>
+            <span className="text-[10px] md:text-xs text-center">{info.emptyHint}</span>
           </div>
-          <span className="text-xs text-center px-2">{info.emptyHint}</span>
-        </div>
-      )}
-      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
-        <span className="truncate">{info.label}</span>
-        {info.id === 'doctor-screen' && info.hasTrack && (
-          <span className="text-primary">Live</span>
         )}
+        <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
+          <span className="truncate">{info.label}</span>
+          {info.id === 'doctor-screen' && info.hasTrack && (
+            <span className="text-primary">Live</span>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div
