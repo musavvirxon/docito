@@ -1,6 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { BlogLanguage, BlogPostRecord } from "@/types/blog";
+import {
+  getPublishedBlogPosts as getStaticPublishedBlogPosts,
+  getFeaturedBlogPosts as getStaticFeaturedBlogPosts,
+} from "@/lib/blog/public-loader";
 
 const mapRow = (row: Record<string, unknown>): BlogPostRecord => ({
   groupId: row.group_id as string,
@@ -24,6 +28,24 @@ const mapRow = (row: Record<string, unknown>): BlogPostRecord => ({
   doc: (row.body as BlogPostRecord["doc"]) || { type: "doc", content: [] },
 });
 
+const mergeAndSort = (
+  dbPosts: BlogPostRecord[],
+  staticPosts: BlogPostRecord[],
+): BlogPostRecord[] => {
+  // DB posts win over static when they share (lang, slug)
+  const seen = new Set(dbPosts.map((p) => `${p.lang}::${p.slug}`));
+  const merged = [
+    ...dbPosts,
+    ...staticPosts.filter((p) => !seen.has(`${p.lang}::${p.slug}`)),
+  ];
+  return merged.sort((a, b) => {
+    if (a.featured !== b.featured) return Number(b.featured) - Number(a.featured);
+    const aDate = new Date(a.publishedAt || a.updatedAt || a.createdAt).getTime();
+    const bDate = new Date(b.publishedAt || b.updatedAt || b.createdAt).getTime();
+    return bDate - aDate;
+  });
+};
+
 export function usePublishedBlogPosts(lang?: BlogLanguage) {
   return useQuery({
     queryKey: ["published-blog-posts", lang ?? "all"],
@@ -40,7 +62,9 @@ export function usePublishedBlogPosts(lang?: BlogLanguage) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []).map(mapRow);
+      const dbPosts = (data || []).map(mapRow);
+      const staticPosts = getStaticPublishedBlogPosts(lang);
+      return mergeAndSort(dbPosts, staticPosts);
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -60,7 +84,9 @@ export function useFeaturedBlogPosts(lang: BlogLanguage, limit = 3) {
         .limit(limit);
 
       if (error) throw error;
-      return (data || []).map(mapRow);
+      const dbPosts = (data || []).map(mapRow);
+      const staticFeatured = getStaticFeaturedBlogPosts(lang, limit);
+      return mergeAndSort(dbPosts, staticFeatured).slice(0, limit);
     },
     staleTime: 1000 * 60 * 5,
   });

@@ -200,11 +200,51 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Prefix identity with role so the client can distinguish doctor/patient
+    // tracks reliably. Format: "<role>::<userId>"
+    let role: 'doctor' | 'patient' | 'staff' | 'guest' = 'guest';
+    if (appointmentId) {
+      // Re-derive flags in this scope
+      // (variables `isDoctor`, `isPatient`, `isClinicMember` are not visible here
+      // because they were declared in an inner block; recompute cheaply.)
+    }
+    // Recompute role inline using the same admin client lookups already done
+    // We refetch only minimally — appointment row is small.
+    if (appointmentId) {
+      try {
+        const adminClient = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const { data: appt } = await adminClient
+          .from("appointments")
+          .select("doctor_id, patient_id, practice_id")
+          .eq("id", appointmentId)
+          .maybeSingle();
+        if (appt) {
+          if (appt.doctor_id === user.id) role = 'doctor';
+          else if (appt.patient_id === user.id) role = 'patient';
+          else {
+            const { data: doctorRow } = await adminClient
+              .from("doctors").select("user_id").eq("id", appt.doctor_id).maybeSingle();
+            if (doctorRow?.user_id === user.id) role = 'doctor';
+            else {
+              const { data: patientRow } = await adminClient
+                .from("profiles").select("user_id").eq("id", appt.patient_id).maybeSingle();
+              if (patientRow?.user_id === user.id) role = 'patient';
+              else if (appt.practice_id) role = 'staff';
+            }
+          }
+        }
+      } catch { /* leave role as guest */ }
+    }
+
+    const identity = `${role}::${user.id}`;
     const token = await makeLivekitToken(
       apiKey,
       apiSecret,
       resolvedRoomId,
-      user.id,
+      identity,
       participantName,
     );
 
