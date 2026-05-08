@@ -678,24 +678,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         </Badge>
       </div>
 
-      {/* Stage */}
-      <div className="flex-1 relative bg-black flex">
-        <div className="flex-1 relative p-2">
-          {renderSlot(focusedInfo, true)}
-        </div>
-
-        <div className="hidden md:flex w-44 lg:w-56 flex-col gap-2 p-2 overflow-y-auto bg-card/40">
-          {sideInfos.map((s) => renderSlot(s, false))}
-        </div>
-
-        {/* Mobile bottom strip */}
-        <div className="md:hidden absolute bottom-2 left-2 right-2 flex gap-2 overflow-x-auto z-20">
-          {sideInfos.map((s) => (
-            <div key={s.id} className="w-32 shrink-0">
-              {renderSlot(s, false)}
-            </div>
-          ))}
-        </div>
+      {/* Stage — all 3 slots are positioned siblings, never re-mounted */}
+      <div className="flex-1 relative bg-black overflow-hidden">
+        {slots.map((s) => renderSlot(s))}
 
         <div ref={audioContainer} className="hidden" />
 
