@@ -7,7 +7,6 @@ import {
   type RemoteTrack,
   type RemoteTrackPublication,
   type LocalTrackPublication,
-  type LocalTrack,
   type RemoteParticipant,
   type Participant,
 } from 'livekit-client';
@@ -31,6 +30,9 @@ import {
   Loader2,
   PlayCircle,
   RefreshCw,
+  User,
+  Stethoscope,
+  MonitorPlay,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,20 +48,22 @@ interface VideoRoomProps {
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
 
-type TileKind = 'camera' | 'screen';
+type SlotId = 'doctor-camera' | 'doctor-screen' | 'patient-camera';
 
-interface TileMeta {
-  id: string;
+interface SlotInfo {
+  id: SlotId;
   label: string;
-  kind: TileKind;
+  icon: React.ReactNode;
+  emptyHint: string;
+  mirror: boolean; // mirror local camera preview
   isLocal: boolean;
-  participantSid: string;
+  hasTrack: boolean;
 }
 
-const tileId = (participantSid: string, source: Track.Source): string | null => {
-  if (source === Track.Source.Camera) return `${participantSid}:camera`;
-  if (source === Track.Source.ScreenShare) return `${participantSid}:screen`;
-  return null;
+const parseRole = (identity: string): 'doctor' | 'patient' | 'staff' | 'guest' => {
+  const [r] = (identity || '').split('::');
+  if (r === 'doctor' || r === 'patient' || r === 'staff') return r;
+  return 'guest';
 };
 
 const VideoRoom: React.FC<VideoRoomProps> = ({
@@ -73,14 +77,24 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const roomRef = useRef<Room | null>(null);
   const cancelledRef = useRef(false);
 
-  // tileId -> DOM node
-  const nodeRegistry = useRef<Map<string, HTMLDivElement>>(new Map());
-  // tileId -> Track (latest)
-  const trackRegistry = useRef<Map<string, Track>>(new Map());
-  // tileIds awaiting their DOM node to mount
-  const pendingAttachRef = useRef<Set<string>>(new Set());
-  // tileId -> isLocal (so attach can mute local elements)
-  const localTileRef = useRef<Map<string, boolean>>(new Map());
+  // Stable DOM refs for each slot (always mounted — never unmounted on toggle)
+  const slotNodeRefs = useRef<Record<SlotId, HTMLDivElement | null>>({
+    'doctor-camera': null,
+    'doctor-screen': null,
+    'patient-camera': null,
+  });
+  // Track currently attached per slot (for re-attach / cleanup)
+  const slotTrackRefs = useRef<Record<SlotId, Track | null>>({
+    'doctor-camera': null,
+    'doctor-screen': null,
+    'patient-camera': null,
+  });
+
+  const [slotHasTrack, setSlotHasTrack] = useState<Record<SlotId, boolean>>({
+    'doctor-camera': false,
+    'doctor-screen': false,
+    'patient-camera': false,
+  });
 
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -91,7 +105,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [isVideoOn, setIsVideoOn] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 
-  // Refs mirroring the booleans above to avoid stale closures in toggles.
   const isAudioOnRef = useRef(false);
   const isVideoOnRef = useRef(false);
   const isScreenSharingRef = useRef(false);
@@ -99,111 +112,121 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   useEffect(() => { isVideoOnRef.current = isVideoOn; }, [isVideoOn]);
   useEffect(() => { isScreenSharingRef.current = isScreenSharing; }, [isScreenSharing]);
 
-  const [tiles, setTiles] = useState<TileMeta[]>([]);
-  const [focusedId, setFocusedId] = useState<string | null>(null);
-
+  const [focusedSlot, setFocusedSlot] = useState<SlotId>(
+    userRole === 'doctor' ? 'patient-camera' : 'doctor-camera',
+  );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(consultation.notes || '');
   const [participantCount, setParticipantCount] = useState(1);
   const [reconnectKey, setReconnectKey] = useState(0);
 
+  /* ---------- Slot mapping ---------- */
+  const sourceToSlot = useCallback(
+    (
+      source: Track.Source,
+      isLocal: boolean,
+      remoteRole?: 'doctor' | 'patient' | 'staff' | 'guest',
+    ): SlotId | null => {
+      const role = isLocal ? userRole : remoteRole;
+      if (role === 'doctor') {
+        if (source === Track.Source.Camera) return 'doctor-camera';
+        if (source === Track.Source.ScreenShare) return 'doctor-screen';
+      } else if (role === 'patient') {
+        if (source === Track.Source.Camera) return 'patient-camera';
+      }
+      // staff/guest screen share also lands on doctor-screen for visibility
+      if (source === Track.Source.ScreenShare) return 'doctor-screen';
+      return null;
+    },
+    [userRole],
+  );
+
   /* ---------- attach helpers ---------- */
-  const attachTrackToNode = (track: Track, node: HTMLElement, isLocal: boolean) => {
+  const attachToSlot = (slot: SlotId, track: Track, isLocal: boolean) => {
+    const node = slotNodeRefs.current[slot];
+    if (!node) return; // node always mounted, but guard anyway
+    // Detach previous track on this slot if different
+    const prev = slotTrackRefs.current[slot];
+    if (prev && prev !== track) {
+      try { prev.detach().forEach((el) => el.remove()); } catch { /* noop */ }
+    }
+    // Clear stale media elements
+    Array.from(node.querySelectorAll('video,audio')).forEach((el) => el.remove());
+
     const el = track.attach();
     el.style.width = '100%';
     el.style.height = '100%';
     el.style.objectFit = track.source === Track.Source.ScreenShare ? 'contain' : 'cover';
     (el as HTMLMediaElement).autoplay = true;
     el.setAttribute('playsinline', 'true');
-    // Always mute local playback (camera mic feedback / duplicate audio).
     if (isLocal) {
       try { (el as HTMLMediaElement).muted = true; } catch { /* noop */ }
     }
-    if (track.kind === Track.Kind.Video) {
-      Array.from(node.querySelectorAll('video')).forEach((v) => v.remove());
-    } else {
-      // Bug #8: prevent duplicate <audio> elements that cause echo.
-      Array.from(node.querySelectorAll('audio')).forEach((a) => a.remove());
-    }
     node.appendChild(el);
+    slotTrackRefs.current[slot] = track;
+    setSlotHasTrack((s) => (s[slot] ? s : { ...s, [slot]: true }));
   };
 
-  const tryAttach = (id: string) => {
-    const track = trackRegistry.current.get(id);
-    const node = nodeRegistry.current.get(id);
-    if (track && node) {
-      attachTrackToNode(track, node, !!localTileRef.current.get(id));
-      pendingAttachRef.current.delete(id);
+  const clearSlot = (slot: SlotId) => {
+    const prev = slotTrackRefs.current[slot];
+    if (prev) {
+      try { prev.detach().forEach((el) => el.remove()); } catch { /* noop */ }
     }
+    slotTrackRefs.current[slot] = null;
+    const node = slotNodeRefs.current[slot];
+    if (node) Array.from(node.querySelectorAll('video,audio')).forEach((el) => el.remove());
+    setSlotHasTrack((s) => (s[slot] ? { ...s, [slot]: false } : s));
   };
 
-  const registerNode = useCallback((id: string, el: HTMLDivElement | null) => {
-    if (el) {
-      nodeRegistry.current.set(id, el);
-      // Bug #2: drain pending attachment now that DOM node exists.
-      tryAttach(id);
-    } else {
-      nodeRegistry.current.delete(id);
-    }
-  }, []);
-
-  const upsertTile = (meta: TileMeta, track: Track) => {
-    trackRegistry.current.set(meta.id, track);
-    localTileRef.current.set(meta.id, meta.isLocal);
-    pendingAttachRef.current.add(meta.id);
-    setTiles((prev) => {
-      if (prev.some((t) => t.id === meta.id)) return prev;
-      return [...prev, meta];
-    });
-    setFocusedId((cur) => cur ?? meta.id);
-    // If the node is already mounted (re-publish case), attach immediately.
-    tryAttach(meta.id);
-  };
-
-  const removeTile = (id: string) => {
-    const track = trackRegistry.current.get(id);
-    try {
-      track?.detach().forEach((el) => el.remove());
-    } catch {
-      /* noop */
-    }
-    trackRegistry.current.delete(id);
-    localTileRef.current.delete(id);
-    pendingAttachRef.current.delete(id);
-    setTiles((prev) => prev.filter((t) => t.id !== id));
-    setFocusedId((cur) => (cur === id ? null : cur));
-  };
-
-  // Safety net: after each tiles render, re-drain any pending attachments.
-  useEffect(() => {
-    pendingAttachRef.current.forEach((id) => tryAttach(id));
-  }, [tiles]);
+  const registerSlotNode = useCallback(
+    (slot: SlotId) => (el: HTMLDivElement | null) => {
+      slotNodeRefs.current[slot] = el;
+      // Re-attach any track that was queued before mount
+      const tr = slotTrackRefs.current[slot];
+      if (el && tr) {
+        // Re-attach (idempotent)
+        try {
+          Array.from(el.querySelectorAll('video,audio')).forEach((m) => m.remove());
+          const m = tr.attach();
+          m.style.width = '100%';
+          m.style.height = '100%';
+          m.style.objectFit = tr.source === Track.Source.ScreenShare ? 'contain' : 'cover';
+          (m as HTMLMediaElement).autoplay = true;
+          m.setAttribute('playsinline', 'true');
+          el.appendChild(m);
+        } catch { /* noop */ }
+      }
+    },
+    [],
+  );
 
   /* ---------- LiveKit handlers ---------- */
   const handleRemoteTrack = useCallback(
     (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
       if (track.kind === Track.Kind.Audio) {
-        if (audioContainer.current) attachTrackToNode(track, audioContainer.current, false);
+        if (audioContainer.current) {
+          Array.from(audioContainer.current.querySelectorAll('audio')).forEach((a) => a.remove());
+          const el = track.attach();
+          (el as HTMLMediaElement).autoplay = true;
+          audioContainer.current.appendChild(el);
+        }
         return;
       }
-      const id = tileId(p.sid, track.source);
-      if (!id) return;
-      const label =
-        track.source === Track.Source.ScreenShare
-          ? `${p.identity || 'Participant'} · Screen`
-          : p.identity || 'Participant';
-      upsertTile({ id, label, kind: track.source === Track.Source.ScreenShare ? 'screen' : 'camera', isLocal: false, participantSid: p.sid }, track);
+      const role = parseRole(p.identity);
+      const slot = sourceToSlot(track.source, false, role);
+      if (slot) attachToSlot(slot, track, false);
     },
-    [],
+    [sourceToSlot],
   );
 
   const handleRemoteTrackGone = useCallback(
     (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
-      const id = tileId(p.sid, track.source);
-      if (id) removeTile(id);
+      const role = parseRole(p.identity);
+      const slot = sourceToSlot(track.source, false, role);
+      if (slot && slotTrackRefs.current[slot] === track) clearSlot(slot);
     },
-    [],
+    [sourceToSlot],
   );
 
   const handleLocalPublished = useCallback((pub: LocalTrackPublication) => {
@@ -214,22 +237,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       setIsAudioOn(true);
       return;
     }
-    const sid = roomRef.current?.localParticipant.sid || 'local';
-    const id = tileId(sid, track.source);
-    if (!id) return;
     if (track.source === Track.Source.Camera) setIsVideoOn(true);
     if (track.source === Track.Source.ScreenShare) setIsScreenSharing(true);
-    upsertTile(
-      {
-        id,
-        label: track.source === Track.Source.ScreenShare ? 'You · Screen' : 'You',
-        kind: track.source === Track.Source.ScreenShare ? 'screen' : 'camera',
-        isLocal: true,
-        participantSid: sid,
-      },
-      track,
-    );
-  }, []);
+    const slot = sourceToSlot(track.source, true);
+    if (slot) attachToSlot(slot, track, true);
+  }, [sourceToSlot]);
 
   const handleLocalUnpublished = useCallback((pub: LocalTrackPublication) => {
     const track = pub.track;
@@ -238,20 +250,29 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       setIsAudioOn(false);
       return;
     }
-    const sid = roomRef.current?.localParticipant.sid || 'local';
-    const id = tileId(sid, track.source);
     if (track.source === Track.Source.Camera) setIsVideoOn(false);
     if (track.source === Track.Source.ScreenShare) setIsScreenSharing(false);
-    if (id) removeTile(id);
-  }, []);
+    const slot = sourceToSlot(track.source, true);
+    if (slot && slotTrackRefs.current[slot] === track) clearSlot(slot);
+  }, [sourceToSlot]);
 
   const handleParticipantGone = useCallback((p: Participant) => {
+    const role = parseRole(p.identity);
     [Track.Source.Camera, Track.Source.ScreenShare].forEach((src) => {
-      const id = tileId(p.sid, src);
-      if (id) removeTile(id);
+      const slot = sourceToSlot(src, false, role);
+      if (slot) {
+        // only clear if the current track belongs to this participant
+        const tr = slotTrackRefs.current[slot] as any;
+        if (tr && tr.sid && p.trackPublications) {
+          const owns = Array.from(p.trackPublications.values()).some(
+            (pub: any) => pub.trackSid === tr.sid,
+          );
+          if (owns) clearSlot(slot);
+        }
+      }
     });
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
-  }, []);
+  }, [sourceToSlot]);
 
   const updateParticipantCount = useCallback(() => {
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
@@ -264,7 +285,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       adaptiveStream: true,
       dynacast: true,
       publishDefaults: { simulcast: true },
-      // Bug #11: more resilient reconnect than the 3-attempt default.
       reconnectPolicy: {
         nextRetryDelayInMs: (ctx) => Math.min(30000, 1000 * Math.pow(2, ctx.retryCount)),
       } as any,
@@ -272,7 +292,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     roomRef.current = room;
 
     const reattachAll = () => {
-      // Re-subscribe remote tracks
       room.remoteParticipants.forEach((p) => {
         p.trackPublications.forEach((pub) => {
           if (pub.track && pub.isSubscribed) {
@@ -280,8 +299,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           }
         });
       });
-      // Re-attach any local tracks we already track
-      trackRegistry.current.forEach((_t, id) => tryAttach(id));
     };
 
     room.on(RoomEvent.TrackSubscribed, handleRemoteTrack);
@@ -296,7 +313,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       else if (state === ConnectionState.Reconnecting) setStatus('connecting');
       else if (state === ConnectionState.Disconnected) setStatus('disconnected');
     });
-    // Bug #5: re-attach all tiles after a successful auto-reconnect.
     room.on(RoomEvent.Reconnected, () => {
       if (cancelledRef.current) return;
       setStatus('connected');
@@ -306,10 +322,8 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       if (cancelledRef.current) return;
       setStatus('connecting');
     });
-    // Bug #6: surface device errors (unplug, permission revoked mid-call).
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
       explainMediaError(err, 'Media device error.');
-      // Reset toggle state so UI is consistent
       setIsAudioOn(false);
       setIsVideoOn(false);
       setIsScreenSharing(false);
@@ -356,7 +370,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           return;
         }
 
-        // Attach any tracks already present
         room.remoteParticipants.forEach((p) => {
           p.trackPublications.forEach((pub) => {
             if (pub.track && pub.isSubscribed) {
@@ -378,21 +391,14 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     return () => {
       cancelledRef.current = true;
       window.clearTimeout(timeout);
-      try {
-        room.removeAllListeners();
-      } catch {
-        /* noop */
-      }
-      // Detach all tracks first
-      trackRegistry.current.forEach((t) => {
-        try {
-          t.detach().forEach((el) => el.remove());
-        } catch {
-          /* noop */
+      try { room.removeAllListeners(); } catch { /* noop */ }
+      (['doctor-camera', 'doctor-screen', 'patient-camera'] as SlotId[]).forEach((s) => {
+        const t = slotTrackRefs.current[s];
+        if (t) {
+          try { t.detach().forEach((el) => el.remove()); } catch { /* noop */ }
+          slotTrackRefs.current[s] = null;
         }
       });
-      trackRegistry.current.clear();
-      nodeRegistry.current.clear();
       if (room.state !== ConnectionState.Disconnected) {
         room.disconnect(true).catch(() => {});
       }
@@ -486,7 +492,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       await room.localParticipant.setScreenShareEnabled(next, { audio: true });
       isScreenSharingRef.current = next;
       setIsScreenSharing(next);
-      // Bug #3: detect when the user stops sharing via the browser's native pill.
       if (next) {
         const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
         const t = pub?.track;
@@ -497,11 +502,8 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             try { t.off('ended' as any, onEnded); } catch { /* noop */ }
           };
           try { t.on('ended' as any, onEnded); } catch { /* noop */ }
-          // Also listen to underlying MediaStreamTrack
           const mst = (t as any).mediaStreamTrack as MediaStreamTrack | undefined;
-          if (mst) {
-            mst.addEventListener('ended', onEnded, { once: true });
-          }
+          if (mst) mst.addEventListener('ended', onEnded, { once: true });
         }
       }
     } catch (err: any) {
@@ -513,7 +515,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     }
   }, []);
 
-  // Bug #10: when tab becomes visible again on mobile, republish dropped tracks.
   useEffect(() => {
     const onVisibility = async () => {
       if (document.visibilityState !== 'visible') return;
@@ -545,53 +546,91 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   };
 
   const handleEndCall = useCallback(() => {
-    try {
-      roomRef.current?.disconnect(true);
-    } catch {
-      /* noop */
-    }
+    try { roomRef.current?.disconnect(true); } catch { /* noop */ }
     onEnd(notes);
   }, [notes, onEnd]);
 
   const handleLeave = useCallback(() => {
-    try {
-      roomRef.current?.disconnect(true);
-    } catch {
-      /* noop */
-    }
+    try { roomRef.current?.disconnect(true); } catch { /* noop */ }
     onLeave();
   }, [onLeave]);
 
   /* ---------- Render ---------- */
-  const focusedTile = useMemo(
-    () => tiles.find((t) => t.id === focusedId) ?? tiles[0] ?? null,
-    [tiles, focusedId],
-  );
-  const sideTiles = useMemo(
-    () => tiles.filter((t) => t.id !== focusedTile?.id),
-    [tiles, focusedTile],
+  const slots: SlotInfo[] = useMemo(
+    () => [
+      {
+        id: 'doctor-camera',
+        label: userRole === 'doctor' ? 'You (Doctor)' : 'Doctor',
+        icon: <Stethoscope className="h-8 w-8" />,
+        emptyHint: userRole === 'doctor'
+          ? 'Your camera is off'
+          : 'Waiting for the doctor’s camera…',
+        mirror: userRole === 'doctor',
+        isLocal: userRole === 'doctor',
+        hasTrack: slotHasTrack['doctor-camera'],
+      },
+      {
+        id: 'patient-camera',
+        label: userRole === 'patient' ? 'You (Patient)' : 'Patient',
+        icon: <User className="h-8 w-8" />,
+        emptyHint: userRole === 'patient'
+          ? 'Your camera is off'
+          : 'Waiting for the patient’s camera…',
+        mirror: userRole === 'patient',
+        isLocal: userRole === 'patient',
+        hasTrack: slotHasTrack['patient-camera'],
+      },
+      {
+        id: 'doctor-screen',
+        label: 'Doctor · Screen',
+        icon: <MonitorPlay className="h-8 w-8" />,
+        emptyHint: userRole === 'doctor'
+          ? 'Click the screen icon to share'
+          : 'Doctor is not sharing their screen',
+        mirror: false,
+        isLocal: userRole === 'doctor',
+        hasTrack: slotHasTrack['doctor-screen'],
+      },
+    ],
+    [slotHasTrack, userRole],
   );
 
-  const renderTile = (tile: TileMeta, opts: { large: boolean }) => {
-    const mirror = tile.isLocal && tile.kind === 'camera';
-    return (
+  const focusedInfo = slots.find((s) => s.id === focusedSlot)!;
+  const sideInfos = slots.filter((s) => s.id !== focusedSlot);
+
+  // Each slot renders ONCE in the DOM and is positioned via CSS so toggling
+  // focus doesn't unmount the <video> element — preventing stream disturbance.
+  const renderSlot = (info: SlotInfo, isFocused: boolean) => (
+    <div
+      key={info.id}
+      onClick={() => !isFocused && setFocusedSlot(info.id)}
+      className={`relative bg-muted rounded-md overflow-hidden border border-border transition-all ${
+        isFocused
+          ? 'w-full h-full'
+          : 'w-full aspect-video cursor-pointer hover:border-primary/60'
+      }`}
+    >
       <div
-        key={tile.id}
-        onClick={() => setFocusedId(tile.id)}
-        className={`relative ${opts.large ? 'w-full h-full' : 'w-full aspect-video'} bg-muted rounded-md overflow-hidden border border-border ${opts.large ? '' : 'cursor-pointer hover:border-primary/60 transition-colors'}`}
-      >
-        <div
-          ref={(el) => registerNode(tile.id, el)}
-          className="absolute inset-0 [&>video]:w-full [&>video]:h-full"
-          style={mirror ? { transform: 'scaleX(-1)' } : undefined}
-        />
-        <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
-          <span className="truncate">{tile.label}</span>
-          {tile.kind === 'screen' && <span className="text-primary">Screen</span>}
+        ref={registerSlotNode(info.id)}
+        className="absolute inset-0 [&>video]:w-full [&>video]:h-full bg-black"
+        style={info.mirror && info.hasTrack ? { transform: 'scaleX(-1)' } : undefined}
+      />
+      {!info.hasTrack && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/80">
+          <div className="h-16 w-16 rounded-full bg-background/80 flex items-center justify-center">
+            {info.icon}
+          </div>
+          <span className="text-xs text-center px-2">{info.emptyHint}</span>
         </div>
+      )}
+      <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
+        <span className="truncate">{info.label}</span>
+        {info.id === 'doctor-screen' && info.hasTrack && (
+          <span className="text-primary">Live</span>
+        )}
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div
@@ -625,39 +664,25 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
       {/* Stage */}
       <div className="flex-1 relative bg-black flex">
-        {/* Focused tile */}
         <div className="flex-1 relative p-2">
-          {focusedTile ? (
-            renderTile(focusedTile, { large: true })
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-sm text-muted-foreground">
-              Waiting for video…
-            </div>
-          )}
+          {renderSlot(focusedInfo, true)}
         </div>
 
-        {/* Side strip */}
-        {sideTiles.length > 0 && (
-          <div className="hidden md:flex w-44 lg:w-56 flex-col gap-2 p-2 overflow-y-auto bg-card/40">
-            {sideTiles.map((t) => renderTile(t, { large: false }))}
-          </div>
-        )}
+        <div className="hidden md:flex w-44 lg:w-56 flex-col gap-2 p-2 overflow-y-auto bg-card/40">
+          {sideInfos.map((s) => renderSlot(s, false))}
+        </div>
 
         {/* Mobile bottom strip */}
-        {sideTiles.length > 0 && (
-          <div className="md:hidden absolute bottom-2 left-2 right-2 flex gap-2 overflow-x-auto z-20">
-            {sideTiles.map((t) => (
-              <div key={t.id} className="w-32 shrink-0">
-                {renderTile(t, { large: false })}
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="md:hidden absolute bottom-2 left-2 right-2 flex gap-2 overflow-x-auto z-20">
+          {sideInfos.map((s) => (
+            <div key={s.id} className="w-32 shrink-0">
+              {renderSlot(s, false)}
+            </div>
+          ))}
+        </div>
 
-        {/* Hidden audio sink */}
         <div ref={audioContainer} className="hidden" />
 
-        {/* Overlays */}
         {status === 'connecting' && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80">
             <div className="flex items-center gap-3 text-muted-foreground">
@@ -759,16 +784,18 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
           </Button>
 
-          <Button
-            variant={isScreenSharing ? 'default' : 'secondary'}
-            size="lg"
-            onClick={toggleScreenShare}
-            disabled={status !== 'connected'}
-            className="rounded-full h-12 w-12"
-            aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
-          >
-            {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
-          </Button>
+          {userRole === 'doctor' && (
+            <Button
+              variant={isScreenSharing ? 'default' : 'secondary'}
+              size="lg"
+              onClick={toggleScreenShare}
+              disabled={status !== 'connected'}
+              className="rounded-full h-12 w-12"
+              aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
+            >
+              {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
+            </Button>
+          )}
 
           {userRole === 'doctor' && (
             <Button
