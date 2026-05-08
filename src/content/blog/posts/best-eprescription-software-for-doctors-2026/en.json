@@ -1,0 +1,779 @@
+{
+  "groupId": "best-eprescription-software-for-doctors-2026",
+  "lang": "en",
+  "slug": "best-eprescription-software-for-doctors-2026",
+  "status": "published",
+  "featured": true,
+  "coverImage": "/blog/best-eprescription-software-for-doctors-2026/cover.webp",
+  "tags": [
+    "ePrescription",
+    "EHR",
+    "EPCS",
+    "digital health",
+    "practice management",
+    "pharmacy",
+    "compliance"
+  ],
+  "createdAt": "2026-05-05T00:00:00.000Z",
+  "updatedAt": "2026-05-05T00:00:00.000Z",
+  "publishedAt": "2026-05-05T00:00:00.000Z",
+  "title": "Best ePrescription Software for Doctors: 2026 Buyer's Guide",
+  "excerpt": "A clear-eyed comparison of the top ePrescription platforms in 2026 — covering EPCS certification, Surescripts connectivity, PDMP compliance, realistic pricing, and what most standalone tools still get wrong after you hit send.",
+  "seo": {
+    "metaTitle": "Best ePrescription Software for Doctors: 2026 Buyer's Guide | Docito",
+    "metaDescription": "Compare the best ePrescription software for doctors in 2026. Covers EPCS certification, Surescripts connectivity, PDMP compliance, pricing by practice size, and how Docito connects the full prescription-to-patient workflow.",
+    "keywords": [
+      "best eprescription software",
+      "eprescription software for doctors",
+      "EPCS certification",
+      "electronic prescribing",
+      "Surescripts integration",
+      "PDMP compliance",
+      "e-prescribing software 2026",
+      "controlled substance prescribing",
+      "ePrescription platform comparison",
+      "docito eprescription"
+    ],
+    "ogImage": "/blog/best-eprescription-software-for-doctors-2026/cover.webp"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "You write the prescription. You hit send. And then you have no idea what happens next. Did the pharmacy receive it? Is it in queue? Did the patient pick it up, or has it been sitting there for four days? For most physicians using standalone eRx tools, that's where the story ends — right at the moment it should just be getting started. This guide covers what separates a functional ePrescription platform from a frustrating one, how to compare the leading options in 2026, and what implementation actually looks like before you sign anything."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "We're comparing the top electronic prescription software options on EPCS certification, Surescripts connectivity, EHR integration, and realistic pricing. And for practices that want more than a prescription router, we'll cover how "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " is rethinking what a connected prescription workflow looks like — from the first visit to the medication at the patient's door."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "What Separates a Good ePrescription Platform from a Frustrating One"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Many physicians only notice the gaps in their e-prescribing software after implementation. The tool works fine for routine prescriptions, then a patient needs a Schedule II controlled substance and the workflow falls apart. Or a state PDMP query is legally required and the platform sends you to a separate browser tab. Knowing what to look for before you buy saves you that kind of pain."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          { "type": "text", "text": "Pharmacy connectivity and formulary checks" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Surescripts integration is not a binary checkbox — the depth of that integration matters enormously. A platform that routes prescriptions through Surescripts but doesn't pull real-time benefit (RTB) data is only doing half the job. Real-time prescription benefit checks give prescribers patient-specific out-of-pocket cost information, prior authorization flags, and lower-cost alternatives before the script is sent, which can help reduce prescription abandonment at the pharmacy. Platforms with strong Surescripts connectivity also support electronic prior authorization (ePA), cutting the phone calls and fax delays that kill prescription adherence for specialty medications."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "EPCS certification and DEA compliance fundamentals"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "If your practice prescribes any Schedule II through V controlled substances, EPCS certification is non-negotiable. DEA certification under 21 CFR Part 1311 is the baseline requirement, and it must be renewed every two years. When evaluating vendors, ask for proof of current certification status directly. Look for platforms audited by Drummond Group, iBeta, or UL Solutions, and verify that the certification covers the version of the software you'll be using. Certifications don't transfer across major version updates."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "EHR and telehealth workflow integration"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "A standalone eRx tool that doesn't connect to your EHR creates double documentation. That's not a minor inconvenience — it's a real liability when patient medication histories are fragmented across systems. Native integration is cleaner than API-based workarounds, but what matters most is whether the connection is bidirectional. In 2026, telehealth prescribing support is increasingly expected across most practice types. If your e-prescribe platform can't route a prescription during a virtual visit without making you switch systems, it's already behind. "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito® handles telehealth and in-person visits inside a single unified workflow"
+          },
+          {
+            "type": "text",
+            "text": " — no switching, no gaps."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Top ePrescription Software for Doctors in 2026"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "No single platform is right for every practice. The right fit depends on your practice size, whether you need a standalone tool or a bundled system, and how seriously you take controlled substance workflows. Here's an honest snapshot of the leading options."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "RXNT: strong EPCS compliance and Surescripts performance"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "RXNT has earned multi-year Surescripts recognition and carries full DEA certification for EPCS. Its PDMP integration is among the most reliable in the category, and it supports web, iOS, and Android access — which matters for multi-location practices and physicians who move between care settings. The RXnotify feature adds patient-facing medication management and pharmacy discount tools. On pricing, RXNT tends to land in the mid-to-upper range for solo practices, worth requesting a direct quote to see whether the feature set justifies the investment for a one-physician operation."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Veradigm ePrescribe: trusted standalone solution with broad reach"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "With over 80,000 prescribers on the platform, Veradigm ePrescribe has real scale behind it. It's ONC-certified, supports ePA through Surescripts, and doesn't require you to buy or replace your existing EHR to use it. That's its primary selling point: a bolt-on eRx layer for practices that already have a practice management system they like. The limitation is what you'd expect from any standalone tool — data sync with your EHR is largely manual, which means someone on your team is reconciling records somewhere."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "CharmHealth and DoseSpot: options for smaller and specialty practices"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "CharmHealth's $250 per provider per year pricing is genuinely accessible for solo and small practices, and its EPCS enrollment is Drummond-audited — which is the right signal to look for. DoseSpot adds ePA submission capability and pharmacy selection tools through its DoseSpot Connect feature, which helps with patient adherence and affordability. Both platforms handle controlled substance prescribing without sacrificing the compliance fundamentals. For practices watching overhead costs closely, either is worth a serious evaluation."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "ClinikEHR: a compelling option for private practices"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "ClinikEHR bundles Surescripts coverage across all 50 states, DEA-certified EPCS, and real-time drug interaction checking without charging an additional EPCS fee. For smaller practices managing tight margins, that bundled pricing model changes the math on total cost of ownership. It won't have the brand recognition of RXNT or Veradigm, but for practices that want solid compliance coverage without paying piecemeal for each feature, it's worth a closer look."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "How ePrescription Software Handles EPCS and PDMP Compliance"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "EPCS compliance feels abstract until you're trying to enroll for the first time at 7 AM before a full schedule. The process has specific requirements that don't bend, and practices that don't plan for them end up delaying their go-live by weeks."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Identity proofing, two-factor signing, and what DEA actually requires"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Before you can write a single controlled substance prescription electronically, you have to complete identity proofing at NIST Assurance Level 3. In practice, that means submitting your information to a third-party credential service provider, which will verify your identity through knowledge-based questions, document validation, or biometrics. After that, every controlled substance signing event requires two-factor authentication — two of three factors: something you know (a password), something you have (a token or mobile authenticator), or something you are (fingerprint or facial recognition). The platform must also maintain tamper-proof audit logs capturing every signing event, prescription detail, and verification step. This is where most implementations stall: KBA questions fail when personal data doesn't match bureau records exactly, and there's no quick workaround."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "For practices that want identity proofing handled within a unified clinical platform, "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito® guides prescribers through DEA enrollment as part of onboarding"
+          },
+          {
+            "type": "text",
+            "text": " — so identity proofing doesn't become a day-of surprise."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "PDMP checks and state-level mandates to know before you deploy"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "49 states and D.C. have active PDMP databases, but query requirements vary significantly by state. Some states mandate a PDMP check before every controlled substance prescription; others make it voluntary. The difference matters for your workflow: platforms that embed automated PDMP queries directly into the signing process are meaningfully better than those that redirect you to a separate state portal. Verify your state's specific requirements before selecting a vendor, because not all platforms cover all states natively — and a manual PDMP redirect adds friction that compounds fast at volume."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "What ePrescription Software Actually Costs by Practice Size"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Pricing for e-prescribing platforms is rarely listed clearly on vendor websites. Here are realistic ranges to use before entering any sales conversation."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          { "type": "text", "text": "Solo practice and small clinic pricing" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Solo practices typically pay $100 to $425 per month total for an eRx-capable platform. EPCS capability is often an add-on running $38 to $65 per month on top of the base fee. Setup, data migration, and training fees typically land between $3,500 and $6,000 for a single-provider implementation. Encounter-based models, which start around $25 per month, can reduce costs significantly for lower-volume practices. When evaluating free trials, confirm whether EPCS is included in the trial or gated behind a paid enrollment."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          { "type": "text", "text": "Group practice and multi-location pricing" }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "For practices with three to ten providers, tiered pricing typically brings per-provider costs down to $250 to $500 per month when bundled with EHR or practice management features. Groups with more than ten providers can often negotiate closer to $250 per provider per month. The costs that practices routinely underestimate are the ones that don't appear in the base pricing: lab interface fees, state PDMP connectivity charges, and training time for staff who manage the PDMP query workflow for controlled substances. Build those into your budget before you sign anything."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Why Standalone ePrescription Tools Often Leave a Critical Gap"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Standalone eRx platforms solve one specific problem: getting the prescription to the pharmacy. That's useful, but it's also where their usefulness ends. The moment you hit send, you're out of the loop."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The handoff problem between prescribing and pharmacy fulfillment"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "No fulfillment confirmation. No alert if the pharmacy can't fill the script. No visibility into whether the patient picked it up or whether it's been sitting unclaimed for three days. For practices managing chronic disease patients, post-discharge follow-ups, or high-risk medication regimens, that gap in visibility is a clinical problem — not just an administrative one. Medication non-adherence is well-documented as one of the leading drivers of avoidable readmissions, and a tool that goes silent after the prescription is sent can't help you address it."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "How Docito® connects the full prescription-to-patient workflow"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " doesn't hand the prescription off and go quiet. When a physician generates an ePrescription inside Docito®, that prescription connects to the patient's electronic health record and routes to the pharmacy — with fulfillment status visible from the same dashboard, no system-switching or phone calls required. For patients who qualify for home delivery, that coordination happens inside the same platform. For practices that want a single workflow from the patient visit to the medication in their hands, Docito® closes the loop that standalone eRx tools leave open. It's the difference between sending a prescription and managing one."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Before You Commit: Integration Checklist and Implementation Steps"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Signing the contract is the easy part. Practices that skip the implementation planning phase spend months cleaning up avoidable problems. Use this before you finalize any vendor decision."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Questions to ask every vendor before signing a contract"
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Does the platform have current DEA EPCS certification, and can you provide documentation?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Which states' PDMP systems are natively integrated versus requiring a manual redirect?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "How does the platform connect to my existing EHR: native integration, HL7, or API?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Is EPCS enrollment an additional fee, and is it included in onboarding support?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "What is the support SLA if the system goes down during patient care hours?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Who handles data migration and what does that process look like?"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Steps to go live without disrupting patient care"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "Most practices can go live in four to six weeks for standard e-prescribing, though EPCS enrollment adds two to four weeks if identity proofing stalls — plan for it. The realistic deployment sequence looks like this:"
+          }
+        ]
+      },
+      {
+        "type": "orderedList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [{ "type": "bold" }],
+                    "text": "Complete identity proofing and DEA credential enrollment first."
+                  },
+                  {
+                    "type": "text",
+                    "text": " This is where implementations consistently get stuck. IDP often takes longer than expected — sometimes days, sometimes weeks — so don't treat it as a same-day task."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [{ "type": "bold" }],
+                    "text": "Run parallel paper and electronic workflows for the first two weeks"
+                  },
+                  {
+                    "type": "text",
+                    "text": " while you confirm pharmacy connectivity."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [{ "type": "bold" }],
+                    "text": "Train every staff member who touches the PDMP query workflow"
+                  },
+                  {
+                    "type": "text",
+                    "text": " for controlled substances — not just the prescribers."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "marks": [{ "type": "bold" }],
+                    "text": "Test connectivity with your top three to five pharmacies"
+                  },
+                  {
+                    "type": "text",
+                    "text": " before going fully digital, and confirm that RTB data is flowing correctly."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The Bottom Line on Choosing ePrescription Software for Doctors"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "The decision criteria are straightforward: EPCS certification with documented renewal status, deep Surescripts connectivity including RTB checks, bidirectional EHR integration, and pricing that fits your practice size without hidden add-ons. Most platforms handle the basics competently. The difference between them shows up in the details of controlled substance workflows, PDMP coverage, and what happens after the prescription leaves your hands."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": "left" },
+        "content": [
+          {
+            "type": "text",
+            "text": "A standalone eRx platform gets the prescription sent. It doesn't handle fulfillment tracking, patient history, pharmacy coordination, or visibility into whether the medication actually reached the patient. If your practice is ready to stop patching together disconnected tools, choose ePrescription software that connects prescribing to the full care workflow. "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito® is built to do exactly that"
+          },
+          {
+            "type": "text",
+            "text": " — from the patient's first booking through to the medication at their door. Visit "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "docito.app"
+          },
+          {
+            "type": "text",
+            "text": " to explore plans and see how the pieces connect."
+          }
+        ]
+      }
+    ]
+  }
+}
