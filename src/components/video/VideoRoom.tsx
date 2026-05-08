@@ -595,7 +595,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     [slotHasTrack, userRole],
   );
 
-  const focusedInfo = slots.find((s) => s.id === focusedSlot)!;
+  
   const sideInfos = slots.filter((s) => s.id !== focusedSlot);
 
   // All 3 slots are siblings in ONE container so React never unmounts them
