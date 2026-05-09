@@ -26,6 +26,7 @@ import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLi
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection";
+import DoctorPrescriptionsSection from "@/components/doctor/prescriptions/DoctorPrescriptionsSection";
 import { UpcomingAppointmentCard } from "@/components/doctor/UpcomingAppointmentCard";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
