@@ -292,34 +292,47 @@ export const useReferralActions = () => {
         receiverUserId = (doc as any)?.user_id ?? null;
       }
 
+      const rawPayload: Record<string, any> = {
+        patient_id: input.patient_id ?? null,
+        doctor_patient_id: input.doctor_patient_id ?? null,
+        facility_patient_id: input.facility_patient_id ?? null,
+        patient_name: input.patient_name ?? null,
+        patient_phone: input.patient_phone ?? null,
+        patient_email: input.patient_email ?? null,
+
+        referrer_type: referrerType,
+        referrer_entity_id: referrerEntityId,
+        referrer_user_id: user.id,
+
+        receiver_type: input.receiver_type,
+        receiver_entity_id: isSpecific ? receiverEntityId : null,
+        receiver_user_id: receiverUserId,
+        referral_scope: referralScope,
+        target_field: targetField,
+        receiver_name: input.receiver_name || null,
+
+        referral_type_enum: input.referral_type,
+        priority: input.priority || 'routine',
+        status: 'draft',
+        reason: input.reason,
+        clinical_notes: input.clinical_notes ?? null,
+        diagnosis_codes: input.diagnosis_codes ?? null,
+        valid_from: new Date().toISOString().split('T')[0],
+        valid_until: validUntil,
+        preferred_date: input.preferred_date ?? null,
+        preferred_time_slot: input.preferred_time_slot ?? null,
+        estimated_duration_minutes: input.estimated_duration_minutes || 30,
+        attachments: input.attachments || [],
+      };
+
+      // Strip undefined keys (keep nulls — they're meaningful)
+      const payload = Object.fromEntries(
+        Object.entries(rawPayload).filter(([, v]) => v !== undefined),
+      );
+
       const { data, error } = await (supabase as any)
         .from('referrals')
-        .insert({
-          patient_id: input.patient_id,
-          referrer_type: referrerType,
-          referrer_entity_id: referrerEntityId,
-          referrer_user_id: user.id,
-
-          receiver_type: input.receiver_type,
-          receiver_entity_id: isSpecific ? receiverEntityId : null,
-          receiver_user_id: receiverUserId,
-          referral_scope: referralScope,
-          target_field: targetField,
-          receiver_name: input.receiver_name || null,
-
-          referral_type_enum: input.referral_type,
-          priority: input.priority || 'routine',
-          status: 'draft',
-          reason: input.reason,
-          clinical_notes: input.clinical_notes,
-          diagnosis_codes: input.diagnosis_codes,
-          valid_from: new Date().toISOString().split('T')[0],
-          valid_until: validUntil,
-          preferred_date: input.preferred_date,
-          preferred_time_slot: input.preferred_time_slot,
-          estimated_duration_minutes: input.estimated_duration_minutes || 30,
-          attachments: input.attachments || [],
-        })
+        .insert(payload)
         .select()
         .single();
 
