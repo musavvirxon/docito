@@ -133,6 +133,13 @@ export interface CreateReferralInput {
   // Optional display name for receiver (helpful when receiver_entity_id is null)
   receiver_name?: string;
 
+  // Patient identity overrides (for doctor-made / facility / walk-in patients)
+  doctor_patient_id?: string | null;
+  facility_patient_id?: string | null;
+  patient_name?: string | null;
+  patient_phone?: string | null;
+  patient_email?: string | null;
+
   referral_type: ReferralType;
   priority?: ReferralPriority;
   reason: string;
