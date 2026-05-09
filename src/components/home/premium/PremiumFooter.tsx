@@ -14,6 +14,7 @@ const footerLinks = {
     { key: "searchDoctors", href: "/search-doctors" },
     { key: "specialties", href: "/specialties" },
     { key: "howItWorks", href: "/how-it-works" },
+    { key: "blog", href: "/blog" },
   ],
   support: [
     { key: "helpCenter", href: "/help" },
@@ -46,6 +47,7 @@ const fallbackLabels: Record<string, string> = {
   searchDoctors: "Search doctors",
   specialties: "Specialties",
   howItWorks: "How it works",
+  blog: "Blog",
 
   // Support
   helpCenter: "Help Center",
