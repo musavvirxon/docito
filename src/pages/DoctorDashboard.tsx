@@ -225,6 +225,8 @@ const DoctorDashboardContent = () => {
         return <DoctorProcedureLibrarySection />;
       case "referrals":
         return <DoctorReferralsSection />;
+      case "prescriptions":
+        return <DoctorPrescriptionsSection />;
       case "verify-documents":
         return <DocumentVerifySection />;
       default:
