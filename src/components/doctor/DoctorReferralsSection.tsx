@@ -930,10 +930,17 @@ export function DoctorReferralsSection() {
 
   const handleCreateSubmit = async (data: any) => {
     if (!uiCanCreate || !doctorProfile?.id || !selectedPatient) return;
+    const isDoctorMade = selectedPatient.type === "doctor_made";
     const referralData = {
       ...data,
-      ...(selectedPatient.type === "doctor_made"
-        ? { doctor_patient_id: selectedPatient.id, patient_id: null }
+      ...(isDoctorMade
+        ? {
+            doctor_patient_id: selectedPatient.id,
+            patient_id: null,
+            patient_name: selectedPatient.full_name ?? null,
+            patient_phone: (selectedPatient as any).phone ?? null,
+            patient_email: (selectedPatient as any).email ?? null,
+          }
         : {}),
     };
     const result = await createReferral(referralData, "doctor", doctorProfile.id);
