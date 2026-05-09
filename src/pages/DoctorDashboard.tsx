@@ -160,6 +160,7 @@ const DoctorDashboardContent = () => {
     { id: "calendar", label: t("doctor.navigation.calendar"), icon: Calendar },
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
+    { id: "prescriptions", label: t("doctor.navigation.prescriptions", "Prescriptions"), icon: Pill },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
