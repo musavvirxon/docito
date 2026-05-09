@@ -7508,6 +7508,7 @@ export type Database = {
           completed_by: string | null
           created_at: string
           diagnosis_codes: string[] | null
+          doctor_patient_id: string | null
           estimated_duration_minutes: number | null
           external_patient_ref: string | null
           facility_patient_id: string | null
@@ -7532,11 +7533,13 @@ export type Database = {
           priority: Database["public"]["Enums"]["referral_priority"] | null
           reason: string | null
           receiver_entity_id: string | null
+          receiver_name: string | null
           receiver_type:
             | Database["public"]["Enums"]["referral_entity_type"]
             | null
           receiver_user_id: string | null
           referral_number: string | null
+          referral_scope: string | null
           referral_type_enum:
             | Database["public"]["Enums"]["referral_type"]
             | null
@@ -7554,6 +7557,9 @@ export type Database = {
           result_notes: string | null
           sent_at: string | null
           status: string | null
+          target_field:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
           treatment_plan_id: string | null
           updated_at: string
           valid_from: string | null
@@ -7568,6 +7574,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           diagnosis_codes?: string[] | null
+          doctor_patient_id?: string | null
           estimated_duration_minutes?: number | null
           external_patient_ref?: string | null
           facility_patient_id?: string | null
@@ -7592,11 +7599,13 @@ export type Database = {
           priority?: Database["public"]["Enums"]["referral_priority"] | null
           reason?: string | null
           receiver_entity_id?: string | null
+          receiver_name?: string | null
           receiver_type?:
             | Database["public"]["Enums"]["referral_entity_type"]
             | null
           receiver_user_id?: string | null
           referral_number?: string | null
+          referral_scope?: string | null
           referral_type_enum?:
             | Database["public"]["Enums"]["referral_type"]
             | null
@@ -7614,6 +7623,9 @@ export type Database = {
           result_notes?: string | null
           sent_at?: string | null
           status?: string | null
+          target_field?:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
           treatment_plan_id?: string | null
           updated_at?: string
           valid_from?: string | null
@@ -7628,6 +7640,7 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           diagnosis_codes?: string[] | null
+          doctor_patient_id?: string | null
           estimated_duration_minutes?: number | null
           external_patient_ref?: string | null
           facility_patient_id?: string | null
@@ -7652,11 +7665,13 @@ export type Database = {
           priority?: Database["public"]["Enums"]["referral_priority"] | null
           reason?: string | null
           receiver_entity_id?: string | null
+          receiver_name?: string | null
           receiver_type?:
             | Database["public"]["Enums"]["referral_entity_type"]
             | null
           receiver_user_id?: string | null
           referral_number?: string | null
+          referral_scope?: string | null
           referral_type_enum?:
             | Database["public"]["Enums"]["referral_type"]
             | null
@@ -7674,6 +7689,9 @@ export type Database = {
           result_notes?: string | null
           sent_at?: string | null
           status?: string | null
+          target_field?:
+            | Database["public"]["Enums"]["referral_entity_type"]
+            | null
           treatment_plan_id?: string | null
           updated_at?: string
           valid_from?: string | null
