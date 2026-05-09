@@ -1,6 +1,6 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill } from "lucide-react";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
