@@ -89,7 +89,9 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
         allAppointmentsData,
         proceduresData,
         doctorData,
-        profilesData
+        profilesData,
+        toothHistoryData,
+        apptProceduresData
       ] = await Promise.all([
         supabase
           .from('appointments')
@@ -118,7 +120,17 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
 
         supabase
           .from('profiles')
-          .select('user_id, full_name')
+          .select('user_id, full_name'),
+
+        supabase
+          .from('tooth_procedure_history')
+          .select('id, appointment_id, patient_id, procedure_name, cost, performed_at, status')
+          .eq('doctor_id', doctorId),
+
+        supabase
+          .from('appointment_procedures')
+          .select('id, appointment_id, estimated_cost, status, procedures(name, price, default_cost), appointments!inner(doctor_id, patient_id, appointment_date)')
+          .eq('appointments.doctor_id', doctorId)
       ]);
 
       const appointments = appointmentsData.data || [];
@@ -267,11 +279,11 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const patientEarnings: PatientEarnings[] = Object.values(patientEarningsMap)
         .sort((a: any, b: any) => b.totalPaid - a.totalPaid);
 
-      // Pending payments
+      // Pending payments — appointment-level (consultation fees on unpaid appointments)
       const pendingPayments: PendingPayment[] = pendingAppointments.map((apt: any) => {
         const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
         const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-        
+
         return {
           appointmentId: apt.id,
           patientName: patientProfile?.full_name || 'Unknown Patient',
@@ -281,6 +293,40 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           status: apt.status
         };
       });
+
+      // Pending payments — procedures performed during appointments (dental work, injections, etc.)
+      const toothHistory = (toothHistoryData as any)?.data || [];
+      const apptProcedures = (apptProceduresData as any)?.data || [];
+
+      toothHistory
+        .filter((row: any) => row.status === 'completed' && Number(row.cost) > 0)
+        .forEach((row: any) => {
+          const patientProfile = profiles.find((p: any) => p.user_id === row.patient_id);
+          pendingPayments.push({
+            appointmentId: `tph-${row.id}`,
+            patientName: patientProfile?.full_name || 'Unknown Patient',
+            serviceName: row.procedure_name || 'Procedure',
+            amount: Number(row.cost) || 0,
+            date: row.performed_at || row.created_at,
+            status: 'unpaid',
+          });
+        });
+
+      apptProcedures
+        .filter((row: any) => Number(row.estimated_cost) > 0 && row.status !== 'cancelled')
+        .forEach((row: any) => {
+          const apt = row.appointments;
+          if (!apt) return;
+          const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+          pendingPayments.push({
+            appointmentId: `ap-${row.id}`,
+            patientName: patientProfile?.full_name || 'Unknown Patient',
+            serviceName: row.procedures?.name || 'Procedure',
+            amount: Number(row.estimated_cost) || 0,
+            date: apt.appointment_date,
+            status: row.status || 'unpaid',
+          });
+        });
 
       // Calculate payout records from completed appointments
       // Group payouts by month
