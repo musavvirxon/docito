@@ -1657,6 +1657,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
                   </TabsContent>
+
+                  <TabsContent value="reviews" className="mt-0 space-y-4">
+                    <PerformanceReviews
+                      reviews={recentReviews || []}
+                      averageRating={doctorPerfStats?.averageRating || 0}
+                      totalReviews={doctorPerfStats?.totalReviews || 0}
+                    />
+                  </TabsContent>
                 </ScrollArea>
               </Tabs>
             </div>
