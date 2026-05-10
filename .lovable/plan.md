@@ -1,96 +1,95 @@
-## Part 1 — Fix "Create Referral" button
+## Part 1 — Why "Create Referral" still fails
 
-### Root cause
+The constraint was only one of two blockers. The real blocker is two `AFTER INSERT` triggers on `public.referrals` whose function bodies reference columns that don't exist on the table:
 
-The DB has a stale CHECK constraint on `public.referrals`:
+```sql
+-- trigger_create_referral_conversation
+INSERT INTO conversations (..., created_by) VALUES (..., NEW.referrer_id);
+INSERT INTO conversation_participants (..., user_id, role)
+  VALUES (..., NEW.referrer_id, 'referrer'),
+         (..., NEW.patient_id,  'patient'),
+         (..., NEW.receiver_id, 'receiver');
 
+-- trigger_referral_messaging_permission
+INSERT INTO messaging_permissions (user_id, can_message_user_id, ...)
+  VALUES (NEW.referrer_id, NEW.patient_id, ...), ...
 ```
-referrals_status_check  CHECK (status IN ('pending','accepted','declined','completed'))
-```
 
-But `useReferralActions.createReferral` inserts `status: 'draft'`. Every insert fails with a check-constraint violation, so the dialog throws and never closes — that's why the button "doesn't work".
+Actual columns on `public.referrals` are `referrer_user_id` / `receiver_user_id` (no `referrer_id` / `receiver_id`). Every INSERT raises `record "new" has no field "referrer_id"`, the transaction aborts, and the dialog throws — that's why the button "does nothing".
 
-Two secondary issues uncovered while tracing:
+### Fix
 
-- `doctor_patient_id` is set in `DoctorReferralsSection.handleCreateSubmit` (when the picker returns a `doctor_made` patient with `patient_id: null`), but `createReferral` only inserts a hand-picked field list and silently drops it. Combined with `referrals_patient_required_chk` (`patient_id IS NOT NULL OR patient_name IS NOT NULL`) and `referrals_walkin_phone_required_chk`, the insert can also fail with no patient identity.
-- The status-history log/trigger expects the new lifecycle values (`draft|sent|...`), so we need the constraint to match the lifecycle the app already uses.
+One migration that rewrites both trigger functions to use the real columns:
 
-### Fix (migration + small code edits)
+- `create_referral_conversation`: read `NEW.referrer_user_id`, `NEW.receiver_user_id`. Skip participant inserts when the corresponding user id is NULL (covers walk-in patients with `patient_id IS NULL`, doctor-made patients, and general referrals with no specific receiver yet).
+- `create_referral_messaging_permission`: same column rename + same NULL-guard for every pair so the insert never crashes when one side isn't a user yet.
 
-1. **Migration** on `public.referrals`:
-   - Drop `referrals_status_check`. Replace with one that matches the real lifecycle:
-     `draft, sent, accepted, rejected, declined, slots_available, booked, in_progress, completed, cancelled, expired, pending`.
-   - Keep `patient_required_chk` and `walkin_phone_required_chk`, but extend them to also accept `doctor_patient_id IS NOT NULL` so doctor-made patients satisfy the constraint without a phone.
-
-2. **`src/hooks/useReferrals.ts` — `createReferral`**:
-   - Accept and forward optional `doctor_patient_id` on `CreateReferralInput`.
-   - When `doctor_patient_id` is set, also write `patient_name` (from caller) so the patient-required check is satisfied even if the row is later read by a function that ignores `doctor_patient_id`.
-   - Sanitize the payload (strip `undefined`s) before `insert`.
-
-3. **`src/components/doctor/DoctorReferralsSection.tsx` — `handleCreateSubmit`**:
-   - Pass `doctor_patient_id` and `patient_name: selectedPatient.full_name` (and `patient_phone` if present) through to `createReferral` for `doctor_made` patients.
-
-No RLS changes — the existing `Referrers can create referrals` policy already covers this user.
+No application code change needed for Part 1 — the frontend already passes the right field names.
 
 ---
 
-## Part 2 — Doctor Dashboard "Prescriptions" section
+## Part 2 — One prescription backend across Doctor Dashboard + Appointment Session
 
-Implement exactly as specified in the brief. No schema, RPC, or hook changes.
+Today there are three places that touch prescriptions and they are inconsistent:
 
-### Files
+| Surface | File | Backend |
+|---|---|---|
+| Doctor Dashboard → Prescriptions | `DoctorPrescriptionsSection.tsx` (`CreatorPanel`) | `usePrescriptions.createPrescription` (RPC `create_prescription`) — real |
+| `/appointment-session/:id` → Prescriptions tab | `AppointmentSession.tsx` → `PrescriptionCreator` | `usePrescriptions.createPrescription` — real ✅ |
+| Visit workspace (`VisitPage` → `PrescriptionTab`) | `src/components/visit/tabs/PrescriptionTab.tsx` | **Local component state + mock `MEDICATIONS` list. Never persisted.** |
 
-- **Create** `src/components/doctor/prescriptions/DoctorPrescriptionsSection.tsx` — the full section: header + 4 stat chips, left panel (search/filters, prescription rows, "Medication History" derived list), right panel (creator OR detail), all loading/empty states, mobile drawer.
-- **Modify** `src/pages/DoctorDashboard.tsx` — import `Pill` from `lucide-react`, add `{ id: "prescriptions", label: t("doctor.navigation.prescriptions","Prescriptions"), icon: Pill }` to **both** sidebar arrays, and add `case "prescriptions": return <DoctorPrescriptionsSection />;` to the `switch (activeSection)`.
+Goal: a single shared creator component used by all three, talking only to `usePrescriptions` / the `create_prescription` RPC. No mock medications anywhere.
 
-### Data flow
+### Refactor
 
-```
-useDoctorData() ──► doctorProfile.id
-                          │
-                          ▼
-           usePrescriptions({ doctorId })  ──► realtime list of every Rx
-                          │
-        ┌─────────────────┼──────────────────────────────┐
-        ▼                 ▼                              ▼
-   stat chips      left panel list +              right panel:
-                   "Medication History"           - PrescriptionCreatorPanel (new)
-                   (derived via useMemo)          - PrescriptionDetailPanel  (new)
-```
+1. **Extract** the creator currently inlined in `DoctorPrescriptionsSection.tsx` into a reusable component:
 
-`PrescriptionCreatorPanel` wraps the existing `PrescriptionCreator` from `src/components/prescriptions/` and adds:
-- Patient selector (searchable combobox sourced from `useDoctorData`).
-- "From previous" chip strip — the last 5 unique medications derived from the loaded `prescriptions`. Click appends to the item list via local state lifted into the wrapper.
-- All existing fields/behavior preserved; existing `createPrescription` RPC + PDF download unchanged.
+   ```
+   src/components/prescriptions/SharedPrescriptionCreator.tsx
+   ```
 
-`PrescriptionDetailPanel` is an inline (non-dialog) render of the same content the existing `PrescriptionList` detail dialog shows: header, status badge, expiry/refills, linked-appointment chip, item cards, notes, and action buttons (`Download PDF` via `downloadPrescriptionPdf`, `Send to Pharmacy` via `sendToPharmacy`, `Re-prescribe`, `Cancel` if `pending`).
+   Props:
+   ```ts
+   {
+     doctorId: string;
+     patientId?: string;          // pre-filled when known (visit / appointment)
+     appointmentId?: string;      // links Rx to appointment when present
+     patients?: Patient[];        // optional list when patient picker is needed
+     prefilledItems?: PrescriptionItem[];
+     recentMedications?: PrescriptionItem[];  // "From previous" chips
+     onCreated?: (rxId: string) => void;
+     compact?: boolean;           // dashboard = full, session/visit = compact
+   }
+   ```
 
-### Re-prescribe / Medication History
+   It hides the patient selector when `patientId` is provided, shows it (with search) otherwise. It always calls `usePrescriptions().createPrescription` and downloads the PDF on success. No mock data, ever.
 
-Both reuse one local state slice in `DoctorPrescriptionsSection`:
+2. **Doctor Dashboard**: `DoctorPrescriptionsSection.tsx` swaps its inlined `CreatorPanel` for `<SharedPrescriptionCreator />`. Behavior identical (patient selector + "From previous" + history).
 
-```ts
-setRightPanel('creator');
-setPrefilledPatientId(rx.patient_id);
-setPrefilledItems(rx.items ?? []);
-```
+3. **Appointment Session** (`src/pages/AppointmentSession.tsx`): replace `import PrescriptionCreator` with `SharedPrescriptionCreator`, pass `doctorId`, `patientId`, `appointmentId` from the session context. (`PrescriptionCreator.tsx` is left in place for any other callers but is no longer the canonical path.)
 
-`Medication History` derived in a single `useMemo` over `prescriptions.flatMap(rx => rx.items)`, grouped by lowercased `medication_name`, sorted by count desc; each row click pre-fills the creator with that medication (last-used dosage/frequency/unit) and leaves the patient selector empty for the doctor to choose.
+4. **Visit workspace** (`src/components/visit/tabs/PrescriptionTab.tsx`):
+   - Delete the mock `MEDICATIONS` array and the local-only "Add prescription" dialog.
+   - Render `<SharedPrescriptionCreator doctorId={...} patientId={...} appointmentId={...} compact />` for the entry form.
+   - Replace the local list with `usePrescriptions({ doctorId, patientId }).prescriptions` so the table shows the real, server-stored Rx for this patient (and updates in realtime).
+   - `VisitPage.tsx`: stop tracking `prescriptions` in local visit state for this tab; remove `handleAddPrescription` / `handleRemovePrescription` plumbing for prescriptions only (other visit fields stay). The visit page already receives `doctorId`/`patientId`/`appointmentId` — wire them through.
 
-### Status badge colors, layout breakpoints, stat math, and empty/loading states
-
-Exactly as specified in the brief (4 chips, two-panel desktop / stacked mobile w/ Sheet, semantic tokens for status colors mapped through the existing `Badge` variants where possible, `Skeleton` for loading).
+5. **Cleanup**: remove now-unused `VisitPrescription` references inside `PrescriptionTab` (keep the type if other tabs still reference it; otherwise drop it from `types.ts`).
 
 ### Out of scope
 
-No edits to `usePrescriptions`, `PrescriptionCreator`, `PrescriptionList`, Supabase schema, or RPCs.
+- No schema / RLS / RPC changes for prescriptions — the existing `create_prescription` RPC already handles auth and items.
+- `ProcedurePrescriptionModal.tsx` is left untouched (it's an unrelated procedure-side prompt).
+- No changes to PDF download or pharmacy-send flows.
 
 ---
 
 ## Technical summary
 
-- 1 SQL migration: relax `referrals_status_check`, broaden `patient_required_chk` / `walkin_phone_required_chk` to accept `doctor_patient_id`.
-- `useReferrals.ts`: forward `doctor_patient_id` + `patient_name`/`patient_phone` and sanitize payload.
-- `DoctorReferralsSection.tsx`: pass walk-in / doctor-made identifiers through.
-- New section component + 2 inline sub-panels under `src/components/doctor/prescriptions/`.
-- 3 lines added to `DoctorDashboard.tsx` (import, nav item ×2, switch case).
+- **Migration**: rewrite `create_referral_conversation` and `create_referral_messaging_permission` to use `referrer_user_id` / `receiver_user_id` and NULL-guard each insert.
+- **New file**: `src/components/prescriptions/SharedPrescriptionCreator.tsx` (single source of truth for Rx creation UI).
+- **Edits**:
+  - `src/components/doctor/prescriptions/DoctorPrescriptionsSection.tsx` — replace inline `CreatorPanel` with the shared creator.
+  - `src/pages/AppointmentSession.tsx` — swap `PrescriptionCreator` for the shared creator.
+  - `src/components/visit/tabs/PrescriptionTab.tsx` — replace mock dialog + local list with the shared creator + real `usePrescriptions` data.
+  - `src/components/visit/VisitPage.tsx` — drop local prescription state plumbing, pass IDs down.
