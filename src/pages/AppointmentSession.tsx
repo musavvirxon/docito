@@ -23,6 +23,7 @@ import {
   MapPin,
   Home,
   MessageSquare,
+  Star,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
