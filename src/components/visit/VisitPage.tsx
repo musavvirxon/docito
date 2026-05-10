@@ -297,10 +297,10 @@ export const VisitPage = ({
 
                 <TabsContent value="prescriptions" className="mt-6">
                   <PrescriptionTab
-                    prescriptions={visit.prescriptions}
                     mode={mode}
-                    onAddPrescription={handleAddPrescription}
-                    onRemovePrescription={handleRemovePrescription}
+                    patientId={patient.id}
+                    doctorId={doctor.id}
+                    appointmentId={visit.appointmentId}
                     onPrint={() => toast.info("Print functionality coming soon")}
                   />
                 </TabsContent>
