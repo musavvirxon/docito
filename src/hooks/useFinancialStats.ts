@@ -89,7 +89,9 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
         allAppointmentsData,
         proceduresData,
         doctorData,
-        profilesData
+        profilesData,
+        toothHistoryData,
+        paymentsData
       ] = await Promise.all([
         supabase
           .from('appointments')
