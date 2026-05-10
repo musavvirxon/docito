@@ -1147,6 +1147,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <FileText className="h-4 w-4" />
                     Notes
                   </TabsTrigger>
+
+                  <TabsTrigger value="reviews" className="gap-2">
+                    <Star className="h-4 w-4" />
+                    Reviews
+                  </TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="flex-1 pr-2">
