@@ -1,0 +1,792 @@
+{
+  "groupId": "digital-treatment-plans-for-doctors-2026",
+  "lang": "en",
+  "slug": "digital-treatment-plans-for-doctors-2026",
+  "status": "published",
+  "featured": true,
+  "coverImage": "/blog/digital-treatment-plans-for-doctors-2026/cover.webp",
+  "tags": [
+    "treatment plan",
+    "EHR",
+    "clinical workflow",
+    "digital health",
+    "practice management",
+    "chronic care",
+    "care coordination"
+  ],
+  "createdAt": "2026-05-09T00:00:00.000Z",
+  "updatedAt": "2026-05-09T00:00:00.000Z",
+  "publishedAt": "2026-05-09T00:00:00.000Z",
+  "title": "Digital Treatment Plans for Doctors: What Good Software Actually Does",
+  "excerpt": "Most treatment plan tools do one thing: create a document. The best ones close the loop between diagnosis, care delivery, and follow-up — without making clinicians chase information across five different screens. Here's what separates them in 2026.",
+  "seo": {
+    "metaTitle": "Digital Treatment Plans for Doctors: What Good Software Actually Does | Docito",
+    "metaDescription": "A practical guide to digital treatment plan software in 2026 — covering care plan templates, chronic disease management, multi-provider coordination, patient adherence tracking, and how Docito connects the full plan-to-outcome workflow.",
+    "keywords": [
+      "digital treatment plan software",
+      "treatment plan for doctors",
+      "care plan software 2026",
+      "chronic disease management tools",
+      "clinical care plan EHR",
+      "treatment plan template",
+      "patient adherence tracking",
+      "multi-provider care coordination",
+      "Docito treatment plan",
+      "care plan management platform"
+    ],
+    "ogImage": "/blog/digital-treatment-plans-for-doctors-2026/cover.webp"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "A treatment plan is supposed to be a living document — something that guides care from diagnosis through recovery, adapts when the patient's condition changes, and keeps every provider on the same page. In practice, for most clinics still using paper forms or basic EHR templates, a treatment plan is a PDF that gets filed and forgotten. The gap between what a treatment plan should do and what most tools actually support is where patient outcomes quietly erode."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "This guide covers what makes a digital treatment plan platform worth using in 2026 — from the clinical workflows it needs to support to the coordination features that separate a documentation tool from a genuine care management system. We'll look at where most platforms still fall short, and why practices managing chronic conditions, multi-specialty care, or post-discharge follow-up need more than a fillable template. And for clinics that want the plan to actually follow the patient, we'll cover how "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " connects the treatment plan to every step of the care journey — from the initial visit to the final follow-up."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "What a Digital Treatment Plan Actually Needs to Do"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "The word \"treatment plan\" means something different depending on specialty. For a primary care physician managing a Type 2 diabetes patient, it's a structured set of medication adjustments, lab monitoring schedules, and lifestyle targets tracked over months. For a physical therapist, it's a session-by-session progression with functional goals and reassessment milestones. For an oncologist, it's a protocol with specific drug sequences, dosage weights, and toxicity thresholds that must be documented precisely. A platform that tries to serve all of these with a single generic template ends up serving none of them well."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "What the best treatment plan software has figured out is that the underlying structure can be standardized — goals, interventions, responsible providers, timelines, review dates — while the content within that structure needs to flex by specialty and patient. The difference between a good system and a frustrating one is whether it makes that flexibility available without requiring the physician to rebuild the wheel on every new patient."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Structured goals, not free-text fields"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Free-text treatment plan fields feel flexible but create real problems downstream. A goal written as \"improve blood pressure\" can't be measured, can't trigger an alert when it's not met, and can't be compared against population benchmarks. Structured goal-setting — where the platform knows the goal is a specific systolic target with a review date — enables automated monitoring, outcome tracking, and clinical decision support. Platforms that still treat the care plan as a rich text document are offering documentation, not management."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Template libraries that reflect real specialty workflows"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "A treatment plan template for hypertension management looks nothing like one for post-surgical rehabilitation. The best platforms ship with specialty-specific templates built from clinical guidelines — HEDIS measures for chronic care, NICE guidelines for mental health care plans, CMS Chronic Care Management (CCM) requirements for Medicare patients — and let practices customize those templates without losing the structured data layer underneath. When a physician starts a plan for a new diabetes patient, they shouldn't be starting from a blank page. They should be editing a pre-loaded evidence-based framework and documenting exceptions, not writing the whole thing from scratch."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Bidirectional EHR linkage, not copy-paste integration"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "The treatment plan is only useful if it reflects current patient data — and if updates to the plan propagate to the people who need to act on them. A platform that generates a care plan PDF and stores it as an attachment in your EHR is not integrated: it's just digital filing. Real integration means the plan pulls active diagnoses, current medications, and recent lab values automatically; that changes to the plan notify the relevant care team members; and that completed interventions — a filled prescription, a completed lab order, a kept appointment — update the plan's status without requiring manual entry. This bidirectional loop is where most standalone treatment plan tools break down."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Chronic Disease Management: Where Treatment Plans Do the Most Work"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Chronic disease patients are the highest-stakes use case for treatment plan software, and the one where most platforms fall furthest short. A patient managing diabetes, hypertension, and chronic kidney disease simultaneously has care needs that span primary care, nephrology, dietary counseling, pharmacy, and possibly home health — with a medication list that changes more frequently than the average clinic's systems can track. The treatment plan is supposed to hold that complexity together. When it doesn't, things slip."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "CMS Chronic Care Management requirements and what they mean for software"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Under CMS billing codes for Chronic Care Management (CPT 99490, 99491, 99487, 99489), practices can bill for non-face-to-face care management time for patients with two or more chronic conditions — but only if they maintain a comprehensive electronic care plan that is accessible to all treating providers. That plan must be updated at least annually and after any significant care event. The documentation requirements are specific: the plan must include a problem list, expected outcome goals, symptom management strategies, a medication reconciliation list, community resources, and scheduled follow-ups. Practices that can't generate and maintain a compliant electronic care plan are leaving CCM billing on the table — typically $40–$130 per patient per month for eligible patients."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Medication reconciliation as a built-in workflow, not a separate step"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Medication errors are the most common source of preventable harm in outpatient chronic care, and most of them happen at care transitions — when a patient is discharged, referred to a specialist, or seen by a covering provider who doesn't have access to the full medication history. A treatment plan that doesn't include live medication reconciliation tied to the actual dispensed medication record (not just what was prescribed) is missing the data that matters most. This is where tight integration between the care plan, the e-prescribing system, and the pharmacy fulfillment record creates a genuine safety advantage."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Platforms like "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " integrate the treatment plan directly with the ePrescription and pharmacy workflow — so the care plan always reflects what the patient is actually taking, not just what was ordered."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Multi-Provider Coordination: The Feature Most Platforms Claim and Few Deliver"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Care coordination sounds simple in theory: everyone on the care team can see the plan, knows their role, and gets notified when something changes. In practice, most treatment plan platforms make this harder than it needs to be. The specialist sees a printed summary that was accurate three weeks ago. The home health aide doesn't have access to the patient portal. The physical therapist's progress notes don't feed back into the primary care plan. Each provider works from their own fragment of the record, and nobody has the complete picture."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Role-based access and task assignment"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Effective multi-provider care plans require more than shared visibility — they require structured task ownership. Each intervention in the plan should have an assigned provider role, a due date, and a completion status. When a physician orders a follow-up HbA1c, the care plan should reflect that the lab order is pending, not just that \"monitoring\" is planned. When the nurse completes a medication education session, that intervention should close automatically in the care plan without requiring the physician to manually update it. Role-based task assignment turns the care plan from a static document into an operational tool."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Referral integration and specialist handoffs"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Referrals are where care plans most reliably break down. The primary care physician sends a referral, the patient sees the specialist two weeks later, the specialist generates their own assessment and plan, and neither document reflects the other. In the best-case scenario, someone sends a fax. In the worst-case scenario, the specialist prescribes something that conflicts with the primary care plan, and the patient's pharmacist catches it — if they're lucky. Treatment plan platforms that generate referral packets automatically from the active care plan, and that capture specialist consultation notes back into the master plan, reduce this risk meaningfully. It requires real interoperability — HL7 FHIR or direct EHR-to-EHR data exchange — not just a PDF export."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Patient-Facing Treatment Plans: What Adherence Actually Requires"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "The treatment plan isn't just for providers. The patient needs to understand it, remember it, and follow it — which is a very different design challenge than making it legible to a clinician. Most platforms generate a patient summary that amounts to a simplified printout: a list of medications, a few instructions, and a follow-up date. That's a start. It isn't enough."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Patient portal access and health literacy design"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "The 21st Century Cures Act mandates that patients have timely access to their health records, including care plans, through patient portals. But access and comprehension are different things. A treatment plan written in clinical language — \"titrate lisinopril to target systolic BP <130 mmHg; reassess renal function at 4 weeks\" — means nothing to most patients. Platforms that automatically generate plain-language patient versions of the care plan, organized by what the patient needs to do rather than by what the provider ordered, improve adherence measurably. The best platforms add medication reminders, appointment alerts, and symptom check-in prompts tied directly to the active plan."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Adherence monitoring without burdening the care team"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Monitoring whether a patient is following their treatment plan is one of the most time-intensive tasks in chronic care management — and one of the most important. Practices that rely on phone calls and manual chart reviews to track adherence can't do it at scale. Platforms that automate adherence signals — pharmacy refill data, appointment attendance records, patient-reported symptom scores, lab result trends — and surface alerts only when a patient's trajectory is falling outside expected parameters give care coordinators the leverage to intervene before a problem escalates. The goal isn't constant surveillance; it's intelligent exception flagging so that attention goes where it's actually needed."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "How Docito® Connects the Treatment Plan to the Full Care Workflow"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Most treatment plan platforms are built around the document. Docito® is built around the patient journey — and the treatment plan is the thread that connects every step of it."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "From first appointment to active care plan in one workflow"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "When a patient books an appointment through Docito®, their intake data — chief complaint, current medications, known conditions, insurance — flows directly into the visit record. After the consultation, the physician creates a treatment plan from within the same platform: selecting a specialty-appropriate template, setting structured goals, assigning interventions to the appropriate team members, and generating the patient-facing version automatically. No switching to a separate care planning module. No re-entering data that was already captured during intake. The plan is live from the moment the visit ends."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Lab, imaging, pharmacy, and follow-up — all closing back into the plan"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito®"
+          },
+          {
+            "type": "text",
+            "text": " connects to lab facilities, imaging centers, and pharmacies — so when a lab result comes back, it automatically updates the relevant care plan goal. When a prescription is filled and picked up, that fulfillment closes the corresponding medication intervention. When a follow-up appointment is kept, the care plan's timeline advances. The physician doesn't have to chase these updates across separate systems — the plan reflects reality in real time, and exceptions surface as alerts rather than slipping through the cracks."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Telehealth and in-person visits on the same plan"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "For practices managing chronic conditions, patients may alternate between telehealth check-ins and in-person visits depending on their needs and geography. A treatment plan that exists only in the in-person EHR and has to be summarized by memory or printout for a telehealth visit isn't functioning as a care coordination tool — it's functioning as a filing cabinet. Docito® treats telehealth and in-person visits identically within the care plan workflow, so the physician running a virtual check-in has exactly the same plan visibility, goal status, and intervention history as they would at the bedside."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "What to Look for Before Choosing Treatment Plan Software"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Not every practice needs the same depth of treatment plan functionality. A single-physician family practice running mostly acute care visits has different requirements than a multi-specialty group managing a population of chronic disease patients. Before evaluating vendors, be clear on what you actually need the platform to do."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Questions to ask every vendor"
+          }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Can the platform generate structured care plans from specialty-specific templates, or only free-text documents?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Does it support CMS Chronic Care Management documentation requirements for CCM billing?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "How does the care plan update when a lab result comes back, a prescription is filled, or an appointment is completed?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Can multiple providers — including specialists and non-physician team members — access and update the plan with appropriate role-based permissions?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "Is there a patient-facing version of the plan that patients can access and interact with through a portal or mobile app?"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "What interoperability standards does the platform support for sharing plans with external providers — HL7 FHIR, Direct messaging, or CCD export?"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 3,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "Red flags to watch for during demos"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "If the vendor's demo shows you a care plan as a PDF output, that's a documentation tool, not a care management platform. If updating the plan requires the physician to manually re-enter data that already exists in the EHR, that's a workflow tax that compounds with every patient. If the \"care team coordination\" feature turns out to be a shared note field, it isn't coordination — it's a comment box. And if the patient-facing functionality is described as \"coming soon\" or exists only as a printout option, treat that as a hard limitation for any chronic disease population."
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 2,
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "The Bottom Line on Digital Treatment Plan Software"
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "The gap between a treatment plan as a document and a treatment plan as an operational system is where most platforms live — and where most patients get lost. The clinical value of a care plan isn't in its creation; it's in what happens between the visit when the plan is written and the visit when outcomes are assessed. Lab results that update goals automatically, pharmacy fulfillment that closes medication interventions, specialist notes that flow back into the master plan, patient adherence signals that alert the care team before a problem escalates — this is what separates a care management platform from a sophisticated word processor."
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": "left"
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "For practices ready to move beyond treatment plans as documents, the starting point is choosing software that connects the plan to the full care workflow — not just the visit note. "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "Docito® is built to do exactly that"
+          },
+          {
+            "type": "text",
+            "text": " — from the first appointment through every follow-up, across every provider, on every visit type. Visit "
+          },
+          {
+            "type": "text",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://docito.app",
+                  "target": "_blank",
+                  "rel": "noopener noreferrer"
+                }
+              }
+            ],
+            "text": "docito.app"
+          },
+          {
+            "type": "text",
+            "text": " to see how the pieces connect."
+          }
+        ]
+      }
+    ]
+  }
+}
