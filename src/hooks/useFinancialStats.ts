@@ -120,7 +120,17 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
 
         supabase
           .from('profiles')
-          .select('user_id, full_name')
+          .select('user_id, full_name'),
+
+        supabase
+          .from('tooth_procedure_history')
+          .select('id, appointment_id, patient_id, procedure_name, cost, performed_at, status')
+          .eq('doctor_id', doctorId),
+
+        supabase
+          .from('payments')
+          .select('appointment_id, amount, status')
+          .eq('practice_id', doctorId)
       ]);
 
       const appointments = appointmentsData.data || [];
