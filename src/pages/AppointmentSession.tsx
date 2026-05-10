@@ -172,6 +172,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     doctorPatientId: appointment?.doctor_patient_id || null,
   });
   const finance = useAppointmentFinance(appointmentId, appointment?.patient_id || undefined);
+  const { recentReviews, stats: doctorPerfStats } = useDoctorPerformance();
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
