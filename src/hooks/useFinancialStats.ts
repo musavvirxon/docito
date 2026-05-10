@@ -128,9 +128,9 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           .eq('doctor_id', doctorId),
 
         supabase
-          .from('payments')
-          .select('appointment_id, amount, status')
-          .eq('practice_id', doctorId)
+          .from('appointment_procedures')
+          .select('id, appointment_id, estimated_cost, status, procedures(name, price, default_cost), appointments!inner(doctor_id, patient_id, appointment_date)')
+          .eq('appointments.doctor_id', doctorId)
       ]);
 
       const appointments = appointmentsData.data || [];
