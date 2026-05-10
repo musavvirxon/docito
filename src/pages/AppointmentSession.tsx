@@ -23,6 +23,7 @@ import {
   MapPin,
   Home,
   MessageSquare,
+  Star,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,6 +66,8 @@ import { DentalProcedurePicker } from '@/components/appointments/DentalProcedure
 import { ToothDiagnosisPicker } from '@/components/appointments/ToothDiagnosisPicker';
 import { PatientClinicalHistoryList } from '@/components/appointments/PatientClinicalHistoryList';
 import { AppointmentTreatmentPlansSection } from '@/components/appointments/AppointmentTreatmentPlansSection';
+import { useDoctorPerformance } from '@/hooks/useDoctorPerformance';
+import { PerformanceReviews } from '@/components/doctor/PerformanceReviews';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -169,6 +172,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     doctorPatientId: appointment?.doctor_patient_id || null,
   });
   const finance = useAppointmentFinance(appointmentId, appointment?.patient_id || undefined);
+  const { recentReviews, stats: doctorPerfStats } = useDoctorPerformance();
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
@@ -1143,6 +1147,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <FileText className="h-4 w-4" />
                     Notes
                   </TabsTrigger>
+
+                  <TabsTrigger value="reviews" className="gap-2">
+                    <Star className="h-4 w-4" />
+                    Reviews
+                  </TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="flex-1 pr-2">
@@ -1647,6 +1656,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         />
                       </CardContent>
                     </Card>
+                  </TabsContent>
+
+                  <TabsContent value="reviews" className="mt-0 space-y-4">
+                    <PerformanceReviews
+                      reviews={recentReviews || []}
+                      averageRating={doctorPerfStats?.averageRating || 0}
+                      totalReviews={doctorPerfStats?.totalReviews || 0}
+                    />
                   </TabsContent>
                 </ScrollArea>
               </Tabs>
