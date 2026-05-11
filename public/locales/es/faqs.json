@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "¿Qué métodos de pago aceptan?",
-      "answer": "Aceptamos todas las principales tarjetas de crédito (Visa, Mastercard, Amex, Discover), tarjetas de débito y tarjetas HSA/FSA. También trabajamos con proveedores de seguros y ofrecemos planes de pago para facturas grandes."
+      "answer": "Aceptamos todas las principales tarjetas de crédito (Visa, Mastercard, Amex, Discover), tarjetas de débito y HSA/FSA para los cargos por servicio. Después de cada cita se genera automáticamente un superbill detallado que puede enviar a su aseguradora para solicitar el reembolso."
     },
     "insurance": {
-      "question": "¿Mi seguro cubre las citas de Docito?",
-      "answer": "Muchos planes de seguro cubren telemedicina y citas en persona reservadas a través de Docito. Consulte con su proveedor de seguros o busque médicos que acepten su seguro en su perfil."
+      "question": "¿Puedo usar mi seguro con Docito?",
+      "answer": "Docito genera un superbill detallado después de cada cita que puede enviar a su aseguradora para solicitar el reembolso, según los beneficios fuera de red o de telemedicina de su plan."
     },
     "whenCharged": {
       "question": "¿Cuándo se me cobrará?",

@@ -81,7 +81,7 @@
         "recordsManagement": "Patient records management",
         "treatmentPlanning": "Treatment planning tools",
         "digitalPrescriptions": "Digital prescriptions",
-        "insuranceVerification": "Insurance information on file",
+        "insuranceVerification": "Insurer details captured for superbills",
         "paymentProcessing": "Billing documentation",
         "videoConsultations": "Video consultations",
         "labImagingOrders": "Lab & imaging orders",

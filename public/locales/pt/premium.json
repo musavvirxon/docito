@@ -202,15 +202,15 @@
   "workflows": {
     "badge": "Gerencie o cuidado em um sistema",
     "title": "Os fluxos essenciais que mantêm a saúde em movimento",
-    "description": "Agendamento, registros, pagamentos e insights—conectados em toda a jornada de cuidado.",
+    "description": "Agendamento, registos, documentação de faturamento e insights—ligados em todo o percurso de cuidado.",
     "items": {
       "payments": {
-        "title": "Pagamentos",
-        "description": "Cobre pagamentos, envie faturas e concilie—online ou na recepção.",
+        "title": "Documentação de faturamento",
+        "description": "Gere faturas, recibos e superbills—reconciliados com cada consulta.",
         "features": [
-          "Pagamentos por cartão e link",
-          "Faturas e recibos",
-          "Conciliação"
+          "Faturas detalhadas",
+          "Recibos e superbills",
+          "Reconciliação"
         ]
       },
       "scheduling": {
@@ -245,7 +245,7 @@
   "automation": {
     "badge": "Automação da unidade",
     "title": "Faça sua unidade funcionar melhor—sem aumentar equipe",
-    "description": "Docito conecta agendamento, registros, laboratórios, imagem, farmácias e pagamentos para que o trabalho avance automaticamente entre etapas. Menos caos administrativo. Cuidado mais previsível.",
+    "description": "O Docito conecta agendamento, registos, laboratórios, imagem, farmácias e documentação de faturamento para que o trabalho flua automaticamente entre etapas. Menos caos administrativo. Cuidados mais previsíveis.",
     "flow": {
       "intake": {
         "title": "Triagem automática",
@@ -268,8 +268,8 @@
         "description": "Coordene pedidos, agendamentos e laudos de RM/TC/raio X/ultrassom de ponta a ponta."
       },
       "billing": {
-        "title": "Cobrança e pagamentos conectados",
-        "description": "Faturas, recibos e links de pagamento—sincronizados com consultas e serviços."
+        "title": "Documentação de faturamento conectada",
+        "description": "Faturas, recibos e superbills—sincronizados com consultas e serviços."
       },
       "reminders": {
         "title": "Lembretes e follow-ups inteligentes",
@@ -337,31 +337,30 @@
     }
   },
   "insurance": {
-    "badge": "Integração com seguros",
-    "title": "Funciona com seguradoras no mundo todo",
-    "description": "Docito integra fluxos de seguro globalmente — para que verificação, cobrança e sinistros aconteçam dentro da plataforma.",
+    "badge": "Faturamento pronto para seguradoras",
+    "title": "Superbills criados para qualquer seguradora, em todo o mundo",
+    "description": "O Docito gera superbills detalhados após cada consulta—o paciente envia à seguradora em qualquer país e moeda.",
     "stepLabel": "Etapa {{step}}",
     "steps": {
       "selectProvider": {
-        "title": "Selecionar provedor",
-        "description": "O paciente seleciona o seguro durante o agendamento — a cobertura é verificada na hora."
+        "title": "Capturar dados da seguradora",
+        "description": "Os pacientes adicionam a sua seguradora ao agendar para que apareça no superbill."
       },
       "verification": {
-        "title": "Verificação instantânea",
-        "description": "Elegibilidade, coparticipação e franquia aparecem antes da consulta."
+        "title": "Detalhado após a consulta",
+        "description": "Procedimentos, códigos e valores são compilados automaticamente num superbill claro."
       },
       "directBilling": {
-        "title": "Cobrança direta",
-        "description": "Sinistros são enviados automaticamente — o paciente paga apenas sua parte."
+        "title": "Paciente envia à seguradora",
+        "description": "O superbill é entregue ao paciente, pronto para pedir reembolso."
       }
     },
     "benefits": [
-      "Checagens instantâneas de elegibilidade",
-      "Envio direto de sinistros",
-      "Sem papelada para pacientes",
-      "Suporte a pré-autorização",
-      "Compatibilidade com múltiplos pagadores",
-      "Status do sinistro em tempo real"
+      "Geração automática de superbills",
+      "Códigos de procedimento detalhados",
+      "Suporte multimoeda",
+      "PDFs prontos para o paciente",
+      "Funciona com qualquer seguradora"
     ]
   },
   "global": {

@@ -81,7 +81,7 @@
         "recordsManagement": "Gestão de prontuários",
         "treatmentPlanning": "Ferramentas de planejamento de tratamento",
         "digitalPrescriptions": "Prescrições digitais",
-        "insuranceVerification": "Verificação de seguro",
+        "insuranceVerification": "Dados da seguradora capturados para superbills",
         "paymentProcessing": "Documentação de cobrança",
         "videoConsultations": "Consultas por vídeo",
         "labImagingOrders": "Pedidos de laboratório e imagem",

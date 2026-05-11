@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
-      "answer": "Tüm büyük kredi kartlarını (Visa, Mastercard, Amex, Discover), banka kartlarını ve HSA/FSA kartlarını kabul ediyoruz. Ayrıca sigorta sağlayıcılarıyla çalışıyoruz ve büyük faturalar için ödeme planları sunuyoruz."
+      "answer": "Hizmet ücretleri için tüm büyük kredi kartlarını (Visa, Mastercard, Amex, Discover), banka kartlarını ve HSA/FSA kartlarını kabul ediyoruz. Her randevu sonrasında otomatik olarak ayrıntılı bir superbill oluşturulur; geri ödeme için sigortacınıza sunabilirsiniz."
     },
     "insurance": {
-      "question": "Sigortam Docito randevularını kapsıyor mu?",
-      "answer": "Birçok sigorta planı tele-tıp ve Docito üzerinden alınan yüz yüze randevuları kapsar. Sigorta sağlayıcınıza danışın veya profillerinde sigortanızı kabul eden doktorlara bakın."
+      "question": "Sigortamı Docito ile kullanabilir miyim?",
+      "answer": "Docito her randevu sonrasında ayrıntılı bir superbill oluşturur; planınızın ağ dışı veya teletıp avantajlarına göre sigortacınıza sunarak geri ödeme talep edebilirsiniz."
     },
     "whenCharged": {
       "question": "Ne zaman ücretlendirileceğim?",

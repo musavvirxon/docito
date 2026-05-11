@@ -202,14 +202,14 @@
   "workflows": {
     "badge": "用一个系统运行照护",
     "title": "让医疗运转的核心工作流",
-    "description": "预约、病历、支付与洞察——贯穿整个照护旅程。",
+    "description": "排程、记录、账单文档与分析，贯穿整个诊疗流程。",
     "items": {
       "payments": {
-        "title": "支付",
-        "description": "收款、开票与对账——线上或前台都可。",
+        "title": "账单文档",
+        "description": "生成与每次预约对账的发票、收据和Superbill。",
         "features": [
-          "卡支付与链接支付",
-          "发票与收据",
+          "明细发票",
+          "收据与Superbill",
           "对账"
         ]
       },
@@ -245,7 +245,7 @@
   "automation": {
     "badge": "机构自动化",
     "title": "让机构运转更顺畅——无需增加人手",
-    "description": "Docito 连接预约、病历、检验、影像、药房与支付，让工作在步骤之间自动流转。更少行政混乱，更可预测的照护。",
+    "description": "Docito将排程、记录、化验、影像、药房与账单文档连接起来，让工作在各步骤间自动流转。减少行政混乱，提供更可预测的诊疗。",
     "flow": {
       "intake": {
         "title": "自动入诊",
@@ -268,8 +268,8 @@
         "description": "协调 MRI/CT/X 光/超声 的医嘱、预约与报告端到端。"
       },
       "billing": {
-        "title": "计费与支付联动",
-        "description": "发票、收据与支付链接与预约和服务保持同步。"
+        "title": "账单文档已连通",
+        "description": "发票、收据与Superbill与预约及服务保持同步。"
       },
       "reminders": {
         "title": "智能提醒与随访",
@@ -337,31 +337,30 @@
     }
   },
   "insurance": {
-    "badge": "保险集成",
-    "title": "支持全球保险机构",
-    "description": "Docito 与全球保险工作流集成——核验、计费与理赔都在平台内完成。",
+    "badge": "可提交保险公司的账单",
+    "title": "为全球任何保险公司打造的Superbill",
+    "description": "Docito在每次就诊后生成明细Superbill，患者可在任何国家、任何币种下提交给保险公司。",
     "stepLabel": "第 {{step}} 步",
     "steps": {
       "selectProvider": {
-        "title": "选择保险",
-        "description": "患者预约时选择保险——系统即时核验覆盖。"
+        "title": "记录保险公司信息",
+        "description": "患者在预约时添加保险公司，信息会出现在Superbill上。"
       },
       "verification": {
-        "title": "即时核验",
-        "description": "就诊前展示资格、共付额与免赔额信息。"
+        "title": "就诊后明细化",
+        "description": "自动汇总诊疗项目、代码与费用，生成清晰的Superbill。"
       },
       "directBilling": {
-        "title": "直接计费",
-        "description": "理赔自动提交——患者仅支付自付部分。"
+        "title": "患者提交给保险公司",
+        "description": "Superbill交付给患者，可直接提交申请理赔。"
       }
     },
     "benefits": [
-      "即时资格核验",
-      "直接提交理赔",
-      "患者无需纸质材料",
-      "支持预授权",
-      "多支付方兼容",
-      "实时理赔状态"
+      "自动生成Superbill",
+      "明细化诊疗代码",
+      "多币种支持",
+      "面向患者的PDF",
+      "适配任何保险公司"
     ]
   },
   "global": {

@@ -181,12 +181,12 @@
         "description": "Secure messaging and handoffs across staff, providers, and facilities."
       },
       "insuranceCoverage": {
-        "title": "Insurance & Coverage",
-        "description": "Integrated coverage checks and billing support that reduces back-and-forth."
+        "title": "Insurer-ready superbills",
+        "description": "Itemized superbills generated after each visit—ready for patients to submit to their insurer."
       },
       "payments": {
-        "title": "Payments",
-        "description": "Collect payments, send invoices, and keep revenue tracking in one place."
+        "title": "Billing documentation",
+        "description": "Invoices, receipts, and superbills tracked alongside every appointment."
       },
       "automations": {
         "title": "Automations",
@@ -201,14 +201,14 @@
   "workflows": {
     "badge": "Run care in one system",
     "title": "The core workflows that keep healthcare moving",
-    "description": "Scheduling, records, payments, and insights—connected across your entire care journey.",
+    "description": "Scheduling, records, billing documentation, and insights—connected across your entire care journey.",
     "items": {
       "payments": {
-        "title": "Payments",
-        "description": "Collect payments, send invoices, and reconcile—online or at the front desk.",
+        "title": "Billing documentation",
+        "description": "Generate invoices, receipts, and superbills—reconciled with each appointment.",
         "features": [
-          "Card & link payments",
-          "Invoices & receipts",
+          "Itemized invoices",
+          "Receipts & superbills",
           "Reconciliation"
         ]
       },
@@ -244,7 +244,7 @@
   "automation": {
     "badge": "Facility automation",
     "title": "Make your facility run smoother—without adding staff",
-    "description": "Docito connects scheduling, records, labs, imaging, pharmacies, and payments so work moves automatically between steps. Less admin chaos. More predictable care.",
+    "description": "Docito connects scheduling, records, labs, imaging, pharmacies, and billing documentation so work moves automatically between steps. Less admin chaos. More predictable care.",
     "flow": {
       "intake": {
         "title": "Intake, automatically",
@@ -267,8 +267,8 @@
         "description": "Coordinate MRI/CT/X-ray/ultrasound orders, appointments, and reports end-to-end."
       },
       "billing": {
-        "title": "Billing & payments connected",
-        "description": "Invoices, receipts, and payment links—kept in sync with appointments and services."
+        "title": "Billing documentation connected",
+        "description": "Invoices, receipts, and superbills—kept in sync with appointments and services."
       },
       "reminders": {
         "title": "Smart reminders & follow-ups",
@@ -336,31 +336,30 @@
     }
   },
   "insurance": {
-    "badge": "Insurance Integration",
-    "title": "Works with insurance providers worldwide",
-    "description": "Docito integrates with insurance workflows globally — so verification, billing, and claims happen inside the platform.",
+    "badge": "Insurer-ready billing",
+    "title": "Superbills built for every insurer, worldwide",
+    "description": "Docito generates itemized superbills after every visit—patients submit them to their insurer in any country, in any currency.",
     "stepLabel": "Step {{step}}",
     "steps": {
       "selectProvider": {
-        "title": "Select provider",
-        "description": "Patient selects their insurance during booking — coverage is checked instantly."
+        "title": "Capture insurer details",
+        "description": "Patients add their insurer during booking so it appears on the superbill."
       },
       "verification": {
-        "title": "Instant verification",
-        "description": "Eligibility, copay, and deductible details are surfaced before the visit."
+        "title": "Itemized after the visit",
+        "description": "Procedures, codes, and charges are compiled into a clean superbill automatically."
       },
       "directBilling": {
-        "title": "Direct billing",
-        "description": "Claims are submitted automatically — patients only pay their share."
+        "title": "Patient submits to insurer",
+        "description": "The superbill is delivered to the patient, ready to submit for reimbursement."
       }
     },
     "benefits": [
-      "Instant eligibility checks",
-      "Direct claims submission",
-      "No paperwork for patients",
-      "Pre-authorization support",
-      "Multi-payer compatibility",
-      "Real-time claim status"
+      "Automatic superbill generation",
+      "Itemized procedure codes",
+      "Multi-currency support",
+      "Patient-ready PDFs",
+      "Works with any insurer"
     ]
   },
   "global": {

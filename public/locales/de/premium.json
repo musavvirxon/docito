@@ -202,15 +202,15 @@
   "workflows": {
     "badge": "Versorgung in einem System",
     "title": "Die Kern-Workflows, die das Gesundheitswesen bewegen",
-    "description": "Terminierung, Akten, Zahlungen und Insights—verbunden entlang der gesamten Versorgungsreise.",
+    "description": "Terminplanung, Akten, Abrechnungsdokumentation und Einblicke—verbunden über den gesamten Versorgungsweg.",
     "items": {
       "payments": {
-        "title": "Zahlungen",
-        "description": "Zahlungen einziehen, Rechnungen senden und abstimmen—online oder an der Rezeption.",
+        "title": "Abrechnungsdokumentation",
+        "description": "Erstellen Sie Rechnungen, Belege und Superbills—abgeglichen mit jedem Termin.",
         "features": [
-          "Karten- & Link-Zahlungen",
-          "Rechnungen & Belege",
-          "Abstimmung"
+          "Detaillierte Rechnungen",
+          "Belege & Superbills",
+          "Abgleich"
         ]
       },
       "scheduling": {
@@ -245,7 +245,7 @@
   "automation": {
     "badge": "Einrichtungsautomatisierung",
     "title": "Lass deine Einrichtung reibungsloser laufen—ohne mehr Personal",
-    "description": "Docito verbindet Terminierung, Akten, Labore, Bildgebung, Apotheken und Zahlungen, sodass Arbeit automatisch zwischen Schritten weiterläuft. Weniger Admin-Chaos. Planbarere Versorgung.",
+    "description": "Docito verbindet Terminplanung, Akten, Labore, Bildgebung, Apotheken und Abrechnungsdokumentation, sodass die Arbeit automatisch zwischen den Schritten fließt. Weniger Verwaltungschaos. Vorhersehbarere Versorgung.",
     "flow": {
       "intake": {
         "title": "Aufnahme, automatisch",
@@ -268,8 +268,8 @@
         "description": "MRT/CT/Röntgen/Ultraschall-Aufträge, Termine und Berichte end-to-end koordinieren."
       },
       "billing": {
-        "title": "Abrechnung & Zahlungen verbunden",
-        "description": "Rechnungen, Belege und Zahlungslinks—synchron mit Terminen und Leistungen."
+        "title": "Abrechnungsdokumentation verbunden",
+        "description": "Rechnungen, Belege und Superbills—synchron mit Terminen und Leistungen."
       },
       "reminders": {
         "title": "Intelligente Erinnerungen & Follow-ups",
@@ -337,31 +337,30 @@
     }
   },
   "insurance": {
-    "badge": "Versicherungsintegration",
-    "title": "Funktioniert mit Versicherern weltweit",
-    "description": "Docito integriert Versicherungs-Workflows global — damit Prüfung, Abrechnung und Claims in der Plattform stattfinden.",
+    "badge": "Versicherungsbereite Abrechnung",
+    "title": "Superbills für jeden Versicherer weltweit",
+    "description": "Docito erstellt detaillierte Superbills nach jedem Besuch—Patienten reichen sie in jedem Land und jeder Währung bei ihrem Versicherer ein.",
     "stepLabel": "Schritt {{step}}",
     "steps": {
       "selectProvider": {
-        "title": "Anbieter auswählen",
-        "description": "Patient:innen wählen ihre Versicherung bei der Buchung — Abdeckung wird sofort geprüft."
+        "title": "Versicherungsdaten erfassen",
+        "description": "Patienten geben ihren Versicherer bei der Buchung an, damit er auf dem Superbill erscheint."
       },
       "verification": {
-        "title": "Sofortige Prüfung",
-        "description": "Eligibility-, Zuzahlungs- und Selbstbehalt-Details erscheinen vor dem Besuch."
+        "title": "Nach dem Besuch detailliert",
+        "description": "Verfahren, Codes und Gebühren werden automatisch zu einem übersichtlichen Superbill zusammengestellt."
       },
       "directBilling": {
-        "title": "Direkte Abrechnung",
-        "description": "Claims werden automatisch eingereicht — Patient:innen zahlen nur ihren Anteil."
+        "title": "Patient reicht beim Versicherer ein",
+        "description": "Der Superbill wird dem Patienten übermittelt—bereit zur Erstattungseinreichung."
       }
     },
     "benefits": [
-      "Sofortige Eligibility-Prüfung",
-      "Direkte Claim-Einreichung",
-      "Kein Papierkram für Patient:innen",
-      "Unterstützung bei Vorabgenehmigungen",
-      "Kompatibel mit mehreren Zahlern",
-      "Claim-Status in Echtzeit"
+      "Automatische Superbill-Erstellung",
+      "Detaillierte Verfahrenscodes",
+      "Mehrwährungsunterstützung",
+      "Patientenfertige PDFs",
+      "Funktioniert mit jedem Versicherer"
     ]
   },
   "global": {

@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "Welche Zahlungsmethoden akzeptieren Sie?",
-      "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, Amex, Discover), Debitkarten und HSA/FSA-Karten. Wir arbeiten auch mit Versicherungsanbietern zusammen und bieten Zahlungspläne für größere Rechnungen an."
+      "answer": "Wir akzeptieren alle gängigen Kreditkarten (Visa, Mastercard, Amex, Discover), Debitkarten und HSA/FSA-Karten für Servicegebühren. Nach jedem Termin wird automatisch ein detaillierter Superbill erstellt, den Sie zur Erstattung bei Ihrem Versicherer einreichen können."
     },
     "insurance": {
-      "question": "Deckt meine Versicherung Docito-Termine ab?",
-      "answer": "Viele Versicherungspläne decken Telemedizin und persönliche Termine ab, die über Docito gebucht werden. Wenden Sie sich an Ihren Versicherungsanbieter oder suchen Sie nach Ärzten, die Ihre Versicherung in ihrem Profil akzeptieren."
+      "question": "Kann ich meine Versicherung mit Docito nutzen?",
+      "answer": "Docito erstellt nach jedem Termin einen detaillierten Superbill, den Sie zur Erstattung bei Ihrem Versicherer einreichen können—gemäß den Out-of-Network- oder Telemedizin-Leistungen Ihres Tarifs."
     },
     "whenCharged": {
       "question": "Wann wird mir Geld berechnet?",

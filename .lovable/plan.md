@@ -1,75 +1,80 @@
-## Goal
+# Final copy sweep: payments, insurance, coverage, billing
 
-Replace marketing/UI copy that promises **"automatic insurance claim submission"** or **"in-platform payment processing"** with three new positionings, in every language:
+The earlier pass missed several strings on the home page (PremiumHome → `premium.json`) plus a few other surfaces. This pass cleans them up everywhere they still render in the UI.
 
-| Old positioning | New positioning |
-|---|---|
-| "Automatic insurance claims" / "insurance claim submission" / "process insurance claims" | **Automatic superbill generation** — generated instantly after every appointment, ready for the patient to submit to their insurer |
-| "In-platform payments" / "pay through the platform" / "accept online payments" (when describing earnings, charges, transactions) | **Billing documentation** |
-| "In-platform payments" (when describing dashboard revenue, outstanding balances, payment history) | **Revenue tracking & analytics** |
+## Replacement vocabulary (recap)
 
-Tone stays professional and medical.
+- "Collect payments / send payment links / card & link payments / online payments" → **Billing documentation** (invoices, receipts, superbills) — patients pay their insurer or provider directly outside the platform.
+- "Insurance verification / instant eligibility / coverage checks / pre-authorization / direct claims submission / claims submitted automatically" → **Automatic superbill generation** — Docito generates an itemized superbill instantly after each appointment, ready for the patient to submit to their insurer.
+- "Insurance & coverage / Insurance Integration / Works with insurance providers" → **Superbill-ready billing** / **Insurer-ready superbills** (kept neutral and professional; no claim that Docito processes claims).
 
 ## Scope
 
-### In scope
-- All UI strings, labels, dashboard sections, onboarding text, marketing copy
-- All 11 language locale files (`en, es, de, pt, ru, tr, uz, ar, ja, ko, zh`) for the affected keys
-- Hardcoded English strings in components
+### 1. `public/locales/en/premium.json` (drives the home page)
 
-### Out of scope (intentionally untouched)
-- Patient-side **insurance information storage** (patients listing their insurer, providers listing accepted plans) — this is metadata, not a "we submit your claim" promise. Legal page (`legal.json`) already correctly disclaims this and is left as-is.
-- Educational blog posts in `src/content/blog/posts/**` that discuss claim submission as general industry knowledge (not as a Docito feature).
-- Database tables, RPC functions, edge functions — only UI copy changes.
-- Stripe Connect functionality where it exists for facility-paid subscriptions to Docito itself (this is platform billing of facilities, not patient↔provider payments).
+- `platformPillars.items.insuranceCoverage` → rename to **"Insurer-ready superbills"**, description: "Itemized superbills generated after each visit—ready for patients to submit to their insurer."
+- `platformPillars.items.payments` → **"Billing documentation"**, description: "Invoices, receipts, and superbills tracked alongside every appointment."
+- `workflows.description` → drop "payments"; use "Scheduling, records, billing documentation, and insights—connected across your entire care journey."
+- `workflows.items.payments` → **"Billing documentation"**, description: "Generate invoices, receipts, and superbills—reconciled with each appointment."
+  - features → `["Itemized invoices", "Receipts & superbills", "Reconciliation"]`
+- `automation.description` → replace "and payments" with "and billing documentation".
+- `automation.flow.billing` → title **"Billing documentation connected"**, description: "Invoices, receipts, and superbills—kept in sync with appointments and services."
+- `insurance.*` block → reframe as **"Superbill generation"**:
+  - `badge` → "Insurer-ready billing"
+  - `title` → "Superbills built for every insurer, worldwide"
+  - `description` → "Docito generates itemized superbills after every visit—patients submit them to their insurer in any country, in any currency."
+  - `steps.selectProvider` → "Capture insurer details" / "Patients add their insurer during booking so it appears on the superbill."
+  - `steps.verification` → "Itemized after the visit" / "Procedures, codes, and charges are compiled into a clean superbill automatically."
+  - `steps.directBilling` → "Patient submits to insurer" / "The superbill is delivered to the patient, ready to submit for reimbursement."
+  - `benefits` → `["Automatic superbill generation", "Itemized procedure codes", "Multi-currency support", "Patient-ready PDFs", "Works with any insurer"]`
+- `global.features.multiCurrency.description` → already says "Document billing"; keep.
+- Remove stray "payment links" phrasing in `automation.flow.billing` (handled above).
 
-## Files to update
+### 2. Other locales (es, de, pt, ru, tr, uz, ar, ja, ko, zh) — `premium.json`
 
-### 1. Hardcoded component copy
-- `src/pages/Doctors.tsx` (line 43) — replace "Accept payments securely…" feature card with **Billing documentation** copy.
-- `src/pages/Index.tsx`, `src/pages/PremiumHome.tsx`, `src/components/HeroSection.tsx`, `src/components/FeaturesSection.tsx`, `src/components/InsuranceSection.tsx` — sweep for any remaining hardcoded "insurance claim" / "in-platform payment" / "accept payments" marketing strings and rebrand.
-- `src/pages/AdminDashboard.tsx` (lines ~3899-4059) — rename the **"Insurance Claims"** admin tab to **"Billing Documentation"**; relabel "Submit Claim" → "Generate Superbill"; "No insurance claims yet" → "No superbills generated yet". The underlying data structure stays; only labels change.
-- `src/components/pharmacy/PharmacyInsuranceClaims.tsx` — rename header "Billing & Insurance Claims" → "Billing Documentation"; "Submit Claim" button → "Generate Superbill"; subtitle and column copy rebranded. Component file name kept to avoid churn; only visible strings change.
-- `src/components/insurance/AdminInsuranceApproval.tsx` — copy review (the underlying RPC `process_insurance_request` is admin tooling for *patient insurance records*, not claim submission, so it stays — only verify no misleading user-facing copy).
+Mirror the same key changes via a small Node script; English fallback used where translation gap is acceptable, then replace the few high-visibility strings with localized equivalents using the same vocabulary already established in the previous rebrand (Billing Documentation / Automatic Superbill Generation / Revenue Tracking & Analytics translations already exist in those locale files for other namespaces and will be reused).
 
-### 2. English locale keys to rewrite
-- `public/locales/en/features.json` → `billing.description`, `billing.benefit1`, `billing.benefit2`
-- `public/locales/en/practicePage.json` → `billingPayments.description`, `solution.bullets.paymentProcessing`
-- `public/locales/en/imagingPage.json` → `services.payments.*`, `howItWorks.steps.step5.description`
-- `public/locales/en/pharmacyPage.json` → `services.payments.*`, `howItWorks.steps.step5.description`
-- `public/locales/en/doctorPage.json` → `slowBilling.*`
-- `public/locales/en/premium.json` → `multiCurrency.description`
-- `public/locales/en/pharmacyAdminDashboard.json` → `billing.title`, `billing.subtitle`, `billing.metrics.*`
-- `public/locales/en/admin.json` → keys 465-495 (`insuranceClaims`, `submitClaim`, `newClaim`, `claimsTitle`, `claimSubmitted`, `noClaimsYet`, `claimsByStatus`, `claimsByInsurer`, `claimFieldsRequired`, etc.) become superbill / billing-documentation language. `acceptedInsurers` and `addInsurer*` (provider-side accepted plans metadata) stay.
+### 3. `public/locales/en/faqs.json`
 
-### 3. Mirror the same key changes in the 10 other locales
-For each updated EN key, write the translated equivalent in: `es, de, pt, ru, tr, uz, ar, ja, ko, zh`. Same JSON structure; values translated using the new positioning vocabulary.
+- `payment.answer` → remove "work with insurance providers"; rephrase as: "We accept major credit/debit cards and HSA/FSA cards for service charges. Itemized superbills are generated automatically so you can submit them to your insurer for reimbursement."
+- `insurance.question` → "Can I use my insurance with Docito?"
+- `insurance.answer` → "Docito generates an itemized superbill after every appointment that you can submit to your insurer for reimbursement, according to your plan's out-of-network or telemedicine benefits."
+- Mirror to all other locales.
 
-## Replacement vocabulary (per language)
+### 4. `public/locales/en/practicePage.json`
 
-| Lang | Superbill generation | Billing documentation | Revenue tracking & analytics |
-|---|---|---|---|
-| en | Automatic superbill generation | Billing documentation | Revenue tracking & analytics |
-| es | Generación automática de superfacturas | Documentación de facturación | Seguimiento de ingresos y analítica |
-| de | Automatische Superbill-Erstellung | Abrechnungsdokumentation | Umsatz-Tracking & Analytik |
-| pt | Geração automática de superbills | Documentação de cobrança | Monitorização de receitas e análise |
-| ru | Автоматическое создание суперсчетов | Документация по биллингу | Отслеживание доходов и аналитика |
-| tr | Otomatik superbill oluşturma | Faturalama dokümantasyonu | Gelir takibi ve analitik |
-| uz | Avtomatik superbill yaratish | Hisob-kitob hujjatlari | Daromadni kuzatish va analitika |
-| ar | إنشاء فواتير سوبر تلقائي | توثيق الفواتير | تتبع الإيرادات والتحليلات |
-| ja | スーパービル自動生成 | 請求ドキュメント | 収益トラッキングと分析 |
-| ko | 슈퍼빌 자동 생성 | 청구 문서화 | 수익 추적 및 분석 |
-| zh | 自动生成超级账单 | 账单文档 | 收入跟踪与分析 |
+- `solution.bullets.insuranceVerification` → "Insurer details captured for superbills"
+- (already updated `paymentProcessing` → "Billing documentation") — verify no stragglers.
+- Mirror to all locales.
 
-A short footnote sentence ("generated instantly after every appointment, ready for the patient to submit to their insurer") is added to the long-form descriptions where the current copy is descriptive (features.json, practicePage.json, imaging/pharmacy pages).
+### 5. `public/locales/en/doctorPage.json`
+
+- `pain.painPoints.slowBilling.description` (and any sibling keys still referencing manual claims/payment collection) → reframe around "manual invoicing and superbill paperwork".
+- Mirror to all locales.
+
+### 6. `src/components/home/TrustIndicators.tsx`
+
+- `"Insurance Supported"` / `"Works with major insurance providers"` → **"Superbill-Ready Billing"** / **"Itemized superbills generated for every visit, ready to submit to any insurer."**
+
+### 7. `src/components/InsuranceSection.tsx` (legacy hardcoded section)
+
+Quick check: confirm whether it's still mounted anywhere. If still rendered, rewrite headline/CTA:
+- Heading → "Superbills accepted by every major insurer"
+- Sub → "Add your insurer so it appears on your superbill"
+- CTA → "Add your insurer details"
+
+If it isn't mounted on any live route, leave it untouched (out of scope for a copy sweep) and note it in the closing message.
+
+### 8. Out of scope (intentionally untouched)
+
+- `accepts_insurance` boolean fields on `labs`/`pharmacies` data and the `"Insurance" / "No insurance"` chips in `TopLabs.tsx` / `NearbyPharmacies.tsx` — these reflect whether the facility accepts insurance for direct billing in their own systems, which is factual provider metadata, not a claim about Docito processing payments. Confirm with user before changing if desired.
+- Search filter input labelled "Insurance" in `SmartSearch.tsx` / `ProminentSearchBar.tsx` — this is a search facet for finding in-network providers; it does not imply Docito processes insurance.
+- `pharmacy.json`, `legal.json`, `dashboard.json` operational copy — already covered in earlier pass; spot-check only.
+- Patient-side stored insurance metadata, blog posts, DB tables, edge functions.
 
 ## Verification
 
-1. After edits, re-run `rg -ni "insurance claim|in[- ]platform payment|process.{0,15}insurance|pay through" src public/locales` and confirm zero remaining hits in UI/locale copy (blog posts excluded).
-2. Open Doctor landing page, Practice page, Imaging page, Pharmacy page, Admin → Billing tab, Pharmacy Admin → Billing tab in preview; spot-check the new copy renders and switching language to ES + AR shows the translated strings.
-3. Build runs clean.
-
-## Out-of-scope follow-ups (flagged, not done)
-
-- Renaming the file `PharmacyInsuranceClaims.tsx` and the route `AdminInsuranceManagement.tsx` for code-level consistency. These can be renamed in a second pass if desired; UI copy is what users see.
-- Removing the `process_insurance_request` admin RPC if you decide insurance-record approval is no longer a workflow you want.
+After edits:
+1. `rg -n -i "collect payment|payment link|claim|insurance verification|coverage check|direct billing|eligibility check" public/locales/ src/components/home src/pages/Index.tsx src/pages/PremiumHome.tsx` → must return no UI hits.
+2. Reload `/` in preview, scroll through every section (hero → platform pillars → workflows → automation → insurance → global → FAQ → footer) and confirm the new copy renders cleanly and the section formerly titled "Insurance & Coverage" now reads as superbill-focused.
+3. Spot-check one non-English locale (e.g. `es`) on the same page to confirm translations updated.

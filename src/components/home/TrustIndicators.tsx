@@ -74,8 +74,8 @@ const TrustIndicators = () => {
           <path d="M6 15h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
         </svg>
       ),
-      title: "Insurance Supported",
-      description: "Works with major insurance providers",
+      title: "Superbill-Ready Billing",
+      description: "Itemized superbills generated for every visit, ready to submit to any insurer",
       color: "from-primary/10 to-primary/5",
       borderColor: "border-primary/20",
     },

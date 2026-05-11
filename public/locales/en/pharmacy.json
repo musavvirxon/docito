@@ -2,7 +2,7 @@
   "seo": {
     "title": "Docito® Pharmacies — E-Prescriptions, Inventory, Refills, Delivery & Insurance Workflows",
     "description": "Docito® for Pharmacies unifies e-prescription intake, inventory and dispensing, refill automation, patient notifications, delivery coordination, and audit-ready compliance—securely connecting pharmacies with doctors, clinics, patients, labs, and insurance.",
-    "keywords": "pharmacy management system, e-prescription platform, prescription dispensing software, pharmacy inventory management, refill automation, medication delivery coordination, insurance verification, claims workflow, HIPAA compliant pharmacy software, multilingual healthcare SaaS"
+    "keywords": "pharmacy management system, e-prescription platform, prescription dispensing software, pharmacy inventory management, refill automation, medication delivery coordination, automatic superbill generation, billing documentation, HIPAA compliant pharmacy software, multilingual healthcare SaaS"
   },
 
   "nav": {
@@ -54,8 +54,8 @@
         "solution": "Delivery scheduling, tracking, and patient updates"
       },
       "insuranceFriction": {
-        "problem": "Insurance verification and claims friction",
-        "solution": "Coverage checks and claim-ready workflows"
+        "problem": "Manual superbill paperwork for insurer reimbursement",
+        "solution": "Automatic superbill generation with itemized procedure codes"
       },
       "complianceRisk": {
         "problem": "Compliance risk and unclear access control",
@@ -128,7 +128,7 @@
       "doctors": { "title": "Doctors", "description": "Receive e-prescriptions and clarifications with structured clinical context." },
       "clinics": { "title": "Clinics", "description": "Coordinate multi-provider workflows, follow-ups, and patient communications." },
       "patients": { "title": "Patients", "description": "Provide secure pickup/delivery updates and access to prescription-related files." },
-      "insurance": { "title": "Insurance", "description": "Support coverage verification and claim-ready workflows tied to each prescription." }
+      "insurance": { "title": "Superbill ready", "description": "Generate itemized superbills tied to each prescription so patients can submit them to their insurer." }
     }
   },
 
