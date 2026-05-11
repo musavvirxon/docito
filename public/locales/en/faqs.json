@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "What payment methods do you accept?",
-      "answer": "We accept all major credit cards (Visa, Mastercard, Amex, Discover), debit cards, and HSA/FSA cards. We also work with insurance providers and offer payment plans for larger bills."
+      "answer": "We accept all major credit cards (Visa, Mastercard, Amex, Discover), debit cards, and HSA/FSA cards for service charges. Itemized superbills are generated automatically after every appointment so you can submit them to your insurer for reimbursement."
     },
     "insurance": {
-      "question": "Does my insurance cover Docito appointments?",
-      "answer": "Many insurance plans cover telemedicine and in-person appointments booked through Docito. Check with your insurance provider or look for doctors who accept your insurance in their profile."
+      "question": "Can I use my insurance with Docito?",
+      "answer": "Docito generates an itemized superbill after every appointment that you can submit to your insurer for reimbursement, according to your plan's out-of-network or telemedicine benefits."
     },
     "whenCharged": {
       "question": "When will I be charged?",
