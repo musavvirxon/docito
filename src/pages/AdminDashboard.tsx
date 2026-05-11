@@ -3997,8 +3997,14 @@ const AdminDashboard = () => {
                   <div className="flex flex-col sm:flex-row gap-3 mb-4">
                     <Input placeholder="Search by patient or insurer…" value={claimSearch} onChange={e => setClaimSearch(e.target.value)} className="sm:max-w-xs" />
                     <div className="flex gap-1 flex-wrap">
-                      {['all', 'generated', 'reimbursed', 'pending', 'denied'].map(s => (
-                        <Button key={s} size="sm" variant={claimStatusFilter === s ? 'default' : 'outline'} onClick={() => setClaimStatusFilter(s)} className="capitalize">{s}</Button>
+                      {[
+                        { value: 'all', label: 'All' },
+                        { value: 'submitted', label: 'Generated' },
+                        { value: 'approved', label: 'Reimbursed' },
+                        { value: 'pending', label: 'Pending' },
+                        { value: 'rejected', label: 'Denied' },
+                      ].map(s => (
+                        <Button key={s.value} size="sm" variant={claimStatusFilter === s.value ? 'default' : 'outline'} onClick={() => setClaimStatusFilter(s.value)}>{s.label}</Button>
                       ))}
                     </div>
                   </div>
