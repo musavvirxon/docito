@@ -181,12 +181,12 @@
         "description": "Secure messaging and handoffs across staff, providers, and facilities."
       },
       "insuranceCoverage": {
-        "title": "Insurance & Coverage",
-        "description": "Integrated coverage checks and billing support that reduces back-and-forth."
+        "title": "Insurer-ready superbills",
+        "description": "Itemized superbills generated after each visit—ready for patients to submit to their insurer."
       },
       "payments": {
-        "title": "Payments",
-        "description": "Collect payments, send invoices, and keep revenue tracking in one place."
+        "title": "Billing documentation",
+        "description": "Invoices, receipts, and superbills tracked alongside every appointment."
       },
       "automations": {
         "title": "Automations",
@@ -201,14 +201,14 @@
   "workflows": {
     "badge": "Run care in one system",
     "title": "The core workflows that keep healthcare moving",
-    "description": "Scheduling, records, payments, and insights—connected across your entire care journey.",
+    "description": "Scheduling, records, billing documentation, and insights—connected across your entire care journey.",
     "items": {
       "payments": {
-        "title": "Payments",
-        "description": "Collect payments, send invoices, and reconcile—online or at the front desk.",
+        "title": "Billing documentation",
+        "description": "Generate invoices, receipts, and superbills—reconciled with each appointment.",
         "features": [
-          "Card & link payments",
-          "Invoices & receipts",
+          "Itemized invoices",
+          "Receipts & superbills",
           "Reconciliation"
         ]
       },
