@@ -295,7 +295,7 @@ export default function PharmacyInsuranceClaims({ pharmacyId }: Props) {
       setClaims(transformed);
     } catch (error: any) {
       console.error("Error fetching claims:", error);
-      toast.error(error?.message || "Failed to load insurance claims");
+      toast.error(error?.message || "Failed to load billing documentation");
       setClaims([]);
     } finally {
       setLoading(false);
@@ -465,10 +465,10 @@ export default function PharmacyInsuranceClaims({ pharmacyId }: Props) {
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <Shield className="h-6 w-6" />
-              Billing & Insurance Claims
+              Billing Documentation
             </h2>
             <p className="text-sm text-muted-foreground">
-              Claims proxy from pharmacy fulfillment orders with insurance/coplay amounts.
+              Itemized records from pharmacy fulfillment orders, including patient and insurer-of-record amounts.
             </p>
           </div>
 
@@ -763,10 +763,10 @@ export default function PharmacyInsuranceClaims({ pharmacyId }: Props) {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
-                  Claims Ledger
+                  Superbill Ledger
                 </CardTitle>
                 <CardDescription>
-                  Search and review claimable pharmacy orders (insurance claims proxy)
+                  Search and review superbills generated from pharmacy fulfillment orders
                 </CardDescription>
               </div>
 
@@ -866,7 +866,7 @@ export default function PharmacyInsuranceClaims({ pharmacyId }: Props) {
                             {["pending", "submitted"].includes(claim.status) && (
                               <Button size="sm" variant="outline" onClick={() => handleSubmitClaim(claim)}>
                                 <Send className="h-4 w-4 mr-1" />
-                                Submit
+                                Generate
                               </Button>
                             )}
                           </div>
@@ -1024,7 +1024,7 @@ export default function PharmacyInsuranceClaims({ pharmacyId }: Props) {
             {selectedClaim && ["pending", "submitted"].includes(selectedClaim.status) && (
               <Button onClick={() => handleSubmitClaim(selectedClaim)}>
                 <Send className="h-4 w-4 mr-1" />
-                Submit Claim
+                Generate Superbill
               </Button>
             )}
           </DialogFooter>
