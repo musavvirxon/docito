@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "Qanday to'lov usullarini qabul qilasiz?",
-      "answer": "Biz barcha asosiy kredit kartalarini (Visa, Mastercard, Amex, Discover), debet kartalarini va HSA/FSA kartalarini qabul qilamiz. Shuningdek, sug'urta provayderlari bilan ishlaymiz va katta hisob-fakturalar uchun to'lov rejalarini taklif qilamiz."
+      "answer": "Xizmat to‘lovlari uchun barcha asosiy kredit kartalari (Visa, Mastercard, Amex, Discover), debet kartalari va HSA/FSA kartalarini qabul qilamiz. Har bir uchrashuvdan so‘ng avtomatik tarzda tafsilotli superbill yaratiladi va uni qoplama uchun sug‘urtachiga yuborishingiz mumkin."
     },
     "insurance": {
-      "question": "Mening sug'urtam Docito uchrashuvlarini qoplaydimi?",
-      "answer": "Ko'pgina sug'urta rejalari telemeditsina va Docito orqali band qilingan shaxsiy uchrashuvlarni qoplaydi. Sug'urta provayder bilan tekshiring yoki profilida sug'urtangizni qabul qiluvchi shifokorlarni qidiring."
+      "question": "Sug‘urtamni Docito bilan ishlatishim mumkinmi?",
+      "answer": "Docito har bir uchrashuvdan so‘ng tafsilotli superbill yaratadi — uni rejangizning out-of-network yoki telemeditsina imtiyozlariga muvofiq sug‘urtachiga yuborib, qoplama olishingiz mumkin."
     },
     "whenCharged": {
       "question": "Qachon to'lov olinadi?",

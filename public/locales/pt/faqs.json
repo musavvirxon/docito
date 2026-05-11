@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "Quais métodos de pagamento vocês aceitam?",
-      "answer": "Aceitamos todos os principais cartões de crédito (Visa, Mastercard, Amex, Discover), cartões de débito e cartões HSA/FSA. Também trabalhamos com seguradoras e oferecemos planos de pagamento para contas maiores."
+      "answer": "Aceitamos todos os principais cartões de crédito (Visa, Mastercard, Amex, Discover), cartões de débito e HSA/FSA para encargos de serviço. Após cada consulta é gerado automaticamente um superbill detalhado para enviar à sua seguradora e pedir reembolso."
     },
     "insurance": {
-      "question": "Meu seguro cobre consultas no Docito?",
-      "answer": "Muitos planos de seguro cobrem telemedicina e consultas presenciais agendadas através do Docito. Verifique com sua seguradora ou procure médicos que aceitem seu seguro no perfil deles."
+      "question": "Posso usar o meu seguro com o Docito?",
+      "answer": "O Docito gera um superbill detalhado após cada consulta que pode enviar à sua seguradora para pedir reembolso, conforme os benefícios fora de rede ou de telemedicina do seu plano."
     },
     "whenCharged": {
       "question": "Quando serei cobrado?",
