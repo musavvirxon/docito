@@ -374,7 +374,7 @@
       },
       "multiCurrency": {
         "title": "Multi-currency",
-        "description": "Accept payments and display pricing in any local currency."
+        "description": "Document billing and display pricing in any local currency."
       },
       "anyTimezone": {
         "title": "Any timezone",

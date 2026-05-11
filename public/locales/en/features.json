@@ -58,10 +58,10 @@
       "benefit4": "Export options"
     },
     "billing": {
-      "title": "Billing & Payments",
-      "description": "Integrated payment processing with insurance claim management",
-      "benefit1": "Online payments",
-      "benefit2": "Insurance claims",
+      "title": "Billing Documentation",
+      "description": "Itemized billing records and automatic superbills, generated instantly after every appointment for patients to submit to their insurer",
+      "benefit1": "Automatic superbill generation",
+      "benefit2": "Revenue tracking & analytics",
       "benefit3": "Invoice generation",
       "benefit4": "Payment plans"
     },
