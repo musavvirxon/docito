@@ -3,9 +3,9 @@
     "badge": "Professional Medical Platform",
     "title1": "Complete Healthcare",
     "title2": "Management Solution",
-    "description": "Integrated payments, scheduling, records, and analytics for medical professionals",
+    "description": "Integrated billing documentation, scheduling, records, and analytics for medical professionals",
     "features": {
-      "payments": "Payment Processing",
+      "payments": "Billing Documentation",
       "scheduling": "Scheduling",
       "records": "Records",
       "analytics": "Analytics"
