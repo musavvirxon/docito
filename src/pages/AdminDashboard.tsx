@@ -3330,7 +3330,7 @@ const AdminDashboard = () => {
           { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
           { key: 'invoices', label: 'Invoices' },
           { key: 'transactions', label: t("adminBilling.recentTransactions").split(' ').slice(-1)[0] || 'Transactions' },
-          { key: 'insurance', label: 'Insurance' },
+          { key: 'insurance', label: 'Superbills' },
           { key: 'settings', label: 'Settings' },
         ];
 
