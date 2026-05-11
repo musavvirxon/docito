@@ -17,7 +17,7 @@ export default function InsuranceProviders() {
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium mb-6">
             <Shield className="w-4 h-4" />
-            {t("insurance.badge", "Insurance Integration")}
+            {t("insurance.badge", "Insurer-ready billing")}
           </div>
           <h2 className="text-4xl md:text-5xl font-extralight tracking-tight text-foreground mb-4">{t("insurance.title")}</h2>
           <p className="text-lg text-muted-foreground font-light max-w-2xl mx-auto">{t("insurance.description")}</p>
