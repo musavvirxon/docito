@@ -14,20 +14,17 @@
       "verifyDocuments": "Belge Doğrulama",
       "settings": "Ayarlar"
     },
-
     "header": {
       "title": "Eczane Paneli",
       "subtitle": "Supabase üzerinden çekilen reçete, karşılama, analiz ve faturalandırma verileri",
       "refresh": "Yenile"
     },
-
     "overview": {
       "prescriptionsToday": "Bugünkü Reçeteler",
       "pendingFulfillment": "Bekleyen İşlemler",
       "deliveriesInProgress": "Devam Eden Teslimatlar",
       "completedToday": "Bugün Tamamlananlar"
     },
-
     "prescriptions": {
       "title": "Gelen Reçete Kutusu",
       "subtitle": "Eczaneniz için yeni ve bekleyen reçeteler.",
@@ -49,7 +46,6 @@
       },
       "empty": "Reçete bulunamadı"
     },
-
     "manualPrescription": {
       "title": "Yeni Manuel Reçete",
       "patient": "Hasta (Ayaktan)",
@@ -84,12 +80,10 @@
         "create": "Reçete Oluştur"
       }
     },
-
     "fulfillment": {
       "title": "Hazırlama Kuyruğu",
       "subtitle": "Reçete karşılama siparişleri için uçtan uca işlem kuyruğu",
       "refresh": "Siparişleri Yenile",
-
       "stats": {
         "activeQueue": "Aktif Kuyruk",
         "pendingProcessingReady": "0 bekleyen • 0 hazırlanan • 0 hazır",
@@ -104,7 +98,6 @@
         "deliveryQueue": "Teslimat Kuyruğu",
         "completedOrders": "Tamamlanan Siparişler"
       },
-
       "charts": {
         "throughput": "İşlem Kapasitesi Trendi",
         "throughputDesc": "Gelen ve tamamlanan siparişler (son 14 aktif gün)",
@@ -116,7 +109,6 @@
         "noPickup": "Teslimat verisi yok.",
         "noPayment": "Ödeme verisi yok."
       },
-
       "table": {
         "title": "Kuyruktaki Siparişler",
         "search": "Sipariş no, durum, ilaç, reçete ile ara...",
@@ -140,11 +132,9 @@
         "footer": "Hazırlama kuyruğundaki 0 siparişten 0 tanesi gösteriliyor."
       }
     },
-
     "inventory": {
       "title": "Envanter Yönetimi",
       "subtitle": "Stok kontrolü, sağlık izleme ve eczane tedarik analizleri",
-
       "stats": {
         "skus": "Stok Birimleri (SKU)",
         "stockRisk": "Stok Riski",
@@ -156,7 +146,6 @@
         "controlled": "Kontrole Tabi Maddeler",
         "refrigerated": "Soğuk Zincir Ürünleri"
       },
-
       "charts": {
         "health": "Stok Sağlığı",
         "topValue": "Değere Göre En İyi Stoklar",
@@ -164,7 +153,6 @@
         "manufacturer": "Üretici Dağılımı",
         "empty": "Henüz envanter verisi yok."
       },
-
       "table": {
         "title": "Envanter Defteri",
         "search": "İlaç, kod, NDC, parti no ile ara...",
@@ -187,7 +175,6 @@
         "footer": "Envanter toplamları: 0 SKU, 0 eldeki birim, ₺0,00 tahmini satış değeri."
       }
     },
-
     "deliveries": {
       "title": "Teslimat Siparişleri",
       "search": "Sipariş no veya adres ile ara...",
@@ -202,11 +189,9 @@
       },
       "empty": "Teslimat siparişi bulunamadı"
     },
-
     "analytics": {
       "title": "Analiz Paneli",
       "subtitle": "Hazırlama, reçeteler, ödemeler ve envanter genelinde uçtan uca analizler",
-
       "metrics": {
         "revenue": "Gelir (30g)",
         "orders": "Karşılanan Siparişler",
@@ -217,7 +202,6 @@
         "inventoryRisk": "Envanter Riski",
         "inventoryValue": "Güncel Envanter Değeri"
       },
-
       "charts": {
         "trend": "Gelir ve Sipariş Trendi",
         "statusMix": "Sipariş Durum Dağılımı",
@@ -230,29 +214,25 @@
         "snapshot": "Hızlı Görünüm"
       }
     },
-
     "billing": {
-      "title": "Faturalandırma ve Sigorta Talepleri",
-      "subtitle": "Sigorta ve katılım payı tutarlarıyla eczane siparişlerinden gelen talep yönetimi.",
-
+      "title": "Faturalama dokümantasyonu",
+      "subtitle": "Eczane siparişlerinden oluşturulan kalemli superbill'ler — hasta ve referans sigortacı tutarları dahil.",
       "metrics": {
-        "claimable": "Talep Edilebilir Siparişler",
-        "pipeline": "İşlem Sırasında",
-        "approved": "Onaylanan / Ödenen",
-        "approvalRate": "Onay Oranı",
-        "totalClaimed": "Toplam Talep Edilen",
-        "copay": "Hasta Katılım Payı",
+        "claimable": "Uygun siparişler",
+        "pipeline": "İşlemde",
+        "approved": "Geri ödendi",
+        "approvalRate": "Geri ödeme oranı",
+        "totalClaimed": "Toplam belgelenen",
+        "copay": "Hasta payı",
         "outstanding": "Ödenmemiş Tutar",
-        "rejected": "Reddedilen Tutar"
+        "rejected": "Reddedilen tutar"
       },
-
       "charts": {
         "trend": "Talep Trendi",
         "statusMix": "Durum Dağılımı",
         "amounts": "Tutar Dağılımı",
         "largest": "En Yüksek Talepler"
       },
-
       "table": {
         "title": "Talep Defteri",
         "search": "Sipariş, talep, poliçe, durum ara...",

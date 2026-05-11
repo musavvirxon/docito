@@ -215,17 +215,17 @@
       }
     },
     "billing": {
-      "title": "Billing & Insurance Claims",
-      "subtitle": "Claims proxy from pharmacy fulfillment orders with insurance/coplay amounts.",
+      "title": "Billing Documentation",
+      "subtitle": "Itemized superbills generated from pharmacy fulfillment orders, including patient and insurer-of-record amounts.",
       "metrics": {
-        "claimable": "Claimable Orders",
-        "pipeline": "In Pipeline",
-        "approved": "Approved / Paid",
-        "approvalRate": "Approval Rate",
-        "totalClaimed": "Total Claimed",
-        "copay": "Patient Copay",
+        "claimable": "Eligible Orders",
+        "pipeline": "In Progress",
+        "approved": "Reimbursed",
+        "approvalRate": "Reimbursement Rate",
+        "totalClaimed": "Total Documented",
+        "copay": "Patient Portion",
         "outstanding": "Outstanding Amount",
-        "rejected": "Rejected Amount"
+        "rejected": "Denied Amount"
       },
       "charts": {
         "trend": "Claims Trend",

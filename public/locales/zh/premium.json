@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "多币种",
-        "description": "支持任意本地货币展示价格并收款。"
+        "description": "记录账单并以任何当地货币显示价格。"
       },
       "anyTimezone": {
         "title": "任意时区",
@@ -476,5 +476,10 @@
       "secondary": "探索功能"
     },
     "note": "14 天免费试用 • 无需信用卡 • 随时取消"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "记录账单并以任何当地货币显示价格。"
+    }
   }
 }

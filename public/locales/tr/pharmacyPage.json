@@ -31,8 +31,8 @@
           "description": "Hastalar için gerçek zamanlı sipariş takibiyle eve teslimatı etkinleştirin."
         },
         "payments": {
-          "title": "Ödemeler & Sigorta",
-          "description": "Nakit, kart, dijital cüzdan kabul edin ve sigorta taleplerini sorunsuz işleyin."
+          "title": "Faturalama dokümantasyonu",
+          "description": "Kalemli faturalar ve otomatik superbill'ler — hastaların sigortacılarına sunmaya hazır."
         },
         "profiles": {
           "title": "Hasta Profilleri",
@@ -70,8 +70,8 @@
         },
         "step5": {
           "number": "05",
-          "title": "Anında Ödeme Alın",
-          "description": "Online ödemeleri, sigorta taleplerini işleyin ve faturalar oluşturun."
+          "title": "Belgele ve faturalandır",
+          "description": "Her hizmetten sonra fatura ve otomatik superbill oluşturun, tam gelir takibi ve analitik ile."
         },
         "step6": {
           "number": "06",
@@ -120,6 +120,14 @@
       "subheadline": "Verimliliği artırın, geliri yükseltin ve Docito ile daha iyi hasta deneyimi sunun.",
       "primaryCta": "Eczanenizi Kaydedin",
       "secondaryCta": "Demo Talep Et"
+    },
+    "services": {
+      "items": {
+        "payments": {
+          "title": "Faturalama dokümantasyonu",
+          "description": "Kalemli faturalar ve otomatik superbill'ler — hastaların sigortacılarına sunmaya hazır."
+        }
+      }
     }
   }
 }

@@ -51,8 +51,8 @@
           "description": "Secure cloud storage for all records"
         },
         "slowBilling": {
-          "title": "Slow billing and insurance claims",
-          "description": "Streamlined billing and instant claims"
+          "title": "Slow billing and manual paperwork",
+          "description": "Automatic superbill generation after every appointment, ready for the patient to submit to their insurer"
         }
       }
     },

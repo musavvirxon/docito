@@ -58,10 +58,10 @@
       "benefit4": "Opciones de exportación"
     },
     "billing": {
-      "title": "Facturación y Pagos",
-      "description": "Procesamiento de pagos integrado con gestión de reclamaciones de seguros",
-      "benefit1": "Pagos en línea",
-      "benefit2": "Reclamaciones de seguros",
+      "title": "Documentación de facturación",
+      "description": "Registros de facturación detallados y superfacturas automáticas, generadas tras cada cita para que el paciente las presente a su aseguradora",
+      "benefit1": "Generación automática de superfacturas",
+      "benefit2": "Seguimiento de ingresos y analítica",
       "benefit3": "Generación de facturas",
       "benefit4": "Planes de pago"
     },
@@ -109,5 +109,13 @@
     "subtitle": "Únete a miles de profesionales de la salud que usan Docito para brindar una mejor atención al paciente",
     "startTrial": "Comenzar Prueba Gratuita",
     "scheduleDemo": "Programar Demo"
+  },
+  "features": {
+    "billing": {
+      "title": "Documentación de facturación",
+      "description": "Registros de facturación detallados y superfacturas automáticas, generadas tras cada cita para que el paciente las presente a su aseguradora",
+      "benefit1": "Generación automática de superfacturas",
+      "benefit2": "Seguimiento de ingresos y analítica"
+    }
   }
 }

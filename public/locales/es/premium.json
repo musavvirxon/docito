@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "Multimoneda",
-        "description": "Acepta pagos y muestra precios en cualquier moneda local."
+        "description": "Documente la facturación y muestre precios en cualquier moneda local."
       },
       "anyTimezone": {
         "title": "Cualquier zona horaria",
@@ -476,5 +476,10 @@
       "secondary": "Explorar funciones"
     },
     "note": "Prueba gratis 14 días • Sin tarjeta • Cancela cuando quieras"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Documente la facturación y muestre precios en cualquier moneda local."
+    }
   }
 }

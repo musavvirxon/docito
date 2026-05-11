@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "Multimoeda",
-        "description": "Aceite pagamentos e exiba preços em qualquer moeda local."
+        "description": "Documente a faturação e exiba preços em qualquer moeda local."
       },
       "anyTimezone": {
         "title": "Qualquer fuso",
@@ -476,5 +476,10 @@
       "secondary": "Explorar recursos"
     },
     "note": "Teste grátis de 14 dias • Sem cartão • Cancele a qualquer momento"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Documente a faturação e exiba preços em qualquer moeda local."
+    }
   }
 }

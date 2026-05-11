@@ -58,8 +58,8 @@
           "description": "AI 辅助生成病历记录、治疗方案与处方"
         },
         "billingPayments": {
-          "title": "计费与支付",
-          "description": "自动开票、催收与保险理赔"
+          "title": "账单文档",
+          "description": "自动生成超级账单、明细记录与收入跟踪及分析"
         },
         "analyticsReports": {
           "title": "分析与报表",
@@ -82,7 +82,7 @@
         "treatmentPlanning": "治疗计划工具",
         "digitalPrescriptions": "电子处方",
         "insuranceVerification": "保险验证",
-        "paymentProcessing": "支付处理",
+        "paymentProcessing": "账单文档",
         "videoConsultations": "视频问诊",
         "labImagingOrders": "检验与影像申请",
         "staffScheduling": "员工排班",
@@ -122,6 +122,14 @@
       "primaryCta": "开始免费试用",
       "secondaryCta": "联系销售",
       "badge": "14 天免费试用 • 无需信用卡 • 全功能访问"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "账单文档",
+          "description": "自动生成超级账单、明细记录与收入跟踪及分析"
+        }
+      }
     }
   }
 }

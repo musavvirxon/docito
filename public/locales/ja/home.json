@@ -3,9 +3,9 @@
     "badge": "プロフェッショナル医療プラットフォーム",
     "title1": "統合ヘルスケア",
     "title2": "管理ソリューション",
-    "description": "決済、予約、記録、分析を安全に統合。医療プロフェッショナルのためのワンプラットフォーム",
+    "description": "医療プロフェッショナルのための統合された請求ドキュメント・予約・記録・分析",
     "features": {
-      "payments": "決済処理",
+      "payments": "請求ドキュメント",
       "scheduling": "予約管理",
       "records": "記録管理",
       "analytics": "分析"
@@ -29,8 +29,8 @@
     "title": "プロ向けツール",
     "subtitle": "現代医療のために",
     "paymentProcessing": {
-      "title": "決済処理",
-      "description": "多通貨対応の安全な決済"
+      "title": "請求ドキュメント",
+      "description": "明細付き請求記録と任意の現地通貨でのスーパービル自動生成"
     },
     "schedulingManagement": {
       "title": "予約・スケジュール管理",
@@ -128,10 +128,22 @@
     "title": "プラットフォーム機能",
     "subtitle": "4ステップで予約",
     "steps": {
-      "search": { "title": "検索", "description": "診療科と場所で探す" },
-      "review": { "title": "比較", "description": "資格と検証済みレビューを確認" },
-      "book": { "title": "予約", "description": "オンラインで即時予約" },
-      "care": { "title": "受診", "description": "専門的な医療サービスを受ける" }
+      "search": {
+        "title": "検索",
+        "description": "診療科と場所で探す"
+      },
+      "review": {
+        "title": "比較",
+        "description": "資格と検証済みレビューを確認"
+      },
+      "book": {
+        "title": "予約",
+        "description": "オンラインで即時予約"
+      },
+      "care": {
+        "title": "受診",
+        "description": "専門的な医療サービスを受ける"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "患者管理インターフェースを表示するダッシュボードプレビュー" },
-    "appointments": { "altText": "アニメーション付き日付のカレンダーイラスト" },
-    "prescriptions": { "altText": "デジタル処方箋フォームを入力している様子" },
-    "files": { "altText": "ファイルが安全なフォルダに整理される様子" },
-    "notes": { "altText": "臨床ノートを書いている様子" },
-    "dashboard": { "altText": "チャートと指標を備えたインタラクティブダッシュボード" },
-    "collaboration": { "altText": "チームが患者ファイルで協働している様子" },
-    "mobile": { "altText": "モバイルアプリUIのデモ" },
-    "success": { "altText": "成功を祝うアニメーション" },
-    "security": { "altText": "データを保護するセキュリティシールド" }
+    "hero": {
+      "altText": "患者管理インターフェースを表示するダッシュボードプレビュー"
+    },
+    "appointments": {
+      "altText": "アニメーション付き日付のカレンダーイラスト"
+    },
+    "prescriptions": {
+      "altText": "デジタル処方箋フォームを入力している様子"
+    },
+    "files": {
+      "altText": "ファイルが安全なフォルダに整理される様子"
+    },
+    "notes": {
+      "altText": "臨床ノートを書いている様子"
+    },
+    "dashboard": {
+      "altText": "チャートと指標を備えたインタラクティブダッシュボード"
+    },
+    "collaboration": {
+      "altText": "チームが患者ファイルで協働している様子"
+    },
+    "mobile": {
+      "altText": "モバイルアプリUIのデモ"
+    },
+    "success": {
+      "altText": "成功を祝うアニメーション"
+    },
+    "security": {
+      "altText": "データを保護するセキュリティシールド"
+    }
   },
   "seo": {
     "title": "Docito® — 統合ヘルスケア管理・予約プラットフォーム",

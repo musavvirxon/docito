@@ -51,8 +51,8 @@
           "description": "Barcha yozuvlar uchun xavfsiz bulutli saqlash"
         },
         "slowBilling": {
-          "title": "Sekin billing va sug‘urta da’volari",
-          "description": "Soddalashtirilgan billing va tezkor da’volar"
+          "title": "Sekin hisob-kitob va qo'lda hujjatlashtirish",
+          "description": "Har bir qabuldan so'ng avtomatik superbill yaratish — bemor sug'urtachiga taqdim etishi uchun tayyor"
         }
       }
     },

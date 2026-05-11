@@ -3330,7 +3330,7 @@ const AdminDashboard = () => {
           { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
           { key: 'invoices', label: 'Invoices' },
           { key: 'transactions', label: t("adminBilling.recentTransactions").split(' ').slice(-1)[0] || 'Transactions' },
-          { key: 'insurance', label: 'Insurance' },
+          { key: 'insurance', label: 'Superbills' },
           { key: 'settings', label: 'Settings' },
         ];
 
@@ -3908,9 +3908,9 @@ const AdminDashboard = () => {
                 <>
                   {/* Header */}
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Insurance Claims</h3>
+                    <h3 className="text-lg font-semibold">Billing Documentation</h3>
                     <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => setAddClaimOpen(true))}>
-                      <Plus className="h-4 w-4 mr-2" /> Submit Claim
+                      <Plus className="h-4 w-4 mr-2" /> Generate Superbill
                     </Button>
                   </div>
 
@@ -3919,7 +3919,7 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl mb-4 border-primary/30">
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-base">New Claim</CardTitle>
+                          <CardTitle className="text-base">New Superbill</CardTitle>
                           <Button variant="ghost" size="icon" onClick={() => setAddClaimOpen(false)}><X className="h-4 w-4" /></Button>
                         </div>
                       </CardHeader>
@@ -3933,7 +3933,7 @@ const AdminDashboard = () => {
                             </datalist>
                           </div>
                           <div>
-                            <label className="text-sm font-medium text-muted-foreground">Insurance Provider *</label>
+                            <label className="text-sm font-medium text-muted-foreground">Insurer (patient reference) *</label>
                             <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={claimForm.insurer} onChange={e => setClaimForm(p => ({ ...p, insurer: e.target.value }))}>
                               <option value="">Select insurer…</option>
                               {insurers.map(ins => <option key={ins} value={ins}>{ins}</option>)}
@@ -3948,11 +3948,11 @@ const AdminDashboard = () => {
                             </select>
                           </div>
                           <div>
-                            <label className="text-sm font-medium text-muted-foreground">Claim Amount *</label>
+                            <label className="text-sm font-medium text-muted-foreground">Superbill Amount *</label>
                             <Input type="number" value={claimForm.amount} onChange={e => setClaimForm(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" />
                           </div>
                           <div>
-                            <label className="text-sm font-medium text-muted-foreground">Submitted Date</label>
+                            <label className="text-sm font-medium text-muted-foreground">Issued Date</label>
                             <Input type="date" value={claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd')} onChange={e => setClaimForm(p => ({ ...p, submitted_date: e.target.value }))} />
                           </div>
                         </div>
@@ -3967,8 +3967,8 @@ const AdminDashboard = () => {
                           await persistInsurance({ claims: next });
                           setClaimForm({ patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '' });
                           setAddClaimOpen(false);
-                          toast.success('Claim submitted');
-                        })}>Submit Claim</Button>
+                          toast.success('Superbill generated');
+                        })}>Generate Superbill</Button>
                       </CardContent>
                     </Card>
                   )}
@@ -3976,11 +3976,11 @@ const AdminDashboard = () => {
                   {/* KPI cards */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Submitted</p>
+                      <p className="text-sm text-muted-foreground">Generated</p>
                       <p className="text-xl font-bold">{claims.length}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Approved</p>
+                      <p className="text-sm text-muted-foreground">Reimbursed</p>
                       <p className="text-xl font-bold text-green-600">{statusCounts.approved}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
@@ -3988,7 +3988,7 @@ const AdminDashboard = () => {
                       <p className="text-xl font-bold text-yellow-600">{statusCounts.pending}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Rejected</p>
+                      <p className="text-sm text-muted-foreground">Denied</p>
                       <p className="text-xl font-bold text-red-600">{statusCounts.rejected}</p>
                     </CardContent></Card>
                   </div>
@@ -3997,8 +3997,14 @@ const AdminDashboard = () => {
                   <div className="flex flex-col sm:flex-row gap-3 mb-4">
                     <Input placeholder="Search by patient or insurer…" value={claimSearch} onChange={e => setClaimSearch(e.target.value)} className="sm:max-w-xs" />
                     <div className="flex gap-1 flex-wrap">
-                      {['all', 'submitted', 'approved', 'pending', 'rejected'].map(s => (
-                        <Button key={s} size="sm" variant={claimStatusFilter === s ? 'default' : 'outline'} onClick={() => setClaimStatusFilter(s)} className="capitalize">{s}</Button>
+                      {[
+                        { value: 'all', label: 'All' },
+                        { value: 'submitted', label: 'Generated' },
+                        { value: 'approved', label: 'Reimbursed' },
+                        { value: 'pending', label: 'Pending' },
+                        { value: 'rejected', label: 'Denied' },
+                      ].map(s => (
+                        <Button key={s.value} size="sm" variant={claimStatusFilter === s.value ? 'default' : 'outline'} onClick={() => setClaimStatusFilter(s.value)}>{s.label}</Button>
                       ))}
                     </div>
                   </div>
@@ -4007,7 +4013,7 @@ const AdminDashboard = () => {
                   <Card className="rounded-xl mb-6">
                     <CardHeader className="pb-2">
                       <div className="flex items-center gap-2">
-                        <CardTitle className="text-base">Claims</CardTitle>
+                        <CardTitle className="text-base">Superbills</CardTitle>
                         <Badge variant="secondary">{filteredClaims.length}</Badge>
                       </div>
                     </CardHeader>
@@ -4021,7 +4027,7 @@ const AdminDashboard = () => {
                                 <th className="pb-2 font-medium text-muted-foreground">Insurer</th>
                                 <th className="pb-2 font-medium text-muted-foreground">Service</th>
                                 <th className="pb-2 font-medium text-muted-foreground">Amount</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Submitted</th>
+                                <th className="pb-2 font-medium text-muted-foreground">Issued</th>
                                 <th className="pb-2 font-medium text-muted-foreground">Status</th>
                                 <th className="pb-2 font-medium text-muted-foreground">Actions</th>
                               </tr>
@@ -4055,8 +4061,8 @@ const AdminDashboard = () => {
                       ) : (
                         <div className="text-center py-8 text-muted-foreground">
                           <AlertCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p className="font-medium">No insurance claims yet.</p>
-                          <Button variant="outline" size="sm" className="mt-3" disabled={!allowModals} onClick={() => guard(() => setAddClaimOpen(true))}>Submit Claim</Button>
+                          <p className="font-medium">No superbills generated yet.</p>
+                          <Button variant="outline" size="sm" className="mt-3" disabled={!allowModals} onClick={() => guard(() => setAddClaimOpen(true))}>Generate Superbill</Button>
                         </div>
                       )}
                     </CardContent>
@@ -4065,7 +4071,7 @@ const AdminDashboard = () => {
                   {/* Analytics: Claims by Status + Claims by Insurer */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle className="text-base">Claims by Status</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">Superbills by Status</CardTitle></CardHeader>
                       <CardContent>
                         {claims.length > 0 ? (
                           <div className="space-y-3">
@@ -6098,7 +6104,7 @@ const AdminDashboard = () => {
                   <Card>
                     <CardHeader>
                       <CardTitle>Payment Gateways</CardTitle>
-                      <p className="text-sm text-muted-foreground">Connect a payment provider to accept online payments.</p>
+                      <p className="text-sm text-muted-foreground">Optional gateway connections for transaction records and revenue tracking. Patients pay providers directly.</p>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {[

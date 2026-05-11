@@ -14,20 +14,17 @@
       "verifyDocuments": "Hujjatlarni tasdiqlash",
       "settings": "Sozlamalar"
     },
-
     "header": {
       "title": "Dorixona paneli",
       "subtitle": "Supabase'dan olingan retseptlar, bajarilish, tahlil va hisob-kitoblar",
       "refresh": "Yangilash"
     },
-
     "overview": {
       "prescriptionsToday": "Bugungi retseptlar",
       "pendingFulfillment": "Kutilayotgan bajarilish",
       "deliveriesInProgress": "Jarayondagi yetkazmalar",
       "completedToday": "Bugun yakunlangan"
     },
-
     "prescriptions": {
       "title": "Retseptlar qutisi",
       "subtitle": "Dorixonangiz uchun yangi va kutilayotgan retseptlar.",
@@ -49,7 +46,6 @@
       },
       "empty": "Retseptlar topilmadi"
     },
-
     "manualPrescription": {
       "title": "Yangi qo'lda kiritilgan retsept",
       "patient": "Bemor (Kelgan)",
@@ -84,12 +80,10 @@
         "create": "Retsept yaratish"
       }
     },
-
     "fulfillment": {
       "title": "Bajarilish navbati",
       "subtitle": "Retseptlarni bajarish buyurtmalari uchun to'liq ishlov berish navbati",
       "refresh": "Buyurtmalarni yangilash",
-
       "stats": {
         "activeQueue": "Faol navbat",
         "pendingProcessingReady": "0 kutilmoqda • 0 jarayonda • 0 tayyor",
@@ -104,7 +98,6 @@
         "deliveryQueue": "Yetkazib berish navbati",
         "completedOrders": "Yakunlangan buyurtmalar"
       },
-
       "charts": {
         "throughput": "Navbat o'tkazuvchanlik tendensiyasi",
         "throughputDesc": "Kiruvchi va yakunlangan buyurtmalar (oxirgi 14 kunlik faoliyat)",
@@ -116,7 +109,6 @@
         "noPickup": "Olish haqida ma'lumot yo'q.",
         "noPayment": "To'lov haqida ma'lumot yo'q."
       },
-
       "table": {
         "title": "Navbatdagi buyurtmalar",
         "search": "Buyurtma #, holat, dori, retsept bo'yicha qidirish...",
@@ -140,11 +132,9 @@
         "footer": "Bajarilish navbatida 0 tadan 0 ta buyurtma ko'rsatilmoqda."
       }
     },
-
     "inventory": {
       "title": "Omborni boshqarish",
       "subtitle": "Zaxiralarni nazorat qilish, holat monitoringi va dorixona ta'minoti tahlili",
-
       "stats": {
         "skus": "SKU (tovarlar)",
         "stockRisk": "Zaxira xavfi",
@@ -156,7 +146,6 @@
         "controlled": "Nazorat qilinadigan dori vositalari",
         "refrigerated": "Muzlatkichdagi mahsulotlar"
       },
-
       "charts": {
         "health": "Zaxira holati",
         "topValue": "Chakana qiymati bo'yicha top mahsulotlar",
@@ -164,7 +153,6 @@
         "manufacturer": "Ishlab chiqaruvchilar qamrovi",
         "empty": "Hozircha inventar ma'lumotlari yo'q."
       },
-
       "table": {
         "title": "Inventar daftari",
         "search": "Dori, kod, NDC, partiya orqali qidirish...",
@@ -187,7 +175,6 @@
         "footer": "Jami zaxira: 0 SKU, 0 dona mavjud, taxminiy chakana qiymati $0.00."
       }
     },
-
     "deliveries": {
       "title": "Yetkazib berish buyurtmalari",
       "search": "Buyurtma # yoki manzil bo'yicha qidirish...",
@@ -202,11 +189,9 @@
       },
       "empty": "Yetkazib berish buyurtmalari topilmadi"
     },
-
     "analytics": {
       "title": "Tahlil paneli",
       "subtitle": "Bajarilish, retseptlar, to'lovlar va inventar bo'yicha to'liq dorixona tahlili",
-
       "metrics": {
         "revenue": "Tushum (30 kun)",
         "orders": "Bajarilgan buyurtmalar",
@@ -217,7 +202,6 @@
         "inventoryRisk": "Zaxira xavfi",
         "inventoryValue": "Joriy zaxira qiymati"
       },
-
       "charts": {
         "trend": "Tushum va buyurtmalar tendensiyasi",
         "statusMix": "Bajarilish holati tarkibi",
@@ -230,29 +214,25 @@
         "snapshot": "Tezkor ko'rinish"
       }
     },
-
     "billing": {
-      "title": "Hisob-kitob va sug'urta da'volari",
-      "subtitle": "Dorixona buyurtmalaridan sug'urta/to'lov summalari bilan olingan da'volar.",
-
+      "title": "Hisob-kitob hujjatlari",
+      "subtitle": "Dorixona buyurtmalaridan yaratilgan batafsil superbill'lar — bemor va sug'urtachi-mos summalari bilan.",
       "metrics": {
-        "claimable": "Talab qilinadigan buyurtmalar",
+        "claimable": "Mos buyurtmalar",
         "pipeline": "Jarayonda",
-        "approved": "Tasdiqlangan / To'langan",
-        "approvalRate": "Tasdiqlash ko'rsatkichi",
-        "totalClaimed": "Jami talab qilingan",
-        "copay": "Bemor to'lovi",
+        "approved": "Qoplangan",
+        "approvalRate": "Qoplash darajasi",
+        "totalClaimed": "Jami hujjatlashtirilgan",
+        "copay": "Bemor ulushi",
         "outstanding": "Qolgan qarz",
         "rejected": "Rad etilgan summa"
       },
-
       "charts": {
         "trend": "Da'volar tendensiyasi",
         "statusMix": "Holatlar tarkibi",
         "amounts": "Summalar taqsimoti",
         "largest": "Eng yirik da'volar"
       },
-
       "table": {
         "title": "Da'volar daftari",
         "search": "Buyurtma, da'vo, sug'urta, holat bo'yicha qidirish...",

@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "多通貨",
-        "description": "あらゆる現地通貨で価格表示と決済が可能。"
+        "description": "請求を記録し、任意の現地通貨で価格を表示できます。"
       },
       "anyTimezone": {
         "title": "あらゆるタイムゾーン",
@@ -476,5 +476,10 @@
       "secondary": "機能を見る"
     },
     "note": "14日間無料 • クレジットカード不要 • いつでも解約"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "請求を記録し、任意の現地通貨で価格を表示できます。"
+    }
   }
 }

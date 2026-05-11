@@ -31,8 +31,8 @@
           "description": "支持送货上门，并为患者提供实时订单追踪。"
         },
         "payments": {
-          "title": "支付与保险",
-          "description": "支持现金、银行卡、数字钱包，并可无缝处理保险理赔。"
+          "title": "账单文档",
+          "description": "自动生成的明细账单和超级账单，方便患者直接提交给保险公司。"
         },
         "profiles": {
           "title": "患者档案",
@@ -70,8 +70,8 @@
         },
         "step5": {
           "number": "05",
-          "title": "即时收款",
-          "description": "处理线上支付、保险理赔并生成发票。"
+          "title": "记录与开票",
+          "description": "每次服务后自动生成账单和超级账单，并提供完整的收入跟踪与分析。"
         },
         "step6": {
           "number": "06",
@@ -120,6 +120,14 @@
       "subheadline": "提升效率、增加营收，并用 Docito 提供更好的患者体验。",
       "primaryCta": "注册药房",
       "secondaryCta": "申请演示"
+    },
+    "services": {
+      "items": {
+        "payments": {
+          "title": "账单文档",
+          "description": "自动生成的明细账单和超级账单，方便患者直接提交给保险公司。"
+        }
+      }
     }
   }
 }

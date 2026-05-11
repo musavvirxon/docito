@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "Çok para birimi",
-        "description": "Ödemeleri kabul edin ve fiyatları yerel para biriminde gösterin."
+        "description": "Faturalamayı belgeleyin ve fiyatları herhangi bir yerel para biriminde gösterin."
       },
       "anyTimezone": {
         "title": "Her zaman dilimi",
@@ -476,5 +476,10 @@
       "secondary": "Özellikleri keşfet"
     },
     "note": "14 gün ücretsiz deneme • Kredi kartı gerekmez • İstediğiniz zaman iptal"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Faturalamayı belgeleyin ve fiyatları herhangi bir yerel para biriminde gösterin."
+    }
   }
 }

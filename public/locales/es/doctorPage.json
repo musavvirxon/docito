@@ -51,8 +51,8 @@
           "description": "Almacenamiento seguro en la nube para todos los registros"
         },
         "slowBilling": {
-          "title": "Facturación lenta y reclamaciones de seguro",
-          "description": "Facturación optimizada y reclamaciones instantáneas"
+          "title": "Facturación lenta y papeleo manual",
+          "description": "Generación automática de superfacturas tras cada cita, listas para que el paciente las presente a su aseguradora"
         }
       }
     },

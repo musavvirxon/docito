@@ -58,8 +58,8 @@
           "description": "AI-assisted notes, treatment plans, and prescriptions"
         },
         "billingPayments": {
-          "title": "Billing & Payments",
-          "description": "Automated invoicing, collections, and insurance claims"
+          "title": "Billing Documentation",
+          "description": "Automatic superbill generation, itemized records, and revenue tracking & analytics"
         },
         "analyticsReports": {
           "title": "Analytics & Reports",
@@ -81,8 +81,8 @@
         "recordsManagement": "Patient records management",
         "treatmentPlanning": "Treatment planning tools",
         "digitalPrescriptions": "Digital prescriptions",
-        "insuranceVerification": "Insurance verification",
-        "paymentProcessing": "Payment processing",
+        "insuranceVerification": "Insurance information on file",
+        "paymentProcessing": "Billing documentation",
         "videoConsultations": "Video consultations",
         "labImagingOrders": "Lab & imaging orders",
         "staffScheduling": "Staff scheduling",

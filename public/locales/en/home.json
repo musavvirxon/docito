@@ -3,9 +3,9 @@
     "badge": "Professional Medical Platform",
     "title1": "Complete Healthcare",
     "title2": "Management Solution",
-    "description": "Integrated payments, scheduling, records, and analytics for medical professionals",
+    "description": "Integrated billing documentation, scheduling, records, and analytics for medical professionals",
     "features": {
-      "payments": "Payment Processing",
+      "payments": "Billing Documentation",
       "scheduling": "Scheduling",
       "records": "Records",
       "analytics": "Analytics"
@@ -29,8 +29,8 @@
     "title": "Professional Tools",
     "subtitle": "For Modern Healthcare",
     "paymentProcessing": {
-      "title": "Payment Processing",
-      "description": "Secure payment handling with multi-currency support"
+      "title": "Billing Documentation",
+      "description": "Itemized billing records and automatic superbill generation in any local currency"
     },
     "schedulingManagement": {
       "title": "Scheduling Management",
@@ -268,11 +268,10 @@
     "security": {
       "altText": "Security shield protecting data"
     }
+  },
+  "seo": {
+    "title": "Docito® — Unified Healthcare Management & Booking Platform",
+    "description": "Docito® is a unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, hospitals, and insurance—secure scheduling, referrals, records, prescriptions, messaging, and analytics.",
+    "keywords": "healthcare management platform, doctor booking system, clinic management software, lab management system, pharmacy platform, imaging center software, patient appointment booking, healthcare referrals, medical records system, HIPAA compliant healthcare software, multilingual healthcare SaaS"
   }
-  ,
-"seo": {
-  "title": "Docito® — Unified Healthcare Management & Booking Platform",
-  "description": "Docito® is a unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, hospitals, and insurance—secure scheduling, referrals, records, prescriptions, messaging, and analytics.",
-  "keywords": "healthcare management platform, doctor booking system, clinic management software, lab management system, pharmacy platform, imaging center software, patient appointment booking, healthcare referrals, medical records system, HIPAA compliant healthcare software, multilingual healthcare SaaS"
-}
 }

@@ -31,8 +31,8 @@
           "description": "Share imaging reports and DICOM files securely with referring doctors and patients."
         },
         "payments": {
-          "title": "Payments & Insurance",
-          "description": "Accept cash, cards, digital wallets, and process insurance claims seamlessly."
+          "title": "Billing Documentation",
+          "description": "Itemized invoices and automatic superbills, ready for patients to submit to their insurer."
         },
         "profiles": {
           "title": "Patient Records",
@@ -70,8 +70,8 @@
         },
         "step5": {
           "number": "05",
-          "title": "Get Paid Instantly",
-          "description": "Process online payments, insurance claims, and generate invoices."
+          "title": "Document & Bill",
+          "description": "Generate invoices and automatic superbills after every study, with full revenue tracking & analytics."
         },
         "step6": {
           "number": "06",

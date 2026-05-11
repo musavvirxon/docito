@@ -14,20 +14,17 @@
       "verifyDocuments": "Dokumente prüfen",
       "settings": "Einstellungen"
     },
-
     "header": {
       "title": "Apotheken-Dashboard",
       "subtitle": "Rezepte, Abwicklung, Analysen und Abrechnung aus Supabase",
       "refresh": "Aktualisieren"
     },
-
     "overview": {
       "prescriptionsToday": "Rezepte heute",
       "pendingFulfillment": "Ausstehende Abwicklung",
       "deliveriesInProgress": "Lieferungen in Zustellung",
       "completedToday": "Heute abgeschlossen"
     },
-
     "prescriptions": {
       "title": "Rezepteingang",
       "subtitle": "Neue und ausstehende Rezepte für Ihre Apotheke.",
@@ -49,7 +46,6 @@
       },
       "empty": "Keine Rezepte gefunden"
     },
-
     "manualPrescription": {
       "title": "Neues manuelles Rezept",
       "patient": "Patient (Laufkundschaft)",
@@ -84,12 +80,10 @@
         "create": "Rezept erstellen"
       }
     },
-
     "fulfillment": {
       "title": "Abwicklungsschlange",
       "subtitle": "End-to-End-Warteschlange für die Bearbeitung von Rezeptbestellungen",
       "refresh": "Bestellungen aktualisieren",
-
       "stats": {
         "activeQueue": "Aktive Warteschlange",
         "pendingProcessingReady": "0 ausstehend • 0 in Bearbeitung • 0 bereit",
@@ -104,7 +98,6 @@
         "deliveryQueue": "Lieferwarteschlange",
         "completedOrders": "Abgeschlossene Bestellungen"
       },
-
       "charts": {
         "throughput": "Durchsatz-Trend",
         "throughputDesc": "Eingegangene und abgeschlossene Bestellungen (letzte 14 Aktivitätstage)",
@@ -116,7 +109,6 @@
         "noPickup": "Keine Abholdaten.",
         "noPayment": "Keine Zahlungsdaten."
       },
-
       "table": {
         "title": "Warteschlangen-Bestellungen",
         "search": "Suche nach Bestell-Nr., Status, Med., Rezept...",
@@ -140,11 +132,9 @@
         "footer": "Zeige 0 von 0 Bestellung(en) in der Warteschlange."
       }
     },
-
     "inventory": {
       "title": "Lagerverwaltung",
       "subtitle": "Bestandskontrolle, Bestandsüberwachung und Analysen des Apothekenbedarfs",
-
       "stats": {
         "skus": "SKUs",
         "stockRisk": "Bestandsrisiko",
@@ -156,7 +146,6 @@
         "controlled": "Betäubungsmittel (BtM)",
         "refrigerated": "Kühlpflichtige Artikel"
       },
-
       "charts": {
         "health": "Bestandszustand",
         "topValue": "Top-Bestand nach Verkaufswert",
@@ -164,7 +153,6 @@
         "manufacturer": "Herstellerabdeckung",
         "empty": "Noch keine Bestandsdaten vorhanden."
       },
-
       "table": {
         "title": "Bestandsbuch",
         "search": "Suche Medikament, Code, PZN, Charge...",
@@ -187,7 +175,6 @@
         "footer": "Bestandssummen: 0 SKU(s), 0 verfügbare Einheiten, 0,00 € geschätzter Verkaufswert."
       }
     },
-
     "deliveries": {
       "title": "Lieferaufträge",
       "search": "Suche nach Bestell-Nr. oder Adresse...",
@@ -202,11 +189,9 @@
       },
       "empty": "Keine Lieferaufträge gefunden"
     },
-
     "analytics": {
       "title": "Analyse-Dashboard",
       "subtitle": "End-to-End Apothekenanalysen über Abwicklung, Rezepte, Zahlungen und Lagerbestand",
-
       "metrics": {
         "revenue": "Umsatz (30 T.)",
         "orders": "Abgewickelte Bestellungen",
@@ -217,7 +202,6 @@
         "inventoryRisk": "Bestandsrisiko",
         "inventoryValue": "Aktueller Bestandswert"
       },
-
       "charts": {
         "trend": "Umsatz- & Bestelltrend",
         "statusMix": "Abwicklungsstatus-Mix",
@@ -230,29 +214,25 @@
         "snapshot": "Schnappschuss"
       }
     },
-
     "billing": {
-      "title": "Abrechnung & Kassenansprüche",
-      "subtitle": "Abrechnungsübersicht aus Apothekenaufträgen mit Versicherungs-/Zuzahlungsbeträgen.",
-
+      "title": "Abrechnungsdokumentation",
+      "subtitle": "Detaillierte Superbills aus Apothekenbestellungen, einschließlich Patienten- und Versicherer-Referenzbeträgen.",
       "metrics": {
-        "claimable": "Abrechenbare Bestellungen",
+        "claimable": "Berechtigte Bestellungen",
         "pipeline": "In Bearbeitung",
-        "approved": "Genehmigt / Bezahlt",
-        "approvalRate": "Genehmigungsquote",
-        "totalClaimed": "Gesamt abgerechnet",
-        "copay": "Patientenzuzahlung",
+        "approved": "Erstattet",
+        "approvalRate": "Erstattungsquote",
+        "totalClaimed": "Gesamt dokumentiert",
+        "copay": "Patientenanteil",
         "outstanding": "Ausstehender Betrag",
         "rejected": "Abgelehnter Betrag"
       },
-
       "charts": {
         "trend": "Abrechnungstrend",
         "statusMix": "Status-Verteilung",
         "amounts": "Aufschlüsselung der Beträge",
         "largest": "Größte Abrechnungsposten"
       },
-
       "table": {
         "title": "Abrechnungsbuch",
         "search": "Suche Bestellung, Antrag, Police, Status...",

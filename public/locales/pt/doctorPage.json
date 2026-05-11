@@ -51,8 +51,8 @@
           "description": "Armazenamento seguro na nuvem para todos os registros"
         },
         "slowBilling": {
-          "title": "Faturamento lento e sinistros de seguro",
-          "description": "Faturamento simplificado e sinistros instantâneos"
+          "title": "Cobrança lenta e papelada manual",
+          "description": "Geração automática de superbills após cada consulta, prontas para o paciente submeter ao seu seguro"
         }
       }
     },

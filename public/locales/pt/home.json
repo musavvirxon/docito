@@ -3,9 +3,9 @@
     "badge": "Plataforma médica profissional",
     "title1": "Gestão completa",
     "title2": "de saúde",
-    "description": "Pagamentos, agendamento, prontuários e análises em uma plataforma segura para profissionais de saúde",
+    "description": "Documentação de cobrança, agendamento, prontuários e análises integradas para profissionais de saúde",
     "features": {
-      "payments": "Processamento de pagamentos",
+      "payments": "Documentação de cobrança",
       "scheduling": "Agendamento",
       "records": "Prontuários",
       "analytics": "Análises"
@@ -29,8 +29,8 @@
     "title": "Ferramentas profissionais",
     "subtitle": "para a saúde moderna",
     "paymentProcessing": {
-      "title": "Processamento de pagamentos",
-      "description": "Pagamentos seguros com suporte a múltiplas moedas"
+      "title": "Documentação de cobrança",
+      "description": "Registos de cobrança detalhados e geração automática de superbills em qualquer moeda local"
     },
     "schedulingManagement": {
       "title": "Gestão de agenda",
@@ -128,10 +128,22 @@
     "title": "Capacidades da plataforma",
     "subtitle": "Agende em 4 passos",
     "steps": {
-      "search": { "title": "Buscar", "description": "Encontre provedores por especialidade e localização" },
-      "review": { "title": "Comparar", "description": "Compare credenciais e avaliações verificadas" },
-      "book": { "title": "Agendar", "description": "Agende instantaneamente online" },
-      "care": { "title": "Atender", "description": "Receba atendimento profissional" }
+      "search": {
+        "title": "Buscar",
+        "description": "Encontre provedores por especialidade e localização"
+      },
+      "review": {
+        "title": "Comparar",
+        "description": "Compare credenciais e avaliações verificadas"
+      },
+      "book": {
+        "title": "Agendar",
+        "description": "Agende instantaneamente online"
+      },
+      "care": {
+        "title": "Atender",
+        "description": "Receba atendimento profissional"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "Prévia do dashboard com interface de gestão de pacientes" },
-    "appointments": { "altText": "Ilustração de calendário com datas animadas" },
-    "prescriptions": { "altText": "Formulário de prescrição digital sendo preenchido" },
-    "files": { "altText": "Arquivos sendo organizados em pastas seguras" },
-    "notes": { "altText": "Anotações clínicas sendo escritas" },
-    "dashboard": { "altText": "Dashboard interativo com gráficos e métricas" },
-    "collaboration": { "altText": "Equipe colaborando em arquivos de pacientes" },
-    "mobile": { "altText": "Demonstração da interface móvel" },
-    "success": { "altText": "Animação de celebração de sucesso" },
-    "security": { "altText": "Escudo de segurança protegendo dados" }
+    "hero": {
+      "altText": "Prévia do dashboard com interface de gestão de pacientes"
+    },
+    "appointments": {
+      "altText": "Ilustração de calendário com datas animadas"
+    },
+    "prescriptions": {
+      "altText": "Formulário de prescrição digital sendo preenchido"
+    },
+    "files": {
+      "altText": "Arquivos sendo organizados em pastas seguras"
+    },
+    "notes": {
+      "altText": "Anotações clínicas sendo escritas"
+    },
+    "dashboard": {
+      "altText": "Dashboard interativo com gráficos e métricas"
+    },
+    "collaboration": {
+      "altText": "Equipe colaborando em arquivos de pacientes"
+    },
+    "mobile": {
+      "altText": "Demonstração da interface móvel"
+    },
+    "success": {
+      "altText": "Animação de celebração de sucesso"
+    },
+    "security": {
+      "altText": "Escudo de segurança protegendo dados"
+    }
   },
   "seo": {
     "title": "Docito® — Plataforma unificada de gestão de saúde e agendamentos",

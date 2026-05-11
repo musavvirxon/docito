@@ -62,5 +62,22 @@
     "timestamp": "الوقت",
     "details": "التفاصيل",
     "noLogs": "لا توجد سجلات تدقيق"
+  },
+  "adminBilling": {
+    "insuranceClaims": "فواتير سوبر",
+    "submitClaim": "إنشاء فاتورة سوبر",
+    "newClaim": "فاتورة سوبر جديدة",
+    "insuranceProviderRequired": "شركة التأمين (للرجوع المريض) *",
+    "claimAmountRequired": "مبلغ فاتورة السوبر *",
+    "submittedDate": "تاريخ الإصدار",
+    "submitted": "تم الإنشاء",
+    "approved": "تم السداد",
+    "rejected": "مرفوض",
+    "claimsTitle": "فواتير سوبر",
+    "noClaimsYet": "لم تُنشأ فواتير سوبر بعد.",
+    "claimsByStatus": "الفواتير السوبر حسب الحالة",
+    "claimsByInsurer": "الفواتير السوبر حسب شركة التأمين",
+    "noClaimsData": "لا توجد فواتير سوبر بعد.",
+    "claimSubmitted": "تم إنشاء فاتورة السوبر"
   }
 }

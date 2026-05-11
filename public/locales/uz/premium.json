@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "Ko‘p valyuta",
-        "description": "To‘lovlarni qabul qiling va narxlarni istalgan lokal valyutada ko‘rsating."
+        "description": "Hisob-kitobni hujjatlashtiring va narxlarni har qanday mahalliy valyutada ko'rsating."
       },
       "anyTimezone": {
         "title": "Har qanday vaqt mintaqasi",
@@ -476,5 +476,10 @@
       "secondary": "Funksiyalarni ko‘rish"
     },
     "note": "14 kun bepul sinov • Karta talab qilinmaydi • Istalgan payt bekor qilish mumkin"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Hisob-kitobni hujjatlashtiring va narxlarni har qanday mahalliy valyutada ko'rsating."
+    }
   }
 }
