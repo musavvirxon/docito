@@ -29,8 +29,8 @@
     "title": "Professional Tools",
     "subtitle": "For Modern Healthcare",
     "paymentProcessing": {
-      "title": "Payment Processing",
-      "description": "Secure payment handling with multi-currency support"
+      "title": "Billing Documentation",
+      "description": "Itemized billing records and automatic superbill generation in any local currency"
     },
     "schedulingManagement": {
       "title": "Scheduling Management",
