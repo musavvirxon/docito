@@ -3,9 +3,9 @@
     "badge": "专业医疗平台",
     "title1": "一体化医疗",
     "title2": "管理解决方案",
-    "description": "面向医疗机构与专业人员的一站式安全平台：支付、排班、记录与分析",
+    "description": "为医疗专业人员整合的账单文档、排班、记录与分析",
     "features": {
-      "payments": "支付处理",
+      "payments": "账单文档",
       "scheduling": "排班预约",
       "records": "医疗记录",
       "analytics": "数据分析"
@@ -29,8 +29,8 @@
     "title": "专业工具",
     "subtitle": "服务现代医疗",
     "paymentProcessing": {
-      "title": "支付处理",
-      "description": "安全支付与多币种支持"
+      "title": "账单文档",
+      "description": "明细账单记录和以任何当地货币自动生成超级账单"
     },
     "schedulingManagement": {
       "title": "预约排班管理",
@@ -128,10 +128,22 @@
     "title": "平台能力",
     "subtitle": "4 步完成预约",
     "steps": {
-      "search": { "title": "搜索", "description": "按专科与位置查找医疗服务" },
-      "review": { "title": "对比", "description": "对比资质与已验证评价" },
-      "book": { "title": "预约", "description": "在线即时预约" },
-      "care": { "title": "就诊", "description": "获得专业医疗服务" }
+      "search": {
+        "title": "搜索",
+        "description": "按专科与位置查找医疗服务"
+      },
+      "review": {
+        "title": "对比",
+        "description": "对比资质与已验证评价"
+      },
+      "book": {
+        "title": "预约",
+        "description": "在线即时预约"
+      },
+      "care": {
+        "title": "就诊",
+        "description": "获得专业医疗服务"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "展示患者管理界面的仪表盘预览" },
-    "appointments": { "altText": "带动画日期的日历插画" },
-    "prescriptions": { "altText": "正在填写数字处方表单" },
-    "files": { "altText": "文件整理到安全文件夹" },
-    "notes": { "altText": "正在书写临床记录" },
-    "dashboard": { "altText": "包含图表与指标的交互式仪表盘" },
-    "collaboration": { "altText": "团队协作处理患者文件" },
-    "mobile": { "altText": "移动端界面演示" },
-    "success": { "altText": "成功庆祝动画" },
-    "security": { "altText": "保护数据的安全盾牌" }
+    "hero": {
+      "altText": "展示患者管理界面的仪表盘预览"
+    },
+    "appointments": {
+      "altText": "带动画日期的日历插画"
+    },
+    "prescriptions": {
+      "altText": "正在填写数字处方表单"
+    },
+    "files": {
+      "altText": "文件整理到安全文件夹"
+    },
+    "notes": {
+      "altText": "正在书写临床记录"
+    },
+    "dashboard": {
+      "altText": "包含图表与指标的交互式仪表盘"
+    },
+    "collaboration": {
+      "altText": "团队协作处理患者文件"
+    },
+    "mobile": {
+      "altText": "移动端界面演示"
+    },
+    "success": {
+      "altText": "成功庆祝动画"
+    },
+    "security": {
+      "altText": "保护数据的安全盾牌"
+    }
   },
   "seo": {
     "title": "Docito® — 统一的医疗管理与预约平台",

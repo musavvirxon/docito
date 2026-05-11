@@ -3,9 +3,9 @@
     "badge": "전문 의료 플랫폼",
     "title1": "통합 헬스케어",
     "title2": "관리 솔루션",
-    "description": "의료 전문가를 위한 결제, 일정, 기록, 분석을 하나의 안전한 플랫폼에서",
+    "description": "의료 전문가를 위한 통합 청구 문서화, 일정, 기록 및 분석",
     "features": {
-      "payments": "결제 처리",
+      "payments": "청구 문서화",
       "scheduling": "일정 관리",
       "records": "의료 기록",
       "analytics": "분석"
@@ -29,8 +29,8 @@
     "title": "전문가용 도구",
     "subtitle": "현대 의료를 위해",
     "paymentProcessing": {
-      "title": "결제 처리",
-      "description": "다중 통화 지원의 안전한 결제"
+      "title": "청구 문서화",
+      "description": "항목별 청구 기록과 모든 현지 통화로 슈퍼빌 자동 생성"
     },
     "schedulingManagement": {
       "title": "일정 관리",
@@ -128,10 +128,22 @@
     "title": "플랫폼 기능",
     "subtitle": "4단계로 상담 예약",
     "steps": {
-      "search": { "title": "검색", "description": "진료과와 위치로 찾기" },
-      "review": { "title": "비교", "description": "자격과 검증된 리뷰 확인" },
-      "book": { "title": "예약", "description": "온라인으로 즉시 예약" },
-      "care": { "title": "진료", "description": "전문 의료 서비스 받기" }
+      "search": {
+        "title": "검색",
+        "description": "진료과와 위치로 찾기"
+      },
+      "review": {
+        "title": "비교",
+        "description": "자격과 검증된 리뷰 확인"
+      },
+      "book": {
+        "title": "예약",
+        "description": "온라인으로 즉시 예약"
+      },
+      "care": {
+        "title": "진료",
+        "description": "전문 의료 서비스 받기"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "환자 관리 인터페이스를 보여주는 대시보드 미리보기" },
-    "appointments": { "altText": "애니메이션 날짜가 있는 캘린더 일러스트" },
-    "prescriptions": { "altText": "디지털 처방전 양식을 작성하는 모습" },
-    "files": { "altText": "파일이 안전한 폴더로 정리되는 모습" },
-    "notes": { "altText": "임상 노트를 작성하는 모습" },
-    "dashboard": { "altText": "차트와 지표가 있는 인터랙티브 대시보드" },
-    "collaboration": { "altText": "팀이 환자 파일을 함께 작업하는 모습" },
-    "mobile": { "altText": "모바일 앱 UI 데모" },
-    "success": { "altText": "성공 축하 애니메이션" },
-    "security": { "altText": "데이터를 보호하는 보안 방패" }
+    "hero": {
+      "altText": "환자 관리 인터페이스를 보여주는 대시보드 미리보기"
+    },
+    "appointments": {
+      "altText": "애니메이션 날짜가 있는 캘린더 일러스트"
+    },
+    "prescriptions": {
+      "altText": "디지털 처방전 양식을 작성하는 모습"
+    },
+    "files": {
+      "altText": "파일이 안전한 폴더로 정리되는 모습"
+    },
+    "notes": {
+      "altText": "임상 노트를 작성하는 모습"
+    },
+    "dashboard": {
+      "altText": "차트와 지표가 있는 인터랙티브 대시보드"
+    },
+    "collaboration": {
+      "altText": "팀이 환자 파일을 함께 작업하는 모습"
+    },
+    "mobile": {
+      "altText": "모바일 앱 UI 데모"
+    },
+    "success": {
+      "altText": "성공 축하 애니메이션"
+    },
+    "security": {
+      "altText": "데이터를 보호하는 보안 방패"
+    }
   },
   "seo": {
     "title": "Docito® — 통합 헬스케어 관리 및 예약 플랫폼",

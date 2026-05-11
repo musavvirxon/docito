@@ -3,9 +3,9 @@
     "badge": "Professional tibbiy platforma",
     "title1": "To‘liq sog‘liqni saqlash",
     "title2": "boshqaruv yechimi",
-    "description": "Tibbiy mutaxassislar uchun to‘lovlar, jadval, yozuvlar va analitika — bitta xavfsiz platformada",
+    "description": "Tibbiyot mutaxassislari uchun integratsiyalashgan hisob-kitob hujjatlari, jadval, yozuvlar va analitika",
     "features": {
-      "payments": "To‘lovlarni qabul qilish",
+      "payments": "Hisob-kitob hujjatlari",
       "scheduling": "Jadval",
       "records": "Tibbiy yozuvlar",
       "analytics": "Analitika"
@@ -29,8 +29,8 @@
     "title": "Professional vositalar",
     "subtitle": "zamonaviy tibbiyot uchun",
     "paymentProcessing": {
-      "title": "To‘lovlarni qabul qilish",
-      "description": "Ko‘p valyutali xavfsiz to‘lovlar"
+      "title": "Hisob-kitob hujjatlari",
+      "description": "Har qanday mahalliy valyutada batafsil hisob-kitob yozuvlari va avtomatik superbill yaratish"
     },
     "schedulingManagement": {
       "title": "Jadvalni boshqarish",

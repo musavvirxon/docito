@@ -3,9 +3,9 @@
     "badge": "Profesyonel Medikal Platform",
     "title1": "Kapsamlı Sağlık",
     "title2": "Yönetim Çözümü",
-    "description": "Sağlık profesyonelleri için ödemeler, randevu, kayıtlar ve analitik tek güvenli platformda",
+    "description": "Sağlık profesyonelleri için entegre faturalama dokümantasyonu, randevu, kayıtlar ve analitik",
     "features": {
-      "payments": "Ödeme İşleme",
+      "payments": "Faturalama dokümantasyonu",
       "scheduling": "Planlama",
       "records": "Kayıtlar",
       "analytics": "Analitik"
@@ -29,8 +29,8 @@
     "title": "Profesyonel Araçlar",
     "subtitle": "Modern Sağlık İçin",
     "paymentProcessing": {
-      "title": "Ödeme İşleme",
-      "description": "Çoklu para birimi desteğiyle güvenli ödeme"
+      "title": "Faturalama dokümantasyonu",
+      "description": "Herhangi bir yerel para biriminde kalemli faturalama kayıtları ve otomatik superbill oluşturma"
     },
     "schedulingManagement": {
       "title": "Planlama Yönetimi",
@@ -128,10 +128,22 @@
     "title": "Platform Yetenekleri",
     "subtitle": "4 adımda randevu alın",
     "steps": {
-      "search": { "title": "Ara", "description": "Uzmanlık ve konuma göre bulun" },
-      "review": { "title": "İncele", "description": "Yetkinlikleri ve doğrulanmış yorumları karşılaştırın" },
-      "book": { "title": "Randevu", "description": "Online anında planlayın" },
-      "care": { "title": "Hizmet", "description": "Profesyonel sağlık hizmeti alın" }
+      "search": {
+        "title": "Ara",
+        "description": "Uzmanlık ve konuma göre bulun"
+      },
+      "review": {
+        "title": "İncele",
+        "description": "Yetkinlikleri ve doğrulanmış yorumları karşılaştırın"
+      },
+      "book": {
+        "title": "Randevu",
+        "description": "Online anında planlayın"
+      },
+      "care": {
+        "title": "Hizmet",
+        "description": "Profesyonel sağlık hizmeti alın"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "Hasta yönetimi arayüzünü gösteren pano önizlemesi" },
-    "appointments": { "altText": "Animasyonlu tarihli takvim illüstrasyonu" },
-    "prescriptions": { "altText": "Dijital reçete formu dolduruluyor" },
-    "files": { "altText": "Dosyalar güvenli klasörlerde düzenleniyor" },
-    "notes": { "altText": "Klinik notlar yazılıyor" },
-    "dashboard": { "altText": "Grafikler ve metriklerle etkileşimli pano" },
-    "collaboration": { "altText": "Ekip hasta dosyalarında birlikte çalışıyor" },
-    "mobile": { "altText": "Mobil uygulama arayüzü gösterimi" },
-    "success": { "altText": "Başarı kutlaması animasyonu" },
-    "security": { "altText": "Verileri koruyan güvenlik kalkanı" }
+    "hero": {
+      "altText": "Hasta yönetimi arayüzünü gösteren pano önizlemesi"
+    },
+    "appointments": {
+      "altText": "Animasyonlu tarihli takvim illüstrasyonu"
+    },
+    "prescriptions": {
+      "altText": "Dijital reçete formu dolduruluyor"
+    },
+    "files": {
+      "altText": "Dosyalar güvenli klasörlerde düzenleniyor"
+    },
+    "notes": {
+      "altText": "Klinik notlar yazılıyor"
+    },
+    "dashboard": {
+      "altText": "Grafikler ve metriklerle etkileşimli pano"
+    },
+    "collaboration": {
+      "altText": "Ekip hasta dosyalarında birlikte çalışıyor"
+    },
+    "mobile": {
+      "altText": "Mobil uygulama arayüzü gösterimi"
+    },
+    "success": {
+      "altText": "Başarı kutlaması animasyonu"
+    },
+    "security": {
+      "altText": "Verileri koruyan güvenlik kalkanı"
+    }
   },
   "seo": {
     "title": "Docito® — Birleşik Sağlık Yönetimi ve Randevu Platformu",
