@@ -244,7 +244,7 @@
   "automation": {
     "badge": "Facility automation",
     "title": "Make your facility run smoother—without adding staff",
-    "description": "Docito connects scheduling, records, labs, imaging, pharmacies, and payments so work moves automatically between steps. Less admin chaos. More predictable care.",
+    "description": "Docito connects scheduling, records, labs, imaging, pharmacies, and billing documentation so work moves automatically between steps. Less admin chaos. More predictable care.",
     "flow": {
       "intake": {
         "title": "Intake, automatically",
