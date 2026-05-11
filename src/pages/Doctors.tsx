@@ -39,8 +39,8 @@ const Doctors = () => {
     },
     {
       icon: CreditCard,
-      title: "Built-In Payments",
-      description: "Accept payments securely with no third-party integrations required"
+      title: "Billing Documentation",
+      description: "Itemized billing records and automatic superbills generated after every appointment, ready for patients to submit to their insurer"
     },
     {
       icon: Shield,
