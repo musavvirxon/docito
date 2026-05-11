@@ -56,11 +56,11 @@
     },
     "paymentMethods": {
       "question": "你们接受哪些付款方式？",
-      "answer": "我们接受所有主要信用卡（Visa、Mastercard、Amex、Discover）、借记卡和HSA/FSA卡。我们还与保险提供商合作，并为大额账单提供付款计划。"
+      "answer": "服务费用支持所有主流信用卡（Visa、Mastercard、Amex、Discover）、借记卡及HSA/FSA卡。每次预约后会自动生成明细Superbill，您可提交给保险公司申请理赔。"
     },
     "insurance": {
-      "question": "我的保险涵盖Docito预约吗？",
-      "answer": "许多保险计划涵盖通过Docito预约的远程医疗和面对面预约。请咨询您的保险提供商或在其个人资料中查找接受您保险的医生。"
+      "question": "我可以在Docito上使用我的保险吗？",
+      "answer": "Docito会在每次预约后生成明细Superbill，您可根据所属计划的网络外或远程医疗权益提交给保险公司申请理赔。"
     },
     "whenCharged": {
       "question": "我什么时候会被收费？",
