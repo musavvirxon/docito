@@ -336,31 +336,30 @@
     }
   },
   "insurance": {
-    "badge": "Insurance Integration",
-    "title": "Works with insurance providers worldwide",
-    "description": "Docito integrates with insurance workflows globally — so verification, billing, and claims happen inside the platform.",
+    "badge": "Insurer-ready billing",
+    "title": "Superbills built for every insurer, worldwide",
+    "description": "Docito generates itemized superbills after every visit—patients submit them to their insurer in any country, in any currency.",
     "stepLabel": "Step {{step}}",
     "steps": {
       "selectProvider": {
-        "title": "Select provider",
-        "description": "Patient selects their insurance during booking — coverage is checked instantly."
+        "title": "Capture insurer details",
+        "description": "Patients add their insurer during booking so it appears on the superbill."
       },
       "verification": {
-        "title": "Instant verification",
-        "description": "Eligibility, copay, and deductible details are surfaced before the visit."
+        "title": "Itemized after the visit",
+        "description": "Procedures, codes, and charges are compiled into a clean superbill automatically."
       },
       "directBilling": {
-        "title": "Direct billing",
-        "description": "Claims are submitted automatically — patients only pay their share."
+        "title": "Patient submits to insurer",
+        "description": "The superbill is delivered to the patient, ready to submit for reimbursement."
       }
     },
     "benefits": [
-      "Instant eligibility checks",
-      "Direct claims submission",
-      "No paperwork for patients",
-      "Pre-authorization support",
-      "Multi-payer compatibility",
-      "Real-time claim status"
+      "Automatic superbill generation",
+      "Itemized procedure codes",
+      "Multi-currency support",
+      "Patient-ready PDFs",
+      "Works with any insurer"
     ]
   },
   "global": {
