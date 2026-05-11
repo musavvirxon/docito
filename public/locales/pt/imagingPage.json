@@ -70,8 +70,8 @@
         },
         "step5": {
           "number": "05",
-          "title": "Receba pagamento na hora",
-          "description": "Processe pagamentos online, seguros e gere faturas."
+          "title": "Documentar e faturar",
+          "description": "Gere faturas e superbills automáticas após cada serviço, com monitorização completa de receitas e análise."
         },
         "step6": {
           "number": "06",
@@ -120,6 +120,14 @@
       "subheadline": "Aumente a eficiência, impulsione a receita e ofereça melhores experiências aos pacientes com Docito.",
       "primaryCta": "Cadastrar minha farmácia",
       "secondaryCta": "Solicitar demo"
+    },
+    "services": {
+      "items": {
+        "payments": {
+          "title": "Documentação de cobrança",
+          "description": "Faturas detalhadas e superbills automáticas, prontas para o paciente submeter ao seu seguro."
+        }
+      }
     }
   }
 }

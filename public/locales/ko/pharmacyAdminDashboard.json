@@ -14,20 +14,17 @@
       "verifyDocuments": "문서 검증",
       "settings": "설정"
     },
-
     "header": {
       "title": "약국 대시보드",
       "subtitle": "Supabase에서 동기화된 처방, 조제, 분석 및 청구 데이터",
       "refresh": "새로고침"
     },
-
     "overview": {
       "prescriptionsToday": "오늘의 처방전",
       "pendingFulfillment": "조제 대기",
       "deliveriesInProgress": "배송 중",
       "completedToday": "오늘 완료"
     },
-
     "prescriptions": {
       "title": "처방전 수신함",
       "subtitle": "약국의 신규 및 대기 중인 처방전 목록입니다.",
@@ -49,7 +46,6 @@
       },
       "empty": "검색된 처방전이 없습니다"
     },
-
     "manualPrescription": {
       "title": "신규 수동 처방 등록",
       "patient": "환자 (방문 환자)",
@@ -84,12 +80,10 @@
         "create": "처방전 생성"
       }
     },
-
     "fulfillment": {
       "title": "조제 처리 대기열",
       "subtitle": "처방 조제 주문에 대한 엔드투엔드 처리 대기열",
       "refresh": "주문 새로고침",
-
       "stats": {
         "activeQueue": "활성 대기열",
         "pendingProcessingReady": "대기 0 • 처리 중 0 • 준비 완료 0",
@@ -104,7 +98,6 @@
         "deliveryQueue": "배송 대기열",
         "completedOrders": "완료된 주문"
       },
-
       "charts": {
         "throughput": "처리량 추세",
         "throughputDesc": "접수 및 완료된 주문 (최근 14일)",
@@ -116,7 +109,6 @@
         "noPickup": "수령 데이터 없음",
         "noPayment": "결제 데이터 없음"
       },
-
       "table": {
         "title": "대기열 주문 목록",
         "search": "주문 번호, 상태, 약품명, 처방전 검색...",
@@ -140,11 +132,9 @@
         "footer": "조제 대기열 주문 0건 중 0건 표시 중"
       }
     },
-
     "inventory": {
       "title": "재고 관리",
       "subtitle": "재고 관리, 품목 상태 모니터링 및 공급 분석",
-
       "stats": {
         "skus": "품목 수(SKU)",
         "stockRisk": "품절 위험",
@@ -156,7 +146,6 @@
         "controlled": "향정/마약류 관리",
         "refrigerated": "냉장 보관 품목"
       },
-
       "charts": {
         "health": "재고 건전성",
         "topValue": "판매 가치 상위 재고",
@@ -164,7 +153,6 @@
         "manufacturer": "제조사별 점유율",
         "empty": "재고 데이터가 아직 없습니다."
       },
-
       "table": {
         "title": "재고 원장",
         "search": "약품명, 코드, 바코드(NDC), 제조번호 검색...",
@@ -187,7 +175,6 @@
         "footer": "재고 합계: 0 SKU, 0개 보유, 예상 판매 가치 ₩0"
       }
     },
-
     "deliveries": {
       "title": "배송 주문",
       "search": "주문 번호 또는 주소로 검색...",
@@ -202,11 +189,9 @@
       },
       "empty": "배송 주문을 찾을 수 없습니다"
     },
-
     "analytics": {
       "title": "데이터 분석 대시보드",
       "subtitle": "조제, 처방, 결제 및 재고 전반에 걸친 통합 분석",
-
       "metrics": {
         "revenue": "매출 (30일)",
         "orders": "조제 주문 수",
@@ -217,7 +202,6 @@
         "inventoryRisk": "재고 위험도",
         "inventoryValue": "현재 재고 가치"
       },
-
       "charts": {
         "trend": "매출 및 주문 추세",
         "statusMix": "조제 상태 비중",
@@ -230,11 +214,9 @@
         "snapshot": "요약 스냅샷"
       }
     },
-
     "billing": {
       "title": "정산 및 보험 청구",
       "subtitle": "보험/본인부담금이 포함된 약국 조제 주문의 청구 관리",
-
       "metrics": {
         "claimable": "청구 가능 주문",
         "pipeline": "청구 진행 중",
@@ -245,19 +227,30 @@
         "outstanding": "미지급 금액",
         "rejected": "지급 거절 금액"
       },
-
       "charts": {
         "trend": "청구 추세",
         "statusMix": "상태별 비중",
         "amounts": "금액 세부 분석",
         "largest": "고액 청구 건"
       },
-
       "table": {
         "title": "청구 원장",
         "search": "주문, 청구 번호, 보험 증권, 상태 검색...",
         "empty": "필터에 해당되는 청구 내역이 없습니다."
       }
+    }
+  },
+  "billing": {
+    "title": "청구 문서화",
+    "subtitle": "약국 조제 주문에서 생성된 항목별 슈퍼빌 — 환자 및 참조 보험자 금액 포함.",
+    "metrics": {
+      "claimable": "대상 주문",
+      "pipeline": "진행 중",
+      "approved": "환급 완료",
+      "approvalRate": "환급률",
+      "totalClaimed": "문서화 합계",
+      "copay": "환자 부담분",
+      "rejected": "거부 금액"
     }
   }
 }

@@ -70,8 +70,8 @@
         },
         "step5": {
           "number": "05",
-          "title": "Sofort bezahlt werden",
-          "description": "Online-Zahlungen, Versicherungsfälle und Rechnungen in einem Ablauf."
+          "title": "Dokumentieren & abrechnen",
+          "description": "Erstellen Sie Rechnungen und automatische Superbills nach jeder Leistung — mit vollständigem Umsatz-Tracking & Analytik."
         },
         "step6": {
           "number": "06",
@@ -120,6 +120,14 @@
       "subheadline": "Steigern Sie Effizienz, Umsatz und Patientenerlebnis mit Docito.",
       "primaryCta": "Apotheke registrieren",
       "secondaryCta": "Demo anfragen"
+    },
+    "services": {
+      "items": {
+        "payments": {
+          "title": "Abrechnungsdokumentation",
+          "description": "Detaillierte Rechnungen und automatische Superbills, bereit zur Einreichung durch den Patienten beim Versicherer."
+        }
+      }
     }
   }
 }

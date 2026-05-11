@@ -82,7 +82,7 @@
         "treatmentPlanning": "Tedavi planlama araçları",
         "digitalPrescriptions": "Dijital reçeteler",
         "insuranceVerification": "Sigorta doğrulama",
-        "paymentProcessing": "Ödeme işleme",
+        "paymentProcessing": "Faturalama dokümantasyonu",
         "videoConsultations": "Video konsültasyonlar",
         "labImagingOrders": "Laboratuvar ve görüntüleme talepleri",
         "staffScheduling": "Personel planlaması",
@@ -122,6 +122,14 @@
       "primaryCta": "Ücretsiz Denemeyi Başlat",
       "secondaryCta": "Satış Ekibiyle Görüş",
       "badge": "14 gün ücretsiz deneme • Kredi kartı gerekmez • Tüm özelliklere erişim"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "Faturalama dokümantasyonu",
+          "description": "Otomatik superbill oluşturma, kalemli kayıtlar ve gelir takibi ve analitik"
+        }
+      }
     }
   }
 }

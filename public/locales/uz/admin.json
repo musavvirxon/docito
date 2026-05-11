@@ -62,5 +62,22 @@
     "timestamp": "Vaqt",
     "details": "Tafsilotlar",
     "noLogs": "Audit yozuvlari topilmadi"
+  },
+  "adminBilling": {
+    "insuranceClaims": "Superbill'lar",
+    "submitClaim": "Superbill yaratish",
+    "newClaim": "Yangi superbill",
+    "insuranceProviderRequired": "Sug'urtachi (bemor uchun ma'lumot) *",
+    "claimAmountRequired": "Superbill summasi *",
+    "submittedDate": "Berilgan sana",
+    "submitted": "Yaratilgan",
+    "approved": "Qoplangan",
+    "rejected": "Rad etildi",
+    "claimsTitle": "Superbill'lar",
+    "noClaimsYet": "Hozircha superbill yaratilmagan.",
+    "claimsByStatus": "Holati bo'yicha superbill'lar",
+    "claimsByInsurer": "Sug'urtachi bo'yicha superbill'lar",
+    "noClaimsData": "Hozircha superbill yo'q.",
+    "claimSubmitted": "Superbill yaratildi"
   }
 }

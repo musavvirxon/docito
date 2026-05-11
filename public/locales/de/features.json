@@ -109,5 +109,13 @@
     "subtitle": "Schließen Sie sich Tausenden von Gesundheitsfachkräften an, die Docito nutzen, um bessere Patientenversorgung zu bieten",
     "startTrial": "Kostenlose Testversion Starten",
     "scheduleDemo": "Demo Planen"
+  },
+  "features": {
+    "billing": {
+      "title": "Abrechnungsdokumentation",
+      "description": "Detaillierte Abrechnungsdatensätze und automatische Superbills, die nach jedem Termin sofort für die Einreichung beim Versicherer erstellt werden",
+      "benefit1": "Automatische Superbill-Erstellung",
+      "benefit2": "Umsatz-Tracking & Analytik"
+    }
   }
 }

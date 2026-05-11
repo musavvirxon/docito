@@ -82,7 +82,7 @@
         "treatmentPlanning": "Ferramentas de planejamento de tratamento",
         "digitalPrescriptions": "Prescrições digitais",
         "insuranceVerification": "Verificação de seguro",
-        "paymentProcessing": "Processamento de pagamentos",
+        "paymentProcessing": "Documentação de cobrança",
         "videoConsultations": "Consultas por vídeo",
         "labImagingOrders": "Pedidos de laboratório e imagem",
         "staffScheduling": "Escalas da equipe",
@@ -122,6 +122,14 @@
       "primaryCta": "Iniciar teste grátis",
       "secondaryCta": "Falar com vendas",
       "badge": "Teste grátis de 14 dias • Sem cartão • Acesso total aos recursos"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "Documentação de cobrança",
+          "description": "Geração automática de superbills, registos detalhados e monitorização de receitas e análise"
+        }
+      }
     }
   }
 }

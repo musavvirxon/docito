@@ -14,20 +14,17 @@
       "verifyDocuments": "Verificar Documentos",
       "settings": "Configuración"
     },
-
     "header": {
       "title": "Panel de Farmacia",
       "subtitle": "Recetas, surtido, análisis y facturación extraídos de Supabase",
       "refresh": "Actualizar"
     },
-
     "overview": {
       "prescriptionsToday": "Recetas de Hoy",
       "pendingFulfillment": "Pendientes de Surtir",
       "deliveriesInProgress": "Envíos en Progreso",
       "completedToday": "Completados Hoy"
     },
-
     "prescriptions": {
       "title": "Bandeja de Recetas",
       "subtitle": "Recetas nuevas y pendientes para su farmacia.",
@@ -49,7 +46,6 @@
       },
       "empty": "No se encontraron recetas"
     },
-
     "manualPrescription": {
       "title": "Nueva Receta Manual",
       "patient": "Paciente (Presencial)",
@@ -84,12 +80,10 @@
         "create": "Crear Receta"
       }
     },
-
     "fulfillment": {
       "title": "Cola de Surtido",
       "subtitle": "Cola de procesamiento de extremo a extremo para pedidos de recetas",
       "refresh": "Actualizar Pedidos",
-
       "stats": {
         "activeQueue": "Cola Activa",
         "pendingProcessingReady": "0 pendientes • 0 en proceso • 0 listos",
@@ -104,7 +98,6 @@
         "deliveryQueue": "Cola de Envíos",
         "completedOrders": "Pedidos Completados"
       },
-
       "charts": {
         "throughput": "Tendencia de Rendimiento",
         "throughputDesc": "Pedidos entrantes y completados (últimos 14 días de actividad)",
@@ -116,7 +109,6 @@
         "noPickup": "Sin datos de recogida.",
         "noPayment": "Sin datos de pago."
       },
-
       "table": {
         "title": "Pedidos en Cola",
         "search": "Buscar nro. pedido, estado, medicamentos, receta...",
@@ -140,11 +132,9 @@
         "footer": "Mostrando 0 de 0 pedido(s) en la cola de surtido."
       }
     },
-
     "inventory": {
       "title": "Gestión de Inventario",
       "subtitle": "Control de inventario, monitoreo de salud de stock y análisis de suministros",
-
       "stats": {
         "skus": "SKUs",
         "stockRisk": "Riesgo de Stock",
@@ -156,7 +146,6 @@
         "controlled": "Sustancias Controladas",
         "refrigerated": "Artículos Refrigerados"
       },
-
       "charts": {
         "health": "Salud de Stock",
         "topValue": "Inventario por Valor Comercial (Top)",
@@ -164,7 +153,6 @@
         "manufacturer": "Cobertura por Fabricante",
         "empty": "Aún no hay datos de inventario."
       },
-
       "table": {
         "title": "Libro de Inventario",
         "search": "Buscar medicamento, código, NDC, lote...",
@@ -187,7 +175,6 @@
         "footer": "Totales de inventario: 0 SKU(s), 0 unidades disponibles, $0.00 valor comercial estimado."
       }
     },
-
     "deliveries": {
       "title": "Pedidos de Envío",
       "search": "Buscar por nro. pedido o dirección...",
@@ -202,11 +189,9 @@
       },
       "empty": "No se encontraron pedidos de envío"
     },
-
     "analytics": {
       "title": "Panel de Análisis",
       "subtitle": "Análisis integral de la farmacia: surtido, recetas, pagos e inventario",
-
       "metrics": {
         "revenue": "Ingresos (30d)",
         "orders": "Pedidos Surtidos",
@@ -217,7 +202,6 @@
         "inventoryRisk": "Riesgo de Inventario",
         "inventoryValue": "Valor Actual del Inventario"
       },
-
       "charts": {
         "trend": "Tendencia de Ingresos y Pedidos",
         "statusMix": "Mezcla de Estados de Surtido",
@@ -230,11 +214,9 @@
         "snapshot": "Resumen Rápido"
       }
     },
-
     "billing": {
       "title": "Facturación y Reclamos de Seguros",
       "subtitle": "Gestión de reclamos de pedidos de farmacia con montos de seguro/copago.",
-
       "metrics": {
         "claimable": "Pedidos Reclamables",
         "pipeline": "En Trámite",
@@ -245,19 +227,30 @@
         "outstanding": "Monto Pendiente",
         "rejected": "Monto Rechazado"
       },
-
       "charts": {
         "trend": "Tendencia de Reclamos",
         "statusMix": "Distribución de Estados",
         "amounts": "Desglose de Montos",
         "largest": "Reclamos Mayores"
       },
-
       "table": {
         "title": "Libro de Reclamos",
         "search": "Buscar pedido, reclamo, póliza, estado...",
         "empty": "No se encontraron reclamos con los filtros actuales."
       }
+    }
+  },
+  "billing": {
+    "title": "Documentación de facturación",
+    "subtitle": "Superfacturas detalladas generadas a partir de pedidos de la farmacia, incluidos los importes de pacientes y aseguradora de referencia.",
+    "metrics": {
+      "claimable": "Pedidos elegibles",
+      "pipeline": "En curso",
+      "approved": "Reembolsado",
+      "approvalRate": "Tasa de reembolso",
+      "totalClaimed": "Total documentado",
+      "copay": "Parte del paciente",
+      "rejected": "Importe denegado"
     }
   }
 }

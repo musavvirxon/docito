@@ -476,5 +476,10 @@
       "secondary": "Funksiyalarni ko‘rish"
     },
     "note": "14 kun bepul sinov • Karta talab qilinmaydi • Istalgan payt bekor qilish mumkin"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Hisob-kitobni hujjatlashtiring va narxlarni har qanday mahalliy valyutada ko'rsating."
+    }
   }
 }

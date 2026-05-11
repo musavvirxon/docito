@@ -476,5 +476,10 @@
       "secondary": "기능 둘러보기"
     },
     "note": "14일 무료 • 카드 불필요 • 언제든 취소"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "청구를 문서화하고 모든 현지 통화로 가격을 표시할 수 있습니다."
+    }
   }
 }

@@ -476,5 +476,10 @@
       "secondary": "Funktionen entdecken"
     },
     "note": "14 Tage gratis • Keine Kreditkarte erforderlich • Jederzeit kündbar"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Dokumentieren Sie die Abrechnung und zeigen Sie Preise in jeder lokalen Währung an."
+    }
   }
 }

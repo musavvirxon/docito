@@ -51,8 +51,8 @@
           "description": "Tüm kayıtlar için güvenli bulut depolama"
         },
         "slowBilling": {
-          "title": "Yavaş faturalama ve sigorta talepleri",
-          "description": "Kolaylaştırılmış faturalama ve anında talepler"
+          "title": "Yavaş faturalama ve manuel evrak işleri",
+          "description": "Her randevudan sonra otomatik superbill oluşturma — hasta sigortacısına iletmek için hazır"
         }
       }
     },

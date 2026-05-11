@@ -476,5 +476,10 @@
       "secondary": "Özellikleri keşfet"
     },
     "note": "14 gün ücretsiz deneme • Kredi kartı gerekmez • İstediğiniz zaman iptal"
+  },
+  "features": {
+    "multiCurrency": {
+      "description": "Faturalamayı belgeleyin ve fiyatları herhangi bir yerel para biriminde gösterin."
+    }
   }
 }

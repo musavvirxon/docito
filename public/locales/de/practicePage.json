@@ -82,7 +82,7 @@
         "treatmentPlanning": "Tools zur Behandlungsplanung",
         "digitalPrescriptions": "Digitale Rezepte",
         "insuranceVerification": "Versicherungsprüfung",
-        "paymentProcessing": "Zahlungsabwicklung",
+        "paymentProcessing": "Abrechnungsdokumentation",
         "videoConsultations": "Videosprechstunden",
         "labImagingOrders": "Labor- & Bildgebungsaufträge",
         "staffScheduling": "Dienstplanung",
@@ -122,6 +122,14 @@
       "primaryCta": "Kostenlose Testphase starten",
       "secondaryCta": "Mit Sales sprechen",
       "badge": "14 Tage kostenlos • Keine Kreditkarte erforderlich • Voller Funktionsumfang"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "Abrechnungsdokumentation",
+          "description": "Automatische Superbill-Erstellung, detaillierte Abrechnungsdatensätze und Umsatz-Tracking & Analytik"
+        }
+      }
     }
   }
 }

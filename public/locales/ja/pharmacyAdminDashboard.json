@@ -14,20 +14,17 @@
       "verifyDocuments": "書類確認",
       "settings": "設定"
     },
-
     "header": {
       "title": "薬局ダッシュボード",
       "subtitle": "Supabaseから取得した処方箋、調剤、分析、請求データ",
       "refresh": "更新"
     },
-
     "overview": {
       "prescriptionsToday": "本日の処方箋",
       "pendingFulfillment": "調剤待ち",
       "deliveriesInProgress": "配送中",
       "completedToday": "本日完了分"
     },
-
     "prescriptions": {
       "title": "処方箋インボックス",
       "subtitle": "新規および保留中の処方箋一覧",
@@ -49,7 +46,6 @@
       },
       "empty": "処方箋が見つかりません"
     },
-
     "manualPrescription": {
       "title": "処方箋 手動作成",
       "patient": "患者（直接来局）",
@@ -84,12 +80,10 @@
         "create": "処方箋を作成"
       }
     },
-
     "fulfillment": {
       "title": "調剤・準備キュー",
       "subtitle": "処方箋の調剤から準備完了までの処理状況",
       "refresh": "注文を更新",
-
       "stats": {
         "activeQueue": "アクティブな待機列",
         "pendingProcessingReady": "保留 0 • 調剤中 0 • 準備完了 0",
@@ -104,7 +98,6 @@
         "deliveryQueue": "配送待ち",
         "completedOrders": "完了した注文"
       },
-
       "charts": {
         "throughput": "スループット傾向",
         "throughputDesc": "新規注文と完了した注文（過去14日間）",
@@ -116,7 +109,6 @@
         "noPickup": "受け取りデータなし",
         "noPayment": "支払いデータなし"
       },
-
       "table": {
         "title": "待機列の注文",
         "search": "注文番号、ステータス、薬剤、処方箋で検索...",
@@ -140,11 +132,9 @@
         "footer": "全 0 件中 0 件を表示中（調剤キュー）"
       }
     },
-
     "inventory": {
       "title": "在庫管理",
       "subtitle": "在庫管理、品質監視、および供給分析",
-
       "stats": {
         "skus": "SKU数",
         "stockRisk": "在庫リスク",
@@ -156,7 +146,6 @@
         "controlled": "向精神薬・麻薬",
         "refrigerated": "冷所保存品"
       },
-
       "charts": {
         "health": "在庫の健全性",
         "topValue": "在庫評価額 上位",
@@ -164,7 +153,6 @@
         "manufacturer": "メーカー別比率",
         "empty": "在庫データはまだありません。"
       },
-
       "table": {
         "title": "在庫台帳",
         "search": "薬剤名、コード、JAN、ロット番号で検索...",
@@ -187,7 +175,6 @@
         "footer": "在庫合計: 0 SKU, 0 ユニット, 見込み販売総額 ¥0"
       }
     },
-
     "deliveries": {
       "title": "配送注文",
       "search": "注文番号、住所で検索...",
@@ -202,11 +189,9 @@
       },
       "empty": "配送注文が見つかりません"
     },
-
     "analytics": {
       "title": "分析ダッシュボード",
       "subtitle": "調剤、処方箋、決済、在庫の包括的な分析",
-
       "metrics": {
         "revenue": "売上（30日間）",
         "orders": "調剤注文数",
@@ -217,7 +202,6 @@
         "inventoryRisk": "在庫リスク",
         "inventoryValue": "現在の在庫総額"
       },
-
       "charts": {
         "trend": "売上・注文推移",
         "statusMix": "調剤ステータス内訳",
@@ -230,11 +214,9 @@
         "snapshot": "クイックスナップショット"
       }
     },
-
     "billing": {
       "title": "請求 & レセプト請求",
       "subtitle": "調剤注文に基づく保険請求および自己負担金の管理",
-
       "metrics": {
         "claimable": "請求可能注文",
         "pipeline": "処理中",
@@ -245,19 +227,30 @@
         "outstanding": "未収金",
         "rejected": "返戻・査定額"
       },
-
       "charts": {
         "trend": "請求推移",
         "statusMix": "ステータス内訳",
         "amounts": "金額構成",
         "largest": "高額請求"
       },
-
       "table": {
         "title": "請求台帳",
         "search": "注文、請求、保険、ステータスで検索...",
         "empty": "該当する請求データはありません。"
       }
+    }
+  },
+  "billing": {
+    "title": "請求ドキュメント",
+    "subtitle": "薬局の調剤注文から生成された明細付きスーパービル — 患者および参照保険者の金額を含みます。",
+    "metrics": {
+      "claimable": "対象注文",
+      "pipeline": "処理中",
+      "approved": "払い戻し済み",
+      "approvalRate": "払い戻し率",
+      "totalClaimed": "記録合計",
+      "copay": "患者負担分",
+      "rejected": "却下額"
     }
   }
 }

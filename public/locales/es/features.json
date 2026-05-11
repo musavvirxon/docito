@@ -109,5 +109,13 @@
     "subtitle": "Únete a miles de profesionales de la salud que usan Docito para brindar una mejor atención al paciente",
     "startTrial": "Comenzar Prueba Gratuita",
     "scheduleDemo": "Programar Demo"
+  },
+  "features": {
+    "billing": {
+      "title": "Documentación de facturación",
+      "description": "Registros de facturación detallados y superfacturas automáticas, generadas tras cada cita para que el paciente las presente a su aseguradora",
+      "benefit1": "Generación automática de superfacturas",
+      "benefit2": "Seguimiento de ingresos y analítica"
+    }
   }
 }

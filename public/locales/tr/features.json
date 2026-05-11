@@ -109,5 +109,13 @@
     "subtitle": "Daha iyi hasta bakımı sunmak için Docito kullanan binlerce sağlık profesyoneline katılın",
     "startTrial": "Ücretsiz Deneme Başlat",
     "scheduleDemo": "Demo Planla"
+  },
+  "features": {
+    "billing": {
+      "title": "Faturalama dokümantasyonu",
+      "description": "Her randevudan sonra otomatik oluşturulan kalemli faturalama kayıtları ve superbill'ler — hasta sigortacısına iletmek için hazır",
+      "benefit1": "Otomatik superbill oluşturma",
+      "benefit2": "Gelir takibi ve analitik"
+    }
   }
 }

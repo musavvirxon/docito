@@ -109,5 +109,13 @@
     "subtitle": "Junte-se a milhares de profissionais de saúde que usam o Docito para fornecer melhor atendimento ao paciente",
     "startTrial": "Iniciar Teste Gratuito",
     "scheduleDemo": "Agendar Demonstração"
+  },
+  "features": {
+    "billing": {
+      "title": "Documentação de cobrança",
+      "description": "Registos de cobrança detalhados e superbills automáticas, geradas após cada consulta para o paciente submeter ao seu seguro",
+      "benefit1": "Geração automática de superbills",
+      "benefit2": "Monitorização de receitas e análise"
+    }
   }
 }

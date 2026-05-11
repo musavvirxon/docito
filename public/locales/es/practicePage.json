@@ -82,7 +82,7 @@
         "treatmentPlanning": "Herramientas de planificación de tratamiento",
         "digitalPrescriptions": "Recetas digitales",
         "insuranceVerification": "Verificación de seguros",
-        "paymentProcessing": "Procesamiento de pagos",
+        "paymentProcessing": "Documentación de facturación",
         "videoConsultations": "Consultas por video",
         "labImagingOrders": "Órdenes de laboratorio e imagen",
         "staffScheduling": "Planificación de personal",
@@ -122,6 +122,14 @@
       "primaryCta": "Iniciar prueba gratis",
       "secondaryCta": "Hablar con ventas",
       "badge": "Prueba gratuita de 14 días • Sin tarjeta • Acceso total a funciones"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "Documentación de facturación",
+          "description": "Generación automática de superfacturas, registros detallados y seguimiento de ingresos y analítica"
+        }
+      }
     }
   }
 }

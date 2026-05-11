@@ -109,5 +109,13 @@
     "subtitle": "Yaxshiroq bemor parvarishini ta'minlash uchun Docito'dan foydalanadigan minglab tibbiy mutaxassislarga qo'shiling",
     "startTrial": "Bepul Sinovni Boshlash",
     "scheduleDemo": "Demo Rejalashtirish"
+  },
+  "features": {
+    "billing": {
+      "title": "Hisob-kitob hujjatlari",
+      "description": "Har bir qabuldan so'ng avtomatik yaratiladigan batafsil hisob-kitob yozuvlari va superbill'lar — bemor sug'urtachiga taqdim etishi uchun tayyor",
+      "benefit1": "Avtomatik superbill yaratish",
+      "benefit2": "Daromadni kuzatish va analitika"
+    }
   }
 }

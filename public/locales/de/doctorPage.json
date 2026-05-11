@@ -51,8 +51,8 @@
           "description": "Sicherer Cloud-Speicher für alle Unterlagen"
         },
         "slowBilling": {
-          "title": "Langsame Abrechnung und Versicherungsansprüche",
-          "description": "Optimierte Abrechnung und sofortige Claims"
+          "title": "Langsame Abrechnung und manueller Papierkram",
+          "description": "Automatische Superbill-Erstellung nach jedem Termin — bereit für die Einreichung durch den Patienten beim Versicherer"
         }
       }
     },

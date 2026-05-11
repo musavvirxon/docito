@@ -62,5 +62,22 @@
     "timestamp": "Время",
     "details": "Детали",
     "noLogs": "Записи не найдены"
+  },
+  "adminBilling": {
+    "insuranceClaims": "Суперсчета",
+    "submitClaim": "Создать суперсчет",
+    "newClaim": "Новый суперсчет",
+    "insuranceProviderRequired": "Страховщик (для справки пациента) *",
+    "claimAmountRequired": "Сумма суперсчета *",
+    "submittedDate": "Дата выдачи",
+    "submitted": "Создано",
+    "approved": "Возмещено",
+    "rejected": "Отклонено",
+    "claimsTitle": "Суперсчета",
+    "noClaimsYet": "Суперсчета пока не созданы.",
+    "claimsByStatus": "Суперсчета по статусу",
+    "claimsByInsurer": "Суперсчета по страховщику",
+    "noClaimsData": "Суперсчетов пока нет.",
+    "claimSubmitted": "Суперсчет создан"
   }
 }

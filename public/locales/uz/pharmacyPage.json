@@ -70,8 +70,8 @@
         },
         "step5": {
           "number": "05",
-          "title": "Darhol to‘lov oling",
-          "description": "Onlayn to‘lovlar, sug‘urta da’volari va hisob-fakturalar — barchasi bir joyda."
+          "title": "Hujjatlashtirish va hisob-kitob",
+          "description": "Har bir xizmatdan so'ng hisob-fakturalar va avtomatik superbill'lar yarating, to'liq daromadni kuzatish va analitika bilan."
         },
         "step6": {
           "number": "06",
@@ -120,6 +120,14 @@
       "subheadline": "Samaradorlikni oshiring, daromadni ko‘paytiring va Docito bilan bemor tajribasini yaxshilang.",
       "primaryCta": "Dorixonani ro‘yxatdan o‘tkazish",
       "secondaryCta": "Demo so‘rash"
+    },
+    "services": {
+      "items": {
+        "payments": {
+          "title": "Hisob-kitob hujjatlari",
+          "description": "Batafsil hisob-fakturalar va avtomatik superbill'lar — bemorlar sug'urtachiga taqdim etishi uchun tayyor."
+        }
+      }
     }
   }
 }

@@ -82,7 +82,7 @@
         "treatmentPlanning": "치료 계획 도구",
         "digitalPrescriptions": "디지털 처방",
         "insuranceVerification": "보험 확인",
-        "paymentProcessing": "결제 처리",
+        "paymentProcessing": "청구 문서화",
         "videoConsultations": "영상 진료",
         "labImagingOrders": "검사 및 영상 오더",
         "staffScheduling": "직원 스케줄링",
@@ -122,6 +122,14 @@
       "primaryCta": "무료 체험 시작",
       "secondaryCta": "영업팀 문의",
       "badge": "14일 무료 체험 • 카드 불필요 • 전체 기능 이용"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "청구 문서화",
+          "description": "슈퍼빌 자동 생성, 상세 기록, 수익 추적 및 분석"
+        }
+      }
     }
   }
 }

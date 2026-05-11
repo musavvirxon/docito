@@ -82,7 +82,7 @@
         "treatmentPlanning": "أدوات تخطيط العلاج",
         "digitalPrescriptions": "وصفات رقمية",
         "insuranceVerification": "التحقق من التأمين",
-        "paymentProcessing": "معالجة المدفوعات",
+        "paymentProcessing": "توثيق الفواتير",
         "videoConsultations": "استشارات فيديو",
         "labImagingOrders": "طلبات المختبر والتصوير",
         "staffScheduling": "جدولة الموظفين",
@@ -122,6 +122,14 @@
       "primaryCta": "ابدأ التجربة المجانية",
       "secondaryCta": "تحدث إلى المبيعات",
       "badge": "تجربة مجانية لمدة 14 يوماً • لا تحتاج بطاقة • وصول كامل للميزات"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "توثيق الفواتير",
+          "description": "إنشاء فواتير سوبر تلقائي، سجلات مفصّلة، وتتبع الإيرادات والتحليلات"
+        }
+      }
     }
   }
 }

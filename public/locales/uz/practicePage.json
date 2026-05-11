@@ -82,7 +82,7 @@
         "treatmentPlanning": "Davolash rejalash vositalari",
         "digitalPrescriptions": "Raqamli retseptlar",
         "insuranceVerification": "Sug‘urtani tekshirish",
-        "paymentProcessing": "To‘lovlarni qayta ishlash",
+        "paymentProcessing": "Hisob-kitob hujjatlari",
         "videoConsultations": "Video konsultatsiyalar",
         "labImagingOrders": "Laboratoriya va diagnostika buyurtmalari",
         "staffScheduling": "Xodimlar jadvali",
@@ -122,6 +122,14 @@
       "primaryCta": "Bepul sinovni boshlash",
       "secondaryCta": "Sotuv bo‘limi bilan gaplashish",
       "badge": "14 kun bepul sinov • Karta talab qilinmaydi • To‘liq funksiyalar"
+    },
+    "features": {
+      "items": {
+        "billingPayments": {
+          "title": "Hisob-kitob hujjatlari",
+          "description": "Avtomatik superbill yaratish, batafsil yozuvlar va daromadni kuzatish va analitika"
+        }
+      }
     }
   }
 }
