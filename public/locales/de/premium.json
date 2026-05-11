@@ -375,7 +375,7 @@
       },
       "multiCurrency": {
         "title": "Mehrwährungsfähig",
-        "description": "Zahlungen akzeptieren und Preise in jeder lokalen Währung anzeigen."
+        "description": "Dokumentieren Sie die Abrechnung und zeigen Sie Preise in jeder lokalen Währung an."
       },
       "anyTimezone": {
         "title": "Jede Zeitzone",

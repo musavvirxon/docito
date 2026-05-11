@@ -215,17 +215,17 @@
       }
     },
     "billing": {
-      "title": "정산 및 보험 청구",
-      "subtitle": "보험/본인부담금이 포함된 약국 조제 주문의 청구 관리",
+      "title": "청구 문서화",
+      "subtitle": "약국 조제 주문에서 생성된 항목별 슈퍼빌 — 환자 및 참조 보험자 금액 포함.",
       "metrics": {
-        "claimable": "청구 가능 주문",
-        "pipeline": "청구 진행 중",
-        "approved": "승인 / 지급 완료",
-        "approvalRate": "승인율",
-        "totalClaimed": "총 청구 금액",
-        "copay": "환자 본인부담금",
+        "claimable": "대상 주문",
+        "pipeline": "진행 중",
+        "approved": "환급 완료",
+        "approvalRate": "환급률",
+        "totalClaimed": "문서화 합계",
+        "copay": "환자 부담분",
         "outstanding": "미지급 금액",
-        "rejected": "지급 거절 금액"
+        "rejected": "거부 금액"
       },
       "charts": {
         "trend": "청구 추세",
@@ -238,19 +238,6 @@
         "search": "주문, 청구 번호, 보험 증권, 상태 검색...",
         "empty": "필터에 해당되는 청구 내역이 없습니다."
       }
-    }
-  },
-  "billing": {
-    "title": "청구 문서화",
-    "subtitle": "약국 조제 주문에서 생성된 항목별 슈퍼빌 — 환자 및 참조 보험자 금액 포함.",
-    "metrics": {
-      "claimable": "대상 주문",
-      "pipeline": "진행 중",
-      "approved": "환급 완료",
-      "approvalRate": "환급률",
-      "totalClaimed": "문서화 합계",
-      "copay": "환자 부담분",
-      "rejected": "거부 금액"
     }
   }
 }

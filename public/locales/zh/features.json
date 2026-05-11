@@ -58,10 +58,10 @@
       "benefit4": "导出选项"
     },
     "billing": {
-      "title": "计费和付款",
-      "description": "集成支付处理与保险理赔管理",
-      "benefit1": "在线支付",
-      "benefit2": "保险理赔",
+      "title": "账单文档",
+      "description": "每次就诊后即时生成的明细账单与超级账单，便于患者提交给保险公司",
+      "benefit1": "自动生成超级账单",
+      "benefit2": "收入跟踪与分析",
       "benefit3": "发票生成",
       "benefit4": "付款计划"
     },

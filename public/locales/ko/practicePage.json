@@ -58,8 +58,8 @@
           "description": "AI 지원 노트, 치료 계획, 처방"
         },
         "billingPayments": {
-          "title": "청구 및 결제",
-          "description": "자동 청구서 발행, 수금, 보험 청구"
+          "title": "청구 문서화",
+          "description": "슈퍼빌 자동 생성, 상세 기록, 수익 추적 및 분석"
         },
         "analyticsReports": {
           "title": "분석 및 리포트",

@@ -215,15 +215,15 @@
       }
     },
     "billing": {
-      "title": "Abrechnung & Kassenansprüche",
-      "subtitle": "Abrechnungsübersicht aus Apothekenaufträgen mit Versicherungs-/Zuzahlungsbeträgen.",
+      "title": "Abrechnungsdokumentation",
+      "subtitle": "Detaillierte Superbills aus Apothekenbestellungen, einschließlich Patienten- und Versicherer-Referenzbeträgen.",
       "metrics": {
-        "claimable": "Abrechenbare Bestellungen",
+        "claimable": "Berechtigte Bestellungen",
         "pipeline": "In Bearbeitung",
-        "approved": "Genehmigt / Bezahlt",
-        "approvalRate": "Genehmigungsquote",
-        "totalClaimed": "Gesamt abgerechnet",
-        "copay": "Patientenzuzahlung",
+        "approved": "Erstattet",
+        "approvalRate": "Erstattungsquote",
+        "totalClaimed": "Gesamt dokumentiert",
+        "copay": "Patientenanteil",
         "outstanding": "Ausstehender Betrag",
         "rejected": "Abgelehnter Betrag"
       },
@@ -238,19 +238,6 @@
         "search": "Suche Bestellung, Antrag, Police, Status...",
         "empty": "Keine Abrechnungen für die aktuellen Filter gefunden."
       }
-    }
-  },
-  "billing": {
-    "title": "Abrechnungsdokumentation",
-    "subtitle": "Detaillierte Superbills aus Apothekenbestellungen, einschließlich Patienten- und Versicherer-Referenzbeträgen.",
-    "metrics": {
-      "claimable": "Berechtigte Bestellungen",
-      "pipeline": "In Bearbeitung",
-      "approved": "Erstattet",
-      "approvalRate": "Erstattungsquote",
-      "totalClaimed": "Gesamt dokumentiert",
-      "copay": "Patientenanteil",
-      "rejected": "Abgelehnter Betrag"
     }
   }
 }

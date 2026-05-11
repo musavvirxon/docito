@@ -31,8 +31,8 @@
           "description": "Habilita entrega a domicilio con seguimiento en tiempo real para los pacientes."
         },
         "payments": {
-          "title": "Pagos y seguros",
-          "description": "Acepta efectivo, tarjetas, billeteras digitales y procesa reclamaciones de seguro sin fricción."
+          "title": "Documentación de facturación",
+          "description": "Facturas detalladas y superfacturas automáticas, listas para que los pacientes las presenten a su aseguradora."
         },
         "profiles": {
           "title": "Perfiles de pacientes",

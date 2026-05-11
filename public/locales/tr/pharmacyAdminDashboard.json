@@ -215,17 +215,17 @@
       }
     },
     "billing": {
-      "title": "Faturalandırma ve Sigorta Talepleri",
-      "subtitle": "Sigorta ve katılım payı tutarlarıyla eczane siparişlerinden gelen talep yönetimi.",
+      "title": "Faturalama dokümantasyonu",
+      "subtitle": "Eczane siparişlerinden oluşturulan kalemli superbill'ler — hasta ve referans sigortacı tutarları dahil.",
       "metrics": {
-        "claimable": "Talep Edilebilir Siparişler",
-        "pipeline": "İşlem Sırasında",
-        "approved": "Onaylanan / Ödenen",
-        "approvalRate": "Onay Oranı",
-        "totalClaimed": "Toplam Talep Edilen",
-        "copay": "Hasta Katılım Payı",
+        "claimable": "Uygun siparişler",
+        "pipeline": "İşlemde",
+        "approved": "Geri ödendi",
+        "approvalRate": "Geri ödeme oranı",
+        "totalClaimed": "Toplam belgelenen",
+        "copay": "Hasta payı",
         "outstanding": "Ödenmemiş Tutar",
-        "rejected": "Reddedilen Tutar"
+        "rejected": "Reddedilen tutar"
       },
       "charts": {
         "trend": "Talep Trendi",
@@ -238,19 +238,6 @@
         "search": "Sipariş, talep, poliçe, durum ara...",
         "empty": "Mevcut filtrelere uygun talep bulunamadı."
       }
-    }
-  },
-  "billing": {
-    "title": "Faturalama dokümantasyonu",
-    "subtitle": "Eczane siparişlerinden oluşturulan kalemli superbill'ler — hasta ve referans sigortacı tutarları dahil.",
-    "metrics": {
-      "claimable": "Uygun siparişler",
-      "pipeline": "İşlemde",
-      "approved": "Geri ödendi",
-      "approvalRate": "Geri ödeme oranı",
-      "totalClaimed": "Toplam belgelenen",
-      "copay": "Hasta payı",
-      "rejected": "Reddedilen tutar"
     }
   }
 }

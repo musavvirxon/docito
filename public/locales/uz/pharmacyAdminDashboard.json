@@ -215,15 +215,15 @@
       }
     },
     "billing": {
-      "title": "Hisob-kitob va sug'urta da'volari",
-      "subtitle": "Dorixona buyurtmalaridan sug'urta/to'lov summalari bilan olingan da'volar.",
+      "title": "Hisob-kitob hujjatlari",
+      "subtitle": "Dorixona buyurtmalaridan yaratilgan batafsil superbill'lar — bemor va sug'urtachi-mos summalari bilan.",
       "metrics": {
-        "claimable": "Talab qilinadigan buyurtmalar",
+        "claimable": "Mos buyurtmalar",
         "pipeline": "Jarayonda",
-        "approved": "Tasdiqlangan / To'langan",
-        "approvalRate": "Tasdiqlash ko'rsatkichi",
-        "totalClaimed": "Jami talab qilingan",
-        "copay": "Bemor to'lovi",
+        "approved": "Qoplangan",
+        "approvalRate": "Qoplash darajasi",
+        "totalClaimed": "Jami hujjatlashtirilgan",
+        "copay": "Bemor ulushi",
         "outstanding": "Qolgan qarz",
         "rejected": "Rad etilgan summa"
       },
@@ -238,19 +238,6 @@
         "search": "Buyurtma, da'vo, sug'urta, holat bo'yicha qidirish...",
         "empty": "Joriy filtrlar bo'yicha da'volar topilmadi."
       }
-    }
-  },
-  "billing": {
-    "title": "Hisob-kitob hujjatlari",
-    "subtitle": "Dorixona buyurtmalaridan yaratilgan batafsil superbill'lar — bemor va sug'urtachi-mos summalari bilan.",
-    "metrics": {
-      "claimable": "Mos buyurtmalar",
-      "pipeline": "Jarayonda",
-      "approved": "Qoplangan",
-      "approvalRate": "Qoplash darajasi",
-      "totalClaimed": "Jami hujjatlashtirilgan",
-      "copay": "Bemor ulushi",
-      "rejected": "Rad etilgan summa"
     }
   }
 }

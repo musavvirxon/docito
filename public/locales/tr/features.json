@@ -58,10 +58,10 @@
       "benefit4": "Dışa aktarma seçenekleri"
     },
     "billing": {
-      "title": "Faturalandırma ve Ödemeler",
-      "description": "Sigorta talep yönetimi ile entegre ödeme işleme",
-      "benefit1": "Online ödemeler",
-      "benefit2": "Sigorta talepleri",
+      "title": "Faturalama dokümantasyonu",
+      "description": "Her randevudan sonra otomatik oluşturulan kalemli faturalama kayıtları ve superbill'ler — hasta sigortacısına iletmek için hazır",
+      "benefit1": "Otomatik superbill oluşturma",
+      "benefit2": "Gelir takibi ve analitik",
       "benefit3": "Fatura oluşturma",
       "benefit4": "Ödeme planları"
     },

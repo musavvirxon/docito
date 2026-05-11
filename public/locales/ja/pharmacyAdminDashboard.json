@@ -215,17 +215,17 @@
       }
     },
     "billing": {
-      "title": "請求 & レセプト請求",
-      "subtitle": "調剤注文に基づく保険請求および自己負担金の管理",
+      "title": "請求ドキュメント",
+      "subtitle": "薬局の調剤注文から生成された明細付きスーパービル — 患者および参照保険者の金額を含みます。",
       "metrics": {
-        "claimable": "請求可能注文",
+        "claimable": "対象注文",
         "pipeline": "処理中",
-        "approved": "承認済み / 支払い済み",
-        "approvalRate": "承認率",
-        "totalClaimed": "請求総額",
-        "copay": "患者自己負担金",
+        "approved": "払い戻し済み",
+        "approvalRate": "払い戻し率",
+        "totalClaimed": "記録合計",
+        "copay": "患者負担分",
         "outstanding": "未収金",
-        "rejected": "返戻・査定額"
+        "rejected": "却下額"
       },
       "charts": {
         "trend": "請求推移",
@@ -238,19 +238,6 @@
         "search": "注文、請求、保険、ステータスで検索...",
         "empty": "該当する請求データはありません。"
       }
-    }
-  },
-  "billing": {
-    "title": "請求ドキュメント",
-    "subtitle": "薬局の調剤注文から生成された明細付きスーパービル — 患者および参照保険者の金額を含みます。",
-    "metrics": {
-      "claimable": "対象注文",
-      "pipeline": "処理中",
-      "approved": "払い戻し済み",
-      "approvalRate": "払い戻し率",
-      "totalClaimed": "記録合計",
-      "copay": "患者負担分",
-      "rejected": "却下額"
     }
   }
 }

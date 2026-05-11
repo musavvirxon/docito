@@ -215,17 +215,17 @@
       }
     },
     "billing": {
-      "title": "账单与保险理赔",
-      "subtitle": "药房履约订单的理赔代理，包含保险及自付金额明细。",
+      "title": "账单文档",
+      "subtitle": "由药房订单生成的明细超级账单，包含患者及参考保险方金额。",
       "metrics": {
-        "claimable": "可理赔订单",
-        "pipeline": "理赔处理中",
-        "approved": "已批准 / 已结清",
-        "approvalRate": "批准率",
-        "totalClaimed": "申请理赔总额",
-        "copay": "患者自付总额",
+        "claimable": "符合条件的订单",
+        "pipeline": "处理中",
+        "approved": "已偿付",
+        "approvalRate": "偿付率",
+        "totalClaimed": "记录总额",
+        "copay": "患者部分",
         "outstanding": "待收金额",
-        "rejected": "拒付金额"
+        "rejected": "被拒金额"
       },
       "charts": {
         "trend": "理赔趋势",
@@ -238,19 +238,6 @@
         "search": "搜索订单、理赔单、保单、状态...",
         "empty": "没有匹配当前筛选条件的理赔记录。"
       }
-    }
-  },
-  "billing": {
-    "title": "账单文档",
-    "subtitle": "由药房订单生成的明细超级账单，包含患者及参考保险方金额。",
-    "metrics": {
-      "claimable": "符合条件的订单",
-      "pipeline": "处理中",
-      "approved": "已偿付",
-      "approvalRate": "偿付率",
-      "totalClaimed": "记录总额",
-      "copay": "患者部分",
-      "rejected": "被拒金额"
     }
   }
 }

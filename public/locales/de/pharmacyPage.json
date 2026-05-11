@@ -31,8 +31,8 @@
           "description": "Aktivieren Sie Heimlieferung mit Echtzeit-Tracking für Patient:innen."
         },
         "payments": {
-          "title": "Zahlungen & Versicherung",
-          "description": "Akzeptieren Sie Bargeld, Karten, digitale Wallets und bearbeiten Sie Versicherungsfälle nahtlos."
+          "title": "Abrechnungsdokumentation",
+          "description": "Detaillierte Rechnungen und automatische Superbills, bereit zur Einreichung durch den Patienten beim Versicherer."
         },
         "profiles": {
           "title": "Patientenprofile",

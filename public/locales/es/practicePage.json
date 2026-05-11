@@ -58,8 +58,8 @@
           "description": "Notas, planes de tratamiento y recetas asistidas por IA"
         },
         "billingPayments": {
-          "title": "Facturación y pagos",
-          "description": "Facturación, cobros y reclamaciones de seguro automatizadas"
+          "title": "Documentación de facturación",
+          "description": "Generación automática de superfacturas, registros detallados y seguimiento de ingresos y analítica"
         },
         "analyticsReports": {
           "title": "Analítica e informes",

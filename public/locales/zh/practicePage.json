@@ -58,8 +58,8 @@
           "description": "AI 辅助生成病历记录、治疗方案与处方"
         },
         "billingPayments": {
-          "title": "计费与支付",
-          "description": "自动开票、催收与保险理赔"
+          "title": "账单文档",
+          "description": "自动生成超级账单、明细记录与收入跟踪及分析"
         },
         "analyticsReports": {
           "title": "分析与报表",

@@ -58,10 +58,10 @@
       "benefit4": "Eksport imkoniyatlari"
     },
     "billing": {
-      "title": "Hisob-kitob va To'lovlar",
-      "description": "Sug'urta da'volarini boshqarish bilan integratsiyalashgan to'lovlarni qayta ishlash",
-      "benefit1": "Onlayn to'lovlar",
-      "benefit2": "Sug'urta da'volari",
+      "title": "Hisob-kitob hujjatlari",
+      "description": "Har bir qabuldan so'ng avtomatik yaratiladigan batafsil hisob-kitob yozuvlari va superbill'lar — bemor sug'urtachiga taqdim etishi uchun tayyor",
+      "benefit1": "Avtomatik superbill yaratish",
+      "benefit2": "Daromadni kuzatish va analitika",
       "benefit3": "Hisob-faktura yaratish",
       "benefit4": "To'lov rejalari"
     },

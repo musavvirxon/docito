@@ -31,8 +31,8 @@
           "description": "Ative entrega em domicílio com rastreamento em tempo real para pacientes."
         },
         "payments": {
-          "title": "Pagamentos e seguros",
-          "description": "Aceite dinheiro, cartões, carteiras digitais e processe sinistros de seguro sem complicação."
+          "title": "Documentação de cobrança",
+          "description": "Faturas detalhadas e superbills automáticas, prontas para o paciente submeter ao seu seguro."
         },
         "profiles": {
           "title": "Perfis de pacientes",

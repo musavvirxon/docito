@@ -58,8 +58,8 @@
           "description": "Notas, planos de tratamento e prescrições com apoio de IA"
         },
         "billingPayments": {
-          "title": "Faturamento e pagamentos",
-          "description": "Faturamento, cobranças e sinistros de seguro automatizados"
+          "title": "Documentação de cobrança",
+          "description": "Geração automática de superbills, registos detalhados e monitorização de receitas e análise"
         },
         "analyticsReports": {
           "title": "Análises e relatórios",

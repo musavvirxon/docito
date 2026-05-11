@@ -58,8 +58,8 @@
           "description": "KI-gestützte Notizen, Behandlungspläne und Rezepte"
         },
         "billingPayments": {
-          "title": "Abrechnung & Zahlungen",
-          "description": "Automatisierte Rechnungsstellung, Inkasso und Versicherungsansprüche"
+          "title": "Abrechnungsdokumentation",
+          "description": "Automatische Superbill-Erstellung, detaillierte Abrechnungsdatensätze und Umsatz-Tracking & Analytik"
         },
         "analyticsReports": {
           "title": "Analytics & Reports",

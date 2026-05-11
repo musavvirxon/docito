@@ -58,8 +58,8 @@
           "description": "Yapay zeka destekli notlar, tedavi planları ve reçeteler"
         },
         "billingPayments": {
-          "title": "Faturalama ve Ödemeler",
-          "description": "Otomatik faturalama, tahsilat ve sigorta talepleri"
+          "title": "Faturalama dokümantasyonu",
+          "description": "Otomatik superbill oluşturma, kalemli kayıtlar ve gelir takibi ve analitik"
         },
         "analyticsReports": {
           "title": "Analitik ve Raporlar",
