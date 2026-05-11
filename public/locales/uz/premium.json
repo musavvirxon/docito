@@ -202,14 +202,14 @@
   "workflows": {
     "badge": "Parvarishni bitta tizimda yuriting",
     "title": "Sog‘liqni saqlashni harakatlantiradigan asosiy jarayonlar",
-    "description": "Rejalashtirish, yozuvlar, to‘lovlar va tahlillar — parvarish yo‘lingiz bo‘ylab bog‘langan.",
+    "description": "Jadval, yozuvlar, hisob-kitob hujjatlari va tahlillar — butun parvarish yo‘lida bog‘langan.",
     "items": {
       "payments": {
-        "title": "To‘lovlar",
-        "description": "To‘lovlarni qabul qiling, hisob yuboring va moslashtiring — onlayn yoki registraturada.",
+        "title": "Hisob-kitob hujjatlari",
+        "description": "Hisob-fakturalar, kvitansiyalar va superbill yarating — har bir uchrashuv bilan moslashtirilgan.",
         "features": [
-          "Karta va havola orqali to‘lov",
-          "Hisob va kvitansiyalar",
+          "Tafsilotli hisob-fakturalar",
+          "Kvitansiyalar va superbill",
           "Moslashtirish"
         ]
       },
@@ -245,7 +245,7 @@
   "automation": {
     "badge": "Muassasa avtomatlashtirish",
     "title": "Xodim qo‘shmasdan muassasangizingizni silliqroq ishlating",
-    "description": "Docito rejalashtirish, yozuvlar, laboratoriya, tasvirlash, dorixonalar va to‘lovlarni bog‘laydi, ishlar bosqichlar o‘rtasida avtomatik siljiydi. Kamroq admin-tartibsizlik. Ko‘proq bashoratli parvarish.",
+    "description": "Docito jadval, yozuvlar, laboratoriyalar, tasvir, dorixonalar va hisob-kitob hujjatlarini bog‘laydi — ish bosqichlar orasida avtomatik harakatlanadi. Kamroq tartibsizlik, bashoratli parvarish.",
     "flow": {
       "intake": {
         "title": "Qabul, avtomatik",
@@ -268,8 +268,8 @@
         "description": "MRT/KT/rentgen/UZI buyurtmalari, yozilish va hisobotlarni end-to-end muvofiqlashtiring."
       },
       "billing": {
-        "title": "Billing va to‘lovlar bog‘langan",
-        "description": "Hisoblar, kvitansiyalar va to‘lov havolalari — uchrashuvlar va xizmatlar bilan sinxron."
+        "title": "Hisob-kitob hujjatlari bog‘langan",
+        "description": "Hisob-fakturalar, kvitansiyalar va superbill — uchrashuv va xizmatlar bilan moslashtirilgan."
       },
       "reminders": {
         "title": "Aqlli eslatmalar va follow-up",
@@ -337,31 +337,30 @@
     }
   },
   "insurance": {
-    "badge": "Sug‘urta integratsiyasi",
-    "title": "Butun dunyo sug‘urtachilari bilan ishlaydi",
-    "description": "Docito sug‘urta ish oqimlari bilan global integratsiya qiladi — tekshiruv, billing va da’volar platforma ichida bajariladi.",
+    "badge": "Sug‘urta uchun tayyor hisob-kitob",
+    "title": "Butun dunyo bo‘ylab har qanday sug‘urtachi uchun superbill",
+    "description": "Docito har bir tashrifdan so‘ng tafsilotli superbill yaratadi — bemorlar uni istalgan mamlakat va valyutada sug‘urtachisiga yuboradi.",
     "stepLabel": "{{step}}-qadam",
     "steps": {
       "selectProvider": {
-        "title": "Provayderni tanlash",
-        "description": "Bemor yozilishda sug‘urtasini tanlaydi — qamrov darhol tekshiriladi."
+        "title": "Sug‘urtachi maʼlumotlarini olish",
+        "description": "Bemorlar uchrashuv vaqtida sug‘urtachisini qo‘shadi — bu superbillda ko‘rinadi."
       },
       "verification": {
-        "title": "Zudlik bilan tekshiruv",
-        "description": "Eligibility, copay va deductible ma’lumotlari tashrifdan oldin ko‘rinadi."
+        "title": "Tashrifdan so‘ng tafsilotlash",
+        "description": "Protseduralar, kodlar va to‘lovlar avtomatik tarzda toza superbillga yig‘iladi."
       },
       "directBilling": {
-        "title": "To‘g‘ridan-to‘g‘ri billing",
-        "description": "Da’volar avtomatik yuboriladi — bemor faqat o‘z ulushini to‘laydi."
+        "title": "Bemor sug‘urtachiga yuboradi",
+        "description": "Superbill bemorga yetkaziladi va qoplama uchun taqdim etishga tayyor."
       }
     },
     "benefits": [
-      "Eligibility’ni tezkor tekshirish",
-      "Da’volarni to‘g‘ridan-to‘g‘ri yuborish",
-      "Bemorlar uchun qog‘oz ishlar yo‘q",
-      "Pre-authorization qo‘llab-quvvatlash",
-      "Ko‘p to‘lovchi bilan moslik",
-      "Da’vo holati real vaqtda"
+      "Avtomatik superbill yaratish",
+      "Tafsilotli protsedura kodlari",
+      "Ko‘p valyutali qo‘llab-quvvatlash",
+      "Bemorga tayyor PDF’lar",
+      "Har qanday sug‘urtachi bilan ishlaydi"
     ]
   },
   "global": {

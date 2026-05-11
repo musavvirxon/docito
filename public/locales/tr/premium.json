@@ -202,15 +202,15 @@
   "workflows": {
     "badge": "Bakımı tek sistemde yönetin",
     "title": "Sağlığı hareket ettiren temel iş akışları",
-    "description": "Planlama, kayıtlar, ödemeler ve içgörüler—tüm bakım yolculuğunuz boyunca bağlı.",
+    "description": "Randevu, kayıtlar, faturalama belgeleri ve içgörüler—tüm bakım yolculuğu boyunca bağlı.",
     "items": {
       "payments": {
-        "title": "Ödemeler",
-        "description": "Ödeme alın, fatura gönderin ve uzlaştırın—online ya da resepsiyonda.",
+        "title": "Faturalama belgeleri",
+        "description": "Faturalar, makbuzlar ve superbill oluşturun—her randevuyla mutabakatlı.",
         "features": [
-          "Kart ve bağlantı ile ödeme",
-          "Faturalar ve makbuzlar",
-          "Uzlaştırma"
+          "Ayrıntılı faturalar",
+          "Makbuzlar ve superbill",
+          "Mutabakat"
         ]
       },
       "scheduling": {
@@ -245,7 +245,7 @@
   "automation": {
     "badge": "Tesis otomasyonu",
     "title": "Personel eklemeden tesisinizi daha akıcı çalıştırın",
-    "description": "Docito planlama, kayıtlar, laboratuvar, görüntüleme, eczane ve ödemeleri bağlar; işler adımlar arasında otomatik ilerler. Daha az idari karmaşa. Daha öngörülebilir bakım.",
+    "description": "Docito; randevu, kayıtlar, laboratuvarlar, görüntüleme, eczaneler ve faturalama belgelerini birbirine bağlar; iş adımlar arasında otomatik ilerler. Daha az kaos, daha öngörülebilir bakım.",
     "flow": {
       "intake": {
         "title": "Otomatik kayıt",
@@ -268,8 +268,8 @@
         "description": "MR/BT/röntgen/USG istekleri, randevuları ve raporları uçtan uca koordine edin."
       },
       "billing": {
-        "title": "Bağlı faturalama ve ödemeler",
-        "description": "Faturalar, makbuzlar ve ödeme linkleri—randevu ve hizmetlerle senkron."
+        "title": "Faturalama belgeleri bağlı",
+        "description": "Faturalar, makbuzlar ve superbill—randevu ve hizmetlerle senkronize."
       },
       "reminders": {
         "title": "Akıllı hatırlatmalar ve takip",
@@ -337,31 +337,30 @@
     }
   },
   "insurance": {
-    "badge": "Sigorta Entegrasyonu",
-    "title": "Dünya genelindeki sigortacılarla çalışır",
-    "description": "Docito sigorta iş akışlarına global olarak entegre olur — doğrulama, faturalama ve talepler platform içinde yürür.",
+    "badge": "Sigortacıya hazır faturalama",
+    "title": "Dünya genelinde her sigortacı için superbill",
+    "description": "Docito, her ziyaretten sonra ayrıntılı superbill oluşturur; hastalar bunu herhangi bir ülke ve para biriminde sigortacılarına sunar.",
     "stepLabel": "Adım {{step}}",
     "steps": {
       "selectProvider": {
-        "title": "Sağlayıcı seçin",
-        "description": "Hasta randevu sırasında sigortasını seçer — kapsam anında kontrol edilir."
+        "title": "Sigortacı bilgilerini al",
+        "description": "Hastalar randevu sırasında sigortacılarını ekler ve bilgi superbill üzerinde görünür."
       },
       "verification": {
-        "title": "Anında doğrulama",
-        "description": "Uygunluk, katkı payı ve muafiyet detayları ziyaret öncesi görünür."
+        "title": "Ziyaret sonrası ayrıntılı",
+        "description": "İşlemler, kodlar ve ücretler otomatik olarak temiz bir superbill’de toplanır."
       },
       "directBilling": {
-        "title": "Doğrudan faturalama",
-        "description": "Talepler otomatik gönderilir — hasta yalnızca kendi payını öder."
+        "title": "Hasta sigortacıya sunar",
+        "description": "Superbill hastaya iletilir; geri ödeme için sunmaya hazırdır."
       }
     },
     "benefits": [
-      "Anında uygunluk kontrolleri",
-      "Doğrudan talep gönderimi",
-      "Hastalar için evrak yok",
-      "Ön onay desteği",
-      "Çoklu ödeyici uyumluluğu",
-      "Gerçek zamanlı talep durumu"
+      "Otomatik superbill oluşturma",
+      "Ayrıntılı işlem kodları",
+      "Çoklu para birimi desteği",
+      "Hastaya hazır PDF’ler",
+      "Her sigortacıyla çalışır"
     ]
   },
   "global": {
