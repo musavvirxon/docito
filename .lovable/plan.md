@@ -1,95 +1,75 @@
-## Part 1 — Why "Create Referral" still fails
+## Goal
 
-The constraint was only one of two blockers. The real blocker is two `AFTER INSERT` triggers on `public.referrals` whose function bodies reference columns that don't exist on the table:
+Replace marketing/UI copy that promises **"automatic insurance claim submission"** or **"in-platform payment processing"** with three new positionings, in every language:
 
-```sql
--- trigger_create_referral_conversation
-INSERT INTO conversations (..., created_by) VALUES (..., NEW.referrer_id);
-INSERT INTO conversation_participants (..., user_id, role)
-  VALUES (..., NEW.referrer_id, 'referrer'),
-         (..., NEW.patient_id,  'patient'),
-         (..., NEW.receiver_id, 'receiver');
+| Old positioning | New positioning |
+|---|---|
+| "Automatic insurance claims" / "insurance claim submission" / "process insurance claims" | **Automatic superbill generation** — generated instantly after every appointment, ready for the patient to submit to their insurer |
+| "In-platform payments" / "pay through the platform" / "accept online payments" (when describing earnings, charges, transactions) | **Billing documentation** |
+| "In-platform payments" (when describing dashboard revenue, outstanding balances, payment history) | **Revenue tracking & analytics** |
 
--- trigger_referral_messaging_permission
-INSERT INTO messaging_permissions (user_id, can_message_user_id, ...)
-  VALUES (NEW.referrer_id, NEW.patient_id, ...), ...
-```
+Tone stays professional and medical.
 
-Actual columns on `public.referrals` are `referrer_user_id` / `receiver_user_id` (no `referrer_id` / `receiver_id`). Every INSERT raises `record "new" has no field "referrer_id"`, the transaction aborts, and the dialog throws — that's why the button "does nothing".
+## Scope
 
-### Fix
+### In scope
+- All UI strings, labels, dashboard sections, onboarding text, marketing copy
+- All 11 language locale files (`en, es, de, pt, ru, tr, uz, ar, ja, ko, zh`) for the affected keys
+- Hardcoded English strings in components
 
-One migration that rewrites both trigger functions to use the real columns:
+### Out of scope (intentionally untouched)
+- Patient-side **insurance information storage** (patients listing their insurer, providers listing accepted plans) — this is metadata, not a "we submit your claim" promise. Legal page (`legal.json`) already correctly disclaims this and is left as-is.
+- Educational blog posts in `src/content/blog/posts/**` that discuss claim submission as general industry knowledge (not as a Docito feature).
+- Database tables, RPC functions, edge functions — only UI copy changes.
+- Stripe Connect functionality where it exists for facility-paid subscriptions to Docito itself (this is platform billing of facilities, not patient↔provider payments).
 
-- `create_referral_conversation`: read `NEW.referrer_user_id`, `NEW.receiver_user_id`. Skip participant inserts when the corresponding user id is NULL (covers walk-in patients with `patient_id IS NULL`, doctor-made patients, and general referrals with no specific receiver yet).
-- `create_referral_messaging_permission`: same column rename + same NULL-guard for every pair so the insert never crashes when one side isn't a user yet.
+## Files to update
 
-No application code change needed for Part 1 — the frontend already passes the right field names.
+### 1. Hardcoded component copy
+- `src/pages/Doctors.tsx` (line 43) — replace "Accept payments securely…" feature card with **Billing documentation** copy.
+- `src/pages/Index.tsx`, `src/pages/PremiumHome.tsx`, `src/components/HeroSection.tsx`, `src/components/FeaturesSection.tsx`, `src/components/InsuranceSection.tsx` — sweep for any remaining hardcoded "insurance claim" / "in-platform payment" / "accept payments" marketing strings and rebrand.
+- `src/pages/AdminDashboard.tsx` (lines ~3899-4059) — rename the **"Insurance Claims"** admin tab to **"Billing Documentation"**; relabel "Submit Claim" → "Generate Superbill"; "No insurance claims yet" → "No superbills generated yet". The underlying data structure stays; only labels change.
+- `src/components/pharmacy/PharmacyInsuranceClaims.tsx` — rename header "Billing & Insurance Claims" → "Billing Documentation"; "Submit Claim" button → "Generate Superbill"; subtitle and column copy rebranded. Component file name kept to avoid churn; only visible strings change.
+- `src/components/insurance/AdminInsuranceApproval.tsx` — copy review (the underlying RPC `process_insurance_request` is admin tooling for *patient insurance records*, not claim submission, so it stays — only verify no misleading user-facing copy).
 
----
+### 2. English locale keys to rewrite
+- `public/locales/en/features.json` → `billing.description`, `billing.benefit1`, `billing.benefit2`
+- `public/locales/en/practicePage.json` → `billingPayments.description`, `solution.bullets.paymentProcessing`
+- `public/locales/en/imagingPage.json` → `services.payments.*`, `howItWorks.steps.step5.description`
+- `public/locales/en/pharmacyPage.json` → `services.payments.*`, `howItWorks.steps.step5.description`
+- `public/locales/en/doctorPage.json` → `slowBilling.*`
+- `public/locales/en/premium.json` → `multiCurrency.description`
+- `public/locales/en/pharmacyAdminDashboard.json` → `billing.title`, `billing.subtitle`, `billing.metrics.*`
+- `public/locales/en/admin.json` → keys 465-495 (`insuranceClaims`, `submitClaim`, `newClaim`, `claimsTitle`, `claimSubmitted`, `noClaimsYet`, `claimsByStatus`, `claimsByInsurer`, `claimFieldsRequired`, etc.) become superbill / billing-documentation language. `acceptedInsurers` and `addInsurer*` (provider-side accepted plans metadata) stay.
 
-## Part 2 — One prescription backend across Doctor Dashboard + Appointment Session
+### 3. Mirror the same key changes in the 10 other locales
+For each updated EN key, write the translated equivalent in: `es, de, pt, ru, tr, uz, ar, ja, ko, zh`. Same JSON structure; values translated using the new positioning vocabulary.
 
-Today there are three places that touch prescriptions and they are inconsistent:
+## Replacement vocabulary (per language)
 
-| Surface | File | Backend |
-|---|---|---|
-| Doctor Dashboard → Prescriptions | `DoctorPrescriptionsSection.tsx` (`CreatorPanel`) | `usePrescriptions.createPrescription` (RPC `create_prescription`) — real |
-| `/appointment-session/:id` → Prescriptions tab | `AppointmentSession.tsx` → `PrescriptionCreator` | `usePrescriptions.createPrescription` — real ✅ |
-| Visit workspace (`VisitPage` → `PrescriptionTab`) | `src/components/visit/tabs/PrescriptionTab.tsx` | **Local component state + mock `MEDICATIONS` list. Never persisted.** |
+| Lang | Superbill generation | Billing documentation | Revenue tracking & analytics |
+|---|---|---|---|
+| en | Automatic superbill generation | Billing documentation | Revenue tracking & analytics |
+| es | Generación automática de superfacturas | Documentación de facturación | Seguimiento de ingresos y analítica |
+| de | Automatische Superbill-Erstellung | Abrechnungsdokumentation | Umsatz-Tracking & Analytik |
+| pt | Geração automática de superbills | Documentação de cobrança | Monitorização de receitas e análise |
+| ru | Автоматическое создание суперсчетов | Документация по биллингу | Отслеживание доходов и аналитика |
+| tr | Otomatik superbill oluşturma | Faturalama dokümantasyonu | Gelir takibi ve analitik |
+| uz | Avtomatik superbill yaratish | Hisob-kitob hujjatlari | Daromadni kuzatish va analitika |
+| ar | إنشاء فواتير سوبر تلقائي | توثيق الفواتير | تتبع الإيرادات والتحليلات |
+| ja | スーパービル自動生成 | 請求ドキュメント | 収益トラッキングと分析 |
+| ko | 슈퍼빌 자동 생성 | 청구 문서화 | 수익 추적 및 분석 |
+| zh | 自动生成超级账单 | 账单文档 | 收入跟踪与分析 |
 
-Goal: a single shared creator component used by all three, talking only to `usePrescriptions` / the `create_prescription` RPC. No mock medications anywhere.
+A short footnote sentence ("generated instantly after every appointment, ready for the patient to submit to their insurer") is added to the long-form descriptions where the current copy is descriptive (features.json, practicePage.json, imaging/pharmacy pages).
 
-### Refactor
+## Verification
 
-1. **Extract** the creator currently inlined in `DoctorPrescriptionsSection.tsx` into a reusable component:
+1. After edits, re-run `rg -ni "insurance claim|in[- ]platform payment|process.{0,15}insurance|pay through" src public/locales` and confirm zero remaining hits in UI/locale copy (blog posts excluded).
+2. Open Doctor landing page, Practice page, Imaging page, Pharmacy page, Admin → Billing tab, Pharmacy Admin → Billing tab in preview; spot-check the new copy renders and switching language to ES + AR shows the translated strings.
+3. Build runs clean.
 
-   ```
-   src/components/prescriptions/SharedPrescriptionCreator.tsx
-   ```
+## Out-of-scope follow-ups (flagged, not done)
 
-   Props:
-   ```ts
-   {
-     doctorId: string;
-     patientId?: string;          // pre-filled when known (visit / appointment)
-     appointmentId?: string;      // links Rx to appointment when present
-     patients?: Patient[];        // optional list when patient picker is needed
-     prefilledItems?: PrescriptionItem[];
-     recentMedications?: PrescriptionItem[];  // "From previous" chips
-     onCreated?: (rxId: string) => void;
-     compact?: boolean;           // dashboard = full, session/visit = compact
-   }
-   ```
-
-   It hides the patient selector when `patientId` is provided, shows it (with search) otherwise. It always calls `usePrescriptions().createPrescription` and downloads the PDF on success. No mock data, ever.
-
-2. **Doctor Dashboard**: `DoctorPrescriptionsSection.tsx` swaps its inlined `CreatorPanel` for `<SharedPrescriptionCreator />`. Behavior identical (patient selector + "From previous" + history).
-
-3. **Appointment Session** (`src/pages/AppointmentSession.tsx`): replace `import PrescriptionCreator` with `SharedPrescriptionCreator`, pass `doctorId`, `patientId`, `appointmentId` from the session context. (`PrescriptionCreator.tsx` is left in place for any other callers but is no longer the canonical path.)
-
-4. **Visit workspace** (`src/components/visit/tabs/PrescriptionTab.tsx`):
-   - Delete the mock `MEDICATIONS` array and the local-only "Add prescription" dialog.
-   - Render `<SharedPrescriptionCreator doctorId={...} patientId={...} appointmentId={...} compact />` for the entry form.
-   - Replace the local list with `usePrescriptions({ doctorId, patientId }).prescriptions` so the table shows the real, server-stored Rx for this patient (and updates in realtime).
-   - `VisitPage.tsx`: stop tracking `prescriptions` in local visit state for this tab; remove `handleAddPrescription` / `handleRemovePrescription` plumbing for prescriptions only (other visit fields stay). The visit page already receives `doctorId`/`patientId`/`appointmentId` — wire them through.
-
-5. **Cleanup**: remove now-unused `VisitPrescription` references inside `PrescriptionTab` (keep the type if other tabs still reference it; otherwise drop it from `types.ts`).
-
-### Out of scope
-
-- No schema / RLS / RPC changes for prescriptions — the existing `create_prescription` RPC already handles auth and items.
-- `ProcedurePrescriptionModal.tsx` is left untouched (it's an unrelated procedure-side prompt).
-- No changes to PDF download or pharmacy-send flows.
-
----
-
-## Technical summary
-
-- **Migration**: rewrite `create_referral_conversation` and `create_referral_messaging_permission` to use `referrer_user_id` / `receiver_user_id` and NULL-guard each insert.
-- **New file**: `src/components/prescriptions/SharedPrescriptionCreator.tsx` (single source of truth for Rx creation UI).
-- **Edits**:
-  - `src/components/doctor/prescriptions/DoctorPrescriptionsSection.tsx` — replace inline `CreatorPanel` with the shared creator.
-  - `src/pages/AppointmentSession.tsx` — swap `PrescriptionCreator` for the shared creator.
-  - `src/components/visit/tabs/PrescriptionTab.tsx` — replace mock dialog + local list with the shared creator + real `usePrescriptions` data.
-  - `src/components/visit/VisitPage.tsx` — drop local prescription state plumbing, pass IDs down.
+- Renaming the file `PharmacyInsuranceClaims.tsx` and the route `AdminInsuranceManagement.tsx` for code-level consistency. These can be renamed in a second pass if desired; UI copy is what users see.
+- Removing the `process_insurance_request` admin RPC if you decide insurance-record approval is no longer a workflow you want.
