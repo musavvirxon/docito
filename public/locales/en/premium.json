@@ -267,8 +267,8 @@
         "description": "Coordinate MRI/CT/X-ray/ultrasound orders, appointments, and reports end-to-end."
       },
       "billing": {
-        "title": "Billing & payments connected",
-        "description": "Invoices, receipts, and payment links—kept in sync with appointments and services."
+        "title": "Billing documentation connected",
+        "description": "Invoices, receipts, and superbills—kept in sync with appointments and services."
       },
       "reminders": {
         "title": "Smart reminders & follow-ups",
