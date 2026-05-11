@@ -54,8 +54,8 @@
         "solution": "Delivery scheduling, tracking, and patient updates"
       },
       "insuranceFriction": {
-        "problem": "Insurance verification and claims friction",
-        "solution": "Coverage checks and claim-ready workflows"
+        "problem": "Manual superbill paperwork for insurer reimbursement",
+        "solution": "Automatic superbill generation with itemized procedure codes"
       },
       "complianceRisk": {
         "problem": "Compliance risk and unclear access control",
