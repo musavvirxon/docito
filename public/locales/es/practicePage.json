@@ -81,7 +81,7 @@
         "recordsManagement": "Gestión de historiales clínicos",
         "treatmentPlanning": "Herramientas de planificación de tratamiento",
         "digitalPrescriptions": "Recetas digitales",
-        "insuranceVerification": "Verificación de seguros",
+        "insuranceVerification": "Datos de la aseguradora capturados para superbills",
         "paymentProcessing": "Documentación de facturación",
         "videoConsultations": "Consultas por video",
         "labImagingOrders": "Órdenes de laboratorio e imagen",

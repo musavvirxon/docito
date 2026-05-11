@@ -81,7 +81,7 @@
         "recordsManagement": "患者病历管理",
         "treatmentPlanning": "治疗计划工具",
         "digitalPrescriptions": "电子处方",
-        "insuranceVerification": "保险验证",
+        "insuranceVerification": "已记录保险公司信息用于Superbill",
         "paymentProcessing": "账单文档",
         "videoConsultations": "视频问诊",
         "labImagingOrders": "检验与影像申请",
