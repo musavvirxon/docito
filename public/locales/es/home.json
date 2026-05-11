@@ -3,9 +3,9 @@
     "badge": "Plataforma médica profesional",
     "title1": "Gestión integral",
     "title2": "de salud",
-    "description": "Pagos, agenda, registros y analítica en una plataforma segura para profesionales médicos",
+    "description": "Documentación de facturación, agenda, registros y analítica integradas para profesionales médicos",
     "features": {
-      "payments": "Procesamiento de pagos",
+      "payments": "Documentación de facturación",
       "scheduling": "Agenda",
       "records": "Registros",
       "analytics": "Analítica"
@@ -29,8 +29,8 @@
     "title": "Herramientas profesionales",
     "subtitle": "para la salud moderna",
     "paymentProcessing": {
-      "title": "Procesamiento de pagos",
-      "description": "Pagos seguros con soporte multi-moneda"
+      "title": "Documentación de facturación",
+      "description": "Registros de facturación detallados y generación automática de superfacturas en cualquier moneda local"
     },
     "schedulingManagement": {
       "title": "Gestión de agenda",
@@ -128,10 +128,22 @@
     "title": "Capacidades de la plataforma",
     "subtitle": "Reserva en 4 pasos",
     "steps": {
-      "search": { "title": "Buscar", "description": "Encuentra proveedores por especialidad y ubicación" },
-      "review": { "title": "Comparar", "description": "Revisa credenciales y reseñas verificadas" },
-      "book": { "title": "Reservar", "description": "Agenda al instante en línea" },
-      "care": { "title": "Atención", "description": "Recibe atención médica profesional" }
+      "search": {
+        "title": "Buscar",
+        "description": "Encuentra proveedores por especialidad y ubicación"
+      },
+      "review": {
+        "title": "Comparar",
+        "description": "Revisa credenciales y reseñas verificadas"
+      },
+      "book": {
+        "title": "Reservar",
+        "description": "Agenda al instante en línea"
+      },
+      "care": {
+        "title": "Atención",
+        "description": "Recibe atención médica profesional"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "Vista previa del dashboard con interfaz de gestión de pacientes" },
-    "appointments": { "altText": "Ilustración de calendario con fechas animadas" },
-    "prescriptions": { "altText": "Formulario de receta digital completándose" },
-    "files": { "altText": "Archivos organizándose en carpetas seguras" },
-    "notes": { "altText": "Notas clínicas siendo escritas" },
-    "dashboard": { "altText": "Dashboard interactivo con gráficos y métricas" },
-    "collaboration": { "altText": "Equipo colaborando en archivos de pacientes" },
-    "mobile": { "altText": "Demostración de la interfaz móvil" },
-    "success": { "altText": "Animación de celebración de éxito" },
-    "security": { "altText": "Escudo de seguridad protegiendo datos" }
+    "hero": {
+      "altText": "Vista previa del dashboard con interfaz de gestión de pacientes"
+    },
+    "appointments": {
+      "altText": "Ilustración de calendario con fechas animadas"
+    },
+    "prescriptions": {
+      "altText": "Formulario de receta digital completándose"
+    },
+    "files": {
+      "altText": "Archivos organizándose en carpetas seguras"
+    },
+    "notes": {
+      "altText": "Notas clínicas siendo escritas"
+    },
+    "dashboard": {
+      "altText": "Dashboard interactivo con gráficos y métricas"
+    },
+    "collaboration": {
+      "altText": "Equipo colaborando en archivos de pacientes"
+    },
+    "mobile": {
+      "altText": "Demostración de la interfaz móvil"
+    },
+    "success": {
+      "altText": "Animación de celebración de éxito"
+    },
+    "security": {
+      "altText": "Escudo de seguridad protegiendo datos"
+    }
   },
   "seo": {
     "title": "Docito® — Plataforma unificada de gestión sanitaria y reservas",

@@ -3,9 +3,9 @@
     "badge": "Professionelle Medizinplattform",
     "title1": "Komplette",
     "title2": "Healthcare-Management-Lösung",
-    "description": "Zahlungen, Terminplanung, Akten und Analytics — sicher vereint für medizinische Profis",
+    "description": "Integrierte Abrechnungsdokumentation, Terminplanung, Akten und Analytik für medizinische Profis",
     "features": {
-      "payments": "Zahlungsabwicklung",
+      "payments": "Abrechnungsdokumentation",
       "scheduling": "Terminplanung",
       "records": "Patientenakten",
       "analytics": "Analysen"
@@ -29,8 +29,8 @@
     "title": "Professionelle Tools",
     "subtitle": "für moderne Gesundheitsversorgung",
     "paymentProcessing": {
-      "title": "Zahlungsabwicklung",
-      "description": "Sichere Zahlungen mit Multi-Währungs-Support"
+      "title": "Abrechnungsdokumentation",
+      "description": "Detaillierte Abrechnungsdatensätze und automatische Superbill-Erstellung in jeder lokalen Währung"
     },
     "schedulingManagement": {
       "title": "Terminmanagement",
@@ -128,10 +128,22 @@
     "title": "Plattform-Funktionen",
     "subtitle": "In 4 Schritten zur Beratung",
     "steps": {
-      "search": { "title": "Suchen", "description": "Anbieter nach Fachgebiet und Standort finden" },
-      "review": { "title": "Vergleichen", "description": "Qualifikationen und verifizierte Bewertungen prüfen" },
-      "book": { "title": "Buchen", "description": "Termin sofort online planen" },
-      "care": { "title": "Behandlung", "description": "Professionelle Leistungen erhalten" }
+      "search": {
+        "title": "Suchen",
+        "description": "Anbieter nach Fachgebiet und Standort finden"
+      },
+      "review": {
+        "title": "Vergleichen",
+        "description": "Qualifikationen und verifizierte Bewertungen prüfen"
+      },
+      "book": {
+        "title": "Buchen",
+        "description": "Termin sofort online planen"
+      },
+      "care": {
+        "title": "Behandlung",
+        "description": "Professionelle Leistungen erhalten"
+      }
     }
   },
   "features": {
@@ -217,16 +229,36 @@
     }
   },
   "visuals": {
-    "hero": { "altText": "Dashboard-Vorschau mit Patientenmanagement" },
-    "appointments": { "altText": "Kalenderillustration mit animierten Daten" },
-    "prescriptions": { "altText": "Digitales Rezeptformular wird ausgefüllt" },
-    "files": { "altText": "Dateien werden in sichere Ordner organisiert" },
-    "notes": { "altText": "Klinische Notizen werden geschrieben" },
-    "dashboard": { "altText": "Interaktives Dashboard mit Charts und Metriken" },
-    "collaboration": { "altText": "Team arbeitet gemeinsam an Patientendateien" },
-    "mobile": { "altText": "Demonstration der mobilen App-Oberfläche" },
-    "success": { "altText": "Animation einer Erfolgsmeldung" },
-    "security": { "altText": "Sicherheits-Schild schützt Daten" }
+    "hero": {
+      "altText": "Dashboard-Vorschau mit Patientenmanagement"
+    },
+    "appointments": {
+      "altText": "Kalenderillustration mit animierten Daten"
+    },
+    "prescriptions": {
+      "altText": "Digitales Rezeptformular wird ausgefüllt"
+    },
+    "files": {
+      "altText": "Dateien werden in sichere Ordner organisiert"
+    },
+    "notes": {
+      "altText": "Klinische Notizen werden geschrieben"
+    },
+    "dashboard": {
+      "altText": "Interaktives Dashboard mit Charts und Metriken"
+    },
+    "collaboration": {
+      "altText": "Team arbeitet gemeinsam an Patientendateien"
+    },
+    "mobile": {
+      "altText": "Demonstration der mobilen App-Oberfläche"
+    },
+    "success": {
+      "altText": "Animation einer Erfolgsmeldung"
+    },
+    "security": {
+      "altText": "Sicherheits-Schild schützt Daten"
+    }
   },
   "seo": {
     "title": "Docito® — Einheitliche Plattform für Healthcare-Management & Terminbuchung",
