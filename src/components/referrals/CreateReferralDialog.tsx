@@ -1,6 +1,6 @@
 // Path: src/components/referrals/CreateReferralDialog.tsx
-import { useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, addDays } from 'date-fns';
@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { searchReceivers, getEstimatedDuration } from '@/lib/api/referral-api';
 import type { ReferralEntityType, ReferralType, CreateReferralInput } from '@/hooks/useReferrals';
@@ -50,6 +50,7 @@ const referralSchema = z
     referral_scope: z.enum(['specific', 'general']).default('specific'),
     receiver_type: z.enum(receiverEntityTypes),
     receiver_entity_id: z.string().optional(),
+    receiver_manual_name: z.string().trim().max(120).optional(),
     target_field: z.string().optional(),
     target_details_text: z.string().optional(),
     referral_type: z.enum([
@@ -69,11 +70,13 @@ const referralSchema = z
   .superRefine((val, ctx) => {
     const scope = val.referral_scope;
     if (scope === 'specific') {
-      if (!val.receiver_entity_id || !val.receiver_entity_id.trim()) {
+      const hasId = !!val.receiver_entity_id?.trim();
+      const hasManual = !!val.receiver_manual_name && val.receiver_manual_name.trim().length >= 2;
+      if (!hasId && !hasManual) {
         ctx.addIssue({
           path: ['receiver_entity_id'],
           code: z.ZodIssueCode.custom,
-          message: 'Please select a receiver',
+          message: 'Select a provider from the list or type a name below.',
         });
       }
     } else {
@@ -212,6 +215,7 @@ export const CreateReferralDialog = ({
     referral_scope: 'specific',
     receiver_type: 'doctor',
     receiver_entity_id: '',
+    receiver_manual_name: '',
     target_field: '',
     target_details_text: '',
     referral_type: 'consultation',
@@ -266,6 +270,7 @@ export const CreateReferralDialog = ({
     // Clear specific receiver selection if needed
     if (referralScope === 'specific') {
       form.setValue('receiver_entity_id', '');
+      form.setValue('receiver_manual_name', '');
       setSearchTerm('');
       setReceivers([]);
     }
@@ -280,6 +285,7 @@ export const CreateReferralDialog = ({
   useEffect(() => {
     if (referralScope === 'general') {
       form.setValue('receiver_entity_id', '');
+      form.setValue('receiver_manual_name', '');
       setSearchTerm('');
       setReceivers([]);
     } else {
@@ -293,11 +299,16 @@ export const CreateReferralDialog = ({
     try {
       const scope = data.referral_scope;
 
+      const specificId = scope === 'specific' ? data.receiver_entity_id?.trim() || undefined : undefined;
+      const manualName = scope === 'specific' && !specificId
+        ? data.receiver_manual_name?.trim() || undefined
+        : undefined;
+
       await onSubmit({
         patient_id: data.patient_id,
         receiver_type: data.receiver_type as ReferralEntityType,
-        receiver_entity_id:
-          scope === 'specific' ? data.receiver_entity_id?.trim() || undefined : undefined,
+        receiver_entity_id: specificId,
+        receiver_name: manualName,
 
         referral_scope: scope,
         target_field: (scope === 'general' ? data.target_field?.trim() || undefined : undefined) as ReferralEntityType | undefined,
@@ -343,6 +354,44 @@ export const CreateReferralDialog = ({
     [selectedReceiverType],
   );
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const handleInvalid = (errors: FieldErrors<FormData>) => {
+    const order: (keyof FormData)[] = [
+      'referral_scope',
+      'receiver_type',
+      'receiver_entity_id',
+      'receiver_manual_name',
+      'target_field',
+      'referral_type',
+      'priority',
+      'reason',
+      'clinical_notes',
+      'valid_until',
+    ];
+    const first = order.find((k) => (errors as any)[k]);
+    if (!first) return;
+    requestAnimationFrame(() => {
+      const el = scrollRef.current?.querySelector(`[name="${first}"]`) as HTMLElement | null;
+      const target = el?.closest('[data-form-item]') as HTMLElement | null;
+      (target ?? el)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      try { form.setFocus(first as any); } catch {}
+    });
+  };
+
+  const manualNamePlaceholder = (() => {
+    switch (selectedReceiverType) {
+      case 'doctor': return 'e.g., Dr. Jane Smith';
+      case 'clinic': return 'e.g., City Family Clinic';
+      case 'lab': return 'e.g., Acme Diagnostics Lab';
+      case 'imaging_center': return 'e.g., Downtown Imaging Center';
+      case 'pharmacy': return 'e.g., Green Cross Pharmacy';
+      default: return 'Provider name';
+    }
+  })();
+
+  const showInvalidBanner = form.formState.isSubmitted && !form.formState.isValid;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
@@ -352,8 +401,8 @@ export const CreateReferralDialog = ({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="flex-1 pr-4">
+          <form onSubmit={form.handleSubmit(handleSubmit, handleInvalid)} className="flex flex-col flex-1 min-h-0">
+            <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto pr-2">
               <div className="space-y-6 pb-4">
               {/* Referral Scope */}
               <FormField
@@ -470,7 +519,10 @@ export const CreateReferralDialog = ({
                                       'p-3 cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-between',
                                       field.value === receiver.id && 'bg-primary/10 border-l-2 border-primary',
                                     )}
-                                    onClick={() => field.onChange(receiver.id)}
+                                    onClick={() => {
+                                      field.onChange(receiver.id);
+                                      form.setValue('receiver_manual_name', '');
+                                    }}
                                   >
                                     <div>
                                       <p className="font-medium text-sm">
@@ -489,6 +541,33 @@ export const CreateReferralDialog = ({
                             )}
                           </div>
                         </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Manual receiver name (for off-platform providers) */}
+                  <FormField
+                    control={form.control}
+                    name="receiver_manual_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Can't find them? Enter name manually</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={manualNamePlaceholder}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              if (e.target.value.trim().length > 0) {
+                                form.setValue('receiver_entity_id', '');
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Use this for external providers not on Docito.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -616,6 +695,9 @@ export const CreateReferralDialog = ({
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      {Math.min((field.value || '').length, 999)}/10 characters minimum
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -719,7 +801,14 @@ export const CreateReferralDialog = ({
               </div>
 
               </div>
-            </ScrollArea>
+            </div>
+
+            {showInvalidBanner && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 mt-4 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>Please fix the highlighted fields above before creating the referral.</span>
+              </div>
+            )}
 
             {/* Submit - always visible outside scroll area */}
             <div className="flex justify-end gap-3 pt-4 border-t mt-4">
