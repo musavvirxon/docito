@@ -768,7 +768,14 @@ export const CreateReferralDialog = ({
               </div>
 
               </div>
-            </ScrollArea>
+            </div>
+
+            {showInvalidBanner && (
+              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 mt-4 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>Please fix the highlighted fields above before creating the referral.</span>
+              </div>
+            )}
 
             {/* Submit - always visible outside scroll area */}
             <div className="flex justify-end gap-3 pt-4 border-t mt-4">
