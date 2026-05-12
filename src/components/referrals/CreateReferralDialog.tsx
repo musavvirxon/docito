@@ -215,6 +215,7 @@ export const CreateReferralDialog = ({
     referral_scope: 'specific',
     receiver_type: 'doctor',
     receiver_entity_id: '',
+    receiver_manual_name: '',
     target_field: '',
     target_details_text: '',
     referral_type: 'consultation',
