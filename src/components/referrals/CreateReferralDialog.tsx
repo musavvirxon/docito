@@ -285,6 +285,7 @@ export const CreateReferralDialog = ({
   useEffect(() => {
     if (referralScope === 'general') {
       form.setValue('receiver_entity_id', '');
+      form.setValue('receiver_manual_name', '');
       setSearchTerm('');
       setReceivers([]);
     } else {
