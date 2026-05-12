@@ -1,80 +1,44 @@
-# Final copy sweep: payments, insurance, coverage, billing
+## Problem
 
-The earlier pass missed several strings on the home page (PremiumHome → `premium.json`) plus a few other surfaces. This pass cleans them up everywhere they still render in the UI.
+In `src/components/referrals/CreateReferralDialog.tsx`:
 
-## Replacement vocabulary (recap)
+1. **"Create Referral" button looks broken.** The runtime error log shows a Zod validation failure (`Reason must be at least 10 characters`). The button works, but when validation fails the error message renders inside the inner `ScrollArea` and the dialog doesn't auto-scroll to it, so the user doesn't see why nothing happens.
+2. **Lower fields feel hidden.** Same root cause — the form is wrapped in a Radix `ScrollArea` with `flex-1 min-h-0`, and inside the "specific" scope branch there is also a nested scrollable receiver list (`max-h-48 overflow-y-auto`). On many viewports the outer area doesn't scroll predictably, hiding Reason / Notes / Dates below the fold.
+3. **No way to enter a doctor / entity name manually** when search returns no result (e.g. external provider not on the platform).
 
-- "Collect payments / send payment links / card & link payments / online payments" → **Billing documentation** (invoices, receipts, superbills) — patients pay their insurer or provider directly outside the platform.
-- "Insurance verification / instant eligibility / coverage checks / pre-authorization / direct claims submission / claims submitted automatically" → **Automatic superbill generation** — Docito generates an itemized superbill instantly after each appointment, ready for the patient to submit to their insurer.
-- "Insurance & coverage / Insurance Integration / Works with insurance providers" → **Superbill-ready billing** / **Insurer-ready superbills** (kept neutral and professional; no claim that Docito processes claims).
+## Changes (UI / presentation only)
 
-## Scope
+### 1. Make submit failures visible
+- After `form.handleSubmit(handleSubmit)`, pass an `onInvalid` handler that:
+  - Finds the first field with an error via `form.formState.errors`.
+  - Scrolls its `FormItem` into view (`scrollIntoView({ block: 'center', behavior: 'smooth' })`) inside the ScrollArea viewport.
+  - Calls `form.setFocus(firstErrorName)`.
+- Also surface a single inline alert above the submit row when `formState.isSubmitted && !formState.isValid` saying "Please fix the highlighted fields below."
 
-### 1. `public/locales/en/premium.json` (drives the home page)
+### 2. Fix scrolling so all fields are reachable
+- Replace the Radix `ScrollArea` wrapper with a plain `<div className="flex-1 min-h-0 overflow-y-auto pr-2">`. Radix ScrollArea inside a flex column dialog frequently fails to size; native overflow is reliable here and keeps the sticky submit row.
+- Keep `DialogContent` at `max-w-2xl max-h-[90vh] flex flex-col` and the submit row outside the scroll container (already correct).
 
-- `platformPillars.items.insuranceCoverage` → rename to **"Insurer-ready superbills"**, description: "Itemized superbills generated after each visit—ready for patients to submit to their insurer."
-- `platformPillars.items.payments` → **"Billing documentation"**, description: "Invoices, receipts, and superbills tracked alongside every appointment."
-- `workflows.description` → drop "payments"; use "Scheduling, records, billing documentation, and insights—connected across your entire care journey."
-- `workflows.items.payments` → **"Billing documentation"**, description: "Generate invoices, receipts, and superbills—reconciled with each appointment."
-  - features → `["Itemized invoices", "Receipts & superbills", "Reconciliation"]`
-- `automation.description` → replace "and payments" with "and billing documentation".
-- `automation.flow.billing` → title **"Billing documentation connected"**, description: "Invoices, receipts, and superbills—kept in sync with appointments and services."
-- `insurance.*` block → reframe as **"Superbill generation"**:
-  - `badge` → "Insurer-ready billing"
-  - `title` → "Superbills built for every insurer, worldwide"
-  - `description` → "Docito generates itemized superbills after every visit—patients submit them to their insurer in any country, in any currency."
-  - `steps.selectProvider` → "Capture insurer details" / "Patients add their insurer during booking so it appears on the superbill."
-  - `steps.verification` → "Itemized after the visit" / "Procedures, codes, and charges are compiled into a clean superbill automatically."
-  - `steps.directBilling` → "Patient submits to insurer" / "The superbill is delivered to the patient, ready to submit for reimbursement."
-  - `benefits` → `["Automatic superbill generation", "Itemized procedure codes", "Multi-currency support", "Patient-ready PDFs", "Works with any insurer"]`
-- `global.features.multiCurrency.description` → already says "Document billing"; keep.
-- Remove stray "payment links" phrasing in `automation.flow.billing` (handled above).
+### 3. Add manual receiver name entry (specific scope)
+- Add a new optional schema field `receiver_manual_name: z.string().trim().max(120).optional()`.
+- Update the `superRefine` for `specific` scope: pass validation if **either** `receiver_entity_id` is set **or** `receiver_manual_name` is non-empty (≥ 2 chars). Error message: "Select a provider from the list or type a name below."
+- Under the receiver search/list, render a new `FormField` for `receiver_manual_name`:
+  - Label: "Can't find them? Enter name manually"
+  - Input placeholder per receiver type (e.g. "Dr. Jane Smith", "City Imaging Center").
+  - FormDescription: "Use this for external providers not on Docito."
+  - Typing into it clears `receiver_entity_id` (and vice versa) so only one path is active.
+- In `handleSubmit`, when scope is `specific`:
+  - If `receiver_entity_id` is set, send it as today.
+  - Else send `receiver_entity_id: undefined` and `receiver_name: data.receiver_manual_name?.trim()` (the field already exists on `CreateReferralInput` in `src/hooks/useReferrals.ts`, no backend change needed).
 
-### 2. Other locales (es, de, pt, ru, tr, uz, ar, ja, ko, zh) — `premium.json`
+### 4. Minor polish
+- Reset `receiver_manual_name` together with `receiver_entity_id` whenever scope or receiver_type changes.
+- Make the Reason field's `FormDescription` show the live character count (`{value.length}/10 min`) so users see why the form blocks them before submit.
 
-Mirror the same key changes via a small Node script; English fallback used where translation gap is acceptable, then replace the few high-visibility strings with localized equivalents using the same vocabulary already established in the previous rebrand (Billing Documentation / Automatic Superbill Generation / Revenue Tracking & Analytics translations already exist in those locale files for other namespaces and will be reused).
+## Out of scope
+- No changes to `useReferrals` hook, `referral-api`, schema, or DB. `receiver_name` is already supported on `CreateReferralInput`.
+- No copy changes outside this dialog.
+- No translation changes (dialog currently uses hardcoded English strings; matching the existing style).
 
-### 3. `public/locales/en/faqs.json`
-
-- `payment.answer` → remove "work with insurance providers"; rephrase as: "We accept major credit/debit cards and HSA/FSA cards for service charges. Itemized superbills are generated automatically so you can submit them to your insurer for reimbursement."
-- `insurance.question` → "Can I use my insurance with Docito?"
-- `insurance.answer` → "Docito generates an itemized superbill after every appointment that you can submit to your insurer for reimbursement, according to your plan's out-of-network or telemedicine benefits."
-- Mirror to all other locales.
-
-### 4. `public/locales/en/practicePage.json`
-
-- `solution.bullets.insuranceVerification` → "Insurer details captured for superbills"
-- (already updated `paymentProcessing` → "Billing documentation") — verify no stragglers.
-- Mirror to all locales.
-
-### 5. `public/locales/en/doctorPage.json`
-
-- `pain.painPoints.slowBilling.description` (and any sibling keys still referencing manual claims/payment collection) → reframe around "manual invoicing and superbill paperwork".
-- Mirror to all locales.
-
-### 6. `src/components/home/TrustIndicators.tsx`
-
-- `"Insurance Supported"` / `"Works with major insurance providers"` → **"Superbill-Ready Billing"** / **"Itemized superbills generated for every visit, ready to submit to any insurer."**
-
-### 7. `src/components/InsuranceSection.tsx` (legacy hardcoded section)
-
-Quick check: confirm whether it's still mounted anywhere. If still rendered, rewrite headline/CTA:
-- Heading → "Superbills accepted by every major insurer"
-- Sub → "Add your insurer so it appears on your superbill"
-- CTA → "Add your insurer details"
-
-If it isn't mounted on any live route, leave it untouched (out of scope for a copy sweep) and note it in the closing message.
-
-### 8. Out of scope (intentionally untouched)
-
-- `accepts_insurance` boolean fields on `labs`/`pharmacies` data and the `"Insurance" / "No insurance"` chips in `TopLabs.tsx` / `NearbyPharmacies.tsx` — these reflect whether the facility accepts insurance for direct billing in their own systems, which is factual provider metadata, not a claim about Docito processing payments. Confirm with user before changing if desired.
-- Search filter input labelled "Insurance" in `SmartSearch.tsx` / `ProminentSearchBar.tsx` — this is a search facet for finding in-network providers; it does not imply Docito processes insurance.
-- `pharmacy.json`, `legal.json`, `dashboard.json` operational copy — already covered in earlier pass; spot-check only.
-- Patient-side stored insurance metadata, blog posts, DB tables, edge functions.
-
-## Verification
-
-After edits:
-1. `rg -n -i "collect payment|payment link|claim|insurance verification|coverage check|direct billing|eligibility check" public/locales/ src/components/home src/pages/Index.tsx src/pages/PremiumHome.tsx` → must return no UI hits.
-2. Reload `/` in preview, scroll through every section (hero → platform pillars → workflows → automation → insurance → global → FAQ → footer) and confirm the new copy renders cleanly and the section formerly titled "Insurance & Coverage" now reads as superbill-focused.
-3. Spot-check one non-English locale (e.g. `es`) on the same page to confirm translations updated.
+## Files touched
+- `src/components/referrals/CreateReferralDialog.tsx` (only)
