@@ -270,6 +270,7 @@ export const CreateReferralDialog = ({
     // Clear specific receiver selection if needed
     if (referralScope === 'specific') {
       form.setValue('receiver_entity_id', '');
+      form.setValue('receiver_manual_name', '');
       setSearchTerm('');
       setReceivers([]);
     }
