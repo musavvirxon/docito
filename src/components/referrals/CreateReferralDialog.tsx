@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { searchReceivers, getEstimatedDuration } from '@/lib/api/referral-api';
 import type { ReferralEntityType, ReferralType, CreateReferralInput } from '@/hooks/useReferrals';
