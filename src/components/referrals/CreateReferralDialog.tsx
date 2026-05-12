@@ -695,6 +695,9 @@ export const CreateReferralDialog = ({
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      {Math.min((field.value || '').length, 999)}/10 characters minimum
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
