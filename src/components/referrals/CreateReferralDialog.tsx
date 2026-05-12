@@ -519,7 +519,10 @@ export const CreateReferralDialog = ({
                                       'p-3 cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-between',
                                       field.value === receiver.id && 'bg-primary/10 border-l-2 border-primary',
                                     )}
-                                    onClick={() => field.onChange(receiver.id)}
+                                    onClick={() => {
+                                      field.onChange(receiver.id);
+                                      form.setValue('receiver_manual_name', '');
+                                    }}
                                   >
                                     <div>
                                       <p className="font-medium text-sm">
