@@ -629,6 +629,7 @@ function cancelIdle(id: number) {
 function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const globeRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
+  const { invalidate } = useThree();
 
   const cacheKey = isMobile ? "mobile" : "desktop";
   const [textures, setTextures] = useState<GlobeTextures | null>(() => {
@@ -636,6 +637,11 @@ function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean 
       ? globeTextureCache.mobile ?? null
       : globeTextureCache.desktop ?? null;
   });
+
+  // Ensure the demand-driven frameloop renders as soon as textures become available
+  useEffect(() => {
+    if (textures) invalidate();
+  }, [textures, invalidate]);
 
   useEffect(() => {
     let cancelled = false;
