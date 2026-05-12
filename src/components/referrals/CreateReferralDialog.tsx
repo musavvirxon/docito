@@ -50,6 +50,7 @@ const referralSchema = z
     referral_scope: z.enum(['specific', 'general']).default('specific'),
     receiver_type: z.enum(receiverEntityTypes),
     receiver_entity_id: z.string().optional(),
+    receiver_manual_name: z.string().trim().max(120).optional(),
     target_field: z.string().optional(),
     target_details_text: z.string().optional(),
     referral_type: z.enum([
@@ -69,11 +70,13 @@ const referralSchema = z
   .superRefine((val, ctx) => {
     const scope = val.referral_scope;
     if (scope === 'specific') {
-      if (!val.receiver_entity_id || !val.receiver_entity_id.trim()) {
+      const hasId = !!val.receiver_entity_id?.trim();
+      const hasManual = !!val.receiver_manual_name && val.receiver_manual_name.trim().length >= 2;
+      if (!hasId && !hasManual) {
         ctx.addIssue({
           path: ['receiver_entity_id'],
           code: z.ZodIssueCode.custom,
-          message: 'Please select a receiver',
+          message: 'Select a provider from the list or type a name below.',
         });
       }
     } else {
