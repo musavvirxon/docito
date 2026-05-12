@@ -354,6 +354,44 @@ export const CreateReferralDialog = ({
     [selectedReceiverType],
   );
 
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  const handleInvalid = (errors: FieldErrors<FormData>) => {
+    const order: (keyof FormData)[] = [
+      'referral_scope',
+      'receiver_type',
+      'receiver_entity_id',
+      'receiver_manual_name',
+      'target_field',
+      'referral_type',
+      'priority',
+      'reason',
+      'clinical_notes',
+      'valid_until',
+    ];
+    const first = order.find((k) => (errors as any)[k]);
+    if (!first) return;
+    requestAnimationFrame(() => {
+      const el = scrollRef.current?.querySelector(`[name="${first}"]`) as HTMLElement | null;
+      const target = el?.closest('[data-form-item]') as HTMLElement | null;
+      (target ?? el)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      try { form.setFocus(first as any); } catch {}
+    });
+  };
+
+  const manualNamePlaceholder = (() => {
+    switch (selectedReceiverType) {
+      case 'doctor': return 'e.g., Dr. Jane Smith';
+      case 'clinic': return 'e.g., City Family Clinic';
+      case 'lab': return 'e.g., Acme Diagnostics Lab';
+      case 'imaging_center': return 'e.g., Downtown Imaging Center';
+      case 'pharmacy': return 'e.g., Green Cross Pharmacy';
+      default: return 'Provider name';
+    }
+  })();
+
+  const showInvalidBanner = form.formState.isSubmitted && !form.formState.isValid;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
@@ -363,8 +401,8 @@ export const CreateReferralDialog = ({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="flex-1 pr-4">
+          <form onSubmit={form.handleSubmit(handleSubmit, handleInvalid)} className="flex flex-col flex-1 min-h-0">
+            <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto pr-2">
               <div className="space-y-6 pb-4">
               {/* Referral Scope */}
               <FormField
