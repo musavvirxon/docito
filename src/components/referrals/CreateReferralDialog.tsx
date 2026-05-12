@@ -299,11 +299,16 @@ export const CreateReferralDialog = ({
     try {
       const scope = data.referral_scope;
 
+      const specificId = scope === 'specific' ? data.receiver_entity_id?.trim() || undefined : undefined;
+      const manualName = scope === 'specific' && !specificId
+        ? data.receiver_manual_name?.trim() || undefined
+        : undefined;
+
       await onSubmit({
         patient_id: data.patient_id,
         receiver_type: data.receiver_type as ReferralEntityType,
-        receiver_entity_id:
-          scope === 'specific' ? data.receiver_entity_id?.trim() || undefined : undefined,
+        receiver_entity_id: specificId,
+        receiver_name: manualName,
 
         referral_scope: scope,
         target_field: (scope === 'general' ? data.target_field?.trim() || undefined : undefined) as ReferralEntityType | undefined,
