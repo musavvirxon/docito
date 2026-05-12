@@ -545,6 +545,33 @@ export const CreateReferralDialog = ({
                       </FormItem>
                     )}
                   />
+
+                  {/* Manual receiver name (for off-platform providers) */}
+                  <FormField
+                    control={form.control}
+                    name="receiver_manual_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Can't find them? Enter name manually</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder={manualNamePlaceholder}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              if (e.target.value.trim().length > 0) {
+                                form.setValue('receiver_entity_id', '');
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Use this for external providers not on Docito.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </>
               ) : (
                 <>
