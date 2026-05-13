@@ -151,6 +151,11 @@ function ProcedureRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm">{item.name}</span>
+          {item.code && (
+            <Badge variant="secondary" className="text-[10px] font-mono">
+              {item.code}
+            </Badge>
+          )}
           <Badge className={statusBadge(item.status)}>{item.status.replace('_', ' ')}</Badge>
           {item.toothNumbers.length > 0 && (
             <Badge variant="outline" className="text-xs">
