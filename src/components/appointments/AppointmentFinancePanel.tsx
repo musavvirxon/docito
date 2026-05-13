@@ -113,7 +113,11 @@ export function AppointmentFinancePanel({
         currency: finance.currency,
         items: procedures.length
           ? procedures.map((p) => ({
-              name: p.name + (p.toothNumbers?.length ? ` (Teeth ${p.toothNumbers.join(',')})` : ''),
+              name:
+                (p.code ? `[${p.code}] ` : '') +
+                p.name +
+                (p.toothNumbers?.length ? ` (Teeth ${p.toothNumbers.join(',')})` : ''),
+              code: p.code || undefined,
               amount: p.cost || 0,
             }))
           : [{ name: 'Consultation', amount: finance.totalBilled }],
