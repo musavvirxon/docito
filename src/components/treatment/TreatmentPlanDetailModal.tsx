@@ -263,6 +263,7 @@ const TreatmentPlanDetailModal = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Code</TableHead>
                       <TableHead>Procedure</TableHead>
                       <TableHead>Teeth</TableHead>
                       <TableHead>Cost</TableHead>
@@ -273,6 +274,9 @@ const TreatmentPlanDetailModal = ({
                   <TableBody>
                     {procedures.map((proc) => (
                       <TableRow key={proc.id}>
+                        <TableCell className="font-mono text-xs">
+                          {proc.procedure.code || '—'}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{proc.procedure.name}</p>
