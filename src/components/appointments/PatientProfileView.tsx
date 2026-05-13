@@ -601,6 +601,9 @@ export const PatientProfileView = ({
                             </p>
                             {appt.procedure_name && (
                               <Badge variant="secondary" className="mt-2">
+                                {appt.procedure_code && (
+                                  <span className="font-mono mr-1">[{appt.procedure_code}]</span>
+                                )}
                                 {appt.procedure_name}
                               </Badge>
                             )}
