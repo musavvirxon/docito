@@ -554,10 +554,6 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
             Create your first prescription to get started
           </p>
         </div>
-        <Button onClick={onCreate}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create your first prescription
-        </Button>
       </CardContent>
     </Card>
   );
