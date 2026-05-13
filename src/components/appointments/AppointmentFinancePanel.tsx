@@ -30,7 +30,7 @@ interface Props {
   patientName: string;
   appointmentDate?: string;
   doctorName?: string;
-  procedures?: Array<{ name: string; cost: number | null; toothNumbers?: number[] }>;
+  procedures?: Array<{ name: string; code?: string | null; cost: number | null; toothNumbers?: number[] }>;
 }
 
 const fmt = (n: number, currency = 'USD') =>
