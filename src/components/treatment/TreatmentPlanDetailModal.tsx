@@ -75,7 +75,7 @@ const TreatmentPlanDetailModal = ({
         .from("treatment_plan_procedures")
         .select(`
           *,
-          procedure:procedures(name, category, type, default_cost)
+          procedure:procedures(name, code, category, type, default_cost)
         `)
         .eq("treatment_plan_id", treatmentPlan.id)
         .order("sequence_order");
