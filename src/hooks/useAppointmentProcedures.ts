@@ -50,12 +50,12 @@ export function useAppointmentProcedures({
       const [dentalRes, generalRes] = await Promise.all([
         supabase
           .from('tooth_procedure_history')
-          .select('id,procedure_id,procedure_name,tooth_numbers,status,cost,notes,performed_at,created_at')
+          .select('id,procedure_id,procedure_name,tooth_numbers,status,cost,notes,performed_at,created_at,procedure:procedures(code)')
           .eq('appointment_id', appointmentId)
           .order('created_at', { ascending: false }),
         supabase
           .from('appointment_procedures')
-          .select('id,procedure_id,procedure_notes,estimated_cost,status,created_at,procedure:procedures(name)')
+          .select('id,procedure_id,procedure_notes,estimated_cost,status,created_at,procedure:procedures(name,code)')
           .eq('appointment_id', appointmentId)
           .order('created_at', { ascending: false }),
       ]);
@@ -64,6 +64,7 @@ export function useAppointmentProcedures({
         id: r.id,
         source: 'dental',
         name: r.procedure_name || 'Procedure',
+        code: r.procedure?.code || null,
         status: (r.status as ProcedureStatus) || 'planned',
         cost: r.cost == null ? null : Number(r.cost),
         notes: r.notes || null,
@@ -77,6 +78,7 @@ export function useAppointmentProcedures({
         id: r.id,
         source: 'general',
         name: r.procedure?.name || 'Procedure',
+        code: r.procedure?.code || null,
         status: (r.status as ProcedureStatus) || 'planned',
         cost: r.estimated_cost == null ? null : Number(r.estimated_cost),
         notes: r.procedure_notes || null,
