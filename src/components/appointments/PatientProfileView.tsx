@@ -515,7 +515,12 @@ export const PatientProfileView = ({
                             {format(new Date(appt.appointment_date), 'MMM d, yyyy')} at {appt.start_time}
                           </p>
                           {appt.procedure_name && (
-                            <p className="text-xs text-muted-foreground">{appt.procedure_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {appt.procedure_code && (
+                                <span className="font-mono mr-1">[{appt.procedure_code}]</span>
+                              )}
+                              {appt.procedure_name}
+                            </p>
                           )}
                         </div>
                         <Badge variant="outline" className="capitalize text-xs">
