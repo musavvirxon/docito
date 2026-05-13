@@ -55,6 +55,7 @@ interface AppointmentHistoryItem {
   status: string;
   notes?: string;
   procedure_name?: string;
+  procedure_code?: string;
   doctor_name?: string;
 }
 
