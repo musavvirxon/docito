@@ -355,6 +355,28 @@ const AddProcedureModal = ({
               )}
             />
 
+            {/* Procedure / Billing Code */}
+            <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Procedure Code</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., D2740, 99213, CPT/CDT/HCPCS code"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Optional billing code shown on appointment summaries, treatment plans, invoices, and superbills.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {/* Category */}
             <FormField
               control={form.control}
