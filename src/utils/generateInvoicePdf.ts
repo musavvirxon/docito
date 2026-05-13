@@ -4,6 +4,7 @@ export interface InvoiceLineItem {
   name: string;
   amount: number;
   quantity?: number;
+  code?: string;
 }
 
 export interface InvoicePaymentRow {
