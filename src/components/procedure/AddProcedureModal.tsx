@@ -91,6 +91,7 @@ const AddProcedureModal = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      code: "",
       category: "",
       default_cost: undefined,
       notes: "",
