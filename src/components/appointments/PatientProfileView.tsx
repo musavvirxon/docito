@@ -171,13 +171,13 @@ export const PatientProfileView = ({
       const appointmentQuery = patientType === 'registered'
         ? supabase
             .from('appointments')
-            .select('*, procedures:procedure_id(name)')
+            .select('*, procedures:procedure_id(name, code)')
             .eq('patient_id', patientId)
             .order('appointment_date', { ascending: false })
             .limit(20)
         : supabase
             .from('appointments')
-            .select('*, procedures:procedure_id(name)')
+            .select('*, procedures:procedure_id(name, code)')
             .eq('doctor_patient_id', patientId)
             .order('appointment_date', { ascending: false })
             .limit(20);
@@ -190,6 +190,7 @@ export const PatientProfileView = ({
         status: a.status,
         notes: a.notes,
         procedure_name: a.procedures?.name,
+        procedure_code: a.procedures?.code,
       })));
 
       // Fetch lab results (only for registered patients)
