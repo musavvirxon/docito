@@ -272,6 +272,7 @@ const AddProcedureModal = ({
       const procedureData = {
         dentist_id: dentistId, // ✅ doctors.id (RLS-safe)
         name: values.name,
+        code: values.code?.trim() ? values.code.trim() : null,
         category: finalCategory as any,
         type: hasFollowup ? "multi_visit" as any : "single_visit" as any,
         default_cost: values.default_cost || null,
