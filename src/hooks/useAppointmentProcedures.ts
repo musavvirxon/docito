@@ -8,6 +8,7 @@ export interface UnifiedProcedure {
   id: string;
   source: 'dental' | 'general';
   name: string;
+  code: string | null;
   status: ProcedureStatus;
   cost: number | null;
   notes: string | null;
