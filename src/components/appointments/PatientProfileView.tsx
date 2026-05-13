@@ -55,6 +55,7 @@ interface AppointmentHistoryItem {
   status: string;
   notes?: string;
   procedure_name?: string;
+  procedure_code?: string;
   doctor_name?: string;
 }
 
@@ -170,13 +171,13 @@ export const PatientProfileView = ({
       const appointmentQuery = patientType === 'registered'
         ? supabase
             .from('appointments')
-            .select('*, procedures:procedure_id(name)')
+            .select('*, procedures:procedure_id(name, code)')
             .eq('patient_id', patientId)
             .order('appointment_date', { ascending: false })
             .limit(20)
         : supabase
             .from('appointments')
-            .select('*, procedures:procedure_id(name)')
+            .select('*, procedures:procedure_id(name, code)')
             .eq('doctor_patient_id', patientId)
             .order('appointment_date', { ascending: false })
             .limit(20);
@@ -189,6 +190,7 @@ export const PatientProfileView = ({
         status: a.status,
         notes: a.notes,
         procedure_name: a.procedures?.name,
+        procedure_code: a.procedures?.code,
       })));
 
       // Fetch lab results (only for registered patients)
@@ -513,7 +515,12 @@ export const PatientProfileView = ({
                             {format(new Date(appt.appointment_date), 'MMM d, yyyy')} at {appt.start_time}
                           </p>
                           {appt.procedure_name && (
-                            <p className="text-xs text-muted-foreground">{appt.procedure_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {appt.procedure_code && (
+                                <span className="font-mono mr-1">[{appt.procedure_code}]</span>
+                              )}
+                              {appt.procedure_name}
+                            </p>
                           )}
                         </div>
                         <Badge variant="outline" className="capitalize text-xs">
@@ -594,6 +601,9 @@ export const PatientProfileView = ({
                             </p>
                             {appt.procedure_name && (
                               <Badge variant="secondary" className="mt-2">
+                                {appt.procedure_code && (
+                                  <span className="font-mono mr-1">[{appt.procedure_code}]</span>
+                                )}
                                 {appt.procedure_name}
                               </Badge>
                             )}

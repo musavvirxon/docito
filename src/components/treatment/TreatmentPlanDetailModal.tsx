@@ -37,6 +37,7 @@ interface TreatmentPlanProcedure {
   created_at: string;
   procedure: {
     name: string;
+    code?: string | null;
     category: string;
     type: string;
     default_cost?: number;
@@ -74,7 +75,7 @@ const TreatmentPlanDetailModal = ({
         .from("treatment_plan_procedures")
         .select(`
           *,
-          procedure:procedures(name, category, type, default_cost)
+          procedure:procedures(name, code, category, type, default_cost)
         `)
         .eq("treatment_plan_id", treatmentPlan.id)
         .order("sequence_order");
@@ -262,6 +263,7 @@ const TreatmentPlanDetailModal = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Code</TableHead>
                       <TableHead>Procedure</TableHead>
                       <TableHead>Teeth</TableHead>
                       <TableHead>Cost</TableHead>
@@ -272,6 +274,9 @@ const TreatmentPlanDetailModal = ({
                   <TableBody>
                     {procedures.map((proc) => (
                       <TableRow key={proc.id}>
+                        <TableCell className="font-mono text-xs">
+                          {proc.procedure.code || '—'}
+                        </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">{proc.procedure.name}</p>

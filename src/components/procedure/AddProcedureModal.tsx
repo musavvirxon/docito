@@ -43,6 +43,7 @@ const normalizeProcedureCategory = (value: string) => PROCEDURE_CATEGORY_ALIASES
 
 const formSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
+  code: z.string().max(32, "Code is too long").optional(),
   category: z.string().min(1, "Category is required"),
   default_cost: z.number().min(0, "Cost must be a positive number").optional(),
   notes: z.string().optional(),
@@ -90,6 +91,7 @@ const AddProcedureModal = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      code: "",
       category: "",
       default_cost: undefined,
       notes: "",
@@ -270,6 +272,7 @@ const AddProcedureModal = ({
       const procedureData = {
         dentist_id: dentistId, // ✅ doctors.id (RLS-safe)
         name: values.name,
+        code: values.code?.trim() ? values.code.trim() : null,
         category: finalCategory as any,
         type: hasFollowup ? "multi_visit" as any : "single_visit" as any,
         default_cost: values.default_cost || null,
@@ -347,6 +350,28 @@ const AddProcedureModal = ({
                   <FormControl>
                     <Input placeholder="e.g., Dental Crown, Blood Test" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Procedure / Billing Code */}
+            <FormField
+              control={form.control}
+              name="code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Procedure Code</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., D2740, 99213, CPT/CDT/HCPCS code"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Optional billing code shown on appointment summaries, treatment plans, invoices, and superbills.
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

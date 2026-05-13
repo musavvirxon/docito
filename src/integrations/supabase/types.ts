@@ -6930,6 +6930,7 @@ export type Database = {
       procedures: {
         Row: {
           category: Database["public"]["Enums"]["procedure_category"] | null
+          code: string | null
           created_at: string | null
           default_cost: number | null
           default_notes_template: string | null
@@ -6956,6 +6957,7 @@ export type Database = {
         }
         Insert: {
           category?: Database["public"]["Enums"]["procedure_category"] | null
+          code?: string | null
           created_at?: string | null
           default_cost?: number | null
           default_notes_template?: string | null
@@ -6982,6 +6984,7 @@ export type Database = {
         }
         Update: {
           category?: Database["public"]["Enums"]["procedure_category"] | null
+          code?: string | null
           created_at?: string | null
           default_cost?: number | null
           default_notes_template?: string | null
