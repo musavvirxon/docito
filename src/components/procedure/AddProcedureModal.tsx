@@ -43,6 +43,7 @@ const normalizeProcedureCategory = (value: string) => PROCEDURE_CATEGORY_ALIASES
 
 const formSchema = z.object({
   name: z.string().min(1, "Procedure name is required"),
+  code: z.string().max(32, "Code is too long").optional(),
   category: z.string().min(1, "Category is required"),
   default_cost: z.number().min(0, "Cost must be a positive number").optional(),
   notes: z.string().optional(),
