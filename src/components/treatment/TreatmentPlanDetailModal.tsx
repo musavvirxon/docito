@@ -37,6 +37,7 @@ interface TreatmentPlanProcedure {
   created_at: string;
   procedure: {
     name: string;
+    code?: string | null;
     category: string;
     type: string;
     default_cost?: number;
