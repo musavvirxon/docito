@@ -92,7 +92,8 @@ export function generateInvoicePdf(data: InvoiceData) {
   pdf.setFillColor(245, 247, 250);
   pdf.rect(margin, y - 4, pageW - margin * 2, 8, 'F');
   pdf.setFont('helvetica', 'bold');
-  pdf.text('Description', margin + 2, y + 1);
+  pdf.text('Code', margin + 2, y + 1);
+  pdf.text('Description', margin + 28, y + 1);
   pdf.text('Amount', pageW - margin - 2, y + 1, { align: 'right' });
   y += 8;
 
@@ -102,8 +103,9 @@ export function generateInvoicePdf(data: InvoiceData) {
       pdf.addPage();
       y = margin;
     }
-    const lines = pdf.splitTextToSize(item.name, pageW - margin * 2 - 40);
-    pdf.text(lines, margin + 2, y);
+    const lines = pdf.splitTextToSize(item.name, pageW - margin * 2 - 65);
+    pdf.text(item.code || '—', margin + 2, y);
+    pdf.text(lines, margin + 28, y);
     pdf.text(money(item.amount, data.currency), pageW - margin - 2, y, { align: 'right' });
     y += Math.max(6, lines.length * 5);
   }
