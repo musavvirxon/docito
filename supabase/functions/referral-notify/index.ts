@@ -122,7 +122,10 @@ serve(async (req) => {
     }
 
     const patientId = String((referral as any).patient_id || "").trim();
-    if (!isUuid(patientId)) return json({ ok: false, error: "Referral has invalid patient_id" }, 500);
+    // For unregistered (doctor-created) patients there is no auth user to notify — skip gracefully.
+    if (!isUuid(patientId)) {
+      return json({ ok: true, skipped: true, reason: "no_registered_patient" }, 200);
+    }
 
     // 3) Authorization: must be referrer OR have access to referrer entity/doctor OR super_admin
     const isSuper = roles.includes("super_admin");
