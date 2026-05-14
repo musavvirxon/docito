@@ -1087,6 +1087,45 @@ serve(async (req) => {
     }
     (referral as any).patient = patientProfile;
 
+    // Hydrate referrer / receiver display names (parallel, fail-safe)
+    const entityTableFor = (t?: string | null): string | null => {
+      switch ((t || "").toLowerCase()) {
+        case "clinic": return "clinics";
+        case "hospital": return "hospitals";
+        case "laboratory":
+        case "lab": return "laboratories";
+        case "pharmacy": return "pharmacies";
+        case "doctor": return "doctors";
+        default: return null;
+      }
+    };
+    const fetchUserName = async (uid?: string | null): Promise<string | null> => {
+      if (!uid) return null;
+      try {
+        const { data } = await service.from("profiles").select("full_name").eq("user_id", uid).maybeSingle();
+        return ((data as any)?.full_name as string) || null;
+      } catch { return null; }
+    };
+    const fetchEntityName = async (etype?: string | null, eid?: string | null): Promise<string | null> => {
+      const tbl = entityTableFor(etype);
+      if (!tbl || !eid) return null;
+      try {
+        const { data } = await service.from(tbl).select("name").eq("id", eid).maybeSingle();
+        return ((data as any)?.name as string) || null;
+      } catch { return null; }
+    };
+    const r0: any = referral;
+    const [referrerUserName, receiverUserName, referrerEntityName, receiverEntityName] = await Promise.all([
+      fetchUserName(r0.referrer_user_id),
+      fetchUserName(r0.receiver_user_id),
+      fetchEntityName(r0.referrer_type, r0.referrer_entity_id),
+      fetchEntityName(r0.receiver_type, r0.receiver_entity_id),
+    ]);
+    r0.referrer_user_name = referrerUserName;
+    r0.receiver_user_name = receiverUserName;
+    r0.referrer_entity_name = referrerEntityName;
+    r0.receiver_entity_name = receiverEntityName;
+
     // Authorization: patient, referrer, receiver, or staff/admin of either entity.
     const isSuperAdmin = (roles || []).includes("super_admin");
     const actorId = userId as string;
