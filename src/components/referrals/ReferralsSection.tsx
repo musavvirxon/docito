@@ -158,19 +158,20 @@ export const ReferralsSection = ({
   const handleCreateReferral = async (data: any) => {
     if (!entityType || !entityId) {
       toast.error('Entity information is required');
-      return;
+      throw new Error('Entity information is required');
     }
 
     if (!canCreateReferrals(allRoles)) {
       toast.error('Your account cannot create referrals');
-      return;
+      throw new Error('Not allowed');
     }
 
     const result = await createReferral(data, entityType, entityId);
-    if (result.success && result.data) {
-      await sendReferral(result.data.id);
-      refetch();
+    if (!result.success || !result.data) {
+      throw new Error(result.error || 'Failed to create referral');
     }
+    await sendReferral(result.data.id);
+    refetch();
   };
 
   const handleBookSlotConfirm = async (slotId: string, appointmentData: any) => {
