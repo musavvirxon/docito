@@ -199,17 +199,7 @@ export const useReferrals = (args?: UseReferralsArgs) => {
 
       let query = supabase
         .from('referrals')
-        .select(
-          `
-          *,
-          patient:patient_id(
-            full_name,
-            avatar_url,
-            email,
-            phone
-          )
-        `
-        )
+        .select('*')
         .order('created_at', { ascending: false });
 
       // Prefer server-side filtering (works with proper RLS and improves correctness/perf)
