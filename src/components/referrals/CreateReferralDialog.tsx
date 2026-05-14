@@ -371,6 +371,8 @@ export const CreateReferralDialog = ({
       'valid_until',
     ];
     const first = order.find((k) => (errors as any)[k]);
+    const firstMessage = first ? (errors as any)[first]?.message : null;
+    toast.error(firstMessage || 'Please fix the highlighted fields before creating the referral.');
     if (!first) return;
     requestAnimationFrame(() => {
       const el = scrollRef.current?.querySelector(`[name="${first}"]`) as HTMLElement | null;
