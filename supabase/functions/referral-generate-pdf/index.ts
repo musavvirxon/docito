@@ -1123,9 +1123,14 @@ serve(async (req) => {
       primaryFont = await pdfDoc.embedFont(fontBytes, { subset: true });
     }
 
-    // Assets
-    const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
-    const logo = await pdfDoc.embedPng(logoBytes);
+    // Assets: the branded logo is optional so a corrupt asset cannot break clinical PDF export.
+    let logo: any = null;
+    try {
+      const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
+      logo = await pdfDoc.embedPng(logoBytes);
+    } catch (assetError) {
+      console.warn("referral-generate-pdf: skipping logo asset", assetError);
+    }
     const qrPngDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 256 });
     const qrBytes = new Uint8Array(await (await fetch(qrPngDataUrl)).arrayBuffer());
     const qrImg = await pdfDoc.embedPng(qrBytes);
@@ -1190,12 +1195,14 @@ serve(async (req) => {
     };
 
     // Header: logo + title
-    const logoW = 72;
-    const logoH = (logo.height / logo.width) * logoW;
-    const logoX = isRtl ? width - margin - logoW : margin;
-    page.drawImage(logo, { x: logoX, y: y - logoH + 6, width: logoW, height: logoH });
+    const logoW = logo ? 72 : 0;
+    const logoH = logo ? (logo.height / logo.width) * logoW : 0;
+    if (logo) {
+      const logoX = isRtl ? width - margin - logoW : margin;
+      page.drawImage(logo, { x: logoX, y: y - logoH + 6, width: logoW, height: logoH });
+    }
 
-    const titleX = isRtl ? width - margin - logoW - 12 : margin + logoW + 12;
+    const titleX = logo ? (isRtl ? width - margin - logoW - 12 : margin + logoW + 12) : (isRtl ? width - margin : margin);
     drawTextLine(t(locale, "title"), titleX, y - 6, fontSizeTitle, textColor);
     y -= Math.max(logoH, 30);
     y -= 12;
