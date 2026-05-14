@@ -283,8 +283,9 @@ export const useReferralActions = () => {
       const receiverEntityId = (input.receiver_entity_id || '').trim();
       const targetField = (input.target_field || input.receiver_type) as ReferralEntityType;
 
-      if (isSpecific && !receiverEntityId) {
-        toast.error('Please select a specific receiver');
+      const manualReceiverName = (input.receiver_name || '').trim();
+      if (isSpecific && !receiverEntityId && !manualReceiverName) {
+        toast.error('Select a provider or type a name manually');
         return { error: 'Receiver is required for specific referrals' };
       }
 
