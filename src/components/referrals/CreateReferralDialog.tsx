@@ -325,8 +325,9 @@ export const CreateReferralDialog = ({
 
       onOpenChange(false);
       form.reset({ ...defaultValues, patient_id: patientId });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating referral:', error);
+      toast.error(error?.message || 'Failed to create referral');
     } finally {
       setIsSubmitting(false);
     }
