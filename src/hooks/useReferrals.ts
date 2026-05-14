@@ -223,7 +223,24 @@ export const useReferrals = (args?: UseReferralsArgs) => {
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
 
-      setReferrals((data || []) as Referral[]);
+      const rows = (data || []) as Referral[];
+
+      // Hydrate patient profile separately (no FK relationship in schema cache)
+      const patientIds = Array.from(
+        new Set(rows.map((r) => r.patient_id).filter((id): id is string => !!id)),
+      );
+      if (patientIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, email, phone')
+          .in('id', patientIds);
+        const byId = new Map((profiles || []).map((p: any) => [p.id, p]));
+        rows.forEach((r) => {
+          if (r.patient_id) (r as any).patient = byId.get(r.patient_id) || null;
+        });
+      }
+
+      setReferrals(rows);
     } catch (err: any) {
       console.error('Error fetching referrals:', err);
       setError(err.message);
