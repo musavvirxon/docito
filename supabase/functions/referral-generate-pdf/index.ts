@@ -11,7 +11,7 @@
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { PDFDocument, rgb } from "https://esm.sh/pdf-lib@1.17.1";
+import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
 import QRCode from "https://esm.sh/qrcode@1.5.3";
 // @ts-ignore - optional RTL support
@@ -766,6 +766,10 @@ async function getPrimaryFontBytes(locale: Locale): Promise<Uint8Array> {
   return b64ToBytes(DOCITO_FONT_TTF_BASE64);
 }
 
+function canUseStandardFont(locale: Locale): boolean {
+  return locale === "en" || locale === "es" || locale === "pt" || locale === "de";
+}
+
 function reshapeAndBidi(text: string, locale: Locale): string {
   if (locale !== "ar") return text;
   const reshaped = arabicReshaper.reshape(text);
@@ -1110,10 +1114,14 @@ serve(async (req) => {
 
     // PDF setup
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit);
-
-    const fontBytes = await getPrimaryFontBytes(locale);
-    const primaryFont = await pdfDoc.embedFont(fontBytes, { subset: true });
+    let primaryFont: any;
+    if (canUseStandardFont(locale)) {
+      primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    } else {
+      pdfDoc.registerFontkit(fontkit);
+      const fontBytes = await getPrimaryFontBytes(locale);
+      primaryFont = await pdfDoc.embedFont(fontBytes, { subset: true });
+    }
 
     // Assets
     const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
