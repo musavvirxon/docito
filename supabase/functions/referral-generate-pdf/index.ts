@@ -1062,16 +1062,29 @@ serve(async (req) => {
         assigned_imaging_staff_id,
 
         created_at,
-        updated_at,
-
-        patient:patient_id(full_name,email,phone)
+        updated_at
       `,
       )
       .eq("id", body.referral_id)
       .maybeSingle();
 
-    if (refErr) return errorResponse("Failed to fetch referral", 500);
+    if (refErr) {
+      console.error("referral-generate-pdf: fetch referral error", refErr);
+      return errorResponse("Failed to fetch referral", 500);
+    }
     if (!referral) return errorResponse("Referral not found", 404);
+
+    // Hydrate patient profile separately (no FK in schema cache for embed)
+    let patientProfile: { full_name?: string; email?: string; phone?: string } | null = null;
+    if ((referral as any).patient_id) {
+      const { data: pp } = await service
+        .from("profiles")
+        .select("full_name,email,phone")
+        .eq("id", (referral as any).patient_id)
+        .maybeSingle();
+      patientProfile = (pp as any) || null;
+    }
+    (referral as any).patient = patientProfile;
 
     // Authorization: patient, referrer, receiver, or staff/admin of either entity.
     const isSuperAdmin = (roles || []).includes("super_admin");
