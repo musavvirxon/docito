@@ -1058,9 +1058,6 @@ serve(async (req) => {
         result_notes,
         result_attachments,
 
-        imaging_workflow_status,
-        assigned_imaging_staff_id,
-
         created_at,
         updated_at
       `,
