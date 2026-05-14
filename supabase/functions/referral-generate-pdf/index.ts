@@ -1417,7 +1417,7 @@ serve(async (req) => {
     const measurePage = pdfDoc.addPage([PAGE_W, 4000]);
     const measureCtx: DrawCtx = { page: null, y: 4000 - margin };
     const consumed = renderAll(measureCtx);
-    pdfDoc.removePage(pdfDoc.getPageIndices().indexOf(pdfDoc.getPages().indexOf(measurePage)));
+    pdfDoc.removePage(pdfDoc.getPages().indexOf(measurePage));
 
     // Pass 2: real page sized to content
     const minH = 360;
