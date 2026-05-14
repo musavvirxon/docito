@@ -949,12 +949,15 @@ export function DoctorReferralsSection() {
       await sendReferral(referralId);
 
       // Non-critical: notification + PDF download in parallel
-      try {
-        await supabase.functions.invoke("referral-notify", {
-          body: { referral_id: referralId, event: "sent" },
-        });
-      } catch {
-        // non-critical
+      // Only notify when the patient has a registered account (has a real patient_id).
+      if (!isDoctorMade) {
+        try {
+          await supabase.functions.invoke("referral-notify", {
+            body: { referral_id: referralId, event: "sent" },
+          });
+        } catch {
+          // non-critical
+        }
       }
 
       // Auto-download the referral PDF after creation
