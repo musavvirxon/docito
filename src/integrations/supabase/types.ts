@@ -7567,6 +7567,7 @@ export type Database = {
           updated_at: string
           valid_from: string | null
           valid_until: string | null
+          verification_code: string | null
         }
         Insert: {
           accepted_at?: string | null
@@ -7633,6 +7634,7 @@ export type Database = {
           updated_at?: string
           valid_from?: string | null
           valid_until?: string | null
+          verification_code?: string | null
         }
         Update: {
           accepted_at?: string | null
@@ -7699,6 +7701,7 @@ export type Database = {
           updated_at?: string
           valid_from?: string | null
           valid_until?: string | null
+          verification_code?: string | null
         }
         Relationships: [
           {
@@ -10373,6 +10376,7 @@ export type Database = {
         }
         Returns: string
       }
+      docito_make_referral_verification_code: { Args: never; Returns: string }
       doctor_can_view_patient_profile: {
         Args: { target_user_id: string }
         Returns: boolean
