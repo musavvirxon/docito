@@ -1154,15 +1154,18 @@ serve(async (req) => {
     // PDF setup
     const pdfDoc = await PDFDocument.create();
     let primaryFont: any;
+    let boldFont: any;
     if (canUseStandardFont(locale)) {
       primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     } else {
       pdfDoc.registerFontkit(fontkit);
       const fontBytes = await getPrimaryFontBytes(locale);
       primaryFont = await pdfDoc.embedFont(fontBytes, { subset: true });
+      boldFont = primaryFont;
     }
 
-    // Assets: the branded logo is optional so a corrupt asset cannot break clinical PDF export.
+    // Optional logo
     let logo: any = null;
     try {
       const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
@@ -1174,189 +1177,256 @@ serve(async (req) => {
     const qrBytes = new Uint8Array(await (await fetch(qrPngDataUrl)).arrayBuffer());
     const qrImg = await pdfDoc.embedPng(qrBytes);
 
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4
-    const { width, height } = page.getSize();
-    const margin = 40;
+    // Brand palette (Docito)
+    const brandPrimary = rgb(0.05, 0.36, 0.78);   // #0e5cc7-ish
+    const brandSoft    = rgb(0.93, 0.96, 1.0);
+    const textColor    = rgb(0.07, 0.09, 0.13);
+    const subtleColor  = rgb(0.42, 0.45, 0.52);
+    const borderGray   = rgb(0.86, 0.88, 0.92);
+    const idColor      = rgb(0.55, 0.58, 0.64);
 
-    const fontSizeTitle = 20;
-    const fontSizeH2 = 12;
-    const fontSizeBody = 10;
-    const lineHeight = 14;
-    const labelColor = rgb(0.2, 0.2, 0.2);
-    const textColor = rgb(0.05, 0.05, 0.05);
-    const lightGray = rgb(0.92, 0.92, 0.92);
-    const borderGray = rgb(0.82, 0.82, 0.82);
+    const PAGE_W = 595.28;
+    const margin = 36;
+    const contentW = PAGE_W - margin * 2;
 
-    let y = height - margin;
+    // Sizes
+    const sizeTitle = 18;
+    const sizeSection = 11;
+    const sizeBody = 10;
+    const sizeLabel = 8;
+    const sizeId = 7;
+    const lineH = 12;
 
-    const drawTextLine = (text: string, x: number, yPos: number, size = fontSizeBody, color = textColor) => {
-      const v = reshapeAndBidi(text, locale);
-      const w = primaryFont.widthOfTextAtSize(v, size);
-      const drawX = isRtl ? x - w : x;
-      page.drawText(v, { x: drawX, y: yPos, size, font: primaryFont, color });
+    type DrawCtx = { page: any | null; y: number };
+
+    const text = (ctx: DrawCtx, s: string, x: number, size: number, color: any, font = primaryFont) => {
+      const v = reshapeAndBidi(s, locale);
+      if (!ctx.page) return;
+      const w = font.widthOfTextAtSize(v, size);
+      ctx.page.drawText(v, { x: isRtl ? x - w : x, y: ctx.y, size, font, color });
     };
 
-    const drawWrapped = (
-      text: string,
-      x: number,
-      yPos: number,
-      maxWidth: number,
-      size = fontSizeBody,
-      color = textColor,
-    ) => {
-      const v = reshapeAndBidi(text, locale);
-      const lines = wrapText(v, primaryFont, size, maxWidth, locale);
-      let yy = yPos;
+    const wrapped = (ctx: DrawCtx, s: string, x: number, maxW: number, size: number, color: any, font = primaryFont) => {
+      const v = reshapeAndBidi(s || "-", locale);
+      const lines = wrapText(v, font, size, maxW, locale);
       for (const line of lines) {
-        drawTextLine(line, x, yy, size, color);
-        yy -= lineHeight;
+        if (ctx.page) {
+          const w = font.widthOfTextAtSize(line, size);
+          ctx.page.drawText(line, { x: isRtl ? x - w : x, y: ctx.y, size, font, color });
+        }
+        ctx.y -= lineH;
       }
-      return yy;
     };
 
-    const sectionHeader = (title: string) => {
-      y -= 14;
-      page.drawRectangle({ x: margin, y: y - 18, width: width - margin * 2, height: 18, color: lightGray });
-      const headerX = isRtl ? width - margin : margin + 8;
-      drawTextLine(title, headerX, y - 14, fontSizeH2, labelColor);
-      y -= 28;
+    const sectionHeader = (ctx: DrawCtx, title: string) => {
+      ctx.y -= 8;
+      // colored bar + soft fill
+      if (ctx.page) {
+        ctx.page.drawRectangle({ x: margin, y: ctx.y - 16, width: contentW, height: 18, color: brandSoft });
+        ctx.page.drawRectangle({ x: margin, y: ctx.y - 16, width: 3, height: 18, color: brandPrimary });
+      }
+      const tx = isRtl ? PAGE_W - margin - 8 : margin + 10;
+      ctx.y -= 12;
+      text(ctx, title, tx, sizeSection, brandPrimary, boldFont);
+      ctx.y -= 10;
     };
 
-    const drawKeyValue = (key: string, value: string) => {
-      const colLabelW = 140;
-      const xLabel = isRtl ? width - margin : margin;
-      const xValue = isRtl ? width - margin - colLabelW : margin + colLabelW;
-      const maxW = width - margin * 2 - colLabelW;
-
-      drawTextLine(`${key}:`, xLabel, y, fontSizeBody, labelColor);
-      y = drawWrapped(value || "-", xValue, y, maxW, fontSizeBody, textColor);
-      y -= 4;
+    const kv = (ctx: DrawCtx, key: string, value: string) => {
+      const labelW = 130;
+      const xLabel = isRtl ? PAGE_W - margin : margin;
+      const xValue = isRtl ? PAGE_W - margin - labelW : margin + labelW;
+      const valueMaxW = contentW - labelW;
+      // label
+      text(ctx, key.toUpperCase(), xLabel, sizeLabel, subtleColor, boldFont);
+      // value (wrapped, advances y itself)
+      const startY = ctx.y;
+      // value baseline lower than label by lineH? we keep aligned: draw value at same y, then move down
+      wrapped(ctx, value || "-", xValue, valueMaxW, sizeBody, textColor);
+      // ensure at least one line consumed
+      if (ctx.y === startY) ctx.y -= lineH;
+      ctx.y -= 2;
     };
 
-    // Header: logo + title
-    const logoW = logo ? 72 : 0;
-    const logoH = logo ? (logo.height / logo.width) * logoW : 0;
-    if (logo) {
-      const logoX = isRtl ? width - margin - logoW : margin;
-      page.drawImage(logo, { x: logoX, y: y - logoH + 6, width: logoW, height: logoH });
-    }
-
-    const titleX = logo ? (isRtl ? width - margin - logoW - 12 : margin + logoW + 12) : (isRtl ? width - margin : margin);
-    drawTextLine(t(locale, "title"), titleX, y - 6, fontSizeTitle, textColor);
-    y -= Math.max(logoH, 30);
-    y -= 12;
-
-    // Meta box with QR
-    const boxH = 108;
-    page.drawRectangle({
-      x: margin,
-      y: y - boxH,
-      width: width - margin * 2,
-      height: boxH,
-      borderColor: borderGray,
-      borderWidth: 1,
-      color: rgb(1, 1, 1),
-    });
-
-    const qrSize = 84;
-    const qrX = isRtl ? margin + 10 : width - margin - qrSize - 10;
-    const qrY = y - 10 - qrSize;
-    page.drawImage(qrImg, { x: qrX, y: qrY, width: qrSize, height: qrSize });
-
-    let metaY = y - 18;
-    const metaX = isRtl ? width - margin - 10 : margin + 10;
-    const metaMaxW = width - margin * 2 - qrSize - 40;
-
-    const metaRow = (label: string, value: string) => {
-      const lbl = `${label}: `;
-      const labelW = primaryFont.widthOfTextAtSize(reshapeAndBidi(lbl, locale), fontSizeBody);
-      const rowX = isRtl ? metaX : metaX;
-      drawTextLine(lbl, rowX, metaY, fontSizeBody, labelColor);
-      const valueX = isRtl ? rowX - labelW : rowX + labelW;
-      metaY = drawWrapped(value || "-", valueX, metaY, metaMaxW - labelW, fontSizeBody, textColor);
-      metaY -= 2;
+    const partyCard = (ctx: DrawCtx, title: string, name: string, type: string, extra: string) => {
+      const cardH = 46;
+      ctx.y -= 4;
+      if (ctx.page) {
+        ctx.page.drawRectangle({
+          x: margin, y: ctx.y - cardH, width: contentW, height: cardH,
+          borderColor: borderGray, borderWidth: 0.8, color: rgb(1, 1, 1),
+        });
+      }
+      const xL = isRtl ? PAGE_W - margin - 10 : margin + 10;
+      ctx.y -= 13;
+      text(ctx, title.toUpperCase(), xL, sizeLabel, brandPrimary, boldFont);
+      ctx.y -= 14;
+      text(ctx, name || "—", xL, sizeBody + 2, textColor, boldFont);
+      ctx.y -= 12;
+      text(ctx, [type, extra].filter(Boolean).join("  ·  "), xL, sizeLabel + 1, subtleColor);
+      ctx.y -= 12;
     };
 
-    metaRow(t(locale, "referralNumber"), safeText(r.referral_number, 80));
-    metaRow(t(locale, "verificationCode"), safeText(r.verification_code, 80));
-    metaRow(t(locale, "verifyUrl"), verifyUrl);
-    y -= boxH + 12;
+    const renderAll = (ctx: DrawCtx) => {
+      const startY = ctx.y;
 
-    // Details
-    sectionHeader(t(locale, "details"));
-    drawKeyValue(t(locale, "createdAt"), fmtDateTime(r.created_at, locale) || "-");
-    drawKeyValue(t(locale, "updatedAt"), fmtDateTime(r.updated_at, locale) || "-");
-    drawKeyValue(t(locale, "status"), safeText(r.status, 60) || "-");
-    drawKeyValue(t(locale, "priority"), safeText(r.priority, 60) || "-");
-    drawKeyValue(t(locale, "type"), safeText(r.referral_type_enum, 60) || "-");
-    drawKeyValue(t(locale, "referralScope"), safeText(r.referral_scope, 60) || "-");
-    drawKeyValue(t(locale, "targetField"), safeText(r.target_field, 60) || "-");
-    drawKeyValue(t(locale, "receiverName"), safeText(r.receiver_name, 200) || "-");
-    drawKeyValue(t(locale, "validFrom"), fmtDate(r.valid_from, locale) || "-");
-    drawKeyValue(t(locale, "validUntil"), fmtDate(r.valid_until, locale) || "-");
+      // Header: logo + title + brand rule
+      const logoH = logo ? 28 : 0;
+      const logoW = logo ? (logo.width / logo.height) * logoH : 0;
+      if (ctx.page && logo) {
+        const lx = isRtl ? PAGE_W - margin - logoW : margin;
+        ctx.page.drawImage(logo, { x: lx, y: ctx.y - logoH + 4, width: logoW, height: logoH });
+      }
+      const titleX = isRtl
+        ? PAGE_W - margin - (logo ? logoW + 10 : 0)
+        : margin + (logo ? logoW + 10 : 0);
+      // place title baseline aligned roughly with logo
+      const tCtx = { ...ctx };
+      tCtx.y = ctx.y - 18;
+      text(tCtx, t(locale, "title"), titleX, sizeTitle, textColor, boldFont);
+      // tagline / domain on the right
+      const taglineX = isRtl ? margin : PAGE_W - margin;
+      const taglineCtx = { ...ctx };
+      taglineCtx.y = ctx.y - 12;
+      text(taglineCtx, "docito.live", taglineX, sizeLabel, subtleColor);
+      ctx.y -= Math.max(logoH, 24) + 6;
+      // brand rule
+      if (ctx.page) {
+        ctx.page.drawRectangle({ x: margin, y: ctx.y, width: contentW, height: 1.2, color: brandPrimary });
+      }
+      ctx.y -= 12;
 
-    // Patient
-    sectionHeader(t(locale, "patient"));
-    const patientName = safeText(r.patient?.full_name || "", 120) || "-";
-    drawKeyValue(t(locale, "name"), patientName);
-    drawKeyValue(t(locale, "email"), safeText(r.patient?.email || "", 200) || "-");
-    drawKeyValue(t(locale, "phone"), safeText(r.patient?.phone || "", 80) || "-");
+      // Meta box: referral number + verification code + QR
+      const boxH = 78;
+      const qrSize = 64;
+      if (ctx.page) {
+        ctx.page.drawRectangle({
+          x: margin, y: ctx.y - boxH, width: contentW, height: boxH,
+          borderColor: borderGray, borderWidth: 0.8, color: rgb(0.99, 0.99, 1),
+        });
+      }
+      const qrX = isRtl ? margin + 8 : PAGE_W - margin - qrSize - 8;
+      const qrY = ctx.y - 8 - qrSize;
+      if (ctx.page) ctx.page.drawImage(qrImg, { x: qrX, y: qrY, width: qrSize, height: qrSize });
 
-    // Referrer
-    sectionHeader(t(locale, "referrer"));
-    drawKeyValue(t(locale, "referrerType"), safeText(r.referrer_type, 60) || "-");
-    drawKeyValue(t(locale, "referrerEntityId"), safeText(r.referrer_entity_id, 80) || "-");
-    drawKeyValue(t(locale, "referrerUserId"), safeText(r.referrer_user_id, 80) || "-");
+      const metaX = isRtl ? PAGE_W - margin - 12 : margin + 12;
+      const metaInner = { page: ctx.page, y: ctx.y - 16 };
+      text(metaInner, t(locale, "referralNumber").toUpperCase(), metaX, sizeLabel, subtleColor, boldFont);
+      metaInner.y -= 14;
+      text(metaInner, safeText(r.referral_number, 80) || "—", metaX, sizeBody + 2, textColor, boldFont);
+      metaInner.y -= 16;
+      text(metaInner, t(locale, "verificationCode").toUpperCase(), metaX, sizeLabel, subtleColor, boldFont);
+      metaInner.y -= 12;
+      text(metaInner, safeText(r.verification_code, 80) || "—", metaX, sizeBody, textColor);
+      ctx.y -= boxH + 10;
 
-    // Receiver
-    sectionHeader(t(locale, "receiver"));
-    drawKeyValue(t(locale, "receiverType"), safeText(r.receiver_type, 60) || "-");
-    drawKeyValue(t(locale, "receiverEntityId"), safeText(r.receiver_entity_id, 80) || "-");
-    drawKeyValue(t(locale, "receiverUserId"), safeText(r.receiver_user_id, 80) || "-");
+      // Party cards: Referrer, Receiver, Patient
+      partyCard(
+        ctx,
+        t(locale, "referrer"),
+        r.referrer_user_name || r.referrer_entity_name || "—",
+        safeText(r.referrer_type, 40) || "",
+        r.referrer_user_name && r.referrer_entity_name ? r.referrer_entity_name : "",
+      );
+      partyCard(
+        ctx,
+        t(locale, "receiver"),
+        r.receiver_user_name || r.receiver_entity_name || r.receiver_name || "—",
+        safeText(r.receiver_type, 40) || "",
+        r.receiver_user_name && r.receiver_entity_name ? r.receiver_entity_name : "",
+      );
+      partyCard(
+        ctx,
+        t(locale, "patient"),
+        safeText(r.patient?.full_name, 120) || "—",
+        safeText(r.patient?.email, 120) || "",
+        safeText(r.patient?.phone, 60) || "",
+      );
 
-    // Clinical
-    sectionHeader(t(locale, "clinical"));
-    drawKeyValue(t(locale, "reason"), safeText(r.reason, 2000) || "-");
-    drawKeyValue(t(locale, "clinicalNotes"), safeText(r.clinical_notes, 4000) || "-");
-    drawKeyValue(
-      t(locale, "diagnosisCodes"),
-      Array.isArray(r.diagnosis_codes) ? r.diagnosis_codes.join(", ") : safeText(r.diagnosis_codes, 500) || "-",
-    );
+      // Details
+      sectionHeader(ctx, t(locale, "details"));
+      kv(ctx, t(locale, "status"), safeText(r.status, 60) || "-");
+      kv(ctx, t(locale, "priority"), safeText(r.priority, 60) || "-");
+      kv(ctx, t(locale, "type"), safeText(r.referral_type_enum, 60) || "-");
+      kv(ctx, t(locale, "referralScope"), safeText(r.referral_scope, 60) || "-");
+      if (r.target_field) kv(ctx, t(locale, "targetField"), safeText(r.target_field, 60));
+      kv(ctx, t(locale, "createdAt"), fmtDateTime(r.created_at, locale) || "-");
+      if (r.valid_from) kv(ctx, t(locale, "validFrom"), fmtDate(r.valid_from, locale));
+      if (r.valid_until) kv(ctx, t(locale, "validUntil"), fmtDate(r.valid_until, locale));
 
-    // Scheduling
-    sectionHeader(t(locale, "scheduling"));
-    drawKeyValue(t(locale, "preferredDate"), fmtDate(r.preferred_date, locale) || "-");
-    drawKeyValue(t(locale, "preferredTimeSlot"), safeText(r.preferred_time_slot, 200) || "-");
-    drawKeyValue(t(locale, "estimatedDuration"), r.estimated_duration_minutes ? `${r.estimated_duration_minutes} min` : "-");
+      // Clinical
+      sectionHeader(ctx, t(locale, "clinical"));
+      kv(ctx, t(locale, "reason"), safeText(r.reason, 2000) || "-");
+      if (r.clinical_notes) kv(ctx, t(locale, "clinicalNotes"), safeText(r.clinical_notes, 4000));
+      if (r.diagnosis_codes && (Array.isArray(r.diagnosis_codes) ? r.diagnosis_codes.length : true)) {
+        kv(ctx, t(locale, "diagnosisCodes"),
+           Array.isArray(r.diagnosis_codes) ? r.diagnosis_codes.join(", ") : safeText(r.diagnosis_codes, 500));
+      }
 
-    // Timeline / outcome
-    sectionHeader(t(locale, "timeline"));
-    drawKeyValue(t(locale, "sentAt"), fmtDateTime(r.sent_at, locale) || "-");
-    drawKeyValue(t(locale, "acceptedAt"), fmtDateTime(r.accepted_at, locale) || "-");
-    drawKeyValue(t(locale, "rejectedAt"), fmtDateTime(r.rejected_at, locale) || "-");
-    drawKeyValue(t(locale, "completedAt"), fmtDateTime(r.completed_at, locale) || "-");
-    drawKeyValue(t(locale, "rejectionReason"), safeText(r.rejection_reason, 1000) || "-");
-    drawKeyValue(t(locale, "resultNotes"), safeText(r.result_notes, 4000) || "-");
+      // Scheduling — only if any value
+      if (r.preferred_date || r.preferred_time_slot || r.estimated_duration_minutes) {
+        sectionHeader(ctx, t(locale, "scheduling"));
+        if (r.preferred_date) kv(ctx, t(locale, "preferredDate"), fmtDate(r.preferred_date, locale));
+        if (r.preferred_time_slot) kv(ctx, t(locale, "preferredTimeSlot"), safeText(r.preferred_time_slot, 200));
+        if (r.estimated_duration_minutes) kv(ctx, t(locale, "estimatedDuration"), `${r.estimated_duration_minutes} min`);
+      }
 
-    // Imaging workflow (if applicable)
-    sectionHeader(t(locale, "workflow"));
-    drawKeyValue(t(locale, "imagingWorkflowStatus"), safeText(r.imaging_workflow_status, 60) || "-");
-    drawKeyValue(t(locale, "assignedImagingStaffId"), safeText(r.assigned_imaging_staff_id, 80) || "-");
+      // Timeline — only show populated rows
+      const timelineRows: Array<[string, string]> = [];
+      if (r.sent_at) timelineRows.push([t(locale, "sentAt"), fmtDateTime(r.sent_at, locale) || "-"]);
+      if (r.accepted_at) timelineRows.push([t(locale, "acceptedAt"), fmtDateTime(r.accepted_at, locale) || "-"]);
+      if (r.rejected_at) timelineRows.push([t(locale, "rejectedAt"), fmtDateTime(r.rejected_at, locale) || "-"]);
+      if (r.completed_at) timelineRows.push([t(locale, "completedAt"), fmtDateTime(r.completed_at, locale) || "-"]);
+      if (r.rejection_reason) timelineRows.push([t(locale, "rejectionReason"), safeText(r.rejection_reason, 1000)]);
+      if (r.result_notes) timelineRows.push([t(locale, "resultNotes"), safeText(r.result_notes, 4000)]);
+      if (timelineRows.length) {
+        sectionHeader(ctx, t(locale, "timeline"));
+        for (const [k, v] of timelineRows) kv(ctx, k, v);
+      }
 
-    // Attachments
-    sectionHeader(t(locale, "files"));
-    drawKeyValue(t(locale, "attachments"), safeJson(r.attachments, 2000) || "-");
-    drawKeyValue(t(locale, "resultAttachments"), safeJson(r.result_attachments, 2000) || "-");
+      // Footer block: brand line + tiny IDs + generated at
+      ctx.y -= 14;
+      if (ctx.page) {
+        ctx.page.drawRectangle({ x: margin, y: ctx.y, width: contentW, height: 0.8, color: borderGray });
+      }
+      ctx.y -= 12;
+      const footL = `Docito  ·  docito.live`;
+      const footR = `${t(locale, "generatedAt")}: ${fmtDateTime(new Date().toISOString(), locale)}`;
+      if (ctx.page) {
+        const lW = primaryFont.widthOfTextAtSize(footL, sizeLabel);
+        const rW = primaryFont.widthOfTextAtSize(footR, sizeLabel);
+        ctx.page.drawText(footL, { x: margin, y: ctx.y, size: sizeLabel, font: boldFont, color: brandPrimary });
+        ctx.page.drawText(footR, { x: PAGE_W - margin - rW, y: ctx.y, size: sizeLabel, font: primaryFont, color: subtleColor });
+        // subtly use lW to avoid lint about unused
+        void lW;
+      }
+      ctx.y -= 10;
+      // Tiny IDs line
+      const idLine = [
+        `Ref: ${safeText(r.id, 80)}`,
+        r.referrer_user_id ? `R-User: ${safeText(r.referrer_user_id, 80)}` : null,
+        r.receiver_user_id ? `Rx-User: ${safeText(r.receiver_user_id, 80)}` : null,
+        r.referrer_entity_id ? `R-Ent: ${safeText(r.referrer_entity_id, 80)}` : null,
+        r.receiver_entity_id ? `Rx-Ent: ${safeText(r.receiver_entity_id, 80)}` : null,
+      ].filter(Boolean).join("   ");
+      wrapped(ctx, idLine, isRtl ? PAGE_W - margin : margin, contentW, sizeId, idColor);
 
-    // System
-    sectionHeader(t(locale, "system"));
-    drawKeyValue(t(locale, "id"), safeText(r.id, 80) || "-");
+      return startY - ctx.y;
+    };
 
-    // Footer
-    const footerY = margin - 6;
-    const footerText = `${t(locale, "footer")} • ${t(locale, "generatedAt")}: ${fmtDateTime(new Date().toISOString(), locale)}`;
-    const footerX = isRtl ? width - margin : margin;
-    drawTextLine(footerText, footerX, footerY, 8, rgb(0.35, 0.35, 0.35));
+    const r: any = referral;
+
+    // Pass 1: measure on a temporary tall page
+    const measurePage = pdfDoc.addPage([PAGE_W, 4000]);
+    const measureCtx: DrawCtx = { page: null, y: 4000 - margin };
+    const consumed = renderAll(measureCtx);
+    pdfDoc.removePage(pdfDoc.getPageIndices().indexOf(pdfDoc.getPages().indexOf(measurePage)));
+
+    // Pass 2: real page sized to content
+    const minH = 360;
+    const pageH = Math.max(minH, consumed + margin * 2);
+    const realPage = pdfDoc.addPage([PAGE_W, pageH]);
+    const realCtx: DrawCtx = { page: realPage, y: pageH - margin };
+    renderAll(realCtx);
 
     const bytes = await pdfDoc.save();
     const fileName = sanitizeFileName(`referral_${r.referral_number || r.id}`) + ".pdf";
