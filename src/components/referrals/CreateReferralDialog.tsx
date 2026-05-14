@@ -4,6 +4,7 @@ import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, addDays } from 'date-fns';
+import { toast } from 'sonner';
 import { Calendar as CalendarIcon, Search, Loader2, CheckCircle2 } from 'lucide-react';
 import {
   Dialog,
@@ -324,8 +325,9 @@ export const CreateReferralDialog = ({
 
       onOpenChange(false);
       form.reset({ ...defaultValues, patient_id: patientId });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating referral:', error);
+      toast.error(error?.message || 'Failed to create referral');
     } finally {
       setIsSubmitting(false);
     }
@@ -370,6 +372,8 @@ export const CreateReferralDialog = ({
       'valid_until',
     ];
     const first = order.find((k) => (errors as any)[k]);
+    const firstMessage = first ? (errors as any)[first]?.message : null;
+    toast.error(firstMessage || 'Please fix the highlighted fields before creating the referral.');
     if (!first) return;
     requestAnimationFrame(() => {
       const el = scrollRef.current?.querySelector(`[name="${first}"]`) as HTMLElement | null;

@@ -199,17 +199,7 @@ export const useReferrals = (args?: UseReferralsArgs) => {
 
       let query = supabase
         .from('referrals')
-        .select(
-          `
-          *,
-          patient:patient_id(
-            full_name,
-            avatar_url,
-            email,
-            phone
-          )
-        `
-        )
+        .select('*')
         .order('created_at', { ascending: false });
 
       // Prefer server-side filtering (works with proper RLS and improves correctness/perf)
@@ -233,7 +223,24 @@ export const useReferrals = (args?: UseReferralsArgs) => {
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
 
-      setReferrals((data || []) as Referral[]);
+      const rows = (data || []) as Referral[];
+
+      // Hydrate patient profile separately (no FK relationship in schema cache)
+      const patientIds = Array.from(
+        new Set(rows.map((r) => r.patient_id).filter((id): id is string => !!id)),
+      );
+      if (patientIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name, avatar_url, email, phone')
+          .in('id', patientIds);
+        const byId = new Map((profiles || []).map((p: any) => [p.id, p]));
+        rows.forEach((r) => {
+          if (r.patient_id) (r as any).patient = byId.get(r.patient_id) || null;
+        });
+      }
+
+      setReferrals(rows);
     } catch (err: any) {
       console.error('Error fetching referrals:', err);
       setError(err.message);
@@ -276,8 +283,9 @@ export const useReferralActions = () => {
       const receiverEntityId = (input.receiver_entity_id || '').trim();
       const targetField = (input.target_field || input.receiver_type) as ReferralEntityType;
 
-      if (isSpecific && !receiverEntityId) {
-        toast.error('Please select a specific receiver');
+      const manualReceiverName = (input.receiver_name || '').trim();
+      if (isSpecific && !receiverEntityId && !manualReceiverName) {
+        toast.error('Select a provider or type a name manually');
         return { error: 'Receiver is required for specific referrals' };
       }
 
