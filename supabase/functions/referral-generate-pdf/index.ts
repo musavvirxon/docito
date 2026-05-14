@@ -1413,8 +1413,6 @@ serve(async (req) => {
       return startY - ctx.y;
     };
 
-    const r: any = referral;
-
     // Pass 1: measure on a temporary tall page
     const measurePage = pdfDoc.addPage([PAGE_W, 4000]);
     const measureCtx: DrawCtx = { page: null, y: 4000 - margin };
