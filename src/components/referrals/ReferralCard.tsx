@@ -49,6 +49,7 @@ interface ReferralCardProps {
   onBookSlot?: (referral: Referral) => void;
   onPublishSlots?: (referral: Referral) => void;
   onComplete?: (id: string) => void;
+  onBookAppointment?: (referral: Referral) => void;
 }
 
 const getEntityIcon = (type: ReferralEntityType) => {
