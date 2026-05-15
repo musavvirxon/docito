@@ -17,6 +17,7 @@ import {
   ArrowRightLeft,
   ArrowUpRight,
   Calendar,
+  CalendarPlus,
   CheckCircle,
   CheckCircle2,
   ChevronDown,
@@ -30,6 +31,8 @@ import {
   XCircle,
   Inbox,
 } from "lucide-react";
+import ManualBookAppointmentModal from "@/components/doctor/ManualBookAppointmentModal";
+import type { Patient as BookingPatient } from "@/components/patient/PatientSelector";
 import { format } from "date-fns";
 
 import { CreateReferralDialog } from "@/components/referrals";
