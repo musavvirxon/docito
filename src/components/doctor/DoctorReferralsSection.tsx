@@ -950,6 +950,50 @@ export function DoctorReferralsSection() {
     if (result.success) refetchAll();
   };
 
+  // Booking from a received referral
+  const [bookingPatient, setBookingPatient] = useState<BookingPatient | null>(null);
+  const [bookingReferralNotes, setBookingReferralNotes] = useState<string>("");
+  const [bookingOpen, setBookingOpen] = useState(false);
+
+  const handleBookFromReferral = (r: Referral) => {
+    const rAny = r as any;
+    const displayName = getReferralPatientDisplayName(r) || "Patient";
+    let p: BookingPatient | null = null;
+
+    if (rAny.patient_id) {
+      const prof = rAny.patient || {};
+      p = {
+        id: rAny.patient_id,
+        name: prof.full_name || displayName,
+        email: prof.email ?? undefined,
+        phone: prof.phone ?? undefined,
+        source: "registered",
+      };
+    } else if (rAny.doctor_patient_id) {
+      p = {
+        id: rAny.doctor_patient_id,
+        name: rAny.patient_name || displayName,
+        email: rAny.patient_email ?? undefined,
+        phone: rAny.patient_phone ?? undefined,
+        source: "doctor_added",
+      };
+    }
+
+    if (!p) {
+      toast.error("This referral has no linked patient to book for.");
+      return;
+    }
+
+    const notesParts = [
+      `Referral: ${r.referral_number}`,
+      r.reason ? `Reason: ${r.reason}` : null,
+      r.clinical_notes ? `Notes: ${r.clinical_notes}` : null,
+    ].filter(Boolean);
+    setBookingReferralNotes(notesParts.join("\n"));
+    setBookingPatient(p);
+    setBookingOpen(true);
+  };
+
   const handlePatientSelected = (patient: PatientResult) => {
     setSelectedPatient(patient);
     setPickerOpen(false);
