@@ -376,6 +376,7 @@ function ReferralListPanel({
   onReject,
   onComplete,
   onViewDetails,
+  onBookAppointment,
 }: {
   referrals: Referral[];
   loading: boolean;
@@ -384,6 +385,7 @@ function ReferralListPanel({
   onReject: (id: string) => void;
   onComplete: (id: string) => void;
   onViewDetails: (r: Referral) => void;
+  onBookAppointment?: (r: Referral) => void;
 }) {
   if (loading) {
     return (
@@ -427,6 +429,7 @@ function ReferralListPanel({
           onReject={onReject}
           onComplete={onComplete}
           onViewDetails={onViewDetails}
+          onBookAppointment={onBookAppointment}
         />
       ))}
     </div>
