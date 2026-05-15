@@ -1,57 +1,44 @@
 ## Goal
 
-Restyle the referral PDF (`supabase/functions/referral-generate-pdf/index.ts`) so it feels like a Docito-branded clinical document, prioritizes human-readable info (referrer/receiver names), de-emphasizes raw IDs, and fits the page to the actual content (no half-empty A4).
+Make it easy to convert a referral into a real appointment:
+
+- **Doctor / receiving entity** gets a "Book appointment" button on each referral row (where the patient is known), which opens the existing appointment creation flow pre-filled with the referred patient and referral context.
+- **Patient** already sees their referrals in `/patient-dashboard → Referrals` and can book via `ReferralCard`. We confirm the path is discoverable and the booking flow carries `referralId` end-to-end.
 
 ## Changes
 
-### 1. Resolve real names (not just IDs)
+### 1. `src/components/doctor/DoctorReferralsSection.tsx` (referral row)
+- Add a new **"Book"** button (calendar icon) in the actions group at lines 285–339, shown when:
+  - `role === 'receiver'` AND
+  - `status` ∈ `accepted | sent | slots_available | booked` (not completed/rejected/expired) AND
+  - referral has a resolvable patient (`patient_id` OR `doctor_patient_id` OR `facility_patient_id`).
+- On click, open the existing doctor appointment creation modal (the same one used in `DoctorCalendarSection` / "New appointment") pre-filled with:
+  - patient (from referral),
+  - referral id (stored on the appointment as `referral_id` if column exists; otherwise passed as metadata so it can be linked back),
+  - reason / notes from referral.
+- If the referral was sent to the doctor by a clinic/lab/etc. and the doctor accepts, this becomes the primary CTA.
+- Mirror the same button (same logic) inside `ReferralDetailsDialog` footer for discoverability.
 
-Before drawing, fetch display names in parallel from the service client:
-- Referrer user → `profiles.full_name` via `referrer_user_id`
-- Receiver user → `profiles.full_name` via `receiver_user_id`
-- Referrer entity name → query the right table by `referrer_type` (`clinics`, `hospitals`, `laboratories`, `pharmacies`, `doctors`)
-- Receiver entity name → same pattern by `receiver_type`
+### 2. `src/components/referrals/ReferralCard.tsx` (entity-side)
+- Same "Book" button for `role === 'receiver'` so non-doctor dashboards using `ReferralsSection` (clinic/lab/imaging) also get the action. It calls a new optional prop `onBookAppointment?(referral)` so each host dashboard wires it to its own scheduling modal.
 
-Show the resolved names as the primary value; keep the entity type as a small caption.
+### 3. Patient side — already mostly wired
+- `PatientReferralsSection` → `ReferralsSection role="patient"` → `ReferralCard` already shows:
+  - "Book appointment" when referral targets a specific doctor,
+  - "Choose provider" when general.
+- Confirm `/patient-dashboard?section=referrals&referral=<id>` deep link works (already implemented in `PatientDashboard.tsx`).
+- Add a small "Book" shortcut on the patient's appointments empty-state / notifications when a new referral arrives (out of scope for this pass — note only).
 
-### 2. De-emphasize IDs
-
-- Drop `referrerUserId`, `receiverUserId`, `referrerEntityId`, `receiverEntityId`, `assignedImagingStaffId`, and the System `id` row from the main key/value sections.
-- Move the referral UUID + entity/user IDs into a single tiny gray monospace footer line ("Ref ID: … · Referrer: … · Receiver: …") at ~7pt so they remain auditable but visually quiet.
-- Verification code / referral number stay prominent (next to QR).
-
-### 3. Branding
-
-- Header band: thin Docito brand-colored rule under the logo+title, plus a subtle brand accent on each `sectionHeader` (left 3px colored bar + slightly lighter fill).
-- Use brand HSL primary translated to RGB constants at top of file (single source).
-- Footer: "Docito • docito.live" left, generated date right, separated by a hairline rule.
-- Light watermark/logo monogram bottom-right at low opacity (only if logo embedded successfully — keep current try/catch).
-
-### 4. Auto-size page to content
-
-Currently the page is a fixed A4. Change to a two-pass render:
-1. First pass: run the same drawing logic against a measurement-only stub (no real `page.draw*` calls) to compute total content height.
-2. Create the page with `width = 595.28` (A4 width preserved for print familiarity) and `height = max(minHeight, contentHeight + topMargin + bottomMargin + footerBlock)`. `minHeight ≈ 360pt` so very small referrals still look like a card, not a sliver.
-3. Second pass: draw for real onto the sized page.
-
-This makes the "paper" only as tall as the data, matching the compact "Details" panel feel.
-
-### 5. Visual polish
-
-- Reduce body font to 9.5pt, labels 9pt uppercase tracked, values 10pt.
-- Section headers: 11pt semibold-look (Helvetica-Bold when standard font path is used; fall back to primary font otherwise).
-- Tighter `lineHeight` (12) and section spacing (10) so the page stays compact.
-- Patient / Referrer / Receiver rendered as 3 stacked mini-cards with rounded-look rectangles (1px border, 6pt inner padding) instead of plain key/value rows — name is the headline, contact/type is the subline.
+### 4. Linking appointment ↔ referral
+- Reuse existing `appointments.referral_id` column if present; if not, the booking modal stores `{ referralId }` in appointment notes/metadata and we follow up with a migration in a separate task. **No DB migration in this pass** unless verification shows the column is missing — will check during implementation.
+- After successful booking, optimistically refetch referrals so status badge flips to `booked`.
 
 ## Out of scope
-
-- No DB schema changes.
-- No changes to who can download the PDF (auth logic untouched).
-- No changes to the calling UI.
+- New scheduling UI — we reuse the existing doctor "New Appointment" modal.
+- Cross-entity (clinic/lab) wiring beyond exposing the prop on `ReferralCard`.
+- Notifications/emails on booking from referral.
 
 ## Technical notes
-
-- Add `Helvetica-Bold` embed alongside `Helvetica` when `canUseStandardFont(locale)` is true; for non-Latin locales reuse the single embedded Unicode font for both.
-- Measurement pass: factor current draw helpers into `(mode: "measure" | "draw")` variants, or simpler — keep helpers but pass an optional `page` (null = measure). Track `y` decrements identically in both passes so heights match exactly.
-- Name lookups: wrap each in `try/catch` and fall back to the existing ID/string so a missing profile never breaks the PDF.
-- Keep existing logo/QR/RTL/locale logic intact.
+- Prop signature: `onBookAppointment?: (referral: Referral) => void` added to `ReferralCard` and used inside `DoctorReferralsSection`'s row component.
+- Patient resolution helper: small util `resolveReferralPatient(referral)` returning `{ id, name, kind: 'patient' | 'doctor_patient' | 'facility_patient' }` so the booking modal can accept the right id type.
+- Verify `appointments` schema for `referral_id` column before storing it; otherwise pass via modal-local state only.

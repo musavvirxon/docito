@@ -49,6 +49,7 @@ interface ReferralCardProps {
   onBookSlot?: (referral: Referral) => void;
   onPublishSlots?: (referral: Referral) => void;
   onComplete?: (id: string) => void;
+  onBookAppointment?: (referral: Referral) => void;
 }
 
 const getEntityIcon = (type: ReferralEntityType) => {
@@ -91,7 +92,8 @@ export const ReferralCard = ({
   onViewDetails,
   onBookSlot,
   onPublishSlots,
-  onComplete
+  onComplete,
+  onBookAppointment
 }: ReferralCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -398,6 +400,15 @@ export const ReferralCard = ({
                 Book Appointment
               </Button>
             )}
+
+            {role === 'receiver' && onBookAppointment && isValid &&
+              ['sent', 'accepted', 'slots_available', 'booked'].includes(status) &&
+              !!(referral.patient_id || (referral as any).doctor_patient_id) && (
+                <Button size="sm" onClick={() => onBookAppointment(referral)}>
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Book for Patient
+                </Button>
+              )}
 
             {showComplete && (
               <Button size="sm" onClick={() => onComplete?.(referral.id)}>

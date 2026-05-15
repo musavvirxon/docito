@@ -17,6 +17,7 @@ import {
   ArrowRightLeft,
   ArrowUpRight,
   Calendar,
+  CalendarPlus,
   CheckCircle,
   CheckCircle2,
   ChevronDown,
@@ -30,6 +31,8 @@ import {
   XCircle,
   Inbox,
 } from "lucide-react";
+import ManualBookAppointmentModal from "@/components/doctor/ManualBookAppointmentModal";
+import type { Patient as BookingPatient } from "@/components/patient/PatientSelector";
 import { format } from "date-fns";
 
 import { CreateReferralDialog } from "@/components/referrals";
@@ -198,6 +201,7 @@ function ReferralRow({
   onReject,
   onComplete,
   onViewDetails,
+  onBookAppointment,
 }: {
   referral: Referral;
   role: "referrer" | "receiver";
@@ -205,6 +209,7 @@ function ReferralRow({
   onReject: (id: string) => void;
   onComplete: (id: string) => void;
   onViewDetails: (r: Referral) => void;
+  onBookAppointment?: (r: Referral) => void;
 }) {
   useAuth();
   // PDF locale follows UI language (resolved inside downloadReferralPdf)
@@ -217,6 +222,15 @@ function ReferralRow({
     role === "receiver" && ["sent", "accepted"].includes(status);
   const canComplete =
     role === "receiver" && ["booked", "in_progress"].includes(status);
+  const canBook =
+    role === "receiver" &&
+    isValid &&
+    ["sent", "accepted", "slots_available", "booked"].includes(status) &&
+    !!onBookAppointment &&
+    !!(
+      (referral as any).patient_id ||
+      (referral as any).doctor_patient_id
+    );
 
   const handleDownload = async () => {
     try {
@@ -302,6 +316,17 @@ function ReferralRow({
           Details
         </Button>
 
+        {canBook && (
+          <Button
+            size="sm"
+            className="h-8 px-3 text-xs"
+            onClick={() => onBookAppointment?.(referral)}
+          >
+            <CalendarPlus className="h-3.5 w-3.5 mr-1" />
+            Book
+          </Button>
+        )}
+
         {canAccept && (
           <Button
             size="sm"
@@ -351,6 +376,7 @@ function ReferralListPanel({
   onReject,
   onComplete,
   onViewDetails,
+  onBookAppointment,
 }: {
   referrals: Referral[];
   loading: boolean;
@@ -359,6 +385,7 @@ function ReferralListPanel({
   onReject: (id: string) => void;
   onComplete: (id: string) => void;
   onViewDetails: (r: Referral) => void;
+  onBookAppointment?: (r: Referral) => void;
 }) {
   if (loading) {
     return (
@@ -402,6 +429,7 @@ function ReferralListPanel({
           onReject={onReject}
           onComplete={onComplete}
           onViewDetails={onViewDetails}
+          onBookAppointment={onBookAppointment}
         />
       ))}
     </div>
@@ -922,6 +950,50 @@ export function DoctorReferralsSection() {
     if (result.success) refetchAll();
   };
 
+  // Booking from a received referral
+  const [bookingPatient, setBookingPatient] = useState<BookingPatient | null>(null);
+  const [bookingReferralNotes, setBookingReferralNotes] = useState<string>("");
+  const [bookingOpen, setBookingOpen] = useState(false);
+
+  const handleBookFromReferral = (r: Referral) => {
+    const rAny = r as any;
+    const displayName = getReferralPatientDisplayName(r) || "Patient";
+    let p: BookingPatient | null = null;
+
+    if (rAny.patient_id) {
+      const prof = rAny.patient || {};
+      p = {
+        id: rAny.patient_id,
+        name: prof.full_name || displayName,
+        email: prof.email ?? undefined,
+        phone: prof.phone ?? undefined,
+        source: "registered",
+      };
+    } else if (rAny.doctor_patient_id) {
+      p = {
+        id: rAny.doctor_patient_id,
+        name: rAny.patient_name || displayName,
+        email: rAny.patient_email ?? undefined,
+        phone: rAny.patient_phone ?? undefined,
+        source: "doctor_added",
+      };
+    }
+
+    if (!p) {
+      toast.error("This referral has no linked patient to book for.");
+      return;
+    }
+
+    const notesParts = [
+      `Referral: ${r.referral_number}`,
+      r.reason ? `Reason: ${r.reason}` : null,
+      r.clinical_notes ? `Notes: ${r.clinical_notes}` : null,
+    ].filter(Boolean);
+    setBookingReferralNotes(notesParts.join("\n"));
+    setBookingPatient(p);
+    setBookingOpen(true);
+  };
+
   const handlePatientSelected = (patient: PatientResult) => {
     setSelectedPatient(patient);
     setPickerOpen(false);
@@ -1186,6 +1258,7 @@ export function DoctorReferralsSection() {
               onReject={handleRejectClick}
               onComplete={handleComplete}
               onViewDetails={handleViewDetails}
+              onBookAppointment={handleBookFromReferral}
             />
           </TabsContent>
         </Tabs>
@@ -1226,6 +1299,22 @@ export function DoctorReferralsSection() {
         onOpenChange={setRejectOpen}
         onConfirm={handleRejectConfirm}
       />
+
+      {bookingPatient && (
+        <ManualBookAppointmentModal
+          isOpen={bookingOpen}
+          onClose={() => {
+            setBookingOpen(false);
+            setBookingPatient(null);
+            setBookingReferralNotes("");
+          }}
+          doctorId={doctorProfile.id}
+          preselectedPatient={bookingPatient}
+          onSuccess={async () => {
+            refetchAll();
+          }}
+        />
+      )}
     </div>
   );
 }
