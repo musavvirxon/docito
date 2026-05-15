@@ -1258,6 +1258,7 @@ export function DoctorReferralsSection() {
               onReject={handleRejectClick}
               onComplete={handleComplete}
               onViewDetails={handleViewDetails}
+              onBookAppointment={handleBookFromReferral}
             />
           </TabsContent>
         </Tabs>
