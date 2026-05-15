@@ -316,6 +316,17 @@ function ReferralRow({
           Details
         </Button>
 
+        {canBook && (
+          <Button
+            size="sm"
+            className="h-8 px-3 text-xs"
+            onClick={() => onBookAppointment?.(referral)}
+          >
+            <CalendarPlus className="h-3.5 w-3.5 mr-1" />
+            Book
+          </Button>
+        )}
+
         {canAccept && (
           <Button
             size="sm"
