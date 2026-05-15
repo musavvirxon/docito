@@ -92,7 +92,8 @@ export const ReferralCard = ({
   onViewDetails,
   onBookSlot,
   onPublishSlots,
-  onComplete
+  onComplete,
+  onBookAppointment
 }: ReferralCardProps) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
