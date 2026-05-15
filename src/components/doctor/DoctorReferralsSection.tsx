@@ -201,6 +201,7 @@ function ReferralRow({
   onReject,
   onComplete,
   onViewDetails,
+  onBookAppointment,
 }: {
   referral: Referral;
   role: "referrer" | "receiver";
@@ -208,6 +209,7 @@ function ReferralRow({
   onReject: (id: string) => void;
   onComplete: (id: string) => void;
   onViewDetails: (r: Referral) => void;
+  onBookAppointment?: (r: Referral) => void;
 }) {
   useAuth();
   // PDF locale follows UI language (resolved inside downloadReferralPdf)
@@ -220,6 +222,15 @@ function ReferralRow({
     role === "receiver" && ["sent", "accepted"].includes(status);
   const canComplete =
     role === "receiver" && ["booked", "in_progress"].includes(status);
+  const canBook =
+    role === "receiver" &&
+    isValid &&
+    ["sent", "accepted", "slots_available", "booked"].includes(status) &&
+    !!onBookAppointment &&
+    !!(
+      (referral as any).patient_id ||
+      (referral as any).doctor_patient_id
+    );
 
   const handleDownload = async () => {
     try {
