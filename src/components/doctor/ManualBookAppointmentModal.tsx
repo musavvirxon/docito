@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { CalendarPlus, User } from "lucide-react";
+import { format, isSameDay, startOfDay } from "date-fns";
+import { CalendarPlus, User, CalendarIcon, Clock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import PatientSelector, { type Patient } from "@/components/patient/PatientSelector";
 import { useProcedures } from "@/hooks/useProcedures";
@@ -271,40 +274,87 @@ const ManualBookAppointmentModal = ({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label>Date (YYYY-MM-DD)</Label>
-            <input
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              type="date"
-              value={format(selectedDate, "yyyy-MM-dd")}
-              min={format(new Date(), "yyyy-MM-dd")}
-              onChange={(e) => {
-                const newDate = new Date(e.target.value + "T00:00:00");
-                if (newDate >= new Date(new Date().toDateString())) {
-                  setSelectedDate(newDate);
-                }
-              }}
-            />
-          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4" /> Date
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "EEE, MMM d, yyyy") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(d) => {
+                      if (!d) return;
+                      setSelectedDate(d);
+                      setSelectedTime("");
+                    }}
+                    disabled={(date) => date < startOfDay(new Date())}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-          <div className="space-y-2">
-            <Label>Start Time (HH:MM)</Label>
-            <input
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              type="time"
-              value={selectedTime}
-              min={
-                format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
-                  ? format(new Date(), "HH:mm")
-                  : undefined
-              }
-              onChange={(e) => {
-                setSelectedTime(e.target.value);
-              }}
-            />
-            {format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd") && (
-              <p className="text-xs text-muted-foreground">Cannot book in the past. Minimum time auto-adjusted for today</p>
-            )}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Start Time
+              </Label>
+              <div className="rounded-lg border border-border bg-card/50 p-3">
+                <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {(() => {
+                    const slots: string[] = [];
+                    const step = 15;
+                    for (let h = 8; h < 20; h++) {
+                      for (let m = 0; m < 60; m += step) {
+                        slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+                      }
+                    }
+                    const now = new Date();
+                    const isToday = isSameDay(selectedDate, now);
+                    return slots.map((s) => {
+                      const [hh, mm] = s.split(":").map(Number);
+                      const past = isToday && (hh < now.getHours() || (hh === now.getHours() && mm <= now.getMinutes()));
+                      const active = selectedTime === s;
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={past}
+                          onClick={() => setSelectedTime(s)}
+                          className={cn(
+                            "rounded-md border px-2 py-1.5 text-xs font-medium transition-all",
+                            active
+                              ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                              : "border-border bg-background hover:border-primary/40 hover:bg-accent",
+                            past && "opacity-40 cursor-not-allowed hover:bg-background hover:border-border",
+                          )}
+                        >
+                          {s}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+                {!selectedTime && (
+                  <p className="mt-2 text-xs text-muted-foreground">Select a time slot</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
