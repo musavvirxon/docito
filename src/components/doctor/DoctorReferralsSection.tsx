@@ -1299,6 +1299,22 @@ export function DoctorReferralsSection() {
         onOpenChange={setRejectOpen}
         onConfirm={handleRejectConfirm}
       />
+
+      {bookingPatient && (
+        <ManualBookAppointmentModal
+          isOpen={bookingOpen}
+          onClose={() => {
+            setBookingOpen(false);
+            setBookingPatient(null);
+            setBookingReferralNotes("");
+          }}
+          doctorId={doctorProfile.id}
+          preselectedPatient={bookingPatient}
+          onSuccess={async () => {
+            refetchAll();
+          }}
+        />
+      )}
     </div>
   );
 }
