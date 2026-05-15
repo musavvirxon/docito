@@ -401,6 +401,15 @@ export const ReferralCard = ({
               </Button>
             )}
 
+            {role === 'receiver' && onBookAppointment && isValid &&
+              ['sent', 'accepted', 'slots_available', 'booked'].includes(status) &&
+              !!(referral.patient_id || (referral as any).doctor_patient_id) && (
+                <Button size="sm" onClick={() => onBookAppointment(referral)}>
+                  <Calendar className="h-4 w-4 mr-1" />
+                  Book for Patient
+                </Button>
+              )}
+
             {showComplete && (
               <Button size="sm" onClick={() => onComplete?.(referral.id)}>
                 <CheckCircle className="h-4 w-4 mr-1" />
