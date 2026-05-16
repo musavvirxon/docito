@@ -272,7 +272,7 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
           acc[date] = { date, appointments: 0, completed: 0, cancelled: 0, noShow: 0 };
         }
         acc[date].appointments++;
-        if (apt.status === 'completed') acc[date].completed++;
+        if (isCompleted(apt)) acc[date].completed++;
         if (apt.status === 'cancelled') acc[date].cancelled++;
         if (apt.status === 'no-show') acc[date].noShow++;
         return acc;
