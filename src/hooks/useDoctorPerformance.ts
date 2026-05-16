@@ -219,7 +219,7 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
 
       // Calculate revenue
       const totalRevenue = appointments.reduce((sum: number, apt: any) => {
-        if (apt.status === 'completed') {
+        if (isCompleted(apt)) {
           const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
           return sum + procPrice;
         }
