@@ -87,13 +87,13 @@ const ManualBookAppointmentModal = ({
 
     setProcedureId("");
     setDurationMinutes(30);
-    setNotes("");
+    setNotes(prefilledNotes ?? "");
     setSelectedPatient(preselectedPatient ?? null);
 
     // ✅ Follow-up must always be follow_up type
     const nextType = forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person");
     setAppointmentType(nextType);
-  }, [isOpen, prefilledDate, prefilledTime, preselectedPatient, followupOfAppointmentId, forceAppointmentType]);
+  }, [isOpen, prefilledDate, prefilledTime, prefilledNotes, preselectedPatient, followupOfAppointmentId, forceAppointmentType]);
 
   const resetForm = () => {
     setSelectedDate(new Date());
