@@ -112,7 +112,17 @@ serve(async (req) => {
       );
     }
 
-    if (appt.patient_id !== context.userId) {
+    // Authorize: caller must be the patient OR the doctor that owns the appointment (or their staff)
+    let authorized = appt.patient_id === context.userId;
+    if (!authorized) {
+      const { data: doctorRow } = await context.supabase
+        .from("doctors")
+        .select("id, user_id")
+        .eq("id", appt.doctor_id)
+        .maybeSingle();
+      if (doctorRow?.user_id === context.userId) authorized = true;
+    }
+    if (!authorized) {
       return jsonResponse(
         { ok: false, error: "Forbidden", code: "FORBIDDEN" } satisfies LinkReferralAppointmentResponse,
         403,
