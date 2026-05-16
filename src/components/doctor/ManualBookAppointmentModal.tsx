@@ -24,14 +24,18 @@ interface ManualBookAppointmentModalProps {
   onClose: () => void;
   doctorId: string;
   practiceId?: string;
-  onSuccess?: () => Promise<void> | void;
+  onSuccess?: (appointmentId?: string) => Promise<void> | void;
   prefilledDate?: Date;
   prefilledTime?: string;
+  prefilledNotes?: string;
 
   // ✅ Follow-up flow
   preselectedPatient?: Patient | null;
   followupOfAppointmentId?: string | null;
   forceAppointmentType?: "in_person" | "video" | "home_visit" | "follow_up" | "messaging";
+
+  // ✅ Referral link flow
+  referralId?: string | null;
 }
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
