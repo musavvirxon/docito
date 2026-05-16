@@ -283,7 +283,7 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
       // Calculate service performance
       const servicePerformance = procedures.map((proc: any) => {
         const procAppointments = appointments.filter((a: any) => a.procedure_id === proc.id);
-        const completed = procAppointments.filter((a: any) => a.status === 'completed');
+        const completed = procAppointments.filter(isCompleted);
         const revenue = completed.reduce((sum: number, apt: any) => {
           return sum + (proc.price || proc.default_cost || consultationFee);
         }, 0);
