@@ -202,13 +202,26 @@ const ManualBookAppointmentModal = ({
         procedure_id: procedureId || null,
       };
 
-      await insertWithFallback(payload);
+      const created = await insertWithFallback(payload);
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
+      // If this booking is tied to a referral, link it (best-effort)
+      if (referralId && created?.id) {
+        try {
+          const { error: linkErr } = await supabase.functions.invoke(
+            "referral-link-appointment",
+            { body: { referral_id: referralId, appointment_id: created.id } },
+          );
+          if (linkErr) console.error("referral-link-appointment failed:", linkErr);
+        } catch (linkErr) {
+          console.error("referral-link-appointment threw:", linkErr);
+        }
+      }
+
       // Trigger refetch BEFORE closing so the calendar updates
       try {
-        await Promise.resolve(onSuccess?.());
+        await Promise.resolve(onSuccess?.(created?.id));
       } catch (err) {
         console.error("onSuccess/refetch failed:", err);
       }
