@@ -351,7 +351,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const payoutMap: Record<string, { amount: number; appointments: string[] }> = {};
       
       allAppointments
-        .filter((a: any) => a.status === 'completed')
+        .filter(isCompleted)
         .forEach((apt: any) => {
           const monthKey = format(new Date(apt.appointment_date), 'yyyy-MM');
           const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
