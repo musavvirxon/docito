@@ -109,7 +109,8 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
         proceduresData,
         doctorData,
         reviewsData,
-        scheduleData
+        scheduleData,
+        sessionsData,
       ] = await Promise.all([
         // Get appointments in date range
         supabase
@@ -178,7 +179,13 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
           .from('schedule_settings')
           .select('working_days')
           .eq('doctor_id', doctorId)
-          .single()
+          .single(),
+
+        // Get appointment sessions (counts in-progress / completed sessions as activity)
+        supabase
+          .from('appointment_sessions')
+          .select('appointment_id, session_status, started_at, ended_at')
+          .eq('doctor_id', doctorId),
       ]);
 
       const appointments = appointmentsData.data || [];
@@ -191,9 +198,19 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
       const doctor = doctorData.data;
       const reviews = reviewsData.data || [];
       const schedule = scheduleData.data;
+      const sessions = sessionsData.data || [];
+
+      // Sessions in active / completed states promote their appointment to "completed" for analytics.
+      const activeSessionApptIds = new Set(
+        sessions
+          .filter((s: any) => ['in_progress', 'completed', 'ended'].includes(String(s.session_status)))
+          .map((s: any) => s.appointment_id)
+          .filter(Boolean),
+      );
+      const isCompleted = (a: any) => a.status === 'completed' || activeSessionApptIds.has(a.id);
 
       // Calculate detailed stats
-      const completedAppointments = appointments.filter((a: any) => a.status === 'completed');
+      const completedAppointments = appointments.filter(isCompleted);
       const cancelledAppointments = appointments.filter((a: any) => a.status === 'cancelled');
       const noShowAppointments = appointments.filter((a: any) => a.status === 'no-show');
       const uniquePatients = new Set(appointments.map((a: any) => a.patient_id));
