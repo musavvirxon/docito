@@ -91,7 +91,8 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
         doctorData,
         profilesData,
         toothHistoryData,
-        apptProceduresData
+        apptProceduresData,
+        sessionsData,
       ] = await Promise.all([
         supabase
           .from('appointments')
@@ -130,7 +131,12 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
         supabase
           .from('appointment_procedures')
           .select('id, appointment_id, estimated_cost, status, procedures(name, price, default_cost), appointments!inner(doctor_id, patient_id, appointment_date)')
-          .eq('appointments.doctor_id', doctorId)
+          .eq('appointments.doctor_id', doctorId),
+
+        supabase
+          .from('appointment_sessions')
+          .select('appointment_id, session_status')
+          .eq('doctor_id', doctorId),
       ]);
 
       const appointments = appointmentsData.data || [];
@@ -138,15 +144,27 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const procedures = proceduresData.data || [];
       const doctor = doctorData.data;
       const profiles = profilesData.data || [];
+      const sessions = sessionsData.data || [];
       const consultationFee = doctor?.consultation_fee || 150;
       const platformCommissionRate = 0.15; // 15% platform fee
 
+      // Sessions in active/completed states make their appointment count as completed for finance.
+      const activeSessionApptIds = new Set(
+        sessions
+          .filter((s: any) => ['in_progress', 'completed', 'ended'].includes(String(s.session_status)))
+          .map((s: any) => s.appointment_id)
+          .filter(Boolean),
+      );
+      const isCompleted = (a: any) => a.status === 'completed' || activeSessionApptIds.has(a.id);
+
       // Calculate earnings
-      const completedAppointments = appointments.filter((a: any) => a.status === 'completed');
-      const pendingAppointments = appointments.filter((a: any) => a.status === 'pending' || a.status === 'confirmed');
+      const completedAppointments = appointments.filter(isCompleted);
+      const pendingAppointments = appointments.filter(
+        (a: any) => !isCompleted(a) && (a.status === 'pending' || a.status === 'confirmed'),
+      );
       
       const totalEarnings = allAppointments
-        .filter((a: any) => a.status === 'completed')
+        .filter(isCompleted)
         .reduce((sum: number, apt: any) => {
           const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
           return sum + procPrice;
