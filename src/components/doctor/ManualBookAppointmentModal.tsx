@@ -56,9 +56,11 @@ const ManualBookAppointmentModal = ({
   onSuccess,
   prefilledDate,
   prefilledTime,
+  prefilledNotes,
   preselectedPatient,
   followupOfAppointmentId,
   forceAppointmentType,
+  referralId,
 }: ManualBookAppointmentModalProps) => {
   const { procedures } = useProcedures();
 
