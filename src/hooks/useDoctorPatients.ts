@@ -59,18 +59,38 @@ export const useDoctorPatients = () => {
         return;
       }
 
-      // Get unique patient IDs from appointments
-      const { data: appointmentData } = await supabase
-        .from('appointments')
-        .select('patient_id')
-        .eq('doctor_id', doctorData.id);
+      // Collect patient user_ids from appointments (any status) + referrals where
+      // this doctor is referrer or receiver. This ensures patients added via referral
+      // or with non-confirmed appointments still show in the prescription / patients UI.
+      const [apptRes, sentRefRes, recvRefRes] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('patient_id')
+          .eq('doctor_id', doctorData.id)
+          .not('patient_id', 'is', null),
+        supabase
+          .from('referrals')
+          .select('patient_id')
+          .eq('referrer_entity_id', doctorData.id)
+          .not('patient_id', 'is', null),
+        supabase
+          .from('referrals')
+          .select('patient_id')
+          .eq('receiver_entity_id', doctorData.id)
+          .not('patient_id', 'is', null),
+      ]);
 
-      if (!appointmentData || appointmentData.length === 0) {
+      const idSet = new Set<string>();
+      (apptRes.data || []).forEach((r: any) => r.patient_id && idSet.add(r.patient_id));
+      (sentRefRes.data || []).forEach((r: any) => r.patient_id && idSet.add(r.patient_id));
+      (recvRefRes.data || []).forEach((r: any) => r.patient_id && idSet.add(r.patient_id));
+
+      if (idSet.size === 0) {
         setPatients([]);
         return;
       }
 
-      const uniquePatientIds = [...new Set(appointmentData.map(apt => apt.patient_id))];
+      const uniquePatientIds = Array.from(idSet);
 
       // Get patient profiles
       const { data: profileData, error: profileError } = await supabase
