@@ -185,7 +185,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const earningsThisMonth = allAppointments
         .filter((a: any) => {
           const date = new Date(a.appointment_date);
-          return a.status === 'completed' && date >= thisMonthStart && date <= thisMonthEnd;
+          return isCompleted(a) && date >= thisMonthStart && date <= thisMonthEnd;
         })
         .reduce((sum: number, apt: any) => {
           const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
@@ -196,7 +196,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const earningsThisWeek = allAppointments
         .filter((a: any) => {
           const date = new Date(a.appointment_date);
-          return a.status === 'completed' && date >= weekAgo;
+          return isCompleted(a) && date >= weekAgo;
         })
         .reduce((sum: number, apt: any) => {
           const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
