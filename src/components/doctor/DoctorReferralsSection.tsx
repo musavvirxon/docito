@@ -953,6 +953,7 @@ export function DoctorReferralsSection() {
   // Booking from a received referral
   const [bookingPatient, setBookingPatient] = useState<BookingPatient | null>(null);
   const [bookingReferralNotes, setBookingReferralNotes] = useState<string>("");
+  const [bookingReferralId, setBookingReferralId] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
 
   const handleBookFromReferral = (r: Referral) => {
@@ -990,6 +991,7 @@ export function DoctorReferralsSection() {
       r.clinical_notes ? `Notes: ${r.clinical_notes}` : null,
     ].filter(Boolean);
     setBookingReferralNotes(notesParts.join("\n"));
+    setBookingReferralId(r.id);
     setBookingPatient(p);
     setBookingOpen(true);
   };
@@ -1307,9 +1309,12 @@ export function DoctorReferralsSection() {
             setBookingOpen(false);
             setBookingPatient(null);
             setBookingReferralNotes("");
+            setBookingReferralId(null);
           }}
           doctorId={doctorProfile.id}
           preselectedPatient={bookingPatient}
+          prefilledNotes={bookingReferralNotes}
+          referralId={bookingReferralId}
           onSuccess={async () => {
             refetchAll();
           }}

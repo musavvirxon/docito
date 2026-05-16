@@ -24,14 +24,18 @@ interface ManualBookAppointmentModalProps {
   onClose: () => void;
   doctorId: string;
   practiceId?: string;
-  onSuccess?: () => Promise<void> | void;
+  onSuccess?: (appointmentId?: string) => Promise<void> | void;
   prefilledDate?: Date;
   prefilledTime?: string;
+  prefilledNotes?: string;
 
   // ✅ Follow-up flow
   preselectedPatient?: Patient | null;
   followupOfAppointmentId?: string | null;
   forceAppointmentType?: "in_person" | "video" | "home_visit" | "follow_up" | "messaging";
+
+  // ✅ Referral link flow
+  referralId?: string | null;
 }
 
 const DURATION_OPTIONS_MINUTES = [10, 15, 20, 30, 45, 60, 75, 90, 105, 120, 150, 180];
@@ -52,9 +56,11 @@ const ManualBookAppointmentModal = ({
   onSuccess,
   prefilledDate,
   prefilledTime,
+  prefilledNotes,
   preselectedPatient,
   followupOfAppointmentId,
   forceAppointmentType,
+  referralId,
 }: ManualBookAppointmentModalProps) => {
   const { procedures } = useProcedures();
 
@@ -81,13 +87,13 @@ const ManualBookAppointmentModal = ({
 
     setProcedureId("");
     setDurationMinutes(30);
-    setNotes("");
+    setNotes(prefilledNotes ?? "");
     setSelectedPatient(preselectedPatient ?? null);
 
     // ✅ Follow-up must always be follow_up type
     const nextType = forceAppointmentType || (followupOfAppointmentId ? "follow_up" : "in_person");
     setAppointmentType(nextType);
-  }, [isOpen, prefilledDate, prefilledTime, preselectedPatient, followupOfAppointmentId, forceAppointmentType]);
+  }, [isOpen, prefilledDate, prefilledTime, prefilledNotes, preselectedPatient, followupOfAppointmentId, forceAppointmentType]);
 
   const resetForm = () => {
     setSelectedDate(new Date());
@@ -196,13 +202,26 @@ const ManualBookAppointmentModal = ({
         procedure_id: procedureId || null,
       };
 
-      await insertWithFallback(payload);
+      const created = await insertWithFallback(payload);
 
       toast.success(`Appointment booked for ${selectedPatient.name}`);
 
+      // If this booking is tied to a referral, link it (best-effort)
+      if (referralId && created?.id) {
+        try {
+          const { error: linkErr } = await supabase.functions.invoke(
+            "referral-link-appointment",
+            { body: { referral_id: referralId, appointment_id: created.id } },
+          );
+          if (linkErr) console.error("referral-link-appointment failed:", linkErr);
+        } catch (linkErr) {
+          console.error("referral-link-appointment threw:", linkErr);
+        }
+      }
+
       // Trigger refetch BEFORE closing so the calendar updates
       try {
-        await Promise.resolve(onSuccess?.());
+        await Promise.resolve(onSuccess?.(created?.id));
       } catch (err) {
         console.error("onSuccess/refetch failed:", err);
       }
