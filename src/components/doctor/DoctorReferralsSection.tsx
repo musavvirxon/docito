@@ -1307,9 +1307,12 @@ export function DoctorReferralsSection() {
             setBookingOpen(false);
             setBookingPatient(null);
             setBookingReferralNotes("");
+            setBookingReferralId(null);
           }}
           doctorId={doctorProfile.id}
           preselectedPatient={bookingPatient}
+          prefilledNotes={bookingReferralNotes}
+          referralId={bookingReferralId}
           onSuccess={async () => {
             refetchAll();
           }}
