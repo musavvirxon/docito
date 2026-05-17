@@ -1,76 +1,61 @@
-# Plan
+# Finish appointment + guest video links + patient identity merge
 
-Three independent fixes scoped to the doctor dashboard and patient dashboard.
+Three coordinated changes to the appointment session workspace.
 
----
+## 1. "Finish Appointment" button
 
-## 1. Referral → Booked status + Patient Dashboard appointment
+Add a primary button in the session header (next to "End Session") that always marks `appointments.status = 'completed'` and stamps `completed_at`, regardless of whether a session row exists. Useful for video / quick visits where the doctor never opens the session shell.
 
-**Goal:** When a doctor uses "Book" on a referral row, the booked appointment is linked to the referral, the referral flips to `booked`, and the patient sees the new appointment + the linked referral in their dashboard.
+- Reuses the existing follow-up gate before completing.
+- If a session is open, also closes it (`session_status = 'completed'`).
+- Navigates back to the calendar with a success toast.
 
-**Changes**
+## 2. Live video for unregistered (manually-added) patients
 
-- `src/components/doctor/DoctorReferralsSection.tsx`
-  - `handleBookFromReferral`: keep current behavior, but pass the active referral id into `ManualBookAppointmentModal` via a new `referralId` prop.
-  - After the modal calls `onSuccess`, invoke `supabase.functions.invoke("referral-link-appointment-admin", { body: { referral_id, appointment_id } })` (new admin variant — see below) and `refetch()` the referrals list so the row moves to the `booked` filter/category.
+Today `startOrJoinVideo` refuses to run unless `appointment.patient_id` is set. Change:
 
-- `src/components/doctor/ManualBookAppointmentModal.tsx`
-  - Add optional `referralId?: string | null` prop.
-  - Include `referral_id: referralId ?? null` in the insert payload, with the same `insertWithFallback` pattern (delete `referral_id` from the retry if the column is missing).
-  - Return the created appointment id from `onSuccess?(appointmentId)` so the parent can call the link function.
+- Schema (`video_consultations`):
+  - `patient_id` → nullable
+  - add `doctor_patient_id uuid` (FK to `doctor_patients`)
+  - add `guest_token text unique` (random, 32 chars)
+  - add CHECK constraint: exactly one of `patient_id` / `doctor_patient_id` is set
+- `useVideoConsultation.createConsultation` accepts either id and a generated `guest_token`.
+- Session header shows a "Copy patient link" button when the appointment patient is a `doctor_patient`. Link format: `https://<app>/v/<guest_token>`.
+- `livekit-token` edge function: allow joining when the caller presents a valid `guest_token` (no auth required) — issues a participant token scoped to that consultation only.
 
-- `supabase/functions/referral-link-appointment/index.ts`
-  - The current function rejects callers that aren't the patient. Add a sibling function `referral-link-appointment-admin` (verify_jwt=false, service-role client) that authorizes by checking the caller is the doctor/staff bound to `receiver_entity_id`, then performs the same `referral_appointments` upsert and `referrals.status = 'booked'` update. Reuse the same response shape.
-  - Alternative: extend the existing function to allow the receiver as well. Same outcome; pick whichever keeps the schema simpler.
+## 3. Guest join page + identity merge on claim
 
-- Patient side (already wired)
-  - `PatientReferralsSection` → `ReferralsSection role="patient"` already lists referrals and respects `status=booked`. Once the referral row is flipped server-side, it will appear under "Booked" automatically.
-  - The patient's appointments query already reads `appointments` by `patient_id`. The newly-inserted row will surface in `PatientDashboard` → Appointments without further code changes, provided `patient_id` is set (registered patients only; manual `doctor_patient_id` patients have no auth account, so they won't show — this matches existing behavior).
+New route `/v/:token` (public, in `PublicLayout`):
 
----
+- Fetches consultation summary via new RPC `get_consultation_by_guest_token(token)` returning doctor name, scheduled time, and whether the visitor is signed in.
+- If **not signed in**: shows two CTAs — "Join as guest" (enters the LiveKit room using the guest token) and "Sign in / Sign up to claim your record" (routes through normal auth, then returns here).
+- If **signed in**: calls edge function `claim-doctor-patient` which:
+  1. Verifies the `guest_token` matches a `video_consultations` row whose `doctor_patient_id` is set.
+  2. Looks up / creates the user's `profiles` row.
+  3. Merges: copies non-conflicting `doctor_patients` fields (DOB, allergies, history, etc.) into the patient's profile and any patient-side record, then re-points every reference from the `doctor_patient_id` to the new `patient_id`:
+     - `appointments.doctor_patient_id → patient_id`
+     - `appointment_sessions`, `video_consultations`, `treatment_plans`, `prescriptions`, `referrals`, `appointment_dental_procedures`, conversations, attachments
+  4. Marks the original `doctor_patients` row as `merged_into_user_id = <uuid>` and `status = 'merged'` (kept for audit, hidden from active lists).
+  5. Returns the consolidated patient context, then the page joins the LiveKit room with a normal auth-issued token.
 
-## 2. Prescriptions: patient list missing
+Idempotent: re-claiming the same token after merge is a no-op.
 
-**Root cause:** `CreatorPanel` reads `patients` from `useDoctorPatients()`, which only returns patients with confirmed visits. New referral/manual patients never appear, so the selector is empty.
+## Technical details
 
-**Changes**
+- Migration sets defaults and a backfill so existing rows pass the new CHECK.
+- Merge logic lives in a single SECURITY DEFINER RPC `claim_doctor_patient(guest_token text)` invoked by the edge function with the user's JWT; RPC re-validates `auth.uid()` and token before touching data.
+- `useDoctorPatientsV2` filters out rows where `status = 'merged'`.
+- Audit row added in a new `patient_merge_log` table (`doctor_patient_id`, `claimed_by_user_id`, `claimed_at`).
+- Header "Copy patient link" copies the URL and toasts; reuses existing toast system.
+- All new UI strings go through `useTranslation`.
 
-- `src/hooks/useDoctorPatients.ts`
-  - Broaden the source query to also include patients linked via:
-    - `appointments` with any status (not just confirmed),
-    - `doctor_patients` (manual entries),
-    - `referrals` where this doctor is sender or receiver.
-  - De-dupe by `user_id`/`doctor_patient_id`. Keep the existing return shape so `CreatorPanel` and `DoctorPrescriptionsSection` work unchanged.
+## Files touched
 
-- `src/components/doctor/prescriptions/DoctorPrescriptionsSection.tsx`
-  - Add an empty-state hint in the patient `Select` when `patients.length === 0` directing the user to add a patient first (no behavior change otherwise).
-
-- Patient profile linkage
-  - Verify `usePatientPrescriptions(patientId)` is mounted in the patient profile/dashboard view. If a prescription is created with the correct `patient_id`, it already appears in the patient profile (the hook reads `medications` filtered by `patient_id`). No schema change required — only confirm the creator passes the registered patient's `user_id` as `patient_id`.
-
----
-
-## 3. Performance + Financial analytics include session data
-
-**Goal:** Numbers shown in `DoctorPerformanceSection` and `DoctorFinancialStatsSection` count appointments that have an associated session (in-progress, completed, or with recorded session minutes), not only legacy `appointments` rows.
-
-**Changes**
-
-- `src/hooks/useDoctorPerformance.ts` (or the existing aggregator behind `DoctorPerformanceSection`)
-  - Join `appointment_sessions` (or whatever the session table is called — confirm via `supabase--read_query` during implementation) onto `appointments` and count sessions with `status IN ('in_progress','completed')` in addition to `appointments.status = 'completed'`.
-  - Use the session `started_at`/`ended_at` for duration metrics when available; fall back to appointment slot length.
-
-- `src/hooks/useDoctorFinancialStats.ts` (or equivalent feeding `DoctorFinancialStatsSection`)
-  - Include revenue lines whose source is a session (e.g. `appointment_sessions.fee_amount` or `payments.appointment_session_id`). Sum alongside current appointment-based revenue, de-duped by appointment id so we never double-count.
-  - Reflect session counts in the "appointments" series in `earningsHistory` exports.
-
-- No UI changes required — the existing charts/cards re-render off the broadened hook output.
-
----
-
-## Technical notes
-
-- Schema verification needed before coding: `appointments.referral_id` column existence, `referral_appointments` table shape, `appointment_sessions` table name + columns, payment linkage table. Will run targeted `supabase--read_query` calls at the start of implementation.
-- Security: the new admin link endpoint must validate the caller is staff of `receiver_entity_id` (use existing `has_role`/staff-context helpers). No service-role key leaves the edge function.
-- i18n: any new strings use existing namespaces (`doctor`, `prescriptions`, `referrals`).
-- Out of scope: redesigning analytics UI, notifications on referral booking (already handled by `referral-notify`), changes to imaging/lab referral flow.
+- `supabase/migrations/<new>` — schema + RPC + log table + RLS
+- `supabase/functions/livekit-token/index.ts` — guest-token branch
+- `supabase/functions/claim-doctor-patient/index.ts` — new
+- `src/hooks/useVideoConsultation.ts` — accept doctor_patient_id + guest_token
+- `src/pages/AppointmentSession.tsx` — Finish button, guest link UI, allow video for unregistered
+- `src/pages/GuestVideoJoin.tsx` — new public page
+- `src/App.tsx` — route registration
+- `src/hooks/useDoctorPatientsV2.ts` — filter merged
