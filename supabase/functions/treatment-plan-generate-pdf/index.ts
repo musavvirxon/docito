@@ -1964,7 +1964,21 @@ serve(async (req: Request) => {
     doctorLogoUrl = asString((doctorRow as any)?.logo_url);
 
     const doctorUserId = asString((doctorRow as any)?.user_id);
-    const practiceId = asString((doctorRow as any)?.practice_id);
+    let practiceId = asString((doctorRow as any)?.practice_id);
+
+    // Fallback: doctor may have joined a clinic via practice_join_requests
+    // without practice_id being denormalized onto the doctors row.
+    if (!practiceId) {
+      const { data: acceptedJoin } = await serviceClient
+        .from("practice_join_requests")
+        .select("practice_id, reviewed_at")
+        .eq("doctor_id", providerId)
+        .eq("status", "accepted")
+        .order("reviewed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      practiceId = asString((acceptedJoin as any)?.practice_id);
+    }
     const specKey = locale === "ru"
       ? "specialty_ru"
       : locale === "uz"
