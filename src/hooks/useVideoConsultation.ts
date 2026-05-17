@@ -26,11 +26,18 @@ export interface VideoConsultation {
 interface CreateConsultationParams {
   appointment_id?: string;
   doctor_id: string;
-  patient_id: string;
+  patient_id?: string;
+  doctor_patient_id?: string;
   scheduled_start: string;
   scheduled_end: string;
   notes?: string;
 }
+
+const generateGuestToken = () => {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
 const generateRoomId = () => {
   const bytes = new Uint8Array(8);
