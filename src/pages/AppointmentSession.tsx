@@ -609,8 +609,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   }, [videoConsultation]);
 
   const startOrJoinVideo = useCallback(async () => {
-    if (!appointment || !appointment.patient_id) {
-      toast.error(t('doctor.session.videoRequiresRegistered', 'Video calls require a registered patient'));
+    if (!appointment) return;
+
+    const hasRegistered = !!appointment.patient_id;
+    const hasGuest = !!appointment.doctor_patient_id;
+    if (!hasRegistered && !hasGuest) {
+      toast.error(t('doctor.session.videoNoPatient', 'No patient is attached to this appointment'));
       return;
     }
 
@@ -627,11 +631,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         return;
       }
 
-      // Otherwise create a new consultation
+      // Otherwise create a new consultation (guest if no registered patient)
       const consult = await createConsultation({
         appointment_id: appointment.id,
         doctor_id: appointment.doctor_id,
-        patient_id: appointment.patient_id,
+        ...(hasRegistered
+          ? { patient_id: appointment.patient_id! }
+          : { doctor_patient_id: appointment.doctor_patient_id! }),
         scheduled_start: new Date().toISOString(),
         scheduled_end: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       });
@@ -742,6 +748,33 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     }
     await finalizeEndSession();
   }, [session?.id, checkPendingFollowUps, finalizeEndSession]);
+
+  const [isFinishing, setIsFinishing] = useState(false);
+  const handleFinishAppointment = useCallback(async () => {
+    if (!appointment?.id) return;
+    try {
+      setIsFinishing(true);
+      // Close session if open
+      if (session?.id) {
+        await supabase
+          .from('appointment_sessions')
+          .update({ session_status: 'completed', ended_at: new Date().toISOString(), notes: sessionNotes })
+          .eq('id', session.id);
+      }
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('id', appointment.id);
+      if (error) throw error;
+      toast.success(t('doctor.session.finished', 'Appointment marked as completed'));
+      navigate('/doctor-dashboard?section=calendar');
+    } catch (err) {
+      console.error('Finish appointment failed', err);
+      toast.error(t('doctor.session.finishError', 'Failed to finish appointment'));
+    } finally {
+      setIsFinishing(false);
+    }
+  }, [appointment?.id, session?.id, sessionNotes, navigate, t]);
 
   const handleSkipFollowUps = useCallback(async () => {
     try {
@@ -1088,10 +1121,37 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             })()}
 
 
+            {videoConsultation?.guest_token && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={async () => {
+                  const link = `${window.location.origin}/v/${videoConsultation.guest_token}`;
+                  try {
+                    await navigator.clipboard.writeText(link);
+                    toast.success(t('doctor.session.linkCopied', 'Patient link copied'));
+                  } catch {
+                    window.prompt(t('doctor.session.copyManual', 'Copy this patient link:'), link);
+                  }
+                }}
+              >
+                <Send className="h-4 w-4" />
+                {t('doctor.session.copyPatientLink', 'Copy patient link')}
+              </Button>
+            )}
+
             {session && (
-              <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
-                {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+              <Button variant="outline" onClick={handleEndSession} disabled={isEnding} className="gap-2">
+                {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
                 {t('doctor.session.end', 'End Session')}
+              </Button>
+            )}
+
+            {appointment.status !== 'completed' && (
+              <Button onClick={handleFinishAppointment} disabled={isFinishing} className="gap-2">
+                {isFinishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                {t('doctor.session.finish', 'Finish Appointment')}
               </Button>
             )}
           </div>

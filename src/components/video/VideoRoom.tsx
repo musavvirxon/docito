@@ -41,9 +41,10 @@ import { toast } from 'sonner';
 interface VideoRoomProps {
   consultation: VideoConsultation;
   userName: string;
-  userRole: 'doctor' | 'patient';
+  userRole: 'doctor' | 'patient' | 'guest';
   onEnd: (notes?: string) => void;
   onLeave: () => void;
+  guestToken?: string;
 }
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
@@ -71,6 +72,8 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   userRole,
   onEnd,
   onLeave,
+  guestToken,
+  userName,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const audioContainer = useRef<HTMLDivElement>(null);
@@ -341,20 +344,21 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         setStatus('connecting');
         setErrorMsg(null);
 
-        const { data: sessionData } = await supabase.auth.getSession();
-        if (!sessionData?.session?.access_token) {
-          if (!cancelledRef.current) {
-            setStatus('error');
-            setErrorMsg('You must be signed in to join the call.');
+        if (!guestToken) {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (!sessionData?.session?.access_token) {
+            if (!cancelledRef.current) {
+              setStatus('error');
+              setErrorMsg('You must be signed in to join the call.');
+            }
+            return;
           }
-          return;
         }
 
         const resp = await supabase.functions.invoke('livekit-token', {
-          body: {
-            appointmentId: consultation.appointment_id,
-            roomId: consultation.room_id,
-          },
+          body: guestToken
+            ? { guestToken, displayName: userName, roomId: consultation.room_id }
+            : { appointmentId: consultation.appointment_id, roomId: consultation.room_id },
         });
 
         if (cancelledRef.current) return;

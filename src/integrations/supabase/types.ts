@@ -2371,6 +2371,7 @@ export type Database = {
           gender: string | null
           id: string
           medical_history: string | null
+          merged_into_user_id: string | null
           notes: string | null
           phone: string
           profession: string | null
@@ -2394,6 +2395,7 @@ export type Database = {
           gender?: string | null
           id?: string
           medical_history?: string | null
+          merged_into_user_id?: string | null
           notes?: string | null
           phone: string
           profession?: string | null
@@ -2417,6 +2419,7 @@ export type Database = {
           gender?: string | null
           id?: string
           medical_history?: string | null
+          merged_into_user_id?: string | null
           notes?: string | null
           phone?: string
           profession?: string | null
@@ -5269,6 +5272,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      patient_merge_log: {
+        Row: {
+          claimed_at: string
+          claimed_by_user_id: string
+          doctor_patient_id: string
+          guest_token: string | null
+          id: string
+        }
+        Insert: {
+          claimed_at?: string
+          claimed_by_user_id: string
+          doctor_patient_id: string
+          guest_token?: string | null
+          id?: string
+        }
+        Update: {
+          claimed_at?: string
+          claimed_by_user_id?: string
+          doctor_patient_id?: string
+          guest_token?: string | null
+          id?: string
+        }
+        Relationships: []
       }
       patient_notes: {
         Row: {
@@ -9828,10 +9855,12 @@ export type Database = {
           created_at: string
           doctor_id: string
           doctor_joined_at: string | null
+          doctor_patient_id: string | null
           duration_minutes: number | null
+          guest_token: string | null
           id: string
           notes: string | null
-          patient_id: string
+          patient_id: string | null
           patient_joined_at: string | null
           recording_url: string | null
           room_id: string
@@ -9848,10 +9877,12 @@ export type Database = {
           created_at?: string
           doctor_id: string
           doctor_joined_at?: string | null
+          doctor_patient_id?: string | null
           duration_minutes?: number | null
+          guest_token?: string | null
           id?: string
           notes?: string | null
-          patient_id: string
+          patient_id?: string | null
           patient_joined_at?: string | null
           recording_url?: string | null
           room_id: string
@@ -9868,10 +9899,12 @@ export type Database = {
           created_at?: string
           doctor_id?: string
           doctor_joined_at?: string | null
+          doctor_patient_id?: string | null
           duration_minutes?: number | null
+          guest_token?: string | null
           id?: string
           notes?: string | null
-          patient_id?: string
+          patient_id?: string | null
           patient_joined_at?: string | null
           recording_url?: string | null
           room_id?: string
@@ -9915,6 +9948,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_consultations_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
             referencedColumns: ["id"]
           },
         ]
@@ -10290,6 +10330,7 @@ export type Database = {
           user_exists: boolean
         }[]
       }
+      claim_doctor_patient: { Args: { _guest_token: string }; Returns: Json }
       cleanup_expired_appointment_holds: { Args: never; Returns: undefined }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       create_appointment_hold: {
@@ -10583,6 +10624,22 @@ export type Database = {
           preferred_at: string
           status: string
           topic: string
+        }[]
+      }
+      get_consultation_by_guest_token: {
+        Args: { _token: string }
+        Returns: {
+          already_claimed: boolean
+          appointment_id: string
+          consultation_id: string
+          doctor_id: string
+          doctor_name: string
+          doctor_patient_id: string
+          patient_email: string
+          patient_full_name: string
+          patient_phone: string
+          scheduled_end: string
+          scheduled_start: string
         }[]
       }
       get_doctor_monthly_trends: {

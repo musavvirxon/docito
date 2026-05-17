@@ -65,11 +65,12 @@ export const useDoctorPatientsV2 = () => {
         return;
       }
 
-      // Fetch ALL doctor's patients (no status filter - include active, inactive, etc.)
+      // Fetch ALL doctor's patients except merged-into-user ones
       const { data: patientsData, error: patientsError } = await supabase
         .from('doctor_patients')
         .select('*')
         .eq('doctor_id', doctorData.id)
+        .is('merged_into_user_id', null)
         .order('full_name', { ascending: true });
 
       if (patientsError) throw patientsError;

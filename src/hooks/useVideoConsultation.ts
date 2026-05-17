@@ -6,7 +6,9 @@ export interface VideoConsultation {
   id: string;
   appointment_id: string | null;
   doctor_id: string;
-  patient_id: string;
+  patient_id: string | null;
+  doctor_patient_id: string | null;
+  guest_token: string | null;
   room_id: string;
   room_url: string;
   status: 'scheduled' | 'waiting' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
@@ -26,11 +28,18 @@ export interface VideoConsultation {
 interface CreateConsultationParams {
   appointment_id?: string;
   doctor_id: string;
-  patient_id: string;
+  patient_id?: string;
+  doctor_patient_id?: string;
   scheduled_start: string;
   scheduled_end: string;
   notes?: string;
 }
+
+const generateGuestToken = () => {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
 const generateRoomId = () => {
   const bytes = new Uint8Array(8);
@@ -88,6 +97,12 @@ export const useVideoConsultation = () => {
       const roomId = generateRoomId();
       const roomUrl = `${window.location.origin}/video/${roomId}`;
 
+      if (!params.patient_id && !params.doctor_patient_id) {
+        throw new Error('Either patient_id or doctor_patient_id is required');
+      }
+
+      const guest_token = params.doctor_patient_id ? generateGuestToken() : null;
+
       const { data, error } = await supabase
         .from('video_consultations')
         .insert({
@@ -95,7 +110,8 @@ export const useVideoConsultation = () => {
           room_id: roomId,
           room_url: roomUrl,
           status: 'scheduled',
-        })
+          guest_token,
+        } as any)
         .select()
         .single();
 

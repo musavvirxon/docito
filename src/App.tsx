@@ -14,6 +14,7 @@ import { isLandingSubdomain } from "@/lib/subdomain";
 const PremiumHome = lazy(() => import("@/pages/PremiumHome"));
 
 const Auth = lazy(() => import("@/pages/Auth"));
+const GuestVideoJoin = lazy(() => import("@/pages/GuestVideoJoin"));
 const About = lazy(() => import("@/pages/About"));
 const Contact = lazy(() => import("@/pages/Contact"));
 const Features = lazy(() => import("@/pages/Features"));
@@ -153,6 +154,7 @@ export default function App() {
             <Suspense fallback={<PageLoader />}>
             <RouteErrorBoundary>
               <Routes>
+                <Route path="v/:token" element={<GuestVideoJoin />} />
                 <Route path=":lang" element={<LanguageWrapper />}>
                   <Route element={<PublicLayout />}>
                     <Route index element={<PremiumHome />} />

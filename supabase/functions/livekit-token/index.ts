@@ -64,7 +64,55 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Authenticate caller
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Parse body first to detect guest-token flow (does not require auth)
+    let body: { appointmentId?: string; roomId?: string; guestToken?: string; displayName?: string } = {};
+    try { body = await req.json(); } catch { /* allow empty */ }
+    const { appointmentId, roomId, guestToken, displayName } = body;
+
+    // --- GUEST TOKEN FLOW (unregistered patient via shareable link) ---
+    if (guestToken) {
+      const adminClient = createClient(supabaseUrl, serviceRoleKey);
+      const { data: vc } = await adminClient
+        .from("video_consultations")
+        .select("id, room_id, doctor_patient_id")
+        .eq("guest_token", guestToken)
+        .maybeSingle();
+      if (!vc || !vc.room_id) {
+        return new Response(JSON.stringify({ error: "Invalid invite link" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      let guestName = displayName || "Guest";
+      if (vc.doctor_patient_id) {
+        const { data: dp } = await adminClient
+          .from("doctor_patients").select("full_name").eq("id", vc.doctor_patient_id).maybeSingle();
+        if (dp?.full_name) guestName = dp.full_name;
+      }
+
+      const apiKey = Deno.env.get("LIVEKIT_API_KEY");
+      const apiSecret = Deno.env.get("LIVEKIT_API_SECRET");
+      const livekitUrl = Deno.env.get("LIVEKIT_URL");
+      if (!apiKey || !apiSecret || !livekitUrl) {
+        return new Response(JSON.stringify({ error: "LiveKit not configured" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const identity = `guest::${vc.id}::${crypto.randomUUID().slice(0, 8)}`;
+      const token = await makeLivekitToken(apiKey, apiSecret, vc.room_id, identity, guestName);
+      return new Response(
+        JSON.stringify({ token, url: livekitUrl, roomId: vc.room_id }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // --- AUTHENTICATED FLOW ---
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Missing auth" }), {
@@ -73,8 +121,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -90,8 +136,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Parse body
-    const { appointmentId, roomId } = await req.json();
     if (!appointmentId && !roomId) {
       return new Response(
         JSON.stringify({ error: "appointmentId or roomId required" }),
@@ -108,7 +152,6 @@ Deno.serve(async (req) => {
 
     if (appointmentId) {
       // Use service role to bypass RLS for the lookup; we authorize manually below.
-      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
       const { data: appt, error: apptErr } = await adminClient
