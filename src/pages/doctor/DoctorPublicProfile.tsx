@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import PremiumHeroSection from "@/components/doctor/public/PremiumHeroSection";
+import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
 
 const AboutSection = lazy(() => import("@/components/doctor/public/AboutSection"));
@@ -250,6 +251,10 @@ export default function DoctorPublicProfile() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={`${doctor.full_name} — ${doctor.specialty} | Docito`.slice(0, 60)}
+        description={(doctor.bio || `Book ${doctor.full_name}, ${doctor.specialty}${doctor.practice_city ? ` in ${doctor.practice_city}` : ''}, on Docito. View availability, reviews and consultation fees.`).slice(0, 160)}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 gap-2">
           <ArrowLeft className="h-4 w-4" />
