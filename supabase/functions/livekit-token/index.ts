@@ -152,7 +152,6 @@ Deno.serve(async (req) => {
 
     if (appointmentId) {
       // Use service role to bypass RLS for the lookup; we authorize manually below.
-      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
       const { data: appt, error: apptErr } = await adminClient
