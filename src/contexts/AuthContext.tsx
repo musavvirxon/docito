@@ -173,6 +173,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const bootstrapViaEdge = async (accessToken?: string): Promise<{ profile: Profile; roles: AppRole[] } | null> => {
     if (!accessToken) return null;
 
+    // Verify session is still valid before invoking the edge function — avoids 401s
+    // after logout / token revocation that would otherwise surface as runtime errors.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const liveToken = sessionData?.session?.access_token;
+    if (!liveToken) {
+      console.warn("[Auth] me bootstrap skipped: no live session");
+      return null;
+    }
+
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -180,7 +189,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${liveToken}`,
         apikey: anonKey,
       },
       body: JSON.stringify({ action: "get" }),
