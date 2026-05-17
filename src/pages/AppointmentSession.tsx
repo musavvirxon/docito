@@ -749,6 +749,33 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     await finalizeEndSession();
   }, [session?.id, checkPendingFollowUps, finalizeEndSession]);
 
+  const [isFinishing, setIsFinishing] = useState(false);
+  const handleFinishAppointment = useCallback(async () => {
+    if (!appointment?.id) return;
+    try {
+      setIsFinishing(true);
+      // Close session if open
+      if (session?.id) {
+        await supabase
+          .from('appointment_sessions')
+          .update({ session_status: 'completed', ended_at: new Date().toISOString(), notes: sessionNotes })
+          .eq('id', session.id);
+      }
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('id', appointment.id);
+      if (error) throw error;
+      toast.success(t('doctor.session.finished', 'Appointment marked as completed'));
+      navigate('/doctor-dashboard?section=calendar');
+    } catch (err) {
+      console.error('Finish appointment failed', err);
+      toast.error(t('doctor.session.finishError', 'Failed to finish appointment'));
+    } finally {
+      setIsFinishing(false);
+    }
+  }, [appointment?.id, session?.id, sessionNotes, navigate, t]);
+
   const handleSkipFollowUps = useCallback(async () => {
     try {
       const ids = pendingFollowUps.map((p) => p.id);
