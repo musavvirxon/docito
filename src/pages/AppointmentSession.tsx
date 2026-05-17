@@ -609,8 +609,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   }, [videoConsultation]);
 
   const startOrJoinVideo = useCallback(async () => {
-    if (!appointment || !appointment.patient_id) {
-      toast.error(t('doctor.session.videoRequiresRegistered', 'Video calls require a registered patient'));
+    if (!appointment) return;
+
+    const hasRegistered = !!appointment.patient_id;
+    const hasGuest = !!appointment.doctor_patient_id;
+    if (!hasRegistered && !hasGuest) {
+      toast.error(t('doctor.session.videoNoPatient', 'No patient is attached to this appointment'));
       return;
     }
 
@@ -627,11 +631,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         return;
       }
 
-      // Otherwise create a new consultation
+      // Otherwise create a new consultation (guest if no registered patient)
       const consult = await createConsultation({
         appointment_id: appointment.id,
         doctor_id: appointment.doctor_id,
-        patient_id: appointment.patient_id,
+        ...(hasRegistered
+          ? { patient_id: appointment.patient_id! }
+          : { doctor_patient_id: appointment.doctor_patient_id! }),
         scheduled_start: new Date().toISOString(),
         scheduled_end: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       });
