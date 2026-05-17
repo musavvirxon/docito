@@ -93,8 +93,8 @@ export default function BlogIndex() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Docito Blog | Healthcare automation, clinic operations, and medical platform insights"
-        description="Explore Docito articles on doctor workflows, clinic automation, patient record systems, medical management software, and healthcare operations."
+        title="Docito Blog — Healthcare automation & clinic insights"
+        description="Articles on doctor workflows, clinic automation, patient records, and healthcare management software."
         keywords={[
           "Docito blog",
           "healthcare blog",
