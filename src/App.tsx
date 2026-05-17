@@ -154,6 +154,7 @@ export default function App() {
             <Suspense fallback={<PageLoader />}>
             <RouteErrorBoundary>
               <Routes>
+                <Route path="v/:token" element={<GuestVideoJoin />} />
                 <Route path=":lang" element={<LanguageWrapper />}>
                   <Route element={<PublicLayout />}>
                     <Route index element={<PremiumHome />} />
