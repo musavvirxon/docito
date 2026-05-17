@@ -95,6 +95,12 @@ export const useVideoConsultation = () => {
       const roomId = generateRoomId();
       const roomUrl = `${window.location.origin}/video/${roomId}`;
 
+      if (!params.patient_id && !params.doctor_patient_id) {
+        throw new Error('Either patient_id or doctor_patient_id is required');
+      }
+
+      const guest_token = params.doctor_patient_id ? generateGuestToken() : null;
+
       const { data, error } = await supabase
         .from('video_consultations')
         .insert({
@@ -102,7 +108,8 @@ export const useVideoConsultation = () => {
           room_id: roomId,
           room_url: roomUrl,
           status: 'scheduled',
-        })
+          guest_token,
+        } as any)
         .select()
         .single();
 
