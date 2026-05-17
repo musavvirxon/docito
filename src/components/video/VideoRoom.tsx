@@ -72,6 +72,8 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   userRole,
   onEnd,
   onLeave,
+  guestToken,
+  userName,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const audioContainer = useRef<HTMLDivElement>(null);
