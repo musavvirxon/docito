@@ -6,7 +6,9 @@ export interface VideoConsultation {
   id: string;
   appointment_id: string | null;
   doctor_id: string;
-  patient_id: string;
+  patient_id: string | null;
+  doctor_patient_id: string | null;
+  guest_token: string | null;
   room_id: string;
   room_url: string;
   status: 'scheduled' | 'waiting' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
