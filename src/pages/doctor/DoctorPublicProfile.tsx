@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import PremiumHeroSection from "@/components/doctor/public/PremiumHeroSection";
+import { SEOHead } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
 
 const AboutSection = lazy(() => import("@/components/doctor/public/AboutSection"));
