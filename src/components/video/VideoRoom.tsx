@@ -41,9 +41,10 @@ import { toast } from 'sonner';
 interface VideoRoomProps {
   consultation: VideoConsultation;
   userName: string;
-  userRole: 'doctor' | 'patient';
+  userRole: 'doctor' | 'patient' | 'guest';
   onEnd: (notes?: string) => void;
   onLeave: () => void;
+  guestToken?: string;
 }
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
