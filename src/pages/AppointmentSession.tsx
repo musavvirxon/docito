@@ -1121,10 +1121,37 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             })()}
 
 
+            {videoConsultation?.guest_token && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={async () => {
+                  const link = `${window.location.origin}/v/${videoConsultation.guest_token}`;
+                  try {
+                    await navigator.clipboard.writeText(link);
+                    toast.success(t('doctor.session.linkCopied', 'Patient link copied'));
+                  } catch {
+                    window.prompt(t('doctor.session.copyManual', 'Copy this patient link:'), link);
+                  }
+                }}
+              >
+                <Send className="h-4 w-4" />
+                {t('doctor.session.copyPatientLink', 'Copy patient link')}
+              </Button>
+            )}
+
             {session && (
-              <Button variant="destructive" onClick={handleEndSession} disabled={isEnding} className="gap-2">
-                {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+              <Button variant="outline" onClick={handleEndSession} disabled={isEnding} className="gap-2">
+                {isEnding ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
                 {t('doctor.session.end', 'End Session')}
+              </Button>
+            )}
+
+            {appointment.status !== 'completed' && (
+              <Button onClick={handleFinishAppointment} disabled={isFinishing} className="gap-2">
+                {isFinishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+                {t('doctor.session.finish', 'Finish Appointment')}
               </Button>
             )}
           </div>
