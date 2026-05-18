@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { CreditCard, Receipt, ShieldCheck, RefreshCw, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { PatientPaymentsList } from "@/components/PatientPaymentsList";
 
 declare global {
   interface Window {
