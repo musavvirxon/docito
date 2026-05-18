@@ -227,17 +227,46 @@ const DoctorProceduresSection = () => {
     }
   };
 
-  const saveEditedProcedure = () => {
+  const saveEditedProcedure = async () => {
     if (!editingProcedure) return;
-    
-    updateProcedure(editingProcedure.id, editingProcedure);
-    setEditingProcedure(null);
-    setIsEditDialogOpen(false);
-    
-    toast({
-      title: "Procedure Updated",
-      description: `${editingProcedure.name} has been updated`,
-    });
+
+    try {
+      // Persist edits to the database for real procedures
+      const { error } = await supabase
+        .from('procedures')
+        .update({
+          name: editingProcedure.isSystemConsultation ? 'Consultation' : editingProcedure.name,
+          description: editingProcedure.description,
+          default_cost: editingProcedure.fee,
+          duration_minutes: editingProcedure.duration,
+          is_active: editingProcedure.isBookable,
+        })
+        .eq('id', editingProcedure.id);
+      if (error) throw error;
+
+      // For the system consultation, mirror the fee back to the doctor row
+      if (editingProcedure.isSystemConsultation && user) {
+        await supabase
+          .from('doctors')
+          .update({ consultation_fee: editingProcedure.fee })
+          .eq('user_id', user.id);
+      }
+
+      updateProcedure(editingProcedure.id, editingProcedure);
+      setEditingProcedure(null);
+      setIsEditDialogOpen(false);
+
+      toast({
+        title: "Procedure Updated",
+        description: `${editingProcedure.name} has been updated`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Update failed",
+        description: err.message || 'Could not save changes.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSaveAll = async () => {
