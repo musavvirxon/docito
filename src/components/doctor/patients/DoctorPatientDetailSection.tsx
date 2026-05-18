@@ -249,10 +249,11 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
 
       {/* Tabs Section */}
       <Tabs defaultValue="medical" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="medical">Medical Info</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
         {/* Medical Info Tab */}
