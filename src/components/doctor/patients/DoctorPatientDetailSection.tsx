@@ -57,6 +57,18 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
     loadPatient();
   }, [patientId, getPatientById]);
 
+  // Load appointment ids for this doctor_patient so we can scope payments to them.
+  useEffect(() => {
+    const loadAppts = async () => {
+      const { data } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('doctor_patient_id', patientId);
+      setAppointmentIds((data || []).map((r: any) => r.id));
+    };
+    loadAppts();
+  }, [patientId]);
+
   const handleDelete = async () => {
     if (!patient) return;
     if (!confirm("Are you sure you want to delete this patient? This action cannot be undone.")) {
