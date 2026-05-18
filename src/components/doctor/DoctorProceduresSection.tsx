@@ -616,8 +616,14 @@ const DoctorProceduresSection = () => {
                 <Label>Procedure Name</Label>
                 <Input
                   value={editingProcedure.name}
+                  disabled={editingProcedure.isSystemConsultation}
                   onChange={(e) => setEditingProcedure(prev => prev ? { ...prev, name: e.target.value } : null)}
                 />
+                {editingProcedure.isSystemConsultation && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Renaming the consultation is disabled. Updating the fee here will also update your profile's consultation fee.
+                  </p>
+                )}
               </div>
               
               <div>
