@@ -31,6 +31,7 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
   const [patient, setPatient] = useState<DoctorPatient | null>(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
   const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [appointmentIds, setAppointmentIds] = useState<string[]>([]);
 
   // Fetch doctor ID
   useEffect(() => {
