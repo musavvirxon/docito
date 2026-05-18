@@ -189,10 +189,18 @@ const DoctorProceduresSection = () => {
     setProcedures(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   };
 
-  const deleteProcedure = (id: string) => {
+  const deleteProcedure = async (id: string) => {
     const procedure = procedures.find(p => p.id === id);
+    if (procedure?.isSystemConsultation) {
+      toast({
+        title: "Cannot delete",
+        description: "Consultation is managed from your verification profile.",
+        variant: "destructive",
+      });
+      return;
+    }
     setProcedures(prev => prev.filter(p => p.id !== id));
-    
+
     toast({
       title: "Procedure Deleted",
       description: `${procedure?.name} has been removed`,
