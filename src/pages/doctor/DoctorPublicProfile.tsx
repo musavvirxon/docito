@@ -100,10 +100,16 @@ export default function DoctorPublicProfile() {
       setLoading(true);
       try {
         // Public view is anon-safe and already filters to verified + public profiles
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+        const orClauses = [
+          `custom_profile_link.eq.${slug}`,
+          `username.eq.${slug}`,
+          ...(isUuid ? [`id.eq.${slug}`] : []),
+        ].join(",");
         const { data: doc, error: docErr } = await (supabase as any)
           .from("doctor_public_profile_view")
           .select("*")
-          .or(`id.eq.${slug},custom_profile_link.eq.${slug},username.eq.${slug}`)
+          .or(orClauses)
           .maybeSingle();
 
         if (docErr) throw docErr;
