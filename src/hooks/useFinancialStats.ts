@@ -317,15 +317,19 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       // procedure rows below, so we don't double-charge a consultation fee on them.
       const pendingPayments: PendingPayment[] = pendingAppointments
         .filter((apt: any) => !apt.procedure_id && !apt.procedures)
+        .filter((apt: any) => !paidAppointmentIds.has(apt.id))
         .map((apt: any) => {
           const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
           return {
             appointmentId: apt.id,
             patientName: patientProfile?.full_name || 'Unknown Patient',
+            patientId: apt.patient_id,
             serviceName: 'Consultation',
             amount: consultationFee,
             date: apt.appointment_date,
             status: apt.status,
+            doctorId,
+            practiceId,
           };
         });
 
@@ -340,15 +344,19 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           pendingPayments.push({
             appointmentId: `tph-${row.id}`,
             patientName: patientProfile?.full_name || 'Unknown Patient',
+            patientId: row.patient_id,
             serviceName: row.procedure_name || 'Procedure',
             amount: Number(row.cost) || 0,
             date: row.performed_at || row.created_at,
             status: 'unpaid',
+            doctorId,
+            practiceId,
           });
         });
 
       apptProcedures
         .filter((row: any) => Number(row.estimated_cost) > 0 && row.status !== 'cancelled')
+        .filter((row: any) => !paidAppointmentIds.has(row.appointment_id))
         .forEach((row: any) => {
           const apt = row.appointments;
           if (!apt) return;
@@ -356,10 +364,13 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           pendingPayments.push({
             appointmentId: `ap-${row.id}`,
             patientName: patientProfile?.full_name || 'Unknown Patient',
+            patientId: apt.patient_id,
             serviceName: row.procedures?.name || 'Procedure',
             amount: Number(row.estimated_cost) || 0,
             date: apt.appointment_date,
             status: row.status || 'unpaid',
+            doctorId,
+            practiceId,
           });
         });
 
