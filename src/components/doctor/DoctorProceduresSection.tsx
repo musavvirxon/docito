@@ -463,6 +463,9 @@ const DoctorProceduresSection = () => {
                                 {procedure.isBookable ? "Bookable" : "Not Bookable"}
                               </Badge>
                               <Badge variant="outline">{procedure.category}</Badge>
+                              {procedure.isSystemConsultation && (
+                                <Badge variant="secondary">From verification</Badge>
+                              )}
                             </div>
                             
                             <p className="text-sm text-muted-foreground mb-3">
