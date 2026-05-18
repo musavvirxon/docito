@@ -42,10 +42,13 @@ interface PayoutRecord {
 interface PendingPayment {
   appointmentId: string;
   patientName: string;
+  patientId?: string | null;
   serviceName: string;
   amount: number;
   date: string;
   status: string;
+  doctorId?: string | null;
+  practiceId?: string | null;
 }
 
 interface PatientEarnings {
