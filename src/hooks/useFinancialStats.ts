@@ -142,13 +142,24 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           .eq('doctor_id', doctorId),
       ]);
 
+      // Fetch payments already recorded for this doctor so we can filter out paid items.
+      const { data: paidRows } = await supabase
+        .from('payments')
+        .select('appointment_id, status')
+        .eq('doctor_id', doctorId)
+        .in('status', ['paid', 'completed', 'succeeded']);
+      const paidAppointmentIds = new Set(
+        (paidRows || []).map((r: any) => r.appointment_id).filter(Boolean),
+      );
+
       const appointments = appointmentsData.data || [];
       const allAppointments = allAppointmentsData.data || [];
       const procedures = proceduresData.data || [];
       const doctor = doctorData.data;
       const profiles = profilesData.data || [];
       const sessions = sessionsData.data || [];
-      const consultationFee = doctor?.consultation_fee || 150;
+      const consultationFee = Number(doctor?.consultation_fee) || 0;
+      const practiceId = (doctor as any)?.practice_id || null;
       const platformCommissionRate = 0.15; // 15% platform fee
 
       // Sessions in active/completed states make their appointment count as completed for finance.
