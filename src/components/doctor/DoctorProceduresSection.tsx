@@ -52,6 +52,7 @@ interface Procedure {
   isBookable: boolean;
   displayOrder: number;
   category: string;
+  isSystemConsultation?: boolean;
 }
 
 const DoctorProceduresSection = () => {
