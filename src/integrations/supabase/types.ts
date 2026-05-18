@@ -5541,12 +5541,13 @@ export type Database = {
           amount: number
           appointment_id: string | null
           created_at: string
+          doctor_id: string | null
           id: string
           notes: string | null
           paid_at: string | null
           patient_id: string
           payment_method: string | null
-          practice_id: string
+          practice_id: string | null
           status: string | null
           transaction_id: string | null
         }
@@ -5554,12 +5555,13 @@ export type Database = {
           amount: number
           appointment_id?: string | null
           created_at?: string
+          doctor_id?: string | null
           id?: string
           notes?: string | null
           paid_at?: string | null
           patient_id: string
           payment_method?: string | null
-          practice_id: string
+          practice_id?: string | null
           status?: string | null
           transaction_id?: string | null
         }
@@ -5567,12 +5569,13 @@ export type Database = {
           amount?: number
           appointment_id?: string | null
           created_at?: string
+          doctor_id?: string | null
           id?: string
           notes?: string | null
           paid_at?: string | null
           patient_id?: string
           payment_method?: string | null
-          practice_id?: string
+          practice_id?: string | null
           status?: string | null
           transaction_id?: string | null
         }
@@ -5589,6 +5592,27 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
           {
@@ -6974,6 +6998,7 @@ export type Database = {
           informed_consent_template: string | null
           is_active: boolean | null
           is_bookable: boolean | null
+          is_system_consultation: boolean
           name: string
           notes: string | null
           price: number | null
@@ -7001,6 +7026,7 @@ export type Database = {
           informed_consent_template?: string | null
           is_active?: boolean | null
           is_bookable?: boolean | null
+          is_system_consultation?: boolean
           name: string
           notes?: string | null
           price?: number | null
@@ -7028,6 +7054,7 @@ export type Database = {
           informed_consent_template?: string | null
           is_active?: boolean | null
           is_bookable?: boolean | null
+          is_system_consultation?: boolean
           name?: string
           notes?: string | null
           price?: number | null
@@ -10421,6 +10448,10 @@ export type Database = {
       doctor_can_view_patient_profile: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      ensure_doctor_consultation_procedure: {
+        Args: { p_doctor_id: string }
+        Returns: string
       }
       fetch_available_slots: {
         Args: {
