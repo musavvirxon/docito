@@ -42,10 +42,13 @@ interface PayoutRecord {
 interface PendingPayment {
   appointmentId: string;
   patientName: string;
+  patientId?: string | null;
   serviceName: string;
   amount: number;
   date: string;
   status: string;
+  doctorId?: string | null;
+  practiceId?: string | null;
 }
 
 interface PatientEarnings {
@@ -139,13 +142,24 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           .eq('doctor_id', doctorId),
       ]);
 
+      // Fetch payments already recorded for this doctor so we can filter out paid items.
+      const { data: paidRows } = await supabase
+        .from('payments')
+        .select('appointment_id, status')
+        .eq('doctor_id', doctorId)
+        .in('status', ['paid', 'completed', 'succeeded']);
+      const paidAppointmentIds = new Set(
+        (paidRows || []).map((r: any) => r.appointment_id).filter(Boolean),
+      );
+
       const appointments = appointmentsData.data || [];
       const allAppointments = allAppointmentsData.data || [];
       const procedures = proceduresData.data || [];
       const doctor = doctorData.data;
       const profiles = profilesData.data || [];
       const sessions = sessionsData.data || [];
-      const consultationFee = doctor?.consultation_fee || 150;
+      const consultationFee = Number(doctor?.consultation_fee) || 0;
+      const practiceId = (doctor as any)?.practice_id || null;
       const platformCommissionRate = 0.15; // 15% platform fee
 
       // Sessions in active/completed states make their appointment count as completed for finance.
@@ -303,15 +317,19 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       // procedure rows below, so we don't double-charge a consultation fee on them.
       const pendingPayments: PendingPayment[] = pendingAppointments
         .filter((apt: any) => !apt.procedure_id && !apt.procedures)
+        .filter((apt: any) => !paidAppointmentIds.has(apt.id))
         .map((apt: any) => {
           const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
           return {
             appointmentId: apt.id,
             patientName: patientProfile?.full_name || 'Unknown Patient',
+            patientId: apt.patient_id,
             serviceName: 'Consultation',
             amount: consultationFee,
             date: apt.appointment_date,
             status: apt.status,
+            doctorId,
+            practiceId,
           };
         });
 
@@ -326,15 +344,19 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           pendingPayments.push({
             appointmentId: `tph-${row.id}`,
             patientName: patientProfile?.full_name || 'Unknown Patient',
+            patientId: row.patient_id,
             serviceName: row.procedure_name || 'Procedure',
             amount: Number(row.cost) || 0,
             date: row.performed_at || row.created_at,
             status: 'unpaid',
+            doctorId,
+            practiceId,
           });
         });
 
       apptProcedures
         .filter((row: any) => Number(row.estimated_cost) > 0 && row.status !== 'cancelled')
+        .filter((row: any) => !paidAppointmentIds.has(row.appointment_id))
         .forEach((row: any) => {
           const apt = row.appointments;
           if (!apt) return;
@@ -342,10 +364,13 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
           pendingPayments.push({
             appointmentId: `ap-${row.id}`,
             patientName: patientProfile?.full_name || 'Unknown Patient',
+            patientId: apt.patient_id,
             serviceName: row.procedures?.name || 'Procedure',
             amount: Number(row.estimated_cost) || 0,
             date: apt.appointment_date,
             status: row.status || 'unpaid',
+            doctorId,
+            practiceId,
           });
         });
 

@@ -42,6 +42,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useProcedures } from '@/hooks/useProcedures';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Procedure {
   id: string;
@@ -52,6 +53,7 @@ interface Procedure {
   isBookable: boolean;
   displayOrder: number;
   category: string;
+  isSystemConsultation?: boolean;
 }
 
 const DoctorProceduresSection = () => {
@@ -112,16 +114,19 @@ const DoctorProceduresSection = () => {
   // If database procedures exist, use them instead of default ones
   useEffect(() => {
     if (dbProcedures && dbProcedures.length > 0) {
-      const formattedProcedures: Procedure[] = dbProcedures.map((proc, index) => ({
-        id: proc.id,
-        name: proc.name,
-        description: proc.description || '',
-        duration: proc.duration_minutes || 30,
-        fee: proc.default_cost || 0,
-        isBookable: proc.is_active,
-        displayOrder: index + 1,
-        category: proc.category || 'Consultation'
-      }));
+      const formattedProcedures: Procedure[] = dbProcedures
+        .map((proc: any, index) => ({
+          id: proc.id,
+          name: proc.name,
+          description: proc.description || '',
+          duration: proc.duration_minutes || 30,
+          fee: Number(proc.default_cost) || 0,
+          isBookable: proc.is_active,
+          displayOrder: index + 1,
+          category: proc.category || 'Consultation',
+          isSystemConsultation: !!proc.is_system_consultation,
+        }))
+        .sort((a, b) => Number(b.isSystemConsultation) - Number(a.isSystemConsultation));
       setProcedures(formattedProcedures);
     }
   }, [dbProcedures]);
@@ -184,10 +189,18 @@ const DoctorProceduresSection = () => {
     setProcedures(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
   };
 
-  const deleteProcedure = (id: string) => {
+  const deleteProcedure = async (id: string) => {
     const procedure = procedures.find(p => p.id === id);
+    if (procedure?.isSystemConsultation) {
+      toast({
+        title: "Cannot delete",
+        description: "Consultation is managed from your verification profile.",
+        variant: "destructive",
+      });
+      return;
+    }
     setProcedures(prev => prev.filter(p => p.id !== id));
-    
+
     toast({
       title: "Procedure Deleted",
       description: `${procedure?.name} has been removed`,
@@ -214,17 +227,46 @@ const DoctorProceduresSection = () => {
     }
   };
 
-  const saveEditedProcedure = () => {
+  const saveEditedProcedure = async () => {
     if (!editingProcedure) return;
-    
-    updateProcedure(editingProcedure.id, editingProcedure);
-    setEditingProcedure(null);
-    setIsEditDialogOpen(false);
-    
-    toast({
-      title: "Procedure Updated",
-      description: `${editingProcedure.name} has been updated`,
-    });
+
+    try {
+      // Persist edits to the database for real procedures
+      const { error } = await supabase
+        .from('procedures')
+        .update({
+          name: editingProcedure.isSystemConsultation ? 'Consultation' : editingProcedure.name,
+          description: editingProcedure.description,
+          default_cost: editingProcedure.fee,
+          duration_minutes: editingProcedure.duration,
+          is_active: editingProcedure.isBookable,
+        })
+        .eq('id', editingProcedure.id);
+      if (error) throw error;
+
+      // For the system consultation, mirror the fee back to the doctor row
+      if (editingProcedure.isSystemConsultation && user) {
+        await supabase
+          .from('doctors')
+          .update({ consultation_fee: editingProcedure.fee })
+          .eq('user_id', user.id);
+      }
+
+      updateProcedure(editingProcedure.id, editingProcedure);
+      setEditingProcedure(null);
+      setIsEditDialogOpen(false);
+
+      toast({
+        title: "Procedure Updated",
+        description: `${editingProcedure.name} has been updated`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Update failed",
+        description: err.message || 'Could not save changes.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleSaveAll = async () => {
@@ -421,6 +463,9 @@ const DoctorProceduresSection = () => {
                                 {procedure.isBookable ? "Bookable" : "Not Bookable"}
                               </Badge>
                               <Badge variant="outline">{procedure.category}</Badge>
+                              {procedure.isSystemConsultation && (
+                                <Badge variant="secondary">From verification</Badge>
+                              )}
                             </div>
                             
                             <p className="text-sm text-muted-foreground mb-3">
@@ -458,31 +503,33 @@ const DoctorProceduresSection = () => {
                               <Edit2 className="w-4 h-4" />
                             </Button>
                             
-                            {/* Delete button */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="ghost" className="text-destructive">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Procedure</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{procedure.name}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => deleteProcedure(procedure.id)}
-                                    className="bg-destructive text-destructive-foreground"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                            {/* Delete button — hidden for system consultation */}
+                            {!procedure.isSystemConsultation && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="ghost" className="text-destructive">
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Procedure</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "{procedure.name}"? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteProcedure(procedure.id)}
+                                      className="bg-destructive text-destructive-foreground"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -569,8 +616,14 @@ const DoctorProceduresSection = () => {
                 <Label>Procedure Name</Label>
                 <Input
                   value={editingProcedure.name}
+                  disabled={editingProcedure.isSystemConsultation}
                   onChange={(e) => setEditingProcedure(prev => prev ? { ...prev, name: e.target.value } : null)}
                 />
+                {editingProcedure.isSystemConsultation && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Renaming the consultation is disabled. Updating the fee here will also update your profile's consultation fee.
+                  </p>
+                )}
               </div>
               
               <div>

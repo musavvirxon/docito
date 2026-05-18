@@ -16,6 +16,7 @@ import { useDoctorPatientsV2, DoctorPatient } from "@/hooks/useDoctorPatientsV2"
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDoctorPatientPDF } from "./PatientSummaryPDF";
+import { PatientPaymentsList } from "@/components/PatientPaymentsList";
 import { toast } from "sonner";
 
 interface DoctorPatientDetailSectionProps {
@@ -30,6 +31,7 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
   const [patient, setPatient] = useState<DoctorPatient | null>(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
   const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [appointmentIds, setAppointmentIds] = useState<string[]>([]);
 
   // Fetch doctor ID
   useEffect(() => {
@@ -54,6 +56,18 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
     };
     loadPatient();
   }, [patientId, getPatientById]);
+
+  // Load appointment ids for this doctor_patient so we can scope payments to them.
+  useEffect(() => {
+    const loadAppts = async () => {
+      const { data } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('doctor_patient_id', patientId);
+      setAppointmentIds((data || []).map((r: any) => r.id));
+    };
+    loadAppts();
+  }, [patientId]);
 
   const handleDelete = async () => {
     if (!patient) return;
@@ -235,10 +249,11 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
 
       {/* Tabs Section */}
       <Tabs defaultValue="medical" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="medical">Medical Info</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
         </TabsList>
 
         {/* Medical Info Tab */}
@@ -327,6 +342,16 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Billing Tab */}
+        <TabsContent value="billing" className="space-y-4">
+          <PatientPaymentsList
+            doctorId={doctorId}
+            appointmentIds={appointmentIds}
+            title="Payments for this patient"
+            emptyText="No payments recorded for this patient yet."
+          />
         </TabsContent>
       </Tabs>
     </div>

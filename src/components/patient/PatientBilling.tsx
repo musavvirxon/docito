@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { CreditCard, Receipt, ShieldCheck, RefreshCw, Trash2, CheckCircle2, Clock, AlertCircle } from "lucide-react";
+import { PatientPaymentsList } from "@/components/PatientPaymentsList";
 
 declare global {
   interface Window {
@@ -371,6 +372,13 @@ export const PatientBilling = () => {
           </Button>
         </div>
       </div>
+
+      {/* Payments recorded directly by your doctors */}
+      <PatientPaymentsList
+        patientUserId={user?.id || null}
+        title="Doctor-recorded payments"
+        emptyText="No payments have been recorded by your doctors yet."
+      />
 
       {/* Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

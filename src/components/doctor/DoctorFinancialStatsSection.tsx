@@ -184,7 +184,7 @@ export const DoctorFinancialStatsSection = () => {
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-6">
-          <FinancialPending pendingPayments={pendingPayments} />
+          <FinancialPending pendingPayments={pendingPayments} onPaymentRecorded={refreshData} />
         </TabsContent>
 
         <TabsContent value="insights" className="space-y-6">
