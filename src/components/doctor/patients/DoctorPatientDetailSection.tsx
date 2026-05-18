@@ -343,6 +343,16 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Billing Tab */}
+        <TabsContent value="billing" className="space-y-4">
+          <PatientPaymentsList
+            doctorId={doctorId}
+            appointmentIds={appointmentIds}
+            title="Payments for this patient"
+            emptyText="No payments recorded for this patient yet."
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );
