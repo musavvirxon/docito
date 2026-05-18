@@ -114,16 +114,19 @@ const DoctorProceduresSection = () => {
   // If database procedures exist, use them instead of default ones
   useEffect(() => {
     if (dbProcedures && dbProcedures.length > 0) {
-      const formattedProcedures: Procedure[] = dbProcedures.map((proc, index) => ({
-        id: proc.id,
-        name: proc.name,
-        description: proc.description || '',
-        duration: proc.duration_minutes || 30,
-        fee: proc.default_cost || 0,
-        isBookable: proc.is_active,
-        displayOrder: index + 1,
-        category: proc.category || 'Consultation'
-      }));
+      const formattedProcedures: Procedure[] = dbProcedures
+        .map((proc: any, index) => ({
+          id: proc.id,
+          name: proc.name,
+          description: proc.description || '',
+          duration: proc.duration_minutes || 30,
+          fee: Number(proc.default_cost) || 0,
+          isBookable: proc.is_active,
+          displayOrder: index + 1,
+          category: proc.category || 'Consultation',
+          isSystemConsultation: !!proc.is_system_consultation,
+        }))
+        .sort((a, b) => Number(b.isSystemConsultation) - Number(a.isSystemConsultation));
       setProcedures(formattedProcedures);
     }
   }, [dbProcedures]);
