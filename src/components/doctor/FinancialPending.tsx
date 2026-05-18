@@ -1,30 +1,47 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { MarkAsPaidDialog, MarkAsPaidContext } from "@/components/doctor/MarkAsPaidDialog";
 
-interface PendingPayment {
+export interface PendingPayment {
   appointmentId: string;
   patientName: string;
+  patientId?: string | null;
   serviceName: string;
   amount: number;
   date: string;
   status: string;
+  doctorId?: string | null;
+  practiceId?: string | null;
 }
 
 interface FinancialPendingProps {
   pendingPayments: PendingPayment[];
+  onPaymentRecorded?: () => void;
 }
 
-export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => {
+export const FinancialPending = ({ pendingPayments, onPaymentRecorded }: FinancialPendingProps) => {
   const { t } = useTranslation("dashboard");
   const totalPending = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [context, setContext] = useState<MarkAsPaidContext | null>(null);
 
-  const handleMarkAsPaid = (appointmentId: string) => {
-    toast.success(t("doctor.financialStats.pending.paymentMarked"));
+  const openDialog = (payment: PendingPayment) => {
+    if (!payment.patientId) return;
+    setContext({
+      appointmentId: payment.appointmentId,
+      patientId: payment.patientId,
+      doctorId: payment.doctorId,
+      practiceId: payment.practiceId,
+      patientName: payment.patientName,
+      serviceName: payment.serviceName,
+      defaultAmount: payment.amount,
+    });
+    setDialogOpen(true);
   };
 
   return (
@@ -61,10 +78,11 @@ export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => 
                     <Badge variant="secondary">{payment.status}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
-                      onClick={() => handleMarkAsPaid(payment.appointmentId)}
+                      disabled={!payment.patientId}
+                      onClick={() => openDialog(payment)}
                     >
                       <CheckCircle className="w-4 h-4 mr-1" />
                       {t("doctor.financialStats.pending.markPaid")}
@@ -82,6 +100,13 @@ export const FinancialPending = ({ pendingPayments }: FinancialPendingProps) => 
           </TableBody>
         </Table>
       </CardContent>
+
+      <MarkAsPaidDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        context={context}
+        onSuccess={onPaymentRecorded}
+      />
     </Card>
   );
 };
