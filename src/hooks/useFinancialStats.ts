@@ -297,20 +297,23 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
       const patientEarnings: PatientEarnings[] = Object.values(patientEarningsMap)
         .sort((a: any, b: any) => b.totalPaid - a.totalPaid);
 
-      // Pending payments — appointment-level (consultation fees on unpaid appointments)
-      const pendingPayments: PendingPayment[] = pendingAppointments.map((apt: any) => {
-        const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
-        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-
-        return {
-          appointmentId: apt.id,
-          patientName: patientProfile?.full_name || 'Unknown Patient',
-          serviceName: apt.procedures?.name || 'Consultation',
-          amount: procPrice,
-          date: apt.appointment_date,
-          status: apt.status
-        };
-      });
+      // Pending payments — appointment-level.
+      // Only include the consultation fee when the appointment has no linked procedure
+      // (a pure consultation). Appointments with a procedure are billed via the
+      // procedure rows below, so we don't double-charge a consultation fee on them.
+      const pendingPayments: PendingPayment[] = pendingAppointments
+        .filter((apt: any) => !apt.procedure_id && !apt.procedures)
+        .map((apt: any) => {
+          const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+          return {
+            appointmentId: apt.id,
+            patientName: patientProfile?.full_name || 'Unknown Patient',
+            serviceName: 'Consultation',
+            amount: consultationFee,
+            date: apt.appointment_date,
+            status: apt.status,
+          };
+        });
 
       // Pending payments — procedures performed during appointments (dental work, injections, etc.)
       const toothHistory = (toothHistoryData as any)?.data || [];
