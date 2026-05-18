@@ -16,6 +16,7 @@ import { useDoctorPatientsV2, DoctorPatient } from "@/hooks/useDoctorPatientsV2"
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDoctorPatientPDF } from "./PatientSummaryPDF";
+import { PatientPaymentsList } from "@/components/PatientPaymentsList";
 import { toast } from "sonner";
 
 interface DoctorPatientDetailSectionProps {
