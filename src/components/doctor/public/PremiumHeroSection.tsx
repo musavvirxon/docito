@@ -74,9 +74,9 @@ export default function PremiumHeroSection({
     .slice(0, 2);
 
   return (
-    <section className={cn("pt-6 pb-12 lg:py-16", isRTL && "rtl")}>
+    <section className={cn("pt-2 pb-6 lg:py-8", isRTL && "rtl")}>
       <div className="max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Left: Doctor Identity */}
           <div className="lg:col-span-7 space-y-6">
             {/* Avatar + Basic Info */}
