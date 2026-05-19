@@ -434,24 +434,6 @@
     "settings": {
       "title": "Settings",
       "subtitle": "Manage account settings",
-      "account": "Account",
-      "notifications": "Notifications",
-      "privacy": "Privacy",
-      "security": "Security",
-      "save": "Save Changes",
-      "changePassword": "Change Password",
-      "currentPassword": "Current Password",
-      "newPassword": "New Password",
-      "confirmPassword": "Confirm Password",
-      "emailNotifications": "Email Notifications",
-      "smsNotifications": "SMS Notifications",
-      "appointmentReminders": "Appointment Reminders",
-      "medicationReminders": "Medication Reminders",
-      "marketingEmails": "Marketing Emails",
-      "profileVisibility": "Profile Visibility",
-      "shareDataWithDoctors": "Share Data with Doctors",
-      "showActivityStatus": "Show Activity Status",
-      "instructions": "Manage account settings, notifications, and privacy preferences",
       "account": {
         "title": "Personal Information",
         "description": "Update your personal details",
@@ -497,7 +479,21 @@
         "newPassword": "New Password",
         "confirmPassword": "Confirm New Password",
         "updatePassword": "Update Password"
-      }
+      },
+      "save": "Save Changes",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "emailNotifications": "Email Notifications",
+      "smsNotifications": "SMS Notifications",
+      "appointmentReminders": "Appointment Reminders",
+      "medicationReminders": "Medication Reminders",
+      "marketingEmails": "Marketing Emails",
+      "profileVisibility": "Profile Visibility",
+      "shareDataWithDoctors": "Share Data with Doctors",
+      "showActivityStatus": "Show Activity Status",
+      "instructions": "Manage account settings, notifications, and privacy preferences"
     },
     "filters": {
       "title": "Filters",
@@ -888,7 +884,7 @@
     },
     "services": {
       "title": "My Services",
-      "description": "Manage services you offer to patients",
+      "description": "Description",
       "assignedServices": "Assigned Services",
       "assignedServicesDesc": "Services assigned to you by the clinic",
       "assignedByClinic": "Assigned by clinic administration",
@@ -900,7 +896,6 @@
       "serviceNamePlaceholder": "e.g. General Consultation",
       "category": "Category",
       "selectCategory": "Select Category",
-      "description": "Description",
       "descriptionPlaceholder": "Describe the service...",
       "price": "Price ($)",
       "duration": "Duration (in minutes)",
@@ -1300,7 +1295,15 @@
     "settings": {
       "title": "Settings",
       "description": "Manage your account settings and security",
-      "account": "Account",
+      "account": {
+        "title": "Account Information",
+        "description": "Update basic account information",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "timezone": "Timezone",
+        "language": "Language",
+        "saveChanges": "Save Changes"
+      },
       "notifications": "Notifications",
       "calendar": "Calendar",
       "security": "Security",
@@ -1321,15 +1324,6 @@
         "selectTimezone": "Select timezone",
         "selectLanguage": "Select language",
         "saving": "Saving...",
-        "saveChanges": "Save Changes"
-      },
-      "account": {
-        "title": "Account Information",
-        "description": "Update basic account information",
-        "email": "Email Address",
-        "phone": "Phone Number",
-        "timezone": "Timezone",
-        "language": "Language",
         "saveChanges": "Save Changes"
       },
       "personalInfo": "Personal Information",
@@ -1588,5 +1582,65 @@
     "services": {
       "title": "Services"
     }
+  },
+  "profile": {
+    "about": "About",
+    "noBio": "No biography provided yet.",
+    "yearsExp": "yrs exp.",
+    "yearsExperience": "Years of experience",
+    "reviews": "reviews",
+    "verified": "Verified",
+    "acceptingPatients": "Accepting patients",
+    "videoConsult": "Video consults",
+    "bookAppointment": "Book an appointment",
+    "consultationFee": "Consultation fee",
+    "bookNow": "Book now",
+    "messageDoctor": "Message doctor",
+    "save": "Save",
+    "saved": "Saved",
+    "share": "Share",
+    "secureBookingNote": "Secure booking. Your data is encrypted and never shared.",
+    "services": "Services & conditions",
+    "availableTypes": "Available consultation types",
+    "patientReviews": "Patient reviews",
+    "noReviewsYet": "No reviews yet",
+    "basedOn": "Based on {{count}} reviews",
+    "clinicAffiliation": "Clinic affiliation"
+  },
+  "publicProfile": {
+    "about": {
+      "experienceDescription": "Dedicated healthcare professional with proven results"
+    },
+    "availability": {
+      "title": "Next available",
+      "seeAll": "See all availability"
+    },
+    "reviews": {
+      "emptyState": "Reviews appear after verified visits. Be the first to book and leave a review."
+    },
+    "trust": {
+      "headline": "Your data. Your control.",
+      "subheadline": "Security and privacy come first on every booking.",
+      "verified": {
+        "title": "Verified provider",
+        "description": "Credentials and licenses checked"
+      },
+      "encrypted": {
+        "title": "End-to-end encrypted",
+        "description": "Messages and files stay private"
+      },
+      "hipaa": {
+        "title": "HIPAA & GDPR",
+        "description": "Compliant with global standards"
+      },
+      "noSell": {
+        "title": "No data selling",
+        "description": "We never sell your information"
+      }
+    }
+  },
+  "actions": {
+    "browse": "Browse all doctors",
+    "viewClinic": "View clinic"
   }
 }
