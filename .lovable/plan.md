@@ -1,55 +1,55 @@
-# Clinic admin ↔ doctor profile: data, analytics & rules
+## Why the Foe Foe dashboard is empty
 
-The clinic admin dashboard at `/practices/dashboard` (`src/pages/AdminDashboard.tsx`) currently fetches doctors from the `doctors` table only. It never reads from `doctor_profiles_view` (where bio, languages, education, experience, fees, services, photo, ratings live), so the Provider section shows mostly empty fields. The provider detail view also has no controls to set rules/limits on a doctor, and the existing `practice_restrictions` table is practice-wide only, not exposed in this dashboard, and not enforced anywhere in booking/calendar.
+Verified directly in the database for practice `554c8b46…` (Foe Foe / Test Clinic) and doctor Dentist Hi `8fcfe750…`:
 
-## What we'll change
+```
+doctors WHERE practice_id = Foe Foe         → 0
+doctors WHERE id = Dentist Hi               → 1, but practice_id IS NULL
+appointments WHERE practice_id = Foe Foe    → 0
+appointments WHERE doctor_id = Dentist Hi   → 28
+billing_transactions WHERE practice_id      → 0
+practice_join_requests (doctor → Foe Foe)   → status = "accepted"
+```
 
-### 1. Pull real doctor profile data (data layer)
-`src/hooks/useAdminDashboard.ts → fetchDoctors`
-- Join the `doctors` rows with `doctor_profiles_view` (by `doctor_id`/`user_id`) to hydrate: `bio`, `languages`, `years_experience`, `education`, `certifications`, `consultation_fee`, `avatar_url`, `rating`, `total_reviews`, `services`, `verification_status`.
-- Also fetch `doctor_availability` (working hours per doctor) and `procedures` linked to each provider, keyed by `doctor_id`, and attach to each doctor object.
-- Keep the existing practice-scoping (`practice_id = practice.id`) and respect the per-doctor RLS.
+So the join request was accepted, but **`doctors.practice_id` was never set** — there is no trigger on `practice_join_requests` that links the doctor to the clinic. Every dashboard query (`get_practice_providers`, `get_practice_appointments`, payments, patients) filters by `practice_id`, so all of them return zero.
 
-### 2. Show that data in the provider profile (UI)
-`src/pages/AdminDashboard.tsx` provider detail tabs (lines ~1028–1530):
-- **Overview**: render real `bio`, `languages`, `years_experience`, `education`, `consultation_fee`, `avatar_url`, `verification_status` from the hydrated doctor.
-- **Calendar**: replace the hardcoded "09:00–17:00 / Open" rows with the doctor's actual `doctor_availability` records; show blocked times from `blocked_times` for that `doctor_id`.
-- **Procedures**: list the doctor's `procedures` (name, price, duration) instead of static text.
-- **Analytics**: scope the existing `usePracticeInsights` result to `selectedProvider.id` so the charts reflect that doctor, not the whole clinic.
-- **Reviews**: pull from the `reviews` table filtered by `doctor_id`.
+Two extra bugs amplify the issue:
+- `get_practice_services` RPC selects `procedures.created_by`, which does not exist → HTTP 400 every page load (visible in the network log).
+- `useAdminDashboard.fetchAppointments` only fetches 10 rows, and the custom report builder ignores its From/To date range.
 
-### 3. Per-doctor rules & limitations (rules layer)
-The current `practice_restrictions` table is one-row-per-practice. We'll extend it so admins can set rules per provider.
+## Plan
 
-Migration:
-- New table `doctor_restrictions` (`id`, `practice_id`, `doctor_id`, `working_hours_restriction jsonb`, `specialty_restriction jsonb`, `procedure_restriction jsonb`, `max_daily_appointments int`, `max_weekly_appointments int`, `requires_admin_approval boolean`, `notes`, timestamps). RLS: practice admins/staff can read/write rows where `practice_id` matches their practice (via `has_practice_admin_access(auth.uid(), practice_id)`); doctors can read their own row.
-- Keep the existing practice-wide `practice_restrictions` as the fallback default.
+### 1. Migration — link doctors to practices on join
 
-UI:
-- New component `src/components/dashboard/DoctorRulesCard.tsx`, reusing the controls already in `DoctorRestrictionsSettings.tsx` but bound to `(practice_id, doctor_id)`. Add it as a new "Rules & Limits" tab on the provider detail view in AdminDashboard.
-- New hook `useDoctorRestrictions(practiceId, doctorId)` modelled on `usePracticeRestrictions`.
+- **Backfill now**: `UPDATE doctors d SET practice_id = jr.practice_id, practice_location_id = COALESCE(d.practice_location_id, jr.location_id) FROM practice_join_requests jr WHERE jr.doctor_id = d.id AND jr.status = 'accepted' AND d.practice_id IS NULL;`
+- **Backfill historical rows so they show up under the new link**:
+  - `UPDATE appointments a SET practice_id = d.practice_id FROM doctors d WHERE a.doctor_id = d.id AND a.practice_id IS NULL AND d.practice_id IS NOT NULL;`
+  - `UPDATE billing_transactions bt SET practice_id = a.practice_id FROM appointments a WHERE bt.appointment_id = a.id AND bt.practice_id IS NULL AND a.practice_id IS NOT NULL;`
+- **Trigger on `practice_join_requests`**: when row transitions to `status = 'accepted'`, set `doctors.practice_id` / `practice_location_id` (if null), and also stamp existing `appointments` / `billing_transactions` for that doctor with the practice_id (only where null, so independent-practice history isn't hijacked retroactively for other clinics).
+- **Trigger on `appointments` BEFORE INSERT/UPDATE**: if `practice_id IS NULL` and the doctor has one, copy it. Keeps future bookings tagged.
+- **Trigger on `billing_transactions` BEFORE INSERT**: if `practice_id IS NULL` and `appointment_id` is set, copy from the appointment. Keeps future charges tagged.
 
-### 4. Enforce the rules
-- `src/lib/booking.ts` (and the slot generator in `src/utils/TimeSlotCalculator.ts`): before returning bookable slots, load the merged restrictions for the doctor (`doctor_restrictions` overrides `practice_restrictions`) and filter out: slots outside `working_hours_restriction`, services not in `specialty_restriction.allowedSpecialties`, services in `procedure_restriction.blockedProcedures`, and any day where `max_daily_appointments` is already reached (count from `appointments` for that `doctor_id` + date).
-- `PremiumDoctorCalendar` (already used by the provider Calendar tab): visually mark blocked days/slots from the same merged restrictions so the admin sees what patients see.
-- Booking submission in `src/pages/AppointmentBooking.tsx` re-validates the same rules before insert and shows a clear error if violated.
+### 2. Fix the broken services RPC
 
-### 5. i18n
-Add English keys under `dashboard.admin.providers.rules.*` in `public/locales/en/dashboard.json` (and stub the other 10 languages with the English text as fallback) for the new tab title, field labels, save/cancel, and toast messages. No hardcoded English strings in the new component.
+Replace `get_practice_services` so it doesn't reference the non-existent `procedures.created_by`. Join `procedures` → `doctors` via `procedures.doctor_id` (or just by `procedures.practice_id`), and return the same columns the UI expects (`id, name, doctor_name, price, duration_minutes, category`). This stops the 400 on every dashboard load.
 
-## Files touched
+### 3. Fix the custom report builder (`AdminDashboard.tsx` ~5508)
 
-- `src/hooks/useAdminDashboard.ts` — hydrate doctors from `doctor_profiles_view`, `doctor_availability`, `procedures`.
-- `src/pages/AdminDashboard.tsx` — render real fields in Overview/Calendar/Procedures/Analytics/Reviews; add "Rules & Limits" tab.
-- `src/hooks/useDoctorRestrictions.ts` — new.
-- `src/components/dashboard/DoctorRulesCard.tsx` — new (extracted/parameterised from `DoctorRestrictionsSettings.tsx`).
-- `src/lib/booking.ts`, `src/utils/TimeSlotCalculator.ts`, `src/pages/AppointmentBooking.tsx` — enforce merged restrictions.
-- `public/locales/*/dashboard.json` — new `providers.rules.*` keys.
-- Migration: create `public.doctor_restrictions` + RLS policies + indexes on `(practice_id, doctor_id)`.
+- Remove the `p_limit_count: 10` cap in `useAdminDashboard.fetchAppointments` (pass 5000, or no limit) — otherwise the report only sees the most recent 10 rows even when data exists.
+- Apply `reportFrom` / `reportTo` to `filteredAppts` using `a.appointment_date` — currently the date inputs are decorative.
+- Match provider/service by id as well as by name so the filters actually engage.
+- Compute Total Revenue from the now-filtered `payments` list (sum of `amount_cents` over matching `appointment_id`s / date range) rather than the global summary, so the filters move the number.
 
-## Out of scope
+### 4. Verify
 
-- Redesigning the provider list grid.
-- Changing how doctors are invited or linked to a practice.
-- The doctor-side calendar UI (only the admin's read-only view of it).
+After approval and migration run:
+- `SELECT count(*) FROM appointments WHERE practice_id = '554c8b46…';` should be 28.
+- Reload `/practices/dashboard` as Foe Foe: Providers shows Dentist Hi, Appointments tab shows the 28 entries, Financial tab shows the paid/unpaid totals, Reports → Generate returns non-zero metrics that respond to the date filter.
 
+### Files
+
+- `supabase/migrations/<new>.sql` — backfill + 3 triggers + replacement `get_practice_services`
+- `src/hooks/useAdminDashboard.ts` — drop the 10-row appointment cap
+- `src/pages/AdminDashboard.tsx` — apply date range & id-based filters in the report generator
+
+No new tables, no RLS changes, no UI redesign — just connects the existing widgets to the real data and prevents the same disconnect for future joins.
