@@ -569,6 +569,7 @@ export const useDoctorIntegration = () => {
       if (error) throw error;
       toast.success("Diagnosis deleted");
       refreshSeq.current += 1;
+      await fetchDiagnoses();
       return { success: true };
     } catch (err: any) {
       console.error("Error deleting diagnosis:", err);
