@@ -212,6 +212,11 @@ export default function DoctorProfileSection() {
         throw profErr;
       }
 
+      // Optimistically keep entered values so the UI doesn't flash blank
+      // while refreshAllData() round-trips.
+      setUsername(isPublic ? un : "");
+      setIsPublic(isPublic);
+
       toast({ title: "Saved", description: "Your profile has been updated." });
       await refreshAllData();
     } catch (e: any) {
