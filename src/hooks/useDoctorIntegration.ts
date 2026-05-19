@@ -525,6 +525,7 @@ export const useDoctorIntegration = () => {
       if (error) throw error;
       toast.success("Diagnosis added");
       refreshSeq.current += 1;
+      await fetchDiagnoses();
       return { success: true };
     } catch (err: any) {
       console.error("Error adding diagnosis:", err);
