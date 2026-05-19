@@ -2452,6 +2452,51 @@ export type Database = {
           },
         ]
       }
+      doctor_restrictions: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          max_daily_appointments: number | null
+          max_weekly_appointments: number | null
+          notes: string | null
+          practice_id: string
+          procedure_restriction: Json | null
+          requires_admin_approval: boolean
+          specialty_restriction: Json | null
+          updated_at: string
+          working_hours_restriction: Json | null
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          max_daily_appointments?: number | null
+          max_weekly_appointments?: number | null
+          notes?: string | null
+          practice_id: string
+          procedure_restriction?: Json | null
+          requires_admin_approval?: boolean
+          specialty_restriction?: Json | null
+          updated_at?: string
+          working_hours_restriction?: Json | null
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          max_daily_appointments?: number | null
+          max_weekly_appointments?: number | null
+          notes?: string | null
+          practice_id?: string
+          procedure_restriction?: Json | null
+          requires_admin_approval?: boolean
+          specialty_restriction?: Json | null
+          updated_at?: string
+          working_hours_restriction?: Json | null
+        }
+        Relationships: []
+      }
       doctor_verification: {
         Row: {
           created_at: string
