@@ -1124,6 +1124,12 @@ const AdminDashboard = () => {
                               ['Phone', selectedProvider.phone],
                               ['License Number', selectedProvider.license_number],
                               ['Languages', Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
+                              ['Years of Experience', selectedProvider.years_experience ? `${selectedProvider.years_experience} yrs` : '—'],
+                              ['Consultation Fee', selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
+                              ['Consultation Types', Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
+                              ['Accepts New Patients', selectedProvider.accepts_new_patients ? 'Yes' : 'No'],
+                              ['Verified', selectedProvider.verified ? 'Yes' : 'No'],
+                              ['Reviews', selectedProvider.num_reviews ?? 0],
                             ].map(([label, value]) => (
                               <div key={label as string}>
                                 <p className="text-sm text-muted-foreground">{label}</p>
@@ -1131,6 +1137,12 @@ const AdminDashboard = () => {
                               </div>
                             ))}
                           </div>
+                          {selectedProvider.bio && (
+                            <div className="mt-4">
+                              <p className="text-sm text-muted-foreground">Bio</p>
+                              <p className="text-sm leading-relaxed mt-1">{selectedProvider.bio}</p>
+                            </div>
+                          )}
                           <Button variant="outline" className="mt-4" onClick={() => guard(async () => {
                             const bio = prompt('Edit bio:', selectedProvider.bio || '');
                             if (bio !== null) {
