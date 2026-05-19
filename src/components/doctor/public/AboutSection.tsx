@@ -89,7 +89,7 @@ export default function AboutSection({
 
         {/* Services / Conditions */}
         {services.length > 0 && (
-          <div className="mb-10">
+          <div className="mb-6">
             <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Stethoscope className="w-6 h-6 text-primary" />
               {t("profile.services")}
