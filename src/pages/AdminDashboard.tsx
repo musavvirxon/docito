@@ -35,6 +35,7 @@ import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
 import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
+import DoctorRulesCard from "@/components/dashboard/DoctorRulesCard";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
 import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
