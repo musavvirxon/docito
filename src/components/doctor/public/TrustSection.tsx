@@ -46,7 +46,7 @@ export default function TrustSection() {
     <section
       ref={ref}
       className={cn(
-        "py-12 lg:py-16",
+        "py-4 lg:py-6",
         isRTL && "rtl"
       )}
     >

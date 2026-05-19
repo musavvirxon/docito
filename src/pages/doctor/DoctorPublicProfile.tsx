@@ -261,10 +261,10 @@ export default function DoctorPublicProfile() {
         title={`${doctor.full_name} — ${doctor.specialty} | Docito`.slice(0, 60)}
         description={(doctor.bio || `Book ${doctor.full_name}, ${doctor.specialty}${doctor.practice_city ? ` in ${doctor.practice_city}` : ''}, on Docito. View availability, reviews and consultation fees.`).slice(0, 160)}
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4 gap-2">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 gap-2">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {t("common:actions.back", "Back")}
         </Button>
       </div>
 
@@ -279,7 +279,7 @@ export default function DoctorPublicProfile() {
         onToggleSave={handleToggleSave}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 space-y-6">
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
           <AvailabilityPreview doctorId={doctor.id} onOpenBooking={handleBookClick} />
         </Suspense>

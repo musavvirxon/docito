@@ -32,11 +32,11 @@ export default function AboutSection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className={cn("py-12 lg:py-16", isRTL && "rtl")}
+      className={cn("py-4 lg:py-6", isRTL && "rtl")}
     >
       <div className="max-w-4xl mx-auto px-4">
         {/* About */}
-        <div className="mb-10">
+        <div className="mb-6">
           <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
             <GraduationCap className="w-6 h-6 text-primary" />
             {t("profile.about")}
@@ -89,7 +89,7 @@ export default function AboutSection({
 
         {/* Services / Conditions */}
         {services.length > 0 && (
-          <div className="mb-10">
+          <div className="mb-6">
             <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
               <Stethoscope className="w-6 h-6 text-primary" />
               {t("profile.services")}
