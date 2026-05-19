@@ -17,6 +17,7 @@ import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getBookingUrl } from "@/lib/booking";
 
 const USERNAME_RE = /^[a-z0-9][a-z0-9_-]{2,29}$/;
 
@@ -90,8 +91,7 @@ export default function DoctorProfileSection() {
   const bookingLink = useMemo(() => {
     if (!doctorProfile?.id) return "";
     const slug = doctorProfile.custom_profile_link || doctorProfile.id;
-    // Always point patients at the public production domain
-    return `https://docito.app/book-appointment/${slug}`;
+    return getBookingUrl(slug);
   }, [doctorProfile?.id, doctorProfile?.custom_profile_link]);
 
   const [linkCopied, setLinkCopied] = useState(false);
@@ -212,6 +212,11 @@ export default function DoctorProfileSection() {
         throw profErr;
       }
 
+      // Optimistically keep entered values so the UI doesn't flash blank
+      // while refreshAllData() round-trips.
+      setUsername(isPublic ? un : "");
+      setIsPublic(isPublic);
+
       toast({ title: "Saved", description: "Your profile has been updated." });
       await refreshAllData();
     } catch (e: any) {
@@ -269,9 +274,10 @@ export default function DoctorProfileSection() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (publicSlug) navigate(`/doctor/${publicSlug}`);
+              if (publicSlug && doctorProfile.verified) navigate(`/doctor/${publicSlug}`);
             }}
-            disabled={!publicSlug}
+            disabled={!publicSlug || !doctorProfile.verified}
+            title={!doctorProfile.verified ? "Your public profile becomes visible after verification" : undefined}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Preview
@@ -443,6 +449,15 @@ export default function DoctorProfileSection() {
           {!isPublic && (
             <Alert>
               <AlertDescription>Your profile is private (unlisted). Share your link directly if needed.</AlertDescription>
+            </Alert>
+          )}
+
+          {isPublic && !doctorProfile.verified && (
+            <Alert>
+              <AlertDescription>
+                Your public profile at <span className="font-mono">{publicUrl}</span> will go live
+                once your account is verified. Until then, the link will not be reachable.
+              </AlertDescription>
             </Alert>
           )}
         </div>
