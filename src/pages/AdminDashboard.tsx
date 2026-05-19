@@ -5511,11 +5511,37 @@ const AdminDashboard = () => {
                         setTimeout(() => {
                           try {
                             const rows: any[] = [];
+                            const fromDate = reportFrom ? new Date(reportFrom) : null;
+                            const toDate = reportTo ? new Date(reportTo) : null;
                             const filteredAppts = appointments.filter((a: any) => {
-                              if (reportProvider !== 'all' && a.doctor_name !== reportProvider) return false;
-                              if (reportService !== 'all' && a.service_name !== reportService && a.service !== reportService) return false;
+                              if (reportProvider !== 'all' && a.doctor_name !== reportProvider && a.doctor_id !== reportProvider) return false;
+                              if (reportService !== 'all' && a.service_name !== reportService && a.service !== reportService && a.procedure_id !== reportService) return false;
+                              if (fromDate || toDate) {
+                                const ad = a.appointment_date ? new Date(a.appointment_date) : null;
+                                if (!ad) return false;
+                                if (fromDate && ad < fromDate) return false;
+                                if (toDate && ad > toDate) return false;
+                              }
                               return true;
                             });
+                            const apptIds = new Set(filteredAppts.map((a: any) => a.id));
+                            const filteredPayments = (payments || []).filter((p: any) => {
+                              if (apptIds.size && p.appointment_id && !apptIds.has(p.appointment_id)) return false;
+                              if (fromDate || toDate) {
+                                const pd = p.created_at ? new Date(p.created_at) : null;
+                                if (!pd) return false;
+                                if (fromDate && pd < fromDate) return false;
+                                if (toDate && pd > toDate) return false;
+                              }
+                              return true;
+                            });
+                            const revenueCents = filteredPayments.reduce((sum: number, p: any) => {
+                              const status = String(p.status || '').toLowerCase();
+                              if (status !== 'paid' && status !== 'succeeded') return sum;
+                              const cents = Number(p.amount_cents ?? Math.round(Number(p.amount || 0) * 100));
+                              return sum + (Number.isFinite(cents) ? cents : 0);
+                            }, 0);
+                            const revenue = revenueCents / 100;
                             if (reportMetrics.includes('Total Appointments')) rows.push({ metric: 'Total Appointments', value: filteredAppts.length, unit: 'appointments' });
                             if (reportMetrics.includes('Completed Appointments')) rows.push({ metric: 'Completed Appointments', value: filteredAppts.filter((a: any) => a.status === 'completed').length, unit: 'appointments' });
                             if (reportMetrics.includes('Cancelled Appointments')) rows.push({ metric: 'Cancelled Appointments', value: filteredAppts.filter((a: any) => a.status === 'cancelled').length, unit: 'appointments' });
@@ -5523,10 +5549,9 @@ const AdminDashboard = () => {
                             if (reportMetrics.includes('Unique Patients')) rows.push({ metric: 'Unique Patients', value: new Set(filteredAppts.map((a: any) => a.patient_id || a.patient_name)).size, unit: 'patients' });
                             if (reportMetrics.includes('New Patients')) rows.push({ metric: 'New Patients', value: patients.length, unit: 'patients' });
                             if (reportMetrics.includes('Cancellation Rate')) rows.push({ metric: 'Cancellation Rate', value: filteredAppts.length > 0 ? (filteredAppts.filter((a: any) => a.status === 'cancelled').length / filteredAppts.length * 100).toFixed(1) + '%' : '0%', unit: '' });
-                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: '$' + ((billing as any)?.data?.summary?.totalRevenueCents / 100 || 0).toFixed(2), unit: '' });
+                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: '$' + revenue.toFixed(2), unit: '' });
                             if (reportMetrics.includes('Avg Revenue per Appointment')) {
-                              const rev = (billing as any)?.data?.summary?.totalRevenueCents / 100 || 0;
-                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? '$' + (rev / filteredAppts.length).toFixed(2) : '$0.00', unit: '' });
+                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? '$' + (revenue / filteredAppts.length).toFixed(2) : '$0.00', unit: '' });
                             }
                             if (reportMetrics.includes('Patient Retention')) rows.push({ metric: 'Patient Retention', value: 'N/A', unit: '(requires historical data)' });
                             if (reportMetrics.includes('Provider Performance')) {
