@@ -274,9 +274,10 @@ export default function DoctorProfileSection() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (publicSlug) navigate(`/doctor/${publicSlug}`);
+              if (publicSlug && doctorProfile.verified) navigate(`/doctor/${publicSlug}`);
             }}
-            disabled={!publicSlug}
+            disabled={!publicSlug || !doctorProfile.verified}
+            title={!doctorProfile.verified ? "Your public profile becomes visible after verification" : undefined}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Preview
