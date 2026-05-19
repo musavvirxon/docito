@@ -279,7 +279,7 @@ export default function DoctorPublicProfile() {
         onToggleSave={handleToggleSave}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 space-y-6">
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
           <AvailabilityPreview doctorId={doctor.id} onOpenBooking={handleBookClick} />
         </Suspense>
