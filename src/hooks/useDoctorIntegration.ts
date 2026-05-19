@@ -213,7 +213,9 @@ export const useDoctorIntegration = () => {
             full_name,
             email,
             avatar_url,
-            phone
+            phone,
+            username,
+            profile_visibility
           ),
           practices:practice_id (
             name,
