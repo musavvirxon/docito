@@ -245,25 +245,127 @@ export const useAdminDashboard = () => {
   const fetchPatients = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
     try {
-      const { data, error } = await supabase.rpc("get_practice_patients" as any, {
+      // 1. Registered patients (via RPC: completed appointments)
+      const { data: rpcData } = await supabase.rpc("get_practice_patients" as any, {
         p_practice_id: practiceData.id,
-        p_limit_count: 20,
+        p_limit_count: 500,
       });
-      if (error) throw error;
-      setPatients((data as any[]) || []);
-    } catch { setPatients([]); }
+
+      // 2. Facility patients (manually added at the practice)
+      const { data: facilityData } = await (supabase as any)
+        .from("facility_patients")
+        .select("*")
+        .eq("facility_id", practiceData.id)
+        .order("created_at", { ascending: false });
+
+      // 3. Doctor patients for any doctor in this practice
+      const { data: practiceDocs } = await supabase
+        .from("doctors")
+        .select("id, user_id")
+        .eq("practice_id", practiceData.id);
+      const docIds = (practiceDocs || []).map((d: any) => d.id).filter(Boolean);
+      let doctorPatientsData: any[] = [];
+      if (docIds.length) {
+        const { data: dp } = await (supabase as any)
+          .from("doctor_patients")
+          .select("*")
+          .in("doctor_id", docIds)
+          .order("created_at", { ascending: false });
+        doctorPatientsData = dp || [];
+      }
+
+      // 4. Patient names referenced only in appointments (snapshot patient_id list)
+      const { data: aptRows } = await supabase
+        .from("appointments")
+        .select("patient_id, doctor_patient_id, status, appointment_date")
+        .eq("practice_id", practiceData.id)
+        .order("appointment_date", { ascending: false })
+        .limit(5000);
+
+      // 5. Per-patient financial totals
+      const { data: txRows } = await (supabase as any)
+        .from("billing_transactions")
+        .select("user_id, amount, status")
+        .eq("practice_id", practiceData.id)
+        .limit(10000);
+      const totalsByUser = new Map<string, { paid: number; outstanding: number }>();
+      (txRows || []).forEach((t: any) => {
+        if (!t.user_id) return;
+        const cur = totalsByUser.get(t.user_id) || { paid: 0, outstanding: 0 };
+        const amt = Number(t.amount || 0);
+        if (String(t.status).toLowerCase() === "paid" || String(t.status).toLowerCase() === "succeeded") cur.paid += amt;
+        else cur.outstanding += amt;
+        totalsByUser.set(t.user_id, cur);
+      });
+
+      const merged: any[] = [];
+      const seen = new Set<string>();
+      const push = (p: any) => {
+        const key = p.id || p.user_id || p.email || `${p.full_name}-${p.phone || ''}`;
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        const fin = (p.user_id && totalsByUser.get(p.user_id)) || { paid: 0, outstanding: 0 };
+        merged.push({ ...p, total_paid: fin.paid, total_outstanding: fin.outstanding });
+      };
+
+      ((rpcData as any[]) || []).forEach((p) => push({ ...p, source: 'registered' }));
+      (facilityData || []).forEach((p: any) => push({
+        ...p,
+        name: p.full_name,
+        source: 'facility',
+        status: p.status || 'active',
+      }));
+      doctorPatientsData.forEach((p: any) => push({
+        ...p,
+        name: p.full_name,
+        source: 'doctor',
+        status: p.status || 'active',
+      }));
+
+      // Mark appointment-only patient_ids that aren't in the merged list
+      const knownIds = new Set(merged.map((m) => m.id).filter(Boolean));
+      const aptPatientIds = new Set(((aptRows || []) as any[]).map((a) => a.patient_id).filter(Boolean));
+      aptPatientIds.forEach((pid) => {
+        if (!knownIds.has(pid)) {
+          push({ id: pid, full_name: 'Patient', source: 'appointments-only', status: 'active' });
+        }
+      });
+
+      setPatients(merged);
+    } catch (e) {
+      console.error('fetchPatients failed', e);
+      setPatients([]);
+    }
   }, []);
 
   const fetchPayments = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
     try {
-      const { data, error } = await supabase.rpc("get_practice_payments" as any, {
-        p_practice_id: practiceData.id,
-        p_limit_count: 10,
-      });
+      const { data, error } = await (supabase as any)
+        .from("billing_transactions")
+        .select("id, user_id, amount, status, description, created_at, appointment_id")
+        .eq("practice_id", practiceData.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
       if (error) throw error;
-      setPayments((data as any[]) || []);
-    } catch { setPayments([]); }
+      const userIds = Array.from(new Set(((data as any[]) || []).map((d) => d.user_id).filter(Boolean)));
+      let nameByUser: Record<string, string> = {};
+      if (userIds.length) {
+        const { data: profs } = await (supabase as any)
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => { nameByUser[p.user_id] = p.full_name; });
+      }
+      const enriched = ((data as any[]) || []).map((t) => ({
+        ...t,
+        patient_name: (t.user_id && nameByUser[t.user_id]) || 'Walk-in / Offline patient',
+      }));
+      setPayments(enriched);
+    } catch (e) {
+      console.error('fetchPayments failed', e);
+      setPayments([]);
+    }
   }, []);
 
   const fetchMessages = useCallback(async (practiceData: any) => {
