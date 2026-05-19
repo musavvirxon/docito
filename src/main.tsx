@@ -120,7 +120,7 @@ scheduleIdle(() => {
       .then((regs) => regs.forEach((r) => r.unregister()))
       .catch(() => { /* ignore */ });
   }
-}, { timeout: 2000 });
+});
 
 // Hide initial loader once React takes over rendering
 function hideInitialLoader() {
