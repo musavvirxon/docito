@@ -35,6 +35,7 @@ import { InviteStaffModal } from "@/components/dashboard/InviteStaffModal";
 import PendingInvitationsSection from "@/components/dashboard/PendingInvitationsSection";
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
+import DoctorRulesCard from "@/components/dashboard/DoctorRulesCard";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
 import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
@@ -218,7 +219,7 @@ const AdminDashboard = () => {
 
   // Provider section state
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
-  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'procedures' | 'reviews' | 'documents'>('overview');
+  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'procedures' | 'reviews' | 'documents' | 'rules'>('overview');
   const [providerSearch, setProviderSearch] = useState('');
   const [providerStatusFilter, setProviderStatusFilter] = useState('all');
   const [providerSpecialtyFilter, setProviderSpecialtyFilter] = useState('all');
@@ -1022,6 +1023,7 @@ const AdminDashboard = () => {
           { key: 'procedures', label: t("admin.providers.tabs.procedures") },
           { key: 'reviews', label: t("admin.providers.tabs.reviews") },
           { key: 'documents', label: t("admin.providers.tabs.documents") },
+          { key: 'rules', label: t("admin.providers.tabs.rules", { defaultValue: "Rules & Limits" }) },
         ];
 
         // PROFILE VIEW
@@ -1122,6 +1124,12 @@ const AdminDashboard = () => {
                               ['Phone', selectedProvider.phone],
                               ['License Number', selectedProvider.license_number],
                               ['Languages', Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
+                              ['Years of Experience', selectedProvider.years_experience ? `${selectedProvider.years_experience} yrs` : '—'],
+                              ['Consultation Fee', selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
+                              ['Consultation Types', Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
+                              ['Accepts New Patients', selectedProvider.accepts_new_patients ? 'Yes' : 'No'],
+                              ['Verified', selectedProvider.verified ? 'Yes' : 'No'],
+                              ['Reviews', selectedProvider.num_reviews ?? 0],
                             ].map(([label, value]) => (
                               <div key={label as string}>
                                 <p className="text-sm text-muted-foreground">{label}</p>
@@ -1129,6 +1137,12 @@ const AdminDashboard = () => {
                               </div>
                             ))}
                           </div>
+                          {selectedProvider.bio && (
+                            <div className="mt-4">
+                              <p className="text-sm text-muted-foreground">Bio</p>
+                              <p className="text-sm leading-relaxed mt-1">{selectedProvider.bio}</p>
+                            </div>
+                          )}
                           <Button variant="outline" className="mt-4" onClick={() => guard(async () => {
                             const bio = prompt('Edit bio:', selectedProvider.bio || '');
                             if (bio !== null) {
@@ -1194,16 +1208,35 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardHeader><CardTitle className="text-base">Working Hours</CardTitle></CardHeader>
                       <CardContent>
-                        <div className="space-y-2">
-                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                            <div key={day} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                              <span className="text-sm font-medium w-24">{day}</span>
-                              <Badge variant="secondary">Open</Badge>
-                              <span className="text-sm text-muted-foreground">09:00 – 17:00</span>
+                        {(() => {
+                          const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                          const avail: any[] = selectedProvider.availability || [];
+                          const byDay: Record<number, any[]> = {};
+                          avail.forEach(a => {
+                            const k = typeof a.day_of_week === 'number' ? a.day_of_week : -1;
+                            (byDay[k] = byDay[k] || []).push(a);
+                          });
+                          return (
+                            <div className="space-y-2">
+                              {dayNames.map((day, idx) => {
+                                const rows = byDay[idx] || [];
+                                const enabled = rows.some(r => r.is_active !== false);
+                                return (
+                                  <div key={day} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                    <span className="text-sm font-medium w-24">{day}</span>
+                                    <Badge variant={enabled ? 'secondary' : 'outline'}>{enabled ? 'Open' : 'Closed'}</Badge>
+                                    <span className="text-sm text-muted-foreground">
+                                      {enabled
+                                        ? rows.filter(r => r.is_active !== false).map(r => `${r.start_time}–${r.end_time}`).join(', ')
+                                        : '—'}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-3">Working hours are managed from each provider's schedule settings.</p>
+                          );
+                        })()}
+                        <p className="text-xs text-muted-foreground mt-3">Pulled from this doctor's availability. Set rules in "Rules & Limits".</p>
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
@@ -1428,25 +1461,30 @@ const AdminDashboard = () => {
                     </div>
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
-                        {services.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-6">No services configured</p>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
-                              <span>Service Name</span><span>Category</span><span>Base Price</span><span>Provider Fee</span><span>Offered</span>
-                            </div>
-                            {services.map((svc: any) => (
-                              <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
-                                <span className="font-medium truncate">{svc.name}</span>
-                                <Badge variant="outline">{svc.category || '—'}</Badge>
-                                <span>{svc.price ? `$${svc.price}` : '—'}</span>
-                                <Input placeholder="Custom fee" className="h-8" onBlur={async (e) => { const val = parseFloat(e.target.value); if (!isNaN(val) && val > 0) { toast.success('Fee saved locally'); } }} />
-                                <Badge variant="secondary">Active</Badge>
+                        {(() => {
+                          const docProcs: any[] = selectedProvider.procedures || [];
+                          const rows = docProcs.length ? docProcs : services;
+                          if (rows.length === 0) {
+                            return <p className="text-sm text-muted-foreground text-center py-6">No services configured</p>;
+                          }
+                          return (
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
+                                <span>Service Name</span><span>Category</span><span>Price</span><span>Duration</span><span>Status</span>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-3">Pricing overrides will be saved in a future update</p>
+                              {rows.map((svc: any) => (
+                                <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                  <span className="font-medium truncate">{svc.name}</span>
+                                  <Badge variant="outline">{svc.category || '—'}</Badge>
+                                  <span>{svc.price != null ? `$${svc.price}` : '—'}</span>
+                                  <span>{svc.duration ? `${svc.duration} min` : '—'}</span>
+                                  <Badge variant="secondary">{svc.is_active === false ? 'Inactive' : 'Active'}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <p className="text-xs text-muted-foreground mt-3">{(selectedProvider.procedures || []).length ? 'Showing this doctor\'s procedures.' : 'No doctor-specific procedures yet — showing clinic services.'}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -1509,10 +1547,19 @@ const AdminDashboard = () => {
                     <p className="text-xs text-muted-foreground">Document upload and management coming in a future update.</p>
                   </div>
                 )}
+
+                {providerTab === 'rules' && practice?.id && selectedProvider?.id && (
+                  <DoctorRulesCard
+                    practiceId={practice.id}
+                    doctorId={selectedProvider.id}
+                    doctorName={selectedProvider.name}
+                  />
+                )}
               </div>
             </SectionWrapper>
           );
         }
+
 
         // DIRECTORY VIEW
         return (

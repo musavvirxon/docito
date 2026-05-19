@@ -134,7 +134,68 @@ export const useAdminDashboard = () => {
         .eq("practice_id", practiceData.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      setDoctors(data || []);
+      const base = data || [];
+
+      // Hydrate from doctor_profiles_view (bio, fees, languages, experience, ratings...)
+      const ids = base.map((d: any) => d.id).filter(Boolean);
+      let profileById: Record<string, any> = {};
+      if (ids.length) {
+        const { data: profiles } = await (supabase as any)
+          .from("doctor_profiles_view")
+          .select("*")
+          .in("id", ids);
+        (profiles || []).forEach((p: any) => { profileById[p.id] = p; });
+      }
+
+      // Per-doctor availability & procedures (best effort)
+      const [availRes, procRes] = await Promise.all([
+        ids.length
+          ? (supabase as any).from("doctor_availability").select("*").in("doctor_id", ids)
+          : Promise.resolve({ data: [] }),
+        ids.length
+          ? (supabase as any).from("procedures").select("*").in("doctor_id", ids)
+          : Promise.resolve({ data: [] }),
+      ]);
+      const availByDoctor: Record<string, any[]> = {};
+      (availRes?.data || []).forEach((r: any) => {
+        const k = r.doctor_id; if (!k) return;
+        (availByDoctor[k] = availByDoctor[k] || []).push(r);
+      });
+      const procByDoctor: Record<string, any[]> = {};
+      (procRes?.data || []).forEach((r: any) => {
+        const k = r.doctor_id; if (!k) return;
+        (procByDoctor[k] = procByDoctor[k] || []).push(r);
+      });
+
+      const merged = base.map((d: any) => {
+        const p = profileById[d.id] || {};
+        return {
+          ...d,
+          name: d.full_name || p.full_name || d.name,
+          full_name: d.full_name || p.full_name,
+          specialty: d.specialty || p.specialty,
+          bio: d.bio || p.bio,
+          email: d.email || p.email,
+          phone: d.phone || p.phone,
+          languages: d.languages || p.languages || [],
+          years_experience: d.years_experience ?? p.years_experience ?? null,
+          consultation_fee: d.consultation_fee ?? p.consultation_fee ?? null,
+          consultation_types: d.consultation_types || p.consultation_types || [],
+          license_number: d.license_number || p.license_number,
+          avatar_url: d.avatar_url || p.avatar_url,
+          accepts_new_patients: d.accepts_new_patients ?? p.accepts_new_patients ?? null,
+          verified: d.is_verified ?? p.verified ?? null,
+          rating: d.rating ?? p.average_rating ?? null,
+          num_reviews: p.num_reviews ?? 0,
+          custom_profile_link: p.custom_profile_link,
+          username: p.username,
+          availability: availByDoctor[d.id] || [],
+          procedures: procByDoctor[d.id] || [],
+          status: d.status || (p.verified ? "active" : "pending"),
+        };
+      });
+
+      setDoctors(merged);
     } catch { setDoctors([]); }
   }, []);
 
