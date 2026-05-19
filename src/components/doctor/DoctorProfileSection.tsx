@@ -17,6 +17,7 @@ import { useDoctorData } from "@/contexts/DoctorDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { getBookingUrl } from "@/lib/booking";
 
 const USERNAME_RE = /^[a-z0-9][a-z0-9_-]{2,29}$/;
 
