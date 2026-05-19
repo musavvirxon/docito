@@ -101,8 +101,12 @@
   "actions": {
     "save": "Save",
     "share": "Share",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "browse": "Browse all doctors",
+    "showLess": "Show less",
+    "readMore": "Read more"
   },
+  "today": "Today",
   "errors": {
     "notFound": "Not Found",
     "error": "Error",
