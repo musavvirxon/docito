@@ -1208,16 +1208,35 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardHeader><CardTitle className="text-base">Working Hours</CardTitle></CardHeader>
                       <CardContent>
-                        <div className="space-y-2">
-                          {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
-                            <div key={day} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                              <span className="text-sm font-medium w-24">{day}</span>
-                              <Badge variant="secondary">Open</Badge>
-                              <span className="text-sm text-muted-foreground">09:00 – 17:00</span>
+                        {(() => {
+                          const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                          const avail: any[] = selectedProvider.availability || [];
+                          const byDay: Record<number, any[]> = {};
+                          avail.forEach(a => {
+                            const k = typeof a.day_of_week === 'number' ? a.day_of_week : -1;
+                            (byDay[k] = byDay[k] || []).push(a);
+                          });
+                          return (
+                            <div className="space-y-2">
+                              {dayNames.map((day, idx) => {
+                                const rows = byDay[idx] || [];
+                                const enabled = rows.some(r => r.is_active !== false);
+                                return (
+                                  <div key={day} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
+                                    <span className="text-sm font-medium w-24">{day}</span>
+                                    <Badge variant={enabled ? 'secondary' : 'outline'}>{enabled ? 'Open' : 'Closed'}</Badge>
+                                    <span className="text-sm text-muted-foreground">
+                                      {enabled
+                                        ? rows.filter(r => r.is_active !== false).map(r => `${r.start_time}–${r.end_time}`).join(', ')
+                                        : '—'}
+                                    </span>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-3">Working hours are managed from each provider's schedule settings.</p>
+                          );
+                        })()}
+                        <p className="text-xs text-muted-foreground mt-3">Pulled from this doctor's availability. Set rules in "Rules & Limits".</p>
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
