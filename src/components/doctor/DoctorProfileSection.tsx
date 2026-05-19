@@ -451,6 +451,15 @@ export default function DoctorProfileSection() {
               <AlertDescription>Your profile is private (unlisted). Share your link directly if needed.</AlertDescription>
             </Alert>
           )}
+
+          {isPublic && !doctorProfile.verified && (
+            <Alert>
+              <AlertDescription>
+                Your public profile at <span className="font-mono">{publicUrl}</span> will go live
+                once your account is verified. Until then, the link will not be reachable.
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <Separator />
