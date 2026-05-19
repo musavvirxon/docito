@@ -1022,6 +1022,7 @@ const AdminDashboard = () => {
           { key: 'procedures', label: t("admin.providers.tabs.procedures") },
           { key: 'reviews', label: t("admin.providers.tabs.reviews") },
           { key: 'documents', label: t("admin.providers.tabs.documents") },
+          { key: 'rules', label: t("admin.providers.tabs.rules", { defaultValue: "Rules & Limits" }) },
         ];
 
         // PROFILE VIEW
