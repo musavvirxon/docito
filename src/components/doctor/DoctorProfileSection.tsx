@@ -91,8 +91,7 @@ export default function DoctorProfileSection() {
   const bookingLink = useMemo(() => {
     if (!doctorProfile?.id) return "";
     const slug = doctorProfile.custom_profile_link || doctorProfile.id;
-    // Always point patients at the public production domain
-    return `https://docito.app/book-appointment/${slug}`;
+    return getBookingUrl(slug);
   }, [doctorProfile?.id, doctorProfile?.custom_profile_link]);
 
   const [linkCopied, setLinkCopied] = useState(false);
