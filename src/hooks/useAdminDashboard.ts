@@ -225,33 +225,6 @@ export const useAdminDashboard = () => {
       setDoctors(merged);
     } catch { setDoctors([]); }
   }, []);
-          name: d.full_name || p.full_name || d.name,
-          full_name: d.full_name || p.full_name,
-          specialty: d.specialty || p.specialty,
-          bio: d.bio || p.bio,
-          email: d.email || p.email,
-          phone: d.phone || p.phone,
-          languages: d.languages || p.languages || [],
-          years_experience: d.years_experience ?? p.years_experience ?? null,
-          consultation_fee: d.consultation_fee ?? p.consultation_fee ?? null,
-          consultation_types: d.consultation_types || p.consultation_types || [],
-          license_number: d.license_number || p.license_number,
-          avatar_url: d.avatar_url || p.avatar_url,
-          accepts_new_patients: d.accepts_new_patients ?? p.accepts_new_patients ?? null,
-          verified: d.is_verified ?? p.verified ?? null,
-          rating: d.rating ?? p.average_rating ?? null,
-          num_reviews: p.num_reviews ?? 0,
-          custom_profile_link: p.custom_profile_link,
-          username: p.username,
-          availability: availByDoctor[d.id] || [],
-          procedures: procByDoctor[d.id] || [],
-          status: d.status || (p.verified ? "active" : "pending"),
-        };
-      });
-
-      setDoctors(merged);
-    } catch { setDoctors([]); }
-  }, []);
 
   const fetchAppointments = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
