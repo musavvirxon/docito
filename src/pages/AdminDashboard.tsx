@@ -1461,25 +1461,30 @@ const AdminDashboard = () => {
                     </div>
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
-                        {services.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-6">No services configured</p>
-                        ) : (
-                          <div className="space-y-2">
-                            <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
-                              <span>Service Name</span><span>Category</span><span>Base Price</span><span>Provider Fee</span><span>Offered</span>
-                            </div>
-                            {services.map((svc: any) => (
-                              <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
-                                <span className="font-medium truncate">{svc.name}</span>
-                                <Badge variant="outline">{svc.category || '—'}</Badge>
-                                <span>{svc.price ? `$${svc.price}` : '—'}</span>
-                                <Input placeholder="Custom fee" className="h-8" onBlur={async (e) => { const val = parseFloat(e.target.value); if (!isNaN(val) && val > 0) { toast.success('Fee saved locally'); } }} />
-                                <Badge variant="secondary">Active</Badge>
+                        {(() => {
+                          const docProcs: any[] = selectedProvider.procedures || [];
+                          const rows = docProcs.length ? docProcs : services;
+                          if (rows.length === 0) {
+                            return <p className="text-sm text-muted-foreground text-center py-6">No services configured</p>;
+                          }
+                          return (
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
+                                <span>Service Name</span><span>Category</span><span>Price</span><span>Duration</span><span>Status</span>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                        <p className="text-xs text-muted-foreground mt-3">Pricing overrides will be saved in a future update</p>
+                              {rows.map((svc: any) => (
+                                <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                  <span className="font-medium truncate">{svc.name}</span>
+                                  <Badge variant="outline">{svc.category || '—'}</Badge>
+                                  <span>{svc.price != null ? `$${svc.price}` : '—'}</span>
+                                  <span>{svc.duration ? `${svc.duration} min` : '—'}</span>
+                                  <Badge variant="secondary">{svc.is_active === false ? 'Inactive' : 'Active'}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                        <p className="text-xs text-muted-foreground mt-3">{(selectedProvider.procedures || []).length ? 'Showing this doctor\'s procedures.' : 'No doctor-specific procedures yet — showing clinic services.'}</p>
                       </CardContent>
                     </Card>
                   </div>
