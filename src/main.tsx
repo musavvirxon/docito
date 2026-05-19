@@ -17,8 +17,20 @@ const queryClient = new QueryClient({
   },
 });
 
-// Defer chunk load recovery to avoid blocking main thread
-requestIdleCallback(() => {
+// Defer chunk load recovery to avoid blocking main thread.
+// Safari (macOS + iOS) does not implement requestIdleCallback, so we fall back
+// to setTimeout to avoid a top-level ReferenceError that would prevent React
+// from mounting at all (the splash screen would stay forever).
+const scheduleIdle = (cb: () => void, timeout = 2000) => {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    (window as unknown as { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void })
+      .requestIdleCallback(cb, { timeout });
+  } else {
+    setTimeout(cb, 1);
+  }
+};
+
+scheduleIdle(() => {
   const ATTEMPTS_KEY = "__chunk_reload_attempts__";
   const LAST_TS_KEY = "__chunk_reload_last_ts__";
   const MAX_ATTEMPTS = 8;
@@ -108,7 +120,7 @@ requestIdleCallback(() => {
       .then((regs) => regs.forEach((r) => r.unregister()))
       .catch(() => { /* ignore */ });
   }
-}, { timeout: 2000 });
+});
 
 // Hide initial loader once React takes over rendering
 function hideInitialLoader() {

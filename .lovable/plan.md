@@ -1,55 +1,38 @@
-## Problem
+## Root cause
 
-Three related issues on the Doctor → Profile section:
+`src/main.tsx` calls `requestIdleCallback(...)` unconditionally at module top level (line ~22) to register chunk-load recovery and service-worker cleanup. Safari (macOS and iOS) does not implement `window.requestIdleCallback`, so the module throws `ReferenceError: requestIdleCallback is not defined` before `createRoot(...).render(...)` is reached.
 
-1. **Username appears not saved.** The DB write actually succeeds, but `fetchDoctorProfile` in `src/hooks/useDoctorIntegration.ts` only selects `full_name, email, avatar_url, phone` from `profiles` — it doesn't fetch `username` or `profile_visibility`. After `refreshAllData()`, `doctorProfile.profiles.username` is `undefined`, so the `useEffect` in `DoctorProfileSection.tsx` resets the input to `""` and the Public badge stays "Private". Looks like the save failed.
+Result: React never mounts, the static `#initial-loader` (Docito logo) in `index.html` is never hidden, and the page hangs on the splash forever in Safari, iPhone, and iPad. Chrome/Firefox/Edge work because they implement the API.
 
-2. **Profile URL (`/doctor/{slug}`) doesn't work.** `DoctorPublicProfile` reads from `doctor_public_profile_view`, which filters `WHERE d.verified = true AND profile_visibility <> 'private'`. An unverified doctor (or one whose visibility wasn't actually flipped to public due to issue 1) gets a 404. There's also no feedback in the UI explaining why.
-
-3. **Patient booking link doesn't work.** `bookingLink` is hardcoded to `https://docito.app/book-appointment/{id}`. In the preview/staging environment the doctor record may not be reachable on the production domain, so the link looks broken. The link should respect the current origin in non-production environments.
+The `hideInitialLoader()` function further down in the same file already guards `requestIdleCallback` with `'requestIdleCallback' in window` — so it would work on its own, but it never gets called because the earlier unguarded call throws first.
 
 ## Fix
 
-### 1. `src/hooks/useDoctorIntegration.ts`
-Add `username` and `profile_visibility` to the embedded `profiles` select inside `fetchDoctorProfile` (around line 212):
+In `src/main.tsx`, wrap the chunk-recovery registration in a Safari-safe scheduler:
 
 ```ts
-profiles:user_id (
-  full_name,
-  email,
-  avatar_url,
-  phone,
-  username,
-  profile_visibility
-),
+const scheduleIdle = (cb: () => void, timeout = 2000) => {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(cb, { timeout });
+  } else {
+    setTimeout(cb, 1);
+  }
+};
+
+scheduleIdle(() => {
+  // existing chunk-reload + service-worker cleanup body
+});
 ```
 
-This makes the username/visibility round-trip after `refreshAllData()` so the input and "Public/Private" badge reflect the saved state.
+This is the only behavioral change required. No other files are affected. Once React mounts, the existing `hideInitialLoader()` (already guarded) will dismiss the splash on Safari like it does elsewhere.
 
-### 2. `src/components/doctor/DoctorProfileSection.tsx`
-- After a successful save, optimistically keep the entered `username` and `isPublic` in local state (don't depend solely on the refresh) so the field never visually "blanks out" even if the round-trip is delayed.
-- Show a non-blocking inline notice under the Public Profile section when `isPublic` is on but `doctorProfile.verified` is `false`, explaining that the public `/doctor/{username}` page only goes live after verification (this is enforced by `doctor_public_profile_view`). Keep the Preview button but warn the user.
-- Disable the Preview button when the doctor is unverified, with a tooltip explaining verification is required.
+## Verification
 
-### 3. `src/lib/booking.ts` + `DoctorProfileSection.tsx`
-Replace the hardcoded `https://docito.app` origin with an environment-aware origin:
-
-```ts
-export function getPublicBookingOrigin(): string {
-  if (typeof window === 'undefined') return 'https://docito.app';
-  const host = window.location.hostname;
-  // Use production domain only when we're already on a production host
-  const isProd = host === 'docito.app' || host === 'docito.live' || host.endsWith('.docito.live');
-  return isProd ? 'https://docito.app' : window.location.origin;
-}
-```
-
-Update `getBookingUrl(slug)` to use `getPublicBookingOrigin()`, and update `DoctorProfileSection.tsx`'s `bookingLink` to call `getBookingUrl(...)` instead of building the URL inline. This makes the booking link clickable inside the Lovable preview while still pointing at `docito.app` in production.
+After the edit:
+1. Open the published URL in Safari (macOS) or iOS Safari — the splash should disappear and the app should render.
+2. Confirm no `ReferenceError: requestIdleCallback` in the Safari Web Inspector console.
+3. Sanity-check Chrome still works (chunk-reload listeners still attach via the `requestIdleCallback` branch).
 
 ## Files touched
 
-- `src/hooks/useDoctorIntegration.ts` — extend `profiles` select
-- `src/components/doctor/DoctorProfileSection.tsx` — optimistic state, verification notice, use `getBookingUrl`
-- `src/lib/booking.ts` — environment-aware origin helper
-
-No DB or RLS changes needed.
+- `src/main.tsx` — single helper + replace the unguarded `requestIdleCallback(...)` call.
