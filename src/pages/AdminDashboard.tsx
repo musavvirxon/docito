@@ -1510,10 +1510,19 @@ const AdminDashboard = () => {
                     <p className="text-xs text-muted-foreground">Document upload and management coming in a future update.</p>
                   </div>
                 )}
+
+                {providerTab === 'rules' && practice?.id && selectedProvider?.id && (
+                  <DoctorRulesCard
+                    practiceId={practice.id}
+                    doctorId={selectedProvider.id}
+                    doctorName={selectedProvider.name}
+                  />
+                )}
               </div>
             </SectionWrapper>
           );
         }
+
 
         // DIRECTORY VIEW
         return (
