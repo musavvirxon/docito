@@ -3202,11 +3202,22 @@ const AdminDashboard = () => {
                             {getPatientInitials(patient.name)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{patient.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{patient.doctor_name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium truncate">{patient.name}</p>
+                              {patient.source === 'facility' && <Badge variant="outline" className="text-[10px]">In-clinic</Badge>}
+                              {patient.source === 'doctor' && <Badge variant="outline" className="text-[10px]">Doctor patient</Badge>}
+                              {patient.source === 'appointments-only' && <Badge variant="outline" className="text-[10px]">From booking</Badge>}
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate">{patient.doctor_name || patient.phone || patient.email || '—'}</p>
                           </div>
                           <div className="hidden sm:block text-sm text-muted-foreground whitespace-nowrap">
                             {formatPatientDate(patient.last_visit)}
+                          </div>
+                          <div className="hidden md:flex flex-col items-end text-xs whitespace-nowrap">
+                            <span className="text-green-600 font-semibold">${(patient.total_paid || 0).toFixed(2)}</span>
+                            {patient.total_outstanding > 0 && (
+                              <span className="text-orange-600">${patient.total_outstanding.toFixed(2)} due</span>
+                            )}
                           </div>
                           <Badge className={patient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>
                             {patient.status || 'unknown'}
