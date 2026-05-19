@@ -231,7 +231,7 @@ export const useAdminDashboard = () => {
     try {
       const { data, error } = await supabase.rpc("get_practice_appointments" as any, {
         p_practice_id: practiceData.id,
-        p_limit_count: 10,
+        p_limit_count: 5000,
       });
       if (error) throw error;
       setAppointments((data as any[]) || []);
