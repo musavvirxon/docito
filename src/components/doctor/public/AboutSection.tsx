@@ -32,7 +32,7 @@ export default function AboutSection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className={cn("py-12 lg:py-16", isRTL && "rtl")}
+      className={cn("py-4 lg:py-6", isRTL && "rtl")}
     >
       <div className="max-w-4xl mx-auto px-4">
         {/* About */}
