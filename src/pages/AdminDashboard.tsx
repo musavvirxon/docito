@@ -290,6 +290,8 @@ const AdminDashboard = () => {
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
   const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services' | 'reports'>('overview');
+  const [compareA, setCompareA] = useState<string>('');
+  const [compareB, setCompareB] = useState<string>('');
   const [reportMetrics, setReportMetrics] = useState<string[]>([]);
   const [reportFrom, setReportFrom] = useState('');
   const [reportTo, setReportTo] = useState('');
@@ -5107,7 +5109,7 @@ const AdminDashboard = () => {
         const cancellationRateData = Object.entries(cancellationByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, d]) => ({ date, rate: d.total > 0 ? Math.round(d.cancelled / d.total * 100) : 0 }));
 
         const bookingSources: Record<string, number> = {};
-        appointments.forEach((a: any) => { const src = (a as any).source || (a as any).booking_source || 'Unknown'; bookingSources[src] = (bookingSources[src] || 0) + 1; });
+        appointments.forEach((a: any) => { const src = String(a.appointment_type || 'unspecified').replace(/_/g, ' '); bookingSources[src] = (bookingSources[src] || 0) + 1; });
 
         const providerStats = doctors.map((d: any) => {
           const pAppts = appointments.filter((a: any) => a.doctor_name === d.name || a.doctor_id === d.id);
@@ -5118,9 +5120,24 @@ const AdminDashboard = () => {
         }).sort((a, b) => b.total - a.total);
         const maxProvAppts = Math.max(...providerStats.map(p => p.total), 1);
 
+        // Build real last-visit map from appointments (most accurate source).
+        const lastVisitByPatient: Record<string, string> = {};
+        appointments.forEach((a: any) => {
+          const key = a.patient_id || a.patient_name;
+          if (!key) return;
+          const d = a.appointment_date || a.created_at || '';
+          if (d && (!lastVisitByPatient[key] || d > lastVisitByPatient[key])) lastVisitByPatient[key] = d;
+        });
+        const patientLastVisit = (p: any): string => {
+          const byId = p.id && lastVisitByPatient[p.id];
+          const byUserId = p.user_id && lastVisitByPatient[p.user_id];
+          const byName = (p.full_name || p.name) && lastVisitByPatient[p.full_name || p.name];
+          return byId || byUserId || byName || p.last_visit || '';
+        };
+
         const now90 = new Date(); now90.setDate(now90.getDate() - 90);
         let activePatients = 0; let inactivePatientsCount = 0;
-        try { patients.forEach((p: any) => { const lv = p.last_visit || p.updated_at; if (lv && new Date(lv) >= now90) activePatients++; else inactivePatientsCount++; }); } catch { inactivePatientsCount = patients.length; }
+        try { patients.forEach((p: any) => { const lv = patientLastVisit(p); if (lv && new Date(lv) >= now90) activePatients++; else inactivePatientsCount++; }); } catch { inactivePatientsCount = patients.length; }
         const avgVisits = appointments.length > 0 && patients.length > 0 ? (appointments.length / patients.length).toFixed(1) : '0';
 
         const patientsByMonth: Record<string, number> = {};
@@ -5135,26 +5152,63 @@ const AdminDashboard = () => {
         const ageBuckets: Record<string, number> = { '0–17': 0, '18–35': 0, '36–50': 0, '51–65': 0, '65+': 0 };
         try { const nowDate = new Date(); patients.forEach((p: any) => { const dob = p.date_of_birth || p.dob; if (dob) { const age = Math.floor((nowDate.getTime() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)); if (age <= 17) ageBuckets['0–17']++; else if (age <= 35) ageBuckets['18–35']++; else if (age <= 50) ageBuckets['36–50']++; else if (age <= 65) ageBuckets['51–65']++; else ageBuckets['65+']++; } }); } catch {}
 
-        const inactivePatientsList = (() => { try { return patients.filter((p: any) => { const lv = p.last_visit || p.updated_at; return !lv || new Date(lv) < now90; }).slice(0, 10); } catch { return []; } })();
-        const totalInactive = (() => { try { return patients.filter((p: any) => { const lv = p.last_visit || p.updated_at; return !lv || new Date(lv) < now90; }).length; } catch { return 0; } })();
+        const inactivePatientsList = (() => { try { return patients.filter((p: any) => { const lv = patientLastVisit(p); return !lv || new Date(lv) < now90; }).map((p: any) => ({ ...p, last_visit: patientLastVisit(p) || p.last_visit })).slice(0, 10); } catch { return []; } })();
+        const totalInactive = (() => { try { return patients.filter((p: any) => { const lv = patientLastVisit(p); return !lv || new Date(lv) < now90; }).length; } catch { return 0; } })();
 
         const patientVisitCounts: Record<string, { name: string; provider: string; count: number; lastVisit: string }> = {};
         appointments.forEach((a: any) => { const key = a.patient_id || a.patient_name || 'Unknown'; if (!patientVisitCounts[key]) patientVisitCounts[key] = { name: a.patient_name || key, provider: a.doctor_name || '—', count: 0, lastVisit: '' }; patientVisitCounts[key].count++; const d = a.appointment_date || a.created_at || ''; if (d > patientVisitCounts[key].lastVisit) patientVisitCounts[key].lastVisit = d; });
         const topPatients = Object.values(patientVisitCounts).sort((a, b) => b.count - a.count).slice(0, 10);
 
         const billingData: any = billing.data || {};
-        const totalRevCents = billingData?.summary?.totalRevenueCents ?? 0;
-        const pendingCents = billingData?.summary?.pendingCents ?? 0;
-        const refundCents = billingData?.summary?.refundCents ?? 0;
-        const txCount = billingData?.summary?.transactionCount ?? 0;
-        const txList: any[] = billingData?.transactions || [];
+        const billingTxList: any[] = billingData?.transactions || [];
+        const paymentsList: any[] = (payments as any[]) || [];
+        const isPaid = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'paid' || v === 'succeeded' || v === 'completed'; };
+        const isPending = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'pending' || v === 'unpaid' || v === 'processing'; };
+        const isRefund = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'refunded' || v === 'refund'; };
+        const txCents = (t: any) => {
+          const c = Number(t.amount_cents ?? Math.round(Number(t.amount || 0) * 100));
+          return Number.isFinite(c) ? c : 0;
+        };
+
+        // Unified source: prefer payments rows, fall back to billing edge function summary.
+        const useLivePayments = paymentsList.length > 0;
+        const totalRevCents = useLivePayments
+          ? paymentsList.filter(p => isPaid(p.status)).reduce((s, p) => s + txCents(p), 0)
+          : (billingData?.summary?.totalRevenueCents ?? 0);
+        const pendingCents = useLivePayments
+          ? paymentsList.filter(p => isPending(p.status)).reduce((s, p) => s + txCents(p), 0)
+          : (billingData?.summary?.pendingCents ?? 0);
+        const refundCents = useLivePayments
+          ? paymentsList.filter(p => isRefund(p.status)).reduce((s, p) => s + txCents(p), 0)
+          : (billingData?.summary?.refundCents ?? 0);
+        const txCount = useLivePayments
+          ? paymentsList.filter(p => isPaid(p.status)).length
+          : (billingData?.summary?.transactionCount ?? 0);
+        const txList: any[] = useLivePayments ? paymentsList : billingTxList;
 
         const revByMonth: Record<string, number> = {};
-        try { txList.forEach((tx: any) => { const m = (tx.created_at || '').slice(0, 7); if (m) revByMonth[m] = (revByMonth[m] || 0) + ((tx.amount_cents || tx.amount || 0) / 100); }); } catch {}
+        try { txList.forEach((tx: any) => { if (!isPaid(tx.status)) return; const m = (tx.created_at || '').slice(0, 7); if (m) revByMonth[m] = (revByMonth[m] || 0) + (txCents(tx) / 100); }); } catch {}
         const revTrendData = Object.entries(revByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, amount]) => ({ date, amount: Math.round(amount * 100) / 100 }));
 
         const payMethodBreakdown: Record<string, { count: number; total: number }> = {};
-        txList.forEach((tx: any) => { const m = tx.payment_method || 'Unknown'; if (!payMethodBreakdown[m]) payMethodBreakdown[m] = { count: 0, total: 0 }; payMethodBreakdown[m].count++; payMethodBreakdown[m].total += (tx.amount_cents || tx.amount || 0) / 100; });
+        txList.forEach((tx: any) => { const m = String(tx.payment_method || tx.provider || tx.method || 'Unknown'); if (!payMethodBreakdown[m]) payMethodBreakdown[m] = { count: 0, total: 0 }; payMethodBreakdown[m].count++; payMethodBreakdown[m].total += txCents(tx) / 100; });
+
+        // Revenue by provider: join paid txs → appointment → doctor.
+        const apptById: Record<string, any> = {};
+        appointments.forEach((a: any) => { if (a.id) apptById[a.id] = a; });
+        const revByDoctor: Record<string, { name: string; total: number; count: number }> = {};
+        txList.forEach((tx: any) => {
+          if (!isPaid(tx.status)) return;
+          const appt = tx.appointment_id ? apptById[tx.appointment_id] : null;
+          if (!appt) return;
+          const key = appt.doctor_id || appt.doctor_name || 'unknown';
+          const name = appt.doctor_name || (doctors.find((d: any) => d.id === appt.doctor_id) as any)?.name || 'Unknown';
+          if (!revByDoctor[key]) revByDoctor[key] = { name, total: 0, count: 0 };
+          revByDoctor[key].total += txCents(tx) / 100;
+          revByDoctor[key].count++;
+        });
+        const revByDoctorList = Object.values(revByDoctor).sort((a, b) => b.total - a.total);
+        const maxDoctorRev = Math.max(...revByDoctorList.map(d => d.total), 1);
 
         const serviceBookings: Record<string, number> = {};
         services.forEach((s: any) => { const count = appointments.filter((a: any) => a.service_name === s.name || a.service === s.name || (a as any).procedure_name === s.name).length; serviceBookings[s.name || s.id] = count; });
@@ -5234,7 +5288,6 @@ const AdminDashboard = () => {
                             <div className="flex justify-between"><span>{t("adminAnalytics.providers")}</span><span className="font-semibold">{a.summary?.providers ?? 0}</span></div>
                             <div className="flex justify-between"><span>{t("adminAnalytics.locations")}</span><span className="font-semibold">{a.summary?.locations ?? 0}</span></div>
                             <div className="pt-2 text-xs text-muted-foreground">{t("adminAnalytics.range")}: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}</div>
-                            <div className="pt-2 text-xs text-muted-foreground">Range: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}</div>
                           </div>
                         ); })() : <p className="text-sm text-muted-foreground">{t("adminAnalytics.noData")}</p>}
                       </CardContent>
@@ -5266,11 +5319,11 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
-                      <CardHeader><CardTitle>Booking Source</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>Appointment Type</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(bookingSources).length > 0 ? (
-                          <div className="space-y-3">{Object.entries(bookingSources).sort(([,a],[,b]) => b - a).map(([src, count]) => (<div key={src}><div className="flex justify-between text-sm mb-1"><span>{src}</span><span className="font-medium">{count}</span></div><Progress value={appointments.length > 0 ? (count / appointments.length) * 100 : 0} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No booking source data.</p>}
+                          <div className="space-y-3">{Object.entries(bookingSources).sort(([,a],[,b]) => b - a).map(([src, count]) => (<div key={src}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{src}</span><span className="font-medium">{count}</span></div><Progress value={appointments.length > 0 ? (count / appointments.length) * 100 : 0} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No appointment data.</p>}
                       </CardContent>
                     </Card>
                   </div>
@@ -5333,11 +5386,48 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>Provider Comparison</CardTitle></CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground mb-4">Select two providers to compare side-by-side.</p>
-                      <div className="flex gap-4 flex-wrap mb-4">
-                        <select className="border rounded-md px-3 py-2 text-sm bg-background" defaultValue=""><option value="" disabled>Select Provider A</option>{doctors.map((d: any, i: number) => <option key={i} value={d.name || d.full_name}>{d.name || d.full_name}</option>)}</select>
-                        <select className="border rounded-md px-3 py-2 text-sm bg-background" defaultValue=""><option value="" disabled>Select Provider B</option>{doctors.map((d: any, i: number) => <option key={i} value={d.name || d.full_name}>{d.name || d.full_name}</option>)}</select>
+                      <div className="flex gap-4 flex-wrap mb-4 items-end">
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Provider A</label>
+                          <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareA} onChange={(e) => setCompareA(e.target.value)}>
+                            <option value="">Select Provider A</option>
+                            {providerStats.map((p, i) => <option key={`a-${i}`} value={p.name}>{p.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Provider B</label>
+                          <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareB} onChange={(e) => setCompareB(e.target.value)}>
+                            <option value="">Select Provider B</option>
+                            {providerStats.map((p, i) => <option key={`b-${i}`} value={p.name}>{p.name}</option>)}
+                          </select>
+                        </div>
+                        {(compareA || compareB) && (
+                          <Button size="sm" variant="ghost" onClick={() => { setCompareA(''); setCompareB(''); }}>Clear</Button>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">Select two providers to compare.</p>
+                      {(() => {
+                        const pa = providerStats.find(p => p.name === compareA);
+                        const pb = providerStats.find(p => p.name === compareB);
+                        if (!pa || !pb) return <p className="text-sm text-muted-foreground">Select two providers to compare.</p>;
+                        const rows: Array<{ label: string; a: any; b: any }> = [
+                          { label: 'Specialty', a: pa.specialty, b: pb.specialty },
+                          { label: 'Total Appointments', a: pa.total, b: pb.total },
+                          { label: 'Completed', a: pa.completed, b: pb.completed },
+                          { label: 'Cancelled', a: pa.cancelled, b: pb.cancelled },
+                          { label: 'Unique Patients', a: pa.uniquePatients, b: pb.uniquePatients },
+                          { label: 'Completion Rate', a: `${pa.completionRate}%`, b: `${pb.completionRate}%` },
+                          { label: 'Cancellation Rate', a: `${pa.cancellationRate}%`, b: `${pb.cancellationRate}%` },
+                          { label: 'Rating', a: pa.rating, b: pb.rating },
+                        ];
+                        return (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead><tr className="border-b text-left"><th className="pb-2 font-medium">Metric</th><th className="pb-2 font-medium">{pa.name}</th><th className="pb-2 font-medium">{pb.name}</th></tr></thead>
+                              <tbody>{rows.map((r, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 text-muted-foreground">{r.label}</td><td className="py-2 font-medium">{r.a}</td><td className="py-2 font-medium">{r.b}</td></tr>))}</tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </>
@@ -5414,9 +5504,9 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardHeader><CardTitle>Revenue by Provider</CardTitle></CardHeader>
                       <CardContent>
-                        {doctors.length > 0 ? (
-                          <div className="space-y-3">{doctors.map((d: any, i: number) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name || d.full_name || 'Unknown'}</span><span className="font-medium">$0.00</span></div><Progress value={0} className="h-2" /></div>))}<p className="text-xs text-muted-foreground mt-2">Revenue per provider breakdown will populate with billing data.</p></div>
-                        ) : <p className="text-sm text-muted-foreground">No providers.</p>}
+                        {revByDoctorList.length > 0 ? (
+                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">${d.total.toFixed(2)} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No paid transactions linked to providers yet.</p>}
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">

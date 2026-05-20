@@ -1,46 +1,57 @@
-# Surface joined-doctor data inside clinic admin profile
+# Wire all data in clinic admin Analytics
 
-The clinic admin already loads the right doctor row (`Dentist Hi`, 28 appointments tagged to Foe Foe), but four tabs of the provider drawer are empty because they read sources that don't exist or aren't wired up. This plan fills in the gaps without touching the doctor's own dashboard.
+The Analytics section (`/practices/dashboard` → Analytics) has 7 tabs. Most read the real data hooks, but several widgets are stubbed, hard-coded, or read fields that don't exist on our rows. This plan replaces every stub with live data and makes inert controls functional. Frontend only — no migrations.
 
-## What's wrong today
+## Fixes per tab
 
-- **Working Hours** card is always "Closed" — `fetchDoctors` reads `doctor_availability`, a table that doesn't exist. The real source is `public.schedule_settings.working_days` (JSONB keyed by weekday) plus `holidays` and `buffer_time`.
-- **No Financial tab** in the provider drawer at all — clinic admin can't see Total Earnings / This Month / Unpaid / Net / Pending Payments / by-service breakdown for the joined doctor.
-- **No Past Appointments** view — Calendar tab only shows Upcoming. The 28 historical appointments aren't reachable from the provider profile.
-- **Patients tab / Analytics tab** numbers do work off `providerAppointments`, but they're paired with the broken Working Hours / missing Financial, so the profile feels empty.
+### Overview
+- Remove the duplicated "Range" line in the Summary card (line 5237 is a leftover copy of 5236).
 
-## Changes (frontend only, no migrations)
+### Appointments
+- **Booking Source card** currently reads `a.source || a.booking_source` (fields that don't exist) so every row falls into "Unknown". Replace with `appointment_type` (in_person / video / phone / home_visit) which actually exists on appointment rows, and relabel the card to "Appointment Type". Keep the empty state.
 
-1. **`src/hooks/useAdminDashboard.ts` – `fetchDoctors`**
-   - Replace the `doctor_availability` call with `schedule_settings` (`doctor_id IN (ids)`), keep the result on the doctor as `schedule` `{ working_days, buffer_time, holidays }`. Drop the broken `availability` field.
+### Providers
+- **Provider Comparison** is a dead UI — two `<select>` with `defaultValue=""` and no state. Wire it:
+  - Add `compareA` / `compareB` state in the page component.
+  - When both selected, render a side-by-side stat block from the already-computed `providerStats` (Total, Completed, Cancelled, Unique Patients, Completion %, Cancellation %, Rating).
+  - Add a Clear button.
 
-2. **`src/pages/AdminDashboard.tsx` – Calendar tab (`providerTab === 'calendar'`)**
-   - Rewrite "Working Hours" to read `selectedProvider.schedule.working_days` (JSON shape: `{ monday: { enabled, start_time, end_time, breaks:[{start_time,end_time,name}] }, … }`). Show Open/Closed badge, hours range, and lunch break note per day.
-   - Add a "Holidays" mini-list under Working Hours when `schedule.holidays` is non-empty.
-   - Add a "Past Appointments" card under Upcoming, showing the last 25 `providerAppointments` with `appointment_date < today`, sorted desc — date, patient, service, status.
+### Patients
+- **Active (90d) / Inactive (90d+)** are wrong because `p.last_visit` is never populated on most patient sources. Compute a real `lastVisitByPatient` map from `appointments` (`patient_id` and falling back to `patient_name`) once at the top of the section, then use it for the KPIs, the Inactive table, and the Top Patients table (replacing the `p.last_visit || p.updated_at` heuristic).
+- Inactive table: only show patients we have an identifier for (skip `appointments-only` rows that have no real PII).
 
-3. **`src/hooks/useFinancialStats.ts`**
-   - Accept an explicit `doctorId` argument (`useFinancialStats(dateFrom?, dateTo?, doctorIdOverride?)`). When provided, skip the session-based lookup and use it directly. No other behavior change — keeps the doctor dashboard identical.
+### Financial
+The whole tab depends on `billing.summary` / `billing.transactions` from the `practice-billing` edge function. For practices whose payments live in `payments` (not `billing_transactions`), every number is 0 or placeholder. Switch the tab to a unified derivation that prefers the already-loaded `payments` array (from `useAdminDashboard.fetchPayments`) and falls back to `billing.summary` when populated:
+- **KPI cards** — derive totals from `payments`: Total Revenue (sum of paid/succeeded), Pending (sum of pending), Refunds (refunded), Transactions (paid count). Keep `billing.summary` as fallback.
+- **Revenue Trend** — group paid `payments` by `created_at.slice(0,7)`.
+- **Revenue by Provider** — currently hard-coded `$0.00`. Build a `paymentsByApptId` map, join to `appointments[].doctor_id/name` to get per-doctor totals, render with real Progress bars and a sort by revenue desc.
+- **Payment Method Breakdown** — reads `tx.payment_method` which our schema doesn't have; switch to `payments[].provider` (stripe / cash / etc.) and fall back to `billing_transactions[].provider`.
+- **Average Revenue per Appointment** — use the unified Total Revenue / completed-appointment count.
 
-4. **`src/pages/AdminDashboard.tsx` – new Financial provider tab**
-   - Add `'financial'` to `providerTab` union and to `providerTabs` (label from `t("admin.providers.tabs.financial", { defaultValue: "Financial" })`).
-   - New `{providerTab === 'financial' && …}` block (mirrors the doctor's FinancialOverview layout, read-only):
-     - 4 KPI cards: Total Earnings, This Month, Unpaid, Net Earnings (after 15%).
-     - Payout info row: Payouts Processed, Next Payout, Platform Commission.
-     - Earnings-over-time area chart.
-     - "By Service" and "Pending Payments" tables.
-   - Data source: `useFinancialStats(undefined, undefined, selectedProvider.id)` so the hook is scoped to the selected doctor regardless of who's logged in. This works for the clinic admin because all underlying queries (`appointments`, `procedures`, `appointment_procedures`, `tooth_procedure_history`, `payments`) are already readable to the practice admin via existing RLS for rows tagged with the practice.
+### Services
+- Already wired against real `appointments` + `services`. No change.
 
-5. **i18n** — add fallback `defaultValue` strings inline (`Financial`, `Past Appointments`, `Holidays`, `Working Days`) so the feature works in every locale without new namespace edits.
+### Reports
+- Already wired in the previous turn. No change.
+
+## Files
+
+- `src/pages/AdminDashboard.tsx`
+  - Add state: `compareA`, `compareB` (strings).
+  - Edit analytics blocks: overview duplicate line, appointments booking-source card, providers comparison block, patients last-visit derivation + KPIs, full financial tab body.
+- No new files, no hook changes (the financial fix consumes the existing `payments` state surfaced by `useAdminDashboard`).
 
 ## Out of scope
 
-- No SQL migrations, no RLS changes, no edits to the doctor's own dashboard, no changes to `useAdminDashboard.fetchPatients`/`fetchAppointments` (the data they pull is already correct — 28 appointments are tagged to the practice, the doctor patient is fetched).
-- "Performance info" (completion / cancellation / utilization) is already rendered in the existing Analytics tab off `providerAppointments`; it will populate automatically once the empty profile feels alive again. No code change needed there.
+- No edits to the per-provider drawer (already wired in the previous turn).
+- No new edge functions, no RLS or migration work — all data is already fetched and readable for the practice admin.
+- No i18n key changes; use inline `defaultValue` strings for the new labels (Appointment Type, Compare, Clear, etc.).
 
 ## Verification
 
-- As Foe Foe admin, open Providers → Dentist Hi:
-  - Overview / Analytics: appointment counts and Patients Seen > 0.
-  - Calendar: Mon–Fri Open with the schedule_settings hours, Sat/Sun Closed, lunch break shown, 2 holidays listed, Past Appointments populated.
-  - Financial: Total Earnings, This Month, Unpaid, Pending Payments table all populated from the doctor's appointments/procedures.
+As Foe Foe clinic admin → Analytics:
+- Overview: only one Range row shown.
+- Appointments: "Appointment Type" card lists in_person/video counts from real data.
+- Providers: pick Dentist Hi in column A and another doctor (or itself) in column B — side-by-side stats render.
+- Patients: Active/Inactive split reflects actual recent appointment dates; inactive list shows real patients with their true last visit.
+- Financial: Total Revenue, Revenue Trend, Revenue by Provider, Payment Method, and Avg per Appointment all populated from `payments` rows.
