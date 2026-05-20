@@ -218,7 +218,7 @@ export const useAdminDashboard = () => {
             source: 'invitation',
             created_at: inv.created_at,
             invitation_id: inv.id,
-            availability: [],
+            schedule: null,
             procedures: [],
           });
         });
