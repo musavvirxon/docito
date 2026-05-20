@@ -5160,18 +5160,55 @@ const AdminDashboard = () => {
         const topPatients = Object.values(patientVisitCounts).sort((a, b) => b.count - a.count).slice(0, 10);
 
         const billingData: any = billing.data || {};
-        const totalRevCents = billingData?.summary?.totalRevenueCents ?? 0;
-        const pendingCents = billingData?.summary?.pendingCents ?? 0;
-        const refundCents = billingData?.summary?.refundCents ?? 0;
-        const txCount = billingData?.summary?.transactionCount ?? 0;
-        const txList: any[] = billingData?.transactions || [];
+        const billingTxList: any[] = billingData?.transactions || [];
+        const paymentsList: any[] = (payments as any[]) || [];
+        const isPaid = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'paid' || v === 'succeeded' || v === 'completed'; };
+        const isPending = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'pending' || v === 'unpaid' || v === 'processing'; };
+        const isRefund = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'refunded' || v === 'refund'; };
+        const txCents = (t: any) => {
+          const c = Number(t.amount_cents ?? Math.round(Number(t.amount || 0) * 100));
+          return Number.isFinite(c) ? c : 0;
+        };
+
+        // Unified source: prefer payments rows, fall back to billing edge function summary.
+        const useLivePayments = paymentsList.length > 0;
+        const totalRevCents = useLivePayments
+          ? paymentsList.filter(p => isPaid(p.status)).reduce((s, p) => s + txCents(p), 0)
+          : (billingData?.summary?.totalRevenueCents ?? 0);
+        const pendingCents = useLivePayments
+          ? paymentsList.filter(p => isPending(p.status)).reduce((s, p) => s + txCents(p), 0)
+          : (billingData?.summary?.pendingCents ?? 0);
+        const refundCents = useLivePayments
+          ? paymentsList.filter(p => isRefund(p.status)).reduce((s, p) => s + txCents(p), 0)
+          : (billingData?.summary?.refundCents ?? 0);
+        const txCount = useLivePayments
+          ? paymentsList.filter(p => isPaid(p.status)).length
+          : (billingData?.summary?.transactionCount ?? 0);
+        const txList: any[] = useLivePayments ? paymentsList : billingTxList;
 
         const revByMonth: Record<string, number> = {};
-        try { txList.forEach((tx: any) => { const m = (tx.created_at || '').slice(0, 7); if (m) revByMonth[m] = (revByMonth[m] || 0) + ((tx.amount_cents || tx.amount || 0) / 100); }); } catch {}
+        try { txList.forEach((tx: any) => { if (!isPaid(tx.status)) return; const m = (tx.created_at || '').slice(0, 7); if (m) revByMonth[m] = (revByMonth[m] || 0) + (txCents(tx) / 100); }); } catch {}
         const revTrendData = Object.entries(revByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, amount]) => ({ date, amount: Math.round(amount * 100) / 100 }));
 
         const payMethodBreakdown: Record<string, { count: number; total: number }> = {};
-        txList.forEach((tx: any) => { const m = tx.payment_method || 'Unknown'; if (!payMethodBreakdown[m]) payMethodBreakdown[m] = { count: 0, total: 0 }; payMethodBreakdown[m].count++; payMethodBreakdown[m].total += (tx.amount_cents || tx.amount || 0) / 100; });
+        txList.forEach((tx: any) => { const m = String(tx.payment_method || tx.provider || tx.method || 'Unknown'); if (!payMethodBreakdown[m]) payMethodBreakdown[m] = { count: 0, total: 0 }; payMethodBreakdown[m].count++; payMethodBreakdown[m].total += txCents(tx) / 100; });
+
+        // Revenue by provider: join paid txs → appointment → doctor.
+        const apptById: Record<string, any> = {};
+        appointments.forEach((a: any) => { if (a.id) apptById[a.id] = a; });
+        const revByDoctor: Record<string, { name: string; total: number; count: number }> = {};
+        txList.forEach((tx: any) => {
+          if (!isPaid(tx.status)) return;
+          const appt = tx.appointment_id ? apptById[tx.appointment_id] : null;
+          if (!appt) return;
+          const key = appt.doctor_id || appt.doctor_name || 'unknown';
+          const name = appt.doctor_name || (doctors.find((d: any) => d.id === appt.doctor_id) as any)?.name || 'Unknown';
+          if (!revByDoctor[key]) revByDoctor[key] = { name, total: 0, count: 0 };
+          revByDoctor[key].total += txCents(tx) / 100;
+          revByDoctor[key].count++;
+        });
+        const revByDoctorList = Object.values(revByDoctor).sort((a, b) => b.total - a.total);
+        const maxDoctorRev = Math.max(...revByDoctorList.map(d => d.total), 1);
 
         const serviceBookings: Record<string, number> = {};
         services.forEach((s: any) => { const count = appointments.filter((a: any) => a.service_name === s.name || a.service === s.name || (a as any).procedure_name === s.name).length; serviceBookings[s.name || s.id] = count; });
