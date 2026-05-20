@@ -5120,9 +5120,24 @@ const AdminDashboard = () => {
         }).sort((a, b) => b.total - a.total);
         const maxProvAppts = Math.max(...providerStats.map(p => p.total), 1);
 
+        // Build real last-visit map from appointments (most accurate source).
+        const lastVisitByPatient: Record<string, string> = {};
+        appointments.forEach((a: any) => {
+          const key = a.patient_id || a.patient_name;
+          if (!key) return;
+          const d = a.appointment_date || a.created_at || '';
+          if (d && (!lastVisitByPatient[key] || d > lastVisitByPatient[key])) lastVisitByPatient[key] = d;
+        });
+        const patientLastVisit = (p: any): string => {
+          const byId = p.id && lastVisitByPatient[p.id];
+          const byUserId = p.user_id && lastVisitByPatient[p.user_id];
+          const byName = (p.full_name || p.name) && lastVisitByPatient[p.full_name || p.name];
+          return byId || byUserId || byName || p.last_visit || '';
+        };
+
         const now90 = new Date(); now90.setDate(now90.getDate() - 90);
         let activePatients = 0; let inactivePatientsCount = 0;
-        try { patients.forEach((p: any) => { const lv = p.last_visit || p.updated_at; if (lv && new Date(lv) >= now90) activePatients++; else inactivePatientsCount++; }); } catch { inactivePatientsCount = patients.length; }
+        try { patients.forEach((p: any) => { const lv = patientLastVisit(p); if (lv && new Date(lv) >= now90) activePatients++; else inactivePatientsCount++; }); } catch { inactivePatientsCount = patients.length; }
         const avgVisits = appointments.length > 0 && patients.length > 0 ? (appointments.length / patients.length).toFixed(1) : '0';
 
         const patientsByMonth: Record<string, number> = {};
@@ -5137,8 +5152,8 @@ const AdminDashboard = () => {
         const ageBuckets: Record<string, number> = { '0–17': 0, '18–35': 0, '36–50': 0, '51–65': 0, '65+': 0 };
         try { const nowDate = new Date(); patients.forEach((p: any) => { const dob = p.date_of_birth || p.dob; if (dob) { const age = Math.floor((nowDate.getTime() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)); if (age <= 17) ageBuckets['0–17']++; else if (age <= 35) ageBuckets['18–35']++; else if (age <= 50) ageBuckets['36–50']++; else if (age <= 65) ageBuckets['51–65']++; else ageBuckets['65+']++; } }); } catch {}
 
-        const inactivePatientsList = (() => { try { return patients.filter((p: any) => { const lv = p.last_visit || p.updated_at; return !lv || new Date(lv) < now90; }).slice(0, 10); } catch { return []; } })();
-        const totalInactive = (() => { try { return patients.filter((p: any) => { const lv = p.last_visit || p.updated_at; return !lv || new Date(lv) < now90; }).length; } catch { return 0; } })();
+        const inactivePatientsList = (() => { try { return patients.filter((p: any) => { const lv = patientLastVisit(p); return !lv || new Date(lv) < now90; }).map((p: any) => ({ ...p, last_visit: patientLastVisit(p) || p.last_visit })).slice(0, 10); } catch { return []; } })();
+        const totalInactive = (() => { try { return patients.filter((p: any) => { const lv = patientLastVisit(p); return !lv || new Date(lv) < now90; }).length; } catch { return 0; } })();
 
         const patientVisitCounts: Record<string, { name: string; provider: string; count: number; lastVisit: string }> = {};
         appointments.forEach((a: any) => { const key = a.patient_id || a.patient_name || 'Unknown'; if (!patientVisitCounts[key]) patientVisitCounts[key] = { name: a.patient_name || key, provider: a.doctor_name || '—', count: 0, lastVisit: '' }; patientVisitCounts[key].count++; const d = a.appointment_date || a.created_at || ''; if (d > patientVisitCounts[key].lastVisit) patientVisitCounts[key].lastVisit = d; });
