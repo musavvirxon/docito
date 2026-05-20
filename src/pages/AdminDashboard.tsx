@@ -5089,9 +5089,15 @@ const AdminDashboard = () => {
           { key: 'reports' as const, label: 'Reports' },
         ];
 
-        const completedAppts = appointments.filter((a: any) => a.status === 'completed').length;
-        const cancelledAppts = appointments.filter((a: any) => a.status === 'cancelled').length;
-        const noShowAppts = appointments.filter((a: any) => a.status === 'no_show' || a.status === 'no-show').length;
+        const normStatus = (s: any) => {
+          const v = String(s || '').toLowerCase();
+          if (v === 'cancelled' || v === 'canceled') return 'cancelled';
+          if (v === 'no_show' || v === 'no-show' || v === 'noshow') return 'no_show';
+          return v;
+        };
+        const completedAppts = appointments.filter((a: any) => normStatus(a.status) === 'completed').length;
+        const cancelledAppts = appointments.filter((a: any) => normStatus(a.status) === 'cancelled').length;
+        const noShowAppts = appointments.filter((a: any) => normStatus(a.status) === 'no_show').length;
 
         const apptsByMonth: Record<string, number> = {};
         try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) apptsByMonth[m] = (apptsByMonth[m] || 0) + 1; }); } catch {}
