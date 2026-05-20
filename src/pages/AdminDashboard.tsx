@@ -5267,11 +5267,11 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
-                      <CardHeader><CardTitle>Booking Source</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>Appointment Type</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(bookingSources).length > 0 ? (
-                          <div className="space-y-3">{Object.entries(bookingSources).sort(([,a],[,b]) => b - a).map(([src, count]) => (<div key={src}><div className="flex justify-between text-sm mb-1"><span>{src}</span><span className="font-medium">{count}</span></div><Progress value={appointments.length > 0 ? (count / appointments.length) * 100 : 0} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No booking source data.</p>}
+                          <div className="space-y-3">{Object.entries(bookingSources).sort(([,a],[,b]) => b - a).map(([src, count]) => (<div key={src}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{src}</span><span className="font-medium">{count}</span></div><Progress value={appointments.length > 0 ? (count / appointments.length) * 100 : 0} className="h-2" /></div>))}</div>
+                        ) : <p className="text-sm text-muted-foreground">No appointment data.</p>}
                       </CardContent>
                     </Card>
                   </div>
