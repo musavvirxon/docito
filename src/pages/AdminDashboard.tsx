@@ -5109,7 +5109,7 @@ const AdminDashboard = () => {
         const cancellationRateData = Object.entries(cancellationByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, d]) => ({ date, rate: d.total > 0 ? Math.round(d.cancelled / d.total * 100) : 0 }));
 
         const bookingSources: Record<string, number> = {};
-        appointments.forEach((a: any) => { const src = (a as any).source || (a as any).booking_source || 'Unknown'; bookingSources[src] = (bookingSources[src] || 0) + 1; });
+        appointments.forEach((a: any) => { const src = String(a.appointment_type || 'unspecified').replace(/_/g, ' '); bookingSources[src] = (bookingSources[src] || 0) + 1; });
 
         const providerStats = doctors.map((d: any) => {
           const pAppts = appointments.filter((a: any) => a.doctor_name === d.name || a.doctor_id === d.id);
