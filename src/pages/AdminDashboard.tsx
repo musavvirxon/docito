@@ -1020,6 +1020,7 @@ const AdminDashboard = () => {
           { key: 'calendar', label: t("admin.providers.tabs.calendar") },
           { key: 'patients', label: t("admin.providers.tabs.patients") },
           { key: 'analytics', label: t("admin.providers.tabs.analytics") },
+          { key: 'financial', label: t("admin.providers.tabs.financial", { defaultValue: "Financial" }) },
           { key: 'procedures', label: t("admin.providers.tabs.procedures") },
           { key: 'reviews', label: t("admin.providers.tabs.reviews") },
           { key: 'documents', label: t("admin.providers.tabs.documents") },
