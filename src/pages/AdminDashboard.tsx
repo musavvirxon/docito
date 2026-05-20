@@ -1502,6 +1502,10 @@ const AdminDashboard = () => {
                   );
                 })()}
 
+                {providerTab === 'financial' && selectedProvider?.id && (
+                  <ProviderFinancialTab doctorId={selectedProvider.id} doctorName={selectedProvider.name} />
+                )}
+
                 {providerTab === 'procedures' && (
                   <div className="space-y-4">
                     <div>
