@@ -5334,11 +5334,48 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>Provider Comparison</CardTitle></CardHeader>
                     <CardContent>
                       <p className="text-sm text-muted-foreground mb-4">Select two providers to compare side-by-side.</p>
-                      <div className="flex gap-4 flex-wrap mb-4">
-                        <select className="border rounded-md px-3 py-2 text-sm bg-background" defaultValue=""><option value="" disabled>Select Provider A</option>{doctors.map((d: any, i: number) => <option key={i} value={d.name || d.full_name}>{d.name || d.full_name}</option>)}</select>
-                        <select className="border rounded-md px-3 py-2 text-sm bg-background" defaultValue=""><option value="" disabled>Select Provider B</option>{doctors.map((d: any, i: number) => <option key={i} value={d.name || d.full_name}>{d.name || d.full_name}</option>)}</select>
+                      <div className="flex gap-4 flex-wrap mb-4 items-end">
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Provider A</label>
+                          <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareA} onChange={(e) => setCompareA(e.target.value)}>
+                            <option value="">Select Provider A</option>
+                            {providerStats.map((p, i) => <option key={`a-${i}`} value={p.name}>{p.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-muted-foreground block mb-1">Provider B</label>
+                          <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareB} onChange={(e) => setCompareB(e.target.value)}>
+                            <option value="">Select Provider B</option>
+                            {providerStats.map((p, i) => <option key={`b-${i}`} value={p.name}>{p.name}</option>)}
+                          </select>
+                        </div>
+                        {(compareA || compareB) && (
+                          <Button size="sm" variant="ghost" onClick={() => { setCompareA(''); setCompareB(''); }}>Clear</Button>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">Select two providers to compare.</p>
+                      {(() => {
+                        const pa = providerStats.find(p => p.name === compareA);
+                        const pb = providerStats.find(p => p.name === compareB);
+                        if (!pa || !pb) return <p className="text-sm text-muted-foreground">Select two providers to compare.</p>;
+                        const rows: Array<{ label: string; a: any; b: any }> = [
+                          { label: 'Specialty', a: pa.specialty, b: pb.specialty },
+                          { label: 'Total Appointments', a: pa.total, b: pb.total },
+                          { label: 'Completed', a: pa.completed, b: pb.completed },
+                          { label: 'Cancelled', a: pa.cancelled, b: pb.cancelled },
+                          { label: 'Unique Patients', a: pa.uniquePatients, b: pb.uniquePatients },
+                          { label: 'Completion Rate', a: `${pa.completionRate}%`, b: `${pb.completionRate}%` },
+                          { label: 'Cancellation Rate', a: `${pa.cancellationRate}%`, b: `${pb.cancellationRate}%` },
+                          { label: 'Rating', a: pa.rating, b: pb.rating },
+                        ];
+                        return (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead><tr className="border-b text-left"><th className="pb-2 font-medium">Metric</th><th className="pb-2 font-medium">{pa.name}</th><th className="pb-2 font-medium">{pb.name}</th></tr></thead>
+                              <tbody>{rows.map((r, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 text-muted-foreground">{r.label}</td><td className="py-2 font-medium">{r.a}</td><td className="py-2 font-medium">{r.b}</td></tr>))}</tbody>
+                            </table>
+                          </div>
+                        );
+                      })()}
                     </CardContent>
                   </Card>
                 </>
