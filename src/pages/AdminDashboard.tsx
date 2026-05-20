@@ -5118,9 +5118,9 @@ const AdminDashboard = () => {
         appointments.forEach((a: any) => { const src = String(a.appointment_type || 'unspecified').replace(/_/g, ' '); bookingSources[src] = (bookingSources[src] || 0) + 1; });
 
         const providerStats = doctors.map((d: any) => {
-          const pAppts = appointments.filter((a: any) => a.doctor_name === d.name || a.doctor_id === d.id);
-          const comp = pAppts.filter((a: any) => a.status === 'completed').length;
-          const canc = pAppts.filter((a: any) => a.status === 'cancelled').length;
+          const pAppts = appointments.filter((a: any) => a.doctor_id === d.id || a.doctor_name === d.name);
+          const comp = pAppts.filter((a: any) => normStatus(a.status) === 'completed').length;
+          const canc = pAppts.filter((a: any) => normStatus(a.status) === 'cancelled').length;
           const uPatients = new Set(pAppts.map((a: any) => a.patient_id || a.patient_name)).size;
           return { name: d.name || d.full_name || 'Unknown', specialty: d.specialty || '—', total: pAppts.length, completed: comp, cancelled: canc, completionRate: pAppts.length > 0 ? Math.round(comp / pAppts.length * 100) : 0, cancellationRate: pAppts.length > 0 ? Math.round(canc / pAppts.length * 100) : 0, uniquePatients: uPatients, rating: d.rating || d.average_rating || '—' };
         }).sort((a, b) => b.total - a.total);
