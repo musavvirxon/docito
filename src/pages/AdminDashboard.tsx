@@ -5236,7 +5236,6 @@ const AdminDashboard = () => {
                             <div className="flex justify-between"><span>{t("adminAnalytics.providers")}</span><span className="font-semibold">{a.summary?.providers ?? 0}</span></div>
                             <div className="flex justify-between"><span>{t("adminAnalytics.locations")}</span><span className="font-semibold">{a.summary?.locations ?? 0}</span></div>
                             <div className="pt-2 text-xs text-muted-foreground">{t("adminAnalytics.range")}: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}</div>
-                            <div className="pt-2 text-xs text-muted-foreground">Range: {a.period?.from ?? "—"} → {a.period?.to ?? "—"}</div>
                           </div>
                         ); })() : <p className="text-sm text-muted-foreground">{t("adminAnalytics.noData")}</p>}
                       </CardContent>
