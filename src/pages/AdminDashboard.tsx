@@ -5633,7 +5633,7 @@ const AdminDashboard = () => {
                             <label className="text-xs text-muted-foreground">Provider</label>
                             <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportProvider} onChange={e => setReportProvider(e.target.value)}>
                               <option value="all">All Providers</option>
-                              {doctors.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                              {doctors.map((d: any) => <option key={d.id} value={d.id}>{d.name || d.full_name}</option>)}
                             </select>
                           </div>
                           <div>
