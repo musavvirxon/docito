@@ -1,57 +1,32 @@
-# Wire all data in clinic admin Analytics
+## Findings
 
-The Analytics section (`/practices/dashboard` → Analytics) has 7 tabs. Most read the real data hooks, but several widgets are stubbed, hard-coded, or read fields that don't exist on our rows. This plan replaces every stub with live data and makes inert controls functional. Frontend only — no migrations.
+- `get_practice_appointments()` is currently failing in the database because it returns `varchar` profile names where the function promises `text`. The hook catches that error and sets `appointments` to `[]`, so Analytics and Reports show zeros.
+- The current appointment RPC only returns display fields. Analytics needs stable IDs like `doctor_id`, `patient_id`, `practice_id`, `appointment_type`, `procedure_id`, and `created_at` to filter and join correctly.
+- The `payments` table has a real paid row for Dentist hi, but `useAdminDashboard()` only reads `billing_transactions`, and in this case `billing_transactions` has no rows.
+- The visible database rows for Dentist hi show many appointments in the selected date range, but their statuses in the database are currently `confirmed` for the last 30–90 days. `completed` and `canceled` rows exist older than that. I’ll still fix the dashboard wiring so it shows the actual statuses present instead of zeros.
 
-## Fixes per tab
+## Implementation plan
 
-### Overview
-- Remove the duplicated "Range" line in the Summary card (line 5237 is a leftover copy of 5236).
+1. **Fix secure appointment visibility for clinic admins**
+   - Add a migration to replace `get_practice_appointments()` with a `SECURITY DEFINER` RPC that:
+     - authorizes practice admin, active clinic/practice staff, or super admin;
+     - returns real appointment rows for the practice;
+     - casts names to `text` so the RPC no longer crashes;
+     - includes `doctor_id`, `patient_id`, `practice_id`, `appointment_type`, `procedure_id`, and `created_at`.
+   - Add/adjust safe appointment read policy for practice admins so direct practice-scoped queries used by metrics are also allowed.
 
-### Appointments
-- **Booking Source card** currently reads `a.source || a.booking_source` (fields that don't exist) so every row falls into "Unknown". Replace with `appointment_type` (in_person / video / phone / home_visit) which actually exists on appointment rows, and relabel the card to "Appointment Type". Keep the empty state.
+2. **Fix patient and payment hydration in `useAdminDashboard()`**
+   - Read appointments from the repaired RPC and keep the new IDs in state.
+   - Combine `billing_transactions` and `payments` into one normalized payments array.
+   - Include rows from `payments` when they match the practice directly, the appointment’s practice, or a joined doctor in the practice.
+   - Normalize cents/amount fields so financial KPIs and reports calculate consistently.
 
-### Providers
-- **Provider Comparison** is a dead UI — two `<select>` with `defaultValue=""` and no state. Wire it:
-  - Add `compareA` / `compareB` state in the page component.
-  - When both selected, render a side-by-side stat block from the already-computed `providerStats` (Total, Completed, Cancelled, Unique Patients, Completion %, Cancellation %, Rating).
-  - Add a Clear button.
+3. **Make Analytics and Reports filter by IDs instead of fragile names**
+   - Use `doctor_id` for provider filters and comparisons.
+   - Keep display names only for labels.
+   - Normalize appointment statuses so `canceled` and `cancelled` are counted together, and `no_show` / `no-show` are counted together.
+   - Make generated report metrics use the same filtered appointment/payment collections as the analytics cards.
 
-### Patients
-- **Active (90d) / Inactive (90d+)** are wrong because `p.last_visit` is never populated on most patient sources. Compute a real `lastVisitByPatient` map from `appointments` (`patient_id` and falling back to `patient_name`) once at the top of the section, then use it for the KPIs, the Inactive table, and the Top Patients table (replacing the `p.last_visit || p.updated_at` heuristic).
-- Inactive table: only show patients we have an identifier for (skip `appointments-only` rows that have no real PII).
-
-### Financial
-The whole tab depends on `billing.summary` / `billing.transactions` from the `practice-billing` edge function. For practices whose payments live in `payments` (not `billing_transactions`), every number is 0 or placeholder. Switch the tab to a unified derivation that prefers the already-loaded `payments` array (from `useAdminDashboard.fetchPayments`) and falls back to `billing.summary` when populated:
-- **KPI cards** — derive totals from `payments`: Total Revenue (sum of paid/succeeded), Pending (sum of pending), Refunds (refunded), Transactions (paid count). Keep `billing.summary` as fallback.
-- **Revenue Trend** — group paid `payments` by `created_at.slice(0,7)`.
-- **Revenue by Provider** — currently hard-coded `$0.00`. Build a `paymentsByApptId` map, join to `appointments[].doctor_id/name` to get per-doctor totals, render with real Progress bars and a sort by revenue desc.
-- **Payment Method Breakdown** — reads `tx.payment_method` which our schema doesn't have; switch to `payments[].provider` (stripe / cash / etc.) and fall back to `billing_transactions[].provider`.
-- **Average Revenue per Appointment** — use the unified Total Revenue / completed-appointment count.
-
-### Services
-- Already wired against real `appointments` + `services`. No change.
-
-### Reports
-- Already wired in the previous turn. No change.
-
-## Files
-
-- `src/pages/AdminDashboard.tsx`
-  - Add state: `compareA`, `compareB` (strings).
-  - Edit analytics blocks: overview duplicate line, appointments booking-source card, providers comparison block, patients last-visit derivation + KPIs, full financial tab body.
-- No new files, no hook changes (the financial fix consumes the existing `payments` state surfaced by `useAdminDashboard`).
-
-## Out of scope
-
-- No edits to the per-provider drawer (already wired in the previous turn).
-- No new edge functions, no RLS or migration work — all data is already fetched and readable for the practice admin.
-- No i18n key changes; use inline `defaultValue` strings for the new labels (Appointment Type, Compare, Clear, etc.).
-
-## Verification
-
-As Foe Foe clinic admin → Analytics:
-- Overview: only one Range row shown.
-- Appointments: "Appointment Type" card lists in_person/video counts from real data.
-- Providers: pick Dentist Hi in column A and another doctor (or itself) in column B — side-by-side stats render.
-- Patients: Active/Inactive split reflects actual recent appointment dates; inactive list shows real patients with their true last visit.
-- Financial: Total Revenue, Revenue Trend, Revenue by Provider, Payment Method, and Avg per Appointment all populated from `payments` rows.
+4. **Verify against the Dentist hi / Test Clinic case**
+   - Confirm the repaired RPC returns Dentist hi’s appointments for practice `554c8b46-937e-4117-a19f-a4c600031840`.
+   - Confirm the dashboard report for the same date/provider no longer shows all zeros and reflects the real `confirmed`, `completed`, `canceled`, and payment rows available in the database.

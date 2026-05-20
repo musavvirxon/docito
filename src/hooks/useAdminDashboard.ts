@@ -370,27 +370,78 @@ export const useAdminDashboard = () => {
   const fetchPayments = useCallback(async (practiceData: any) => {
     if (!practiceData?.id) return;
     try {
-      const { data, error } = await (supabase as any)
+      // 1) Practice-scoped billing transactions
+      const { data: btData } = await (supabase as any)
         .from("billing_transactions")
-        .select("id, user_id, amount, status, description, created_at, appointment_id")
+        .select("id, user_id, amount, amount_cents, status, description, created_at, appointment_id, provider")
         .eq("practice_id", practiceData.id)
         .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      const userIds = Array.from(new Set(((data as any[]) || []).map((d) => d.user_id).filter(Boolean)));
+        .limit(500);
+
+      // 2) Practice-scoped payments table (cash / clinic-recorded payments)
+      const { data: practiceDocs } = await supabase
+        .from("doctors")
+        .select("id")
+        .eq("practice_id", practiceData.id);
+      const docIds = (practiceDocs || []).map((d: any) => d.id).filter(Boolean);
+
+      let payRows: any[] = [];
+      try {
+        const direct = await (supabase as any)
+          .from("payments")
+          .select("id, patient_id, doctor_id, practice_id, appointment_id, amount, status, payment_method, transaction_id, paid_at, created_at, notes")
+          .eq("practice_id", practiceData.id)
+          .order("created_at", { ascending: false })
+          .limit(500);
+        if (Array.isArray(direct?.data)) payRows = payRows.concat(direct.data);
+      } catch { /* ignore */ }
+      if (docIds.length) {
+        try {
+          const byDoc = await (supabase as any)
+            .from("payments")
+            .select("id, patient_id, doctor_id, practice_id, appointment_id, amount, status, payment_method, transaction_id, paid_at, created_at, notes")
+            .in("doctor_id", docIds)
+            .order("created_at", { ascending: false })
+            .limit(500);
+          if (Array.isArray(byDoc?.data)) payRows = payRows.concat(byDoc.data);
+        } catch { /* ignore */ }
+      }
+      // Dedupe payments by id
+      const seenPay = new Set<string>();
+      payRows = payRows.filter((p: any) => {
+        if (!p?.id || seenPay.has(p.id)) return false;
+        seenPay.add(p.id);
+        return true;
+      });
+
+      const allUserIds = Array.from(new Set([
+        ...(((btData as any[]) || []).map((d: any) => d.user_id).filter(Boolean)),
+        ...payRows.map((d: any) => d.patient_id).filter(Boolean),
+      ]));
       let nameByUser: Record<string, string> = {};
-      if (userIds.length) {
+      if (allUserIds.length) {
         const { data: profs } = await (supabase as any)
           .from("profiles")
           .select("user_id, full_name")
-          .in("user_id", userIds);
+          .in("user_id", allUserIds);
         (profs || []).forEach((p: any) => { nameByUser[p.user_id] = p.full_name; });
       }
-      const enriched = ((data as any[]) || []).map((t) => ({
+
+      const btEnriched = ((btData as any[]) || []).map((t: any) => ({
         ...t,
+        source: 'billing_transactions',
         patient_name: (t.user_id && nameByUser[t.user_id]) || 'Walk-in / Offline patient',
       }));
-      setPayments(enriched);
+      const payEnriched = payRows.map((t: any) => ({
+        ...t,
+        user_id: t.patient_id,
+        amount_cents: Math.round(Number(t.amount || 0) * 100),
+        provider: t.payment_method,
+        source: 'payments',
+        patient_name: (t.patient_id && nameByUser[t.patient_id]) || 'Walk-in / Offline patient',
+      }));
+
+      setPayments([...btEnriched, ...payEnriched]);
     } catch (e) {
       console.error('fetchPayments failed', e);
       setPayments([]);

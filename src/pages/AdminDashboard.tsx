@@ -5089,32 +5089,38 @@ const AdminDashboard = () => {
           { key: 'reports' as const, label: 'Reports' },
         ];
 
-        const completedAppts = appointments.filter((a: any) => a.status === 'completed').length;
-        const cancelledAppts = appointments.filter((a: any) => a.status === 'cancelled').length;
-        const noShowAppts = appointments.filter((a: any) => a.status === 'no_show' || a.status === 'no-show').length;
+        const normStatus = (s: any) => {
+          const v = String(s || '').toLowerCase();
+          if (v === 'cancelled' || v === 'canceled') return 'cancelled';
+          if (v === 'no_show' || v === 'no-show' || v === 'noshow') return 'no_show';
+          return v;
+        };
+        const completedAppts = appointments.filter((a: any) => normStatus(a.status) === 'completed').length;
+        const cancelledAppts = appointments.filter((a: any) => normStatus(a.status) === 'cancelled').length;
+        const noShowAppts = appointments.filter((a: any) => normStatus(a.status) === 'no_show').length;
 
         const apptsByMonth: Record<string, number> = {};
         try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) apptsByMonth[m] = (apptsByMonth[m] || 0) + 1; }); } catch {}
         const apptMonthData = Object.entries(apptsByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, value]) => ({ date, value }));
 
         const statusBreakdown: Record<string, number> = {};
-        appointments.forEach((a: any) => { const s = a.status || 'unknown'; statusBreakdown[s] = (statusBreakdown[s] || 0) + 1; });
-        const statusColors: Record<string, string> = { completed: 'bg-green-500', pending: 'bg-yellow-500', confirmed: 'bg-blue-500', cancelled: 'bg-destructive', 'no_show': 'bg-orange-500', 'no-show': 'bg-orange-500' };
+        appointments.forEach((a: any) => { const s = normStatus(a.status) || 'unknown'; statusBreakdown[s] = (statusBreakdown[s] || 0) + 1; });
+        const statusColors: Record<string, string> = { completed: 'bg-green-500', pending: 'bg-yellow-500', confirmed: 'bg-blue-500', cancelled: 'bg-destructive', no_show: 'bg-orange-500' };
 
         const hourBuckets: number[] = new Array(24).fill(0);
         try { appointments.forEach((a: any) => { if (a.start_time) { const h = parseInt(a.start_time.split(':')[0], 10); if (!isNaN(h) && h >= 0 && h < 24) hourBuckets[h]++; } }); } catch {}
 
         const cancellationByMonth: Record<string, { total: number; cancelled: number }> = {};
-        try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) { if (!cancellationByMonth[m]) cancellationByMonth[m] = { total: 0, cancelled: 0 }; cancellationByMonth[m].total++; if (a.status === 'cancelled' || a.status === 'no_show' || a.status === 'no-show') cancellationByMonth[m].cancelled++; } }); } catch {}
+        try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) { if (!cancellationByMonth[m]) cancellationByMonth[m] = { total: 0, cancelled: 0 }; cancellationByMonth[m].total++; const ns = normStatus(a.status); if (ns === 'cancelled' || ns === 'no_show') cancellationByMonth[m].cancelled++; } }); } catch {}
         const cancellationRateData = Object.entries(cancellationByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, d]) => ({ date, rate: d.total > 0 ? Math.round(d.cancelled / d.total * 100) : 0 }));
 
         const bookingSources: Record<string, number> = {};
         appointments.forEach((a: any) => { const src = String(a.appointment_type || 'unspecified').replace(/_/g, ' '); bookingSources[src] = (bookingSources[src] || 0) + 1; });
 
         const providerStats = doctors.map((d: any) => {
-          const pAppts = appointments.filter((a: any) => a.doctor_name === d.name || a.doctor_id === d.id);
-          const comp = pAppts.filter((a: any) => a.status === 'completed').length;
-          const canc = pAppts.filter((a: any) => a.status === 'cancelled').length;
+          const pAppts = appointments.filter((a: any) => a.doctor_id === d.id || a.doctor_name === d.name);
+          const comp = pAppts.filter((a: any) => normStatus(a.status) === 'completed').length;
+          const canc = pAppts.filter((a: any) => normStatus(a.status) === 'cancelled').length;
           const uPatients = new Set(pAppts.map((a: any) => a.patient_id || a.patient_name)).size;
           return { name: d.name || d.full_name || 'Unknown', specialty: d.specialty || '—', total: pAppts.length, completed: comp, cancelled: canc, completionRate: pAppts.length > 0 ? Math.round(comp / pAppts.length * 100) : 0, cancellationRate: pAppts.length > 0 ? Math.round(canc / pAppts.length * 100) : 0, uniquePatients: uPatients, rating: d.rating || d.average_rating || '—' };
         }).sort((a, b) => b.total - a.total);
@@ -5627,7 +5633,7 @@ const AdminDashboard = () => {
                             <label className="text-xs text-muted-foreground">Provider</label>
                             <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportProvider} onChange={e => setReportProvider(e.target.value)}>
                               <option value="all">All Providers</option>
-                              {doctors.map((d: any) => <option key={d.id} value={d.name}>{d.name}</option>)}
+                              {doctors.map((d: any) => <option key={d.id} value={d.id}>{d.name || d.full_name}</option>)}
                             </select>
                           </div>
                           <div>
@@ -5657,7 +5663,7 @@ const AdminDashboard = () => {
                             const fromDate = reportFrom ? new Date(reportFrom) : null;
                             const toDate = reportTo ? new Date(reportTo) : null;
                             const filteredAppts = appointments.filter((a: any) => {
-                              if (reportProvider !== 'all' && a.doctor_name !== reportProvider && a.doctor_id !== reportProvider) return false;
+                              if (reportProvider !== 'all' && a.doctor_id !== reportProvider && a.doctor_name !== reportProvider) return false;
                               if (reportService !== 'all' && a.service_name !== reportService && a.service !== reportService && a.procedure_id !== reportService) return false;
                               if (fromDate || toDate) {
                                 const ad = a.appointment_date ? new Date(a.appointment_date) : null;
@@ -5669,6 +5675,9 @@ const AdminDashboard = () => {
                             });
                             const apptIds = new Set(filteredAppts.map((a: any) => a.id));
                             const filteredPayments = (payments || []).filter((p: any) => {
+                              if (reportProvider !== 'all' && p.doctor_id && p.doctor_id !== reportProvider) {
+                                if (!p.appointment_id || !apptIds.has(p.appointment_id)) return false;
+                              }
                               if (apptIds.size && p.appointment_id && !apptIds.has(p.appointment_id)) return false;
                               if (fromDate || toDate) {
                                 const pd = p.created_at ? new Date(p.created_at) : null;
@@ -5678,20 +5687,21 @@ const AdminDashboard = () => {
                               }
                               return true;
                             });
+                            const isPaidStatus = (s: any) => { const v = String(s || '').toLowerCase(); return v === 'paid' || v === 'succeeded' || v === 'completed'; };
                             const revenueCents = filteredPayments.reduce((sum: number, p: any) => {
-                              const status = String(p.status || '').toLowerCase();
-                              if (status !== 'paid' && status !== 'succeeded') return sum;
+                              if (!isPaidStatus(p.status)) return sum;
                               const cents = Number(p.amount_cents ?? Math.round(Number(p.amount || 0) * 100));
                               return sum + (Number.isFinite(cents) ? cents : 0);
                             }, 0);
                             const revenue = revenueCents / 100;
+                            const norm = (s: any) => { const v = String(s || '').toLowerCase(); if (v === 'cancelled' || v === 'canceled') return 'cancelled'; if (v === 'no_show' || v === 'no-show') return 'no_show'; return v; };
                             if (reportMetrics.includes('Total Appointments')) rows.push({ metric: 'Total Appointments', value: filteredAppts.length, unit: 'appointments' });
-                            if (reportMetrics.includes('Completed Appointments')) rows.push({ metric: 'Completed Appointments', value: filteredAppts.filter((a: any) => a.status === 'completed').length, unit: 'appointments' });
-                            if (reportMetrics.includes('Cancelled Appointments')) rows.push({ metric: 'Cancelled Appointments', value: filteredAppts.filter((a: any) => a.status === 'cancelled').length, unit: 'appointments' });
-                            if (reportMetrics.includes('No-shows')) rows.push({ metric: 'No-shows', value: filteredAppts.filter((a: any) => a.status === 'no_show' || a.status === 'no-show').length, unit: 'appointments' });
+                            if (reportMetrics.includes('Completed Appointments')) rows.push({ metric: 'Completed Appointments', value: filteredAppts.filter((a: any) => norm(a.status) === 'completed').length, unit: 'appointments' });
+                            if (reportMetrics.includes('Cancelled Appointments')) rows.push({ metric: 'Cancelled Appointments', value: filteredAppts.filter((a: any) => norm(a.status) === 'cancelled').length, unit: 'appointments' });
+                            if (reportMetrics.includes('No-shows')) rows.push({ metric: 'No-shows', value: filteredAppts.filter((a: any) => norm(a.status) === 'no_show').length, unit: 'appointments' });
                             if (reportMetrics.includes('Unique Patients')) rows.push({ metric: 'Unique Patients', value: new Set(filteredAppts.map((a: any) => a.patient_id || a.patient_name)).size, unit: 'patients' });
                             if (reportMetrics.includes('New Patients')) rows.push({ metric: 'New Patients', value: patients.length, unit: 'patients' });
-                            if (reportMetrics.includes('Cancellation Rate')) rows.push({ metric: 'Cancellation Rate', value: filteredAppts.length > 0 ? (filteredAppts.filter((a: any) => a.status === 'cancelled').length / filteredAppts.length * 100).toFixed(1) + '%' : '0%', unit: '' });
+                            if (reportMetrics.includes('Cancellation Rate')) rows.push({ metric: 'Cancellation Rate', value: filteredAppts.length > 0 ? (filteredAppts.filter((a: any) => norm(a.status) === 'cancelled').length / filteredAppts.length * 100).toFixed(1) + '%' : '0%', unit: '' });
                             if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: '$' + revenue.toFixed(2), unit: '' });
                             if (reportMetrics.includes('Avg Revenue per Appointment')) {
                               rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? '$' + (revenue / filteredAppts.length).toFixed(2) : '$0.00', unit: '' });

@@ -10768,11 +10768,17 @@ export type Database = {
         Args: { p_limit_count?: number; p_practice_id: string }
         Returns: {
           appointment_date: string
+          appointment_type: string
+          created_at: string
+          doctor_id: string
           doctor_name: string
           end_time: string
           id: string
           notes: string
+          patient_id: string
           patient_name: string
+          practice_id: string
+          procedure_id: string
           start_time: string
           status: string
         }[]
