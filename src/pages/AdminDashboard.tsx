@@ -290,6 +290,8 @@ const AdminDashboard = () => {
   const [ledgerFormRef, setLedgerFormRef] = useState('');
   const [ledgerFormDesc, setLedgerFormDesc] = useState('');
   const [analyticsTab, setAnalyticsTab] = useState<'overview' | 'appointments' | 'providers' | 'patients' | 'financial' | 'services' | 'reports'>('overview');
+  const [compareA, setCompareA] = useState<string>('');
+  const [compareB, setCompareB] = useState<string>('');
   const [reportMetrics, setReportMetrics] = useState<string[]>([]);
   const [reportFrom, setReportFrom] = useState('');
   const [reportTo, setReportTo] = useState('');
