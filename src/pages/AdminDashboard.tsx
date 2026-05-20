@@ -1320,6 +1320,31 @@ const AdminDashboard = () => {
                         
                       </CardContent>
                     </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle className="text-base">Past Appointments</CardTitle></CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const today = new Date().toISOString().split('T')[0];
+                          const past = providerAppointments
+                            .filter(a => a.appointment_date < today)
+                            .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date))
+                            .slice(0, 25);
+                          if (past.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">No past appointments</p>;
+                          return (
+                            <div className="space-y-2">
+                              {past.map(a => (
+                                <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                  <span>{a.appointment_date} {a.start_time || ''}</span>
+                                  <span className="truncate">{a.patient_name || 'Unknown'}</span>
+                                  <span className="truncate">{a.service_name || '—'}</span>
+                                  <Badge variant="outline" className="w-fit capitalize">{a.status}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
 
