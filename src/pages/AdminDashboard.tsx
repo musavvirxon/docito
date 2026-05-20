@@ -5104,14 +5104,14 @@ const AdminDashboard = () => {
         const apptMonthData = Object.entries(apptsByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, value]) => ({ date, value }));
 
         const statusBreakdown: Record<string, number> = {};
-        appointments.forEach((a: any) => { const s = a.status || 'unknown'; statusBreakdown[s] = (statusBreakdown[s] || 0) + 1; });
-        const statusColors: Record<string, string> = { completed: 'bg-green-500', pending: 'bg-yellow-500', confirmed: 'bg-blue-500', cancelled: 'bg-destructive', 'no_show': 'bg-orange-500', 'no-show': 'bg-orange-500' };
+        appointments.forEach((a: any) => { const s = normStatus(a.status) || 'unknown'; statusBreakdown[s] = (statusBreakdown[s] || 0) + 1; });
+        const statusColors: Record<string, string> = { completed: 'bg-green-500', pending: 'bg-yellow-500', confirmed: 'bg-blue-500', cancelled: 'bg-destructive', no_show: 'bg-orange-500' };
 
         const hourBuckets: number[] = new Array(24).fill(0);
         try { appointments.forEach((a: any) => { if (a.start_time) { const h = parseInt(a.start_time.split(':')[0], 10); if (!isNaN(h) && h >= 0 && h < 24) hourBuckets[h]++; } }); } catch {}
 
         const cancellationByMonth: Record<string, { total: number; cancelled: number }> = {};
-        try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) { if (!cancellationByMonth[m]) cancellationByMonth[m] = { total: 0, cancelled: 0 }; cancellationByMonth[m].total++; if (a.status === 'cancelled' || a.status === 'no_show' || a.status === 'no-show') cancellationByMonth[m].cancelled++; } }); } catch {}
+        try { appointments.forEach((a: any) => { const m = (a.appointment_date || a.created_at || '').slice(0, 7); if (m) { if (!cancellationByMonth[m]) cancellationByMonth[m] = { total: 0, cancelled: 0 }; cancellationByMonth[m].total++; const ns = normStatus(a.status); if (ns === 'cancelled' || ns === 'no_show') cancellationByMonth[m].cancelled++; } }); } catch {}
         const cancellationRateData = Object.entries(cancellationByMonth).sort(([a],[b]) => a.localeCompare(b)).map(([date, d]) => ({ date, rate: d.total > 0 ? Math.round(d.cancelled / d.total * 100) : 0 }));
 
         const bookingSources: Record<string, number> = {};
