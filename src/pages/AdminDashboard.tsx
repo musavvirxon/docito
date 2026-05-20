@@ -219,7 +219,7 @@ const AdminDashboard = () => {
 
   // Provider section state
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
-  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'procedures' | 'reviews' | 'documents' | 'rules'>('overview');
+  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'financial' | 'procedures' | 'reviews' | 'documents' | 'rules'>('overview');
   const [providerSearch, setProviderSearch] = useState('');
   const [providerStatusFilter, setProviderStatusFilter] = useState('all');
   const [providerSpecialtyFilter, setProviderSpecialtyFilter] = useState('all');
