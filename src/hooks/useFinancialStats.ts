@@ -59,14 +59,18 @@ interface PatientEarnings {
   lastVisit: string;
 }
 
-export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
+export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverride?: string | null) => {
   const { user } = useAuth();
-  const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [doctorId, setDoctorId] = useState<string | null>(doctorIdOverride || null);
   
   const defaultFrom = dateFrom || subDays(new Date(), 30);
   const defaultTo = dateTo || new Date();
 
   useEffect(() => {
+    if (doctorIdOverride) {
+      setDoctorId(doctorIdOverride);
+      return;
+    }
     const getDoctorId = async () => {
       if (!user) return;
       
@@ -80,7 +84,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date) => {
     };
 
     getDoctorId();
-  }, [user]);
+  }, [user, doctorIdOverride]);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['financial-stats', doctorId, format(defaultFrom, 'yyyy-MM-dd'), format(defaultTo, 'yyyy-MM-dd')],

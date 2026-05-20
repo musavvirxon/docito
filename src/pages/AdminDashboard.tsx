@@ -36,6 +36,7 @@ import PendingInvitationsSection from "@/components/dashboard/PendingInvitations
 import { AddLocationModal } from "@/components/dashboard/AddLocationModal";
 import { SettingsPanel } from "@/components/dashboard/SettingsPanel";
 import DoctorRulesCard from "@/components/dashboard/DoctorRulesCard";
+import ProviderFinancialTab from "@/components/admin/ProviderFinancialTab";
 import { ComprehensiveRegistrationModal } from "@/components/dashboard/ComprehensiveRegistrationModal";
 import { CreateClinicModal } from "@/components/dashboard/CreateClinicModal";
 import { ViewRequirementsModal } from "@/components/dashboard/ViewRequirementsModal";
@@ -219,7 +220,7 @@ const AdminDashboard = () => {
 
   // Provider section state
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
-  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'procedures' | 'reviews' | 'documents' | 'rules'>('overview');
+  const [providerTab, setProviderTab] = useState<'overview' | 'calendar' | 'patients' | 'analytics' | 'financial' | 'procedures' | 'reviews' | 'documents' | 'rules'>('overview');
   const [providerSearch, setProviderSearch] = useState('');
   const [providerStatusFilter, setProviderStatusFilter] = useState('all');
   const [providerSpecialtyFilter, setProviderSpecialtyFilter] = useState('all');
@@ -1020,6 +1021,7 @@ const AdminDashboard = () => {
           { key: 'calendar', label: t("admin.providers.tabs.calendar") },
           { key: 'patients', label: t("admin.providers.tabs.patients") },
           { key: 'analytics', label: t("admin.providers.tabs.analytics") },
+          { key: 'financial', label: t("admin.providers.tabs.financial", { defaultValue: "Financial" }) },
           { key: 'procedures', label: t("admin.providers.tabs.procedures") },
           { key: 'reviews', label: t("admin.providers.tabs.reviews") },
           { key: 'documents', label: t("admin.providers.tabs.documents") },
@@ -1209,36 +1211,58 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle className="text-base">Working Hours</CardTitle></CardHeader>
                       <CardContent>
                         {(() => {
-                          const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-                          const avail: any[] = selectedProvider.availability || [];
-                          const byDay: Record<number, any[]> = {};
-                          avail.forEach(a => {
-                            const k = typeof a.day_of_week === 'number' ? a.day_of_week : -1;
-                            (byDay[k] = byDay[k] || []).push(a);
-                          });
+                          const dayKeys = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+                          const dayLabels: Record<string, string> = {
+                            monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
+                            thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday',
+                          };
+                          const wd = (selectedProvider.schedule?.working_days || {}) as Record<string, any>;
+                          const hasAny = dayKeys.some(k => wd[k]);
+                          if (!hasAny) {
+                            return <p className="text-sm text-muted-foreground py-4 text-center">No working hours configured</p>;
+                          }
                           return (
                             <div className="space-y-2">
-                              {dayNames.map((day, idx) => {
-                                const rows = byDay[idx] || [];
-                                const enabled = rows.some(r => r.is_active !== false);
+                              {dayKeys.map(k => {
+                                const row = wd[k] || {};
+                                const enabled = !!row.enabled;
+                                const breaks: any[] = Array.isArray(row.breaks) ? row.breaks : [];
                                 return (
-                                  <div key={day} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                                    <span className="text-sm font-medium w-24">{day}</span>
+                                  <div key={k} className="flex items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border flex-wrap">
+                                    <span className="text-sm font-medium w-24">{dayLabels[k]}</span>
                                     <Badge variant={enabled ? 'secondary' : 'outline'}>{enabled ? 'Open' : 'Closed'}</Badge>
                                     <span className="text-sm text-muted-foreground">
-                                      {enabled
-                                        ? rows.filter(r => r.is_active !== false).map(r => `${r.start_time}–${r.end_time}`).join(', ')
-                                        : '—'}
+                                      {enabled ? `${row.start_time}–${row.end_time}` : '—'}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {enabled && breaks.length
+                                        ? breaks.map(b => `${b.name || 'Break'} ${b.start_time}–${b.end_time}`).join(', ')
+                                        : ''}
                                     </span>
                                   </div>
                                 );
                               })}
+                              {selectedProvider.schedule?.buffer_time != null && (
+                                <p className="text-xs text-muted-foreground mt-2">Buffer between appointments: {selectedProvider.schedule.buffer_time} min</p>
+                              )}
                             </div>
                           );
                         })()}
                         <p className="text-xs text-muted-foreground mt-3">Pulled from this doctor's availability. Set rules in "Rules & Limits".</p>
                       </CardContent>
                     </Card>
+                    {Array.isArray(selectedProvider.schedule?.holidays) && selectedProvider.schedule.holidays.length > 0 && (
+                      <Card className="rounded-xl">
+                        <CardHeader><CardTitle className="text-base">Holidays</CardTitle></CardHeader>
+                        <CardContent>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedProvider.schedule.holidays.map((h: string) => (
+                              <Badge key={h} variant="outline">{h}</Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
                     <Card className="rounded-xl">
                       <CardHeader><CardTitle className="text-base">Upcoming Appointments</CardTitle></CardHeader>
                       <CardContent>
@@ -1295,6 +1319,31 @@ const AdminDashboard = () => {
                           );
                         })()}
                         
+                      </CardContent>
+                    </Card>
+                    <Card className="rounded-xl">
+                      <CardHeader><CardTitle className="text-base">Past Appointments</CardTitle></CardHeader>
+                      <CardContent>
+                        {(() => {
+                          const today = new Date().toISOString().split('T')[0];
+                          const past = providerAppointments
+                            .filter(a => a.appointment_date < today)
+                            .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date))
+                            .slice(0, 25);
+                          if (past.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">No past appointments</p>;
+                          return (
+                            <div className="space-y-2">
+                              {past.map(a => (
+                                <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
+                                  <span>{a.appointment_date} {a.start_time || ''}</span>
+                                  <span className="truncate">{a.patient_name || 'Unknown'}</span>
+                                  <span className="truncate">{a.service_name || '—'}</span>
+                                  <Badge variant="outline" className="w-fit capitalize">{a.status}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </CardContent>
                     </Card>
                   </div>
@@ -1452,6 +1501,10 @@ const AdminDashboard = () => {
                     </div>
                   );
                 })()}
+
+                {providerTab === 'financial' && selectedProvider?.id && (
+                  <ProviderFinancialTab doctorId={selectedProvider.id} doctorName={selectedProvider.name} />
+                )}
 
                 {providerTab === 'procedures' && (
                   <div className="space-y-4">
