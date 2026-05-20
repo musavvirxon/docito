@@ -147,19 +147,18 @@ export const useAdminDashboard = () => {
         (profiles || []).forEach((p: any) => { profileById[p.id] = p; });
       }
 
-      // Per-doctor availability & procedures (best effort)
-      const [availRes, procRes] = await Promise.all([
+      // Per-doctor schedule_settings & procedures (best effort)
+      const [schedRes, procRes] = await Promise.all([
         ids.length
-          ? (supabase as any).from("doctor_availability").select("*").in("doctor_id", ids)
+          ? (supabase as any).from("schedule_settings").select("*").in("doctor_id", ids)
           : Promise.resolve({ data: [] }),
         ids.length
           ? (supabase as any).from("procedures").select("*").in("doctor_id", ids)
           : Promise.resolve({ data: [] }),
       ]);
-      const availByDoctor: Record<string, any[]> = {};
-      (availRes?.data || []).forEach((r: any) => {
-        const k = r.doctor_id; if (!k) return;
-        (availByDoctor[k] = availByDoctor[k] || []).push(r);
+      const schedByDoctor: Record<string, any> = {};
+      (schedRes?.data || []).forEach((r: any) => {
+        if (r.doctor_id) schedByDoctor[r.doctor_id] = r;
       });
       const procByDoctor: Record<string, any[]> = {};
       (procRes?.data || []).forEach((r: any) => {
@@ -169,6 +168,7 @@ export const useAdminDashboard = () => {
 
       const merged = base.map((d: any) => {
         const p = profileById[d.id] || {};
+        const s = schedByDoctor[d.id] || null;
         return {
           ...d,
           name: d.full_name || p.full_name || d.name,
@@ -189,7 +189,9 @@ export const useAdminDashboard = () => {
           num_reviews: p.num_reviews ?? 0,
           custom_profile_link: p.custom_profile_link,
           username: p.username,
-          availability: availByDoctor[d.id] || [],
+          schedule: s
+            ? { working_days: s.working_days || {}, buffer_time: s.buffer_time, holidays: s.holidays || [] }
+            : null,
           procedures: procByDoctor[d.id] || [],
           status: d.status || (p.verified ? "active" : "pending"),
           source: 'doctor',
