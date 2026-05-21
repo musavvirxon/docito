@@ -1,14 +1,4 @@
-## Problem
-Clinic admin cannot add a service. The insert into `public.procedures` is rejected by RLS because the only INSERT policy requires `auth.uid() = doctors.user_id` — i.e. only the doctor themselves can create their own procedures. A practice admin acting on behalf of a joined doctor is blocked.
 
-## Fix
-Extend RLS on `public.procedures` so practice admins and active practice staff can manage procedures for any doctor whose `doctors.practice_id` belongs to a practice they can access. Reuse the existing `public.can_access_practice(uuid)` SECURITY DEFINER helper to avoid recursion.
-
-### Migration
-Add four policies (keep the existing doctor-self policies intact):
-
-```sql
--- SELECT
 CREATE POLICY "Practice can view doctor procedures"
 ON public.procedures FOR SELECT
 USING (
@@ -20,7 +10,6 @@ USING (
   )
 );
 
--- INSERT
 CREATE POLICY "Practice can insert doctor procedures"
 ON public.procedures FOR INSERT
 WITH CHECK (
@@ -32,7 +21,6 @@ WITH CHECK (
   )
 );
 
--- UPDATE
 CREATE POLICY "Practice can update doctor procedures"
 ON public.procedures FOR UPDATE
 USING (
@@ -52,7 +40,6 @@ WITH CHECK (
   )
 );
 
--- DELETE
 CREATE POLICY "Practice can delete doctor procedures"
 ON public.procedures FOR DELETE
 USING (
@@ -63,11 +50,3 @@ USING (
       AND public.can_access_practice(d.practice_id)
   )
 );
-```
-
-### Frontend
-No code change required — `AddServiceModal` already inserts with the correct enum value after the previous fix. Once the policy is in place, the practice admin's submit will succeed.
-
-### Out of scope
-- The "missing key prop" React warning inside `AddServiceModal` (cosmetic, not the blocker).
-- The DialogContent `aria-describedby` warning.
