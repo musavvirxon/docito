@@ -1,73 +1,20 @@
-## Problem
-Clinic admin cannot add a service. The insert into `public.procedures` is rejected by RLS because the only INSERT policy requires `auth.uid() = doctors.user_id` — i.e. only the doctor themselves can create their own procedures. A practice admin acting on behalf of a joined doctor is blocked.
+## Plan
 
-## Fix
-Extend RLS on `public.procedures` so practice admins and active practice staff can manage procedures for any doctor whose `doctors.practice_id` belongs to a practice they can access. Reuse the existing `public.can_access_practice(uuid)` SECURITY DEFINER helper to avoid recursion.
+1. **Fix the actual RLS failure in the modal**
+   - `get_practice_providers()` returns provider rows with `id`, but `AddServiceModal` reads `doctor_id`.
+   - Because of that mismatch, the insert request sends no `dentist_id`, so Supabase rejects the row with `new row violates row-level security policy`.
+   - Update the modal provider type and checkbox handling to use the returned `id`, and insert it as `dentist_id`.
 
-### Migration
-Add four policies (keep the existing doctor-self policies intact):
+2. **Fix related dashboard service loading bug**
+   - `useAdminDashboard.ts` currently queries `procedures` with `.in("doctor_id", ids)`, but the table column is `dentist_id`.
+   - Change this to `.in("dentist_id", ids)` and group results by `dentist_id`, so services created for clinic doctors show correctly afterward.
 
-```sql
--- SELECT
-CREATE POLICY "Practice can view doctor procedures"
-ON public.procedures FOR SELECT
-USING (
-  EXISTS (
-    SELECT 1 FROM public.doctors d
-    WHERE d.id = procedures.dentist_id
-      AND d.practice_id IS NOT NULL
-      AND public.can_access_practice(d.practice_id)
-  )
-);
+3. **Handle clinic locations correctly without weakening security**
+   - The current `procedures` table has no `location_id` column and no service-location join table, so the location checkboxes are currently not saved anywhere.
+   - For this fix, keep the secure doctor-based insert working first.
+   - If location-specific services are required, add a follow-up migration for a dedicated `procedure_locations` join table protected by `can_access_practice(...)`, then update the modal to save selected locations there.
 
--- INSERT
-CREATE POLICY "Practice can insert doctor procedures"
-ON public.procedures FOR INSERT
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.doctors d
-    WHERE d.id = procedures.dentist_id
-      AND d.practice_id IS NOT NULL
-      AND public.can_access_practice(d.practice_id)
-  )
-);
-
--- UPDATE
-CREATE POLICY "Practice can update doctor procedures"
-ON public.procedures FOR UPDATE
-USING (
-  EXISTS (
-    SELECT 1 FROM public.doctors d
-    WHERE d.id = procedures.dentist_id
-      AND d.practice_id IS NOT NULL
-      AND public.can_access_practice(d.practice_id)
-  )
-)
-WITH CHECK (
-  EXISTS (
-    SELECT 1 FROM public.doctors d
-    WHERE d.id = procedures.dentist_id
-      AND d.practice_id IS NOT NULL
-      AND public.can_access_practice(d.practice_id)
-  )
-);
-
--- DELETE
-CREATE POLICY "Practice can delete doctor procedures"
-ON public.procedures FOR DELETE
-USING (
-  EXISTS (
-    SELECT 1 FROM public.doctors d
-    WHERE d.id = procedures.dentist_id
-      AND d.practice_id IS NOT NULL
-      AND public.can_access_practice(d.practice_id)
-  )
-);
-```
-
-### Frontend
-No code change required — `AddServiceModal` already inserts with the correct enum value after the previous fix. Once the policy is in place, the practice admin's submit will succeed.
-
-### Out of scope
-- The "missing key prop" React warning inside `AddServiceModal` (cosmetic, not the blocker).
-- The DialogContent `aria-describedby` warning.
+4. **Verify after implementation**
+   - Confirm the POST body includes `dentist_id`.
+   - Confirm the request no longer triggers the RLS error for a clinic admin adding a service to a joined doctor.
+   - Confirm the admin dashboard reads services using `dentist_id` instead of the non-existent `doctor_id` column.

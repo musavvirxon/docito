@@ -153,7 +153,7 @@ export const useAdminDashboard = () => {
           ? (supabase as any).from("schedule_settings").select("*").in("doctor_id", ids)
           : Promise.resolve({ data: [] }),
         ids.length
-          ? (supabase as any).from("procedures").select("*").in("doctor_id", ids)
+          ? (supabase as any).from("procedures").select("*").in("dentist_id", ids)
           : Promise.resolve({ data: [] }),
       ]);
       const schedByDoctor: Record<string, any> = {};
@@ -162,7 +162,7 @@ export const useAdminDashboard = () => {
       });
       const procByDoctor: Record<string, any[]> = {};
       (procRes?.data || []).forEach((r: any) => {
-        const k = r.doctor_id; if (!k) return;
+        const k = r.dentist_id; if (!k) return;
         (procByDoctor[k] = procByDoctor[k] || []).push(r);
       });
 
