@@ -24,14 +24,24 @@ interface AddServiceModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const serviceCategories = [
-  "Diagnostic",
-  "Preventive",
-  "Surgical",
-  "Therapeutic",
-  "Cosmetic",
-  "Emergency",
-  "Consultation",
+const serviceCategories: { value: string; label: string }[] = [
+  { value: "general", label: "General" },
+  { value: "diagnostic", label: "Diagnostic" },
+  { value: "preventive", label: "Preventive" },
+  { value: "restorative", label: "Restorative" },
+  { value: "cosmetic", label: "Cosmetic" },
+  { value: "orthodontic", label: "Orthodontic" },
+  { value: "endodontic", label: "Endodontic" },
+  { value: "periodontic", label: "Periodontic" },
+  { value: "prosthodontic", label: "Prosthodontic" },
+  { value: "oral_surgery", label: "Oral Surgery" },
+  { value: "minor_surgery", label: "Minor Surgery" },
+  { value: "emergency_dental", label: "Emergency" },
+  { value: "general_consultation", label: "Consultation" },
+  { value: "follow_up", label: "Follow-up" },
+  { value: "vaccination", label: "Vaccination" },
+  { value: "physical_therapy", label: "Physical Therapy" },
+  { value: "mental_health", label: "Mental Health" },
 ];
 
 const durations = [
@@ -297,8 +307,8 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                     </SelectTrigger>
                     <SelectContent>
                       {serviceCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
