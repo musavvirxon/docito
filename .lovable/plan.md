@@ -1,20 +1,29 @@
 ## Plan
 
-1. **Fix the actual RLS failure in the modal**
-   - `get_practice_providers()` returns provider rows with `id`, but `AddServiceModal` reads `doctor_id`.
-   - Because of that mismatch, the insert request sends no `dentist_id`, so Supabase rejects the row with `new row violates row-level security policy`.
-   - Update the modal provider type and checkbox handling to use the returned `id`, and insert it as `dentist_id`.
+**Problem**
+The doctor's patient list (`doctor_patients` table) is invisible to the clinic admin because RLS only allows the doctor themselves to SELECT/UPDATE these rows. `useAdminDashboard.fetchPatients` already queries `doctor_patients` for every doctor of the practice, but RLS silently returns 0 rows. Also, when a doctor leaves a practice (their `doctors.practice_id` is cleared), their patients should no longer appear in the clinic admin dashboard.
 
-2. **Fix related dashboard service loading bug**
-   - `useAdminDashboard.ts` currently queries `procedures` with `.in("doctor_id", ids)`, but the table column is `dentist_id`.
-   - Change this to `.in("dentist_id", ids)` and group results by `dentist_id`, so services created for clinic doctors show correctly afterward.
+**Solution — RLS only, no UI changes needed**
 
-3. **Handle clinic locations correctly without weakening security**
-   - The current `procedures` table has no `location_id` column and no service-location join table, so the location checkboxes are currently not saved anywhere.
-   - For this fix, keep the secure doctor-based insert working first.
-   - If location-specific services are required, add a follow-up migration for a dedicated `procedure_locations` join table protected by `can_access_practice(...)`, then update the modal to save selected locations there.
+Add scoped RLS policies on `public.doctor_patients` using the existing `can_access_practice(uuid)` security‑definer helper:
 
-4. **Verify after implementation**
-   - Confirm the POST body includes `dentist_id`.
-   - Confirm the request no longer triggers the RLS error for a clinic admin adding a service to a joined doctor.
-   - Confirm the admin dashboard reads services using `dentist_id` instead of the non-existent `doctor_id` column.
+1. **SELECT** — practice admin / staff can view a `doctor_patients` row when the linked doctor still belongs to a practice they can access:
+   ```
+   EXISTS (
+     SELECT 1 FROM public.doctors d
+     WHERE d.id = doctor_patients.doctor_id
+       AND d.practice_id IS NOT NULL
+       AND public.can_access_practice(d.practice_id)
+   )
+   ```
+2. **UPDATE** — same predicate for `USING` and `WITH CHECK`, so the admin can edit phone/email/status/allergies (already used in `AdminDashboard.tsx`).
+
+Skip INSERT/DELETE policies; admins create patients through `facility_patients` and shouldn't hard-delete doctor-owned records.
+
+**Automatic "lose access when doctor leaves"**
+Because the predicate filters on `doctors.practice_id`, the moment a doctor's `practice_id` is set to NULL (or changed to another practice), their patients disappear from the original clinic admin dashboard. No extra cleanup needed.
+
+**Verification**
+- Sign in as clinic admin → Patients tab now lists patients added directly by joined doctors.
+- Remove a doctor from the practice → those patients vanish from the admin list on next fetch.
+- Doctor's own patient view (`useDoctorPatientsV2`) keeps working unchanged.
