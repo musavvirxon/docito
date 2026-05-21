@@ -307,8 +307,8 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                     </SelectTrigger>
                     <SelectContent>
                       {serviceCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
