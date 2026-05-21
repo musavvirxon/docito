@@ -54,7 +54,7 @@ const durations = [
 ];
 
 type ProviderRow = {
-  doctor_id: string;
+  id: string;
   full_name: string | null;
   specialty: string | null;
 };
@@ -381,13 +381,13 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
                   ) : (
                     <div className="space-y-2">
                       {providers.map((p) => (
-                        <div key={p.doctor_id} className="flex items-center space-x-2">
+                        <div key={p.id} className="flex items-center space-x-2">
                           <Checkbox
-                            id={`prov-${p.doctor_id}`}
-                            checked={formData.providers.includes(p.doctor_id)}
-                            onCheckedChange={(checked) => handleProviderChange(p.doctor_id, checked as boolean)}
+                            id={`prov-${p.id}`}
+                            checked={formData.providers.includes(p.id)}
+                            onCheckedChange={(checked) => handleProviderChange(p.id, checked as boolean)}
                           />
-                          <Label htmlFor={`prov-${p.doctor_id}`}>
+                          <Label htmlFor={`prov-${p.id}`}>
                             {p.full_name || "Unknown"}
                             {p.specialty ? ` • ${p.specialty}` : ""}
                           </Label>
