@@ -434,24 +434,6 @@
     "settings": {
       "title": "设置",
       "subtitle": "管理账户设置",
-      "account": "账户",
-      "notifications": "通知",
-      "privacy": "隐私",
-      "security": "安全",
-      "save": "保存更改",
-      "changePassword": "更改密码",
-      "currentPassword": "当前密码",
-      "newPassword": "新密码",
-      "confirmPassword": "确认密码",
-      "emailNotifications": "电子邮件通知",
-      "smsNotifications": "短信通知",
-      "appointmentReminders": "预约提醒",
-      "medicationReminders": "用药提醒",
-      "marketingEmails": "营销邮件",
-      "profileVisibility": "资料可见性",
-      "shareDataWithDoctors": "与医生共享数据",
-      "showActivityStatus": "显示活跃状态",
-      "instructions": "管理账户设置、通知和隐私参数",
       "account": {
         "title": "个人信息",
         "description": "更新您的个人信息",
@@ -497,7 +479,21 @@
         "newPassword": "新密码",
         "confirmPassword": "确认新密码",
         "updatePassword": "更新密码"
-      }
+      },
+      "save": "保存更改",
+      "changePassword": "更改密码",
+      "currentPassword": "当前密码",
+      "newPassword": "新密码",
+      "confirmPassword": "确认密码",
+      "emailNotifications": "电子邮件通知",
+      "smsNotifications": "短信通知",
+      "appointmentReminders": "预约提醒",
+      "medicationReminders": "用药提醒",
+      "marketingEmails": "营销邮件",
+      "profileVisibility": "资料可见性",
+      "shareDataWithDoctors": "与医生共享数据",
+      "showActivityStatus": "显示活跃状态",
+      "instructions": "管理账户设置、通知和隐私参数"
     },
     "filters": {
       "title": "筛选",
@@ -888,7 +884,7 @@
     },
     "services": {
       "title": "我的服务",
-      "description": "管理提供给患者的服务",
+      "description": "描述",
       "assignedServices": "已分配服务",
       "assignedServicesDesc": "由诊所分配给您的服务",
       "assignedByClinic": "由诊所管理员分配",
@@ -900,7 +896,6 @@
       "serviceNamePlaceholder": "例如：一般咨询",
       "category": "类别",
       "selectCategory": "选择类别",
-      "description": "描述",
       "descriptionPlaceholder": "描述此服务...",
       "price": "价格（$）",
       "duration": "时长（分钟）",
@@ -1198,7 +1193,77 @@
       "min": "分钟",
       "serviceName": "服务名称",
       "avgDurationLabel": "平均时长",
-      "completedLabel": "已完成"
+      "completedLabel": "已完成",
+      "advancedFinancial": {
+        "title": "Advanced Financial KPIs",
+        "description": "Deep financial metrics for business performance, profitability, and efficiency",
+        "configureInputs": "Configure Inputs",
+        "keyInsightsTitle": "Key Insights",
+        "insights": {
+          "cacToLtvHealthy": "Healthy LTV:CAC ratio — you're earning significantly more from each customer than it costs to acquire them.",
+          "cacToLtvNeedsImprovement": "Your LTV:CAC ratio is below 3:1 — consider reducing acquisition cost or increasing customer lifetime value.",
+          "netProfitBelowAvg": "Net profit margin is below the 15% industry benchmark — review costs and pricing.",
+          "netProfitStrong": "Strong net profit margin above 15% — your business is highly profitable.",
+          "roasExcellent": "Excellent return on ad spend (4x or higher) — keep investing in your marketing channels.",
+          "roasNeedsOptimization": "ROAS below 4x — optimize ad targeting, creatives, or landing experience.",
+          "workingCapitalHealthy": "Healthy working capital ratio (1.5+) — you have ample short-term liquidity.",
+          "workingCapitalTight": "Working capital ratio below 1.5 — short-term liquidity is tight, monitor cash flow."
+        },
+        "metrics": {
+          "roi": {
+            "title": "Return on Investment",
+            "description": "Net profit relative to total invested capital."
+          },
+          "roas": {
+            "title": "Return on Ad Spend",
+            "description": "Revenue generated for every $1 spent on advertising."
+          },
+          "adRevenueCost": {
+            "title": "Ad Revenue / Cost",
+            "description": "Revenue attributed to ads vs total advertising spend."
+          },
+          "workingCapital": {
+            "title": "Working Capital",
+            "description": "Current assets minus current liabilities."
+          },
+          "workingCapitalRatio": {
+            "title": "Working Capital Ratio",
+            "description": "Current assets divided by current liabilities; 1.5+ is healthy."
+          },
+          "netProfitMargin": {
+            "title": "Net Profit Margin",
+            "description": "Net income as a percentage of revenue."
+          },
+          "grossProfitMargin": {
+            "title": "Gross Profit Margin",
+            "description": "Revenue minus cost of goods sold, as a percentage of revenue."
+          },
+          "ebitda": {
+            "title": "EBITDA",
+            "description": "Earnings before interest, taxes, depreciation and amortization."
+          },
+          "breakEvenUnits": {
+            "title": "Break-Even Units",
+            "description": "Units needed to cover all fixed and variable costs."
+          },
+          "revenueRunRate": {
+            "title": "Revenue Run Rate",
+            "description": "Annualized revenue based on current monthly performance."
+          },
+          "cac": {
+            "title": "Customer Acquisition Cost",
+            "description": "Marketing and sales spend divided by new customers acquired."
+          },
+          "ltv": {
+            "title": "Customer Lifetime Value",
+            "description": "Projected revenue from a customer over their full relationship."
+          },
+          "cacToLtv": {
+            "title": "LTV : CAC Ratio",
+            "description": "How many times the lifetime value covers acquisition cost; 3:1 is the benchmark."
+          }
+        }
+      }
     },
     "financialStats": {
       "title": "财务统计",
@@ -1300,7 +1365,15 @@
     "settings": {
       "title": "设置",
       "description": "管理您的账户设置和安全",
-      "account": "账户",
+      "account": {
+        "title": "账户信息",
+        "description": "更新基本账户信息",
+        "email": "电子邮件地址",
+        "phone": "电话号码",
+        "timezone": "时区",
+        "language": "语言",
+        "saveChanges": "保存更改"
+      },
       "notifications": "通知",
       "calendar": "日历",
       "security": "安全",
@@ -1321,15 +1394,6 @@
         "selectTimezone": "选择时区",
         "selectLanguage": "选择语言",
         "saving": "保存中...",
-        "saveChanges": "保存更改"
-      },
-      "account": {
-        "title": "账户信息",
-        "description": "更新基本账户信息",
-        "email": "电子邮件地址",
-        "phone": "电话号码",
-        "timezone": "时区",
-        "language": "语言",
         "saveChanges": "保存更改"
       },
       "personalInfo": "个人信息",

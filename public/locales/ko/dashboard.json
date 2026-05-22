@@ -434,24 +434,6 @@
     "settings": {
       "title": "설정",
       "subtitle": "계정 설정 관리",
-      "account": "계정",
-      "notifications": "알림",
-      "privacy": "개인정보",
-      "security": "보안",
-      "save": "변경사항 저장",
-      "changePassword": "비밀번호 변경",
-      "currentPassword": "현재 비밀번호",
-      "newPassword": "새 비밀번호",
-      "confirmPassword": "비밀번호 확인",
-      "emailNotifications": "이메일 알림",
-      "smsNotifications": "SMS 알림",
-      "appointmentReminders": "예약 알림",
-      "medicationReminders": "복약 알림",
-      "marketingEmails": "마케팅 이메일",
-      "profileVisibility": "프로필 공개 설정",
-      "shareDataWithDoctors": "의사와 데이터 공유",
-      "showActivityStatus": "활동 상태 표시",
-      "instructions": "계정 설정, 알림 및 개인정보 보호 설정 관리",
       "account": {
         "title": "개인 정보",
         "description": "개인 정보 업데이트",
@@ -497,7 +479,21 @@
         "newPassword": "새 비밀번호",
         "confirmPassword": "새 비밀번호 확인",
         "updatePassword": "비밀번호 업데이트"
-      }
+      },
+      "save": "변경사항 저장",
+      "changePassword": "비밀번호 변경",
+      "currentPassword": "현재 비밀번호",
+      "newPassword": "새 비밀번호",
+      "confirmPassword": "비밀번호 확인",
+      "emailNotifications": "이메일 알림",
+      "smsNotifications": "SMS 알림",
+      "appointmentReminders": "예약 알림",
+      "medicationReminders": "복약 알림",
+      "marketingEmails": "마케팅 이메일",
+      "profileVisibility": "프로필 공개 설정",
+      "shareDataWithDoctors": "의사와 데이터 공유",
+      "showActivityStatus": "활동 상태 표시",
+      "instructions": "계정 설정, 알림 및 개인정보 보호 설정 관리"
     },
     "filters": {
       "title": "필터",
@@ -888,7 +884,7 @@
     },
     "services": {
       "title": "내 서비스",
-      "description": "환자에게 제공하는 서비스 관리",
+      "description": "설명",
       "assignedServices": "배정된 서비스",
       "assignedServicesDesc": "클리닉에서 배정한 서비스",
       "assignedByClinic": "클리닉 관리부에서 배정",
@@ -900,7 +896,6 @@
       "serviceNamePlaceholder": "예: 일반 진료",
       "category": "카테고리",
       "selectCategory": "카테고리 선택",
-      "description": "설명",
       "descriptionPlaceholder": "서비스를 설명해 주세요...",
       "price": "가격 ($)",
       "duration": "소요 시간 (분)",
@@ -1198,7 +1193,77 @@
       "min": "분",
       "serviceName": "서비스 이름",
       "avgDurationLabel": "평균 소요 시간",
-      "completedLabel": "완료됨"
+      "completedLabel": "완료됨",
+      "advancedFinancial": {
+        "title": "Advanced Financial KPIs",
+        "description": "Deep financial metrics for business performance, profitability, and efficiency",
+        "configureInputs": "Configure Inputs",
+        "keyInsightsTitle": "Key Insights",
+        "insights": {
+          "cacToLtvHealthy": "Healthy LTV:CAC ratio — you're earning significantly more from each customer than it costs to acquire them.",
+          "cacToLtvNeedsImprovement": "Your LTV:CAC ratio is below 3:1 — consider reducing acquisition cost or increasing customer lifetime value.",
+          "netProfitBelowAvg": "Net profit margin is below the 15% industry benchmark — review costs and pricing.",
+          "netProfitStrong": "Strong net profit margin above 15% — your business is highly profitable.",
+          "roasExcellent": "Excellent return on ad spend (4x or higher) — keep investing in your marketing channels.",
+          "roasNeedsOptimization": "ROAS below 4x — optimize ad targeting, creatives, or landing experience.",
+          "workingCapitalHealthy": "Healthy working capital ratio (1.5+) — you have ample short-term liquidity.",
+          "workingCapitalTight": "Working capital ratio below 1.5 — short-term liquidity is tight, monitor cash flow."
+        },
+        "metrics": {
+          "roi": {
+            "title": "Return on Investment",
+            "description": "Net profit relative to total invested capital."
+          },
+          "roas": {
+            "title": "Return on Ad Spend",
+            "description": "Revenue generated for every $1 spent on advertising."
+          },
+          "adRevenueCost": {
+            "title": "Ad Revenue / Cost",
+            "description": "Revenue attributed to ads vs total advertising spend."
+          },
+          "workingCapital": {
+            "title": "Working Capital",
+            "description": "Current assets minus current liabilities."
+          },
+          "workingCapitalRatio": {
+            "title": "Working Capital Ratio",
+            "description": "Current assets divided by current liabilities; 1.5+ is healthy."
+          },
+          "netProfitMargin": {
+            "title": "Net Profit Margin",
+            "description": "Net income as a percentage of revenue."
+          },
+          "grossProfitMargin": {
+            "title": "Gross Profit Margin",
+            "description": "Revenue minus cost of goods sold, as a percentage of revenue."
+          },
+          "ebitda": {
+            "title": "EBITDA",
+            "description": "Earnings before interest, taxes, depreciation and amortization."
+          },
+          "breakEvenUnits": {
+            "title": "Break-Even Units",
+            "description": "Units needed to cover all fixed and variable costs."
+          },
+          "revenueRunRate": {
+            "title": "Revenue Run Rate",
+            "description": "Annualized revenue based on current monthly performance."
+          },
+          "cac": {
+            "title": "Customer Acquisition Cost",
+            "description": "Marketing and sales spend divided by new customers acquired."
+          },
+          "ltv": {
+            "title": "Customer Lifetime Value",
+            "description": "Projected revenue from a customer over their full relationship."
+          },
+          "cacToLtv": {
+            "title": "LTV : CAC Ratio",
+            "description": "How many times the lifetime value covers acquisition cost; 3:1 is the benchmark."
+          }
+        }
+      }
     },
     "financialStats": {
       "title": "재무 통계",
@@ -1300,7 +1365,15 @@
     "settings": {
       "title": "설정",
       "description": "계정 설정 및 보안 관리",
-      "account": "계정",
+      "account": {
+        "title": "계정 정보",
+        "description": "기본 계정 정보 업데이트",
+        "email": "이메일 주소",
+        "phone": "전화번호",
+        "timezone": "시간대",
+        "language": "언어",
+        "saveChanges": "변경사항 저장"
+      },
       "notifications": "알림",
       "calendar": "캘린더",
       "security": "보안",
@@ -1321,15 +1394,6 @@
         "selectTimezone": "시간대 선택",
         "selectLanguage": "언어 선택",
         "saving": "저장 중...",
-        "saveChanges": "변경사항 저장"
-      },
-      "account": {
-        "title": "계정 정보",
-        "description": "기본 계정 정보 업데이트",
-        "email": "이메일 주소",
-        "phone": "전화번호",
-        "timezone": "시간대",
-        "language": "언어",
         "saveChanges": "변경사항 저장"
       },
       "personalInfo": "개인 정보",

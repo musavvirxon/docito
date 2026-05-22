@@ -1055,74 +1055,74 @@
       "avgDurationLabel": "Avg. Duration",
       "completedLabel": "Completed",
       "advancedFinancial": {
+        "title": "Advanced Financial KPIs",
+        "description": "Deep financial metrics for business performance, profitability, and efficiency",
         "configureInputs": "Configure Inputs",
-        "description": "Description",
+        "keyInsightsTitle": "Key Insights",
         "insights": {
-          "cacToLtvHealthy": "Cac To Ltv Healthy",
-          "cacToLtvNeedsImprovement": "Cac To Ltv Needs Improvement",
-          "netProfitBelowAvg": "Net Profit Below Avg",
-          "netProfitStrong": "Net Profit Strong",
-          "roasExcellent": "Roas Excellent",
-          "roasNeedsOptimization": "Roas Needs Optimization",
-          "workingCapitalHealthy": "Working Capital Healthy",
-          "workingCapitalTight": "Working Capital Tight"
+          "cacToLtvHealthy": "Healthy LTV:CAC ratio — you're earning significantly more from each customer than it costs to acquire them.",
+          "cacToLtvNeedsImprovement": "Your LTV:CAC ratio is below 3:1 — consider reducing acquisition cost or increasing customer lifetime value.",
+          "netProfitBelowAvg": "Net profit margin is below the 15% industry benchmark — review costs and pricing.",
+          "netProfitStrong": "Strong net profit margin above 15% — your business is highly profitable.",
+          "roasExcellent": "Excellent return on ad spend (4x or higher) — keep investing in your marketing channels.",
+          "roasNeedsOptimization": "ROAS below 4x — optimize ad targeting, creatives, or landing experience.",
+          "workingCapitalHealthy": "Healthy working capital ratio (1.5+) — you have ample short-term liquidity.",
+          "workingCapitalTight": "Working capital ratio below 1.5 — short-term liquidity is tight, monitor cash flow."
         },
-        "keyInsightsTitle": "Key Insights Title",
         "metrics": {
-          "adRevenueCost": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "breakEvenUnits": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "cac": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "cacToLtv": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "ebitda": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "grossProfitMargin": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "ltv": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "netProfitMargin": {
-            "description": "Description",
-            "title": "Title"
-          },
-          "revenueRunRate": {
-            "description": "Description",
-            "title": "Title"
+          "roi": {
+            "title": "Return on Investment",
+            "description": "Net profit relative to total invested capital."
           },
           "roas": {
-            "description": "Description",
-            "title": "Title"
+            "title": "Return on Ad Spend",
+            "description": "Revenue generated for every $1 spent on advertising."
           },
-          "roi": {
-            "description": "Description",
-            "title": "Title"
+          "adRevenueCost": {
+            "title": "Ad Revenue / Cost",
+            "description": "Revenue attributed to ads vs total advertising spend."
           },
           "workingCapital": {
-            "description": "Description",
-            "title": "Title"
+            "title": "Working Capital",
+            "description": "Current assets minus current liabilities."
           },
           "workingCapitalRatio": {
-            "description": "Description",
-            "title": "Title"
+            "title": "Working Capital Ratio",
+            "description": "Current assets divided by current liabilities; 1.5+ is healthy."
+          },
+          "netProfitMargin": {
+            "title": "Net Profit Margin",
+            "description": "Net income as a percentage of revenue."
+          },
+          "grossProfitMargin": {
+            "title": "Gross Profit Margin",
+            "description": "Revenue minus cost of goods sold, as a percentage of revenue."
+          },
+          "ebitda": {
+            "title": "EBITDA",
+            "description": "Earnings before interest, taxes, depreciation and amortization."
+          },
+          "breakEvenUnits": {
+            "title": "Break-Even Units",
+            "description": "Units needed to cover all fixed and variable costs."
+          },
+          "revenueRunRate": {
+            "title": "Revenue Run Rate",
+            "description": "Annualized revenue based on current monthly performance."
+          },
+          "cac": {
+            "title": "Customer Acquisition Cost",
+            "description": "Marketing and sales spend divided by new customers acquired."
+          },
+          "ltv": {
+            "title": "Customer Lifetime Value",
+            "description": "Projected revenue from a customer over their full relationship."
+          },
+          "cacToLtv": {
+            "title": "LTV : CAC Ratio",
+            "description": "How many times the lifetime value covers acquisition cost; 3:1 is the benchmark."
           }
-        },
-        "title": "Title"
+        }
       },
       "dataRefreshed": "Data Refreshed",
       "description": "Description",

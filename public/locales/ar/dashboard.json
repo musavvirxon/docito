@@ -3,7 +3,6 @@
     "title": "لوحة الطبيب",
     "loading": "جارٍ تحميل لوحتك...",
     "settingUp": "جارٍ إعداد ملفك الطبي...",
-
     "navigation": {
       "dashboard": "لوحة التحكم",
       "myProfile": "ملفي الشخصي",
@@ -21,24 +20,20 @@
       "settings": "الإعدادات",
       "logout": "تسجيل الخروج"
     },
-
     "clinic": {
       "verified": "تم التحقق",
       "requestToLeave": "طلب مغادرة"
     },
-
     "verification": {
       "pending": "قيد التحقق",
       "message": "ملفك الشخصي قيد المراجعة. أكمل ملفك لتسريع التحقق.",
       "completeProfile": "أكمل الملف الشخصي",
       "viewProfile": "عرض الملف الشخصي"
     },
-
     "profileCompletion": {
       "title": "إكمال الملف الشخصي",
       "message": "أكمل ملفك الشخصي لجذب المزيد من المرضى"
     },
-
     "stats": {
       "totalAppointments": "إجمالي المواعيد",
       "allTimeBookings": "إجمالي الحجوزات",
@@ -49,7 +44,6 @@
       "revenue": "الإيرادات",
       "totalEarnings": "إجمالي الأرباح"
     },
-
     "appointmentStatus": {
       "confirmed": "مؤكد",
       "pending": "قيد الانتظار",
@@ -58,19 +52,16 @@
       "canceled": "ملغي",
       "rescheduled": "أُعيدت جدولته"
     },
-
     "upcomingAppointments": {
       "title": "المواعيد القادمة",
       "noAppointments": "لا توجد مواعيد قادمة",
       "scheduleIsClear": "جدولك فارغ حاليًا"
     },
-
     "recentActivity": {
       "title": "النشاط الأخير",
       "noActivity": "لا يوجد نشاط حديث",
       "startBuildingHistory": "ابدأ ببناء سجل النشاط"
     },
-
     "quickActions": {
       "title": "إجراءات سريعة",
       "setAvailability": "تعيين التوفر",
@@ -79,7 +70,6 @@
       "blockTime": "حظر وقت",
       "updateSettings": "تحديث الإعدادات"
     },
-
     "todaysSchedule": {
       "title": "جدول اليوم",
       "patients": "مرضى",
@@ -87,13 +77,11 @@
       "noAppointments": "لا توجد مواعيد اليوم",
       "freeDay": "يومك خالٍ اليوم!"
     },
-
     "dashboardContent": {
       "welcomeBack": "مرحبًا بعودتك",
       "specialtyNotProvided": "لم يتم تحديد التخصص",
       "completeProfileBanner": "أكمل ملفك الشخصي ({{completion}}%)",
       "completeProfileMessage": "الملف الشخصي الكامل يساعد المرضى على العثور عليك بسهولة أكبر والثقة بك",
-
       "clinicProfile": "ملف العيادة",
       "requestToLeave": "طلب مغادرة",
       "verificationPending": "التحقق قيد الانتظار",
@@ -123,7 +111,6 @@
       "findClinics": "ابحث عن عيادات",
       "blockTime": "حظر وقت"
     },
-
     "profileSetup": {
       "required": "إعداد الملف الشخصي مطلوب",
       "message": "يرجى إكمال إعداد ملف الطبيب للوصول إلى لوحة التحكم.",
@@ -134,7 +121,6 @@
       "settingUp": "جارٍ إعداد الملف الشخصي",
       "unableToLoad": "تعذر تحميل ملف الطبيب الخاص بك. ربما ما زال ملفك قيد الإعداد أو حدثت مشكلة مؤقتة."
     },
-
     "calendar": {
       "title": "تقويمي",
       "today": "اليوم",
@@ -144,18 +130,15 @@
       "clinicDescription": "عرض الجدول المتزامن مع حجوزات العيادة",
       "clinicCalendarDesc": "عرض وإدارة مواعيد العيادة",
       "myCalendarDesc": "عرض وإدارة مواعيدك وتوفرك",
-
       "views": {
         "day": "يوم",
         "week": "أسبوع",
         "month": "شهر"
       },
-
       "viewMode": "وضع العرض",
       "day": "يوم",
       "week": "أسبوع",
       "month": "شهر",
-
       "searchPlaceholder": "ابحث عن مريض أو ملاحظات...",
       "filters": "الفلاتر",
       "appointmentType": "نوع الموعد",
@@ -173,7 +156,6 @@
         "canceled": "ملغي",
         "no-show": "لم يحضر"
       },
-
       "showBuffers": "إظهار الفواصل الزمنية",
       "blockTime": "حظر وقت",
       "setAvailability": "تعيين التوفر",
@@ -188,7 +170,6 @@
       "dayOff": "هذا اليوم غير مُعد كيوم عمل في إعدادات الجدول.",
       "notWorkingDay": "ليس يوم عمل",
       "officeClosed": "العيادة مغلقة",
-
       "startVisit": "بدء الزيارة",
       "addNote": "إضافة ملاحظة",
       "addPrescription": "إضافة وصفة",
@@ -204,7 +185,6 @@
       "reschedule": "إعادة جدولة",
       "cancel": "إلغاء",
       "close": "إغلاق",
-
       "profileLoading": "لا يزال ملف الطبيب قيد التحميل. يرجى تحديث الصفحة.",
       "rescheduleSuccess": "تمت إعادة جدولة الموعد بنجاح",
       "cancelSuccess": "تم إلغاء الموعد بنجاح",
@@ -213,7 +193,6 @@
       "cancelReason": "سبب الإلغاء (اختياري)",
       "confirmCancel": "نعم، إلغاء",
       "keepAppointment": "الاحتفاظ بالموعد",
-
       "calendarSettings": "إعدادات التقويم",
       "scheduleOverview": "نظرة عامة على الجدول",
       "selectProcedure": "اختر إجراء/خدمة",
@@ -225,15 +204,12 @@
       "quickActions": "إجراءات سريعة",
       "syncGoogleCalendar": "مزامنة مع تقويم Google",
       "syncGoogle": "مزامنة مع تقويم Google",
-
       "timeBlockedSuccess": "تم حظر الوقت بنجاح",
       "appointmentBookedSuccess": "تم حجز الموعد بنجاح",
       "availabilityUpdated": "تم تحديث التوفر",
-
       "availabilitySettings": "إعدادات التوفر",
       "configureWorkingHours": "قم بتكوين ساعات العمل وإعدادات المواعيد",
       "availabilityDescription": "قم بتكوين ساعات العمل وإعدادات المواعيد",
-
       "bufferTime": "الفاصل الزمني بين المواعيد",
       "noBuffer": "بدون فاصل",
       "minutes15": "15 دقيقة",
@@ -241,16 +217,13 @@
       "minutes45": "45 دقيقة",
       "bufferTimeDesc": "وقت للتحضير بين المواعيد",
       "bufferDescription": "وقت إضافي بين المواعيد للتحضير",
-
       "weeklySchedule": "الجدول الأسبوعي",
       "to": "إلى",
       "closed": "مغلق",
-
       "saveAvailabilitySettings": "حفظ إعدادات التوفر",
       "saveAvailability": "حفظ التوفر",
       "saving": "جارٍ الحفظ..."
     },
-
     "quickModals": {
       "settings": {
         "title": "إعدادات الملف السريعة",
@@ -299,7 +272,6 @@
         "timeBlocked": "تم حظر الوقت من {{start}} إلى {{end}}"
       }
     },
-
     "schedule": {
       "title": "إعدادات الجدول",
       "description": "إدارة ساعات العمل والفواصل والتوفر",
@@ -345,7 +317,6 @@
       "weekendsDisabled": "تم تعطيل عطلة نهاية الأسبوع",
       "weekendsDisabledDesc": "تم تعطيل السبت والأحد"
     },
-
     "profile": {
       "title": "إكمال الملف الشخصي",
       "description": "أكمل ملفك الشخصي لزيادة الظهور",
@@ -384,10 +355,9 @@
       "saving": "جارٍ الحفظ...",
       "submitting": "جارٍ الإرسال..."
     },
-
     "services": {
       "title": "خدماتي",
-      "description": "إدارة الخدمات التي تقدمها للمرضى",
+      "description": "الوصف",
       "assignedServices": "الخدمات المعيّنة",
       "assignedServicesDesc": "الخدمات المعيّنة لك من العيادة",
       "assignedByClinic": "مُعيّنة بواسطة إدارة العيادة",
@@ -399,7 +369,6 @@
       "serviceNamePlaceholder": "مثال: استشارة عامة",
       "category": "الفئة",
       "selectCategory": "اختر الفئة",
-      "description": "الوصف",
       "descriptionPlaceholder": "صف الخدمة...",
       "price": "السعر ($)",
       "duration": "المدة (دقائق)",
@@ -410,7 +379,6 @@
       "assigned": "مُعيّن",
       "editService": "تعديل الخدمة"
     },
-
     "procedureLibrary": {
       "title": "مكتبة الإجراءات الخاصة بي",
       "description": "إدارة إجراءات وعلاجات الأسنان",
@@ -445,7 +413,6 @@
       "bookable": "قابل للحجز",
       "notBookable": "غير قابل للحجز"
     },
-
     "treatmentPlanning": {
       "title": "تخطيط العلاج",
       "description": "أنشئ وأدر خطط علاج شاملة لمرضاك",
@@ -488,7 +455,6 @@
       "publishFailed": "فشل نشر خطة العلاج",
       "loadFailed": "فشل تحميل خطط العلاج"
     },
-
     "clinicFinder": {
       "title": "البحث عن عيادات للانضمام",
       "description": "ابحث وقدّم طلبات للانضمام إلى الممارسات الطبية والعيادات القائمة",
@@ -512,7 +478,6 @@
       "noDescription": "الوصف غير متاح",
       "loadingError": "تعذر تحميل العيادات."
     },
-
     "performance": {
       "title": "تحليلات الأداء",
       "description": "تتبع مؤشرات الأداء والتحليلات",
@@ -651,7 +616,6 @@
         "completed": "مكتمل",
         "cancelled": "ملغي"
       },
-
       "performanceLevel": "مستوى الأداء",
       "performanceLevelDesc": "استنادًا إلى الإكمال والتقييمات والنشاط",
       "totalAppointments": "إجمالي المواعيد",
@@ -704,8 +668,6 @@
       "aiRecommendationsDesc": "أفكار لتحسين ممارستك",
       "patientTypeDistribution": "توزيع أنواع المرضى",
       "patientTypeDesc": "الجدد مقابل العائدين",
-      "returning": "عائدون",
-      "new": "جدد",
       "newPatients": "مرضى جدد",
       "popularTimeSlots": "الفترات الزمنية الشائعة",
       "peakBookingTimes": "أوقات ذروة الحجز",
@@ -724,9 +686,78 @@
       "min": "دقيقة",
       "serviceName": "اسم الخدمة",
       "avgDurationLabel": "متوسط المدة",
-      "completedLabel": "مكتمل"
+      "completedLabel": "مكتمل",
+      "advancedFinancial": {
+        "title": "Advanced Financial KPIs",
+        "description": "Deep financial metrics for business performance, profitability, and efficiency",
+        "configureInputs": "Configure Inputs",
+        "keyInsightsTitle": "Key Insights",
+        "insights": {
+          "cacToLtvHealthy": "Healthy LTV:CAC ratio — you're earning significantly more from each customer than it costs to acquire them.",
+          "cacToLtvNeedsImprovement": "Your LTV:CAC ratio is below 3:1 — consider reducing acquisition cost or increasing customer lifetime value.",
+          "netProfitBelowAvg": "Net profit margin is below the 15% industry benchmark — review costs and pricing.",
+          "netProfitStrong": "Strong net profit margin above 15% — your business is highly profitable.",
+          "roasExcellent": "Excellent return on ad spend (4x or higher) — keep investing in your marketing channels.",
+          "roasNeedsOptimization": "ROAS below 4x — optimize ad targeting, creatives, or landing experience.",
+          "workingCapitalHealthy": "Healthy working capital ratio (1.5+) — you have ample short-term liquidity.",
+          "workingCapitalTight": "Working capital ratio below 1.5 — short-term liquidity is tight, monitor cash flow."
+        },
+        "metrics": {
+          "roi": {
+            "title": "Return on Investment",
+            "description": "Net profit relative to total invested capital."
+          },
+          "roas": {
+            "title": "Return on Ad Spend",
+            "description": "Revenue generated for every $1 spent on advertising."
+          },
+          "adRevenueCost": {
+            "title": "Ad Revenue / Cost",
+            "description": "Revenue attributed to ads vs total advertising spend."
+          },
+          "workingCapital": {
+            "title": "Working Capital",
+            "description": "Current assets minus current liabilities."
+          },
+          "workingCapitalRatio": {
+            "title": "Working Capital Ratio",
+            "description": "Current assets divided by current liabilities; 1.5+ is healthy."
+          },
+          "netProfitMargin": {
+            "title": "Net Profit Margin",
+            "description": "Net income as a percentage of revenue."
+          },
+          "grossProfitMargin": {
+            "title": "Gross Profit Margin",
+            "description": "Revenue minus cost of goods sold, as a percentage of revenue."
+          },
+          "ebitda": {
+            "title": "EBITDA",
+            "description": "Earnings before interest, taxes, depreciation and amortization."
+          },
+          "breakEvenUnits": {
+            "title": "Break-Even Units",
+            "description": "Units needed to cover all fixed and variable costs."
+          },
+          "revenueRunRate": {
+            "title": "Revenue Run Rate",
+            "description": "Annualized revenue based on current monthly performance."
+          },
+          "cac": {
+            "title": "Customer Acquisition Cost",
+            "description": "Marketing and sales spend divided by new customers acquired."
+          },
+          "ltv": {
+            "title": "Customer Lifetime Value",
+            "description": "Projected revenue from a customer over their full relationship."
+          },
+          "cacToLtv": {
+            "title": "LTV : CAC Ratio",
+            "description": "How many times the lifetime value covers acquisition cost; 3:1 is the benchmark."
+          }
+        }
+      }
     },
-
     "financialStats": {
       "title": "الإحصائيات المالية",
       "description": "تتبّع أرباحك وأدائك المالي",
@@ -741,7 +772,6 @@
       "csvExported": "تم تنزيل تقرير CSV بنجاح",
       "exportComingSoon": "سيتوفر تصدير {{format}} قريبًا",
       "dataRefreshed": "تم تحديث البيانات المالية بنجاح",
-
       "overview": {
         "totalEarnings": "إجمالي الأرباح",
         "allTimeRevenue": "إيرادات كل الوقت",
@@ -757,7 +787,6 @@
         "tbd": "سيتم التحديد لاحقًا",
         "platformCommission": "عمولة المنصة"
       },
-
       "tabs": {
         "earningsChart": "مخطط الأرباح",
         "byService": "حسب الخدمة",
@@ -765,7 +794,6 @@
         "pending": "معلّق",
         "insights": "الرؤى"
       },
-
       "chart": {
         "title": "الأرباح بمرور الوقت",
         "line": "خطي",
@@ -776,7 +804,6 @@
         "earningsLabel": "الأرباح",
         "earnings": "الأرباح ($)"
       },
-
       "services": {
         "title": "الأرباح حسب الخدمة/الإجراء",
         "serviceName": "اسم الخدمة",
@@ -787,7 +814,6 @@
         "minutes": "دقيقة",
         "noData": "لا توجد بيانات أرباح للخدمات"
       },
-
       "payouts": {
         "title": "سجل السحوبات",
         "referenceId": "المرجع",
@@ -801,7 +827,6 @@
         "noData": "لا توجد سجلات سحب",
         "noRecords": "لا توجد سجلات سحب"
       },
-
       "pending": {
         "title": "المدفوعات المعلقة",
         "total": "الإجمالي: ${{amount}}",
@@ -817,7 +842,6 @@
         "noData": "لا توجد مدفوعات معلقة",
         "noPayments": "لا توجد مدفوعات معلقة"
       },
-
       "insights": {
         "mostProfitable": "الخدمة الأكثر ربحية",
         "bookings": "حجوزات",
@@ -831,11 +855,18 @@
         "busiestDays": "الأيام الأكثر ازدحامًا (إيراد)"
       }
     },
-
     "settings": {
       "title": "الإعدادات",
       "description": "إدارة إعدادات حسابك وأمانه",
-      "account": "الحساب",
+      "account": {
+        "title": "معلومات الحساب",
+        "description": "حدّث بيانات الحساب الأساسية",
+        "email": "عنوان البريد الإلكتروني",
+        "phone": "رقم الهاتف",
+        "timezone": "المنطقة الزمنية",
+        "language": "اللغة",
+        "saveChanges": "حفظ التغييرات"
+      },
       "notifications": "الإشعارات",
       "calendar": "التقويم",
       "security": "الأمان",
@@ -846,7 +877,6 @@
         "calendar": "التقويم",
         "security": "الأمان"
       },
-
       "accountInfo": {
         "title": "المعلومات الشخصية",
         "description": "حدّث معلومات حسابك",
@@ -859,17 +889,6 @@
         "saving": "جارٍ الحفظ...",
         "saveChanges": "حفظ التغييرات"
       },
-
-      "account": {
-        "title": "معلومات الحساب",
-        "description": "حدّث بيانات الحساب الأساسية",
-        "email": "عنوان البريد الإلكتروني",
-        "phone": "رقم الهاتف",
-        "timezone": "المنطقة الزمنية",
-        "language": "اللغة",
-        "saveChanges": "حفظ التغييرات"
-      },
-
       "privacy": {
         "title": "إعدادات الخصوصية",
         "description": "إدارة تفضيلات الخصوصية",
@@ -881,7 +900,6 @@
         "marketingCommunicationsDesc": "تلقي تحديثات حول الميزات الجديدة",
         "saveSettings": "حفظ إعدادات الخصوصية"
       },
-
       "notificationSettings": {
         "emailTitle": "إشعارات البريد الإلكتروني",
         "emailDescription": "إدارة تفضيلات إشعارات البريد الإلكتروني",
@@ -904,7 +922,6 @@
         "enablePush": "تفعيل الإشعارات الفورية",
         "enablePushDesc": "تلقي إشعارات فورية داخل التطبيق"
       },
-
       "notificationPreferences": {
         "title": "إعدادات الإشعارات",
         "description": "اختر كيف تريد تلقي الإشعارات",
@@ -933,7 +950,6 @@
         },
         "save": "حفظ إعدادات الإشعارات"
       },
-
       "calendarSync": {
         "title": "تكامل التقويم",
         "description": "مزامنة المواعيد مع تقويمك",
@@ -944,29 +960,8 @@
         "appleCalendar": "تقويم Apple",
         "appleCalendarDesc": "مزامنة مع تقويم Apple"
       },
-
-      "calendarIntegration": {
-        "title": "تكامل التقويم",
-        "description": "مزامنة المواعيد مع تقاويم خارجية",
-        "googleCalendar": "تقويم Google",
-        "outlookCalendar": "تقويم Outlook",
-        "appleCalendar": "تقويم Apple",
-        "connected": "متصل",
-        "notConnected": "غير متصل",
-        "syncSettings": {
-          "title": "إعدادات المزامنة",
-          "realTime": "ستتم مزامنة المواعيد في الوقت الفعلي",
-          "noImport": "لن يتم استيراد الأحداث من التقاويم الخارجية",
-          "disconnect": "يمكنك قطع الاتصال في أي وقت"
-        }
-      },
-
-      "practiceInfo": {
-        "title": "معلومات العيادة",
-        "description": "إدارة عيادتك",
-        "comingSoon": "ميزات إدارة العيادة قريبًا..."
-      },
-
+      "calendarIntegration": "تكامل التقويم",
+      "practiceInfo": "معلومات العيادة",
       "personalInfo": "المعلومات الشخصية",
       "updateDetails": "حدّث تفاصيل حسابك",
       "email": "البريد الإلكتروني",
@@ -982,7 +977,6 @@
       "french": "الفرنسية",
       "saveChanges": "حفظ التغييرات",
       "saving": "جارٍ الحفظ...",
-
       "privacySettings": "إعدادات الخصوصية",
       "privacyDesc": "إدارة إعدادات الخصوصية",
       "profileVisibility": "ظهور الملف الشخصي",
@@ -993,7 +987,6 @@
       "marketingCommsDesc": "تلقي تحديثات حول الميزات الجديدة",
       "marketingCommunications": "اتصالات تسويقية",
       "marketingDesc": "تلقي تحديثات حول الميزات الجديدة",
-
       "emailNotifications": "إشعارات البريد الإلكتروني",
       "emailNotificationsDesc": "إدارة تفضيلات إشعارات البريد الإلكتروني",
       "appointmentBookings": "حجوزات المواعيد",
@@ -1014,8 +1007,6 @@
       "pushNotificationsDesc": "إدارة الإشعارات الفورية داخل التطبيق",
       "enablePush": "تفعيل الإشعارات الفورية",
       "enablePushDesc": "تلقي إشعارات فورية داخل التطبيق",
-
-      "calendarIntegration": "تكامل التقويم",
       "calendarIntegrationDesc": "مزامنة المواعيد مع تقويمك",
       "googleCalendar": "تقويم Google",
       "googleCalendarDesc": "مزامنة مع تقويم Google",
@@ -1023,11 +1014,8 @@
       "outlookCalendarDesc": "مزامنة مع Microsoft Outlook",
       "appleCalendar": "تقويم Apple",
       "appleCalendarDesc": "مزامنة مع تقويم Apple",
-
-      "practiceInfo": "معلومات العيادة",
       "practiceInfoDesc": "إدارة ارتباطك بالعيادة",
       "practiceComingSoon": "ميزات إدارة العيادة قريبًا...",
-
       "timezones": {
         "eastern": "التوقيت الشرقي القياسي",
         "central": "التوقيت المركزي القياسي",
@@ -1038,7 +1026,6 @@
         "mst": "توقيت الجبال (MST)",
         "pst": "توقيت المحيط الهادئ (PST)"
       },
-
       "languages": {
         "en": "الإنجليزية",
         "es": "الإسبانية",
@@ -1047,7 +1034,6 @@
         "uz": "الأوزبكية",
         "ar": "العربية"
       },
-
       "changePassword": "تغيير كلمة المرور",
       "changePasswordDesc": "حدّث كلمة المرور لحماية حسابك",
       "currentPassword": "كلمة المرور الحالية",
@@ -1055,16 +1041,13 @@
       "confirmPassword": "تأكيد كلمة المرور الجديدة",
       "updatePassword": "تحديث كلمة المرور",
       "updating": "جارٍ التحديث...",
-
       "recentActivity": "النشاط الأخير",
       "recentActivityDesc": "عرض سجل تسجيلات الدخول والتغييرات",
       "loadingActivity": "جارٍ تحميل النشاط...",
       "noRecentActivity": "لا يوجد نشاط حديث",
-
       "twoFactorAuth": "المصادقة الثنائية (قريبًا)",
       "twoFactorAuthDesc": "أضف طبقة أمان إضافية",
       "twoFactorComingSoon": "ستتوفر المصادقة الثنائية في التحديث القادم. سيسمح ذلك بحماية حسابك عبر الرسائل النصية أو تطبيق المصادقة.",
-
       "dangerZone": "المنطقة الخطرة",
       "dangerZoneDesc": "إجراءات حساب غير قابلة للتراجع",
       "exportData": "تصدير بيانات الحساب",
@@ -1073,7 +1056,6 @@
       "deactivateAccount": "تعطيل الحساب",
       "deactivateAccountDesc": "طلب تعطيل نهائي",
       "requestDeactivation": "طلب التعطيل",
-
       "pendingRequests": "لديك طلبات معلقة. يرجى انتظار معالجتها.",
       "passwordRequired": "يرجى ملء جميع حقول كلمة المرور",
       "passwordMismatch": "كلمات المرور الجديدة غير متطابقة",
@@ -1083,7 +1065,6 @@
       "confirmNewPassword": "أكد كلمة المرور الجديدة",
       "activityType": "نوع النشاط",
       "ip": "IP",
-
       "toast": {
         "accountSuccess": "تم حفظ إعدادات الحساب بنجاح",
         "accountError": "فشل حفظ إعدادات الحساب",
@@ -1094,7 +1075,6 @@
       }
     }
   },
-
   "superAdmin": {
     "login": {
       "title": "وصول المشرف الأعلى",
@@ -1193,13 +1173,10 @@
       }
     }
   },
-
   "tabs": {
     "advanced": "مؤشرات الأداء الرئيسية المتقدمة"
   },
-
   "notAvailable": "غير متاح",
-
   "advancedFinancial": {
     "title": "المؤشرات المالية المتقدمة",
     "description": "تتبّع مؤشرات الأداء المالية الأساسية ومقاييس الربحية",
