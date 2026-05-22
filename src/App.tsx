@@ -155,7 +155,8 @@ export default function App() {
             <RouteErrorBoundary>
               <Routes>
                 <Route path="v/:token" element={<GuestVideoJoin />} />
-                <Route path=":lang" element={<LanguageWrapper />}>
+                {supportedLangCodes.map((code) => (
+                <Route key={code} path={code} element={<LanguageWrapper />}>
                   <Route element={<PublicLayout />}>
                     <Route index element={<PremiumHome />} />
                     <Route path="auth" element={<Auth />} />
