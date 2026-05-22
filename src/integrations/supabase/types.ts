@@ -10777,8 +10777,6 @@ export type Database = {
           notes: string
           patient_id: string
           patient_name: string
-          practice_id: string
-          procedure_id: string
           start_time: string
           status: string
         }[]
