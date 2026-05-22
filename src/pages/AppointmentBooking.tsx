@@ -355,7 +355,7 @@ export default function AppointmentBooking() {
 
     if (!user) {
       toast.error("Please sign in to book an appointment");
-      navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorId}`)}`);
+      navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorSlug}`)}`);
       return;
     }
 
