@@ -335,27 +335,46 @@ serve(async (req) => {
     const prevUniquePatients = new Set(prevAptRows.map((a) => a.patient_id).filter(Boolean)).size;
     const prevCompletedAppointments = prevAptRows.filter((a) => String(a.status || "") === "completed").length;
 
-    const [{ data: txs, error: tErr }, { data: prevTxs, error: ptErr }] = await Promise.all([
-      service
-        .from("billing_transactions")
-        .select("amount, currency, status, created_at, transaction_type")
-        .eq("practice_id", practiceId)
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .limit(20000),
-      service
-        .from("billing_transactions")
-        .select("amount, currency, status, created_at, transaction_type")
-        .eq("practice_id", practiceId)
-        .gte("created_at", prevStart.toISOString())
-        .lt("created_at", prevEnd.toISOString())
-        .limit(20000),
-    ]);
-    if (tErr) throw tErr;
-    if (ptErr) throw ptErr;
+    // Doctors for legacy-payment fallback
+    const { data: doctorRowsA } = await service
+      .from("doctors").select("id").eq("practice_id", practiceId);
+    const doctorIdsA = (doctorRowsA || []).map((d: any) => d.id).filter(Boolean);
 
-    const txRows = (txs || []) as any[];
-    const prevTxRows = (prevTxs || []) as any[];
+    const payRangeQuery = (s: Date, e: Date) => [
+      service.from("billing_transactions")
+        .select("amount, currency, status, created_at, transaction_type")
+        .eq("practice_id", practiceId)
+        .gte("created_at", s.toISOString()).lt("created_at", e.toISOString()).limit(20000),
+      service.from("payments")
+        .select("amount, status, created_at, paid_at, doctor_id, practice_id")
+        .eq("practice_id", practiceId)
+        .gte("created_at", s.toISOString()).lt("created_at", e.toISOString()).limit(20000),
+      doctorIdsA.length
+        ? service.from("payments")
+            .select("amount, status, created_at, paid_at, doctor_id, practice_id")
+            .is("practice_id", null).in("doctor_id", doctorIdsA)
+            .gte("created_at", s.toISOString()).lt("created_at", e.toISOString()).limit(20000)
+        : Promise.resolve({ data: [] as any[] }),
+    ];
+
+    const normalizePay = (rows: any[]) => rows.map((p: any) => {
+      const sl = String(p.status || "").toLowerCase();
+      return {
+        amount: p.amount,
+        currency: "usd",
+        status: sl === "paid" || sl === "succeeded" ? "completed" : sl,
+        created_at: p.paid_at || p.created_at,
+        transaction_type: "charge",
+      };
+    });
+
+    const [btCur, payCur, payCurDoc] = await Promise.all(payRangeQuery(start, end));
+    const [btPrev, payPrev, payPrevDoc] = await Promise.all(payRangeQuery(prevStart, prevEnd));
+    if ((btCur as any).error) throw (btCur as any).error;
+    if ((btPrev as any).error) throw (btPrev as any).error;
+
+    const txRows = [...(((btCur as any).data) || []), ...normalizePay([...(((payCur as any).data) || []), ...(((payCurDoc as any).data) || [])])];
+    const prevTxRows = [...(((btPrev as any).data) || []), ...normalizePay([...(((payPrev as any).data) || []), ...(((payPrevDoc as any).data) || [])])];
 
     const currency = (txRows.find((t) => t.currency)?.currency || "usd") as string;
     const totalRevenueCents = computeRevenueCents(txRows);
