@@ -9,14 +9,12 @@
 
 export const PUBLIC_BOOKING_ORIGIN = 'https://docito.app';
 
-const PROD_HOSTS = new Set(['docito.app', 'docito.live', 'www.docito.live']);
-
-/** Resolve which origin patient-facing booking links should use. */
+/** Resolve which origin patient-facing booking links should use.
+ *  Always returns the canonical patient domain so shared links are stable
+ *  regardless of which host (preview, staging, docito.live, etc.) the
+ *  doctor is currently viewing the dashboard from. */
 export function getPublicBookingOrigin(): string {
-  if (typeof window === 'undefined') return PUBLIC_BOOKING_ORIGIN;
-  const host = window.location.hostname;
-  const isProd = PROD_HOSTS.has(host) || host.endsWith('.docito.live');
-  return isProd ? PUBLIC_BOOKING_ORIGIN : window.location.origin;
+  return PUBLIC_BOOKING_ORIGIN;
 }
 
 /** Resolve a slug (custom_profile_link or doctor.id) to a full booking URL. */

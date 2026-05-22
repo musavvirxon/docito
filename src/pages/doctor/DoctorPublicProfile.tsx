@@ -99,24 +99,36 @@ export default function DoctorPublicProfile() {
 
       setLoading(true);
       try {
-        // Public view is anon-safe and already filters to verified + public profiles
+        // Public view is anon-safe and already filters to verified + public profiles.
+        // Use sequential .eq() lookups so slugs containing dots or other PostgREST
+        // operator characters do not break an .or() filter.
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-        const orClauses = [
-          `custom_profile_link.eq.${slug}`,
-          `username.eq.${slug}`,
-          ...(isUuid ? [`id.eq.${slug}`] : []),
-        ].join(",");
-        const { data: doc, error: docErr } = await (supabase as any)
-          .from("doctor_public_profile_view")
-          .select("*")
-          .or(orClauses)
-          .maybeSingle();
+        const lookups: Array<{ column: string; value: string }> = [
+          { column: "custom_profile_link", value: slug },
+          { column: "username", value: slug },
+        ];
+        if (isUuid) lookups.push({ column: "id", value: slug });
 
-        if (docErr) throw docErr;
+        let doc: any = null;
+        for (const { column, value } of lookups) {
+          const { data, error } = await (supabase as any)
+            .from("doctor_public_profile_view")
+            .select("*")
+            .eq(column, value)
+            .limit(1)
+            .maybeSingle();
+          if (error) throw error;
+          if (data) {
+            doc = data;
+            break;
+          }
+        }
+
         if (!doc) {
           setDoctor(null);
           return;
         }
+
 
         setDoctor(doc as PublicDoctorProfile);
 
