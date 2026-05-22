@@ -194,20 +194,77 @@ serve(async (req) => {
       const end = now;
       const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
 
-      const { data: txs, error: txErr } = await service
-        .from("billing_transactions")
-        .select(
-          "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data",
-        )
-        .eq("practice_id", practiceId)
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .order("created_at", { ascending: false })
-        .limit(20000);
+      const { data: doctorRows } = await service
+        .from("doctors")
+        .select("id")
+        .eq("practice_id", practiceId);
+      const doctorIds = (doctorRows || []).map((d: any) => d.id).filter(Boolean);
+
+      const [{ data: txs, error: txErr }, payDirectRes, payByDocRes] = await Promise.all([
+        service
+          .from("billing_transactions")
+          .select(
+            "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data",
+          )
+          .eq("practice_id", practiceId)
+          .gte("created_at", start.toISOString())
+          .lt("created_at", end.toISOString())
+          .order("created_at", { ascending: false })
+          .limit(20000),
+        service
+          .from("payments")
+          .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, notes")
+          .eq("practice_id", practiceId)
+          .gte("created_at", start.toISOString())
+          .lt("created_at", end.toISOString())
+          .order("created_at", { ascending: false })
+          .limit(20000),
+        doctorIds.length
+          ? service
+              .from("payments")
+              .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, notes")
+              .is("practice_id", null)
+              .in("doctor_id", doctorIds)
+              .gte("created_at", start.toISOString())
+              .lt("created_at", end.toISOString())
+              .order("created_at", { ascending: false })
+              .limit(20000)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
       if (txErr) throw txErr;
 
-      const txRows = (txs || []) as any[];
-      const currency = txRows.find((t: any) => t.currency)?.currency || "usd";
+      const paySeen = new Set<string>();
+      const payRows: any[] = [];
+      [...(((payDirectRes as any)?.data) || []), ...(((payByDocRes as any)?.data) || [])].forEach((p: any) => {
+        if (!p?.id || paySeen.has(p.id)) return;
+        paySeen.add(p.id);
+        payRows.push(p);
+      });
+
+      const normalizedPay = payRows.map((p: any) => {
+        const statusLower = String(p.status || "").toLowerCase();
+        const mappedStatus =
+          statusLower === "paid" || statusLower === "succeeded" ? "completed" :
+          statusLower === "refunded" ? "refunded" :
+          statusLower === "failed" ? "failed" :
+          statusLower === "pending" ? "pending" : statusLower || "completed";
+        return {
+          id: p.id,
+          created_at: p.paid_at || p.created_at,
+          amount: p.amount,
+          currency: "usd",
+          status: mappedStatus,
+          transaction_type: "charge",
+          description: p.notes || null,
+          provider_transaction_id: p.transaction_id || null,
+          provider_data: { source: "payments", payment_method: p.payment_method, patient_id: p.patient_id, doctor_id: p.doctor_id, appointment_id: p.appointment_id },
+        };
+      });
+
+      const txRows = [...(((txs as any[]) || [])), ...normalizedPay].sort((a: any, b: any) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      const currency = (txRows.find((t: any) => t.currency)?.currency || "usd") as string;
 
       // Most useful summary: within selected period.
       const totalRevenueCents = computeRevenueCents(txRows);
