@@ -105,6 +105,13 @@ serve(async (req) => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!UUID_RE.test(String(provider_id))) {
+      return new Response(
+        JSON.stringify({ error: "provider_id must be a UUID", code: "INVALID_PROVIDER_ID" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } },
+      );
+    }
     if (!from || !to) {
       return new Response(JSON.stringify({ error: "Missing from/to dates" }), {
         status: 400,

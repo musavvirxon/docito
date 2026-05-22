@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { resolveDoctorIdFromSlug, isUuid } from "@/lib/doctorSlug";
 
 type DoctorInfo = {
   id: string;
@@ -81,8 +82,13 @@ const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
 
 export default function AppointmentBooking() {
   const { t } = useTranslation(['common', 'dashboard']);
-  const { doctorId } = useParams();
+  const { doctorId: doctorSlug } = useParams();
   const navigate = useNavigate();
+
+  // Resolved canonical doctor UUID. The URL param may be a username,
+  // custom_profile_link, or UUID — all UUID-typed queries must use this.
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [slugResolving, setSlugResolving] = useState(true);
 
   const [doctor, setDoctor] = useState<DoctorInfo | null>(null);
 
@@ -111,10 +117,45 @@ export default function AppointmentBooking() {
     return procedures.find((p) => p.id === selectedProcedureId) || null;
   }, [procedures, selectedProcedureId]);
 
+  // Resolve URL slug (username, custom link, or UUID) -> canonical doctor UUID
+  useEffect(() => {
+    let cancelled = false;
+    const resolve = async () => {
+      if (!doctorSlug) {
+        setSlugResolving(false);
+        setDoctorId(null);
+        return;
+      }
+      setSlugResolving(true);
+      try {
+        if (isUuid(doctorSlug)) {
+          if (!cancelled) setDoctorId(doctorSlug);
+        } else {
+          const id = await resolveDoctorIdFromSlug(doctorSlug);
+          if (!cancelled) setDoctorId(id);
+        }
+      } catch (e) {
+        console.error("Failed to resolve doctor slug", e);
+        if (!cancelled) setDoctorId(null);
+      } finally {
+        if (!cancelled) setSlugResolving(false);
+      }
+    };
+    void resolve();
+    return () => {
+      cancelled = true;
+    };
+  }, [doctorSlug]);
+
   // Load doctor using doctor_profiles_view for name visibility
   useEffect(() => {
     const loadDoctor = async () => {
-      if (!doctorId) return;
+      if (slugResolving) return;
+      if (!doctorId) {
+        setDoctor(null);
+        setLoadingDoctor(false);
+        return;
+      }
 
       setLoadingDoctor(true);
       try {
@@ -169,7 +210,7 @@ export default function AppointmentBooking() {
     };
 
     loadDoctor();
-  }, [doctorId]);
+  }, [doctorId, slugResolving]);
 
   // Load bookable procedures for ALL doctors (not just dentists)
   useEffect(() => {
@@ -314,7 +355,7 @@ export default function AppointmentBooking() {
 
     if (!user) {
       toast.error("Please sign in to book an appointment");
-      navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorId}`)}`);
+      navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorSlug}`)}`);
       return;
     }
 
@@ -366,7 +407,7 @@ export default function AppointmentBooking() {
     }
   };
 
-  if (loadingDoctor) {
+  if (slugResolving || loadingDoctor) {
     return (
       <div className="container max-w-5xl mx-auto px-4 py-12">
         <div className="flex items-center justify-center">

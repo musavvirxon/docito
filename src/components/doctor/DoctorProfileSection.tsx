@@ -90,9 +90,15 @@ export default function DoctorProfileSection() {
 
   const bookingLink = useMemo(() => {
     if (!doctorProfile?.id) return "";
-    const slug = doctorProfile.custom_profile_link || doctorProfile.id;
+    // Prefer username (URL-safe), then doctor.id (UUID).
+    // custom_profile_link may contain dots/special characters that break
+    // PostgREST .or() filters and Postgres UUID validation downstream.
+    const un = normalizeUsername(doctorProfile.profiles?.username || "");
+    const slug =
+      (USERNAME_RE.test(un) && un) ||
+      doctorProfile.id;
     return getBookingUrl(slug);
-  }, [doctorProfile?.id, doctorProfile?.custom_profile_link]);
+  }, [doctorProfile?.id, doctorProfile?.profiles?.username]);
 
   const [linkCopied, setLinkCopied] = useState(false);
 
