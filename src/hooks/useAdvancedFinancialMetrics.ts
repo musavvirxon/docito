@@ -207,7 +207,7 @@ export const useAdvancedFinancialMetrics = (
 
       return metrics;
     },
-    enabled: !!targetEntityId && revenue > 0,
+    enabled: !!targetEntityId,
     refetchInterval: 300000, // Refetch every 5 minutes
   });
 
