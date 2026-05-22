@@ -337,16 +337,21 @@ export const useAdminDashboard = () => {
         merged.push({ ...p, total_paid: fin.paid, total_outstanding: fin.outstanding });
       };
 
-      ((rpcData as any[]) || []).forEach((p) => push({ ...p, source: 'registered' }));
+      ((rpcData as any[]) || []).forEach((p) => push({
+        ...p,
+        name: p.full_name || p.name,
+        source: 'registered',
+        status: p.status || 'active',
+      }));
       (facilityData || []).forEach((p: any) => push({
         ...p,
-        name: p.full_name,
+        name: p.full_name || p.name,
         source: 'facility',
         status: p.status || 'active',
       }));
       doctorPatientsData.forEach((p: any) => push({
         ...p,
-        name: p.full_name,
+        name: p.full_name || p.name,
         source: 'doctor',
         status: p.status || 'active',
       }));
