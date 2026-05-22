@@ -117,10 +117,45 @@ export default function AppointmentBooking() {
     return procedures.find((p) => p.id === selectedProcedureId) || null;
   }, [procedures, selectedProcedureId]);
 
+  // Resolve URL slug (username, custom link, or UUID) -> canonical doctor UUID
+  useEffect(() => {
+    let cancelled = false;
+    const resolve = async () => {
+      if (!doctorSlug) {
+        setSlugResolving(false);
+        setDoctorId(null);
+        return;
+      }
+      setSlugResolving(true);
+      try {
+        if (isUuid(doctorSlug)) {
+          if (!cancelled) setDoctorId(doctorSlug);
+        } else {
+          const id = await resolveDoctorIdFromSlug(doctorSlug);
+          if (!cancelled) setDoctorId(id);
+        }
+      } catch (e) {
+        console.error("Failed to resolve doctor slug", e);
+        if (!cancelled) setDoctorId(null);
+      } finally {
+        if (!cancelled) setSlugResolving(false);
+      }
+    };
+    void resolve();
+    return () => {
+      cancelled = true;
+    };
+  }, [doctorSlug]);
+
   // Load doctor using doctor_profiles_view for name visibility
   useEffect(() => {
     const loadDoctor = async () => {
-      if (!doctorId) return;
+      if (slugResolving) return;
+      if (!doctorId) {
+        setDoctor(null);
+        setLoadingDoctor(false);
+        return;
+      }
 
       setLoadingDoctor(true);
       try {
@@ -175,7 +210,7 @@ export default function AppointmentBooking() {
     };
 
     loadDoctor();
-  }, [doctorId]);
+  }, [doctorId, slugResolving]);
 
   // Load bookable procedures for ALL doctors (not just dentists)
   useEffect(() => {
