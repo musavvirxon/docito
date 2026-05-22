@@ -237,7 +237,20 @@ export const useAdminDashboard = () => {
       });
       if (error) throw error;
       setAppointments((data as any[]) || []);
-    } catch { setAppointments([]); }
+    } catch {
+      // Fallback: direct query
+      try {
+        const { data } = await supabase
+          .from("appointments")
+          .select("id, appointment_date, start_time, end_time, status, patient_id, doctor_id, appointment_type, notes, created_at")
+          .eq("practice_id", practiceData.id)
+          .order("appointment_date", { ascending: false })
+          .limit(5000);
+        setAppointments((data as any[]) || []);
+      } catch {
+        setAppointments([]);
+      }
+    }
   }, []);
 
   const fetchServices = useCallback(async (practiceData: any) => {
