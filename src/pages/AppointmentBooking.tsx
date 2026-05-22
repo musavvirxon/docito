@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { resolveDoctorIdFromSlug, isUuid } from "@/lib/doctorSlug";
 
 type DoctorInfo = {
   id: string;
@@ -81,8 +82,13 @@ const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
 
 export default function AppointmentBooking() {
   const { t } = useTranslation(['common', 'dashboard']);
-  const { doctorId } = useParams();
+  const { doctorId: doctorSlug } = useParams();
   const navigate = useNavigate();
+
+  // Resolved canonical doctor UUID. The URL param may be a username,
+  // custom_profile_link, or UUID — all UUID-typed queries must use this.
+  const [doctorId, setDoctorId] = useState<string | null>(null);
+  const [slugResolving, setSlugResolving] = useState(true);
 
   const [doctor, setDoctor] = useState<DoctorInfo | null>(null);
 
