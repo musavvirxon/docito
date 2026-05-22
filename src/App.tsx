@@ -257,6 +257,7 @@ export default function App() {
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
+                ))}
 
                 <Route element={<PublicLayout />}>
                   <Route index element={<PremiumHome />} />
