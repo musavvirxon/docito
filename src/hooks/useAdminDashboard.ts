@@ -237,7 +237,20 @@ export const useAdminDashboard = () => {
       });
       if (error) throw error;
       setAppointments((data as any[]) || []);
-    } catch { setAppointments([]); }
+    } catch {
+      // Fallback: direct query
+      try {
+        const { data } = await supabase
+          .from("appointments")
+          .select("id, appointment_date, start_time, end_time, status, patient_id, doctor_id, appointment_type, notes, created_at")
+          .eq("practice_id", practiceData.id)
+          .order("appointment_date", { ascending: false })
+          .limit(5000);
+        setAppointments((data as any[]) || []);
+      } catch {
+        setAppointments([]);
+      }
+    }
   }, []);
 
   const fetchServices = useCallback(async (practiceData: any) => {
@@ -337,16 +350,21 @@ export const useAdminDashboard = () => {
         merged.push({ ...p, total_paid: fin.paid, total_outstanding: fin.outstanding });
       };
 
-      ((rpcData as any[]) || []).forEach((p) => push({ ...p, source: 'registered' }));
+      ((rpcData as any[]) || []).forEach((p) => push({
+        ...p,
+        name: p.full_name || p.name,
+        source: 'registered',
+        status: p.status || 'active',
+      }));
       (facilityData || []).forEach((p: any) => push({
         ...p,
-        name: p.full_name,
+        name: p.full_name || p.name,
         source: 'facility',
         status: p.status || 'active',
       }));
       doctorPatientsData.forEach((p: any) => push({
         ...p,
-        name: p.full_name,
+        name: p.full_name || p.name,
         source: 'doctor',
         status: p.status || 'active',
       }));

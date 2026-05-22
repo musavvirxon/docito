@@ -194,20 +194,77 @@ serve(async (req) => {
       const end = now;
       const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
 
-      const { data: txs, error: txErr } = await service
-        .from("billing_transactions")
-        .select(
-          "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data",
-        )
-        .eq("practice_id", practiceId)
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .order("created_at", { ascending: false })
-        .limit(20000);
+      const { data: doctorRows } = await service
+        .from("doctors")
+        .select("id")
+        .eq("practice_id", practiceId);
+      const doctorIds = (doctorRows || []).map((d: any) => d.id).filter(Boolean);
+
+      const [{ data: txs, error: txErr }, payDirectRes, payByDocRes] = await Promise.all([
+        service
+          .from("billing_transactions")
+          .select(
+            "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data",
+          )
+          .eq("practice_id", practiceId)
+          .gte("created_at", start.toISOString())
+          .lt("created_at", end.toISOString())
+          .order("created_at", { ascending: false })
+          .limit(20000),
+        service
+          .from("payments")
+          .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, notes")
+          .eq("practice_id", practiceId)
+          .gte("created_at", start.toISOString())
+          .lt("created_at", end.toISOString())
+          .order("created_at", { ascending: false })
+          .limit(20000),
+        doctorIds.length
+          ? service
+              .from("payments")
+              .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, notes")
+              .is("practice_id", null)
+              .in("doctor_id", doctorIds)
+              .gte("created_at", start.toISOString())
+              .lt("created_at", end.toISOString())
+              .order("created_at", { ascending: false })
+              .limit(20000)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
       if (txErr) throw txErr;
 
-      const txRows = (txs || []) as any[];
-      const currency = txRows.find((t: any) => t.currency)?.currency || "usd";
+      const paySeen = new Set<string>();
+      const payRows: any[] = [];
+      [...(((payDirectRes as any)?.data) || []), ...(((payByDocRes as any)?.data) || [])].forEach((p: any) => {
+        if (!p?.id || paySeen.has(p.id)) return;
+        paySeen.add(p.id);
+        payRows.push(p);
+      });
+
+      const normalizedPay = payRows.map((p: any) => {
+        const statusLower = String(p.status || "").toLowerCase();
+        const mappedStatus =
+          statusLower === "paid" || statusLower === "succeeded" ? "completed" :
+          statusLower === "refunded" ? "refunded" :
+          statusLower === "failed" ? "failed" :
+          statusLower === "pending" ? "pending" : statusLower || "completed";
+        return {
+          id: p.id,
+          created_at: p.paid_at || p.created_at,
+          amount: p.amount,
+          currency: "usd",
+          status: mappedStatus,
+          transaction_type: "charge",
+          description: p.notes || null,
+          provider_transaction_id: p.transaction_id || null,
+          provider_data: { source: "payments", payment_method: p.payment_method, patient_id: p.patient_id, doctor_id: p.doctor_id, appointment_id: p.appointment_id },
+        };
+      });
+
+      const txRows = [...(((txs as any[]) || [])), ...normalizedPay].sort((a: any, b: any) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      const currency = (txRows.find((t: any) => t.currency)?.currency || "usd") as string;
 
       // Most useful summary: within selected period.
       const totalRevenueCents = computeRevenueCents(txRows);
@@ -278,27 +335,46 @@ serve(async (req) => {
     const prevUniquePatients = new Set(prevAptRows.map((a) => a.patient_id).filter(Boolean)).size;
     const prevCompletedAppointments = prevAptRows.filter((a) => String(a.status || "") === "completed").length;
 
-    const [{ data: txs, error: tErr }, { data: prevTxs, error: ptErr }] = await Promise.all([
-      service
-        .from("billing_transactions")
-        .select("amount, currency, status, created_at, transaction_type")
-        .eq("practice_id", practiceId)
-        .gte("created_at", start.toISOString())
-        .lt("created_at", end.toISOString())
-        .limit(20000),
-      service
-        .from("billing_transactions")
-        .select("amount, currency, status, created_at, transaction_type")
-        .eq("practice_id", practiceId)
-        .gte("created_at", prevStart.toISOString())
-        .lt("created_at", prevEnd.toISOString())
-        .limit(20000),
-    ]);
-    if (tErr) throw tErr;
-    if (ptErr) throw ptErr;
+    // Doctors for legacy-payment fallback
+    const { data: doctorRowsA } = await service
+      .from("doctors").select("id").eq("practice_id", practiceId);
+    const doctorIdsA = (doctorRowsA || []).map((d: any) => d.id).filter(Boolean);
 
-    const txRows = (txs || []) as any[];
-    const prevTxRows = (prevTxs || []) as any[];
+    const payRangeQuery = (s: Date, e: Date) => [
+      service.from("billing_transactions")
+        .select("amount, currency, status, created_at, transaction_type")
+        .eq("practice_id", practiceId)
+        .gte("created_at", s.toISOString()).lt("created_at", e.toISOString()).limit(20000),
+      service.from("payments")
+        .select("amount, status, created_at, paid_at, doctor_id, practice_id")
+        .eq("practice_id", practiceId)
+        .gte("created_at", s.toISOString()).lt("created_at", e.toISOString()).limit(20000),
+      doctorIdsA.length
+        ? service.from("payments")
+            .select("amount, status, created_at, paid_at, doctor_id, practice_id")
+            .is("practice_id", null).in("doctor_id", doctorIdsA)
+            .gte("created_at", s.toISOString()).lt("created_at", e.toISOString()).limit(20000)
+        : Promise.resolve({ data: [] as any[] }),
+    ];
+
+    const normalizePay = (rows: any[]) => rows.map((p: any) => {
+      const sl = String(p.status || "").toLowerCase();
+      return {
+        amount: p.amount,
+        currency: "usd",
+        status: sl === "paid" || sl === "succeeded" ? "completed" : sl,
+        created_at: p.paid_at || p.created_at,
+        transaction_type: "charge",
+      };
+    });
+
+    const [btCur, payCur, payCurDoc] = await Promise.all(payRangeQuery(start, end));
+    const [btPrev, payPrev, payPrevDoc] = await Promise.all(payRangeQuery(prevStart, prevEnd));
+    if ((btCur as any).error) throw (btCur as any).error;
+    if ((btPrev as any).error) throw (btPrev as any).error;
+
+    const txRows = [...(((btCur as any).data) || []), ...normalizePay([...(((payCur as any).data) || []), ...(((payCurDoc as any).data) || [])])];
+    const prevTxRows = [...(((btPrev as any).data) || []), ...normalizePay([...(((payPrev as any).data) || []), ...(((payPrevDoc as any).data) || [])])];
 
     const currency = (txRows.find((t) => t.currency)?.currency || "usd") as string;
     const totalRevenueCents = computeRevenueCents(txRows);
