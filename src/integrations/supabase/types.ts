@@ -1008,17 +1008,23 @@ export type Database = {
           amount_due_cents: number
           amount_paid_cents: number
           amount_remaining_cents: number
+          appointment_id: string | null
           created_at: string
+          created_by: string | null
           currency: string
           description: string | null
+          doctor_id: string | null
           due_at: string | null
           entity_id: string
           entity_type: string
           hosted_invoice_url: string | null
           id: string
+          invoice_number: string | null
           invoice_pdf_url: string | null
+          line_items: Json | null
           metadata: Json | null
           paid_at: string | null
+          patient_id: string | null
           status: string
           updated_at: string
         }
@@ -1026,17 +1032,23 @@ export type Database = {
           amount_due_cents?: number
           amount_paid_cents?: number
           amount_remaining_cents?: number
+          appointment_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           description?: string | null
+          doctor_id?: string | null
           due_at?: string | null
           entity_id: string
           entity_type: string
           hosted_invoice_url?: string | null
           id?: string
+          invoice_number?: string | null
           invoice_pdf_url?: string | null
+          line_items?: Json | null
           metadata?: Json | null
           paid_at?: string | null
+          patient_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -1044,21 +1056,63 @@ export type Database = {
           amount_due_cents?: number
           amount_paid_cents?: number
           amount_remaining_cents?: number
+          appointment_id?: string | null
           created_at?: string
+          created_by?: string | null
           currency?: string
           description?: string | null
+          doctor_id?: string | null
           due_at?: string | null
           entity_id?: string
           entity_type?: string
           hosted_invoice_url?: string | null
           id?: string
+          invoice_number?: string | null
           invoice_pdf_url?: string | null
+          line_items?: Json | null
           metadata?: Json | null
           paid_at?: string | null
+          patient_id?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "billing_invoices_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       billing_plans: {
         Row: {
@@ -5584,10 +5638,12 @@ export type Database = {
       payments: {
         Row: {
           amount: number
+          amount_due: number | null
           appointment_id: string | null
           created_at: string
           doctor_id: string | null
           id: string
+          invoice_id: string | null
           notes: string | null
           paid_at: string | null
           patient_id: string
@@ -5598,10 +5654,12 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_due?: number | null
           appointment_id?: string | null
           created_at?: string
           doctor_id?: string | null
           id?: string
+          invoice_id?: string | null
           notes?: string | null
           paid_at?: string | null
           patient_id: string
@@ -5612,10 +5670,12 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_due?: number | null
           appointment_id?: string | null
           created_at?: string
           doctor_id?: string | null
           id?: string
+          invoice_id?: string | null
           notes?: string | null
           paid_at?: string | null
           patient_id?: string
@@ -5658,6 +5718,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "billing_invoices"
             referencedColumns: ["id"]
           },
           {
@@ -11002,6 +11069,7 @@ export type Database = {
         Args: { notification_id: string }
         Returns: Json
       }
+      next_invoice_number: { Args: never; Returns: string }
       process_fulfillment_order: {
         Args: { p_action: string; p_fulfillment_id: string; p_notes?: string }
         Returns: Json
