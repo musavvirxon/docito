@@ -3855,6 +3855,27 @@ const AdminDashboard = () => {
                                           <Mail className="h-3 w-3" />
                                         </Button>
                                         {(() => {
+                                          const invId = tx?.invoice_id || tx?.metadata?.invoice_id || (tx?.source === 'billing_invoices' ? tx.id : null);
+                                          if (!invId) return null;
+                                          return (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              title="Download invoice PDF"
+                                              onClick={() => guard(async () => {
+                                                try {
+                                                  const { downloadInvoicePdf } = await import('@/lib/api/invoice-api');
+                                                  await downloadInvoicePdf(invId, `invoice-${String(invId).slice(0, 8)}`);
+                                                } catch (e: any) {
+                                                  toast.error(e?.message || 'Failed to download invoice');
+                                                }
+                                              })}
+                                            >
+                                              <FileText className="h-3 w-3" />
+                                            </Button>
+                                          );
+                                        })()}
+                                        {(() => {
                                           const pName = tx?.metadata?.patient_name || tx?.metadata?.customer_name || '';
                                           const p: any = patients.find((pt: any) => pt.id === tx?.metadata?.patient_id || pt.name === pName) || {};
                                           const dobVal = p.date_of_birth || (p as any).dob || '';
