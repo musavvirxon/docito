@@ -204,7 +204,7 @@ serve(async (req) => {
         service
           .from("billing_transactions")
           .select(
-            "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data",
+            "id, created_at, amount, currency, status, transaction_type, description, provider_transaction_id, provider_data, invoice_id",
           )
           .eq("practice_id", practiceId)
           .gte("created_at", start.toISOString())
@@ -213,7 +213,7 @@ serve(async (req) => {
           .limit(20000),
         service
           .from("payments")
-          .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, notes")
+          .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, invoice_id, notes")
           .eq("practice_id", practiceId)
           .gte("created_at", start.toISOString())
           .lt("created_at", end.toISOString())
@@ -222,7 +222,7 @@ serve(async (req) => {
         doctorIds.length
           ? service
               .from("payments")
-              .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, notes")
+              .select("id, created_at, paid_at, amount, status, payment_method, transaction_id, patient_id, doctor_id, appointment_id, invoice_id, notes")
               .is("practice_id", null)
               .in("doctor_id", doctorIds)
               .gte("created_at", start.toISOString())
@@ -247,6 +247,7 @@ serve(async (req) => {
           statusLower === "paid" || statusLower === "succeeded" ? "completed" :
           statusLower === "refunded" ? "refunded" :
           statusLower === "failed" ? "failed" :
+          statusLower === "partial" ? "partial" :
           statusLower === "pending" ? "pending" : statusLower || "completed";
         return {
           id: p.id,
@@ -257,7 +258,8 @@ serve(async (req) => {
           transaction_type: "charge",
           description: p.notes || null,
           provider_transaction_id: p.transaction_id || null,
-          provider_data: { source: "payments", payment_method: p.payment_method, patient_id: p.patient_id, doctor_id: p.doctor_id, appointment_id: p.appointment_id },
+          invoice_id: p.invoice_id || null,
+          provider_data: { source: "payments", payment_method: p.payment_method, patient_id: p.patient_id, doctor_id: p.doctor_id, appointment_id: p.appointment_id, invoice_id: p.invoice_id || null },
         };
       });
 
