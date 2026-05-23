@@ -146,15 +146,33 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           .eq('doctor_id', doctorId),
       ]);
 
-      // Fetch payments already recorded for this doctor so we can filter out paid items.
+      // Fetch payments already recorded for this doctor so we can subtract paid amounts
+      // (including partial payments) from pending balances.
       const { data: paidRows } = await supabase
         .from('payments')
-        .select('appointment_id, status')
+        .select('appointment_id, amount, status')
         .eq('doctor_id', doctorId)
-        .in('status', ['paid', 'completed', 'succeeded']);
-      const paidAppointmentIds = new Set(
-        (paidRows || []).map((r: any) => r.appointment_id).filter(Boolean),
-      );
+        .in('status', ['paid', 'completed', 'succeeded', 'partial']);
+      const paidByAppointment = new Map<string, number>();
+      (paidRows || []).forEach((r: any) => {
+        if (!r.appointment_id) return;
+        paidByAppointment.set(
+          r.appointment_id,
+          (paidByAppointment.get(r.appointment_id) || 0) + Number(r.amount || 0),
+        );
+      });
+      const paidAppointmentIds = new Set<string>();
+      paidByAppointment.forEach((paid, id) => {
+        // mark only fully paid (any positive remaining still keeps it pending)
+        // We can't know the due here without context, so we leave the filter to the per-row logic below.
+        // Kept for backward compatibility with consultation-only flow:
+        if (paid > 0) paidAppointmentIds.add(id);
+      });
+      const remainingFor = (apptId: string | null | undefined, full: number) => {
+        if (!apptId) return full;
+        const paid = paidByAppointment.get(apptId) || 0;
+        return Math.max(full - paid, 0);
+      };
 
       const appointments = appointmentsData.data || [];
       const allAppointments = allAppointmentsData.data || [];
