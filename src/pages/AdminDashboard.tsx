@@ -3019,14 +3019,20 @@ const AdminDashboard = () => {
                       <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {
                         const amount = prompt('Invoice amount ($):');
                         if (!amount) return;
-                        const desc = prompt('Description:', 'Medical services');
+                        const desc = prompt('Description:', 'Medical services') || 'Medical services';
                         const amountCents = Math.round(parseFloat(amount) * 100);
                         if (isNaN(amountCents) || amountCents <= 0) { toast.error('Invalid amount'); return; }
+                        const invNum = `INV-${Date.now().toString().slice(-8)}`;
+                        const { data: u } = await supabase.auth.getUser();
                         const { error } = await (supabase as any).from('billing_invoices').insert({
                           entity_type: 'practice', entity_id: practice?.id,
+                          patient_id: selectedPatient?.user_id || selectedPatient?.id || null,
+                          invoice_number: invNum,
                           amount_due_cents: amountCents, amount_paid_cents: 0, amount_remaining_cents: amountCents,
-                          currency: 'USD', status: 'pending', description: desc || 'Medical services',
-                          metadata: { patient_name: selectedPatient?.name || 'Patient' },
+                          currency: 'usd', status: 'pending', description: desc,
+                          line_items: [{ description: desc, quantity: 1, unit_amount: amountCents, amount: amountCents }],
+                          metadata: { patient_name: selectedPatient?.name || 'Patient', invoice_number: invNum },
+                          created_by: u?.user?.id ?? null,
                         });
                         if (error) { toast.error(error.message); return; }
                         toast.success('Invoice created');
@@ -3766,13 +3772,21 @@ const AdminDashboard = () => {
                       if (!patientName) return;
                       const amount = prompt('Amount ($):');
                       if (!amount) return;
+                      const desc = prompt('Description:', 'Medical services') || 'Medical services';
                       const amountCents = Math.round(parseFloat(amount) * 100);
                       if (isNaN(amountCents) || amountCents <= 0) { toast.error('Invalid amount'); return; }
+                      const matched: any = patients.find((p: any) => (p.name || '').toLowerCase() === patientName.toLowerCase());
+                      const invNum = `INV-${Date.now().toString().slice(-8)}`;
+                      const { data: u } = await supabase.auth.getUser();
                       const { error } = await (supabase as any).from('billing_invoices').insert({
                         entity_type: 'practice', entity_id: practice?.id,
+                        patient_id: matched?.user_id || matched?.id || null,
+                        invoice_number: invNum,
                         amount_due_cents: amountCents, amount_paid_cents: 0, amount_remaining_cents: amountCents,
-                        currency: 'USD', status: 'pending', description: 'Medical services',
-                        metadata: { patient_name: patientName },
+                        currency: 'usd', status: 'pending', description: desc,
+                        line_items: [{ description: desc, quantity: 1, unit_amount: amountCents, amount: amountCents }],
+                        metadata: { patient_name: patientName, invoice_number: invNum },
+                        created_by: u?.user?.id ?? null,
                       });
                       if (error) { toast.error(error.message); return; }
                       toast.success('Invoice created');
@@ -3854,6 +3868,27 @@ const AdminDashboard = () => {
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success('Invoice email queued'))}>
                                           <Mail className="h-3 w-3" />
                                         </Button>
+                                        {(() => {
+                                          const invId = tx?.invoice_id || tx?.metadata?.invoice_id || (tx?.source === 'billing_invoices' ? tx.id : null);
+                                          if (!invId) return null;
+                                          return (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              title="Download invoice PDF"
+                                              onClick={() => guard(async () => {
+                                                try {
+                                                  const { downloadInvoicePdf } = await import('@/lib/api/invoice-api');
+                                                  await downloadInvoicePdf(invId, `invoice-${String(invId).slice(0, 8)}`);
+                                                } catch (e: any) {
+                                                  toast.error(e?.message || 'Failed to download invoice');
+                                                }
+                                              })}
+                                            >
+                                              <FileText className="h-3 w-3" />
+                                            </Button>
+                                          );
+                                        })()}
                                         {(() => {
                                           const pName = tx?.metadata?.patient_name || tx?.metadata?.customer_name || '';
                                           const p: any = patients.find((pt: any) => pt.id === tx?.metadata?.patient_id || pt.name === pName) || {};
