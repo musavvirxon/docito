@@ -3019,14 +3019,20 @@ const AdminDashboard = () => {
                       <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {
                         const amount = prompt('Invoice amount ($):');
                         if (!amount) return;
-                        const desc = prompt('Description:', 'Medical services');
+                        const desc = prompt('Description:', 'Medical services') || 'Medical services';
                         const amountCents = Math.round(parseFloat(amount) * 100);
                         if (isNaN(amountCents) || amountCents <= 0) { toast.error('Invalid amount'); return; }
+                        const invNum = `INV-${Date.now().toString().slice(-8)}`;
+                        const { data: u } = await supabase.auth.getUser();
                         const { error } = await (supabase as any).from('billing_invoices').insert({
                           entity_type: 'practice', entity_id: practice?.id,
+                          patient_id: selectedPatient?.user_id || selectedPatient?.id || null,
+                          invoice_number: invNum,
                           amount_due_cents: amountCents, amount_paid_cents: 0, amount_remaining_cents: amountCents,
-                          currency: 'USD', status: 'pending', description: desc || 'Medical services',
-                          metadata: { patient_name: selectedPatient?.name || 'Patient' },
+                          currency: 'usd', status: 'pending', description: desc,
+                          line_items: [{ description: desc, quantity: 1, unit_amount: amountCents, amount: amountCents }],
+                          metadata: { patient_name: selectedPatient?.name || 'Patient', invoice_number: invNum },
+                          created_by: u?.user?.id ?? null,
                         });
                         if (error) { toast.error(error.message); return; }
                         toast.success('Invoice created');
