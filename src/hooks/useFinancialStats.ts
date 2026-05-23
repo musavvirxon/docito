@@ -339,21 +339,24 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       // procedure rows below, so we don't double-charge a consultation fee on them.
       const pendingPayments: PendingPayment[] = pendingAppointments
         .filter((apt: any) => !apt.procedure_id && !apt.procedures)
-        .filter((apt: any) => !paidAppointmentIds.has(apt.id))
         .map((apt: any) => {
+          const remaining = remainingFor(apt.id, consultationFee);
+          if (remaining <= 0) return null;
           const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+          const paid = paidByAppointment.get(apt.id) || 0;
           return {
             appointmentId: apt.id,
             patientName: patientProfile?.full_name || 'Unknown Patient',
             patientId: apt.patient_id,
             serviceName: 'Consultation',
-            amount: consultationFee,
+            amount: remaining,
             date: apt.appointment_date,
-            status: apt.status,
+            status: paid > 0 ? 'partial' : apt.status,
             doctorId,
             practiceId,
-          };
-        });
+          } as PendingPayment;
+        })
+        .filter(Boolean) as PendingPayment[];
 
       // Pending payments — procedures performed during appointments (dental work, injections, etc.)
       const toothHistory = (toothHistoryData as any)?.data || [];
@@ -378,19 +381,22 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
 
       apptProcedures
         .filter((row: any) => Number(row.estimated_cost) > 0 && row.status !== 'cancelled')
-        .filter((row: any) => !paidAppointmentIds.has(row.appointment_id))
         .forEach((row: any) => {
           const apt = row.appointments;
           if (!apt) return;
+          const full = Number(row.estimated_cost) || 0;
+          const remaining = remainingFor(row.appointment_id, full);
+          if (remaining <= 0) return;
           const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+          const paid = paidByAppointment.get(row.appointment_id) || 0;
           pendingPayments.push({
             appointmentId: `ap-${row.id}`,
             patientName: patientProfile?.full_name || 'Unknown Patient',
             patientId: apt.patient_id,
             serviceName: row.procedures?.name || 'Procedure',
-            amount: Number(row.estimated_cost) || 0,
+            amount: remaining,
             date: apt.appointment_date,
-            status: row.status || 'unpaid',
+            status: paid > 0 ? 'partial' : (row.status || 'unpaid'),
             doctorId,
             practiceId,
           });
