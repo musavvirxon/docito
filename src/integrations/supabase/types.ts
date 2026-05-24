@@ -1025,6 +1025,7 @@ export type Database = {
           metadata: Json | null
           paid_at: string | null
           patient_id: string | null
+          practice_id: string | null
           status: string
           updated_at: string
         }
@@ -1049,6 +1050,7 @@ export type Database = {
           metadata?: Json | null
           paid_at?: string | null
           patient_id?: string | null
+          practice_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -1073,6 +1075,7 @@ export type Database = {
           metadata?: Json | null
           paid_at?: string | null
           patient_id?: string | null
+          practice_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -8318,6 +8321,108 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      superbills: {
+        Row: {
+          appointment_id: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          diagnosis_codes: Json
+          doctor_id: string | null
+          id: string
+          invoice_id: string | null
+          line_items: Json
+          metadata: Json | null
+          notes: string | null
+          patient_id: string
+          pdf_url: string | null
+          practice_id: string | null
+          service_date: string
+          status: string
+          superbill_number: string
+          total_amount_cents: number
+          updated_at: string
+        }
+        Insert: {
+          appointment_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          diagnosis_codes?: Json
+          doctor_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          line_items?: Json
+          metadata?: Json | null
+          notes?: string | null
+          patient_id: string
+          pdf_url?: string | null
+          practice_id?: string | null
+          service_date?: string
+          status?: string
+          superbill_number: string
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          diagnosis_codes?: Json
+          doctor_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          line_items?: Json
+          metadata?: Json | null
+          notes?: string | null
+          patient_id?: string
+          pdf_url?: string | null
+          practice_id?: string | null
+          service_date?: string
+          status?: string
+          superbill_number?: string
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "superbills_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "superbills_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "superbills_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "superbills_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "billing_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "superbills_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_messages: {
         Row: {
