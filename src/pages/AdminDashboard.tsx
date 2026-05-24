@@ -4054,167 +4054,30 @@ const AdminDashboard = () => {
                 const presetInsurers = ['SOGAZ', 'Alfa Insurance', 'Ingosstrakhovanie', 'AlfaStrakhovanie', 'UzbekInvest'];
                 return (
                 <>
-                  {/* Header */}
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Billing Documentation</h3>
-                    <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => setAddClaimOpen(true))}>
-                      <Plus className="h-4 w-4 mr-2" /> Generate Superbill
-                    </Button>
                   </div>
-
-                  {/* Add Claim Form */}
-                  {addClaimOpen && (
-                    <Card className="rounded-xl mb-4 border-primary/30">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-base">New Superbill</CardTitle>
-                          <Button variant="ghost" size="icon" onClick={() => setAddClaimOpen(false)}><X className="h-4 w-4" /></Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <label className="text-sm font-medium text-muted-foreground">Patient Name *</label>
-                            <Input value={claimForm.patient_name} onChange={e => setClaimForm(p => ({ ...p, patient_name: e.target.value }))} list="claim-patients-list" placeholder="Select patient…" />
-                            <datalist id="claim-patients-list">
-                              {(patients || []).map((p: any) => <option key={p.id || p.name} value={p.name} />)}
-                            </datalist>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-muted-foreground">Insurer (patient reference) *</label>
-                            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={claimForm.insurer} onChange={e => setClaimForm(p => ({ ...p, insurer: e.target.value }))}>
-                              <option value="">Select insurer…</option>
-                              {insurers.map(ins => <option key={ins} value={ins}>{ins}</option>)}
-                              <option value="__other__">Other</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-muted-foreground">Service</label>
-                            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={claimForm.service} onChange={e => setClaimForm(p => ({ ...p, service: e.target.value }))}>
-                              <option value="">Select service…</option>
-                              {(services || []).map((s: any) => <option key={s.id || s.name} value={s.name}>{s.name}</option>)}
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-muted-foreground">Superbill Amount *</label>
-                            <Input type="number" value={claimForm.amount} onChange={e => setClaimForm(p => ({ ...p, amount: e.target.value }))} placeholder="0.00" />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-muted-foreground">Issued Date</label>
-                            <Input type="date" value={claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd')} onChange={e => setClaimForm(p => ({ ...p, submitted_date: e.target.value }))} />
-                          </div>
-                        </div>
-                        <div className="mb-4">
-                          <label className="text-sm font-medium text-muted-foreground">Notes (optional)</label>
-                          <Textarea value={claimForm.notes} onChange={e => setClaimForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Additional notes…" />
-                        </div>
-                        <Button disabled={!allowModals} onClick={() => guard(async () => {
-                          if (!claimForm.patient_name || !claimForm.insurer || !claimForm.amount) { toast.error('Patient, insurer, and amount are required'); return; }
-                          const next = [...claims, { id: Date.now().toString(), ...claimForm, submitted_date: claimForm.submitted_date || format(new Date(), 'yyyy-MM-dd'), status: 'submitted', created_at: new Date().toISOString() }];
-                          setClaims(next);
-                          await persistInsurance({ claims: next });
-                          setClaimForm({ patient_name: '', insurer: '', service: '', amount: '', submitted_date: '', notes: '' });
-                          setAddClaimOpen(false);
-                          toast.success('Superbill generated');
-                        })}>Generate Superbill</Button>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* KPI cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Generated</p>
-                      <p className="text-xl font-bold">{claims.length}</p>
-                    </CardContent></Card>
-                    <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Reimbursed</p>
-                      <p className="text-xl font-bold text-green-600">{statusCounts.approved}</p>
-                    </CardContent></Card>
-                    <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Pending</p>
-                      <p className="text-xl font-bold text-yellow-600">{statusCounts.pending}</p>
-                    </CardContent></Card>
-                    <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Denied</p>
-                      <p className="text-xl font-bold text-red-600">{statusCounts.rejected}</p>
-                    </CardContent></Card>
-                  </div>
-
-                  {/* Filters */}
-                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                    <Input placeholder="Search by patient or insurer…" value={claimSearch} onChange={e => setClaimSearch(e.target.value)} className="sm:max-w-xs" />
-                    <div className="flex gap-1 flex-wrap">
-                      {[
-                        { value: 'all', label: 'All' },
-                        { value: 'submitted', label: 'Generated' },
-                        { value: 'approved', label: 'Reimbursed' },
-                        { value: 'pending', label: 'Pending' },
-                        { value: 'rejected', label: 'Denied' },
-                      ].map(s => (
-                        <Button key={s.value} size="sm" variant={claimStatusFilter === s.value ? 'default' : 'outline'} onClick={() => setClaimStatusFilter(s.value)}>{s.label}</Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Claims table */}
-                  <Card className="rounded-xl mb-6">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base">Superbills</CardTitle>
-                        <Badge variant="secondary">{filteredClaims.length}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {filteredClaims.length > 0 ? (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b border-border text-left">
-                                <th className="pb-2 font-medium text-muted-foreground">Patient</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Insurer</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Service</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Amount</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Issued</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Status</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredClaims.map((c: any) => {
-                                let dateStr = c.submitted_date || '';
-                                try { if (dateStr) dateStr = format(new Date(dateStr), 'MMM dd, yyyy'); } catch { /* keep raw */ }
-                                const statusColor: Record<string, string> = { submitted: 'bg-blue-100 text-blue-800', approved: 'bg-green-100 text-green-800', pending: 'bg-yellow-100 text-yellow-800', rejected: 'bg-red-100 text-red-800' };
-                                return (
-                                  <tr key={c.id} className="border-b border-border/50 hover:bg-muted/30">
-                                    <td className="py-2.5 font-medium">{c.patient_name}</td>
-                                    <td className="py-2.5"><Badge variant="outline">{c.insurer}</Badge></td>
-                                    <td className="py-2.5">{c.service || '—'}</td>
-                                    <td className="py-2.5">${c.amount}</td>
-                                    <td className="py-2.5">{dateStr}</td>
-                                    <td className="py-2.5"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[c.status] || ''}`}>{c.status}</span></td>
-                                    <td className="py-2.5">
-                                      <div className="flex gap-1">
-                                        {c.status !== 'approved' && <Button size="sm" variant="outline" className="h-7 text-xs text-green-700 border-green-300 hover:bg-green-50" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.map(x => x.id === c.id ? { ...x, status: 'approved' } : x); setClaims(next); await persistInsurance({ claims: next }); })}>Approve</Button>}
-                                        {c.status !== 'rejected' && <Button size="sm" variant="outline" className="h-7 text-xs text-red-700 border-red-300 hover:bg-red-50" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.map(x => x.id === c.id ? { ...x, status: 'rejected' } : x); setClaims(next); await persistInsurance({ claims: next }); })}>Reject</Button>}
-                                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={!allowModals} onClick={() => guard(async () => { const next = claims.filter(x => x.id !== c.id); setClaims(next); await persistInsurance({ claims: next }); })}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <AlertCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p className="font-medium">No superbills generated yet.</p>
-                          <Button variant="outline" size="sm" className="mt-3" disabled={!allowModals} onClick={() => guard(() => setAddClaimOpen(true))}>Generate Superbill</Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                  <SuperbillsManager
+                    practiceId={practice?.id || null}
+                    patients={(patients || []).map((p: any) => ({ id: p.id || p.user_id, name: p.name || p.full_name }))}
+                  />
+                </>
+                );
+              })()}
+              {false && billingTab === 'insurance' && (() => {
+                return (
+                <>
+                  {/* legacy claim table retained for reference */}
+                  {filteredClaims.length > 0 && null}
+                </>
+                );
+              })()}
+              {/* end superbills section */}
+              {false && (
+                <>
+                  {/* placeholder */}
+                </>
+              )}
 
                   {/* Analytics: Claims by Status + Claims by Insurer */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
