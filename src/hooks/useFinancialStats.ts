@@ -178,7 +178,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const allAppointments = allAppointmentsData.data || [];
       const procedures = proceduresData.data || [];
       const doctor = doctorData.data;
-      const profiles = profilesData.data || [];
+      void profilesData;
       const sessions = sessionsData.data || [];
       const consultationFee = Number(doctor?.consultation_fee) || 0;
       const practiceId = (doctor as any)?.practice_id || null;
