@@ -126,9 +126,9 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           .eq('id', doctorId)
           .single(),
 
-        supabase
-          .from('profiles')
-          .select('user_id, full_name'),
+        // Patient names are resolved later with a targeted query so RLS lets the doctor
+        // read each linked patient's profile.
+        Promise.resolve({ data: [] as Array<{ user_id: string; full_name: string | null }> } as any),
 
         supabase
           .from('tooth_procedure_history')
@@ -178,11 +178,31 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const allAppointments = allAppointmentsData.data || [];
       const procedures = proceduresData.data || [];
       const doctor = doctorData.data;
-      const profiles = profilesData.data || [];
+      void profilesData;
       const sessions = sessionsData.data || [];
       const consultationFee = Number(doctor?.consultation_fee) || 0;
       const practiceId = (doctor as any)?.practice_id || null;
       const platformCommissionRate = 0.15; // 15% platform fee
+
+      // Resolve patient names for every patient referenced across the result sets.
+      const toothHistoryRaw = (toothHistoryData as any)?.data || [];
+      const apptProceduresRaw = (apptProceduresData as any)?.data || [];
+      const patientIdSet = new Set<string>();
+      [...(appointmentsData.data || []), ...(allAppointmentsData.data || [])]
+        .forEach((a: any) => { if (a?.patient_id) patientIdSet.add(a.patient_id); });
+      toothHistoryRaw.forEach((r: any) => { if (r?.patient_id) patientIdSet.add(r.patient_id); });
+      apptProceduresRaw.forEach((r: any) => {
+        const pid = r?.appointments?.patient_id;
+        if (pid) patientIdSet.add(pid);
+      });
+      let profiles: Array<{ user_id: string; full_name: string | null }> = [];
+      if (patientIdSet.size > 0) {
+        const { data: profRows } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', Array.from(patientIdSet));
+        profiles = (profRows as any) || [];
+      }
 
       // Sessions in active/completed states make their appointment count as completed for finance.
       const activeSessionApptIds = new Set(
