@@ -184,6 +184,26 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const practiceId = (doctor as any)?.practice_id || null;
       const platformCommissionRate = 0.15; // 15% platform fee
 
+      // Resolve patient names for every patient referenced across the result sets.
+      const toothHistoryRaw = (toothHistoryData as any)?.data || [];
+      const apptProceduresRaw = (apptProceduresData as any)?.data || [];
+      const patientIdSet = new Set<string>();
+      [...(appointmentsData.data || []), ...(allAppointmentsData.data || [])]
+        .forEach((a: any) => { if (a?.patient_id) patientIdSet.add(a.patient_id); });
+      toothHistoryRaw.forEach((r: any) => { if (r?.patient_id) patientIdSet.add(r.patient_id); });
+      apptProceduresRaw.forEach((r: any) => {
+        const pid = r?.appointments?.patient_id;
+        if (pid) patientIdSet.add(pid);
+      });
+      let profiles: Array<{ user_id: string; full_name: string | null }> = [];
+      if (patientIdSet.size > 0) {
+        const { data: profRows } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', Array.from(patientIdSet));
+        profiles = (profRows as any) || [];
+      }
+
       // Sessions in active/completed states make their appointment count as completed for finance.
       const activeSessionApptIds = new Set(
         sessions
