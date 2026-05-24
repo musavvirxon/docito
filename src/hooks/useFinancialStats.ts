@@ -126,9 +126,9 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           .eq('id', doctorId)
           .single(),
 
-        supabase
-          .from('profiles')
-          .select('user_id, full_name'),
+        // Patient names are resolved later with a targeted query so RLS lets the doctor
+        // read each linked patient's profile.
+        Promise.resolve({ data: [] as Array<{ user_id: string; full_name: string | null }> } as any),
 
         supabase
           .from('tooth_procedure_history')
