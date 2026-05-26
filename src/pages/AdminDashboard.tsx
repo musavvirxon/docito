@@ -52,7 +52,7 @@ import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
-import SuperbillsManager from "@/components/billing/SuperbillsManager";
+import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
 import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import BranchSelector from "@/components/shared/BranchSelector";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
