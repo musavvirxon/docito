@@ -101,72 +101,83 @@ export function ClinicAdminWorkspaceSettings() {
   const isVerified = Boolean(practice?.verified ?? practice?.is_verified ?? false);
 
   return (
-    <div className="space-y-6">
-      {/* Organization Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Organization Settings
-          </CardTitle>
-          <CardDescription>Manage your clinic/practice details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isVerified && (
-            <Badge className="bg-green-100 text-green-800 border-green-200">
-              <Shield className="h-3 w-3 mr-1" /> Verified
-            </Badge>
-          )}
+    <Tabs defaultValue="organization" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="organization">Organization</TabsTrigger>
+        <TabsTrigger value="services">Services & Pricing</TabsTrigger>
+      </TabsList>
 
-          {/* ── Logo upload ─────────────────────────────────────────────── */}
-          <LogoUpload
-            currentUrl={logoUrl}
-            onUpload={(url) => setLogoUrl(url)}
-            entityType="clinic"
-            entityId={practice.id}
-            label="Clinic Logo"
-            description="Appears on treatment plans, referrals & patient summary PDFs. PNG or WebP with transparency recommended (max 2 MB)."
-          />
+      <TabsContent value="organization" className="space-y-6">
+        {/* Organization Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Organization Settings
+            </CardTitle>
+            <CardDescription>Manage your clinic/practice details</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isVerified && (
+              <Badge className="bg-green-100 text-green-800 border-green-200">
+                <Shield className="h-3 w-3 mr-1" /> Verified
+              </Badge>
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <div className="space-y-2">
-              <Label>Clinic Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Clinic name" />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1"><MapPin className="h-3 w-3" />Address</Label>
-              <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" />
-            </div>
-            <div className="space-y-2">
-              <Label>City</Label>
-              <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1"><Phone className="h-3 w-3" />Phone</Label>
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1"><Mail className="h-3 w-3" />Email</Label>
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="clinic@example.com" />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1"><FileText className="h-3 w-3" />Description</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of your clinic..."
-              rows={3}
+            {/* ── Logo upload ─────────────────────────────────────────────── */}
+            <LogoUpload
+              currentUrl={logoUrl}
+              onUpload={(url) => setLogoUrl(url)}
+              entityType="clinic"
+              entityId={practice.id}
+              label="Clinic Logo"
+              description="Appears on treatment plans, referrals & patient summary PDFs. PNG or WebP with transparency recommended (max 2 MB)."
             />
-          </div>
 
-          <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto">
-            {saving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving…</> : "Save Changes"}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <Label>Clinic Name</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Clinic name" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1"><MapPin className="h-3 w-3" />Address</Label>
+                <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" />
+              </div>
+              <div className="space-y-2">
+                <Label>City</Label>
+                <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1"><Phone className="h-3 w-3" />Phone</Label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" />
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1"><Mail className="h-3 w-3" />Email</Label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="clinic@example.com" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1"><FileText className="h-3 w-3" />Description</Label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description of your clinic..."
+                rows={3}
+              />
+            </div>
+
+            <Button onClick={handleSave} disabled={saving} className="w-full md:w-auto">
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Saving…</> : "Save Changes"}
+            </Button>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="services">
+        <ClinicServicesManager practiceId={practice.id} />
+      </TabsContent>
+    </Tabs>
   );
 }
 
