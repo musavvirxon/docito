@@ -156,13 +156,7 @@ async function downloadTextFile(filename: string, content: string, mimeType: str
 export function FinanceHub(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
 
-  if (!entityId || !entityType) {
-    return (
-      <div className="p-6 text-sm text-muted-foreground">
-        Finance data unavailable — no entity linked to your account.
-      </div>
-    );
-  }
+
 
 
   const [fromDate, setFromDate] = useState(() => {
