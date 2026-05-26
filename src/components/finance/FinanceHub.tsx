@@ -352,7 +352,16 @@ export function FinanceHub(props: { entityType: FinanceEntityType; entityId: str
 
   const totals = analytics?.totals;
 
+  if (!entityId || !entityType) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        Finance data unavailable — no entity linked to your account.
+      </div>
+    );
+  }
+
   return (
+
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
