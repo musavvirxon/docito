@@ -24,9 +24,18 @@ interface FinanceHubProps {
 const iconClass = "w-4 h-4";
 
 export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
+  if (!entityId || !entityType) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        Finance data unavailable — no entity linked to your account.
+      </div>
+    );
+  }
+
   const [tab, setTab] = useState<
     "overview" | "transactions" | "expenses" | "payroll" | "attendance" | "budgets" | "reports"
   >("overview");
+
 
   const [locationId, setLocationId] = useState<string | null>(null);
 
