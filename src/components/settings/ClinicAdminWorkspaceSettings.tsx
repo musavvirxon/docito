@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { LogoUpload } from "@/components/shared/LogoUpload";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ClinicServicesManager from "@/components/clinic/ClinicServicesManager";
 
 export function ClinicAdminWorkspaceSettings() {
   const { user } = useAuth();
