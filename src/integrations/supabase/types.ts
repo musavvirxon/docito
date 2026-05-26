@@ -1992,6 +1992,65 @@ export type Database = {
           },
         ]
       }
+      clinic_services: {
+        Row: {
+          category: string | null
+          created_at: string
+          currency: string
+          deposit_cents: number
+          deposit_required: boolean
+          deposit_type: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean
+          name: string
+          practice_id: string
+          price_cents: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          deposit_cents?: number
+          deposit_required?: boolean
+          deposit_type?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          practice_id: string
+          price_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          currency?: string
+          deposit_cents?: number
+          deposit_required?: boolean
+          deposit_type?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          practice_id?: string
+          price_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_services_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_staff: {
         Row: {
           can_book_appointments: boolean | null

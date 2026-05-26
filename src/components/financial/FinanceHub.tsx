@@ -32,6 +32,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
 
   useEnsureFinanceDefaults({ entityType, entityId });
 
+
   const entityLabel = useMemo(() => {
     switch (entityType) {
       case "clinic":
@@ -46,6 +47,14 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         return "Entity";
     }
   }, [entityType]);
+
+  if (!entityId || !entityType) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        Finance data unavailable — no entity linked to your account.
+      </div>
+    );
+  }
 
   const showBranchSelector = entityType === "clinic" || entityType === "practice";
 
