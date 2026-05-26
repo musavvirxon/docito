@@ -48,6 +48,14 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
     }
   }, [entityType]);
 
+  if (!entityId || !entityType) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        Finance data unavailable — no entity linked to your account.
+      </div>
+    );
+  }
+
   const showBranchSelector = entityType === "clinic" || entityType === "practice";
 
   return (
