@@ -6,6 +6,7 @@ import { Download, RefreshCw, FileText } from "lucide-react";
 import { useFinancialStats } from "@/hooks/useFinancialStats";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
+import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
 import { FinancialOverview } from "./FinancialOverview";
 import { FinancialChart } from "./FinancialChart";
 import { FinancialServices } from "./FinancialServices";
@@ -36,7 +37,8 @@ export const DoctorFinancialStatsSection = () => {
     insights,
     loading,
     error,
-    refreshData
+    refreshData,
+    doctorId,
   } = useFinancialStats(dateRange.from, dateRange.to);
   
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.earningsThisMonth, 'doctor');
@@ -162,13 +164,14 @@ export const DoctorFinancialStatsSection = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="chart" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="chart">{t("doctor.financialStats.tabs.earningsChart")}</TabsTrigger>
           <TabsTrigger value="services">{t("doctor.financialStats.tabs.byService")}</TabsTrigger>
           <TabsTrigger value="payouts">{t("doctor.financialStats.tabs.payouts")}</TabsTrigger>
           <TabsTrigger value="pending">{t("doctor.financialStats.tabs.pending")}</TabsTrigger>
           <TabsTrigger value="insights">{t("doctor.financialStats.tabs.insights")}</TabsTrigger>
           <TabsTrigger value="advanced">{t("doctor.financialStats.tabs.advancedKPIs", "Advanced KPIs")}</TabsTrigger>
+          <TabsTrigger value="superbills">{t("doctor.financialStats.tabs.superbills", "Superbills")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chart" className="space-y-6">
@@ -200,6 +203,10 @@ export const DoctorFinancialStatsSection = () => {
               refreshAdvancedMetrics();
             }}
           />
+        </TabsContent>
+
+        <TabsContent value="superbills" className="space-y-6">
+          <SuperbillsManager doctorId={doctorId} />
         </TabsContent>
       </Tabs>
     </div>

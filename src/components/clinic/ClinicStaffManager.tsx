@@ -318,7 +318,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
 
     setInviteLoading(true);
     try {
-      // Try unified staff_invitations first
+      // Unified staff_invitations is the source of truth for pending invites
       const { error } = await sb.from("staff_invitations").insert({
         entity_id: practiceId,
         entity_type: "clinic",
@@ -327,16 +327,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         status: "pending",
         invite_type: "email",
       });
-      if (error) {
-        // Fallback: insert to clinic_staff
-        const { error: fallbackErr } = await sb.from("clinic_staff").insert({
-          practice_id: practiceId,
-          user_id: "00000000-0000-0000-0000-000000000000",
-          staff_role: inviteRole,
-          status: "invited",
-        });
-        if (fallbackErr) throw fallbackErr;
-      }
+      if (error) throw error;
       toast.success("Invitation created");
       setInviteEmail("");
       setInviteRole("receptionist");

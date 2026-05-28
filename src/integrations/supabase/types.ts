@@ -7161,6 +7161,8 @@ export type Database = {
           default_notes_template: string | null
           default_time_interval: number | null
           dentist_id: string | null
+          deposit_amount: number | null
+          deposit_required: boolean
           description: string | null
           duration_minutes: number | null
           estimated_duration_minutes: number | null
@@ -7176,6 +7178,7 @@ export type Database = {
           name: string
           notes: string | null
           price: number | null
+          provider_override_price: number | null
           tooth_range: number[] | null
           type: Database["public"]["Enums"]["procedure_type"] | null
           updated_at: string | null
@@ -7189,6 +7192,8 @@ export type Database = {
           default_notes_template?: string | null
           default_time_interval?: number | null
           dentist_id?: string | null
+          deposit_amount?: number | null
+          deposit_required?: boolean
           description?: string | null
           duration_minutes?: number | null
           estimated_duration_minutes?: number | null
@@ -7204,6 +7209,7 @@ export type Database = {
           name: string
           notes?: string | null
           price?: number | null
+          provider_override_price?: number | null
           tooth_range?: number[] | null
           type?: Database["public"]["Enums"]["procedure_type"] | null
           updated_at?: string | null
@@ -7217,6 +7223,8 @@ export type Database = {
           default_notes_template?: string | null
           default_time_interval?: number | null
           dentist_id?: string | null
+          deposit_amount?: number | null
+          deposit_required?: boolean
           description?: string | null
           duration_minutes?: number | null
           estimated_duration_minutes?: number | null
@@ -7232,6 +7240,7 @@ export type Database = {
           name?: string
           notes?: string | null
           price?: number | null
+          provider_override_price?: number | null
           tooth_range?: number[] | null
           type?: Database["public"]["Enums"]["procedure_type"] | null
           updated_at?: string | null
