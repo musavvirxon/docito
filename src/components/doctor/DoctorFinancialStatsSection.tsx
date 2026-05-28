@@ -204,6 +204,10 @@ export const DoctorFinancialStatsSection = () => {
             }}
           />
         </TabsContent>
+
+        <TabsContent value="superbills" className="space-y-6">
+          <SuperbillsManager doctorId={doctorId} />
+        </TabsContent>
       </Tabs>
     </div>
   );
