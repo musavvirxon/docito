@@ -6,6 +6,7 @@ import { Download, RefreshCw, FileText } from "lucide-react";
 import { useFinancialStats } from "@/hooks/useFinancialStats";
 import { useAdvancedFinancialMetrics } from "@/hooks/useAdvancedFinancialMetrics";
 import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMetrics";
+import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
 import { FinancialOverview } from "./FinancialOverview";
 import { FinancialChart } from "./FinancialChart";
 import { FinancialServices } from "./FinancialServices";
