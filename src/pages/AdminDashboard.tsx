@@ -53,6 +53,9 @@ import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMe
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
+import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
+import CompensationProfilesPanel from "@/components/financial/CompensationProfilesPanel";
+import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
 import ClinicStaffManager from "@/components/clinic/ClinicStaffManager";
 import BranchSelector from "@/components/shared/BranchSelector";
 import { useVerificationStatus } from "@/hooks/useVerificationStatus";
