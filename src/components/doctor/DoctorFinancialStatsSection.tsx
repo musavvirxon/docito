@@ -36,7 +36,8 @@ export const DoctorFinancialStatsSection = () => {
     insights,
     loading,
     error,
-    refreshData
+    refreshData,
+    doctorId,
   } = useFinancialStats(dateRange.from, dateRange.to);
   
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.earningsThisMonth, 'doctor');
