@@ -163,6 +163,7 @@ export const DoctorFinancialStatsSection = () => {
       <FinancialOverview stats={stats} />
 
       {/* Tabs */}
+      <Tabs defaultValue="chart" className="space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="chart">{t("doctor.financialStats.tabs.earningsChart")}</TabsTrigger>
           <TabsTrigger value="services">{t("doctor.financialStats.tabs.byService")}</TabsTrigger>
@@ -171,7 +172,6 @@ export const DoctorFinancialStatsSection = () => {
           <TabsTrigger value="insights">{t("doctor.financialStats.tabs.insights")}</TabsTrigger>
           <TabsTrigger value="advanced">{t("doctor.financialStats.tabs.advancedKPIs", "Advanced KPIs")}</TabsTrigger>
           <TabsTrigger value="superbills">{t("doctor.financialStats.tabs.superbills", "Superbills")}</TabsTrigger>
-        </TabsList>
         </TabsList>
 
         <TabsContent value="chart" className="space-y-6">
