@@ -525,6 +525,6 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
     },
     loading: isLoading,
     error: error?.message || null,
-    refreshData: refetch
-  };
+    refreshData: refetch,
+    doctorId,
 };
