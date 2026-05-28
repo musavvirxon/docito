@@ -111,6 +111,35 @@ export const useRecordPayment = () => {
       const { data, error } = await supabase.from('payments').insert(payload).select().single();
       if (error) throw error;
 
+      // Post to finance_entries so the Finances tab (overview, ledger, charts, budgets) reflects this income.
+      try {
+        const entityType = input.practiceId ? 'practice' : 'doctor';
+        const entityId = input.practiceId || input.doctorId || null;
+        if (entityId && amountPaid > 0) {
+          const amountCents = Math.round(amountPaid * 100);
+          await (supabase as any).from('finance_entries').insert({
+            entity_type: entityType,
+            entity_id: entityId,
+            entry_type: 'income',
+            amount_cents: amountCents,
+            currency: 'USD',
+            occurred_at: input.paidAt ?? new Date().toISOString(),
+            description: input.serviceName || input.notes || 'Payment received',
+            reference: input.invoiceNumber,
+            metadata: {
+              source: { table: 'payments', id: data.id },
+              payment_method: input.paymentMethod,
+              patient_id: input.patientId,
+              patient_name: input.patientName || null,
+              doctor_id: input.doctorId ?? null,
+              invoice_id: invoiceId,
+            },
+          });
+        }
+      } catch (e) {
+        console.warn('finance_entries post skipped', e);
+      }
+
       toast.success(isFullyPaid ? 'Payment recorded' : 'Partial payment recorded');
       return { success: true, data, invoiceId };
     } catch (err: any) {
