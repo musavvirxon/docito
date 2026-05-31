@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Room,
   RoomEvent,
@@ -33,6 +34,7 @@ import {
   User,
   Stethoscope,
   MonitorPlay,
+  X,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +48,10 @@ interface VideoRoomProps {
   onLeave: () => void;
   guestToken?: string;
 }
+
+const SESSION_MAX_SECONDS = 3600; // 1 hour auto-close
+const WARN_AT_SECONDS = 300; // 5-minute warning
+
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
 
@@ -75,10 +81,16 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   guestToken,
   userName,
 }) => {
+  const { t } = useTranslation('dashboard');
   const containerRef = useRef<HTMLDivElement>(null);
   const audioContainer = useRef<HTMLDivElement>(null);
   const roomRef = useRef<Room | null>(null);
   const cancelledRef = useRef(false);
+  const heartbeatRef = useRef<number | null>(null);
+  const sessionStartRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
+  const mediaErrorRetryRef = useRef(0);
+
 
   // Stable DOM refs for each slot (always mounted — never unmounted on toggle)
   const slotNodeRefs = useRef<Record<SlotId, HTMLDivElement | null>>({
@@ -123,6 +135,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [notes, setNotes] = useState(consultation.notes || '');
   const [participantCount, setParticipantCount] = useState(1);
   const [reconnectKey, setReconnectKey] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [showSessionEndingBanner, setShowSessionEndingBanner] = useState(false);
+  const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
+
 
   /* ---------- Slot mapping ---------- */
   const sourceToSlot = useCallback(
@@ -289,19 +305,38 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       dynacast: true,
       publishDefaults: { simulcast: true },
       reconnectPolicy: {
-        nextRetryDelayInMs: (ctx) => Math.min(30000, 1000 * Math.pow(2, ctx.retryCount)),
+        nextRetryDelayInMs: (ctx: { retryCount: number }) =>
+          Math.min(10000, 500 * Math.pow(1.5, ctx.retryCount)),
+        maxRetries: 50,
       } as any,
     });
     roomRef.current = room;
 
     const reattachAll = () => {
-      room.remoteParticipants.forEach((p) => {
-        p.trackPublications.forEach((pub) => {
-          if (pub.track && pub.isSubscribed) {
-            handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
-          }
+      try {
+        room.remoteParticipants.forEach((p) => {
+          p.trackPublications.forEach((pub) => {
+            if (pub.track && pub.isSubscribed) {
+              handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
+            }
+          });
         });
-      });
+      } catch (e) { console.warn('reattachAll failed', e); }
+    };
+
+    const safeEnableMic = async () => {
+      try {
+        if (isAudioOnRef.current && !room.localParticipant.isMicrophoneEnabled) {
+          await room.localParticipant.setMicrophoneEnabled(true);
+        }
+      } catch (e) { console.warn('mic re-enable failed', e); }
+    };
+    const safeEnableCam = async () => {
+      try {
+        if (isVideoOnRef.current && !room.localParticipant.isCameraEnabled) {
+          await room.localParticipant.setCameraEnabled(true);
+        }
+      } catch (e) { console.warn('cam re-enable failed', e); }
     };
 
     room.on(RoomEvent.TrackSubscribed, handleRemoteTrack);
@@ -312,32 +347,67 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     room.on(RoomEvent.ParticipantDisconnected, handleParticipantGone);
     room.on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
       if (cancelledRef.current) return;
-      if (state === ConnectionState.Connected) setStatus('connected');
-      else if (state === ConnectionState.Reconnecting) setStatus('connecting');
-      else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+      try {
+        if (state === ConnectionState.Connected) setStatus('connected');
+        else if (state === ConnectionState.Reconnecting) setStatus('connecting');
+        else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+      } catch (e) { console.warn(e); }
     });
     room.on(RoomEvent.Reconnected, () => {
       if (cancelledRef.current) return;
       setStatus('connected');
-      reattachAll();
+      (async () => {
+        try {
+          reattachAll();
+          await safeEnableMic();
+          await safeEnableCam();
+        } catch (e) { console.warn('reconnect handler failed', e); }
+      })().catch(() => { /* swallow */ });
     });
     room.on(RoomEvent.Reconnecting, () => {
       if (cancelledRef.current) return;
       setStatus('connecting');
     });
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
-      explainMediaError(err, 'Media device error.');
-      setIsAudioOn(false);
-      setIsVideoOn(false);
-      setIsScreenSharing(false);
+      try {
+        mediaErrorRetryRef.current += 1;
+        if (mediaErrorRetryRef.current <= 3) {
+          window.setTimeout(() => {
+            (async () => {
+              try {
+                await safeEnableMic();
+                await safeEnableCam();
+              } catch { /* noop */ }
+            })().catch(() => { /* swallow */ });
+          }, 3000);
+          return;
+        }
+        explainMediaError(err, t('videoConsultation.deviceInUse'));
+        setIsAudioOn(false);
+        setIsVideoOn(false);
+        setIsScreenSharing(false);
+      } catch (e) { console.warn(e); }
     });
+
+    // Heartbeat — every 30s ensure expected local tracks are still published.
+    heartbeatRef.current = window.setInterval(() => {
+      if (cancelledRef.current) return;
+      if (room.state !== ConnectionState.Connected) return;
+      (async () => {
+        try {
+          await safeEnableMic();
+          await safeEnableCam();
+        } catch { /* noop */ }
+      })().catch(() => { /* swallow */ });
+    }, 30000) as unknown as number;
 
     const timeout = window.setTimeout(() => {
       if (!cancelledRef.current && room.state !== ConnectionState.Connected) {
         setStatus('error');
-        setErrorMsg('Network or video service unreachable. Please retry.');
+        setErrorMsg(t('videoConsultation.couldNotJoin'));
       }
-    }, 12000);
+    }, 20000);
+
 
     (async () => {
       try {
@@ -349,7 +419,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           if (!sessionData?.session?.access_token) {
             if (!cancelledRef.current) {
               setStatus('error');
-              setErrorMsg('You must be signed in to join the call.');
+              setErrorMsg(t('videoConsultation.couldNotJoin'));
             }
             return;
           }
@@ -364,7 +434,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         if (cancelledRef.current) return;
         if (resp.error || !resp.data?.token) {
           setStatus('error');
-          setErrorMsg(resp.error?.message || 'Failed to get video token');
+          setErrorMsg(resp.error?.message || t('videoConsultation.couldNotJoin'));
           return;
         }
 
@@ -388,18 +458,26 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         if (cancelledRef.current) return;
         console.error('LiveKit connect error:', err);
         setStatus('error');
-        setErrorMsg(err?.message || 'Could not connect to the video room.');
+        setErrorMsg(err?.message || t('videoConsultation.couldNotJoin'));
       }
     })();
 
     return () => {
       cancelledRef.current = true;
       window.clearTimeout(timeout);
+      if (heartbeatRef.current) {
+        window.clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+      if (timerIntervalRef.current) {
+        window.clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
       try { room.removeAllListeners(); } catch { /* noop */ }
       (['doctor-camera', 'doctor-screen', 'patient-camera'] as SlotId[]).forEach((s) => {
-        const t = slotTrackRefs.current[s];
-        if (t) {
-          try { t.detach().forEach((el) => el.remove()); } catch { /* noop */ }
+        const tr = slotTrackRefs.current[s];
+        if (tr) {
+          try { tr.detach().forEach((el) => el.remove()); } catch { /* noop */ }
           slotTrackRefs.current[s] = null;
         }
       });
@@ -415,26 +493,28 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const explainMediaError = (err: any, fallback: string) => {
     const name = err?.name || '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-      toast.error('Permission denied. Allow camera, microphone or screen sharing in your browser settings.');
+      toast.error(t('videoConsultation.permissionDenied'));
     } else if (name === 'NotFoundError') {
-      toast.error('No matching camera or microphone was found on this device.');
+      toast.error(t('videoConsultation.noDeviceFound'));
     } else if (name === 'NotReadableError') {
-      toast.error('The camera or microphone is already in use by another app.');
+      toast.error(t('videoConsultation.deviceInUse'));
     } else if (name === 'SecurityError' || name === 'NotSupportedError') {
-      toast.error('Media permissions require a secure HTTPS browser context.');
+      toast.error(t('videoConsultation.secureContextRequired'));
     } else {
       toast.error(err?.message || fallback);
     }
   };
 
+
   const requireConnected = () => {
     const room = roomRef.current;
     if (!room || room.state !== ConnectionState.Connected) {
-      toast.error('Still connecting. Try again in a moment.');
+      toast.error(t('videoConsultation.stillConnecting'));
       return null;
     }
     return room;
   };
+
 
   const startMedia = useCallback(async () => {
     const room = requireConnected();
@@ -493,31 +573,48 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     if (!room) return;
     try {
       const next = !isScreenSharingRef.current;
+      if (next) {
+        // Block if a remote participant already has an active screen-share publication.
+        let someoneElseSharing = false;
+        room.remoteParticipants.forEach((p) => {
+          p.trackPublications.forEach((pub) => {
+            if (pub.source === Track.Source.ScreenShare && (pub.track || pub.isSubscribed)) {
+              someoneElseSharing = true;
+            }
+          });
+        });
+        if (someoneElseSharing) {
+          toast.error(t('videoConsultation.screenShareBlocked'));
+          return;
+        }
+      }
       await room.localParticipant.setScreenShareEnabled(next, { audio: true });
       isScreenSharingRef.current = next;
       setIsScreenSharing(next);
       if (next) {
         const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
-        const t = pub?.track;
-        if (t) {
+        const tr = pub?.track;
+        if (tr) {
           const onEnded = () => {
             isScreenSharingRef.current = false;
             setIsScreenSharing(false);
-            try { t.off('ended' as any, onEnded); } catch { /* noop */ }
+            try { tr.off('ended' as any, onEnded); } catch { /* noop */ }
           };
-          try { t.on('ended' as any, onEnded); } catch { /* noop */ }
-          const mst = (t as any).mediaStreamTrack as MediaStreamTrack | undefined;
+          try { tr.on('ended' as any, onEnded); } catch { /* noop */ }
+          const mst = (tr as any).mediaStreamTrack as MediaStreamTrack | undefined;
           if (mst) mst.addEventListener('ended', onEnded, { once: true });
         }
       }
     } catch (err: any) {
       if (err?.name === 'NotAllowedError') {
-        toast.error('Screen share was cancelled or not permitted.');
+        toast.error(t('videoConsultation.screenShareCancelled'));
       } else {
         explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   useEffect(() => {
     const onVisibility = async () => {
@@ -559,45 +656,84 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     onLeave();
   }, [onLeave]);
 
+  /* ---------- Session timer (1h auto-close) ---------- */
+  useEffect(() => {
+    if (status !== 'connected' || !mediaStarted) return;
+    if (sessionStartRef.current == null) sessionStartRef.current = Date.now();
+
+    const tick = () => {
+      if (sessionStartRef.current == null) return;
+      const elapsed = Math.floor((Date.now() - sessionStartRef.current) / 1000);
+      const remaining = Math.max(0, SESSION_MAX_SECONDS - elapsed);
+      setRemainingSeconds(remaining);
+      if (remaining <= WARN_AT_SECONDS && !sessionEndingDismissed) {
+        setShowSessionEndingBanner(true);
+      }
+      if (remaining <= 0) {
+        if (timerIntervalRef.current) {
+          window.clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+        try { handleEndCall(); } catch (e) { console.warn(e); }
+      }
+    };
+    tick();
+    timerIntervalRef.current = window.setInterval(tick, 1000) as unknown as number;
+    return () => {
+      if (timerIntervalRef.current) {
+        window.clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [status, mediaStarted, sessionEndingDismissed, handleEndCall]);
+
+  const formatRemaining = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+
   /* ---------- Render ---------- */
   const slots: SlotInfo[] = useMemo(
     () => [
       {
         id: 'doctor-camera',
-        label: userRole === 'doctor' ? 'You (Doctor)' : 'Doctor',
+        label: userRole === 'doctor' ? t('videoConsultation.youDoctor') : t('videoConsultation.doctor'),
         icon: <Stethoscope className="h-8 w-8" />,
         emptyHint: userRole === 'doctor'
-          ? 'Your camera is off'
-          : 'Waiting for the doctor’s camera…',
+          ? t('videoConsultation.yourCameraOff')
+          : t('videoConsultation.waitingDoctorCamera'),
         mirror: userRole === 'doctor',
         isLocal: userRole === 'doctor',
         hasTrack: slotHasTrack['doctor-camera'],
       },
       {
         id: 'patient-camera',
-        label: userRole === 'patient' ? 'You (Patient)' : 'Patient',
+        label: userRole === 'patient' ? t('videoConsultation.youPatient') : t('videoConsultation.patient'),
         icon: <User className="h-8 w-8" />,
         emptyHint: userRole === 'patient'
-          ? 'Your camera is off'
-          : 'Waiting for the patient’s camera…',
+          ? t('videoConsultation.yourCameraOff')
+          : t('videoConsultation.waitingPatientCamera'),
         mirror: userRole === 'patient',
         isLocal: userRole === 'patient',
         hasTrack: slotHasTrack['patient-camera'],
       },
       {
         id: 'doctor-screen',
-        label: 'Doctor · Screen',
+        label: t('videoConsultation.doctorScreen'),
         icon: <MonitorPlay className="h-8 w-8" />,
         emptyHint: userRole === 'doctor'
-          ? 'Click the screen icon to share'
-          : 'Doctor is not sharing their screen',
+          ? t('videoConsultation.clickToShare')
+          : t('videoConsultation.doctorNotSharing'),
         mirror: false,
         isLocal: userRole === 'doctor',
         hasTrack: slotHasTrack['doctor-screen'],
       },
     ],
-    [slotHasTrack, userRole],
+    [slotHasTrack, userRole, t],
   );
+
 
   
   const sideInfos = slots.filter((s) => s.id !== focusedSlot);
@@ -645,7 +781,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
           <span className="truncate">{info.label}</span>
           {info.id === 'doctor-screen' && info.hasTrack && (
-            <span className="text-primary">Live</span>
+            <span className="text-primary">{t('videoConsultation.live')}</span>
           )}
         </div>
       </div>
@@ -659,28 +795,57 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       style={{ height: isFullscreen ? '100vh' : 'min(80vh, 900px)', minHeight: '560px' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-border bg-card">
+      <div className="flex items-center justify-between p-3 border-b border-border bg-card gap-2 flex-wrap">
         <div className="flex items-center gap-3">
           <Badge variant={status === 'connected' ? 'default' : 'secondary'}>
             {status === 'connected'
-              ? 'Live'
+              ? t('videoConsultation.live')
               : status === 'connecting'
-                ? 'Connecting…'
+                ? t('videoConsultation.connecting')
                 : status === 'error'
-                  ? 'Error'
+                  ? t('videoConsultation.error')
                   : status === 'disconnected'
-                    ? 'Disconnected'
-                    : 'Idle'}
+                    ? t('videoConsultation.disconnected')
+                    : t('videoConsultation.idle')}
           </Badge>
           <span className="text-xs text-muted-foreground truncate max-w-[40ch]">
-            Room: {consultation.room_id}
+            {t('videoConsultation.room')}: {consultation.room_id}
           </span>
         </div>
-        <Badge variant="outline" className="gap-1">
-          <Users className="h-3 w-3" />
-          {participantCount}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {remainingSeconds != null && status === 'connected' && (
+            <Badge
+              variant={remainingSeconds <= WARN_AT_SECONDS ? 'destructive' : 'outline'}
+              className="font-mono tabular-nums"
+            >
+              {t('videoConsultation.sessionRemainingTime', { time: formatRemaining(remainingSeconds) })}
+            </Badge>
+          )}
+          <Badge variant="outline" className="gap-1">
+            <Users className="h-3 w-3" />
+            {participantCount}
+          </Badge>
+        </div>
       </div>
+
+      {/* 5-minute warning banner */}
+      {showSessionEndingBanner && !sessionEndingDismissed && status === 'connected' && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-destructive/10 border-b border-destructive/30 text-sm text-destructive-foreground">
+          <span className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            {t('videoConsultation.sessionEnding')}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive"
+            aria-label={t('videoConsultation.sessionEndingDismiss')}
+            onClick={() => setSessionEndingDismissed(true)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Stage — all 3 slots are positioned siblings, never re-mounted */}
       <div className="flex-1 relative bg-black overflow-hidden">
@@ -692,7 +857,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80">
             <div className="flex items-center gap-3 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              Connecting to video room…
+              {t('videoConsultation.connectingToRoom')}
             </div>
           </div>
         )}
@@ -701,13 +866,13 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/90 p-4">
             <Card className="p-6 max-w-md text-center space-y-3">
               <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
-              <h4 className="font-medium">Could not join the call</h4>
+              <h4 className="font-medium">{t('videoConsultation.couldNotJoin')}</h4>
               <p className="text-sm text-muted-foreground">{errorMsg}</p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={() => setReconnectKey((k) => k + 1)} className="gap-2">
-                  <RefreshCw className="h-4 w-4" /> Retry
+                  <RefreshCw className="h-4 w-4" /> {t('videoConsultation.retryButton')}
                 </Button>
-                <Button onClick={handleLeave} variant="outline">Leave</Button>
+                <Button onClick={handleLeave} variant="outline">{t('videoConsultation.leaveButton')}</Button>
               </div>
             </Card>
           </div>
@@ -716,25 +881,26 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         {status === 'disconnected' && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/90 p-4">
             <Card className="p-6 max-w-md text-center space-y-3">
-              <h4 className="font-medium">You were disconnected</h4>
+              <h4 className="font-medium">{t('videoConsultation.youWereDisconnected')}</h4>
               <div className="flex gap-2 justify-center">
                 <Button onClick={() => setReconnectKey((k) => k + 1)} className="gap-2">
-                  <RefreshCw className="h-4 w-4" /> Rejoin
+                  <RefreshCw className="h-4 w-4" /> {t('videoConsultation.rejoinButton')}
                 </Button>
-                <Button onClick={handleLeave} variant="outline">Leave</Button>
+                <Button onClick={handleLeave} variant="outline">{t('videoConsultation.leaveButton')}</Button>
               </div>
             </Card>
           </div>
         )}
+
 
         {status === 'connected' && !mediaStarted && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/85 p-4">
             <Card className="p-6 max-w-md text-center space-y-4">
               <PlayCircle className="h-10 w-10 text-primary mx-auto" />
               <div>
-                <h4 className="font-medium">Ready to join</h4>
+                <h4 className="font-medium">{t('videoConsultation.readyToJoin')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Your browser will ask for camera and microphone access.
+                  {t('videoConsultation.browserWillAsk')}
                 </p>
               </div>
               <Button onClick={startMedia} disabled={startingMedia} className="gap-2">
@@ -743,7 +909,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
                 ) : (
                   <Video className="h-4 w-4" />
                 )}
-                Start camera & microphone
+                {t('videoConsultation.startCameraAndMic')}
               </Button>
             </Card>
           </div>
@@ -752,13 +918,14 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         {showNotes && userRole === 'doctor' && (
           <div className="absolute right-3 top-3 w-72 z-20">
             <Card className="p-3 bg-card/95 backdrop-blur">
-              <h4 className="font-medium mb-2 text-sm">Consultation Notes</h4>
+              <h4 className="font-medium mb-2 text-sm">{t('videoConsultation.consultationNotes')}</h4>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about this consultation…"
+                placeholder={t('videoConsultation.notesPlaceholder')}
                 className="min-h-[120px] resize-none"
               />
+
             </Card>
           </div>
         )}

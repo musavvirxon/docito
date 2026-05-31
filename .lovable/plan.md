@@ -1,94 +1,69 @@
-# Finance, Services & Staff Invite Fixes
+# Video Consultation Stability + i18n Plan
 
-Scope is exactly the six items below — nothing more.
+## 1. Edge function: `supabase/functions/livekit-token/index.ts`
+- Restrict role resolution to `doctor` | `patient` only for appointment rooms. Reject other roles with 403.
+- Use LiveKit `RoomServiceClient.listParticipants(roomName)`:
+  - If `participants.length >= 2` → 403 `"Room is full"`.
+  - If any existing participant's metadata/identity matches the requesting role → 403 `"A {role} is already in this call"`.
+- Token grant:
+  - `maxParticipants: 2`
+  - doctor → `canPublishSources: ["camera","microphone","screen_share"]`
+  - patient → `canPublishSources: ["camera","microphone"]`
+- Encode role into participant `metadata` (JSON) so server-side dedup works.
 
-## 1. Staff invite crash
+## 2. `src/components/video/VideoRoom.tsx`
 
-**Migration**
-- `clinic_staff_status_check`: drop and re-create to include `active, inactive, on_leave, terminated, invited, pending, cancelled, removed`.
+### Screen share gating
+- Before `setScreenShareEnabled(true)`, iterate `room.remoteParticipants` and check `getTrackPublications()` for `Track.Source.ScreenShare` active publications. If present → `toast.error(t('videoConsultation.screenShareBlocked'))` and return.
 
-**Code**
-- `src/components/clinic/ClinicStaffManager.tsx` → `handleInviteSubmit`: remove the `clinic_staff` fallback insert entirely. Keep only the `staff_invitations` insert path.
+### Stable reconnection
+- `connectOptions.reconnectPolicy = { nextRetryDelayInMs: ctx => Math.min(10000, 500 * 1.5 ** ctx.retryCount), maxRetries: 50 }`.
+- Increase initial connect timeout `12000 → 20000`.
+- On `RoomEvent.Reconnected`: `await reattachAll()`; if `isAudioOnRef.current` → `setMicrophoneEnabled(true)`; if `isVideoOnRef.current` → `setCameraEnabled(true)`.
+- On `RoomEvent.MediaDevicesError`: auto-retry track enable after 3s, up to 3 attempts (tracked in a ref counter), then surface error.
+- 30s heartbeat `setInterval` while `status === 'connected'`: inspect `localParticipant` publications; silently re-enable missing expected tracks. Clear on unmount/disconnect.
+- Wrap all async event handlers in `try/catch` so nothing escapes to unhandled rejection.
 
-## 2. Services RLS for clinic admins
+### Session timer (1 h auto-close)
+- When `status` becomes `connected` and `mediaStarted` becomes true: `sessionStartRef.current = Date.now()`.
+- `setInterval(1000)` computes `remaining = 3600 - elapsed`; store in state `remainingSeconds`.
+- Header badge: `mm:ss remaining` using `t('videoConsultation.sessionRemainingTime', { time })`.
+- At `remaining === 300` show dismissible banner `t('videoConsultation.sessionEnding')`.
+- At `remaining <= 0` call `handleEndCall()` and clear interval.
+- Cleanup in unmount/disconnect effect.
 
-**Migration** on `public.procedures`:
-```sql
-CREATE POLICY "Practice admins manage procedures"
-ON public.procedures FOR ALL
-USING (EXISTS (SELECT 1 FROM public.practices p
-               WHERE p.id = procedures.practice_id
-                 AND p.admin_id = auth.uid()))
-WITH CHECK (EXISTS (SELECT 1 FROM public.practices p
-                    WHERE p.id = procedures.practice_id
-                      AND p.admin_id = auth.uid()));
-```
-(Confirm column names — verify `practice_id` exists on `procedures`, otherwise use the actual FK.)
+## 3. `src/components/video/VideoWaitingRoom.tsx`
+- `getUserMedia` errors handled by `err.name`:
+  - `NotAllowedError` → permission denied message.
+  - `NotFoundError` → no device message.
+  - `NotReadableError` → "device in use", auto retry once after 2s.
+  - Default → generic.
+- Wrap all async handlers in try/catch.
 
-## 3. Provider pricing & deposit fields
+## 4. i18n migration
 
-**Migration**: add to `procedures`:
-- `deposit_required boolean NOT NULL DEFAULT false`
-- `deposit_amount numeric`
-- `provider_override_price numeric`
+### `public/locales/en/dashboard.json`
+Add `videoConsultation` namespace with: `connecting, live, error, disconnected, idle, room, participants, couldNotJoin, retryButton, leaveButton, rejoinButton, youWereDisconnected, readyToJoin, browserWillAsk, startCameraAndMic, consultationNotes, notesPlaceholder, sessionEndsIn, sessionEnding, youDoctor, doctor, yourCameraOff, waitingDoctorCamera, patient, youPatient, waitingPatientCamera, doctorScreen, clickToShare, doctorNotSharing, screenShareBlocked, sessionRemainingTime`.
 
-**UI**: Services → Pricing Rules tab. Render a table with one row per service:
-- Service name (read-only)
-- Override price input (numeric)
-- Deposit required toggle
-- Deposit amount input (disabled when toggle off)
+### `public/locales/en/popups.json`
+Add `appointmentSession` block: status labels (`scheduled, confirmed, in_progress, completed, cancelled, no_show`), actions (`startSession, endSession, joinCall, reschedule, markNoShow, confirmAppointment`), and titles/descriptions found in `src/pages/AppointmentSession.tsx`.
 
-Save on `onBlur` / toggle change via direct `supabase.from('procedures').update(...).eq('id', ...)`. Optimistic local state, toast on error.
-
-## 4. Doctor payments → finance analytics
-
-**`src/hooks/useRecordPayment.ts`**: after the `payments` insert succeeds, invoke `finance-post-entry`:
-```ts
-await supabase.functions.invoke('finance-post-entry', {
-  body: {
-    entityType: practiceId ? 'practice' : 'doctor',
-    entityId: practiceId ?? doctorId,
-    entryType: 'income',
-    amountCents,
-    currency,
-    source: { table: 'payments', id: data.id },
-    occurredAt: paidAt,
-  },
-});
-```
-Non-blocking — log on failure, don't fail the user's payment flow.
-
-## 5. Finance sub-tabs in AdminDashboard
-
-`src/pages/AdminDashboard.tsx` — replace the inline prototype blocks:
-- Ledger sub-tab → `<FinanceLedgerPanel entityType="practice" entityId={practice.id} />`
-- Compensation sub-tab → `<CompensationProfilesPanel entityType="practice" entityId={practice.id} />`
-- Recurring sub-tab → `<RecurringRulesPanel entityType="practice" entityId={practice.id} />`
-
-Remove the `window.prompt()` scaffolding. Add the imports from `@/components/financial/...`. (Verify component filenames during build; fall back to existing exports like `FinanceLedgerManager` if the `Panel` variant doesn't exist.)
-
-## 6. Billing invoices + Superbills wiring
-
-**Invoices tab (clinic admin)**: query `billing_invoices` directly where `entity_id = practice.id`. Columns:
-- Patient, Issued date, Due (total), Paid, Remaining, Status, Actions
-
-Rendering:
-- Remaining in destructive color when `> 0`
-- Progress bar = `paid / due`
-- Status badge: `Paid` (remaining = 0), `Partial` (paid > 0), `Pending` (paid = 0)
-
-**Doctor side**:
-- `src/hooks/useSuperbills.ts`: accept optional `doctorId` filter; when provided, scope query to that doctor.
-- `src/components/.../DoctorFinancialStatsSection.tsx`: add a "Superbills" tab rendering `<SuperbillsManager doctorId={doctorId} />`.
+### Replace hardcoded strings
+- `VideoRoom.tsx`, `VideoWaitingRoom.tsx` → `useTranslation('dashboard')` + `t('videoConsultation.*')`.
+- `AppointmentSession.tsx` → `useTranslation('popups')` for the new keys.
+- Scan `src/components/clinic/`, `src/components/dashboard/`, `src/pages/AppointmentSession.tsx` for remaining English JSX literals; move into `dashboard.json` or `admin.json` under descriptive keys and replace with `t()`.
+- English-only this pass (per request); other locales fall back to EN until a separate translation task.
 
 ## Files touched
-- 3 migrations (staff status, procedures RLS, procedures columns)
-- `src/components/clinic/ClinicStaffManager.tsx`
-- `src/components/.../ClinicServicesManager.tsx` (or new PricingRulesTable component within Services UI)
-- `src/hooks/useRecordPayment.ts`
-- `src/pages/AdminDashboard.tsx` (finance sub-tabs + invoices tab query)
-- `src/hooks/useSuperbills.ts`
-- `src/components/.../DoctorFinancialStatsSection.tsx`
+- `supabase/functions/livekit-token/index.ts`
+- `src/components/video/VideoRoom.tsx`
+- `src/components/video/VideoWaitingRoom.tsx`
+- `src/pages/AppointmentSession.tsx`
+- Selected files under `src/components/clinic/` and `src/components/dashboard/` (only those containing English literals discovered during the sweep)
+- `public/locales/en/dashboard.json`
+- `public/locales/en/popups.json`
 
 ## Out of scope
-- Webhook changes, new edge functions, design overhauls, i18n string updates beyond labels for new fields.
+- Non-EN locale translations for the new keys.
+- UI redesign of video room (only string + behavior changes).
+- Changes to billing/finance code.
