@@ -509,11 +509,12 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const requireConnected = () => {
     const room = roomRef.current;
     if (!room || room.state !== ConnectionState.Connected) {
-      toast.error('Still connecting. Try again in a moment.');
+      toast.error(t('videoConsultation.stillConnecting'));
       return null;
     }
     return room;
   };
+
 
   const startMedia = useCallback(async () => {
     const room = requireConnected();
