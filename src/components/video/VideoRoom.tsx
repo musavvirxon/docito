@@ -465,11 +465,19 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     return () => {
       cancelledRef.current = true;
       window.clearTimeout(timeout);
+      if (heartbeatRef.current) {
+        window.clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+      if (timerIntervalRef.current) {
+        window.clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
       try { room.removeAllListeners(); } catch { /* noop */ }
       (['doctor-camera', 'doctor-screen', 'patient-camera'] as SlotId[]).forEach((s) => {
-        const t = slotTrackRefs.current[s];
-        if (t) {
-          try { t.detach().forEach((el) => el.remove()); } catch { /* noop */ }
+        const tr = slotTrackRefs.current[s];
+        if (tr) {
+          try { tr.detach().forEach((el) => el.remove()); } catch { /* noop */ }
           slotTrackRefs.current[s] = null;
         }
       });
@@ -485,17 +493,18 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const explainMediaError = (err: any, fallback: string) => {
     const name = err?.name || '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-      toast.error('Permission denied. Allow camera, microphone or screen sharing in your browser settings.');
+      toast.error(t('videoConsultation.permissionDenied'));
     } else if (name === 'NotFoundError') {
-      toast.error('No matching camera or microphone was found on this device.');
+      toast.error(t('videoConsultation.noDeviceFound'));
     } else if (name === 'NotReadableError') {
-      toast.error('The camera or microphone is already in use by another app.');
+      toast.error(t('videoConsultation.deviceInUse'));
     } else if (name === 'SecurityError' || name === 'NotSupportedError') {
-      toast.error('Media permissions require a secure HTTPS browser context.');
+      toast.error(t('videoConsultation.secureContextRequired'));
     } else {
       toast.error(err?.message || fallback);
     }
   };
+
 
   const requireConnected = () => {
     const room = roomRef.current;
