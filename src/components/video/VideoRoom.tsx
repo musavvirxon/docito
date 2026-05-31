@@ -135,6 +135,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [notes, setNotes] = useState(consultation.notes || '');
   const [participantCount, setParticipantCount] = useState(1);
   const [reconnectKey, setReconnectKey] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [showSessionEndingBanner, setShowSessionEndingBanner] = useState(false);
+  const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
+
 
   /* ---------- Slot mapping ---------- */
   const sourceToSlot = useCallback(
