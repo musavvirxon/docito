@@ -434,7 +434,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         if (cancelledRef.current) return;
         if (resp.error || !resp.data?.token) {
           setStatus('error');
-          setErrorMsg(resp.error?.message || 'Failed to get video token');
+          setErrorMsg(resp.error?.message || t('videoConsultation.couldNotJoin'));
           return;
         }
 
