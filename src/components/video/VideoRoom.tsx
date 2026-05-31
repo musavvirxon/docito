@@ -81,10 +81,16 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   guestToken,
   userName,
 }) => {
+  const { t } = useTranslation('dashboard');
   const containerRef = useRef<HTMLDivElement>(null);
   const audioContainer = useRef<HTMLDivElement>(null);
   const roomRef = useRef<Room | null>(null);
   const cancelledRef = useRef(false);
+  const heartbeatRef = useRef<number | null>(null);
+  const sessionStartRef = useRef<number | null>(null);
+  const timerIntervalRef = useRef<number | null>(null);
+  const mediaErrorRetryRef = useRef(0);
+
 
   // Stable DOM refs for each slot (always mounted — never unmounted on toggle)
   const slotNodeRefs = useRef<Record<SlotId, HTMLDivElement | null>>({
