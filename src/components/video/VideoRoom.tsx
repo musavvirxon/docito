@@ -419,7 +419,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           if (!sessionData?.session?.access_token) {
             if (!cancelledRef.current) {
               setStatus('error');
-              setErrorMsg('You must be signed in to join the call.');
+              setErrorMsg(t('videoConsultation.couldNotJoin'));
             }
             return;
           }
