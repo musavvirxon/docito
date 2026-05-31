@@ -898,9 +898,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             <Card className="p-6 max-w-md text-center space-y-4">
               <PlayCircle className="h-10 w-10 text-primary mx-auto" />
               <div>
-                <h4 className="font-medium">Ready to join</h4>
+                <h4 className="font-medium">{t('videoConsultation.readyToJoin')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Your browser will ask for camera and microphone access.
+                  {t('videoConsultation.browserWillAsk')}
                 </p>
               </div>
               <Button onClick={startMedia} disabled={startingMedia} className="gap-2">
@@ -909,7 +909,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
                 ) : (
                   <Video className="h-4 w-4" />
                 )}
-                Start camera & microphone
+                {t('videoConsultation.startCameraAndMic')}
               </Button>
             </Card>
           </div>
@@ -918,13 +918,14 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         {showNotes && userRole === 'doctor' && (
           <div className="absolute right-3 top-3 w-72 z-20">
             <Card className="p-3 bg-card/95 backdrop-blur">
-              <h4 className="font-medium mb-2 text-sm">Consultation Notes</h4>
+              <h4 className="font-medium mb-2 text-sm">{t('videoConsultation.consultationNotes')}</h4>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add notes about this consultation…"
+                placeholder={t('videoConsultation.notesPlaceholder')}
                 className="min-h-[120px] resize-none"
               />
+
             </Card>
           </div>
         )}
