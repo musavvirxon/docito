@@ -573,31 +573,48 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     if (!room) return;
     try {
       const next = !isScreenSharingRef.current;
+      if (next) {
+        // Block if a remote participant already has an active screen-share publication.
+        let someoneElseSharing = false;
+        room.remoteParticipants.forEach((p) => {
+          p.trackPublications.forEach((pub) => {
+            if (pub.source === Track.Source.ScreenShare && (pub.track || pub.isSubscribed)) {
+              someoneElseSharing = true;
+            }
+          });
+        });
+        if (someoneElseSharing) {
+          toast.error(t('videoConsultation.screenShareBlocked'));
+          return;
+        }
+      }
       await room.localParticipant.setScreenShareEnabled(next, { audio: true });
       isScreenSharingRef.current = next;
       setIsScreenSharing(next);
       if (next) {
         const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
-        const t = pub?.track;
-        if (t) {
+        const tr = pub?.track;
+        if (tr) {
           const onEnded = () => {
             isScreenSharingRef.current = false;
             setIsScreenSharing(false);
-            try { t.off('ended' as any, onEnded); } catch { /* noop */ }
+            try { tr.off('ended' as any, onEnded); } catch { /* noop */ }
           };
-          try { t.on('ended' as any, onEnded); } catch { /* noop */ }
-          const mst = (t as any).mediaStreamTrack as MediaStreamTrack | undefined;
+          try { tr.on('ended' as any, onEnded); } catch { /* noop */ }
+          const mst = (tr as any).mediaStreamTrack as MediaStreamTrack | undefined;
           if (mst) mst.addEventListener('ended', onEnded, { once: true });
         }
       }
     } catch (err: any) {
       if (err?.name === 'NotAllowedError') {
-        toast.error('Screen share was cancelled or not permitted.');
+        toast.error(t('videoConsultation.screenShareCancelled'));
       } else {
         explainMediaError(err, 'Failed to start screen sharing.');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   useEffect(() => {
     const onVisibility = async () => {
