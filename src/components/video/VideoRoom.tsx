@@ -656,6 +656,44 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     onLeave();
   }, [onLeave]);
 
+  /* ---------- Session timer (1h auto-close) ---------- */
+  useEffect(() => {
+    if (status !== 'connected' || !mediaStarted) return;
+    if (sessionStartRef.current == null) sessionStartRef.current = Date.now();
+
+    const tick = () => {
+      if (sessionStartRef.current == null) return;
+      const elapsed = Math.floor((Date.now() - sessionStartRef.current) / 1000);
+      const remaining = Math.max(0, SESSION_MAX_SECONDS - elapsed);
+      setRemainingSeconds(remaining);
+      if (remaining <= WARN_AT_SECONDS && !sessionEndingDismissed) {
+        setShowSessionEndingBanner(true);
+      }
+      if (remaining <= 0) {
+        if (timerIntervalRef.current) {
+          window.clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
+        try { handleEndCall(); } catch (e) { console.warn(e); }
+      }
+    };
+    tick();
+    timerIntervalRef.current = window.setInterval(tick, 1000) as unknown as number;
+    return () => {
+      if (timerIntervalRef.current) {
+        window.clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
+  }, [status, mediaStarted, sessionEndingDismissed, handleEndCall]);
+
+  const formatRemaining = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+
   /* ---------- Render ---------- */
   const slots: SlotInfo[] = useMemo(
     () => [
