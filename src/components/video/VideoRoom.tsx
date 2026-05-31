@@ -699,40 +699,41 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     () => [
       {
         id: 'doctor-camera',
-        label: userRole === 'doctor' ? 'You (Doctor)' : 'Doctor',
+        label: userRole === 'doctor' ? t('videoConsultation.youDoctor') : t('videoConsultation.doctor'),
         icon: <Stethoscope className="h-8 w-8" />,
         emptyHint: userRole === 'doctor'
-          ? 'Your camera is off'
-          : 'Waiting for the doctor’s camera…',
+          ? t('videoConsultation.yourCameraOff')
+          : t('videoConsultation.waitingDoctorCamera'),
         mirror: userRole === 'doctor',
         isLocal: userRole === 'doctor',
         hasTrack: slotHasTrack['doctor-camera'],
       },
       {
         id: 'patient-camera',
-        label: userRole === 'patient' ? 'You (Patient)' : 'Patient',
+        label: userRole === 'patient' ? t('videoConsultation.youPatient') : t('videoConsultation.patient'),
         icon: <User className="h-8 w-8" />,
         emptyHint: userRole === 'patient'
-          ? 'Your camera is off'
-          : 'Waiting for the patient’s camera…',
+          ? t('videoConsultation.yourCameraOff')
+          : t('videoConsultation.waitingPatientCamera'),
         mirror: userRole === 'patient',
         isLocal: userRole === 'patient',
         hasTrack: slotHasTrack['patient-camera'],
       },
       {
         id: 'doctor-screen',
-        label: 'Doctor · Screen',
+        label: t('videoConsultation.doctorScreen'),
         icon: <MonitorPlay className="h-8 w-8" />,
         emptyHint: userRole === 'doctor'
-          ? 'Click the screen icon to share'
-          : 'Doctor is not sharing their screen',
+          ? t('videoConsultation.clickToShare')
+          : t('videoConsultation.doctorNotSharing'),
         mirror: false,
         isLocal: userRole === 'doctor',
         hasTrack: slotHasTrack['doctor-screen'],
       },
     ],
-    [slotHasTrack, userRole],
+    [slotHasTrack, userRole, t],
   );
+
 
   
   const sideInfos = slots.filter((s) => s.id !== focusedSlot);
