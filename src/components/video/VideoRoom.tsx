@@ -458,7 +458,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         if (cancelledRef.current) return;
         console.error('LiveKit connect error:', err);
         setStatus('error');
-        setErrorMsg(err?.message || 'Could not connect to the video room.');
+        setErrorMsg(err?.message || t('videoConsultation.couldNotJoin'));
       }
     })();
 
