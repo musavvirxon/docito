@@ -305,19 +305,38 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       dynacast: true,
       publishDefaults: { simulcast: true },
       reconnectPolicy: {
-        nextRetryDelayInMs: (ctx) => Math.min(30000, 1000 * Math.pow(2, ctx.retryCount)),
+        nextRetryDelayInMs: (ctx: { retryCount: number }) =>
+          Math.min(10000, 500 * Math.pow(1.5, ctx.retryCount)),
+        maxRetries: 50,
       } as any,
     });
     roomRef.current = room;
 
     const reattachAll = () => {
-      room.remoteParticipants.forEach((p) => {
-        p.trackPublications.forEach((pub) => {
-          if (pub.track && pub.isSubscribed) {
-            handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
-          }
+      try {
+        room.remoteParticipants.forEach((p) => {
+          p.trackPublications.forEach((pub) => {
+            if (pub.track && pub.isSubscribed) {
+              handleRemoteTrack(pub.track as RemoteTrack, pub as RemoteTrackPublication, p);
+            }
+          });
         });
-      });
+      } catch (e) { console.warn('reattachAll failed', e); }
+    };
+
+    const safeEnableMic = async () => {
+      try {
+        if (isAudioOnRef.current && !room.localParticipant.isMicrophoneEnabled) {
+          await room.localParticipant.setMicrophoneEnabled(true);
+        }
+      } catch (e) { console.warn('mic re-enable failed', e); }
+    };
+    const safeEnableCam = async () => {
+      try {
+        if (isVideoOnRef.current && !room.localParticipant.isCameraEnabled) {
+          await room.localParticipant.setCameraEnabled(true);
+        }
+      } catch (e) { console.warn('cam re-enable failed', e); }
     };
 
     room.on(RoomEvent.TrackSubscribed, handleRemoteTrack);
@@ -328,32 +347,67 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     room.on(RoomEvent.ParticipantDisconnected, handleParticipantGone);
     room.on(RoomEvent.ConnectionStateChanged, (state: ConnectionState) => {
       if (cancelledRef.current) return;
-      if (state === ConnectionState.Connected) setStatus('connected');
-      else if (state === ConnectionState.Reconnecting) setStatus('connecting');
-      else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+      try {
+        if (state === ConnectionState.Connected) setStatus('connected');
+        else if (state === ConnectionState.Reconnecting) setStatus('connecting');
+        else if (state === ConnectionState.Disconnected) setStatus('disconnected');
+      } catch (e) { console.warn(e); }
     });
     room.on(RoomEvent.Reconnected, () => {
       if (cancelledRef.current) return;
       setStatus('connected');
-      reattachAll();
+      (async () => {
+        try {
+          reattachAll();
+          await safeEnableMic();
+          await safeEnableCam();
+        } catch (e) { console.warn('reconnect handler failed', e); }
+      })().catch(() => { /* swallow */ });
     });
     room.on(RoomEvent.Reconnecting, () => {
       if (cancelledRef.current) return;
       setStatus('connecting');
     });
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
-      explainMediaError(err, 'Media device error.');
-      setIsAudioOn(false);
-      setIsVideoOn(false);
-      setIsScreenSharing(false);
+      try {
+        mediaErrorRetryRef.current += 1;
+        if (mediaErrorRetryRef.current <= 3) {
+          window.setTimeout(() => {
+            (async () => {
+              try {
+                await safeEnableMic();
+                await safeEnableCam();
+              } catch { /* noop */ }
+            })().catch(() => { /* swallow */ });
+          }, 3000);
+          return;
+        }
+        explainMediaError(err, t('videoConsultation.deviceInUse'));
+        setIsAudioOn(false);
+        setIsVideoOn(false);
+        setIsScreenSharing(false);
+      } catch (e) { console.warn(e); }
     });
+
+    // Heartbeat — every 30s ensure expected local tracks are still published.
+    heartbeatRef.current = window.setInterval(() => {
+      if (cancelledRef.current) return;
+      if (room.state !== ConnectionState.Connected) return;
+      (async () => {
+        try {
+          await safeEnableMic();
+          await safeEnableCam();
+        } catch { /* noop */ }
+      })().catch(() => { /* swallow */ });
+    }, 30000) as unknown as number;
 
     const timeout = window.setTimeout(() => {
       if (!cancelledRef.current && room.state !== ConnectionState.Connected) {
         setStatus('error');
-        setErrorMsg('Network or video service unreachable. Please retry.');
+        setErrorMsg(t('videoConsultation.couldNotJoin'));
       }
-    }, 12000);
+    }, 20000);
+
 
     (async () => {
       try {
