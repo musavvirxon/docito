@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Room,
   RoomEvent,
@@ -33,6 +34,7 @@ import {
   User,
   Stethoscope,
   MonitorPlay,
+  X,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,6 +48,10 @@ interface VideoRoomProps {
   onLeave: () => void;
   guestToken?: string;
 }
+
+const SESSION_MAX_SECONDS = 3600; // 1 hour auto-close
+const WARN_AT_SECONDS = 300; // 5-minute warning
+
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
 
