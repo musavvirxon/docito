@@ -781,7 +781,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
           <span className="truncate">{info.label}</span>
           {info.id === 'doctor-screen' && info.hasTrack && (
-            <span className="text-primary">Live</span>
+            <span className="text-primary">{t('videoConsultation.live')}</span>
           )}
         </div>
       </div>
@@ -795,28 +795,57 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       style={{ height: isFullscreen ? '100vh' : 'min(80vh, 900px)', minHeight: '560px' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-border bg-card">
+      <div className="flex items-center justify-between p-3 border-b border-border bg-card gap-2 flex-wrap">
         <div className="flex items-center gap-3">
           <Badge variant={status === 'connected' ? 'default' : 'secondary'}>
             {status === 'connected'
-              ? 'Live'
+              ? t('videoConsultation.live')
               : status === 'connecting'
-                ? 'Connecting…'
+                ? t('videoConsultation.connecting')
                 : status === 'error'
-                  ? 'Error'
+                  ? t('videoConsultation.error')
                   : status === 'disconnected'
-                    ? 'Disconnected'
-                    : 'Idle'}
+                    ? t('videoConsultation.disconnected')
+                    : t('videoConsultation.idle')}
           </Badge>
           <span className="text-xs text-muted-foreground truncate max-w-[40ch]">
-            Room: {consultation.room_id}
+            {t('videoConsultation.room')}: {consultation.room_id}
           </span>
         </div>
-        <Badge variant="outline" className="gap-1">
-          <Users className="h-3 w-3" />
-          {participantCount}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {remainingSeconds != null && status === 'connected' && (
+            <Badge
+              variant={remainingSeconds <= WARN_AT_SECONDS ? 'destructive' : 'outline'}
+              className="font-mono tabular-nums"
+            >
+              {t('videoConsultation.sessionRemainingTime', { time: formatRemaining(remainingSeconds) })}
+            </Badge>
+          )}
+          <Badge variant="outline" className="gap-1">
+            <Users className="h-3 w-3" />
+            {participantCount}
+          </Badge>
+        </div>
       </div>
+
+      {/* 5-minute warning banner */}
+      {showSessionEndingBanner && !sessionEndingDismissed && status === 'connected' && (
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-destructive/10 border-b border-destructive/30 text-sm text-destructive-foreground">
+          <span className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-4 w-4" />
+            {t('videoConsultation.sessionEnding')}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive"
+            aria-label={t('videoConsultation.sessionEndingDismiss')}
+            onClick={() => setSessionEndingDismissed(true)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
 
       {/* Stage — all 3 slots are positioned siblings, never re-mounted */}
       <div className="flex-1 relative bg-black overflow-hidden">
@@ -828,7 +857,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/80">
             <div className="flex items-center gap-3 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" />
-              Connecting to video room…
+              {t('videoConsultation.connectingToRoom')}
             </div>
           </div>
         )}
@@ -837,13 +866,13 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/90 p-4">
             <Card className="p-6 max-w-md text-center space-y-3">
               <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
-              <h4 className="font-medium">Could not join the call</h4>
+              <h4 className="font-medium">{t('videoConsultation.couldNotJoin')}</h4>
               <p className="text-sm text-muted-foreground">{errorMsg}</p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={() => setReconnectKey((k) => k + 1)} className="gap-2">
-                  <RefreshCw className="h-4 w-4" /> Retry
+                  <RefreshCw className="h-4 w-4" /> {t('videoConsultation.retryButton')}
                 </Button>
-                <Button onClick={handleLeave} variant="outline">Leave</Button>
+                <Button onClick={handleLeave} variant="outline">{t('videoConsultation.leaveButton')}</Button>
               </div>
             </Card>
           </div>
@@ -852,16 +881,17 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         {status === 'disconnected' && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/90 p-4">
             <Card className="p-6 max-w-md text-center space-y-3">
-              <h4 className="font-medium">You were disconnected</h4>
+              <h4 className="font-medium">{t('videoConsultation.youWereDisconnected')}</h4>
               <div className="flex gap-2 justify-center">
                 <Button onClick={() => setReconnectKey((k) => k + 1)} className="gap-2">
-                  <RefreshCw className="h-4 w-4" /> Rejoin
+                  <RefreshCw className="h-4 w-4" /> {t('videoConsultation.rejoinButton')}
                 </Button>
-                <Button onClick={handleLeave} variant="outline">Leave</Button>
+                <Button onClick={handleLeave} variant="outline">{t('videoConsultation.leaveButton')}</Button>
               </div>
             </Card>
           </div>
         )}
+
 
         {status === 'connected' && !mediaStarted && (
           <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/85 p-4">
