@@ -14,14 +14,22 @@ function b64url(buf: ArrayBuffer): string {
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+type Role = 'doctor' | 'patient' | 'guest';
+
 async function makeLivekitToken(
   apiKey: string,
   apiSecret: string,
   roomName: string,
   identity: string,
   name: string,
+  role: Role,
 ): Promise<string> {
   const enc = new TextEncoder();
+
+  const canPublishSources =
+    role === 'doctor'
+      ? ['camera', 'microphone', 'screen_share', 'screen_share_audio']
+      : ['camera', 'microphone'];
 
   const header = { alg: "HS256", typ: "JWT" };
   const now = Math.floor(Date.now() / 1000);
@@ -31,13 +39,18 @@ async function makeLivekitToken(
     name,
     iat: now,
     nbf: now,
-    exp: now + 4 * 3600, // 4 hours — long appointments must not silently drop
+    exp: now + 4 * 3600,
+    metadata: JSON.stringify({ role }),
     video: {
       roomJoin: true,
       room: roomName,
       canPublish: true,
       canSubscribe: true,
       canPublishData: true,
+      canPublishSources,
+      roomCreate: true,
+      // maxParticipants is enforced on the room itself — also gate via
+      // server-side participant check below.
     },
   };
 
@@ -57,6 +70,70 @@ async function makeLivekitToken(
   return `${signingInput}.${b64url(sig)}`;
 }
 
+/* ---------- LiveKit RoomService helpers (REST) ---------- */
+async function livekitListParticipants(
+  livekitUrl: string,
+  apiKey: string,
+  apiSecret: string,
+  roomName: string,
+): Promise<Array<{ identity: string; metadata?: string }>> {
+  try {
+    const httpBase = livekitUrl.replace(/^wss:\/\//, 'https://').replace(/^ws:\/\//, 'http://');
+    // Sign a short-lived admin token with roomAdmin
+    const enc = new TextEncoder();
+    const header = { alg: "HS256", typ: "JWT" };
+    const now = Math.floor(Date.now() / 1000);
+    const payload = {
+      iss: apiKey,
+      sub: 'roomservice',
+      iat: now,
+      nbf: now,
+      exp: now + 60,
+      video: { roomAdmin: true, room: roomName },
+    };
+    const signingInput =
+      b64url(enc.encode(JSON.stringify(header)).buffer) +
+      "." +
+      b64url(enc.encode(JSON.stringify(payload)).buffer);
+    const key = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(apiSecret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, enc.encode(signingInput));
+    const adminToken = `${signingInput}.${b64url(sig)}`;
+
+    const resp = await fetch(`${httpBase}/twirp/livekit.RoomService/ListParticipants`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${adminToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ room: roomName }),
+    });
+    if (!resp.ok) return [];
+    const json = await resp.json().catch(() => ({}));
+    return Array.isArray(json.participants) ? json.participants : [];
+  } catch (e) {
+    console.warn('livekit list participants failed', e);
+    return [];
+  }
+}
+
+function getParticipantRole(p: { identity: string; metadata?: string }): Role {
+  try {
+    if (p.metadata) {
+      const m = JSON.parse(p.metadata);
+      if (m?.role === 'doctor' || m?.role === 'patient') return m.role;
+    }
+  } catch { /* fallthrough */ }
+  const [r] = (p.identity || '').split('::');
+  if (r === 'doctor' || r === 'patient') return r;
+  return 'guest';
+}
+
 /* ---------- handler ---------- */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -68,10 +145,18 @@ Deno.serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Parse body first to detect guest-token flow (does not require auth)
     let body: { appointmentId?: string; roomId?: string; guestToken?: string; displayName?: string } = {};
     try { body = await req.json(); } catch { /* allow empty */ }
     const { appointmentId, roomId, guestToken, displayName } = body;
+
+    const apiKey = Deno.env.get("LIVEKIT_API_KEY");
+    const apiSecret = Deno.env.get("LIVEKIT_API_SECRET");
+    const livekitUrl = Deno.env.get("LIVEKIT_URL");
+    if (!apiKey || !apiSecret || !livekitUrl) {
+      return new Response(JSON.stringify({ error: "LiveKit not configured" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // --- GUEST TOKEN FLOW (unregistered patient via shareable link) ---
     if (guestToken) {
@@ -95,17 +180,21 @@ Deno.serve(async (req) => {
         if (dp?.full_name) guestName = dp.full_name;
       }
 
-      const apiKey = Deno.env.get("LIVEKIT_API_KEY");
-      const apiSecret = Deno.env.get("LIVEKIT_API_SECRET");
-      const livekitUrl = Deno.env.get("LIVEKIT_URL");
-      if (!apiKey || !apiSecret || !livekitUrl) {
-        return new Response(JSON.stringify({ error: "LiveKit not configured" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      // Guests join as 'patient' role. Enforce room capacity + role uniqueness.
+      const existing = await livekitListParticipants(livekitUrl, apiKey, apiSecret, vc.room_id);
+      if (existing.length >= 2) {
+        return new Response(JSON.stringify({ error: "Room is full" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (existing.some((p) => getParticipantRole(p) === 'patient')) {
+        return new Response(JSON.stringify({ error: "A patient is already in this call" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      const identity = `guest::${vc.id}::${crypto.randomUUID().slice(0, 8)}`;
-      const token = await makeLivekitToken(apiKey, apiSecret, vc.room_id, identity, guestName);
+      const identity = `patient::guest-${vc.id}-${crypto.randomUUID().slice(0, 8)}`;
+      const token = await makeLivekitToken(apiKey, apiSecret, vc.room_id, identity, guestName, 'patient');
       return new Response(
         JSON.stringify({ token, url: livekitUrl, roomId: vc.room_id }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -139,19 +228,15 @@ Deno.serve(async (req) => {
     if (!appointmentId && !roomId) {
       return new Response(
         JSON.stringify({ error: "appointmentId or roomId required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // If appointmentId provided, verify user is doctor or patient
     let resolvedRoomId = roomId;
     let participantName = user.email || user.id;
+    let role: Role = 'guest';
 
     if (appointmentId) {
-      // Use service role to bypass RLS for the lookup; we authorize manually below.
       const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
       const { data: appt, error: apptErr } = await adminClient
@@ -161,142 +246,71 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (apptErr || !appt) {
-        return new Response(
-          JSON.stringify({ error: "Appointment not found" }),
-          {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
+        return new Response(JSON.stringify({ error: "Appointment not found" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
-      // appt.doctor_id references doctors.id and appt.patient_id may reference
-      // a patient row id, not auth user id. Resolve user-id ownership.
       let isDoctor = appt.doctor_id === user.id;
       let isPatient = appt.patient_id === user.id;
 
       if (!isDoctor && appt.doctor_id) {
         const { data: doctorRow } = await adminClient
-          .from("doctors")
-          .select("user_id")
-          .eq("id", appt.doctor_id)
-          .maybeSingle();
+          .from("doctors").select("user_id").eq("id", appt.doctor_id).maybeSingle();
         if (doctorRow?.user_id === user.id) isDoctor = true;
       }
-
       if (!isPatient && !isDoctor && appt.patient_id) {
         const { data: patientRow } = await adminClient
-          .from("profiles")
-          .select("user_id")
-          .eq("id", appt.patient_id)
-          .maybeSingle();
+          .from("profiles").select("user_id").eq("id", appt.patient_id).maybeSingle();
         if (patientRow?.user_id === user.id) isPatient = true;
       }
 
-      // Allow practice staff assigned to this appointment's practice to join.
-      let isClinicMember = false;
-      if (!isDoctor && !isPatient && appt.practice_id) {
-        const { data: staffRow } = await adminClient
-          .from("clinic_staff")
-          .select("id")
-          .eq("practice_id", appt.practice_id)
-          .eq("user_id", user.id)
-          .eq("status", "active")
-          .maybeSingle();
-        isClinicMember = !!staffRow;
-      }
-
-      if (!isDoctor && !isPatient && !isClinicMember) {
+      // Appointment rooms are strictly doctor + patient. Clinic staff/guest
+      // join paths are not allowed.
+      if (!isDoctor && !isPatient) {
         return new Response(
-          JSON.stringify({ error: "Not a participant of this appointment" }),
-          {
-            status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+          JSON.stringify({ error: "Only the doctor and patient may join this consultation" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
 
+      role = isDoctor ? 'doctor' : 'patient';
       resolvedRoomId = appt.video_room_id || `appointment-${appointmentId}`;
 
-      // Get display name
       const { data: profile } = await supabase
         .from("profiles")
         .select("full_name")
         .eq("user_id", user.id)
         .maybeSingle();
-
       participantName = profile?.full_name || user.email || user.id;
+    } else if (roomId) {
+      // Free-room flow (non-appointment) — treat caller as doctor.
+      role = 'doctor';
     }
 
-    // Generate LiveKit token
-    const apiKey = Deno.env.get("LIVEKIT_API_KEY");
-    const apiSecret = Deno.env.get("LIVEKIT_API_SECRET");
-    const livekitUrl = Deno.env.get("LIVEKIT_URL");
-
-    if (!apiKey || !apiSecret || !livekitUrl) {
-      return new Response(
-        JSON.stringify({ error: "LiveKit not configured" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    // Enforce capacity + role uniqueness via LiveKit RoomService.
+    const existing = await livekitListParticipants(livekitUrl, apiKey, apiSecret, resolvedRoomId!);
+    const myIdentity = `${role}::${user.id}`;
+    const others = existing.filter((p) => p.identity !== myIdentity);
+    if (others.length >= 2) {
+      return new Response(JSON.stringify({ error: "Room is full" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (others.some((p) => getParticipantRole(p) === role)) {
+      const who = role === 'doctor' ? 'A doctor' : 'A patient';
+      return new Response(JSON.stringify({ error: `${who} is already in this call` }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Prefix identity with role so the client can distinguish doctor/patient
-    // tracks reliably. Format: "<role>::<userId>"
-    let role: 'doctor' | 'patient' | 'staff' | 'guest' = 'guest';
-    if (appointmentId) {
-      // Re-derive flags in this scope
-      // (variables `isDoctor`, `isPatient`, `isClinicMember` are not visible here
-      // because they were declared in an inner block; recompute cheaply.)
-    }
-    // Recompute role inline using the same admin client lookups already done
-    // We refetch only minimally — appointment row is small.
-    if (appointmentId) {
-      try {
-        const adminClient = createClient(
-          Deno.env.get("SUPABASE_URL")!,
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-        );
-        const { data: appt } = await adminClient
-          .from("appointments")
-          .select("doctor_id, patient_id, practice_id")
-          .eq("id", appointmentId)
-          .maybeSingle();
-        if (appt) {
-          if (appt.doctor_id === user.id) role = 'doctor';
-          else if (appt.patient_id === user.id) role = 'patient';
-          else {
-            const { data: doctorRow } = await adminClient
-              .from("doctors").select("user_id").eq("id", appt.doctor_id).maybeSingle();
-            if (doctorRow?.user_id === user.id) role = 'doctor';
-            else {
-              const { data: patientRow } = await adminClient
-                .from("profiles").select("user_id").eq("id", appt.patient_id).maybeSingle();
-              if (patientRow?.user_id === user.id) role = 'patient';
-              else if (appt.practice_id) role = 'staff';
-            }
-          }
-        }
-      } catch { /* leave role as guest */ }
-    }
-
-    const identity = `${role}::${user.id}`;
     const token = await makeLivekitToken(
-      apiKey,
-      apiSecret,
-      resolvedRoomId,
-      identity,
-      participantName,
+      apiKey, apiSecret, resolvedRoomId!, myIdentity, participantName, role,
     );
 
     return new Response(
       JSON.stringify({ token, url: livekitUrl, roomId: resolvedRoomId }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("livekit-token error:", err);
