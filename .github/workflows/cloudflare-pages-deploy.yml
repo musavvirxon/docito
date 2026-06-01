@@ -43,6 +43,14 @@ jobs:
         env:
           CI: false
 
+      - name: Verify Cloudflare config files
+        run: |
+          echo "=== dist/_redirects ==="
+          cat dist/_redirects
+          echo "=== dist/_headers ==="
+          cat dist/_headers || echo "(no _headers)"
+
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
