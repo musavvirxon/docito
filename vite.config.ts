@@ -1,6 +1,7 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
+import { copyFile, mkdir } from "node:fs/promises";
 import { componentTagger } from "lovable-tagger";
 
 /**
@@ -23,6 +24,36 @@ function asyncCssPlugin(): Plugin {
   };
 }
 
+/**
+ * Ensure Cloudflare Pages config files (_redirects, _headers) always land in dist/.
+ * wrangler pages deploy occasionally skips files from public/ if not explicitly emitted,
+ * which breaks SPA fallback routing (e.g. /book-appointment/:doctorId -> 404).
+ */
+function copyCloudflareConfigPlugin(): Plugin {
+  return {
+    name: 'copy-cloudflare-config',
+    apply: 'build',
+    async closeBundle() {
+      const distDir = path.resolve(__dirname, 'dist');
+      await mkdir(distDir, { recursive: true });
+      for (const file of ['_redirects', '_headers']) {
+        try {
+          await copyFile(
+            path.resolve(__dirname, 'public', file),
+            path.resolve(distDir, file),
+          );
+          // eslint-disable-next-line no-console
+          console.log(`[copy-cloudflare-config] copied public/${file} -> dist/${file}`);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn(`[copy-cloudflare-config] skipped ${file}:`, (err as Error).message);
+        }
+      }
+    },
+  };
+}
+
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -32,7 +63,9 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
     mode === 'production' && asyncCssPlugin(),
+    mode === 'production' && copyCloudflareConfigPlugin(),
   ].filter(Boolean),
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
