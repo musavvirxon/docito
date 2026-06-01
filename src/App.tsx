@@ -121,6 +121,33 @@ function DefaultBlogPostRedirect() {
   return <Navigate to={slug ? `/en/blog/${slug}` : "/en/blog"} replace />;
 }
 
+function resolveDefaultLang(): string {
+  try {
+    const fromI18n = i18n.language?.split("-")[0];
+    if (fromI18n && supportedLangCodes.includes(fromI18n)) return fromI18n;
+    const fromStorage =
+      typeof window !== "undefined"
+        ? window.localStorage?.getItem("i18nextLng")?.split("-")[0]
+        : null;
+    if (fromStorage && supportedLangCodes.includes(fromStorage)) return fromStorage;
+    const fromNav =
+      typeof navigator !== "undefined" ? navigator.language?.split("-")[0] : null;
+    if (fromNav && supportedLangCodes.includes(fromNav)) return fromNav;
+  } catch {
+    // ignore
+  }
+  return "en";
+}
+
+function RedirectToLocalizedBooking({ basePath }: { basePath: "book" | "book-appointment" }) {
+  const { doctorId } = useParams<{ doctorId: string }>();
+  const lang = resolveDefaultLang();
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  const hash = typeof window !== "undefined" ? window.location.hash : "";
+  return <Navigate to={`/${lang}/${basePath}/${doctorId ?? ""}${search}${hash}`} replace />;
+}
+
+
 export default function App() {
   // If on landing subdomain, render only the landing page
   if (isLandingSubdomain()) {
