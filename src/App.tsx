@@ -312,8 +312,9 @@ export default function App() {
                   <Route path="find-practices" element={<FindPractices />} />
                   <Route path="specialties" element={<BrowseSpecialties />} />
                   <Route path="category/:category" element={<CategorySearch />} />
-                  <Route path="book/:doctorId" element={<AppointmentBooking />} />
-                  <Route path="book-appointment/:doctorId" element={<AppointmentBooking />} />
+                  <Route path="book/:doctorId" element={<RedirectToLocalizedBooking basePath="book" />} />
+                  <Route path="book-appointment/:doctorId" element={<RedirectToLocalizedBooking basePath="book-appointment" />} />
+
                   <Route
                     path="booking-confirmation/:appointmentId"
                     element={<BookingConfirmation />}
