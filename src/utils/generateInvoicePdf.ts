@@ -39,11 +39,30 @@ const money = (n: number, currency = 'USD') => {
   }
 };
 
-export function generateInvoicePdf(data: InvoiceData) {
+export async function generateInvoicePdf(data: InvoiceData) {
   const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageW = pdf.internal.pageSize.getWidth();
   const margin = 15;
   let y = margin;
+
+  // Load clinic logo (top-right) – silent fallback on failure
+  if (data.clinicLogoUrl) {
+    try {
+      const res = await fetch(data.clinicLogoUrl);
+      if (res.ok) {
+        const blob = await res.blob();
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onloadend = () => resolve(r.result as string);
+          r.onerror = () => reject(new Error('read failed'));
+          r.readAsDataURL(blob);
+        });
+        const fmt = (data.clinicLogoUrl.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG');
+        pdf.addImage(dataUrl, fmt, pageW - 55, 8, 40, 14);
+      }
+    } catch { /* silent */ }
+  }
+
 
   // Header
   pdf.setFontSize(20);
