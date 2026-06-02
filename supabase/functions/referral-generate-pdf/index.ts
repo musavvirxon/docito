@@ -1114,17 +1114,40 @@ serve(async (req) => {
         return ((data as any)?.name as string) || null;
       } catch { return null; }
     };
+    // Fetch referrer entity branding (logo + address) for the PDF header
+    const fetchEntityBrand = async (etype?: string | null, eid?: string | null): Promise<{ logo_url: string | null; address: string | null } | null> => {
+      if (!eid) return null;
+      const t = (etype || "").toLowerCase();
+      try {
+        if (t === "doctor") {
+          const { data } = await service.from("doctors").select("logo_url, practices(address, logo_url)").eq("id", eid).maybeSingle();
+          const prac = (data as any)?.practices || null;
+          return { logo_url: (prac?.logo_url || (data as any)?.logo_url) || null, address: prac?.address || null };
+        }
+        if (t === "clinic") {
+          const { data } = await service.from("practices").select("logo_url, address").eq("id", eid).maybeSingle();
+          return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null };
+        }
+        const tbl = entityTableFor(etype);
+        if (!tbl) return null;
+        const { data } = await service.from(tbl).select("logo_url, address").eq("id", eid).maybeSingle();
+        return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null };
+      } catch { return null; }
+    };
     const r0: any = referral;
-    const [referrerUserName, receiverUserName, referrerEntityName, receiverEntityName] = await Promise.all([
+    const [referrerUserName, receiverUserName, referrerEntityName, receiverEntityName, referrerBrand] = await Promise.all([
       fetchUserName(r0.referrer_user_id),
       fetchUserName(r0.receiver_user_id),
       fetchEntityName(r0.referrer_type, r0.referrer_entity_id),
       fetchEntityName(r0.receiver_type, r0.receiver_entity_id),
+      fetchEntityBrand(r0.referrer_type, r0.referrer_entity_id),
     ]);
     r0.referrer_user_name = referrerUserName;
     r0.receiver_user_name = receiverUserName;
     r0.referrer_entity_name = referrerEntityName;
     r0.receiver_entity_name = receiverEntityName;
+    const entityLogoUrl: string | null = referrerBrand?.logo_url || null;
+    const entityAddress: string = (referrerBrand?.address || "").toString();
 
     // Authorization: patient, referrer, receiver, or staff/admin of either entity.
     const isSuperAdmin = (roles || []).includes("super_admin");
