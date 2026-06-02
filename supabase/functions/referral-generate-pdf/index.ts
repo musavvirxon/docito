@@ -31,7 +31,7 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
-import { DOCITO_LOGO_PNG_BASE64, DOCITO_FONT_TTF_BASE64 } from "./assets.ts";
+import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64, DOCITO_FONT_TTF_BASE64 } from "../invoice-generate-pdf/assets.ts";
 
 type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt" | "de";
 
