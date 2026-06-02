@@ -473,13 +473,35 @@ serve(async (req) => {
 
     const drawHeader = () => {
       page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: blue });
+      // Left: full Docito logo
       if (fullLogo && fullLogoW > 0) {
         page.drawImage(fullLogo, { x: margin, y: H - HEADER_H + (HEADER_H - fullLogoH) / 2, width: fullLogoW, height: fullLogoH });
       } else {
         txt("DOCITO", margin, H - HEADER_H + 14, 14, rgb(1, 1, 1));
       }
-      const label = sanitizePdf(i(locale, "prescription"));
-      try { const lw = font.widthOfTextAtSize(label, 11); page.drawText(label, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      // Center: entity logo (practice/doctor) or fallback name
+      if (entityLogo) {
+        page.drawImage(entityLogo, {
+          x: (W - entityLogoW) / 2,
+          y: H - HEADER_H + (HEADER_H - entityLogoH) / 2,
+          width: entityLogoW,
+          height: entityLogoH,
+        });
+      } else if (practiceName) {
+        try {
+          const cw = font.widthOfTextAtSize(practiceName.slice(0, 30), 11);
+          page.drawText(practiceName.slice(0, 30), { x: (W - cw) / 2, y: H - HEADER_H + (HEADER_H - 11) / 2 + 1, size: 11, font, color: rgb(1, 1, 1) });
+        } catch { /* ignore */ }
+      }
+      // Right: practice name (line 1), doc label (line 2), address/phone (line 3)
+      const rightLabel1 = sanitizePdf(practiceName || i(locale, "prescription"));
+      try { const lw = font.widthOfTextAtSize(rightLabel1.slice(0, 40), 11); page.drawText(rightLabel1.slice(0, 40), { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 14, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      const rightLabel2 = sanitizePdf(i(locale, "prescription"));
+      try { const lw = font.widthOfTextAtSize(rightLabel2, 9); page.drawText(rightLabel2, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 25, size: 9, font, color: rgb(0.85, 0.90, 1.0) }); } catch { /* ignore */ }
+      const detail = sanitizePdf((practiceAddress || practicePhone || "").slice(0, 50));
+      if (detail) {
+        try { const lw = font.widthOfTextAtSize(detail, 7.5); page.drawText(detail, { x: W - margin - lw, y: H - HEADER_H + 6, size: 7.5, font, color: rgb(0.75, 0.82, 0.97) }); } catch { /* ignore */ }
+      }
     };
 
     // ── Verification + QR footer block (drawn on EVERY page at end) ───────────
