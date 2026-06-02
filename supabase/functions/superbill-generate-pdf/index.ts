@@ -87,6 +87,20 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number, locale: L
   return out;
 }
 
+async function fetchImageBytes(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const u = url.toLowerCase();
+    const isPng = ct.includes("png") || u.endsWith(".png");
+    const isJpg = ct.includes("jpeg") || ct.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes: new Uint8Array(ab), type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
+
 serve(async (req) => {
   const { response, context, validatedBody } = await secureHandler(req, "superbill-generate-pdf", {
     requireAuth: true,
