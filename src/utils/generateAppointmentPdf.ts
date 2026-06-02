@@ -112,6 +112,24 @@ export async function generateAppointmentPdf(
       ln(x + lw + doc.getTextWidth(val) + 1, yy + 0.5, x + totalW, yy + 0.5);
     };
 
+    // ─ CLINIC LOGO (top-left, before MOH title) — silent fallback
+    if (data.clinicLogoUrl) {
+      try {
+        const res = await fetch(data.clinicLogoUrl);
+        if (res.ok) {
+          const blob = await res.blob();
+          const dataUrl: string = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onloadend = () => resolve(r.result as string);
+            r.onerror = () => reject(new Error('read failed'));
+            r.readAsDataURL(blob);
+          });
+          const fmt = data.clinicLogoUrl.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG';
+          doc.addImage(dataUrl, fmt, M, 8, 40, 14);
+        }
+      } catch { /* silent fallback */ }
+    }
+
     // ─ HEADER ────────────────────────────────────────────
     txt(
       ru
