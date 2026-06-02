@@ -144,7 +144,10 @@ const PDFExport = ({
         <body>
           <div class="header">
             <div class="practice-info">
+              ${practiceLogoUrl ? `<img src="${practiceLogoUrl}" alt="${practiceName}" style="max-height:50px;max-width:160px;object-fit:contain;margin-bottom:8px;" />` : ''}
               <div class="practice-name">${practiceName}</div>
+              ${practiceAddress ? `<div style="font-size:11px;color:#555;margin-top:2px;">${practiceAddress}</div>` : ''}
+              ${practicePhone ? `<div style="font-size:11px;color:#555;">${practicePhone}</div>` : ''}
               <div>Dental Treatment Plan</div>
             </div>
           </div>
