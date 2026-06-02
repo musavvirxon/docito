@@ -1188,14 +1188,41 @@ serve(async (req) => {
       boldFont = primaryFont;
     }
 
-    // Optional logo
+    // Optional Docito logos
     let logo: any = null;
     try {
       const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
       logo = await pdfDoc.embedPng(logoBytes);
     } catch (assetError) {
-      console.warn("referral-generate-pdf: skipping logo asset", assetError);
+      console.warn("referral-generate-pdf: skipping icon logo asset", assetError);
     }
+    let fullLogo: any = null;
+    try {
+      const fullLogoBytes = b64ToBytes(DOCITO_LOGO_FULL_PNG_BASE64);
+      if (fullLogoBytes.length) fullLogo = await pdfDoc.embedPng(fullLogoBytes);
+    } catch (assetError) {
+      console.warn("referral-generate-pdf: skipping full logo asset", assetError);
+    }
+
+    // Entity logo (referrer clinic/doctor) — embedded once, reused
+    let entityLogo: any = null;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      try {
+        const res = await fetch(entityLogoUrl, { redirect: "follow" });
+        if (res.ok) {
+          const ct = (res.headers.get("content-type") || "").toLowerCase();
+          const ab = await res.arrayBuffer();
+          if (ab.byteLength <= 2_000_000) {
+            const u = entityLogoUrl.toLowerCase();
+            const isPng = ct.includes("png") || u.endsWith(".png");
+            const isJpg = ct.includes("jpeg") || ct.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+            if (isPng) entityLogo = await pdfDoc.embedPng(new Uint8Array(ab));
+            else if (isJpg) entityLogo = await pdfDoc.embedJpg(new Uint8Array(ab));
+          }
+        }
+      } catch { /* silent */ }
+    }
+
     const qrPngDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 256 });
     const qrBytes = new Uint8Array(await (await fetch(qrPngDataUrl)).arrayBuffer());
     const qrImg = await pdfDoc.embedPng(qrBytes);
