@@ -303,7 +303,27 @@ export const generatePatientSummaryPDF = async (
     }
     
     // Practice info (right side)
-    if (practiceInfo?.name) {
+    let clinicLogoDataUrl: string | null = null;
+    if (practiceInfo?.logo_url) {
+      try {
+        const res = await fetch(practiceInfo.logo_url);
+        if (res.ok) {
+          const blob = await res.blob();
+          clinicLogoDataUrl = await new Promise<string | null>((resolve) => {
+            const r = new FileReader();
+            r.onloadend = () => resolve(r.result as string);
+            r.onerror = () => resolve(null);
+            r.readAsDataURL(blob);
+          });
+        }
+      } catch { /* silent */ }
+    }
+    if (clinicLogoDataUrl) {
+      try {
+        const fmt = practiceInfo!.logo_url!.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG';
+        doc.addImage(clinicLogoDataUrl, fmt, pageWidth - 50, 8, 35, 12);
+      } catch { /* fallback to text below */ }
+    } else if (practiceInfo?.name) {
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text(practiceInfo.name, pageWidth - 14, 15, { align: "right" });
