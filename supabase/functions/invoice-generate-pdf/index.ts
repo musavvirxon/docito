@@ -253,6 +253,21 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number, locale: L
   return lines;
 }
 
+async function fetchImageBytes(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const contentType = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const bytes = new Uint8Array(ab);
+    const u = url.toLowerCase();
+    const isPng = contentType.includes("png") || u.endsWith(".png");
+    const isJpg = contentType.includes("jpeg") || contentType.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes, type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
+
 serve(async (req) => {
   const { response, context, validatedBody } = await secureHandler(req, "invoice-generate-pdf", {
     requireAuth: true,
