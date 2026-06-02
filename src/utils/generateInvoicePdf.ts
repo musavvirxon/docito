@@ -87,6 +87,11 @@ export async function generateInvoicePdf(data: InvoiceData) {
     pdf.text(data.clinicAddress, margin, y);
     y += 5;
   }
+  if (data.clinicPhone) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(data.clinicPhone, margin, y);
+    y += 5;
+  }
 
   y += 4;
   pdf.setDrawColor(220);
