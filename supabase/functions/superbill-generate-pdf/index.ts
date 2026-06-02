@@ -131,15 +131,19 @@ serve(async (req) => {
     }
     if (!allowed) return errorResponse("Forbidden", 403);
 
-    // Resolve names
+    // Resolve names + entity branding
     let patientName = "—", doctorName = "—", clinicName = "—";
+    let practiceLogoUrl: string | null = null;
+    let doctorLogoUrl: string | null = null;
+    let practiceAddress = "", practicePhone = "";
     try {
       if (r.patient_id) {
         const { data: prof } = await svc.from("profiles").select("full_name").eq("user_id", r.patient_id).maybeSingle();
         patientName = safe((prof as any)?.full_name, 200) || "—";
       }
       if (r.doctor_id) {
-        const { data: d } = await svc.from("doctors").select("user_id, full_name").eq("id", r.doctor_id).maybeSingle();
+        const { data: d } = await svc.from("doctors").select("user_id, full_name, logo_url").eq("id", r.doctor_id).maybeSingle();
+        doctorLogoUrl = (d as any)?.logo_url || null;
         const dn = (d as any)?.full_name;
         if (dn) doctorName = safe(dn, 200);
         else if ((d as any)?.user_id) {
@@ -148,10 +152,14 @@ serve(async (req) => {
         }
       }
       if (r.practice_id) {
-        const { data: pr } = await svc.from("practices").select("name").eq("id", r.practice_id).maybeSingle();
+        const { data: pr } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.practice_id).maybeSingle();
         clinicName = safe((pr as any)?.name, 200) || "—";
+        practiceLogoUrl = (pr as any)?.logo_url || null;
+        practiceAddress = safe((pr as any)?.address, 200);
+        practicePhone = safe((pr as any)?.phone, 60);
       }
     } catch { /* ignore */ }
+    const entityLogoUrl = practiceLogoUrl || doctorLogoUrl || null;
 
     const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");
     const verifyUrl = `${siteBase}/verify?type=superbill&code=${encodeURIComponent(r.id)}`;
