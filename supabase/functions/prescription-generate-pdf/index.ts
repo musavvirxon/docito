@@ -425,6 +425,29 @@ serve(async (req) => {
     let iconLogo: any = null; const iconLogoW = 16; let iconLogoH = 16;
     if (iconBytes.length) { try { iconLogo = await pdf.embedPng(iconBytes); iconLogoH = (iconLogo.height / iconLogo.width) * iconLogoW; } catch { /* ignore */ } }
 
+    // ── Resolve entity (clinic / doctor) branding ─────────────────────────────
+    const doctorLogoUrl: string | null = (r.doctor as any)?.logo_url || null;
+    const practiceRow = (r.doctor as any)?.practices || null;
+    const practiceLogoUrl: string | null = practiceRow?.logo_url || null;
+    const practiceName: string = safe(practiceRow?.name, 120);
+    const practiceAddress: string = safe(practiceRow?.address, 200);
+    const practicePhone: string = safe(practiceRow?.phone, 60);
+    const entityLogoUrl = (practiceLogoUrl || doctorLogoUrl || "").trim();
+
+    let entityLogo: any = null; let entityLogoW = 40; let entityLogoH = 24;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      const img = await fetchImageBytes(entityLogoUrl);
+      try {
+        if (img.type === "png" && img.bytes.length) entityLogo = await pdf.embedPng(img.bytes);
+        else if (img.type === "jpg" && img.bytes.length) entityLogo = await pdf.embedJpg(img.bytes);
+      } catch { entityLogo = null; }
+      if (entityLogo) {
+        const ratio = entityLogo.height / entityLogo.width;
+        entityLogoH = Math.min(28, entityLogoW * ratio);
+        entityLogoW = entityLogoH / ratio;
+      }
+    }
+
     // ── QR code (embed once, reuse image across pages) ────────────────────────
     let qrImg: any = null;
     const QR_SIZE = 80;
