@@ -315,24 +315,49 @@ serve(async (req) => {
 
     if (!allowed) return errorResponse("Forbidden", 403);
 
-    // Resolve "billed to" name
+    // Resolve "billed to" name + entity branding (logo, address, phone)
     let billedToName = "—";
+    let entityLogoUrl: string | null = null;
+    let entityAddress = "";
+    let entityPhone = "";
     try {
       if (r.entity_type === "user") {
         const { data: prof } = await svc.from("profiles").select("full_name, email").eq("user_id", r.entity_id).maybeSingle();
         billedToName = safe((prof as any)?.full_name || (prof as any)?.email, 200) || "—";
       } else if (r.entity_type === "practice" || r.entity_type === "clinic") {
-        const { data: p } = await svc.from("practices").select("name").eq("id", r.entity_id).maybeSingle();
+        const { data: p } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
         billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
       } else if (r.entity_type === "doctor") {
-        const { data: d } = await svc.from("doctors").select("user_id").eq("id", r.entity_id).maybeSingle();
+        const { data: d } = await svc.from("doctors").select("user_id, logo_url, practices(name, address, phone, logo_url)").eq("id", r.entity_id).maybeSingle();
         if ((d as any)?.user_id) {
           const { data: prof } = await svc.from("profiles").select("full_name").eq("user_id", (d as any).user_id).maybeSingle();
           billedToName = safe((prof as any)?.full_name, 200) || "—";
         }
+        const prac = (d as any)?.practices || null;
+        entityLogoUrl = prac?.logo_url || (d as any)?.logo_url || null;
+        entityAddress = safe(prac?.address, 200);
+        entityPhone = safe(prac?.phone, 60);
       } else if (r.entity_type === "pharmacy") {
-        const { data: p } = await svc.from("pharmacies").select("name").eq("id", r.entity_id).maybeSingle();
+        const { data: p } = await svc.from("pharmacies").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
         billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
+      } else if (r.entity_type === "lab" || r.entity_type === "lab_center") {
+        const { data: p } = await svc.from("lab_centers").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
+        billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
+      } else if (r.entity_type === "imaging" || r.entity_type === "imaging_center") {
+        const { data: p } = await svc.from("imaging_centers").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
+        billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
       }
     } catch { /* ignore */ }
 
