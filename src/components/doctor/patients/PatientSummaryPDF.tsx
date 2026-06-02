@@ -648,7 +648,7 @@ export const generateDoctorPatientPDF = async (
     // Fetch practice info
    const { data: doctorData } = await supabase
      .from("doctors")
-     .select("user_id, practice_id, practices(name, phone, email, address)")
+     .select("user_id, practice_id, practices(name, phone, email, address, logo_url)")
      .eq("id", doctorId)
      .single();
     let doctorName: string | undefined;
@@ -765,7 +765,7 @@ export const generateProfilePatientPDF = async (
     // Fetch practice info
    const { data: doctorData } = await supabase
   .from("doctors")
-  .select("user_id, practice_id, practices(name, phone, email, address)")
+  .select("user_id, practice_id, practices(name, phone, email, address, logo_url)")
   .eq("id", doctorId)
   .single();
 let doctorName: string | undefined;
