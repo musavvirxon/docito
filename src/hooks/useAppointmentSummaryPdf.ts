@@ -56,11 +56,57 @@ export function useAppointmentSummaryPdf() {
       const pageWidth = doc.internal.pageSize.getWidth();
       let y = 20;
 
-      // Header
+      // Resolve clinic logo + info from doctor's practice
+      const practice = (doctor as any)?.practices || null;
+      const clinicName: string = practice?.name || "";
+      const clinicAddress: string = practice?.address || "";
+      const clinicLogoUrl: string | null = practice?.logo_url || (doctor as any)?.logo_url || null;
+
+      // Try fetching clinic logo as data URL — silent fallback
+      let clinicLogoDataUrl: string | null = null;
+      if (clinicLogoUrl) {
+        try {
+          const res = await fetch(clinicLogoUrl);
+          if (res.ok) {
+            const blob = await res.blob();
+            clinicLogoDataUrl = await new Promise<string | null>((resolve) => {
+              const r = new FileReader();
+              r.onloadend = () => resolve(r.result as string);
+              r.onerror = () => resolve(null);
+              r.readAsDataURL(blob);
+            });
+          }
+        } catch { /* silent */ }
+      }
+
+      // Top header bar with logo (left), clinic info (right), title centered below
+      if (clinicLogoDataUrl) {
+        try {
+          const fmt = clinicLogoUrl!.toLowerCase().endsWith(".png") ? "PNG" : "JPEG";
+          doc.addImage(clinicLogoDataUrl, fmt, 14, 10, 35, 12);
+        } catch { /* fallback */ }
+      } else if (clinicName) {
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text(clinicName, 14, 16);
+      }
+      if (clinicName) {
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text(clinicName, pageWidth - 14, 14, { align: "right" });
+      }
+      if (clinicAddress) {
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "normal");
+        doc.text(clinicAddress.slice(0, 60), pageWidth - 14, 19, { align: "right" });
+      }
+      y = 28;
+
+      // Title under the brand bar
       doc.setFontSize(18);
       doc.setFont("helvetica", "bold");
       doc.text("Appointment Summary", pageWidth / 2, y, { align: "center" });
-      y += 12;
+      y += 10;
 
       doc.setDrawColor(200);
       doc.line(14, y, pageWidth - 14, y);
