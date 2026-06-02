@@ -1287,7 +1287,7 @@ serve(async (req) => {
       const taglineX = isRtl ? margin : PAGE_W - margin;
       const taglineCtx = { ...ctx };
       taglineCtx.y = ctx.y - 12;
-      text(taglineCtx, "docito.live", taglineX, sizeLabel, subtleColor);
+      text(taglineCtx, "docito.app", taglineX, sizeLabel, subtleColor);
       ctx.y -= Math.max(logoH, 24) + 6;
       // brand rule
       if (ctx.page) {
@@ -1389,7 +1389,7 @@ serve(async (req) => {
         ctx.page.drawRectangle({ x: margin, y: ctx.y, width: contentW, height: 0.8, color: borderGray });
       }
       ctx.y -= 12;
-      const footL = `Docito  ·  docito.live`;
+      const footL = `Docito  ·  docito.app`;
       const footR = `${t(locale, "generatedAt")}: ${fmtDateTime(new Date().toISOString(), locale)}`;
       if (ctx.page) {
         const lW = primaryFont.widthOfTextAtSize(footL, sizeLabel);
