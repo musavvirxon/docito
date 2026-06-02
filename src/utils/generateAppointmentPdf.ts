@@ -12,6 +12,9 @@ export type { ToothFinding } from './pdfUnicodeFont';
 export interface AppointmentPdfData {
   clinicName: string;
   clinicAddress: string;
+  clinicLogoUrl?: string;
+  clinicPhone?: string;
+  doctorPhotoUrl?: string;
   patientName: string;
   gender?: string;
   age?: string | number;
