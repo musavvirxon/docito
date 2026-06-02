@@ -103,9 +103,9 @@ export function AppointmentFinancePanel({
     }
   };
 
-  const handleInvoicePdf = () => {
+  const handleInvoicePdf = async () => {
     try {
-      generateInvoicePdf({
+      await generateInvoicePdf({
         invoiceNumber: `INV-${appointmentId.slice(0, 8).toUpperCase()}`,
         patientName,
         appointmentDate: appointmentDate || '',
