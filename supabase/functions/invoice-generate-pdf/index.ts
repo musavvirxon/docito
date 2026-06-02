@@ -404,6 +404,21 @@ serve(async (req) => {
     let iconLogo: any = null; const iconLogoW = 16; let iconLogoH = 16;
     if (iconBytes.length) { try { iconLogo = await pdf.embedPng(iconBytes); iconLogoH = (iconLogo.height / iconLogo.width) * iconLogoW; } catch { /* ignore */ } }
 
+    // Entity logo (practice/doctor/etc.)
+    let entityLogo: any = null; let entityLogoW = 40; let entityLogoH = 24;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      const img = await fetchImageBytes(entityLogoUrl);
+      try {
+        if (img.type === "png" && img.bytes.length) entityLogo = await pdf.embedPng(img.bytes);
+        else if (img.type === "jpg" && img.bytes.length) entityLogo = await pdf.embedJpg(img.bytes);
+      } catch { entityLogo = null; }
+      if (entityLogo) {
+        const ratio = entityLogo.height / entityLogo.width;
+        entityLogoH = Math.min(28, entityLogoW * ratio);
+        entityLogoW = entityLogoH / ratio;
+      }
+    }
+
     let qrImg: any = null;
     const QR_SIZE = 80;
     try {
@@ -424,8 +439,30 @@ serve(async (req) => {
       } else {
         try { page.drawText("DOCITO", { x: margin, y: H - HEADER_H + 14, size: 14, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
       }
-      const label = sanitizePdf(i(locale, "invoice"));
-      try { const lw = font.widthOfTextAtSize(label, 11); page.drawText(label, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      // Center: entity logo
+      if (entityLogo) {
+        page.drawImage(entityLogo, {
+          x: (W - entityLogoW) / 2,
+          y: H - HEADER_H + (HEADER_H - entityLogoH) / 2,
+          width: entityLogoW,
+          height: entityLogoH,
+        });
+      } else if (billedToName && billedToName !== "—") {
+        try {
+          const t = sanitizePdf(billedToName).slice(0, 30);
+          const cw = font.widthOfTextAtSize(t, 11);
+          page.drawText(t, { x: (W - cw) / 2, y: H - HEADER_H + (HEADER_H - 11) / 2 + 1, size: 11, font, color: rgb(1, 1, 1) });
+        } catch { /* ignore */ }
+      }
+      // Right column: billed-to name + "Invoice" label + address
+      const right1 = sanitizePdf(billedToName || i(locale, "invoice")).slice(0, 40);
+      try { const lw = font.widthOfTextAtSize(right1, 11); page.drawText(right1, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 14, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      const right2 = sanitizePdf(i(locale, "invoice"));
+      try { const lw = font.widthOfTextAtSize(right2, 9); page.drawText(right2, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 25, size: 9, font, color: rgb(0.85, 0.90, 1.0) }); } catch { /* ignore */ }
+      const detail = sanitizePdf((entityAddress || entityPhone || "").slice(0, 50));
+      if (detail) {
+        try { const lw = font.widthOfTextAtSize(detail, 7.5); page.drawText(detail, { x: W - margin - lw, y: H - HEADER_H + 6, size: 7.5, font, color: rgb(0.75, 0.82, 0.97) }); } catch { /* ignore */ }
+      }
     };
 
     const drawVerifyFooter = (pg: typeof page, pageNum: number, pageCount: number) => {
