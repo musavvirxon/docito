@@ -207,14 +207,20 @@ serve(async (req) => {
       }
     }
 
-    // Fetch related data in parallel
-    const [diagRes, clinRes, rxRes, billsRes, doctorProfileRes, patientProfileRes] = await Promise.all([
+    // Fetch related data in parallel (incl. clinic + doctor branding)
+    const [diagRes, clinRes, rxRes, billsRes, doctorProfileRes, patientProfileRes, practiceRes, doctorRowRes] = await Promise.all([
       admin.from("appointment_diagnoses").select("diagnosis_title, icd10_code, notes").eq("appointment_id", body.appointment_id),
       admin.from("appointment_clinical_items").select("title, description, item_type, cost").eq("appointment_id", body.appointment_id),
       admin.from("prescriptions").select("id, prescription_number, status, created_at").eq("appointment_id", body.appointment_id).limit(20),
       admin.from("billing_transactions").select("amount, currency, status, description, transaction_type").eq("appointment_id", body.appointment_id),
       doctorRow ? admin.from("profiles").select("full_name").eq("user_id", (doctorRow as any).user_id).maybeSingle() : Promise.resolve({ data: null }),
       appt.patient_id ? admin.from("profiles").select("full_name, email").eq("user_id", appt.patient_id).maybeSingle() : Promise.resolve({ data: null }),
+      appt.practice_id
+        ? admin.from("practices").select("name, address, phone, logo_url").eq("id", appt.practice_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      appt.doctor_id
+        ? admin.from("doctors").select("logo_url").eq("id", appt.doctor_id).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
     // Fetch FX rates for currency conversion
