@@ -42,7 +42,7 @@ export function useAppointmentSummaryPdf() {
         appointment.doctor_id
           ? supabase
               .from("doctors")
-              .select("full_name, specialty, license_number")
+              .select("full_name, specialty, license_number, logo_url, practice_id, practices(name, address, phone, logo_url)")
               .eq("id", appointment.doctor_id)
               .maybeSingle()
           : Promise.resolve({ data: null, error: null }),
