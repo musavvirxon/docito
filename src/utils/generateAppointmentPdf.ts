@@ -160,7 +160,12 @@ export async function generateAppointmentPdf(
       M,
       y,
     );
-    y += LH;
+    y += SLH;
+    if (data.clinicPhone) {
+      doc.text((ru ? 'Тел: ' : 'Tel: ') + data.clinicPhone, M, y);
+      y += SLH;
+    }
+    y += LH - SLH;
 
     // ─ TITLE ─────────────────────────────────────────────
     hrule(y);
