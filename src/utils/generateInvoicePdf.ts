@@ -21,6 +21,8 @@ export interface InvoiceData {
   clinicName?: string;
   clinicAddress?: string;
   currency?: string;
+  clinicLogoUrl?: string;
+  clinicPhone?: string;
   items: InvoiceLineItem[];
   totalBilled: number;
   totalDiscount: number;
