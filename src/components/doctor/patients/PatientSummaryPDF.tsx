@@ -787,7 +787,8 @@ const practiceInfo: PracticeInfo = doctorData?.practices
       phone: (doctorData.practices as any).phone,
       email: (doctorData.practices as any).email,
       address: (doctorData.practices as any).address,
-      doctor_name: doctorName, // 👈 ADD THIS LINE
+      logo_url: (doctorData.practices as any).logo_url,
+      doctor_name: doctorName,
     }
   : { doctor_name: doctorName };
     
