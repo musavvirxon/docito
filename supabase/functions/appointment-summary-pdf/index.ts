@@ -14,6 +14,32 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import QRCode from "https://esm.sh/qrcode@1.5.3";
+import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "../invoice-generate-pdf/assets.ts";
+
+function b64ToBytes(s: string): Uint8Array {
+  const clean = (s || "").replace(/\s+/g, "");
+  if (!clean) return new Uint8Array(0);
+  try {
+    const bin = atob(clean);
+    const out = new Uint8Array(bin.length);
+    for (let j = 0; j < bin.length; j++) out[j] = bin.charCodeAt(j);
+    return out;
+  } catch { return new Uint8Array(0); }
+}
+
+async function fetchImageBytesAS(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const u = url.toLowerCase();
+    const isPng = ct.includes("png") || u.endsWith(".png");
+    const isJpg = ct.includes("jpeg") || ct.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes: new Uint8Array(ab), type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
