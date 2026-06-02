@@ -87,6 +87,20 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number, locale: L
   return out;
 }
 
+async function fetchImageBytes(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const u = url.toLowerCase();
+    const isPng = ct.includes("png") || u.endsWith(".png");
+    const isJpg = ct.includes("jpeg") || ct.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes: new Uint8Array(ab), type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
+
 serve(async (req) => {
   const { response, context, validatedBody } = await secureHandler(req, "superbill-generate-pdf", {
     requireAuth: true,
@@ -131,15 +145,19 @@ serve(async (req) => {
     }
     if (!allowed) return errorResponse("Forbidden", 403);
 
-    // Resolve names
+    // Resolve names + entity branding
     let patientName = "—", doctorName = "—", clinicName = "—";
+    let practiceLogoUrl: string | null = null;
+    let doctorLogoUrl: string | null = null;
+    let practiceAddress = "", practicePhone = "";
     try {
       if (r.patient_id) {
         const { data: prof } = await svc.from("profiles").select("full_name").eq("user_id", r.patient_id).maybeSingle();
         patientName = safe((prof as any)?.full_name, 200) || "—";
       }
       if (r.doctor_id) {
-        const { data: d } = await svc.from("doctors").select("user_id, full_name").eq("id", r.doctor_id).maybeSingle();
+        const { data: d } = await svc.from("doctors").select("user_id, full_name, logo_url").eq("id", r.doctor_id).maybeSingle();
+        doctorLogoUrl = (d as any)?.logo_url || null;
         const dn = (d as any)?.full_name;
         if (dn) doctorName = safe(dn, 200);
         else if ((d as any)?.user_id) {
@@ -148,10 +166,14 @@ serve(async (req) => {
         }
       }
       if (r.practice_id) {
-        const { data: pr } = await svc.from("practices").select("name").eq("id", r.practice_id).maybeSingle();
+        const { data: pr } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.practice_id).maybeSingle();
         clinicName = safe((pr as any)?.name, 200) || "—";
+        practiceLogoUrl = (pr as any)?.logo_url || null;
+        practiceAddress = safe((pr as any)?.address, 200);
+        practicePhone = safe((pr as any)?.phone, 60);
       }
     } catch { /* ignore */ }
+    const entityLogoUrl = practiceLogoUrl || doctorLogoUrl || null;
 
     const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");
     const verifyUrl = `${siteBase}/verify?type=superbill&code=${encodeURIComponent(r.id)}`;
@@ -176,6 +198,20 @@ serve(async (req) => {
     let iconLogo: any = null; const iconLogoW = 16; let iconLogoH = 16;
     if (iconBytes.length) { try { iconLogo = await pdf.embedPng(iconBytes); iconLogoH = (iconLogo.height / iconLogo.width) * iconLogoW; } catch { /* ignore */ } }
 
+    let entityLogo: any = null; let entityLogoW = 40; let entityLogoH = 24;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      const img = await fetchImageBytes(entityLogoUrl);
+      try {
+        if (img.type === "png" && img.bytes.length) entityLogo = await pdf.embedPng(img.bytes);
+        else if (img.type === "jpg" && img.bytes.length) entityLogo = await pdf.embedJpg(img.bytes);
+      } catch { entityLogo = null; }
+      if (entityLogo) {
+        const ratio = entityLogo.height / entityLogo.width;
+        entityLogoH = Math.min(28, entityLogoW * ratio);
+        entityLogoW = entityLogoH / ratio;
+      }
+    }
+
     let qrImg: any = null;
     const QR_SIZE = 80;
     try {
@@ -190,8 +226,21 @@ serve(async (req) => {
     const drawHeader = () => {
       page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: blue });
       if (fullLogo && fullLogoW > 0) page.drawImage(fullLogo, { x: margin, y: H - HEADER_H + (HEADER_H - fullLogoH) / 2, width: fullLogoW, height: fullLogoH });
-      const lbl = sanitizePdf(tr(locale, "title"));
-      try { const lw = font.widthOfTextAtSize(lbl, 11); page.drawText(lbl, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      // Center: entity logo
+      if (entityLogo) {
+        page.drawImage(entityLogo, { x: (W - entityLogoW) / 2, y: H - HEADER_H + (HEADER_H - entityLogoH) / 2, width: entityLogoW, height: entityLogoH });
+      } else if (clinicName && clinicName !== "—") {
+        try { const t = sanitizePdf(clinicName).slice(0, 30); const cw = font.widthOfTextAtSize(t, 11); page.drawText(t, { x: (W - cw) / 2, y: H - HEADER_H + (HEADER_H - 11) / 2 + 1, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      }
+      // Right: clinic name, doc label, address
+      const r1 = sanitizePdf(clinicName || tr(locale, "title")).slice(0, 40);
+      try { const lw = font.widthOfTextAtSize(r1, 11); page.drawText(r1, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 14, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      const r2 = sanitizePdf(tr(locale, "title"));
+      try { const lw = font.widthOfTextAtSize(r2, 9); page.drawText(r2, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 25, size: 9, font, color: rgb(0.85, 0.90, 1.0) }); } catch { /* ignore */ }
+      const detail = sanitizePdf((practiceAddress || practicePhone || "").slice(0, 50));
+      if (detail) {
+        try { const lw = font.widthOfTextAtSize(detail, 7.5); page.drawText(detail, { x: W - margin - lw, y: H - HEADER_H + 6, size: 7.5, font, color: rgb(0.75, 0.82, 0.97) }); } catch { /* ignore */ }
+      }
     };
     const drawFooter = (pg: typeof page, n: number, c: number) => {
       const fY = margin;

@@ -303,6 +303,21 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number, locale: L
   return lines;
 }
 
+async function fetchImageBytes(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const contentType = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const bytes = new Uint8Array(ab);
+    const u = url.toLowerCase();
+    const isPng = contentType.includes("png") || u.endsWith(".png");
+    const isJpg = contentType.includes("jpeg") || contentType.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes, type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -337,7 +352,7 @@ serve(async (req) => {
         prescribed_at, expires_at,
         refills_remaining, refills_total, notes, diagnosis_code,
         patient:patient_id(full_name, email, phone),
-        doctor:doctor_id(specialty, user_id),
+        doctor:doctor_id(specialty, user_id, logo_url, practice_id, practices(name, address, phone, logo_url)),
         pharmacy:pharmacy_id(name, address, phone),
         prescription_items(
           id, medication_name, medication_code, dosage, frequency,
@@ -410,6 +425,29 @@ serve(async (req) => {
     let iconLogo: any = null; const iconLogoW = 16; let iconLogoH = 16;
     if (iconBytes.length) { try { iconLogo = await pdf.embedPng(iconBytes); iconLogoH = (iconLogo.height / iconLogo.width) * iconLogoW; } catch { /* ignore */ } }
 
+    // ── Resolve entity (clinic / doctor) branding ─────────────────────────────
+    const doctorLogoUrl: string | null = (r.doctor as any)?.logo_url || null;
+    const practiceRow = (r.doctor as any)?.practices || null;
+    const practiceLogoUrl: string | null = practiceRow?.logo_url || null;
+    const practiceName: string = safe(practiceRow?.name, 120);
+    const practiceAddress: string = safe(practiceRow?.address, 200);
+    const practicePhone: string = safe(practiceRow?.phone, 60);
+    const entityLogoUrl = (practiceLogoUrl || doctorLogoUrl || "").trim();
+
+    let entityLogo: any = null; let entityLogoW = 40; let entityLogoH = 24;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      const img = await fetchImageBytes(entityLogoUrl);
+      try {
+        if (img.type === "png" && img.bytes.length) entityLogo = await pdf.embedPng(img.bytes);
+        else if (img.type === "jpg" && img.bytes.length) entityLogo = await pdf.embedJpg(img.bytes);
+      } catch { entityLogo = null; }
+      if (entityLogo) {
+        const ratio = entityLogo.height / entityLogo.width;
+        entityLogoH = Math.min(28, entityLogoW * ratio);
+        entityLogoW = entityLogoH / ratio;
+      }
+    }
+
     // ── QR code (embed once, reuse image across pages) ────────────────────────
     let qrImg: any = null;
     const QR_SIZE = 80;
@@ -435,13 +473,35 @@ serve(async (req) => {
 
     const drawHeader = () => {
       page.drawRectangle({ x: 0, y: H - HEADER_H, width: W, height: HEADER_H, color: blue });
+      // Left: full Docito logo
       if (fullLogo && fullLogoW > 0) {
         page.drawImage(fullLogo, { x: margin, y: H - HEADER_H + (HEADER_H - fullLogoH) / 2, width: fullLogoW, height: fullLogoH });
       } else {
         txt("DOCITO", margin, H - HEADER_H + 14, 14, rgb(1, 1, 1));
       }
-      const label = sanitizePdf(i(locale, "prescription"));
-      try { const lw = font.widthOfTextAtSize(label, 11); page.drawText(label, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      // Center: entity logo (practice/doctor) or fallback name
+      if (entityLogo) {
+        page.drawImage(entityLogo, {
+          x: (W - entityLogoW) / 2,
+          y: H - HEADER_H + (HEADER_H - entityLogoH) / 2,
+          width: entityLogoW,
+          height: entityLogoH,
+        });
+      } else if (practiceName) {
+        try {
+          const cw = font.widthOfTextAtSize(practiceName.slice(0, 30), 11);
+          page.drawText(practiceName.slice(0, 30), { x: (W - cw) / 2, y: H - HEADER_H + (HEADER_H - 11) / 2 + 1, size: 11, font, color: rgb(1, 1, 1) });
+        } catch { /* ignore */ }
+      }
+      // Right: practice name (line 1), doc label (line 2), address/phone (line 3)
+      const rightLabel1 = sanitizePdf(practiceName || i(locale, "prescription"));
+      try { const lw = font.widthOfTextAtSize(rightLabel1.slice(0, 40), 11); page.drawText(rightLabel1.slice(0, 40), { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 14, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      const rightLabel2 = sanitizePdf(i(locale, "prescription"));
+      try { const lw = font.widthOfTextAtSize(rightLabel2, 9); page.drawText(rightLabel2, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 25, size: 9, font, color: rgb(0.85, 0.90, 1.0) }); } catch { /* ignore */ }
+      const detail = sanitizePdf((practiceAddress || practicePhone || "").slice(0, 50));
+      if (detail) {
+        try { const lw = font.widthOfTextAtSize(detail, 7.5); page.drawText(detail, { x: W - margin - lw, y: H - HEADER_H + 6, size: 7.5, font, color: rgb(0.75, 0.82, 0.97) }); } catch { /* ignore */ }
+      }
     };
 
     // ── Verification + QR footer block (drawn on EVERY page at end) ───────────

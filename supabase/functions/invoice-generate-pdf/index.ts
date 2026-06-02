@@ -253,6 +253,21 @@ function wrap(text: string, font: PDFFont, size: number, maxW: number, locale: L
   return lines;
 }
 
+async function fetchImageBytes(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const contentType = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const bytes = new Uint8Array(ab);
+    const u = url.toLowerCase();
+    const isPng = contentType.includes("png") || u.endsWith(".png");
+    const isJpg = contentType.includes("jpeg") || contentType.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes, type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
+
 serve(async (req) => {
   const { response, context, validatedBody } = await secureHandler(req, "invoice-generate-pdf", {
     requireAuth: true,
@@ -315,24 +330,49 @@ serve(async (req) => {
 
     if (!allowed) return errorResponse("Forbidden", 403);
 
-    // Resolve "billed to" name
+    // Resolve "billed to" name + entity branding (logo, address, phone)
     let billedToName = "—";
+    let entityLogoUrl: string | null = null;
+    let entityAddress = "";
+    let entityPhone = "";
     try {
       if (r.entity_type === "user") {
         const { data: prof } = await svc.from("profiles").select("full_name, email").eq("user_id", r.entity_id).maybeSingle();
         billedToName = safe((prof as any)?.full_name || (prof as any)?.email, 200) || "—";
       } else if (r.entity_type === "practice" || r.entity_type === "clinic") {
-        const { data: p } = await svc.from("practices").select("name").eq("id", r.entity_id).maybeSingle();
+        const { data: p } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
         billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
       } else if (r.entity_type === "doctor") {
-        const { data: d } = await svc.from("doctors").select("user_id").eq("id", r.entity_id).maybeSingle();
+        const { data: d } = await svc.from("doctors").select("user_id, logo_url, practices(name, address, phone, logo_url)").eq("id", r.entity_id).maybeSingle();
         if ((d as any)?.user_id) {
           const { data: prof } = await svc.from("profiles").select("full_name").eq("user_id", (d as any).user_id).maybeSingle();
           billedToName = safe((prof as any)?.full_name, 200) || "—";
         }
+        const prac = (d as any)?.practices || null;
+        entityLogoUrl = prac?.logo_url || (d as any)?.logo_url || null;
+        entityAddress = safe(prac?.address, 200);
+        entityPhone = safe(prac?.phone, 60);
       } else if (r.entity_type === "pharmacy") {
-        const { data: p } = await svc.from("pharmacies").select("name").eq("id", r.entity_id).maybeSingle();
+        const { data: p } = await svc.from("pharmacies").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
         billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
+      } else if (r.entity_type === "lab" || r.entity_type === "lab_center") {
+        const { data: p } = await svc.from("lab_centers").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
+        billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
+      } else if (r.entity_type === "imaging" || r.entity_type === "imaging_center") {
+        const { data: p } = await svc.from("imaging_centers").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
+        billedToName = safe((p as any)?.name, 200) || "—";
+        entityLogoUrl = (p as any)?.logo_url || null;
+        entityAddress = safe((p as any)?.address, 200);
+        entityPhone = safe((p as any)?.phone, 60);
       }
     } catch { /* ignore */ }
 
@@ -364,6 +404,21 @@ serve(async (req) => {
     let iconLogo: any = null; const iconLogoW = 16; let iconLogoH = 16;
     if (iconBytes.length) { try { iconLogo = await pdf.embedPng(iconBytes); iconLogoH = (iconLogo.height / iconLogo.width) * iconLogoW; } catch { /* ignore */ } }
 
+    // Entity logo (practice/doctor/etc.)
+    let entityLogo: any = null; let entityLogoW = 40; let entityLogoH = 24;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      const img = await fetchImageBytes(entityLogoUrl);
+      try {
+        if (img.type === "png" && img.bytes.length) entityLogo = await pdf.embedPng(img.bytes);
+        else if (img.type === "jpg" && img.bytes.length) entityLogo = await pdf.embedJpg(img.bytes);
+      } catch { entityLogo = null; }
+      if (entityLogo) {
+        const ratio = entityLogo.height / entityLogo.width;
+        entityLogoH = Math.min(28, entityLogoW * ratio);
+        entityLogoW = entityLogoH / ratio;
+      }
+    }
+
     let qrImg: any = null;
     const QR_SIZE = 80;
     try {
@@ -384,8 +439,30 @@ serve(async (req) => {
       } else {
         try { page.drawText("DOCITO", { x: margin, y: H - HEADER_H + 14, size: 14, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
       }
-      const label = sanitizePdf(i(locale, "invoice"));
-      try { const lw = font.widthOfTextAtSize(label, 11); page.drawText(label, { x: W - margin - lw, y: H - HEADER_H + (HEADER_H + 11) / 2 - 4, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      // Center: entity logo
+      if (entityLogo) {
+        page.drawImage(entityLogo, {
+          x: (W - entityLogoW) / 2,
+          y: H - HEADER_H + (HEADER_H - entityLogoH) / 2,
+          width: entityLogoW,
+          height: entityLogoH,
+        });
+      } else if (billedToName && billedToName !== "—") {
+        try {
+          const t = sanitizePdf(billedToName).slice(0, 30);
+          const cw = font.widthOfTextAtSize(t, 11);
+          page.drawText(t, { x: (W - cw) / 2, y: H - HEADER_H + (HEADER_H - 11) / 2 + 1, size: 11, font, color: rgb(1, 1, 1) });
+        } catch { /* ignore */ }
+      }
+      // Right column: billed-to name + "Invoice" label + address
+      const right1 = sanitizePdf(billedToName || i(locale, "invoice")).slice(0, 40);
+      try { const lw = font.widthOfTextAtSize(right1, 11); page.drawText(right1, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 14, size: 11, font, color: rgb(1, 1, 1) }); } catch { /* ignore */ }
+      const right2 = sanitizePdf(i(locale, "invoice"));
+      try { const lw = font.widthOfTextAtSize(right2, 9); page.drawText(right2, { x: W - margin - lw, y: H - HEADER_H + HEADER_H - 25, size: 9, font, color: rgb(0.85, 0.90, 1.0) }); } catch { /* ignore */ }
+      const detail = sanitizePdf((entityAddress || entityPhone || "").slice(0, 50));
+      if (detail) {
+        try { const lw = font.widthOfTextAtSize(detail, 7.5); page.drawText(detail, { x: W - margin - lw, y: H - HEADER_H + 6, size: 7.5, font, color: rgb(0.75, 0.82, 0.97) }); } catch { /* ignore */ }
+      }
     };
 
     const drawVerifyFooter = (pg: typeof page, pageNum: number, pageCount: number) => {

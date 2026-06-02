@@ -303,7 +303,27 @@ export const generatePatientSummaryPDF = async (
     }
     
     // Practice info (right side)
-    if (practiceInfo?.name) {
+    let clinicLogoDataUrl: string | null = null;
+    if (practiceInfo?.logo_url) {
+      try {
+        const res = await fetch(practiceInfo.logo_url);
+        if (res.ok) {
+          const blob = await res.blob();
+          clinicLogoDataUrl = await new Promise<string | null>((resolve) => {
+            const r = new FileReader();
+            r.onloadend = () => resolve(r.result as string);
+            r.onerror = () => resolve(null);
+            r.readAsDataURL(blob);
+          });
+        }
+      } catch { /* silent */ }
+    }
+    if (clinicLogoDataUrl) {
+      try {
+        const fmt = practiceInfo!.logo_url!.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG';
+        doc.addImage(clinicLogoDataUrl, fmt, pageWidth - 50, 8, 35, 12);
+      } catch { /* fallback to text below */ }
+    } else if (practiceInfo?.name) {
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.text(practiceInfo.name, pageWidth - 14, 15, { align: "right" });
@@ -648,7 +668,7 @@ export const generateDoctorPatientPDF = async (
     // Fetch practice info
    const { data: doctorData } = await supabase
      .from("doctors")
-     .select("user_id, practice_id, practices(name, phone, email, address)")
+     .select("user_id, practice_id, practices(name, phone, email, address, logo_url)")
      .eq("id", doctorId)
      .single();
     let doctorName: string | undefined;
@@ -668,6 +688,7 @@ if (doctorData?.user_id) {
       phone: (doctorData.practices as any).phone,
       email: (doctorData.practices as any).email,
       address: (doctorData.practices as any).address,
+      logo_url: (doctorData.practices as any).logo_url,
       doctor_name: doctorName,
     }
   : { doctor_name: doctorName };
@@ -765,7 +786,7 @@ export const generateProfilePatientPDF = async (
     // Fetch practice info
    const { data: doctorData } = await supabase
   .from("doctors")
-  .select("user_id, practice_id, practices(name, phone, email, address)")
+  .select("user_id, practice_id, practices(name, phone, email, address, logo_url)")
   .eq("id", doctorId)
   .single();
 let doctorName: string | undefined;
@@ -786,7 +807,8 @@ const practiceInfo: PracticeInfo = doctorData?.practices
       phone: (doctorData.practices as any).phone,
       email: (doctorData.practices as any).email,
       address: (doctorData.practices as any).address,
-      doctor_name: doctorName, // 👈 ADD THIS LINE
+      logo_url: (doctorData.practices as any).logo_url,
+      doctor_name: doctorName,
     }
   : { doctor_name: doctorName };
     

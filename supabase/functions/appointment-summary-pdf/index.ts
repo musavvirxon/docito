@@ -14,6 +14,32 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import QRCode from "https://esm.sh/qrcode@1.5.3";
+import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "../invoice-generate-pdf/assets.ts";
+
+function b64ToBytes(s: string): Uint8Array {
+  const clean = (s || "").replace(/\s+/g, "");
+  if (!clean) return new Uint8Array(0);
+  try {
+    const bin = atob(clean);
+    const out = new Uint8Array(bin.length);
+    for (let j = 0; j < bin.length; j++) out[j] = bin.charCodeAt(j);
+    return out;
+  } catch { return new Uint8Array(0); }
+}
+
+async function fetchImageBytesAS(url: string, maxBytes = 2_000_000): Promise<{ bytes: Uint8Array; type: "png" | "jpg" | null }> {
+  try {
+    const res = await fetch(url, { redirect: "follow" });
+    if (!res.ok) return { bytes: new Uint8Array(0), type: null };
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const ab = await res.arrayBuffer();
+    if (ab.byteLength > maxBytes) return { bytes: new Uint8Array(0), type: null };
+    const u = url.toLowerCase();
+    const isPng = ct.includes("png") || u.endsWith(".png");
+    const isJpg = ct.includes("jpeg") || ct.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+    return { bytes: new Uint8Array(ab), type: isPng ? "png" : isJpg ? "jpg" : null };
+  } catch { return { bytes: new Uint8Array(0), type: null }; }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -181,14 +207,20 @@ serve(async (req) => {
       }
     }
 
-    // Fetch related data in parallel
-    const [diagRes, clinRes, rxRes, billsRes, doctorProfileRes, patientProfileRes] = await Promise.all([
+    // Fetch related data in parallel (incl. clinic + doctor branding)
+    const [diagRes, clinRes, rxRes, billsRes, doctorProfileRes, patientProfileRes, practiceRes, doctorRowRes] = await Promise.all([
       admin.from("appointment_diagnoses").select("diagnosis_title, icd10_code, notes").eq("appointment_id", body.appointment_id),
       admin.from("appointment_clinical_items").select("title, description, item_type, cost").eq("appointment_id", body.appointment_id),
       admin.from("prescriptions").select("id, prescription_number, status, created_at").eq("appointment_id", body.appointment_id).limit(20),
       admin.from("billing_transactions").select("amount, currency, status, description, transaction_type").eq("appointment_id", body.appointment_id),
       doctorRow ? admin.from("profiles").select("full_name").eq("user_id", (doctorRow as any).user_id).maybeSingle() : Promise.resolve({ data: null }),
       appt.patient_id ? admin.from("profiles").select("full_name, email").eq("user_id", appt.patient_id).maybeSingle() : Promise.resolve({ data: null }),
+      appt.practice_id
+        ? admin.from("practices").select("name, address, phone, logo_url").eq("id", appt.practice_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+      appt.doctor_id
+        ? admin.from("doctors").select("logo_url").eq("id", appt.doctor_id).maybeSingle()
+        : Promise.resolve({ data: null }),
     ]);
 
     // Fetch FX rates for currency conversion
@@ -202,22 +234,102 @@ serve(async (req) => {
       return (amount / f) * t;
     };
 
+    // Resolve clinic + doctor branding
+    const practice = (practiceRes as any)?.data || null;
+    const doctorBrand = (doctorRowRes as any)?.data || null;
+    const clinicName = (practice?.name || "").toString();
+    const clinicAddress = (practice?.address || "").toString();
+    const clinicPhone = (practice?.phone || "").toString();
+    const entityLogoUrl: string | null = practice?.logo_url || doctorBrand?.logo_url || null;
+
     // Build PDF
     const pdfDoc = await PDFDocument.create();
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    let page = pdfDoc.addPage([595, 842]); // A4
+
+    // Embed Docito brand logos
+    let docitoFullLogo: any = null;
+    try {
+      const flb = b64ToBytes(DOCITO_LOGO_FULL_PNG_BASE64);
+      if (flb.length) docitoFullLogo = await pdfDoc.embedPng(flb);
+    } catch { /* ignore */ }
+    let docitoIcon: any = null;
+    try {
+      const ib = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
+      if (ib.length) docitoIcon = await pdfDoc.embedPng(ib);
+    } catch { /* ignore */ }
+
+    // Embed entity logo (clinic preferred, doctor fallback)
+    let entityLogo: any = null;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      const img = await fetchImageBytesAS(entityLogoUrl);
+      try {
+        if (img.type === "png" && img.bytes.length) entityLogo = await pdfDoc.embedPng(img.bytes);
+        else if (img.type === "jpg" && img.bytes.length) entityLogo = await pdfDoc.embedJpg(img.bytes);
+      } catch { entityLogo = null; }
+    }
+
+    const PAGE_W = 595, PAGE_H = 842;
+    const HEADER_H = 52;
+    let page = pdfDoc.addPage([PAGE_W, PAGE_H]);
     const { width, height } = page.getSize();
     const margin = 48;
     let y = height - margin;
+
+    const blue = rgb(0.145, 0.388, 0.922);
+    const white = rgb(1, 1, 1);
+
+    const drawHeader = (pg: typeof page) => {
+      pg.drawRectangle({ x: 0, y: PAGE_H - HEADER_H, width: PAGE_W, height: HEADER_H, color: blue });
+      // Left: full Docito logo
+      if (docitoFullLogo) {
+        const flH = 16;
+        const flW = (docitoFullLogo.width / docitoFullLogo.height) * flH;
+        pg.drawImage(docitoFullLogo, { x: 16, y: PAGE_H - HEADER_H + (HEADER_H - flH) / 2, width: flW, height: flH });
+      } else {
+        try { pg.drawText("DOCITO", { x: 16, y: PAGE_H - HEADER_H + 18, size: 16, font: fontBold, color: white }); } catch { /* ignore */ }
+      }
+      // Center: entity logo
+      if (entityLogo) {
+        let elW = 50;
+        const ratio = entityLogo.height / entityLogo.width;
+        let elH = Math.min(36, elW * ratio);
+        elW = elH / ratio;
+        pg.drawImage(entityLogo, { x: (PAGE_W - elW) / 2, y: PAGE_H - HEADER_H + (HEADER_H - elH) / 2, width: elW, height: elH });
+      } else if (clinicName) {
+        try {
+          const txt = safe(clinicName).slice(0, 30);
+          const cw = fontBold.widthOfTextAtSize(txt, 12);
+          pg.drawText(txt, { x: (PAGE_W - cw) / 2, y: PAGE_H - HEADER_H + (HEADER_H - 12) / 2 + 1, size: 12, font: fontBold, color: white });
+        } catch { /* ignore */ }
+      }
+      // Right: clinic name + label + address
+      try {
+        const right1 = safe((clinicName || "Appointment Summary").slice(0, 40));
+        const w1 = font.widthOfTextAtSize(right1, 11);
+        pg.drawText(right1, { x: PAGE_W - 16 - w1, y: PAGE_H - HEADER_H + HEADER_H - 16, size: 11, font: fontBold, color: white });
+        const right2 = safe(L.title);
+        const w2 = font.widthOfTextAtSize(right2, 9);
+        pg.drawText(right2, { x: PAGE_W - 16 - w2, y: PAGE_H - HEADER_H + HEADER_H - 28, size: 9, font, color: rgb(0.85, 0.90, 1.0) });
+        const detail = safe((clinicAddress || clinicPhone || "").slice(0, 50));
+        if (detail) {
+          const w3 = font.widthOfTextAtSize(detail, 7.5);
+          pg.drawText(detail, { x: PAGE_W - 16 - w3, y: PAGE_H - HEADER_H + 8, size: 7.5, font, color: rgb(0.75, 0.82, 0.97) });
+        }
+      } catch { /* ignore */ }
+    };
+
+    drawHeader(page);
+    y = PAGE_H - HEADER_H - 16;
 
     const drawText = (text: string, opts: { size?: number; bold?: boolean; color?: any; x?: number } = {}) => {
       const f = opts.bold ? fontBold : font;
       const size = opts.size ?? 11;
       const xPos = opts.x ?? margin;
-      if (y < margin + size + 8) {
-        page = pdfDoc.addPage([595, 842]);
-        y = height - margin;
+      if (y < margin + size + 28) {
+        page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        drawHeader(page);
+        y = PAGE_H - HEADER_H - 16;
       }
       page.drawText(safe(text), { x: xPos, y, size, font: f, color: opts.color || rgb(0.1, 0.1, 0.15) });
       y -= size + 4;
@@ -225,9 +337,10 @@ serve(async (req) => {
 
     const drawDivider = () => {
       y -= 6;
-      if (y < margin + 12) {
-        page = pdfDoc.addPage([595, 842]);
-        y = height - margin;
+      if (y < margin + 28) {
+        page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+        drawHeader(page);
+        y = PAGE_H - HEADER_H - 16;
       }
       page.drawLine({
         start: { x: margin, y },
@@ -238,21 +351,20 @@ serve(async (req) => {
       y -= 12;
     };
 
-    // Header
-    drawText("DOCITO", { size: 18, bold: true, color: rgb(0.13, 0.34, 0.78) });
-    drawText(L.title, { size: 22, bold: true });
-    y -= 4;
+    // Title under bar
+    drawText(L.title, { size: 18, bold: true, color: rgb(0.1, 0.1, 0.15) });
+    y -= 2;
 
     // Verification code
     const verificationCode = `AS-${body.appointment_id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     drawText(`${L.verify}: docito.app/verify/${verificationCode}`, { size: 9, color: rgb(0.4, 0.4, 0.45) });
 
-    // QR code top-right
+    // QR code top-right (under header bar)
     try {
       const qrData = `https://docito.app/verify/${verificationCode}`;
       const qrPng = await QRCode.toBuffer(qrData, { width: 96, margin: 0 });
       const qrImg = await pdfDoc.embedPng(qrPng);
-      page.drawImage(qrImg, { x: width - margin - 72, y: height - margin - 56, width: 72, height: 72 });
+      page.drawImage(qrImg, { x: width - margin - 64, y: PAGE_H - HEADER_H - 72, width: 64, height: 64 });
     } catch (qrErr) {
       console.error("QR error:", qrErr);
     }
@@ -345,11 +457,28 @@ serve(async (req) => {
       drawText(`${L.total}: ${formatMoney(total, displayCurrency)}`, { bold: true });
     }
 
-    // Footer
-    y = margin;
-    page.drawText(safe(`${L.generated}: ${new Date().toISOString().slice(0, 19).replace("T", " ")} UTC  •  docito.app`), {
-      x: margin, y, size: 8, font, color: rgb(0.55, 0.55, 0.6),
-    });
+    // Footer on every page: Docito icon + "Generated by Docito · docito.app" + page X of Y
+    const pages = pdfDoc.getPages();
+    const totalPages = pages.length;
+    for (let p = 0; p < totalPages; p++) {
+      const pg = pages[p];
+      const fy = 18;
+      // Divider line
+      pg.drawLine({ start: { x: margin, y: fy + 14 }, end: { x: PAGE_W - margin, y: fy + 14 }, thickness: 0.5, color: rgb(0.85, 0.85, 0.9) });
+      // Docito icon left
+      let lx = margin;
+      if (docitoIcon) {
+        const ih = 10;
+        const iw = (docitoIcon.width / docitoIcon.height) * ih;
+        pg.drawImage(docitoIcon, { x: lx, y: fy - 1, width: iw, height: ih });
+        lx += iw + 4;
+      }
+      const footL = safe(`Generated by Docito · docito.app`);
+      pg.drawText(footL, { x: lx, y: fy + 1, size: 8, font, color: rgb(0.55, 0.55, 0.6) });
+      const footR = safe(`Page ${p + 1} of ${totalPages}`);
+      const fw = font.widthOfTextAtSize(footR, 8);
+      pg.drawText(footR, { x: PAGE_W - margin - fw, y: fy + 1, size: 8, font, color: rgb(0.55, 0.55, 0.6) });
+    }
 
     // Audit log (best-effort, never block response)
     try {

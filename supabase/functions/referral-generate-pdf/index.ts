@@ -31,7 +31,7 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
-import { DOCITO_LOGO_PNG_BASE64, DOCITO_FONT_TTF_BASE64 } from "./assets.ts";
+import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64, DOCITO_FONT_TTF_BASE64 } from "../invoice-generate-pdf/assets.ts";
 
 type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt" | "de";
 
@@ -1114,17 +1114,40 @@ serve(async (req) => {
         return ((data as any)?.name as string) || null;
       } catch { return null; }
     };
+    // Fetch referrer entity branding (logo + address) for the PDF header
+    const fetchEntityBrand = async (etype?: string | null, eid?: string | null): Promise<{ logo_url: string | null; address: string | null } | null> => {
+      if (!eid) return null;
+      const t = (etype || "").toLowerCase();
+      try {
+        if (t === "doctor") {
+          const { data } = await service.from("doctors").select("logo_url, practices(address, logo_url)").eq("id", eid).maybeSingle();
+          const prac = (data as any)?.practices || null;
+          return { logo_url: (prac?.logo_url || (data as any)?.logo_url) || null, address: prac?.address || null };
+        }
+        if (t === "clinic") {
+          const { data } = await service.from("practices").select("logo_url, address").eq("id", eid).maybeSingle();
+          return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null };
+        }
+        const tbl = entityTableFor(etype);
+        if (!tbl) return null;
+        const { data } = await service.from(tbl).select("logo_url, address").eq("id", eid).maybeSingle();
+        return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null };
+      } catch { return null; }
+    };
     const r0: any = referral;
-    const [referrerUserName, receiverUserName, referrerEntityName, receiverEntityName] = await Promise.all([
+    const [referrerUserName, receiverUserName, referrerEntityName, receiverEntityName, referrerBrand] = await Promise.all([
       fetchUserName(r0.referrer_user_id),
       fetchUserName(r0.receiver_user_id),
       fetchEntityName(r0.referrer_type, r0.referrer_entity_id),
       fetchEntityName(r0.receiver_type, r0.receiver_entity_id),
+      fetchEntityBrand(r0.referrer_type, r0.referrer_entity_id),
     ]);
     r0.referrer_user_name = referrerUserName;
     r0.receiver_user_name = receiverUserName;
     r0.referrer_entity_name = referrerEntityName;
     r0.receiver_entity_name = receiverEntityName;
+    const entityLogoUrl: string | null = referrerBrand?.logo_url || null;
+    const entityAddress: string = (referrerBrand?.address || "").toString();
 
     // Authorization: patient, referrer, receiver, or staff/admin of either entity.
     const isSuperAdmin = (roles || []).includes("super_admin");
@@ -1165,14 +1188,41 @@ serve(async (req) => {
       boldFont = primaryFont;
     }
 
-    // Optional logo
+    // Optional Docito logos
     let logo: any = null;
     try {
       const logoBytes = b64ToBytes(DOCITO_LOGO_PNG_BASE64);
       logo = await pdfDoc.embedPng(logoBytes);
     } catch (assetError) {
-      console.warn("referral-generate-pdf: skipping logo asset", assetError);
+      console.warn("referral-generate-pdf: skipping icon logo asset", assetError);
     }
+    let fullLogo: any = null;
+    try {
+      const fullLogoBytes = b64ToBytes(DOCITO_LOGO_FULL_PNG_BASE64);
+      if (fullLogoBytes.length) fullLogo = await pdfDoc.embedPng(fullLogoBytes);
+    } catch (assetError) {
+      console.warn("referral-generate-pdf: skipping full logo asset", assetError);
+    }
+
+    // Entity logo (referrer clinic/doctor) — embedded once, reused
+    let entityLogo: any = null;
+    if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {
+      try {
+        const res = await fetch(entityLogoUrl, { redirect: "follow" });
+        if (res.ok) {
+          const ct = (res.headers.get("content-type") || "").toLowerCase();
+          const ab = await res.arrayBuffer();
+          if (ab.byteLength <= 2_000_000) {
+            const u = entityLogoUrl.toLowerCase();
+            const isPng = ct.includes("png") || u.endsWith(".png");
+            const isJpg = ct.includes("jpeg") || ct.includes("jpg") || u.endsWith(".jpg") || u.endsWith(".jpeg");
+            if (isPng) entityLogo = await pdfDoc.embedPng(new Uint8Array(ab));
+            else if (isJpg) entityLogo = await pdfDoc.embedJpg(new Uint8Array(ab));
+          }
+        }
+      } catch { /* silent */ }
+    }
+
     const qrPngDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 256 });
     const qrBytes = new Uint8Array(await (await fetch(qrPngDataUrl)).arrayBuffer());
     const qrImg = await pdfDoc.embedPng(qrBytes);
@@ -1269,26 +1319,50 @@ serve(async (req) => {
     const renderAll = (ctx: DrawCtx) => {
       const startY = ctx.y;
 
-      // Header: logo + title + brand rule
-      const logoH = logo ? 28 : 0;
-      const logoW = logo ? (logo.width / logo.height) * logoH : 0;
-      if (ctx.page && logo) {
-        const lx = isRtl ? PAGE_W - margin - logoW : margin;
-        ctx.page.drawImage(logo, { x: lx, y: ctx.y - logoH + 4, width: logoW, height: logoH });
+      // ── Blue header bar with 3 zones: Docito left | entity center | name+address right
+      const HEADER_BAR_H = 52;
+      if (ctx.page) {
+        ctx.page.drawRectangle({ x: 0, y: ctx.y - HEADER_BAR_H + 4, width: PAGE_W, height: HEADER_BAR_H, color: brandPrimary });
       }
-      const titleX = isRtl
-        ? PAGE_W - margin - (logo ? logoW + 10 : 0)
-        : margin + (logo ? logoW + 10 : 0);
-      // place title baseline aligned roughly with logo
-      const tCtx = { ...ctx };
-      tCtx.y = ctx.y - 18;
-      text(tCtx, t(locale, "title"), titleX, sizeTitle, textColor, boldFont);
-      // tagline / domain on the right
-      const taglineX = isRtl ? margin : PAGE_W - margin;
-      const taglineCtx = { ...ctx };
-      taglineCtx.y = ctx.y - 12;
-      text(taglineCtx, "docito.live", taglineX, sizeLabel, subtleColor);
-      ctx.y -= Math.max(logoH, 24) + 6;
+      // Left: full Docito logo
+      if (ctx.page && fullLogo) {
+        const flH = 16;
+        const flW = (fullLogo.width / fullLogo.height) * flH;
+        ctx.page.drawImage(fullLogo, { x: margin, y: ctx.y - HEADER_BAR_H + 4 + (HEADER_BAR_H - flH) / 2, width: flW, height: flH });
+      } else if (ctx.page && logo) {
+        const lH = 24;
+        const lW = (logo.width / logo.height) * lH;
+        ctx.page.drawImage(logo, { x: margin, y: ctx.y - HEADER_BAR_H + 4 + (HEADER_BAR_H - lH) / 2, width: lW, height: lH });
+      }
+      // Center: entity logo or fallback referrer name
+      const referrerLabel = (r.referrer_entity_name || r.referrer_user_name || "") as string;
+      if (ctx.page && entityLogo) {
+        let elW = 50;
+        const ratio = entityLogo.height / entityLogo.width;
+        let elH = Math.min(36, elW * ratio);
+        elW = elH / ratio;
+        ctx.page.drawImage(entityLogo, { x: (PAGE_W - elW) / 2, y: ctx.y - HEADER_BAR_H + 4 + (HEADER_BAR_H - elH) / 2, width: elW, height: elH });
+      } else if (ctx.page && referrerLabel) {
+        const txt = reshapeAndBidi(safeText(referrerLabel, 30), locale);
+        const tw = primaryFont.widthOfTextAtSize(txt, 12);
+        ctx.page.drawText(txt, { x: (PAGE_W - tw) / 2, y: ctx.y - HEADER_BAR_H + 4 + (HEADER_BAR_H - 12) / 2 + 1, size: 12, font: boldFont, color: rgb(1, 1, 1) });
+      }
+      // Right: referrer name + "Referral" + address
+      if (ctx.page) {
+        const r1 = reshapeAndBidi(safeText(referrerLabel || t(locale, "title"), 40), locale);
+        const w1 = primaryFont.widthOfTextAtSize(r1, 11);
+        ctx.page.drawText(r1, { x: PAGE_W - margin - w1, y: ctx.y - HEADER_BAR_H + 4 + HEADER_BAR_H - 16, size: 11, font: boldFont, color: rgb(1, 1, 1) });
+        const r2 = reshapeAndBidi(t(locale, "title"), locale);
+        const w2 = primaryFont.widthOfTextAtSize(r2, 9);
+        ctx.page.drawText(r2, { x: PAGE_W - margin - w2, y: ctx.y - HEADER_BAR_H + 4 + HEADER_BAR_H - 30, size: 9, font: primaryFont, color: rgb(0.85, 0.90, 1.0) });
+        const addrTxt = safeText(entityAddress, 50);
+        if (addrTxt) {
+          const r3 = reshapeAndBidi(addrTxt, locale);
+          const w3 = primaryFont.widthOfTextAtSize(r3, 7.5);
+          ctx.page.drawText(r3, { x: PAGE_W - margin - w3, y: ctx.y - HEADER_BAR_H + 4 + 8, size: 7.5, font: primaryFont, color: rgb(0.75, 0.82, 0.97) });
+        }
+      }
+      ctx.y -= HEADER_BAR_H + 8;
       // brand rule
       if (ctx.page) {
         ctx.page.drawRectangle({ x: margin, y: ctx.y, width: contentW, height: 1.2, color: brandPrimary });
@@ -1389,7 +1463,7 @@ serve(async (req) => {
         ctx.page.drawRectangle({ x: margin, y: ctx.y, width: contentW, height: 0.8, color: borderGray });
       }
       ctx.y -= 12;
-      const footL = `Docito  ·  docito.live`;
+      const footL = `Docito  ·  docito.app`;
       const footR = `${t(locale, "generatedAt")}: ${fmtDateTime(new Date().toISOString(), locale)}`;
       if (ctx.page) {
         const lW = primaryFont.widthOfTextAtSize(footL, sizeLabel);
