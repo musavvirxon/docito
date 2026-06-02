@@ -337,7 +337,7 @@ serve(async (req) => {
         prescribed_at, expires_at,
         refills_remaining, refills_total, notes, diagnosis_code,
         patient:patient_id(full_name, email, phone),
-        doctor:doctor_id(specialty, user_id),
+        doctor:doctor_id(specialty, user_id, logo_url, practice_id, practices(name, address, phone, logo_url)),
         pharmacy:pharmacy_id(name, address, phone),
         prescription_items(
           id, medication_name, medication_code, dosage, frequency,
