@@ -31,6 +31,10 @@ interface PDFExportProps {
   patientName?: string;
   doctorName?: string;
   practiceName?: string;
+  practiceLogoUrl?: string;
+  doctorPhotoUrl?: string;
+  practiceAddress?: string;
+  practicePhone?: string;
 }
 
 const PDFExport = ({
