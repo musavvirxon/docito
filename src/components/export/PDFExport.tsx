@@ -42,7 +42,10 @@ const PDFExport = ({
   procedures = [],
   patientName = "Patient",
   doctorName = "Doctor",
-  practiceName = "Dental Practice"
+  practiceName = "Dental Practice",
+  practiceLogoUrl,
+  practiceAddress,
+  practicePhone,
 }: PDFExportProps) => {
 
   const generatePDF = () => {
