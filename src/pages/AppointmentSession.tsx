@@ -66,8 +66,9 @@ import { DentalProcedurePicker } from '@/components/appointments/DentalProcedure
 import { ToothDiagnosisPicker } from '@/components/appointments/ToothDiagnosisPicker';
 import { PatientClinicalHistoryList } from '@/components/appointments/PatientClinicalHistoryList';
 import { AppointmentTreatmentPlansSection } from '@/components/appointments/AppointmentTreatmentPlansSection';
-import { useDoctorPerformance } from '@/hooks/useDoctorPerformance';
-import { PerformanceReviews } from '@/components/doctor/PerformanceReviews';
+import { useAppointmentReviews } from '@/hooks/useAppointmentReviews';
+import { ReviewsList } from '@/components/reviews/ReviewsList';
+import { LeaveReviewForm } from '@/components/reviews/LeaveReviewForm';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
