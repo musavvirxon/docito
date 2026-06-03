@@ -173,7 +173,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     doctorPatientId: appointment?.doctor_patient_id || null,
   });
   const finance = useAppointmentFinance(appointmentId, appointment?.patient_id || undefined);
-  const { recentReviews, stats: doctorPerfStats } = useDoctorPerformance();
+  const {
+    reviews: appointmentReviews,
+    loading: reviewsLoading,
+    submitReview,
+    replyToReview,
+  } = useAppointmentReviews({
+    doctorId: appointment?.doctor_id || null,
+    appointmentId,
+  });
+  const thisAppointmentReview = appointmentReviews.find((r) => r.appointment_id === appointmentId) || null;
+  const isPatientViewer = !!appointment && !!user && appointment.patient_id === user.id;
+  const isDoctorViewer = !!appointment && !!user && !isPatientViewer;
 
   const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
 
