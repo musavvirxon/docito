@@ -250,40 +250,33 @@ const AppointmentQuickPreview = memo(
       }
     }, [appointment, onClose, startConversation, tp]);
 
-    const handleSaveDiagnosis = useCallback(async () => {
-      if (!appointment || !diagnosisTitle.trim()) {
-        toast.error(tp("diagnosisRequired"));
+    useEffect(() => {
+      if (!isOpen || !appointment?.id) {
+        setExistingDiagnoses([]);
         return;
       }
-      setSavingDiagnosis(true);
-      try {
-        if (!appointment.doctor_id || !user?.id) {
-          throw new Error("Doctor context is missing");
+      let cancelled = false;
+      (async () => {
+        setLoadingDiagnoses(true);
+        try {
+          const { data, error } = await supabase
+            .from("appointment_diagnoses")
+            .select("id, diagnosis_title, icd10_code, notes, created_at")
+            .eq("appointment_id", appointment.id)
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          if (!cancelled) setExistingDiagnoses(data || []);
+        } catch (err) {
+          console.error("Load diagnoses error:", err);
+          if (!cancelled) setExistingDiagnoses([]);
+        } finally {
+          if (!cancelled) setLoadingDiagnoses(false);
         }
-
-        const { error } = await supabase.from("appointment_diagnoses").insert({
-          appointment_id: appointment.id,
-          doctor_id: appointment.doctor_id,
-          created_by: user.id,
-          diagnosis_title: diagnosisTitle.trim(),
-          icd10_code: icdCode.trim() || null,
-          notes: diagnosisNotes.trim() || null,
-          patient_id: appointment.patient_id || null,
-          doctor_patient_id: (appointment as any).doctor_patient_id || null,
-        });
-        if (error) throw error;
-        toast.success(tp("diagnosisAdded"));
-        setDiagnosisTitle("");
-        setIcdCode("");
-        setDiagnosisNotes("");
-        setShowDiagnosisForm(false);
-      } catch (err: any) {
-        console.error("Save diagnosis error:", err);
-        toast.error(err?.message || tp("failedDiagnosis"));
-      } finally {
-        setSavingDiagnosis(false);
-      }
-    }, [appointment, diagnosisTitle, icdCode, diagnosisNotes, user?.id, tp]);
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [isOpen, appointment?.id]);
 
     if (!appointment) return null;
 
