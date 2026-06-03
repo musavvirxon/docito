@@ -384,60 +384,50 @@ const AppointmentQuickPreview = memo(
             </div>
           </div>
 
-          {/* Diagnosis Section - hidden for patients */}
+          {/* Diagnoses Section (read-only) - hidden for patients */}
           {!isPatient && (
             <div className="space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2"
-                onClick={() => setShowDiagnosisForm(!showDiagnosisForm)}
-              >
-                <Plus className="h-4 w-4" />
-                {tp("addDiagnosis")}
-              </Button>
-
-              {showDiagnosisForm && (
-                <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
-                  <Input
-                    placeholder={tp("diagnosisTitle")}
-                    value={diagnosisTitle}
-                    onChange={(e) => setDiagnosisTitle(e.target.value)}
-                    className="text-sm"
-                  />
-                  <Input
-                    placeholder={tp("icdCode")}
-                    value={icdCode}
-                    onChange={(e) => setIcdCode(e.target.value)}
-                    className="text-sm"
-                  />
-                  <Textarea
-                    placeholder={tp("notes")}
-                    value={diagnosisNotes}
-                    onChange={(e) => setDiagnosisNotes(e.target.value)}
-                    rows={2}
-                    className="text-sm"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleSaveDiagnosis}
-                      disabled={savingDiagnosis || !diagnosisTitle.trim()}
-                      className="flex-1 gap-1"
-                    >
-                      {savingDiagnosis && <Loader2 className="h-3 w-3 animate-spin" />}
-                      {tp("save")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setShowDiagnosisForm(false)}
-                    >
-                      {tp("cancel")}
-                    </Button>
-                  </div>
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                {tp("diagnoses") || "Diagnoses"}
+              </div>
+              {loadingDiagnoses ? (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {tp("loading") || "Loading…"}
                 </div>
+              ) : existingDiagnoses.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {tp("noDiagnosesYet") || "No diagnoses recorded yet."}
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {existingDiagnoses.map((d) => (
+                    <li
+                      key={d.id}
+                      className="p-2.5 rounded-lg border border-border bg-muted/30 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-medium">{d.diagnosis_title}</span>
+                        {d.icd10_code && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {d.icd10_code}
+                          </Badge>
+                        )}
+                      </div>
+                      {d.notes && (
+                        <p className="mt-1 text-xs text-muted-foreground whitespace-pre-wrap">
+                          {d.notes}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
+              <p className="text-[11px] text-muted-foreground">
+                {tp("addDiagnosisInSession") ||
+                  "Add new diagnoses from the appointment session."}
+              </p>
             </div>
           )}
 
