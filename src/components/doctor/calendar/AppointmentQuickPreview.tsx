@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useMemo } from "react";
+import { memo, useState, useCallback, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -104,11 +104,8 @@ const AppointmentQuickPreview = memo(
     const navigate = useNavigate();
     const { startConversation, loading: isMessaging } = useMessageAction();
     const [isStarting, setIsStarting] = useState(false);
-    const [showDiagnosisForm, setShowDiagnosisForm] = useState(false);
-    const [diagnosisTitle, setDiagnosisTitle] = useState("");
-    const [icdCode, setIcdCode] = useState("");
-    const [diagnosisNotes, setDiagnosisNotes] = useState("");
-    const [savingDiagnosis, setSavingDiagnosis] = useState(false);
+    const [existingDiagnoses, setExistingDiagnoses] = useState<any[]>([]);
+    const [loadingDiagnoses, setLoadingDiagnoses] = useState(false);
     const isRTL = i18n.language === "ar";
     const { downloadSummary, loading: pdfLoading } = useAppointmentSummaryPdf();
 
@@ -253,40 +250,33 @@ const AppointmentQuickPreview = memo(
       }
     }, [appointment, onClose, startConversation, tp]);
 
-    const handleSaveDiagnosis = useCallback(async () => {
-      if (!appointment || !diagnosisTitle.trim()) {
-        toast.error(tp("diagnosisRequired"));
+    useEffect(() => {
+      if (!isOpen || !appointment?.id) {
+        setExistingDiagnoses([]);
         return;
       }
-      setSavingDiagnosis(true);
-      try {
-        if (!appointment.doctor_id || !user?.id) {
-          throw new Error("Doctor context is missing");
+      let cancelled = false;
+      (async () => {
+        setLoadingDiagnoses(true);
+        try {
+          const { data, error } = await supabase
+            .from("appointment_diagnoses")
+            .select("id, diagnosis_title, icd10_code, notes, created_at")
+            .eq("appointment_id", appointment.id)
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          if (!cancelled) setExistingDiagnoses(data || []);
+        } catch (err) {
+          console.error("Load diagnoses error:", err);
+          if (!cancelled) setExistingDiagnoses([]);
+        } finally {
+          if (!cancelled) setLoadingDiagnoses(false);
         }
-
-        const { error } = await supabase.from("appointment_diagnoses").insert({
-          appointment_id: appointment.id,
-          doctor_id: appointment.doctor_id,
-          created_by: user.id,
-          diagnosis_title: diagnosisTitle.trim(),
-          icd10_code: icdCode.trim() || null,
-          notes: diagnosisNotes.trim() || null,
-          patient_id: appointment.patient_id || null,
-          doctor_patient_id: (appointment as any).doctor_patient_id || null,
-        });
-        if (error) throw error;
-        toast.success(tp("diagnosisAdded"));
-        setDiagnosisTitle("");
-        setIcdCode("");
-        setDiagnosisNotes("");
-        setShowDiagnosisForm(false);
-      } catch (err: any) {
-        console.error("Save diagnosis error:", err);
-        toast.error(err?.message || tp("failedDiagnosis"));
-      } finally {
-        setSavingDiagnosis(false);
-      }
-    }, [appointment, diagnosisTitle, icdCode, diagnosisNotes, user?.id, tp]);
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [isOpen, appointment?.id]);
 
     if (!appointment) return null;
 
@@ -302,7 +292,7 @@ const AppointmentQuickPreview = memo(
 
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-2">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -394,60 +384,50 @@ const AppointmentQuickPreview = memo(
             </div>
           </div>
 
-          {/* Diagnosis Section - hidden for patients */}
+          {/* Diagnoses Section (read-only) - hidden for patients */}
           {!isPatient && (
             <div className="space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full gap-2"
-                onClick={() => setShowDiagnosisForm(!showDiagnosisForm)}
-              >
-                <Plus className="h-4 w-4" />
-                {tp("addDiagnosis")}
-              </Button>
-
-              {showDiagnosisForm && (
-                <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
-                  <Input
-                    placeholder={tp("diagnosisTitle")}
-                    value={diagnosisTitle}
-                    onChange={(e) => setDiagnosisTitle(e.target.value)}
-                    className="text-sm"
-                  />
-                  <Input
-                    placeholder={tp("icdCode")}
-                    value={icdCode}
-                    onChange={(e) => setIcdCode(e.target.value)}
-                    className="text-sm"
-                  />
-                  <Textarea
-                    placeholder={tp("notes")}
-                    value={diagnosisNotes}
-                    onChange={(e) => setDiagnosisNotes(e.target.value)}
-                    rows={2}
-                    className="text-sm"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleSaveDiagnosis}
-                      disabled={savingDiagnosis || !diagnosisTitle.trim()}
-                      className="flex-1 gap-1"
-                    >
-                      {savingDiagnosis && <Loader2 className="h-3 w-3 animate-spin" />}
-                      {tp("save")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setShowDiagnosisForm(false)}
-                    >
-                      {tp("cancel")}
-                    </Button>
-                  </div>
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                {tp("diagnoses") || "Diagnoses"}
+              </div>
+              {loadingDiagnoses ? (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  {tp("loading") || "Loading…"}
                 </div>
+              ) : existingDiagnoses.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {tp("noDiagnosesYet") || "No diagnoses recorded yet."}
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {existingDiagnoses.map((d) => (
+                    <li
+                      key={d.id}
+                      className="p-2.5 rounded-lg border border-border bg-muted/30 text-sm"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-medium">{d.diagnosis_title}</span>
+                        {d.icd10_code && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {d.icd10_code}
+                          </Badge>
+                        )}
+                      </div>
+                      {d.notes && (
+                        <p className="mt-1 text-xs text-muted-foreground whitespace-pre-wrap">
+                          {d.notes}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
+              <p className="text-[11px] text-muted-foreground">
+                {tp("addDiagnosisInSession") ||
+                  "Add new diagnoses from the appointment session."}
+              </p>
             </div>
           )}
 
