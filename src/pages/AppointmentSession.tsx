@@ -69,6 +69,7 @@ import { AppointmentTreatmentPlansSection } from '@/components/appointments/Appo
 import { useAppointmentReviews } from '@/hooks/useAppointmentReviews';
 import { ReviewsList } from '@/components/reviews/ReviewsList';
 import { LeaveReviewForm } from '@/components/reviews/LeaveReviewForm';
+import { DoctorReplyBox } from '@/components/reviews/DoctorReplyBox';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
