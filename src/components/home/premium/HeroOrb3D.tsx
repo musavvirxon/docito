@@ -322,7 +322,6 @@ type GlobeTextures = {
   roughness: THREE.Texture;
   bump: THREE.Texture;
 };
-const globeTextureCache: { mobile?: GlobeTextures; desktop?: GlobeTextures } = {};
 
 function configureTex(tex: THREE.Texture) {
   tex.wrapS = THREE.RepeatWrapping;
@@ -608,89 +607,131 @@ function generateEarthTextures(width: number, height: number, seed: number): Glo
   return { earth: earthTex, clouds: cloudsTex, roughness: roughnessTex, bump: bumpTex };
 }
 
-function requestIdle(cb: () => void) {
-  const w = window as any;
-  if (typeof w.requestIdleCallback === "function") {
-    return w.requestIdleCallback(cb, { timeout: 1200 });
+// ─── Texture cache (module-level singleton, survives SPA navigation) ──────────
+const globeTextureCache: { mobile?: GlobeTextures; desktop?: GlobeTextures } = {};
+
+// ─── Module-level warm-up ─────────────────────────────────────────────────────
+//
+// WHY THIS EXISTS:
+//   HeroOrb3D is lazy-imported, so this module only evaluates the first time the
+//   hero section renders. Without warm-up, `globeTextureCache` is empty when
+//   EarthGlobe mounts → useState gets null → first frame shows a plain blue
+//   sphere. The cache is only warm on *re-visits* (module already evaluated).
+//
+// HOW IT WORKS:
+//   1. At module-load time (synchronous): generate 256×128 preview textures.
+//      This takes ~10–25 ms and completes before the React component tree is
+//      built, so useState's lazy initializer always reads a non-null value.
+//   2. ~200 ms later (setTimeout, after first paint): generate the 512×256
+//      hi-res textures on the main thread.  Any mounted EarthGlobe is notified
+//      via a lightweight listener set and re-renders with the upgraded texture.
+//   3. On every subsequent visit to the page the hi-res textures are already in
+//      `globeTextureCache`, so useState returns them immediately (zero flash).
+//
+const EARTH_SEED = 1337;
+
+// Hi-res upgrade listener registry
+const _hiResListeners = new Set<(t: GlobeTextures) => void>();
+let _hiResReady = false;
+let _warmupRan = false;
+
+/** Subscribe to the desktop hi-res upgrade.  Returns an unsubscribe function. */
+function subscribeHiRes(cb: (t: GlobeTextures) => void): () => void {
+  if (_hiResReady && globeTextureCache.desktop) {
+    // Already upgraded — deliver synchronously so the component gets it on mount
+    cb(globeTextureCache.desktop);
+    return () => {};
   }
-  return window.setTimeout(cb, 60);
+  _hiResListeners.add(cb);
+  return () => { _hiResListeners.delete(cb); };
 }
 
-function cancelIdle(id: number) {
-  const w = window as any;
-  if (typeof w.cancelIdleCallback === "function") {
-    w.cancelIdleCallback(id);
-  } else {
-    window.clearTimeout(id);
+function _notifyHiRes(t: GlobeTextures) {
+  _hiResReady = true;
+  _hiResListeners.forEach((cb) => cb(t));
+  _hiResListeners.clear();
+}
+
+function _runWarmup() {
+  if (_warmupRan || typeof window === "undefined" || typeof document === "undefined") return;
+  _warmupRan = true;
+
+  // ── Step 1: preview textures (synchronous, fast) ──────────────────────────
+  // These are ready before EarthGlobe's useState lazy initializer runs.
+  try {
+    if (!globeTextureCache.mobile) {
+      globeTextureCache.mobile = generateEarthTextures(256, 128, EARTH_SEED);
+    }
+    if (!globeTextureCache.desktop) {
+      globeTextureCache.desktop = generateEarthTextures(256, 128, EARTH_SEED);
+    }
+  } catch {
+    // Canvas unavailable (unusual) – component will fall back to the blue sphere.
+  }
+
+  // ── Step 2: hi-res upgrade (deferred, after first paint) ──────────────────
+  // 200 ms gives React time to commit the first frame before we block the
+  // main thread with the heavier 512×256 generation (~50–150 ms on fast HW).
+  if (!_hiResReady) {
+    window.setTimeout(() => {
+      try {
+        const final = generateEarthTextures(512, 256, EARTH_SEED);
+        const prev = globeTextureCache.desktop;
+        globeTextureCache.desktop = final;
+        // Dispose old preview textures to free canvas memory
+        if (prev && prev !== final) {
+          prev.earth.dispose();
+          prev.clouds.dispose();
+          prev.roughness.dispose();
+          prev.bump.dispose();
+        }
+        _notifyHiRes(final);
+      } catch {
+        // Generation failed; listeners won't be called; component keeps preview.
+        _hiResReady = true;
+        _hiResListeners.clear();
+      }
+    }, 200);
   }
 }
 
-// Earth globe component (progressive + cached textures)
+// Kick off immediately when this module is first imported
+_runWarmup();
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Earth globe component (reads from pre-warmed cache; subscribes to hi-res upgrade)
 function EarthGlobe({ opacity, isMobile }: { opacity: number; isMobile: boolean }) {
   const globeRef = useRef<THREE.Mesh>(null);
   const cloudsRef = useRef<THREE.Mesh>(null);
   const { invalidate } = useThree();
 
   const cacheKey = isMobile ? "mobile" : "desktop";
+
+  // Lazy initializer: cache is already populated by _runWarmup, so this
+  // returns preview textures on first mount (no more blue sphere on load).
   const [textures, setTextures] = useState<GlobeTextures | null>(() => {
     return cacheKey === "mobile"
       ? globeTextureCache.mobile ?? null
       : globeTextureCache.desktop ?? null;
   });
 
-  // Ensure the demand-driven frameloop renders as soon as textures become available
+  // Trigger a render as soon as textures land
   useEffect(() => {
     if (textures) invalidate();
   }, [textures, invalidate]);
 
   useEffect(() => {
-    let cancelled = false;
-    let idleId: number | null = null;
+    // Sync state with cache in case the component remounted after navigation
+    // and the cache was upgraded while it was unmounted.
+    const cached =
+      cacheKey === "mobile" ? globeTextureCache.mobile : globeTextureCache.desktop;
+    if (cached) setTextures(cached);
 
-    const current = cacheKey === "mobile" ? globeTextureCache.mobile : globeTextureCache.desktop;
-    if (current) {
-      setTextures(current);
-      return () => {
-        // keep cached textures for fast future navigations
-      };
-    }
-
-    // Fast preview textures (immediate)
-    const previewW = 256;
-    const previewH = 128;
-    const preview = generateEarthTextures(previewW, previewH, 1337);
-
-    if (cacheKey === "mobile") globeTextureCache.mobile = preview;
-    else globeTextureCache.desktop = preview;
-    setTextures(preview);
-
-    // Desktop: upgrade to higher-res textures when the browser is idle
+    // Subscribe to the hi-res upgrade (desktop only; mobile stays at preview).
     if (!isMobile) {
-      idleId = requestIdle(() => {
-        if (cancelled) return;
-        const final = generateEarthTextures(512, 256, 1337);
-        if (cancelled) {
-          final.earth.dispose();
-          final.clouds.dispose();
-          final.roughness.dispose();
-          final.bump.dispose();
-          return;
-        }
-        const prev = globeTextureCache.desktop;
-        globeTextureCache.desktop = final;
-        setTextures(final);
-        // dispose the old preview textures (keep only final in cache)
-        prev?.earth.dispose();
-        prev?.clouds.dispose();
-        prev?.roughness.dispose();
-        prev?.bump.dispose();
-      });
+      return subscribeHiRes((final) => setTextures(final));
     }
-
-    return () => {
-      cancelled = true;
-      if (idleId !== null) cancelIdle(idleId);
-    };
+    return undefined;
   }, [cacheKey, isMobile]);
 
   useFrame((state) => {
