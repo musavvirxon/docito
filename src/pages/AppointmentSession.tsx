@@ -1731,11 +1731,64 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                   </TabsContent>
 
                   <TabsContent value="reviews" className="mt-0 space-y-4">
-                    <PerformanceReviews
-                      reviews={recentReviews || []}
-                      averageRating={doctorPerfStats?.averageRating || 0}
-                      totalReviews={doctorPerfStats?.totalReviews || 0}
-                    />
+                    {/* Patient: leave or edit their review when the appointment is completed */}
+                    {isPatientViewer && appointment?.status === 'completed' && appointment?.doctor_id && (
+                      <LeaveReviewForm
+                        appointmentId={appointmentId!}
+                        doctorId={appointment.doctor_id}
+                        existingReview={thisAppointmentReview}
+                      />
+                    )}
+                    {isPatientViewer && appointment?.status !== 'completed' && (
+                      <Card>
+                        <CardContent className="py-6 text-center text-sm text-muted-foreground">
+                          You'll be able to leave a review once this appointment is completed.
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Doctor: this appointment's review + reply */}
+                    {isDoctorViewer && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <Star className="h-4 w-4 text-yellow-500" />
+                            Review for this appointment
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {reviewsLoading ? (
+                            <p className="text-sm text-muted-foreground">Loading…</p>
+                          ) : thisAppointmentReview ? (
+                            <div className="space-y-3">
+                              <ReviewsList reviews={[thisAppointmentReview]} />
+                              <DoctorReplyBox
+                                review={thisAppointmentReview}
+                                onSubmit={(reply) => replyToReview(thisAppointmentReview.id, reply)}
+                              />
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              The patient hasn't left a review for this appointment yet.
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Everyone: all reviews this doctor has received */}
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">All reviews for this doctor</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ReviewsList
+                          reviews={appointmentReviews}
+                          loading={reviewsLoading}
+                          emptyHint="No reviews yet."
+                        />
+                      </CardContent>
+                    </Card>
                   </TabsContent>
                 </ScrollArea>
               </Tabs>
