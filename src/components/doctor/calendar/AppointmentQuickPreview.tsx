@@ -104,11 +104,8 @@ const AppointmentQuickPreview = memo(
     const navigate = useNavigate();
     const { startConversation, loading: isMessaging } = useMessageAction();
     const [isStarting, setIsStarting] = useState(false);
-    const [showDiagnosisForm, setShowDiagnosisForm] = useState(false);
-    const [diagnosisTitle, setDiagnosisTitle] = useState("");
-    const [icdCode, setIcdCode] = useState("");
-    const [diagnosisNotes, setDiagnosisNotes] = useState("");
-    const [savingDiagnosis, setSavingDiagnosis] = useState(false);
+    const [existingDiagnoses, setExistingDiagnoses] = useState<any[]>([]);
+    const [loadingDiagnoses, setLoadingDiagnoses] = useState(false);
     const isRTL = i18n.language === "ar";
     const { downloadSummary, loading: pdfLoading } = useAppointmentSummaryPdf();
 
