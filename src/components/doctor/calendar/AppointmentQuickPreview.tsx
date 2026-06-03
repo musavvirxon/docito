@@ -302,7 +302,7 @@ const AppointmentQuickPreview = memo(
 
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-2">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
