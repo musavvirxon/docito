@@ -85,6 +85,7 @@ export default function PatientDashboard() {
 
   const [activeSection, setActiveSection] = useState<PatientDashboardSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [reviewingAppt, setReviewingAppt] = useState<{ id: string; doctor_id: string; doctor_name: string } | null>(null);
 
   const deepLinkSection = searchParams.get("section");
   const deepLinkReferralId = searchParams.get("referral") || undefined;
