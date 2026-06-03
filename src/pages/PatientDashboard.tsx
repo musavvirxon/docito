@@ -28,6 +28,7 @@ import {
   User,
   X,
   XCircle,
+  Star,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,8 @@ import { TimezoneNotice } from "@/components/time/TimezoneNotice";
 import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
 import { getEffectiveTimeZone } from "@/lib/timezone";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LeaveReviewForm } from "@/components/reviews/LeaveReviewForm";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 
@@ -82,6 +85,7 @@ export default function PatientDashboard() {
 
   const [activeSection, setActiveSection] = useState<PatientDashboardSection>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [reviewingAppt, setReviewingAppt] = useState<{ id: string; doctor_id: string; doctor_name: string } | null>(null);
 
   const deepLinkSection = searchParams.get("section");
   const deepLinkReferralId = searchParams.get("referral") || undefined;
@@ -488,6 +492,23 @@ export default function PatientDashboard() {
                             >
                               {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                             </Button>
+                            {a.status === "completed" && a.doctor_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  setReviewingAppt({
+                                    id: a.id,
+                                    doctor_id: a.doctor_id,
+                                    doctor_name:
+                                      a?.doctor?.profiles?.full_name || a?.doctor_name || doctorFallbackLabel,
+                                  })
+                                }
+                              >
+                                <Star className="h-3.5 w-3.5 mr-1.5" />
+                                {t("patient.appointments.review", { defaultValue: "Leave review" })}
+                              </Button>
+                            )}
                             <Button variant="outline" size="sm" onClick={() => navigate(`/appointment-session/${a.id}`)}>
                               {t("patient.appointments.open", { defaultValue: "Open" })}
                             </Button>
@@ -702,6 +723,27 @@ export default function PatientDashboard() {
           </div>
         </main>
       </div>
+
+      <Dialog open={!!reviewingAppt} onOpenChange={(o) => !o && setReviewingAppt(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t("patient.appointments.reviewTitle", {
+                defaultValue: "Review {{name}}",
+                name: reviewingAppt?.doctor_name || "",
+              })}
+            </DialogTitle>
+          </DialogHeader>
+          {reviewingAppt && (
+            <LeaveReviewForm
+              appointmentId={reviewingAppt.id}
+              doctorId={reviewingAppt.doctor_id}
+              compact
+              onSubmitted={() => setReviewingAppt(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

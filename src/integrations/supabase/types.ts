@@ -661,6 +661,63 @@ export type Database = {
           },
         ]
       }
+      appointment_reviews: {
+        Row: {
+          appointment_id: string
+          comment: string | null
+          created_at: string
+          doctor_id: string
+          doctor_replied_at: string | null
+          doctor_reply: string | null
+          id: string
+          is_public: boolean
+          patient_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          appointment_id: string
+          comment?: string | null
+          created_at?: string
+          doctor_id: string
+          doctor_replied_at?: string | null
+          doctor_reply?: string | null
+          id?: string
+          is_public?: boolean
+          patient_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          appointment_id?: string
+          comment?: string | null
+          created_at?: string
+          doctor_id?: string
+          doctor_replied_at?: string | null
+          doctor_reply?: string | null
+          id?: string
+          is_public?: boolean
+          patient_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_reviews_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_sessions: {
         Row: {
           appointment_id: string
@@ -11250,6 +11307,10 @@ export type Database = {
       process_insurance_request: {
         Args: { p_action: string; p_notes?: string; p_request_id: string }
         Returns: Json
+      }
+      recompute_doctor_review_stats: {
+        Args: { _doctor_id: string }
+        Returns: undefined
       }
       refresh_all_ratings: { Args: never; Returns: undefined }
       release_payment_hold: {

@@ -314,7 +314,7 @@ export default function DoctorPublicProfile() {
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
-          <ReviewsSection averageRating={doctor.average_rating} numReviews={doctor.num_reviews} />
+          <ReviewsSection averageRating={doctor.average_rating} numReviews={doctor.num_reviews} doctorId={doctor.id} />
         </Suspense>
 
         <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
