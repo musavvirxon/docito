@@ -492,6 +492,23 @@ export default function PatientDashboard() {
                             >
                               {pdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                             </Button>
+                            {a.status === "completed" && a.doctor_id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  setReviewingAppt({
+                                    id: a.id,
+                                    doctor_id: a.doctor_id,
+                                    doctor_name:
+                                      a?.doctor?.profiles?.full_name || a?.doctor_name || doctorFallbackLabel,
+                                  })
+                                }
+                              >
+                                <Star className="h-3.5 w-3.5 mr-1.5" />
+                                {t("patient.appointments.review", { defaultValue: "Leave review" })}
+                              </Button>
+                            )}
                             <Button variant="outline" size="sm" onClick={() => navigate(`/appointment-session/${a.id}`)}>
                               {t("patient.appointments.open", { defaultValue: "Open" })}
                             </Button>
