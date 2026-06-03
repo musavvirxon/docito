@@ -723,6 +723,27 @@ export default function PatientDashboard() {
           </div>
         </main>
       </div>
+
+      <Dialog open={!!reviewingAppt} onOpenChange={(o) => !o && setReviewingAppt(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t("patient.appointments.reviewTitle", {
+                defaultValue: "Review {{name}}",
+                name: reviewingAppt?.doctor_name || "",
+              })}
+            </DialogTitle>
+          </DialogHeader>
+          {reviewingAppt && (
+            <LeaveReviewForm
+              appointmentId={reviewingAppt.id}
+              doctorId={reviewingAppt.doctor_id}
+              compact
+              onSubmitted={() => setReviewingAppt(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
