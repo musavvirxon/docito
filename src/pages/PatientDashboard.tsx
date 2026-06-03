@@ -49,6 +49,8 @@ import { TimezoneNotice } from "@/components/time/TimezoneNotice";
 import { useTimeZonesByUserIds } from "@/hooks/useTimeZonesByUserIds";
 import { formatAppointmentForViewer } from "@/lib/appointmentTime";
 import { getEffectiveTimeZone } from "@/lib/timezone";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { LeaveReviewForm } from "@/components/reviews/LeaveReviewForm";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { useAppointmentSummaryPdf } from "@/hooks/useAppointmentSummaryPdf";
 
