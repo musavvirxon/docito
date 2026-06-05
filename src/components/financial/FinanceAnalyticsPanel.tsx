@@ -86,6 +86,8 @@ function centsToMajor(cents: number) {
 
 export default function FinanceAnalyticsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);
 
   const today = useMemo(() => new Date(), []);
   const [dateFrom, setDateFrom] = useState(() => isoDate(new Date(today.getFullYear(), today.getMonth(), 1)));
