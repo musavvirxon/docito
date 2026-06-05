@@ -483,6 +483,28 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                     </div>
                   </div>
 
+                  <div>
+                    <Label htmlFor="display-currency">Display Currency</Label>
+                    <Select
+                      value={settings.currency}
+                      onValueChange={(value) => updateSetting("currency", value)}
+                    >
+                      <SelectTrigger id="display-currency">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_CURRENCIES.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            {c.symbol} {c.name} ({c.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Changes how amounts are displayed across dashboards and PDFs. Does not convert values.
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label>{t("settingsPanel.general.practiceLogo")}</Label>
                     <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
