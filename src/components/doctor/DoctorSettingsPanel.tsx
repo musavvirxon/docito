@@ -200,6 +200,8 @@ export function DoctorSettingsPanel() {
               </div>
             </CardContent>
           </Card>
+
+          <CurrencyPreferenceCard />
         </TabsContent>
 
         {/* Notification Settings */}
