@@ -45,9 +45,12 @@ export function AppointmentFinancePanel({
   doctorName,
   procedures = [],
 }: Props) {
+  const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
+  const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
   const finance = useAppointmentFinance(appointmentId, patientId || undefined);
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
+
 
   const [payOpen, setPayOpen] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
