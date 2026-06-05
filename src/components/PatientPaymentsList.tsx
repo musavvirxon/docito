@@ -30,8 +30,15 @@ interface Props {
   emptyText?: string;
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n) || 0);
+export const PatientPaymentsList = ({
+  patientUserId,
+  doctorId,
+  appointmentIds,
+  title = 'Payment history',
+  emptyText = 'No payments recorded yet.',
+}: Props) => {
+  const { format: ctxFmtMajor } = useCurrency();
+  const fmt = (n: number) => ctxFmtMajor(Number(n || 0));
 
 export const PatientPaymentsList = ({
   patientUserId,
