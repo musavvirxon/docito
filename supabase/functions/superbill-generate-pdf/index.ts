@@ -126,6 +126,7 @@ serve(async (req) => {
     if (sbErr) return errorResponse("Failed to fetch superbill", 500);
     if (!sb) return errorResponse("Superbill not found", 404);
     const r: any = sb;
+    if (body.display_currency) r.currency = body.display_currency;
 
     // Authorization: super admin / patient / doctor owner / clinic admin or billing staff
     const isSuper = (roles || []).includes("super_admin");
