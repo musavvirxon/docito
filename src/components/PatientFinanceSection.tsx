@@ -43,6 +43,8 @@ export function PatientFinanceSection({
   onAddPayment,
   disabled,
 }: Props) {
+  const { format: ctxFmtMajor } = useCurrency();
+  const fmt = (n: number) => ctxFmtMajor(Number(n || 0));
   const mine = (payments || []).filter(
     (p) =>
       !patientName ||
