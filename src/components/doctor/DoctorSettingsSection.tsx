@@ -280,7 +280,10 @@ const DoctorSettingsSection = () => {
               </Button>
             </CardContent>
           </Card>
+
+          <CurrencyPreferenceCard />
         </TabsContent>
+
 
         <TabsContent value="notifications" className="space-y-6">
           <Card>
