@@ -66,6 +66,9 @@ function badgeForType(t: EntryType) {
 
 export default function FinanceLedgerManager(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);
+
 
   const today = useMemo(() => new Date(), []);
   const [dateTo, setDateTo] = useState(() => isoDate(today));
