@@ -28,8 +28,6 @@ interface Props {
   disabled?: boolean;
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0);
 
 const getAmount = (p: Payment) =>
   p.amount_cents ? p.amount_cents / 100 : p.amount || 0;
