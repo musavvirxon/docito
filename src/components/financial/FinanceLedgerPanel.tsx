@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 import { Loader2, RefreshCw, Plus, ListOrdered, ArrowUpRight, ArrowDownLeft, Briefcase } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 type EntryType = "income" | "expense" | "payroll";
