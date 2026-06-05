@@ -25,7 +25,7 @@ export async function downloadSuperbillPdf(superbillId: string, fileName?: strin
       'apikey': anonKey,
       'Accept': 'application/pdf',
     },
-    body: JSON.stringify({ superbill_id: superbillId, locale: resolveLocale(locale) }),
+    body: JSON.stringify({ superbill_id: superbillId, locale: resolveLocale(locale), display_currency: (typeof window !== 'undefined' ? (() => { try { return window.localStorage.getItem('preferred_currency') || undefined; } catch { return undefined; } })() : undefined) }),
   });
   if (!res.ok) {
     const errText = await res.text().catch(() => 'Unknown error');
