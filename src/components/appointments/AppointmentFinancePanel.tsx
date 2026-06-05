@@ -112,7 +112,7 @@ export function AppointmentFinancePanel({
         patientName,
         appointmentDate: appointmentDate || '',
         doctorName: doctorName || '',
-        currency: finance.currency,
+        currency: displayCurrency,
         items: procedures.length
           ? procedures.map((p) => ({
               name:
