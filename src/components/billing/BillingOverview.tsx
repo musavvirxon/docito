@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, RefreshCw } from "lucide-react";
 import { useBillingTransactions, BillingTransaction, BillingEntityType } from "@/hooks/useBillingTransactions";
 import { format } from "date-fns";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface BillingOverviewProps {
   entityType: BillingEntityType;
@@ -67,6 +68,9 @@ const getTypeLabel = (type: BillingTransaction["transaction_type"]) => {
 const isRefundLike = (t: BillingTransaction) => normalizeType(t.transaction_type) === "refund" || normalizeStatus(t.status) === "refunded";
 
 export const BillingOverview = ({ entityType, entityId }: BillingOverviewProps) => {
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatCents = (amountCents: number, _currency: string) => ctxFmtCents(amountCents);
+
   const { transactions, isLoading, refetch, totalRevenue, totalRefunds, netRevenue } = useBillingTransactions({
     entityType,
     entityId,

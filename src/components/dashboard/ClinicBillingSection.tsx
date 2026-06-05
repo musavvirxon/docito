@@ -8,6 +8,7 @@ import { Loader2, CreditCard, ExternalLink, RefreshCw, Download } from "lucide-r
 import { useTranslation } from "react-i18next";
 import { downloadInvoicePdf } from "@/lib/api/invoice-api";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 function badgeVariant(status: string) {
   const s = String(status || "").toLowerCase();
@@ -20,6 +21,7 @@ function badgeVariant(status: string) {
 export default function ClinicBillingSection(props: { clinicId: string }) {
   const entityType = "clinic" as EntityType;
   const entityId = props.clinicId;
+  const { formatCents: ctxFmtCents } = useCurrency();
 
   const { loading, error, plans, invoices, summary, actions } = useBilling({
     entityType,
@@ -90,10 +92,7 @@ export default function ClinicBillingSection(props: { clinicId: string }) {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="text-2xl font-bold">
-                          {(p.amount_cents / 100).toLocaleString(undefined, {
-                            style: "currency",
-                            currency: p.currency.toUpperCase(),
-                          })}
+                          {ctxFmtCents(p.amount_cents)}
                           <span className="text-sm text-muted-foreground font-normal">/{p.interval}</span>
                         </div>
                         <Button className="w-full" onClick={() => actions.startCheckout(p.code)}>
@@ -120,10 +119,7 @@ export default function ClinicBillingSection(props: { clinicId: string }) {
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{inv.status}</Badge>
                             <div className="font-medium">
-                              {(inv.amount_due_cents / 100).toLocaleString(undefined, {
-                                style: "currency",
-                                currency: inv.currency.toUpperCase(),
-                              })}
+                              {ctxFmtCents(inv.amount_due_cents)}
                             </div>
                           </div>
                           <div className="text-xs text-muted-foreground">

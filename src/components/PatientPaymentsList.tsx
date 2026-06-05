@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Receipt } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface PaymentRow {
   id: string;
@@ -29,9 +30,6 @@ interface Props {
   emptyText?: string;
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n) || 0);
-
 export const PatientPaymentsList = ({
   patientUserId,
   doctorId,
@@ -39,6 +37,8 @@ export const PatientPaymentsList = ({
   title = 'Payment history',
   emptyText = 'No payments recorded yet.',
 }: Props) => {
+  const { format: ctxFmtMajor } = useCurrency();
+  const fmt = (n: number) => ctxFmtMajor(Number(n || 0));
   const [rows, setRows] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(true);
 

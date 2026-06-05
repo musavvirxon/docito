@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -120,6 +121,9 @@ async function loadStripeJs(): Promise<void> {
 export const PatientBilling = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { format: ctxFmtMajor } = useCurrency();
+  const formatMoney = (amount: number, _currency: string) => ctxFmtMajor(Number(amount || 0));
+
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<BillingSummaryResponse | null>(null);

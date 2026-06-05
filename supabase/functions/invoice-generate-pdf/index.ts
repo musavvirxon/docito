@@ -34,6 +34,7 @@ type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt
 const schema = {
   invoice_id: { type: "uuid" as const, required: true },
   locale: { type: "string" as const, required: false, maxLength: 12, sanitize: true, trim: true },
+  display_currency: { type: "string" as const, required: false, maxLength: 8, sanitize: true, trim: true },
 };
 
 const RTL_LOCALES = new Set<Locale>(["ar"]);
@@ -281,7 +282,7 @@ serve(async (req) => {
 
   try {
     const { userId, roles, serviceClient: svc } = context;
-    const body = validatedBody as { invoice_id: string; locale?: string };
+    const body = validatedBody as { invoice_id: string; locale?: string; display_currency?: string };
 
     let locale: Locale = normalizeLocale(body.locale);
     if (!body.locale) {
@@ -302,6 +303,7 @@ serve(async (req) => {
     if (!inv) return errorResponse("Invoice not found", 404);
 
     const r: any = inv;
+    if (body.display_currency) r.currency = body.display_currency;
 
     // Authorization
     const isSuperAdmin = (roles || []).includes("super_admin");

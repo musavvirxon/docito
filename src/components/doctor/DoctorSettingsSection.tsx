@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CurrencyPreferenceCard from "@/components/profile/CurrencyPreferenceCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -279,7 +280,10 @@ const DoctorSettingsSection = () => {
               </Button>
             </CardContent>
           </Card>
+
+          <CurrencyPreferenceCard />
         </TabsContent>
+
 
         <TabsContent value="notifications" className="space-y-6">
           <Card>

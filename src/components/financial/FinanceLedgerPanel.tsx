@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 import { Loader2, RefreshCw, Plus, ListOrdered, ArrowUpRight, ArrowDownLeft, Briefcase } from "lucide-react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 type EntryType = "income" | "expense" | "payroll";
@@ -96,6 +97,8 @@ function labelForType(t: EntryType) {
 
 export default function FinanceLedgerPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);

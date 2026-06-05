@@ -2,6 +2,7 @@ import { CreditCard, CheckCircle, AlertCircle, DollarSign, TrendingDown, Receipt
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Payment {
   id?: string;
@@ -27,8 +28,6 @@ interface Props {
   disabled?: boolean;
 }
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0);
 
 const getAmount = (p: Payment) =>
   p.amount_cents ? p.amount_cents / 100 : p.amount || 0;
@@ -44,6 +43,8 @@ export function PatientFinanceSection({
   onAddPayment,
   disabled,
 }: Props) {
+  const { format: ctxFmtMajor } = useCurrency();
+  const fmt = (n: number) => ctxFmtMajor(Number(n || 0));
   const mine = (payments || []).filter(
     (p) =>
       !patientName ||

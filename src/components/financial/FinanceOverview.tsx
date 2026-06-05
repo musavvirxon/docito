@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, DollarSign, Receipt, Wallet, TrendingUp, Loader2, RefreshCcw } from "lucide-react";
@@ -38,6 +39,8 @@ function bpsToPct(bps: number) {
 
 export default function FinanceOverview({ entityType, entityId, locationId }: Props) {
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatCents = (cents: number, _currency: string) => ctxFmtCents(cents);
 
   const { from, to } = useMemo(() => {
     const nowIso = new Date().toISOString();

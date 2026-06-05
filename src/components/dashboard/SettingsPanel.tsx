@@ -18,6 +18,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, Building2, Users, Calendar, CreditCard, Bell, MapPin, X, Loader2, Trash2, Shield } from "lucide-react";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import DoctorRestrictionsSettings from "./DoctorRestrictionsSettings";
+import { useCurrency } from "@/hooks/useCurrency";
+import { SUPPORTED_CURRENCIES, type CurrencyCode } from "@/lib/currency";
 
 interface SettingsPanelProps {
   open: boolean;
@@ -77,6 +79,7 @@ interface StaffRole {
 export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
+  const { setCurrency: setDisplayCurrency } = useCurrency();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(true);
@@ -262,11 +265,20 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
           practice_id: practice.id,
           tagline: settings.tagline,
           timezone: settings.timezone,
+          currency: settings.currency,
         }, {
           onConflict: 'practice_id'
         });
 
       if (settingsError) throw settingsError;
+
+      if (user?.id && settings.currency) {
+        await supabase
+          .from('profiles')
+          .update({ preferred_currency: settings.currency } as any)
+          .eq('user_id', user.id);
+        await setDisplayCurrency(settings.currency as CurrencyCode);
+      }
 
       toast.success(t("settingsPanel.general.saved"));
     } catch (err: any) {
@@ -346,6 +358,14 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
         });
 
       if (error) throw error;
+
+      if (user?.id && settings.currency) {
+        await supabase
+          .from('profiles')
+          .update({ preferred_currency: settings.currency } as any)
+          .eq('user_id', user.id);
+        await setDisplayCurrency(settings.currency as CurrencyCode);
+      }
 
       toast.success(t("settingsPanel.payments.saved"));
     } catch (err: any) {
@@ -478,6 +498,28 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                         onChange={(e) => setPractice(prev => prev ? {...prev, country: e.target.value} : null)}
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="display-currency">Display Currency</Label>
+                    <Select
+                      value={settings.currency}
+                      onValueChange={(value) => updateSetting("currency", value)}
+                    >
+                      <SelectTrigger id="display-currency">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SUPPORTED_CURRENCIES.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            {c.symbol} {c.name} ({c.code})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Changes how amounts are displayed across dashboards and PDFs. Does not convert values.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -744,8 +786,8 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {currencies.map((currency) => (
-                              <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                            {SUPPORTED_CURRENCIES.map((c) => (
+                              <SelectItem key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>

@@ -24,6 +24,7 @@ type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt
 const schema = {
   superbill_id: { type: "uuid" as const, required: true },
   locale: { type: "string" as const, required: false, maxLength: 12, sanitize: true, trim: true },
+  display_currency: { type: "string" as const, required: false, maxLength: 8, sanitize: true, trim: true },
 };
 
 const CJK = new Set<Locale>(["ja", "ko", "zh"]);
@@ -113,7 +114,7 @@ serve(async (req) => {
 
   try {
     const { userId, roles, serviceClient: svc } = context;
-    const body = validatedBody as { superbill_id: string; locale?: string };
+    const body = validatedBody as { superbill_id: string; locale?: string; display_currency?: string };
     let locale: Locale = normalize(body.locale);
     if (!body.locale) {
       try {
@@ -126,6 +127,7 @@ serve(async (req) => {
     if (sbErr) return errorResponse("Failed to fetch superbill", 500);
     if (!sb) return errorResponse("Superbill not found", 404);
     const r: any = sb;
+    if (body.display_currency) r.currency = body.display_currency;
 
     // Authorization: super admin / patient / doctor owner / clinic admin or billing staff
     const isSuper = (roles || []).includes("super_admin");

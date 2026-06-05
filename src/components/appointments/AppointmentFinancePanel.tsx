@@ -23,6 +23,7 @@ import {
 import { useAppointmentFinance, type PaymentMethod } from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { toast } from 'sonner';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   appointmentId: string;
@@ -33,8 +34,6 @@ interface Props {
   procedures?: Array<{ name: string; code?: string | null; cost: number | null; toothNumbers?: number[] }>;
 }
 
-const fmt = (n: number, currency = 'USD') =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n || 0);
 
 export function AppointmentFinancePanel({
   appointmentId,
@@ -44,9 +43,12 @@ export function AppointmentFinancePanel({
   doctorName,
   procedures = [],
 }: Props) {
+  const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
+  const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
   const finance = useAppointmentFinance(appointmentId, patientId || undefined);
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
+
 
   const [payOpen, setPayOpen] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
@@ -110,7 +112,7 @@ export function AppointmentFinancePanel({
         patientName,
         appointmentDate: appointmentDate || '',
         doctorName: doctorName || '',
-        currency: finance.currency,
+        currency: displayCurrency,
         items: procedures.length
           ? procedures.map((p) => ({
               name:

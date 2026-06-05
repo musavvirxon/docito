@@ -28,6 +28,10 @@ export async function downloadPrescriptionPdf(
   const anonKey = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd3dwamR0Z3N4emNzbnJ4dXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTI4MTUsImV4cCI6MjA3MzM2ODgxNX0.YEjg25_0LlzWQoh-SIk-kq_mxcvUoyhODSQ__4DJfSw';
 
   const effectiveLocale = resolveLocale(locale);
+  let displayCurrency: string | undefined;
+  if (typeof window !== 'undefined') {
+    try { displayCurrency = window.localStorage.getItem('preferred_currency') || undefined; } catch { /* noop */ }
+  }
 
   const res = await fetch(`${supabaseUrl}/functions/v1/prescription-generate-pdf`, {
     method: 'POST',
@@ -37,7 +41,7 @@ export async function downloadPrescriptionPdf(
       'apikey': anonKey,
       'Accept': 'application/pdf',
     },
-    body: JSON.stringify({ prescription_id: prescriptionId, locale: effectiveLocale }),
+    body: JSON.stringify({ prescription_id: prescriptionId, locale: effectiveLocale, display_currency: displayCurrency }),
   });
 
   if (!res.ok) {

@@ -1,5 +1,6 @@
 // File: src/components/financial/FinanceLedgerManager.tsx
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -65,6 +66,9 @@ function badgeForType(t: EntryType) {
 
 export default function FinanceLedgerManager(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);
+
 
   const today = useMemo(() => new Date(), []);
   const [dateTo, setDateTo] = useState(() => isoDate(today));
