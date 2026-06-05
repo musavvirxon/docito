@@ -92,10 +92,7 @@ export default function ClinicBillingSection(props: { clinicId: string }) {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="text-2xl font-bold">
-                          {(p.amount_cents / 100).toLocaleString(undefined, {
-                            style: "currency",
-                            currency: p.currency.toUpperCase(),
-                          })}
+                          {ctxFmtCents(p.amount_cents)}
                           <span className="text-sm text-muted-foreground font-normal">/{p.interval}</span>
                         </div>
                         <Button className="w-full" onClick={() => actions.startCheckout(p.code)}>
