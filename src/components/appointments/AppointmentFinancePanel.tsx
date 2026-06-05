@@ -34,8 +34,6 @@ interface Props {
   procedures?: Array<{ name: string; code?: string | null; cost: number | null; toothNumbers?: number[] }>;
 }
 
-const fmt = (n: number, currency = 'USD') =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n || 0);
 
 export function AppointmentFinancePanel({
   appointmentId,
