@@ -119,10 +119,7 @@ export default function ClinicBillingSection(props: { clinicId: string }) {
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{inv.status}</Badge>
                             <div className="font-medium">
-                              {(inv.amount_due_cents / 100).toLocaleString(undefined, {
-                                style: "currency",
-                                currency: inv.currency.toUpperCase(),
-                              })}
+                              {ctxFmtCents(inv.amount_due_cents)}
                             </div>
                           </div>
                           <div className="text-xs text-muted-foreground">
