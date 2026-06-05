@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { BarChart3, DollarSign, Receipt, Wallet, TrendingUp, Loader2, RefreshCcw } from "lucide-react";
