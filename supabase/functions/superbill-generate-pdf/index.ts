@@ -24,6 +24,7 @@ type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt
 const schema = {
   superbill_id: { type: "uuid" as const, required: true },
   locale: { type: "string" as const, required: false, maxLength: 12, sanitize: true, trim: true },
+  display_currency: { type: "string" as const, required: false, maxLength: 8, sanitize: true, trim: true },
 };
 
 const CJK = new Set<Locale>(["ja", "ko", "zh"]);
