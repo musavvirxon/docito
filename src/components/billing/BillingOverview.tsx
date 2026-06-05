@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, RefreshCw } from "lucide-react";
 import { useBillingTransactions, BillingTransaction, BillingEntityType } from "@/hooks/useBillingTransactions";
 import { format } from "date-fns";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface BillingOverviewProps {
   entityType: BillingEntityType;
