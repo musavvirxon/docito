@@ -79,6 +79,7 @@ interface StaffRole {
 export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
+  const { setCurrency: setDisplayCurrency } = useCurrency();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState("general");
   const [loading, setLoading] = useState(true);
