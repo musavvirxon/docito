@@ -18,6 +18,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Upload, Building2, Users, Calendar, CreditCard, Bell, MapPin, X, Loader2, Trash2, Shield } from "lucide-react";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import DoctorRestrictionsSettings from "./DoctorRestrictionsSettings";
+import { useCurrency } from "@/hooks/useCurrency";
+import { SUPPORTED_CURRENCIES, type CurrencyCode } from "@/lib/currency";
 
 interface SettingsPanelProps {
   open: boolean;
