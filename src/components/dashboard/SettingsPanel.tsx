@@ -786,8 +786,8 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {currencies.map((currency) => (
-                              <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                            {SUPPORTED_CURRENCIES.map((c) => (
+                              <SelectItem key={c.code} value={c.code}>{c.symbol} {c.name} ({c.code})</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
