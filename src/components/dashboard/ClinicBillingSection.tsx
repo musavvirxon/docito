@@ -21,6 +21,7 @@ function badgeVariant(status: string) {
 export default function ClinicBillingSection(props: { clinicId: string }) {
   const entityType = "clinic" as EntityType;
   const entityId = props.clinicId;
+  const { formatCents: ctxFmtCents } = useCurrency();
 
   const { loading, error, plans, invoices, summary, actions } = useBilling({
     entityType,
