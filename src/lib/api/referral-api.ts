@@ -31,10 +31,16 @@ function sanitizeLocale(input: string): string {
 export async function downloadReferralPdf({ referralId, locale, fileName }: DownloadReferralPdfArgs) {
   const effectiveLocale = sanitizeLocale(locale || inferDashboardLocale());
 
+  let displayCurrency: string | undefined;
+  if (typeof window !== 'undefined') {
+    try { displayCurrency = window.localStorage.getItem('preferred_currency') || undefined; } catch { /* noop */ }
+  }
+
   const { data, error } = await supabase.functions.invoke('referral-generate-pdf', {
     body: {
       referral_id: referralId,
       locale: effectiveLocale,
+      display_currency: displayCurrency,
     },
   });
 
