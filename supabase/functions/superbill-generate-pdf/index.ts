@@ -113,7 +113,7 @@ serve(async (req) => {
 
   try {
     const { userId, roles, serviceClient: svc } = context;
-    const body = validatedBody as { superbill_id: string; locale?: string };
+    const body = validatedBody as { superbill_id: string; locale?: string; display_currency?: string };
     let locale: Locale = normalize(body.locale);
     if (!body.locale) {
       try {
