@@ -359,6 +359,14 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
 
       if (error) throw error;
 
+      if (user?.id && settings.currency) {
+        await supabase
+          .from('profiles')
+          .update({ preferred_currency: settings.currency } as any)
+          .eq('user_id', user.id);
+        await setDisplayCurrency(settings.currency as CurrencyCode);
+      }
+
       toast.success(t("settingsPanel.payments.saved"));
     } catch (err: any) {
       console.error('Error saving payment settings:', err);
