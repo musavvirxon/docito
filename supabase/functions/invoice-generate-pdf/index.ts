@@ -302,6 +302,7 @@ serve(async (req) => {
     if (!inv) return errorResponse("Invoice not found", 404);
 
     const r: any = inv;
+    if (body.display_currency) r.currency = body.display_currency;
 
     // Authorization
     const isSuperAdmin = (roles || []).includes("super_admin");
