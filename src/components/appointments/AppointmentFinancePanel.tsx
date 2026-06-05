@@ -23,6 +23,7 @@ import {
 import { useAppointmentFinance, type PaymentMethod } from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { toast } from 'sonner';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   appointmentId: string;
