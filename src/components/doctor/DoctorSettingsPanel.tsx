@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SecuritySettings } from "../dashboard/SecuritySettings";
 import { useSettings } from "@/hooks/useSettings";
 import { TimezoneCombobox } from "@/components/profile/TimezoneCombobox";
+import CurrencyPreferenceCard from "@/components/profile/CurrencyPreferenceCard";
 
 const languages = [
   { code: "en", label: "English" },
