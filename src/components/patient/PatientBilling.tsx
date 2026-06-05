@@ -121,6 +121,9 @@ async function loadStripeJs(): Promise<void> {
 export const PatientBilling = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { format: ctxFmtMajor } = useCurrency();
+  const formatMoney = (amount: number, _currency: string) => ctxFmtMajor(Number(amount || 0));
+
 
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<BillingSummaryResponse | null>(null);
