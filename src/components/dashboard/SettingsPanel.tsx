@@ -265,11 +265,20 @@ export const SettingsPanel = ({ open, onOpenChange }: SettingsPanelProps) => {
           practice_id: practice.id,
           tagline: settings.tagline,
           timezone: settings.timezone,
+          currency: settings.currency,
         }, {
           onConflict: 'practice_id'
         });
 
       if (settingsError) throw settingsError;
+
+      if (user?.id && settings.currency) {
+        await supabase
+          .from('profiles')
+          .update({ preferred_currency: settings.currency } as any)
+          .eq('user_id', user.id);
+        await setDisplayCurrency(settings.currency as CurrencyCode);
+      }
 
       toast.success(t("settingsPanel.general.saved"));
     } catch (err: any) {
