@@ -24,6 +24,7 @@ import { useAppointmentFinance, type PaymentMethod } from '@/hooks/useAppointmen
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
+import i18n from '@/i18n/config';
 
 interface Props {
   appointmentId: string;
@@ -132,7 +133,7 @@ export function AppointmentFinancePanel({
           method: p.payment_method || '—',
           amount: Number(p.amount) || 0,
         })),
-      });
+      }, i18n.language);
       toast.success('Invoice PDF generated');
     } catch (e: any) {
       console.error(e);
