@@ -26,11 +26,8 @@ export interface AppointmentPdfData {
   appointmentTime?: string;
   diagnosis?: string;
   complaints?: string;
-  /** Doctor's external (extra-oral) examination notes */
   externalExam?: string;
-  /** Oral cavity / mucosa / gingiva description */
   oralCavity?: string;
-  /** X-ray + lab investigation summary */
   xrayLab?: string;
   treatment?: string;
   serviceName?: string;
@@ -41,25 +38,192 @@ export interface AppointmentPdfData {
   amountPaid?: number;
   balance?: number;
   currency?: string;
-  /** Optional dental findings rendered into the 32-tooth chart */
   toothFindings?: ToothFinding[];
+}
+
+type Locale = 'en' | 'ru' | 'uz' | 'ar' | 'tr' | 'es' | 'de' | 'zh' | 'pt' | 'ja' | 'ko';
+
+function normalizeLocale(v?: string): Locale {
+  const c = (v || 'en').split('-')[0].toLowerCase();
+  const supported: Locale[] = ['en','ru','uz','ar','tr','es','de','zh','pt','ja','ko'];
+  return (supported as string[]).includes(c) ? (c as Locale) : 'en';
+}
+
+// Translations for the Uzbek MOH form-043/u medical card.
+// Ru/Uz are the official languages of this regulated form. Other locales
+// fall back to English via the tr() helper.
+const I18N: Record<Locale, Record<string, string>> = {
+  en: {
+    moh: 'Ministry of Health',
+    institutionName: 'Institution: ',
+    okpoCode: 'OKPO code: ____________',
+    addressLabel: 'Address: ',
+    phoneLabel: 'Phone: ',
+    medicalCard: 'MEDICAL CARD',
+    ofDentalPatient: 'of the dental patient',
+    formNo: 'Form No. 043/u  |  Medical record',
+    dateLabel: 'Date: ',
+    timeLabel: 'Time: ',
+    patientFullNameLabel: 'Full name: ',
+    genderLabel: 'Gender: ',
+    ageLabel: '  Age: ',
+    dobLabel: '  DOB: ',
+    phoneInline: '  Phone: ',
+    professionLabel: 'Occupation: ',
+    addressInline: '  Address: ',
+    diagnosisLabel: 'Diagnosis: ',
+    complaintsTitle: 'Chief complaints:',
+    externalExamTitle: 'Objective examination. External exam:',
+    oralExamTitle: 'Intraoral examination:',
+    legend: 'Legend: missing-O, root-R, caries-C, pulpitis-P, periodontitis-Pt, filling-F, periodontosis-A, mobility-I/II/III, crown-Cr, implant-Imp',
+    rightArrow: '← Right',
+    leftArrow: 'Left →',
+    upperShort: 'Upr',
+    lowerShort: 'Lwr',
+    biteLabel: 'Occlusion: ',
+    mucosaTitle: 'Condition of mucosa, gingiva, alveolar ridges and palate:',
+    xrayLabTitle: 'Radiographic and laboratory findings:',
+    treatmentPlanHeader: 'TREATMENT PLAN / TREATMENT DIARY',
+    serviceLabel: 'Service / procedure: ',
+    performedProcedures: 'Performed procedures:',
+    toothCol: 'Tooth',
+    descriptionCol: 'Description',
+    treatmentDescTitle: 'Treatment description:',
+    notesTitle: 'Notes:',
+    financialInfo: 'FINANCIAL INFORMATION',
+    totalPayable: 'Total due:',
+    paidLabel: 'Paid:',
+    balanceDebt: 'Balance / Debt:',
+    attendingDoctor: 'Attending doctor: ',
+    signature: 'Signature: _______________________',
+    patientSignature: 'Patient signature: ___________________________',
+    footerForm: 'Form No. 043/u  |  Ministry of Health  |  Page',
+    pageOf: 'of',
+  },
+  ru: {
+    moh: 'Министерство здравоохранения Республики Узбекистан',
+    institutionName: 'Наименование учреждения: ',
+    okpoCode: 'Код по ОКПО: ____________',
+    addressLabel: 'Адрес: ',
+    phoneLabel: 'Тел: ',
+    medicalCard: 'МЕДИЦИНСКАЯ КАРТА',
+    ofDentalPatient: 'стоматологического больного',
+    formNo: 'Форма N 043/у  |  Медицинская документация',
+    dateLabel: 'Дата: ',
+    timeLabel: 'Время: ',
+    patientFullNameLabel: 'Фамилия, имя, отчество: ',
+    genderLabel: 'Пол: ',
+    ageLabel: '  Возраст: ',
+    dobLabel: '  Дата рождения: ',
+    phoneInline: '  Тел: ',
+    professionLabel: 'Профессия: ',
+    addressInline: '  Адрес: ',
+    diagnosisLabel: 'Диагноз: ',
+    complaintsTitle: 'Жалобы:',
+    externalExamTitle: 'Данные объективного исследования. Внешний осмотр:',
+    oralExamTitle: 'Осмотр полости рта:',
+    legend: 'Усл. обозн.: отсутствует-О, корень-Кр, кариес-С, пульпит-Р, периодонтит-Pt, пломба-П, пародонтоз-А, подвижн.-I/II/III, коронка-К, имплант-Имп',
+    rightArrow: '← Правая',
+    leftArrow: 'Левая →',
+    upperShort: 'Верх',
+    lowerShort: 'Низ',
+    biteLabel: 'Прикус: ',
+    mucosaTitle: 'Состояние слизистой оболочки, дёсен, альвеолярных отростков и нёба:',
+    xrayLabTitle: 'Данные рентгеновских и лабораторных исследований:',
+    treatmentPlanHeader: 'ПЛАН ЛЕЧЕНИЯ / ДНЕВНИК ЛЕЧЕНИЯ',
+    serviceLabel: 'Услуга / процедура: ',
+    performedProcedures: 'Выполненные процедуры:',
+    toothCol: 'Зуб',
+    descriptionCol: 'Описание',
+    treatmentDescTitle: 'Описание лечения:',
+    notesTitle: 'Примечания:',
+    financialInfo: 'ФИНАНСОВАЯ ИНФОРМАЦИЯ',
+    totalPayable: 'Итого к оплате:',
+    paidLabel: 'Оплачено:',
+    balanceDebt: 'Остаток / Долг:',
+    attendingDoctor: 'Лечащий врач: ',
+    signature: 'Подпись: _______________________',
+    patientSignature: 'Подпись пациента: ___________________________',
+    footerForm: 'Форма N 043/у  |  Министерство здравоохранения Республики Узбекистан  |  Стр.',
+    pageOf: 'из',
+  },
+  uz: {
+    moh: "O'ZBEKISTON RESPUBLIKASI SOG'LIQNI SAQLASH VAZIRLIGI",
+    institutionName: 'Muassasa nomi: ',
+    okpoCode: 'OKPO kodi: ____________',
+    addressLabel: 'Manzil: ',
+    phoneLabel: 'Tel: ',
+    medicalCard: 'TIBBIY KARTA',
+    ofDentalPatient: 'stomatologik bemorning',
+    formNo: 'Shakl N 043/u  |  Tibbiy hujjat',
+    dateLabel: 'Sana: ',
+    timeLabel: 'Vaqt: ',
+    patientFullNameLabel: 'Familiya, ism, sharif: ',
+    genderLabel: 'Jinsi: ',
+    ageLabel: '  Yoshi: ',
+    dobLabel: "  Tug'ilgan: ",
+    phoneInline: '  Tel: ',
+    professionLabel: 'Kasbi: ',
+    addressInline: '  Manzil: ',
+    diagnosisLabel: 'Tashxis: ',
+    complaintsTitle: 'Shikoyatlar:',
+    externalExamTitle: "Ob'ektiv tekshiruv. Tashqi ko'rik:",
+    oralExamTitle: "Og'iz bo'shlig'ini ko'rik:",
+    legend: "Shartli bel.: yo'q-Y, ildiz-Il, karies-K, pulpit-P, periodontit-Pt, plomba-Pl, paradontoz-Pd, harak.-I/II/III, toj-T, implant-Imp",
+    rightArrow: "← O'ng",
+    leftArrow: 'Chap →',
+    upperShort: 'Yuq',
+    lowerShort: 'Pas',
+    biteLabel: 'Tishlar tutashuvi: ',
+    mucosaTitle: "Og'iz bo'shlig'i shilliq qavati, milklar va tanglay holati:",
+    xrayLabTitle: "Rentgen va laboratoriya tekshiruvlari ma'lumotlari:",
+    treatmentPlanHeader: 'DAVOLASH REJASI / DAVOLASH KUNDALIGI',
+    serviceLabel: 'Xizmat / protsedura: ',
+    performedProcedures: 'Bajarilgan protseduralar:',
+    toothCol: 'Tish',
+    descriptionCol: 'Tavsif',
+    treatmentDescTitle: 'Davolash tavsifi:',
+    notesTitle: 'Izohlar:',
+    financialInfo: "MOLIYAVIY MA'LUMOT",
+    totalPayable: "To'lov summasi:",
+    paidLabel: "To'langan:",
+    balanceDebt: "Qoldiq / Qarz:",
+    attendingDoctor: 'Davoluvchi shifokor: ',
+    signature: 'Imzo: _______________________',
+    patientSignature: 'Bemor imzosi: ___________________________',
+    footerForm: "Shakl N 043/u  |  O'zbekiston Respublikasi Sog'liqni saqlash vazirligi  |  Bet",
+    pageOf: '/',
+  },
+  ar: {},
+  tr: {},
+  es: {},
+  de: {},
+  zh: {},
+  pt: {},
+  ja: {},
+  ko: {},
+};
+
+function tr(locale: Locale, key: string): string {
+  return I18N[locale]?.[key] ?? I18N.en[key] ?? key;
 }
 
 const fmtCur = (n?: number, currency = 'USD') =>
   n != null
     ? new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n)
     : '_____________';
-const v = (x?: string | number | null, fb = '______________________________') =>
+const vv = (x?: string | number | null, fb = '______________________________') =>
   x != null && x !== '' ? String(x) : fb;
 
 export async function generateAppointmentPdf(
   data: AppointmentPdfData,
-  lang: 'ru' | 'uz' = 'ru',
+  lang: string = 'en',
 ): Promise<void> {
   try {
+    const locale = normalizeLocale(lang);
+    const t = (k: string) => tr(locale, k);
+
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    // CRITICAL: jsPDF's built-in Helvetica only supports Latin-1, so any
-    // Cyrillic / Uzbek text would render as black squares without this.
     await ensureUnicodeFont(doc);
 
     const W = 210;
@@ -68,7 +232,6 @@ export async function generateAppointmentPdf(
     let y = 15;
     const LH = 6;
     const SLH = 5;
-    const ru = lang === 'ru';
     const currency = data.currency || 'USD';
 
     const font = (bold = false) => doc.setFont(PDF_FONT_NAME, bold ? 'bold' : 'normal');
@@ -98,8 +261,8 @@ export async function generateAppointmentPdf(
       }
       return cur;
     };
-    const secTitle = (t: string, yy: number) => {
-      txt(t, M, yy, 9, true);
+    const secTitle = (s: string, yy: number) => {
+      txt(s, M, yy, 9, true);
       return yy + LH;
     };
     const fldLine = (lbl: string, val: string, x: number, yy: number, totalW: number) => {
@@ -112,7 +275,6 @@ export async function generateAppointmentPdf(
       ln(x + lw + doc.getTextWidth(val) + 1, yy + 0.5, x + totalW, yy + 0.5);
     };
 
-    // ─ CLINIC LOGO (top-left, before MOH title) — silent fallback
     if (data.clinicLogoUrl) {
       try {
         const res = await fetch(data.clinicLogoUrl);
@@ -127,121 +289,73 @@ export async function generateAppointmentPdf(
           const fmt = data.clinicLogoUrl.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG';
           doc.addImage(dataUrl, fmt, M, 8, 40, 14);
         }
-      } catch { /* silent fallback */ }
+      } catch { /* silent */ }
     }
 
-    // ─ HEADER ────────────────────────────────────────────
-    txt(
-      ru
-        ? 'Министерство здравоохранения Республики Узбекистан'
-        : "O'ZBEKISTON RESPUBLIKASI SOG'LIQNI SAQLASH VAZIRLIGI",
-      W / 2,
-      y,
-      9,
-      true,
-      'center',
-    );
+    txt(t('moh'), W / 2, y, 9, true, 'center');
     y += LH;
 
     size(7.5);
     font(false);
-    doc.text(
-      (ru ? 'Наименование учреждения: ' : 'Muassasa nomi: ') +
-        v(data.clinicName, '__________________________'),
-      M,
-      y,
-    );
-    doc.text(ru ? 'Код по ОКПО: ____________' : 'OKPO kodi: ____________', W - M, y, {
-      align: 'right',
-    });
+    doc.text(t('institutionName') + vv(data.clinicName, '__________________________'), M, y);
+    doc.text(t('okpoCode'), W - M, y, { align: 'right' });
     y += SLH;
-    doc.text(
-      (ru ? 'Адрес: ' : 'Manzil: ') + v(data.clinicAddress, '_________________________'),
-      M,
-      y,
-    );
+    doc.text(t('addressLabel') + vv(data.clinicAddress, '_________________________'), M, y);
     y += SLH;
     if (data.clinicPhone) {
-      doc.text((ru ? 'Тел: ' : 'Tel: ') + data.clinicPhone, M, y);
+      doc.text(t('phoneLabel') + data.clinicPhone, M, y);
       y += SLH;
     }
     y += LH - SLH;
 
-    // ─ TITLE ─────────────────────────────────────────────
     hrule(y);
     y += 3;
-    txt(ru ? 'МЕДИЦИНСКАЯ КАРТА' : 'TIBBIY KARTA', W / 2, y, 15, true, 'center');
+    txt(t('medicalCard'), W / 2, y, 15, true, 'center');
     y += 7;
-    txt(
-      ru ? 'стоматологического больного' : 'stomatologik bemorning',
-      W / 2,
-      y,
-      10,
-      true,
-      'center',
-    );
+    txt(t('ofDentalPatient'), W / 2, y, 10, true, 'center');
     y += 5;
-    txt(
-      ru ? 'Форма N 043/у  |  Медицинская документация' : 'Shakl N 043/u  |  Tibbiy hujjat',
-      W / 2,
-      y,
-      7,
-      false,
-      'center',
-    );
+    txt(t('formNo'), W / 2, y, 7, false, 'center');
     y += 5;
     hrule(y);
     y += 4;
 
-    // ─ PATIENT BOX ────────────────────────────────────────
     const bt = y;
     doc.rect(M, y, CW, 30);
     y += 4;
     size(8);
     font(false);
-    doc.text((ru ? 'Дата: ' : 'Sana: ') + v(data.appointmentDate), M + 3, y);
-    doc.text((ru ? 'Время: ' : 'Vaqt: ') + v(data.appointmentTime, '______'), M + 65, y);
+    doc.text(t('dateLabel') + vv(data.appointmentDate), M + 3, y);
+    doc.text(t('timeLabel') + vv(data.appointmentTime, '______'), M + 65, y);
     y += SLH;
     size(8.5);
     font(true);
-    doc.text(
-      (ru ? 'Фамилия, имя, отчество: ' : 'Familiya, ism, sharif: ') + v(data.patientName),
-      M + 3,
-      y,
-    );
+    doc.text(t('patientFullNameLabel') + vv(data.patientName), M + 3, y);
     y += SLH;
     size(8);
     font(false);
     doc.text(
-      (ru ? 'Пол: ' : 'Jinsi: ') +
-        v(data.gender, '__') +
-        (ru ? '  Возраст: ' : '  Yoshi: ') +
-        v(data.age, '__') +
-        (ru ? '  Дата рождения: ' : "  Tug'ilgan: ") +
-        v(data.dob, '__________') +
-        (ru ? '  Тел: ' : '  Tel: ') +
-        v(data.phone, '____________'),
+      t('genderLabel') + vv(data.gender, '__') +
+        t('ageLabel') + vv(data.age, '__') +
+        t('dobLabel') + vv(data.dob, '__________') +
+        t('phoneInline') + vv(data.phone, '____________'),
       M + 3,
       y,
     );
     y += SLH;
     doc.text(
-      (ru ? 'Профессия: ' : 'Kasbi: ') +
-        v(data.profession, '_____________') +
-        (ru ? '  Адрес: ' : '  Manzil: ') +
-        v(data.address, '_______________________'),
+      t('professionLabel') + vv(data.profession, '_____________') +
+        t('addressInline') + vv(data.address, '_______________________'),
       M + 3,
       y,
     );
     y = bt + 34;
 
-    // ─ DIAGNOSIS ─────────────────────────────────────────
-    fldLine(ru ? 'Диагноз: ' : 'Tashxis: ', v(data.diagnosis, ''), M, y, CW);
+    fldLine(t('diagnosisLabel'), vv(data.diagnosis, ''), M, y, CW);
     y += LH;
     ln(M, y, W - M, y);
     y += LH;
 
-    y = secTitle(ru ? 'Жалобы:' : 'Shikoyatlar:', y);
+    y = secTitle(t('complaintsTitle'), y);
     if (data.complaints) {
       size(8);
       font(false);
@@ -251,7 +365,6 @@ export async function generateAppointmentPdf(
     }
     y = emptyLn(2, y);
 
-    // Helper: print provided text wrapped, or fall back to N blank lines
     const textOrBlanks = (val: string | undefined, blanks: number, yy: number) => {
       const v = (val || '').trim();
       if (v) {
@@ -264,73 +377,54 @@ export async function generateAppointmentPdf(
       return emptyLn(blanks, yy);
     };
 
-    y = secTitle(
-      ru
-        ? 'Данные объективного исследования. Внешний осмотр:'
-        : "Ob'ektiv tekshiruv. Tashqi ko'rik:",
-      y,
-    );
+    y = secTitle(t('externalExamTitle'), y);
     y = textOrBlanks(data.externalExam, 2, y);
 
-    // ─ ORAL CAVITY ──────────────────────────────────────
-    y = secTitle(ru ? 'Осмотр полости рта:' : "Og'iz bo'shlig'ini ko'rik:", y);
+    y = secTitle(t('oralExamTitle'), y);
     size(6.5);
     font(false);
-    doc.text(
-      ru
-        ? 'Усл. обозн.: отсутствует-О, корень-Кр, кариес-С, пульпит-Р, периодонтит-Pt, пломба-П, пародонтоз-А, подвижн.-I/II/III, коронка-К, имплант-Имп'
-        : "Shartli bel.: yo'q-Y, ildiz-Il, karies-K, pulpit-P, periodontit-Pt, plomba-Pl, paradontoz-Pd, harak.-I/II/III, toj-T, implant-Imp",
-      M,
-      y,
-    );
+    doc.text(t('legend'), M, y);
     y += SLH;
 
-    // ─ TOOTH CHART ────────────────────────────────────────
     const cx = M + 11;
     const cw = (CW - 13) / 16;
     const ch = 6;
     const nums = ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8'];
 
-    // Direction labels (above the chart, with their own row)
     size(6.5);
     font(false);
-    doc.text(ru ? '← Правая' : "← O'ng", cx + cw * 3.5, y, { align: 'center' });
-    doc.text(ru ? 'Левая →' : 'Chap →', cx + cw * 12.5, y, { align: 'center' });
+    doc.text(t('rightArrow'), cx + cw * 3.5, y, { align: 'center' });
+    doc.text(t('leftArrow'), cx + cw * 12.5, y, { align: 'center' });
     y += 4;
 
-    // Top FDI numbers row
     size(7);
     font(true);
     nums.forEach((n, i) => doc.text(n, cx + i * cw + cw / 2, y, { align: 'center' }));
     y += 2;
 
-    // Upper jaw cells
     const upperY = y;
     nums.forEach((_, i) => doc.rect(cx + i * cw, upperY, cw, ch));
-    // Lower jaw cells
     const lowerY = upperY + ch;
     nums.forEach((_, i) => doc.rect(cx + i * cw, lowerY, cw, ch));
 
-    // Vertical midline (between R/L)
     ln(cx + cw * 8, upperY - 2, cx + cw * 8, lowerY + ch + 2, 0.8);
 
-    // Side labels — Upper / Lower — placed to the LEFT of cells, vertically centered on each row
     size(6.5);
     font(false);
-    doc.text(ru ? 'Верх' : 'Yuq', M, upperY + ch / 2 + 1.2, { align: 'left' });
-    doc.text(ru ? 'Низ' : 'Pas', M, lowerY + ch / 2 + 1.2, { align: 'left' });
+    doc.text(t('upperShort'), M, upperY + ch / 2 + 1.2, { align: 'left' });
+    doc.text(t('lowerShort'), M, lowerY + ch / 2 + 1.2, { align: 'left' });
 
-    // Bottom FDI numbers row (under the lower-jaw cells)
     y = lowerY + ch + 3.5;
     size(7);
     font(true);
     nums.forEach((n, i) => doc.text(n, cx + i * cw + cw / 2, y, { align: 'center' }));
     y += 2;
 
-    // Stamp the diagnoses inside the matching cells
+    // Pass locale to dental code helper; it only branches on ru/uz today.
+    const codeLang: 'ru' | 'uz' = locale === 'uz' ? 'uz' : 'ru';
     const findings = (data.toothFindings || []).map((f) => ({
       ...f,
-      code: f.code || procedureToToothCode(f.label, lang),
+      code: f.code || procedureToToothCode(f.label, codeLang),
     }));
     if (findings.length > 0) {
       font(true);
@@ -349,7 +443,6 @@ export async function generateAppointmentPdf(
     }
     y += 4;
 
-    // Footnote list of long descriptions
     if (findings.length > 0) {
       const footnotes = findings
         .filter((f) => f.label)
@@ -364,57 +457,31 @@ export async function generateAppointmentPdf(
       }
     }
 
-    // ─ BITE & MUCOSA ─────────────────────────────────
-    fldLine(ru ? 'Прикус: ' : 'Tishlar tutashuvi: ', '', M, y, CW / 2);
+    fldLine(t('biteLabel'), '', M, y, CW / 2);
     y += LH;
-    y = secTitle(
-      ru
-        ? 'Состояние слизистой оболочки, дёсен, альвеолярных отростков и нёба:'
-        : "Og'iz bo'shlig'i shilliq qavati, milklar va tanglay holati:",
-      y,
-    );
+    y = secTitle(t('mucosaTitle'), y);
     y = textOrBlanks(data.oralCavity, 2, y);
-    y = secTitle(
-      ru
-        ? 'Данные рентгеновских и лабораторных исследований:'
-        : "Rentgen va laboratoriya tekshiruvlari ma'lumotlari:",
-      y,
-    );
+    y = secTitle(t('xrayLabTitle'), y);
     y = textOrBlanks(data.xrayLab, 2, y);
 
-    // ─ PAGE 2 ───────────────────────────────────────────────
     doc.addPage();
     y = 15;
     hrule(y);
     y += 4;
-    txt(
-      ru ? 'ПЛАН ЛЕЧЕНИЯ / ДНЕВНИК ЛЕЧЕНИЯ' : 'DAVOLASH REJASI / DAVOLASH KUNDALIGI',
-      W / 2,
-      y,
-      11,
-      true,
-      'center',
-    );
+    txt(t('treatmentPlanHeader'), W / 2, y, 11, true, 'center');
     y += 7;
 
-    fldLine(
-      ru ? 'Услуга / процедура: ' : 'Xizmat / protsedura: ',
-      v(data.serviceName, ''),
-      M,
-      y,
-      CW,
-    );
+    fldLine(t('serviceLabel'), vv(data.serviceName, ''), M, y, CW);
     y += LH;
 
-    // Procedures table from findings
     if (findings.length > 0) {
-      y = secTitle(ru ? 'Выполненные процедуры:' : 'Bajarilgan protseduralar:', y);
+      y = secTitle(t('performedProcedures'), y);
       size(8);
       font(true);
       doc.rect(M, y, 18, 6);
       doc.rect(M + 18, y, CW - 18, 6);
-      doc.text(ru ? 'Зуб' : 'Tish', M + 9, y + 4, { align: 'center' });
-      doc.text(ru ? 'Описание' : 'Tavsif', M + 18 + 3, y + 4);
+      doc.text(t('toothCol'), M + 9, y + 4, { align: 'center' });
+      doc.text(t('descriptionCol'), M + 18 + 3, y + 4);
       y += 6;
       font(false);
       for (const f of findings) {
@@ -430,7 +497,7 @@ export async function generateAppointmentPdf(
       y += 4;
     }
 
-    y = secTitle(ru ? 'Описание лечения:' : 'Davolash tavsifi:', y);
+    y = secTitle(t('treatmentDescTitle'), y);
     if (data.treatment) {
       size(8);
       font(false);
@@ -440,7 +507,7 @@ export async function generateAppointmentPdf(
     }
     y = emptyLn(3, y);
 
-    y = secTitle(ru ? 'Примечания:' : 'Izohlar:', y);
+    y = secTitle(t('notesTitle'), y);
     if (data.notes) {
       size(8);
       font(false);
@@ -451,30 +518,16 @@ export async function generateAppointmentPdf(
       y = emptyLn(2, y);
     }
 
-    // ─ FINANCE TABLE ───────────────────────────────────────
     y += 3;
     hrule(y);
     y += 4;
-    txt(
-      ru ? 'ФИНАНСОВАЯ ИНФОРМАЦИЯ' : "MOLIYAVIY MA'LUMOT",
-      W / 2,
-      y,
-      10,
-      true,
-      'center',
-    );
+    txt(t('financialInfo'), W / 2, y, 10, true, 'center');
     y += 7;
-    const rows = ru
-      ? [
-          ['Итого к оплате:', fmtCur(data.totalAmount, currency)],
-          ['Оплачено:', fmtCur(data.amountPaid, currency)],
-          ['Остаток / Долг:', fmtCur(data.balance, currency)],
-        ]
-      : [
-          ["To'lov summasi:", fmtCur(data.totalAmount, currency)],
-          ["To'langan:", fmtCur(data.amountPaid, currency)],
-          ['Qoldiq / Qarz:', fmtCur(data.balance, currency)],
-        ];
+    const rows: Array<[string, string]> = [
+      [t('totalPayable'), fmtCur(data.totalAmount, currency)],
+      [t('paidLabel'), fmtCur(data.amountPaid, currency)],
+      [t('balanceDebt'), fmtCur(data.balance, currency)],
+    ];
     const cw1 = 80;
     const cw2 = 60;
     const tx = (W - cw1 - cw2) / 2;
@@ -490,39 +543,26 @@ export async function generateAppointmentPdf(
     });
     y += 6;
 
-    // ─ SIGNATURES ──────────────────────────────────────────
     hrule(y);
     y += 5;
     size(8.5);
     font(true);
-    const dl = ru ? 'Лечащий врач: ' : 'Davoluvchi shifokor: ';
+    const dl = t('attendingDoctor');
     doc.text(dl, M, y);
     const dlw = doc.getTextWidth(dl);
     font(false);
-    doc.text(v(data.doctorName), M + dlw, y);
+    doc.text(vv(data.doctorName), M + dlw, y);
     if (data.doctorSpecialty) {
       size(7);
       doc.text(data.doctorSpecialty, M + dlw, y + 4);
     }
     size(8);
     font(false);
-    doc.text(
-      ru ? 'Подпись: _______________________' : 'Imzo: _______________________',
-      W - M,
-      y,
-      { align: 'right' },
-    );
+    doc.text(t('signature'), W - M, y, { align: 'right' });
     y += 14;
-    doc.text(
-      ru
-        ? 'Подпись пациента: ___________________________'
-        : 'Bemor imzosi: ___________________________',
-      M,
-      y,
-    );
+    doc.text(t('patientSignature'), M, y);
     y += 10;
 
-    // ─ FOOTER (all pages) ────────────────────────────────
     const pc = doc.getNumberOfPages();
     for (let i = 1; i <= pc; i++) {
       doc.setPage(i);
@@ -531,15 +571,7 @@ export async function generateAppointmentPdf(
       size(6.5);
       font(false);
       doc.setDrawColor(0);
-      doc.text(
-        ru
-          ? `Форма N 043/у  |  Министерство здравоохранения Республики Узбекистан  |  Стр. ${i} из ${pc}`
-          : `Shakl N 043/u  |  O'zbekiston Respublikasi Sog'liqni saqlash vazirligi  |  Bet ${i} / ${pc}`,
-        W / 2,
-        291,
-        { align: 'center' },
-      );
-      // Docito branding line (right-aligned)
+      doc.text(`${t('footerForm')} ${i} ${t('pageOf')} ${pc}`, W / 2, 291, { align: 'center' });
       size(6);
       doc.setTextColor(150, 150, 150);
       doc.text('Generated by Docito · docito.app', W - M, 294, { align: 'right' });
@@ -548,7 +580,7 @@ export async function generateAppointmentPdf(
 
     const safe = (data.patientName || 'patient').replace(/\s+/g, '_');
     const ds = (data.appointmentDate || new Date().toLocaleDateString()).replace(/\//g, '-');
-    doc.save(`043u_${safe}_${ds}_${lang.toUpperCase()}.pdf`);
+    doc.save(`043u_${safe}_${ds}_${locale.toUpperCase()}.pdf`);
   } catch (e) {
     console.error('PDF generation failed:', e);
     throw e;

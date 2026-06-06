@@ -82,6 +82,7 @@ export const I18N_NAMESPACES = [
   "practicePage",
   "homeSearch",
   "patients",
+  "finance",
   "popups",
   "verification",
   "admin",
