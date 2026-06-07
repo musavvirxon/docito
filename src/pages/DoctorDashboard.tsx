@@ -1,6 +1,6 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus } from "lucide-react";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
+import NewPatientAppointmentFlow from "@/components/doctor/NewPatientAppointmentFlow";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import DoctorProfileSection from "@/components/doctor/DoctorProfileSection";
 import DoctorServicesSection from "@/components/doctor/DoctorServicesSection";
@@ -71,6 +71,8 @@ const DoctorDashboardContent = () => {
     isOpen: false,
     action: null
   });
+
+  const [newFlowOpen, setNewFlowOpen] = useState(false);
   
   const { t } = useTranslation("dashboard");
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
@@ -88,27 +90,6 @@ const DoctorDashboardContent = () => {
     navigate("/");
   };
 
-  const calculateProfileCompletion = () => {
-    if (!doctorProfile) return 0;
-    let completedCount = 0;
-    let totalCount = 10;
-
-    if (doctorProfile.bio) completedCount++;
-    if (doctorProfile.license_number) completedCount++;
-    if (doctorProfile.consultation_fee) completedCount++;
-    if (profile?.avatar_url) completedCount++;
-    if (profile?.date_of_birth) completedCount++;
-    if (profile?.phone) completedCount++;
-    if (doctorProfile.specialty && doctorProfile.specialty !== "General Practice") completedCount++;
-    if (stats && (stats as any).totalServices && (stats as any).totalServices > 0) completedCount++;
-    if (doctorProfile.verified || doctorProfile.practice_id) completedCount++;
-    if (scheduleSettings && scheduleSettings.working_days) completedCount++;
-    
-    return Math.round(completedCount / totalCount * 100);
-  };
-
-  const profileCompletion = calculateProfileCompletion();
-  const isProfileIncomplete = profileCompletion < 80;
 
   if (loading || authLoading) {
     return (
@@ -232,37 +213,33 @@ const DoctorDashboardContent = () => {
       default:
         return (
           <div className="space-y-8">
-            {/* Profile Completion Alert */}
-            {isProfileIncomplete && (
-              <Card className="border-0 shadow-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
-                <CardContent className="p-6">
+            {/* New Patient · New Appointment CTA */}
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent pointer-events-none" />
+              <CardContent className="p-6 relative">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-amber-500/20 flex items-center justify-center shrink-0">
-                      <Sparkles className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                    <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <UserPlus className="h-6 w-6 text-primary" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-amber-800 dark:text-amber-200">
-                        {t("doctor.profileCompletion.incomplete")}
-                      </h3>
-                      <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                        {t("doctor.profileCompletion.completeProfile", { percent: profileCompletion })}
+                    <div>
+                      <h3 className="font-semibold text-foreground">Onboard a patient in seconds</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Add a new patient and book or start their appointment in one flow.
                       </p>
-                      <div className="mt-4 flex items-center gap-4">
-                        <Progress value={profileCompletion} className="h-2 flex-1" />
-                        <span className="text-sm font-medium text-amber-800 dark:text-amber-200">{profileCompletion}%</span>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        className="mt-4 bg-amber-600 hover:bg-amber-700"
-                        onClick={() => setActiveSection("profile")}
-                      >
-                        {t("doctor.profileCompletion.updateProfile")}
-                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                  <Button
+                    size="lg"
+                    className="shrink-0 w-full sm:w-auto"
+                    onClick={() => setNewFlowOpen(true)}
+                  >
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    <span>New Patient · New Appointment</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Premium Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
