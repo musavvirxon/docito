@@ -25,6 +25,7 @@ interface FinanceHubProps {
 const iconClass = "w-4 h-4";
 
 export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
+  const { t } = useTranslation("finance");
   const [tab, setTab] = useState<
     "overview" | "transactions" | "expenses" | "payroll" | "attendance" | "budgets" | "reports"
   >("overview");
@@ -37,22 +38,24 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
   const entityLabel = useMemo(() => {
     switch (entityType) {
       case "clinic":
-        return "Clinic";
+        return t("clinic");
       case "lab":
-        return "Lab";
+        return t("lab");
       case "pharmacy":
-        return "Pharmacy";
+        return t("pharmacy");
       case "imaging":
-        return "Imaging";
+        return t("imaging");
+      case "practice":
+        return t("practice");
       default:
-        return "Entity";
+        return t("entity");
     }
-  }, [entityType]);
+  }, [entityType, t]);
 
   if (!entityId || !entityType) {
     return (
       <div className="p-6 text-sm text-muted-foreground">
-        Finance data unavailable — no entity linked to your account.
+        {t("financeUnavailable")}
       </div>
     );
   }
@@ -64,7 +67,7 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Finance</h2>
+          <h2 className="text-lg font-semibold">{t("finance")}</h2>
           <Badge variant="secondary">{entityLabel}</Badge>
         </div>
         {showBranchSelector && (
@@ -80,31 +83,31 @@ export default function FinanceHub({ entityType, entityId }: FinanceHubProps) {
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="overview" className="gap-2">
             <DollarSign className={iconClass} />
-            Overview
+            {t("overviewTab")}
           </TabsTrigger>
           <TabsTrigger value="transactions" className="gap-2">
             <ListChecks className={iconClass} />
-            Transactions
+            {t("transactionsTab")}
           </TabsTrigger>
           <TabsTrigger value="expenses" className="gap-2">
             <Receipt className={iconClass} />
-            Expenses
+            {t("expensesTab")}
           </TabsTrigger>
           <TabsTrigger value="payroll" className="gap-2">
             <Wallet className={iconClass} />
-            Payroll
+            {t("payrollTab")}
           </TabsTrigger>
           <TabsTrigger value="attendance" className="gap-2">
             <Clock className={iconClass} />
-            Attendance
+            {t("attendanceTab")}
           </TabsTrigger>
           <TabsTrigger value="budgets" className="gap-2">
             <PiggyBank className={iconClass} />
-            Budgets
+            {t("budgetsTab")}
           </TabsTrigger>
           <TabsTrigger value="reports" className="gap-2">
             <BarChart3 className={iconClass} />
-            Reports
+            {t("reportsTab")}
           </TabsTrigger>
         </TabsList>
 
