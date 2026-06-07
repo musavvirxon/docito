@@ -198,7 +198,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="rounded-xl lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Daily trend</CardTitle>
+            <CardTitle className="text-base">{t("dailyTrend")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
