@@ -39,6 +39,7 @@ function bpsToPct(bps: number) {
 }
 
 export default function FinanceOverview({ entityType, entityId, locationId }: Props) {
+  const { t } = useTranslation("finance");
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const { formatCents: ctxFmtCents } = useCurrency();
   const formatCents = (cents: number, _currency: string) => ctxFmtCents(cents);
@@ -71,31 +72,31 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
 
     return [
       {
-        label: "Income",
+        label: t("income"),
         value: formatCents(income, currency),
         icon: <DollarSign className="h-5 w-5 text-primary" />,
-        hint: "Total income",
+        hint: t("totalIncomeHint"),
       },
       {
-        label: "Expenses",
+        label: t("expenses"),
         value: formatCents(expense, currency),
         icon: <Receipt className="h-5 w-5 text-primary" />,
-        hint: "Non-payroll expenses",
+        hint: t("nonPayrollExpensesHint"),
       },
       {
-        label: "Payroll",
+        label: t("payroll"),
         value: formatCents(payroll, currency),
         icon: <Wallet className="h-5 w-5 text-primary" />,
-        hint: `${payrollPct.toFixed(1)}% of income`,
+        hint: t("pctOfIncome", { pct: payrollPct.toFixed(1) }),
       },
       {
-        label: "Net",
+        label: t("net"),
         value: formatCents(net, currency),
         icon: <TrendingUp className="h-5 w-5 text-primary" />,
-        hint: `${opCostPct.toFixed(1)}% total costs`,
+        hint: t("pctTotalCosts", { pct: opCostPct.toFixed(1) }),
       },
     ];
-  }, [data, currency]);
+  }, [data, currency, t]);
 
   const series = useMemo(() => {
     const s = data?.series || [];
