@@ -1,71 +1,50 @@
-# Full i18n Coverage: Finance UI + Frontend PDFs + Treatment-Plan Edge Fix
+## Goal
 
-Goal: every hardcoded English string in financial/billing components and frontend PDF generators is translatable; the treatment-plan edge function honors all 11 supported languages.
+On the Doctor Dashboard, remove the profile-completion alert/progress bar at the top and replace it with a single prominent CTA: **"New Patient · New Appointment"**. Clicking it opens a 2-step flow that reuses existing components (no new forms, no new pages).
 
-Supported locales (everywhere): `en, ru, uz, ar, tr, es, de, zh, pt, ja, ko`.
+## Files touched
 
----
+1. `src/pages/DoctorDashboard.tsx` — remove completion card, render new CTA + stepper container.
+2. `src/components/doctor/NewPatientAppointmentFlow.tsx` *(new — orchestration only, no form/UI of its own)* — wraps the existing modals and routes between steps.
 
-## Step 1 — Create `finance` namespace
+The new file is just glue: it imports and renders existing components in sequence. No duplicated form fields, no new styling beyond the standard `Dialog` shell already used everywhere.
 
-1. **`src/i18n/config.ts`** — add `"finance"` to `I18N_NAMESPACES` between `"patients"` and `"popups"`. No other changes.
-2. **Create `public/locales/en/finance.json`** with the full key set from the spec (~130 keys: income/expense/payroll/net, totals, table headers, actions, budgets, payroll, inventory, recurring, billing, superbill, PDF labels `generatedBy/generated/confidential/preparedBy/legalNotice/page/of`, status/empty/loading messages).
-3. **Create the same file for all 10 other languages**: `ru, uz, ar, tr, es, de, zh, pt, ja, ko`. Identical key set in each, accurate translations per language, Arabic in native RTL script. Use the per-key translation table provided in the spec as the source of truth for critical terms; translate the rest consistently in the same style.
+## Behavior
 
-## Step 2 — Convert financial / billing / appointment components to `t()`
+### Replace top card
+Remove the entire `{isProfileIncomplete && (...)}` block in `DoctorDashboard.tsx` (lines ~235–265) and the now-unused `profileCompletion` / `isProfileIncomplete` locals + `Progress` import.
 
-For each file: add `import { useTranslation } from 'react-i18next'` and `const { t } = useTranslation('finance')`, then replace every hardcoded English label/header/button/empty-state with the corresponding `t('key')`. Do not touch business logic, queries, or props.
+In its place, render a single dashboard-styled card containing one primary `Button` (default variant, `size="lg"`, with `UserPlus` + `Calendar` icons) labeled **"New Patient · New Appointment"**. Style matches the existing stats cards above (same `Card` shell, gradient accent, same button look used elsewhere on the dashboard).
 
-Files (all under `src/components/`):
+### Stepper flow (orchestrator component)
 
-- `financial/`: `FinanceLedgerPanel`, `FinanceLedgerManager`, `FinanceAnalyticsPanel`, `FinanceOverview`, `FinanceHub`, `FinanceCategoriesManager`, `FinanceCategorySelect`, `FinanceEntriesExportCard`, `FinanceEntryDialog`, `FinanceTransactions`, `BudgetsPanel`, `BudgetDashboard`, `BudgetEditorPanel`, `BudgetVsActualPanel`, `PayrollPanel`, `PayrollEntriesPanel`, `PayrollRunsPanel`, `CompensationManager`, `CompensationProfileDialog`, `CompensationProfilesPanel`, `AttendancePanel`, `InventoryItemsPanel`, `SuppliesPanel`, `SuppliesPurchasesPanel`, `RecurringExpensesPanel`, `RecurringRulesPanel`, `ExpensesPanel`, `ExpenseBreakdownPanel`, `ExpensesEntriesPanel`, `IncomeEntriesPanel`, `ReportsPanel`, `FinancialInputsModal`
-- `finance/`: `FinanceHub`, `RecurringTemplatesPanel`
-- `billing/`: `BillingOverview`, `PaymentHoldsSection`, `SuperbillsManager`
-- `appointments/AppointmentFinancePanel`
-- `patient/PatientBilling`
-- `dashboard/ClinicBillingSection` — audit-only; add `t()` for any still-hardcoded strings
+State machine inside `NewPatientAppointmentFlow`:
 
-## Step 3 — `src/utils/generateAppointmentPdf.ts` (Pattern B)
+```text
+idle → step1_patient → choose_mode → step2_schedule | step2_start_now → done
+```
 
-- Change signature: `generateAppointmentPdf(data, lang: string = 'en')`.
-- Add `type Locale` union of all 11 codes, `normalizeLocale()`, inline `I18N: Record<Locale, Record<string,string>>`, `tr(locale, key)` helper.
-- Keys per spec (medical-card form: ministry, medicalCard, form, okpo, phone, patient name parts, dob, age, gender, address, profession, date, time, appointmentNo, diagnosis, complaints, externalExam, intraOral, dentalFormula, treatment, recommendations, nextVisit, doctorSignature, stamp, generatedBy, confidential, page, of). Provide accurate translations for all 11 languages.
-- Replace every `ru ? 'x' : 'y'` ternary with `tr(locale, 'key')`.
+- **Step 1 — Patient**: render the existing `AddPatientModal` (`src/components/doctor/patients/AddPatientModal.tsx`). Its `onSuccess(patientId)` advances the flow and stores the new `patientId`.
 
-## Step 4 — `src/utils/generateInvoicePdf.ts` (Pattern B)
+- **Choose mode**: a tiny intermediate `Dialog` with two buttons — "Schedule for later" and "Start right now". No new form fields.
 
-- Add `lang?: string` parameter; default `'en'`.
-- Same Pattern B scaffold. Keys: invoice, invoiceNumber, date, dueDate, billTo, appointment, doctor, code, description, amount, subtotal, discount, total, amountPaid, outstanding, paymentHistory, paidOn, via, thankYou, generatedBy, confidential, page, of. Translate for all 11 languages.
-- Replace every hardcoded literal in the PDF body with `tr(...)`.
+- **Step 2a — Schedule for later**: render the existing `ManualBookAppointmentModal` with `doctorId`, `practiceId`, and `preselectedPatient={{ id: patientId, ... }}` pre-filled so the doctor only picks date/time. Its `onSuccess` closes the flow.
 
-## Step 5 — `src/components/PatientSummaryPDF.tsx` + `generatePatientPDF`
+- **Step 2b — Start right now**: open `ManualBookAppointmentModal` with `prefilledDate={new Date()}`, `prefilledTime` = current rounded time, and `forceAppointmentType="in_person"`, so the doctor confirms the immediate slot in one click. In its `onSuccess(appointmentId)`, `navigate(`/appointment-session/${appointmentId}`)` — the existing session page (`src/pages/AppointmentSession.tsx`, route already wired in `src/App.tsx` line 282/385).
 
-- Extend `GeneratePDFOptions` with optional `labels?: { generatedBy, generated, confidential, preparedBy, legalNotice, page, of, patient, doctor, diagnosis, medications, allergies, vitals, notes }`.
-- Inside `generatePatientPDF`, replace each hardcoded label with `options.labels?.<key> ?? '<English fallback>'`.
-- In `PatientSummaryPDF.tsx`, use `useTranslation('finance')` to build the `labels` object from `t()` and pass it through.
-- Ensure all needed keys exist in `finance.json` for every language (add any missing ones consistently).
+Using `ManualBookAppointmentModal` for both branches keeps all booking validation, conflict checks, and DB inserts in one already-tested path.
 
-## Step 6 — Fix `supabase/functions/treatment-plan-generate-pdf/index.ts`
+## Technical notes
 
-- Widen `type Locale` to all 11 codes.
-- Replace `normalizeLocale` with the version that accepts every supported code and falls back to `'en'`.
-- Ensure the `I18N` object has entries for all 11 languages; for any missing language, add accurate translations of every existing key. No other logic changes.
+- No DB changes, no new edge functions, no schema work.
+- `AddPatientModal.onSuccess` already returns `patientId` (line 229).
+- `ManualBookAppointmentModal` already accepts `preselectedPatient`, `prefilledDate`, `prefilledTime`, `forceAppointmentType`, and emits `onSuccess(appointmentId)`.
+- Session route `/appointment-session/:appointmentId` is already registered.
+- The flow component only owns a `step` state and the captured `patientId`; everything else is delegated.
+- Remove `Progress` import and `profileCompletion`/`isProfileIncomplete` to keep the file clean. `useDoctorProfile` still exposes them for other consumers — no changes to the hook.
+- Button label is literal and untranslated per request ("New Patient · New Appointment"); matches the user's wording.
 
-## Step 7 — Pass `i18n.language` at call sites
+## Out of scope
 
-- For every caller of `generateAppointmentPdf(...)` and `generateInvoicePdf(...)`: `import i18n from '@/i18n/config'` and pass `i18n.language` as the locale arg.
-- For every `supabase.functions.invoke('treatment-plan-generate-pdf', { body: {...} })`: include `locale: i18n.language` in the body.
-
-## Out of scope (explicitly do not touch)
-
-- `src/i18n/config.ts` beyond adding `"finance"` to `I18N_NAMESPACES`.
-- Any existing locale JSON file.
-- Edge functions: `prescription-generate-pdf`, `invoice-generate-pdf`, `referral-generate-pdf`, `superbill-generate-pdf`, `appointment-summary-pdf`.
-- Routing, auth, data fetching, currency logic, RLS, schemas, dependencies.
-
-## Verification
-
-- Build passes; no TS errors in modified files.
-- Switching app language re-renders all updated finance/billing UI in the chosen language.
-- Generated appointment PDF, invoice PDF, patient summary PDF render in the active language for each of the 11 locales.
-- Treatment-plan edge function returns localized output when `locale` is passed for each of the 11 codes (no silent fallback to `en` for non-`ru` languages).
+- No edits to `AddPatientModal`, `ManualBookAppointmentModal`, `AppointmentSession`, or `useDoctorProfile`.
+- No changes to other dashboard sections, routing, or i18n files.
