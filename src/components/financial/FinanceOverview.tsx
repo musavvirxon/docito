@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -38,6 +39,7 @@ function bpsToPct(bps: number) {
 }
 
 export default function FinanceOverview({ entityType, entityId, locationId }: Props) {
+  const { t } = useTranslation("finance");
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const { formatCents: ctxFmtCents } = useCurrency();
   const formatCents = (cents: number, _currency: string) => ctxFmtCents(cents);
@@ -70,31 +72,31 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
 
     return [
       {
-        label: "Income",
+        label: t("income"),
         value: formatCents(income, currency),
         icon: <DollarSign className="h-5 w-5 text-primary" />,
-        hint: "Total income",
+        hint: t("totalIncomeHint"),
       },
       {
-        label: "Expenses",
+        label: t("expenses"),
         value: formatCents(expense, currency),
         icon: <Receipt className="h-5 w-5 text-primary" />,
-        hint: "Non-payroll expenses",
+        hint: t("nonPayrollExpensesHint"),
       },
       {
-        label: "Payroll",
+        label: t("payroll"),
         value: formatCents(payroll, currency),
         icon: <Wallet className="h-5 w-5 text-primary" />,
-        hint: `${payrollPct.toFixed(1)}% of income`,
+        hint: t("pctOfIncome", { pct: payrollPct.toFixed(1) }),
       },
       {
-        label: "Net",
+        label: t("net"),
         value: formatCents(net, currency),
         icon: <TrendingUp className="h-5 w-5 text-primary" />,
-        hint: `${opCostPct.toFixed(1)}% total costs`,
+        hint: t("pctTotalCosts", { pct: opCostPct.toFixed(1) }),
       },
     ];
-  }, [data, currency]);
+  }, [data, currency, t]);
 
   const series = useMemo(() => {
     const s = data?.series || [];
@@ -125,7 +127,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-muted-foreground" />
-          <h3 className="text-base font-semibold">Overview</h3>
+          <h3 className="text-base font-semibold">{t("overviewTab")}</h3>
           <Badge variant="secondary">{range}</Badge>
         </div>
 
@@ -157,7 +159,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
 
           <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
-            Refresh
+            {t("refresh")}
           </Button>
         </div>
       </div>
@@ -165,12 +167,12 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
       {error ? (
         <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="text-base">Couldn&apos;t load finance overview</CardTitle>
+            <CardTitle className="text-base">{t("loadOverviewFailed")}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p>{error}</p>
             <Button variant="outline" onClick={refresh}>
-              Try again
+              {t("tryAgain")}
             </Button>
           </CardContent>
         </Card>
@@ -184,7 +186,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{c.label}</p>
                   <p className="text-2xl font-semibold">{loading ? "—" : c.value}</p>
-                  <p className="text-xs text-muted-foreground">{loading ? "Loading…" : c.hint}</p>
+                  <p className="text-xs text-muted-foreground">{loading ? t("loading") : c.hint}</p>
                 </div>
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">{c.icon}</div>
               </div>
@@ -196,7 +198,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="rounded-xl lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Daily trend</CardTitle>
+            <CardTitle className="text-base">{t("dailyTrend")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[280px]">
@@ -212,9 +214,9 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
                       formatter={(value: any, name: any) => {
                         const cur = currency || "USD";
                         const v = Number(value || 0);
-                        if (name === "income") return [formatCents(Math.round(v * 100), cur), "Income"];
-                        if (name === "costs") return [formatCents(Math.round(v * 100), cur), "Costs"];
-                        if (name === "net") return [formatCents(Math.round(v * 100), cur), "Net"];
+                        if (name === "income") return [formatCents(Math.round(v * 100), cur), t("income")];
+                        if (name === "costs") return [formatCents(Math.round(v * 100), cur), t("costs")];
+                        if (name === "net") return [formatCents(Math.round(v * 100), cur), t("net")];
                         return [value, name];
                       }}
                     />
@@ -230,7 +232,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
 
         <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="text-base">Top costs</CardTitle>
+            <CardTitle className="text-base">{t("topCosts")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading ? (
@@ -240,7 +242,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
                 ))}
               </div>
             ) : topCosts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No expense/payroll entries yet for this range.</p>
+              <p className="text-sm text-muted-foreground">{t("noExpenseEntriesRange")}</p>
             ) : (
               <div className="space-y-2">
                 {topCosts.map((c) => (
