@@ -232,7 +232,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
 
         <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="text-base">Top costs</CardTitle>
+            <CardTitle className="text-base">{t("topCosts")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loading ? (
@@ -242,7 +242,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
                 ))}
               </div>
             ) : topCosts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No expense/payroll entries yet for this range.</p>
+              <p className="text-sm text-muted-foreground">{t("noExpenseEntriesRange")}</p>
             ) : (
               <div className="space-y-2">
                 {topCosts.map((c) => (
