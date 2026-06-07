@@ -127,7 +127,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-muted-foreground" />
-          <h3 className="text-base font-semibold">Overview</h3>
+          <h3 className="text-base font-semibold">{t("overviewTab")}</h3>
           <Badge variant="secondary">{range}</Badge>
         </div>
 
@@ -159,7 +159,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
 
           <Button size="sm" variant="outline" onClick={refresh} disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
-            Refresh
+            {t("refresh")}
           </Button>
         </div>
       </div>
@@ -167,12 +167,12 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
       {error ? (
         <Card className="rounded-xl">
           <CardHeader>
-            <CardTitle className="text-base">Couldn&apos;t load finance overview</CardTitle>
+            <CardTitle className="text-base">{t("loadOverviewFailed")}</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-3">
             <p>{error}</p>
             <Button variant="outline" onClick={refresh}>
-              Try again
+              {t("tryAgain")}
             </Button>
           </CardContent>
         </Card>
@@ -186,7 +186,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
                 <div className="space-y-1">
                   <p className="text-sm text-muted-foreground">{c.label}</p>
                   <p className="text-2xl font-semibold">{loading ? "—" : c.value}</p>
-                  <p className="text-xs text-muted-foreground">{loading ? "Loading…" : c.hint}</p>
+                  <p className="text-xs text-muted-foreground">{loading ? t("loading") : c.hint}</p>
                 </div>
                 <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">{c.icon}</div>
               </div>
