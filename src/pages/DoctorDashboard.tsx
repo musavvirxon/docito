@@ -527,6 +527,13 @@ const DoctorDashboardContent = () => {
             onClose={() => setQuickActionModal({ isOpen: false, action: null })} 
             doctorProfile={doctorProfile} 
           />
+
+          <NewPatientAppointmentFlow
+            open={newFlowOpen}
+            onOpenChange={setNewFlowOpen}
+            doctorId={doctorProfile.id}
+            practiceId={doctorProfile.practice_id}
+          />
         </div>
       </ThemeProvider>
     </SidebarProvider>
