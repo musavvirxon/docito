@@ -214,9 +214,9 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
                       formatter={(value: any, name: any) => {
                         const cur = currency || "USD";
                         const v = Number(value || 0);
-                        if (name === "income") return [formatCents(Math.round(v * 100), cur), "Income"];
-                        if (name === "costs") return [formatCents(Math.round(v * 100), cur), "Costs"];
-                        if (name === "net") return [formatCents(Math.round(v * 100), cur), "Net"];
+                        if (name === "income") return [formatCents(Math.round(v * 100), cur), t("income")];
+                        if (name === "costs") return [formatCents(Math.round(v * 100), cur), t("costs")];
+                        if (name === "net") return [formatCents(Math.round(v * 100), cur), t("net")];
                         return [value, name];
                       }}
                     />
