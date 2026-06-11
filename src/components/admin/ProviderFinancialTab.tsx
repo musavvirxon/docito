@@ -2,6 +2,7 @@ import { useFinancialStats } from "@/hooks/useFinancialStats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area } from "recharts";
+import { useCurrency } from "@/hooks/useCurrency";
 
 type Props = { doctorId: string; doctorName?: string };
 
@@ -11,6 +12,7 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
     undefined,
     doctorId,
   );
+  const { format: money } = useCurrency();
 
   if (loading) {
     return <p className="text-sm text-muted-foreground py-8 text-center">Loading financial data…</p>;
@@ -18,8 +20,6 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
   if (error) {
     return <p className="text-sm text-destructive py-8 text-center">{error}</p>;
   }
-
-  const money = (n: number) => `$${Number(n || 0).toFixed(2)}`;
 
   return (
     <div className="space-y-6">
