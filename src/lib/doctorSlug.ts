@@ -33,7 +33,7 @@ export async function resolveDoctorIdFromSlug(
     const { data, error } = await (supabase as any)
       .from("doctor_public_profile_view")
       .select("id")
-      .eq(column, value)
+      .ilike(column, value)
       .limit(1)
       .maybeSingle();
     if (!error && data?.id) return String(data.id);
@@ -44,7 +44,7 @@ export async function resolveDoctorIdFromSlug(
     const { data, error } = await (supabase as any)
       .from("doctor_profiles_view")
       .select("id")
-      .eq(column, value)
+      .ilike(column, value)
       .limit(1)
       .maybeSingle();
     if (!error && data?.id) return String(data.id);

@@ -100,21 +100,20 @@ export default function DoctorPublicProfile() {
       setLoading(true);
       try {
         // Public view is anon-safe and already filters to verified + public profiles.
-        // Use sequential .eq() lookups so slugs containing dots or other PostgREST
-        // operator characters do not break an .or() filter.
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
-        const lookups: Array<{ column: string; value: string }> = [
-          { column: "custom_profile_link", value: slug },
-          { column: "username", value: slug },
+        // Use .ilike() for case-insensitive exact match so shared links work
+        // regardless of slug casing (e.g. "dr.john.doe1" vs "dr.John.Doe1").
+        const normalized = decodeURIComponent(slug).trim();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized);
+        const lookups: Array<{ column: string; value: string; op: "eq" | "ilike" }> = [
+          { column: "custom_profile_link", value: normalized, op: "ilike" },
+          { column: "username", value: normalized, op: "ilike" },
         ];
-        if (isUuid) lookups.push({ column: "id", value: slug });
+        if (isUuid) lookups.push({ column: "id", value: normalized, op: "eq" });
 
         let doc: any = null;
-        for (const { column, value } of lookups) {
-          const { data, error } = await (supabase as any)
-            .from("doctor_public_profile_view")
-            .select("*")
-            .eq(column, value)
+        for (const { column, value, op } of lookups) {
+          const query = (supabase as any).from("doctor_public_profile_view").select("*");
+          const { data, error } = await (op === "ilike" ? query.ilike(column, value) : query.eq(column, value))
             .limit(1)
             .maybeSingle();
           if (error) throw error;

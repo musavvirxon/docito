@@ -1,50 +1,105 @@
 ## Goal
 
-On the Doctor Dashboard, remove the profile-completion alert/progress bar at the top and replace it with a single prominent CTA: **"New Patient · New Appointment"**. Clicking it opens a 2-step flow that reuses existing components (no new forms, no new pages).
+Fix three independent regressions in priority order: public links → currency → i18n. This will land in 3 sequential passes so progress is visible and reviewable. The plan below is the contract for all three.
 
-## Files touched
+---
 
-1. `src/pages/DoctorDashboard.tsx` — remove completion card, render new CTA + stepper container.
-2. `src/components/doctor/NewPatientAppointmentFlow.tsx` *(new — orchestration only, no form/UI of its own)* — wraps the existing modals and routes between steps.
+## Phase 1 — Public booking & doctor profile links (production "doctor not found")
 
-The new file is just glue: it imports and renders existing components in sequence. No duplicated form fields, no new styling beyond the standard `Dialog` shell already used everywhere.
+**Diagnosis** (confirmed by hitting the production REST API):
+- `doctor_public_profile_view` is reachable by anon (200 OK).
+- Lookups are `.eq()` on `custom_profile_link` / `username`, which are **case-sensitive** in Postgres. Real data contains mixed case (e.g. `dr.John.Doe1`). Typing `dr.john.doe1` returns `[]` → "doctor not found".
+- Same code path is used by `/book-appointment/:doctorId` via `resolveDoctorIdFromSlug` (`src/lib/doctorSlug.ts`) and by `/doctor/:slug` (`src/pages/doctor/DoctorPublicProfile.tsx`).
+- Routes under non-language paths (`/doctor/:slug`, `/book-appointment/:doctorId`) exist in `App.tsx` but only as a fallback tree (lines 286–316); production canonical URLs from `getBookingUrl()` point at `https://docito.app/book-appointment/<slug>` with no language prefix, so the fallback tree must work.
 
-## Behavior
+**Changes**
+1. `src/lib/doctorSlug.ts` — switch slug lookups from `.eq()` to `.ilike()` (case-insensitive exact match) on `custom_profile_link` and `username`. Keep UUID path as `.eq("id", …)`. Try `doctor_public_profile_view` first, then `doctor_profiles_view` as today.
+2. `src/pages/doctor/DoctorPublicProfile.tsx` — same `.ilike()` switch in the inline lookup loop. Also normalize the slug (trim, decode `%2E`/dots safely) before querying.
+3. Verify both URL families resolve in production by curling `…/rest/v1/doctor_public_profile_view?custom_profile_link=ilike.dr.john.doe1`.
+4. Confirm the non-prefixed routes `/doctor/:slug`, `/dr/:slug`, `/book-appointment/:doctorId` are present in the fallback `<Routes>` block (they are — lines 286–316). No App.tsx changes needed.
 
-### Replace top card
-Remove the entire `{isProfileIncomplete && (...)}` block in `DoctorDashboard.tsx` (lines ~235–265) and the now-unused `profileCompletion` / `isProfileIncomplete` locals + `Progress` import.
+No DB migration. No new dependency.
 
-In its place, render a single dashboard-styled card containing one primary `Button` (default variant, `size="lg"`, with `UserPlus` + `Calendar` icons) labeled **"New Patient · New Appointment"**. Style matches the existing stats cards above (same `Card` shell, gradient accent, same button look used elsewhere on the dashboard).
+---
 
-### Stepper flow (orchestrator component)
+## Phase 2 — Currency propagation (remaining 80+ files)
 
-State machine inside `NewPatientAppointmentFlow`:
+`useCurrency()` exists and is wired through `CurrencyContext`. The earlier pass covered ~20 files. A grep finds ~60 more places still using hardcoded `$…toFixed(2)` or `Intl.NumberFormat('en-US',{currency:'USD'})`.
 
-```text
-idle → step1_patient → choose_mode → step2_schedule | step2_start_now → done
-```
+**Strategy** — replace each hardcoded formatter with `useCurrency().format(...)` or `formatCents(...)`. Source currency is preserved per row when the DB stores one (`row.currency`); display currency comes from the context. No conversion — only symbol/locale.
 
-- **Step 1 — Patient**: render the existing `AddPatientModal` (`src/components/doctor/patients/AddPatientModal.tsx`). Its `onSuccess(patientId)` advances the flow and stores the new `patientId`.
+**Files to update** (batched 8–12 per turn):
 
-- **Choose mode**: a tiny intermediate `Dialog` with two buttons — "Schedule for later" and "Start right now". No new form fields.
+Batch A — patient & appointment surfaces:
+- `src/components/patient/PatientBilling.tsx`, `PatientTreatmentPlanModal.tsx`, `PatientTreatmentPlansSection.tsx`
+- `src/components/patient-dashboard/QuickOverviewCards.tsx`, `tabs/HistoryTab.tsx`
+- `src/components/appointments/AppointmentProceduresPanel.tsx`, `AppointmentTreatmentPlansSection.tsx`, `DentalProcedurePicker.tsx`
+- `src/pages/AppointmentSession.tsx`
 
-- **Step 2a — Schedule for later**: render the existing `ManualBookAppointmentModal` with `doctorId`, `practiceId`, and `preselectedPatient={{ id: patientId, ... }}` pre-filled so the doctor only picks date/time. Its `onSuccess` closes the flow.
+Batch B — treatment & procedures:
+- `src/components/treatment/TreatmentPlanCard.tsx`, `TreatmentPlanDetailModal.tsx`, `AddProcedureToPlanModal.tsx`
+- `src/components/visit/tabs/TreatmentTab.tsx`
+- `src/components/consent/ProcedureConsentModal.tsx`, `ConsentSigningModal.tsx`
+- `src/components/appointment/ProcedurePrescriptionModal.tsx`, `RealTimeProcedureNotification.tsx`
+- `src/pages/TreatmentPlanning.tsx`, `ProcedureLibrary.tsx`
 
-- **Step 2b — Start right now**: open `ManualBookAppointmentModal` with `prefilledDate={new Date()}`, `prefilledTime` = current rounded time, and `forceAppointmentType="in_person"`, so the doctor confirms the immediate slot in one click. In its `onSuccess(appointmentId)`, `navigate(`/appointment-session/${appointmentId}`)` — the existing session page (`src/pages/AppointmentSession.tsx`, route already wired in `src/App.tsx` line 282/385).
+Batch C — clinic / lab / imaging / pharmacy:
+- `src/components/clinic/ClinicServicesManager.tsx`
+- `src/components/billing/SuperbillsManager.tsx`
+- `src/components/admin/ProviderFinancialTab.tsx`
+- `src/components/lab/LabAnalytics.tsx`, `TestOrderCreator.tsx`
+- `src/components/imaging/ImagingAnalytics.tsx`, `ImagingBillingSection.tsx`
+- `src/components/pharmacy/PharmacyDeliveryOrders.tsx`
+- `src/hooks/usePharmacyStaffDashboard.ts`
 
-Using `ManualBookAppointmentModal` for both branches keeps all booking validation, conflict checks, and DB inserts in one already-tested path.
+Batch D — admin dashboard finance blocks:
+- `src/pages/AdminDashboard.tsx` (lines 3282, 3284, 4275–4277, 4314, 4336, 4922, 4939, 4947, 4955)
 
-## Technical notes
+Batch E — PDFs (display only, no conversion):
+- `src/utils/generateInvoicePdf.ts`, `generateAppointmentPdf.ts` — accept `displayCurrency` parameter, pass `useCurrency().currency` from the caller; format via `formatCents()`/`formatCurrency()` from `@/lib/currency`.
 
-- No DB changes, no new edge functions, no schema work.
-- `AddPatientModal.onSuccess` already returns `patientId` (line 229).
-- `ManualBookAppointmentModal` already accepts `preselectedPatient`, `prefilledDate`, `prefilledTime`, `forceAppointmentType`, and emits `onSuccess(appointmentId)`.
-- Session route `/appointment-session/:appointmentId` is already registered.
-- The flow component only owns a `step` state and the captured `patientId`; everything else is delegated.
-- Remove `Progress` import and `profileCompletion`/`isProfileIncomplete` to keep the file clean. `useDoctorProfile` still exposes them for other consumers — no changes to the hook.
-- Button label is literal and untranslated per request ("New Patient · New Appointment"); matches the user's wording.
+Hooks not allowed in plain `.ts` utilities (`usePharmacyStaffDashboard` is a hook so OK; for `LabAnalytics` keep its inner helper but pass `currency` from props/context).
+
+---
+
+## Phase 3 — i18n sweep across Doctor, Clinic-Admin, Patient dashboards
+
+**Plan**
+1. Run a scan (`scripts/phase0-audit.mjs` already exists — extend if needed) that lists every JSX text node and `toast()` string under:
+   - `src/components/doctor/**`, `src/pages/Doctor*.tsx`
+   - `src/components/clinic/**`, `src/components/admin/**`, `src/pages/AdminDashboard.tsx`
+   - `src/components/patient/**`, `src/components/patient-dashboard/**`, `src/pages/Patient*.tsx`
+2. Group keys by feature; add missing keys to existing namespaces (`doctor`, `dashboard`, `patients`, `admin`, `finance`, `common`) — create new sub-namespaces only when a namespace exceeds ~300 keys.
+3. Translate to all 11 languages (`en, ru, uz, ar, tr, es, de, zh, pt, ja, ko`) using existing translation conventions (don't re-translate brand names).
+4. Wire `useTranslation(ns)` + `t("key")` in each component. Toasts use the same hook.
+5. Verify with a final scan that no English literal >2 words remains in those trees outside intentional brand/proper-noun strings.
+
+This phase is the largest and will be delivered in several turns (one dashboard tree per turn).
+
+---
 
 ## Out of scope
 
-- No edits to `AddPatientModal`, `ManualBookAppointmentModal`, `AppointmentSession`, or `useDoctorProfile`.
-- No changes to other dashboard sections, routing, or i18n files.
+- No DB schema or RLS changes.
+- No new edge functions.
+- No FX conversion changes (display-only currency stands).
+- No design-system, routing, or auth refactors.
+
+---
+
+## Technical notes
+
+- `.ilike(col, value)` in PostgREST: pass the literal slug — no `%` wildcards, exact case-insensitive match. PostgREST encodes dots fine in the value position.
+- `useCurrency().format(amount, sourceCurrency?)` is the canonical formatter for major-unit values; `formatCents(cents, sourceCurrency?)` for cent-stored values.
+- For PDF generators (non-React), pass `{ displayCurrency, sourceCurrency }` from the caller; never call hooks inside.
+- i18n keys follow existing dotted style; reuse `common:buttons.*` and `common:status.*` where possible to avoid duplication.
+
+---
+
+## Execution order
+
+1. Phase 1 (single turn).
+2. Phase 2 — batches A–E (≈5 turns).
+3. Phase 3 — doctor → clinic-admin → patient (≈3–4 turns).
+
+I will pause after Phase 1 for you to verify the production link before continuing.
