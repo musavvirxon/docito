@@ -25,6 +25,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { downloadTreatmentPlanPdf } from '@/lib/api/treatment-plan-api';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface TreatmentPlanProcedure {
   id: string;
@@ -58,6 +59,7 @@ interface TreatmentPlan {
 export const PatientTreatmentPlans = () => {
   const { user } = useAuth();
   const { i18n } = useTranslation();
+  const { format: fmtMoney } = useCurrency();
   const [plans, setPlans] = useState<TreatmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -333,7 +335,7 @@ export const PatientTreatmentPlans = () => {
                 <div className="p-4 rounded-lg bg-muted">
                   <p className="text-sm text-muted-foreground">Total Cost</p>
                   <p className="font-semibold mt-1">
-                    {viewPlan.total_cost ? `$${viewPlan.total_cost.toLocaleString()}` : 'N/A'}
+                    {viewPlan.total_cost ? fmtMoney(viewPlan.total_cost) : 'N/A'}
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted">
@@ -380,7 +382,7 @@ export const PatientTreatmentPlans = () => {
                           </TableCell>
                           <TableCell>{proc.procedure?.category || 'N/A'}</TableCell>
                           <TableCell>
-                            {proc.cost ? `$${proc.cost.toLocaleString()}` : 'N/A'}
+                            {proc.cost ? fmtMoney(proc.cost) : 'N/A'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={proc.status === 'completed' ? 'default' : 'secondary'}>

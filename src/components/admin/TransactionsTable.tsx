@@ -14,9 +14,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import { format } from "date-fns";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export const TransactionsTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { formatCents } = useCurrency();
 
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['admin-transactions', searchTerm],
@@ -47,10 +49,7 @@ export const TransactionsTable = () => {
   };
 
   const formatAmount = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency.toUpperCase(),
-    }).format(amount / 100);
+    return formatCents(amount, (currency || 'usd').toUpperCase());
   };
 
   return (
