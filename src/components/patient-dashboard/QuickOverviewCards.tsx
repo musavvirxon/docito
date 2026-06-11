@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, Pill, DollarSign, User, Stethoscope } from "lucide-react";
 import { motion } from "framer-motion";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface OverviewStats {
   nextAppointment: {
@@ -22,6 +23,7 @@ interface QuickOverviewCardsProps {
 }
 
 const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
+  const { format: formatMoney } = useCurrency();
   const cards = [
     {
       title: "Next Appointment",
@@ -100,7 +102,7 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
       content: (
         <div>
           <p className="text-2xl font-bold">
-            ${stats.outstandingBalance.toFixed(2)}
+            {formatMoney(stats.outstandingBalance)}
           </p>
           <p className="text-xs text-muted-foreground">
             {stats.outstandingBalance === 0 ? "All paid" : "Amount due"}

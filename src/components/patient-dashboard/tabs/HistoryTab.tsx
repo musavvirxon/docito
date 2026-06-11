@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface MedicalHistoryItem {
   id: string;
@@ -99,14 +100,10 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
     run();
   }, [user?.id]);
 
+  const { format: ctxFmt } = useCurrency();
   const formatMoney = (amount: number | null | undefined) => {
     const n = Number(amount ?? 0);
-    const safe = Number.isFinite(n) ? n : 0;
-    try {
-      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(safe);
-    } catch {
-      return `$${safe.toFixed(2)}`;
-    }
+    return ctxFmt(Number.isFinite(n) ? n : 0);
   };
 
   const dentalStatusBadgeClass = (status: DentalProcedureStatus) => {
