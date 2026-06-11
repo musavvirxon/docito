@@ -104,12 +104,7 @@ const PatientTreatmentPlanModal = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {

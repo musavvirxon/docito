@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PatientTreatmentPlanModal from "./PatientTreatmentPlanModal";
 import ConsentSigningModal from "../consent/ConsentSigningModal";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface TreatmentPlan {
   id: string;
@@ -65,12 +66,7 @@ const PatientTreatmentPlansSection = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {

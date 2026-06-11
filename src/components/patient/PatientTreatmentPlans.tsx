@@ -25,6 +25,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { downloadTreatmentPlanPdf } from '@/lib/api/treatment-plan-api';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface TreatmentPlanProcedure {
   id: string;
