@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Stethoscope, Clock } from 'lucide-react';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export interface PublicProcedure {
   id: string;
@@ -16,16 +17,10 @@ interface Props {
   currency?: string;
 }
 
-const fmtMoney = (n: number | null | undefined, currency = 'USD') => {
-  if (n == null) return '—';
-  try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n);
-  } catch {
-    return `$${Number(n).toFixed(2)}`;
-  }
-};
-
 export default function ProceduresSection({ procedures, currency = 'USD' }: Props) {
+  const { format } = useCurrency();
+  const fmtMoney = (n: number | null | undefined) =>
+    n == null ? '—' : format(Number(n), currency);
   return (
     <section aria-labelledby="procedures-heading">
       <h2
