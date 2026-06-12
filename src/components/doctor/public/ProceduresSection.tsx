@@ -57,7 +57,7 @@ export default function ProceduresSection({ procedures, currency = 'USD' }: Prop
                 )}
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-base font-semibold tabular-nums">
-                    {fmtMoney(p.cost, currency)}
+                    {fmtMoney(p.cost)}
                   </span>
                   {p.duration_minutes ? (
                     <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
