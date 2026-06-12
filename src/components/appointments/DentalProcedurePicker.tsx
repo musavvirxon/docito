@@ -90,8 +90,9 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
     }
   };
 
-  const fmtMoney = (n: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
+  const { format: fmtMoney } = useCurrency();
+
+
 
   return (
     <Card>
