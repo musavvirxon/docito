@@ -44,6 +44,7 @@ import MedicationManagementModal from "./MedicationManagementModal";
 import TreatmentPlanTemplatesModal from "./TreatmentPlanTemplatesModal";
 import FileAttachmentSection from "@/components/files/FileAttachmentSection";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 import { downloadTreatmentPlanPdf } from "@/lib/api/treatment-plan-api";
 import {
   MedicationsSection,
