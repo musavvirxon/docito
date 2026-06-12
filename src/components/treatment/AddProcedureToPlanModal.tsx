@@ -218,7 +218,7 @@ const AddProcedureToPlanModal = ({
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{p.name}</h4>
                       <span className="text-sm font-medium text-primary">
-                        ${Number(p.default_cost ?? p.price ?? 0).toFixed(2)}
+                        {money(Number(p.default_cost ?? p.price ?? 0))}
                       </span>
                     </div>
                     <div className="flex gap-2">
@@ -316,7 +316,7 @@ const AddProcedureToPlanModal = ({
                   <CardContent className="p-4 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Unit cost</span>
-                      <span className="font-medium">${unitCost.toFixed(2)}</span>
+                      <span className="font-medium">{money(unitCost)}</span>
                     </div>
 
                     {isToothBased && (
@@ -329,7 +329,7 @@ const AddProcedureToPlanModal = ({
                     <div className="flex justify-between text-base pt-2 border-t">
                       <span className="font-semibold">Line total</span>
                       <span className="font-bold text-primary">
-                        ${lineTotal.toFixed(2)}
+                        {money(lineTotal)}
                       </span>
                     </div>
                   </CardContent>
