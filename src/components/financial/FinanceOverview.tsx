@@ -24,15 +24,8 @@ function isoForDaysAgo(days: number) {
   return d.toISOString();
 }
 
-function formatCents(cents: number, currency: string) {
-  const cur = (currency || "USD").toUpperCase();
-  const value = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur }).format(value);
-  } catch {
-    return `${cur} ${value.toFixed(2)}`;
-  }
-}
+// formatCents now provided by useCurrency context inside the component
+
 
 function bpsToPct(bps: number) {
   return (Number(bps || 0) || 0) / 100;
