@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { ListChecks, Loader2, RefreshCcw, Filter, ArrowDownUp } from "lucide-react";
 import { toast } from "sonner";
@@ -39,10 +40,7 @@ type CategoryRow = {
 function formatCents(cents: number, currency: string) {
   const cur = (currency || "USD").toUpperCase();
   const value = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur }).format(value);
-  } catch {
-    return `${cur} ${value.toFixed(2)}`;
+  return __ctxMoney(value, String(cur)); ${value.toFixed(2)}`;
   }
 }
 
@@ -53,6 +51,9 @@ function isoForDaysAgo(days: number) {
 }
 
 export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
+  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
+  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
+
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const [type, setType] = useState<EntryType | "all">("all");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");

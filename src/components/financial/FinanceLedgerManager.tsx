@@ -50,11 +50,7 @@ function parseISODateToNoon(dateStr: string) {
 
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
-  } catch {
-    const sign = v < 0 ? "-" : "";
-    return `${sign}${currency || "USD"} ${Math.abs(v).toFixed(2)}`;
+  return __ctxMoney(v, String(currency || "USD"));${currency || "USD"} ${Math.abs(v).toFixed(2)}`;
   }
 }
 
@@ -65,6 +61,9 @@ function badgeForType(t: EntryType) {
 }
 
 export default function FinanceLedgerManager(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
+  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
+
   const { entityType, entityId } = props;
   const { formatCents: ctxFmtCents } = useCurrency();
   const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);

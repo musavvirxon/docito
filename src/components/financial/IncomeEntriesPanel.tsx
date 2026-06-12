@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -32,10 +33,7 @@ type IncomeRow = {
 
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
-  } catch {
-    return `${currency || "USD"} ${v.toFixed(2)}`;
+  return __ctxMoney(v, String(currency || "USD")); ${v.toFixed(2)}`;
   }
 }
 
@@ -82,6 +80,9 @@ function isReversalRow(r: IncomeRow) {
 }
 
 export default function IncomeEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
+  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
+
   const { entityType, entityId } = props;
 
   const today = useMemo(() => new Date(), []);
