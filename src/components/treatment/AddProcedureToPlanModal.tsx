@@ -59,6 +59,7 @@ const AddProcedureToPlanModal = ({
   onSuccess,
 }: AddProcedureToPlanModalProps) => {
   const [loading, setLoading] = useState(false);
+  const { format: money } = useCurrency();
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
