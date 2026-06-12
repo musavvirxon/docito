@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ToothSelector from "@/components/procedure/ToothSelector";
+import { useCurrency } from "@/hooks/useCurrency";
 
 const formSchema = z.object({
   procedure_id: z.string().min(1, "Select a procedure"),
