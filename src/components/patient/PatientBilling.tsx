@@ -115,7 +115,7 @@ export const PatientBilling = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { format: ctxFmtMajor } = useCurrency();
-  const formatMoney = (amount: number, _currency: string) => ctxFmtMajor(Number(amount || 0));
+  const formatMoney = (amount: number, sourceCurrency: string) => ctxFmtMajor(Number(amount || 0), sourceCurrency);
 
 
   const [loading, setLoading] = useState(true);
