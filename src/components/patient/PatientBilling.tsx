@@ -74,15 +74,8 @@ type PayInvoiceResponse = {
 };
 type ConfirmPiResponse = { ok: boolean; error?: string; status?: string };
 
-function formatMoney(amount: number, currency: string) {
-  const n = Number(amount || 0);
-  const cur = String(currency || "USD").toUpperCase();
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, maximumFractionDigits: 2 }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${cur}`;
-  }
-}
+// formatMoney is now provided per-component via useCurrency context
+
 
 function statusBadge(status: string) {
   const s = String(status || "").toLowerCase();
