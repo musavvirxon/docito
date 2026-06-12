@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import EnhancedCreateTreatmentPlanModal from '@/components/treatment/EnhancedCreateTreatmentPlanModal';
 import EnhancedTreatmentPlanDetailModal from '@/components/treatment/EnhancedTreatmentPlanDetailModal';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   doctorId: string;
