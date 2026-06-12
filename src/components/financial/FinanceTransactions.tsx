@@ -40,7 +40,14 @@ type CategoryRow = {
 function formatCents(cents: number, currency: string) {
   const cur = (currency || "USD").toUpperCase();
   const value = (Number(cents || 0) || 0) / 100;
-  return __ctxMoney(value, String(cur)); ${value.toFixed(2)}`;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (cur) || "USD" }).format(value);
+
+  } catch {
+
+    return `${(cur) || "USD"} ${Number(value).toFixed(2)}`;
+
   }
 }
 

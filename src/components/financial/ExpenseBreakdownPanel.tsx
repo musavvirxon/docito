@@ -28,7 +28,14 @@ type BreakdownRow = {
 
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
-  return __ctxMoney(v, String(currency)); ${v.toFixed(2)}`;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(v);
+
+  } catch {
+
+    return `${(currency) || "USD"} ${Number(v).toFixed(2)}`;
+
   }
 }
 

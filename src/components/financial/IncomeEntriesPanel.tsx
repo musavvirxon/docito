@@ -33,7 +33,14 @@ type IncomeRow = {
 
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
-  return __ctxMoney(v, String(currency || "USD")); ${v.toFixed(2)}`;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
+
+  } catch {
+
+    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
+
   }
 }
 

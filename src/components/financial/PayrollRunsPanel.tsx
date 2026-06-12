@@ -49,7 +49,14 @@ function yyyyMmDd(d: Date) {
 
 function formatMoney(currency: string, cents: number) {
   const value = (Number(cents || 0) || 0) / 100;
-  return __ctxMoney(value, String(currency)); ${value.toFixed(2)}`;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(value);
+
+  } catch {
+
+    return `${(currency) || "USD"} ${Number(value).toFixed(2)}`;
+
   }
 }
 
