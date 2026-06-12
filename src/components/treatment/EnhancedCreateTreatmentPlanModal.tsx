@@ -1,6 +1,7 @@
 // src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
