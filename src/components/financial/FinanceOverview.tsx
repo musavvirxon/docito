@@ -35,7 +35,7 @@ export default function FinanceOverview({ entityType, entityId, locationId }: Pr
   const { t } = useTranslation("finance");
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const { formatCents: ctxFmtCents } = useCurrency();
-  const formatCents = (cents: number, _currency: string) => ctxFmtCents(cents);
+  const formatCents = (cents: number, currency: string) => ctxFmtCents(cents, currency);
 
   const { from, to } = useMemo(() => {
     const nowIso = new Date().toISOString();
