@@ -15,6 +15,7 @@ import {
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
 import type { AddProcedureInput, UnifiedProcedure } from '@/hooks/useAppointmentProcedures';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   initialTeeth?: number[];
