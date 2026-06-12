@@ -53,6 +53,8 @@ export function AppointmentProceduresPanel({
 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [seedTeeth, setSeedTeeth] = useState<number[]>(initialTeeth || []);
+  const { format: money } = useCurrency();
+  const fmtMoney = (n: number | null) => (n == null ? '—' : money(n));
 
   const { items, loading, totalCost, refresh, addProcedure, updateStatus, removeProcedure } =
     useAppointmentProcedures({ appointmentId, doctorId, patientId, doctorPatientId });
