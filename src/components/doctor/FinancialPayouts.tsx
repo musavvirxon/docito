@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface PayoutRecord {
   id: string;
@@ -19,6 +20,8 @@ interface FinancialPayoutsProps {
 
 export const FinancialPayouts = ({ payoutRecords }: FinancialPayoutsProps) => {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
+  
   
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -67,7 +70,7 @@ export const FinancialPayouts = ({ payoutRecords }: FinancialPayoutsProps) => {
               payoutRecords.map((payout) => (
                 <TableRow key={payout.id}>
                   <TableCell className="font-mono text-sm">{payout.referenceId}</TableCell>
-                  <TableCell className="font-semibold">${payout.amount.toLocaleString()}</TableCell>
+                  <TableCell className="font-semibold">{money(payout.amount)}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusVariant(payout.status)} className="flex items-center gap-1 w-fit">
                       {getStatusIcon(payout.status)}

@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -154,8 +155,7 @@ const TreatmentPlanningSection = () => {
     [t]
   );
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  const { format: formatCurrency } = useCurrency();
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {

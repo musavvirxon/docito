@@ -4,6 +4,7 @@ import { ArrowUpDown, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ServiceEarnings {
   serviceId: string;
@@ -20,6 +21,7 @@ interface FinancialServicesProps {
 
 export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) => {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
   const [sortBy, setSortBy] = useState<'bookings' | 'revenue'>('revenue');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -86,9 +88,9 @@ export const FinancialServices = ({ serviceEarnings }: FinancialServicesProps) =
                   <TableCell className="font-medium">{service.serviceName}</TableCell>
                   <TableCell>{service.bookings}</TableCell>
                   <TableCell className="font-semibold text-green-600">
-                    ${service.totalRevenue.toLocaleString()}
+                    {money(service.totalRevenue)}
                   </TableCell>
-                  <TableCell>${service.avgRevenue.toFixed(2)}</TableCell>
+                  <TableCell>{money(service.avgRevenue)}</TableCell>
                   <TableCell>{service.avgDuration} {t("doctor.financialStats.services.minutes")}</TableCell>
                 </TableRow>
               ))

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MarkAsPaidDialog, MarkAsPaidContext } from "@/components/doctor/MarkAsPaidDialog";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export interface PendingPayment {
   appointmentId: string;
@@ -26,6 +27,7 @@ interface FinancialPendingProps {
 
 export const FinancialPending = ({ pendingPayments, onPaymentRecorded }: FinancialPendingProps) => {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
   const totalPending = pendingPayments.reduce((sum, payment) => sum + payment.amount, 0);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [context, setContext] = useState<MarkAsPaidContext | null>(null);
@@ -50,7 +52,7 @@ export const FinancialPending = ({ pendingPayments, onPaymentRecorded }: Financi
         <div className="flex items-center justify-between">
           <CardTitle>{t("doctor.financialStats.pending.title")}</CardTitle>
           <Badge variant="outline" className="text-lg">
-            {t("doctor.financialStats.pending.total")}: ${totalPending.toLocaleString()}
+            {t("doctor.financialStats.pending.total")}: {money(totalPending)}
           </Badge>
         </div>
       </CardHeader>
@@ -72,7 +74,7 @@ export const FinancialPending = ({ pendingPayments, onPaymentRecorded }: Financi
                 <TableRow key={payment.appointmentId}>
                   <TableCell className="font-medium">{payment.patientName}</TableCell>
                   <TableCell>{payment.serviceName}</TableCell>
-                  <TableCell className="font-semibold">${payment.amount.toLocaleString()}</TableCell>
+                  <TableCell className="font-semibold">{money(payment.amount)}</TableCell>
                   <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <Badge variant="secondary">{payment.status}</Badge>
