@@ -46,8 +46,8 @@ const statusBadge = (status: string) => {
   return map[status] || map.draft;
 };
 
-const formatCurrency = (n: number | null) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n || 0));
+
+
 
 export function AppointmentTreatmentPlansSection({
   doctorId,
