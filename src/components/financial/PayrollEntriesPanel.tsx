@@ -4,7 +4,6 @@
 // - Uses RPC finance_entry_create_reversal for reversal (creates negative payroll entry linked to original)
 
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -92,8 +91,6 @@ function isReversalRow(r: PayrollRow) {
 }
 
 export default function PayrollEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const { entityType, entityId } = props;
 

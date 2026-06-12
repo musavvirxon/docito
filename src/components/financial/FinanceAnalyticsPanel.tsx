@@ -88,8 +88,6 @@ function centsToMajor(cents: number) {
 }
 
 export default function FinanceAnalyticsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const { entityType, entityId } = props;
   const { formatCents: ctxFmtCents } = useCurrency();

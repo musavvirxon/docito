@@ -2,7 +2,6 @@
 // B33: Add export (CSV) for recurring runs by date range
 
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -192,8 +191,6 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
 }
 
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const { entityType, entityId } = props;
 

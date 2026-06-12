@@ -99,8 +99,6 @@ function labelForType(t: EntryType) {
 }
 
 export default function FinanceLedgerPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const { entityType, entityId } = props;
   const { formatCents: ctxFmtCents } = useCurrency();

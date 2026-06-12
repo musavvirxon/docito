@@ -5,7 +5,6 @@
 // - Keeps UI consistent with other admin/finance panels
 
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -71,8 +70,6 @@ function utcNowMonth() {
 }
 
 export default function ExpenseBreakdownPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __ctxMoneyMajor } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const { entityType, entityId } = props;
 

@@ -2,7 +2,6 @@
 // Step 31: Minimal UI panel to create + list recurring templates and run due items (manual trigger)
 
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -60,8 +59,6 @@ function parseMoneyToCents(input: string) {
 }
 
 export default function RecurringTemplatesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __ctxMoneyMajor } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const { entityType, entityId } = props;
 

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { ListChecks, Loader2, RefreshCcw, Filter, ArrowDownUp } from "lucide-react";
 import { toast } from "sonner";
@@ -58,8 +57,6 @@ function isoForDaysAgo(days: number) {
 }
 
 export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
-  const { format: __ctxMoneyMajor, formatCents: __ctxMoneyCents } = useCurrency();
-  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
 
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const [type, setType] = useState<EntryType | "all">("all");
