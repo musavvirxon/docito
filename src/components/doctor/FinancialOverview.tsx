@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, Clock, CreditCard, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface FinancialOverviewProps {
   stats: {
@@ -18,6 +19,8 @@ interface FinancialOverviewProps {
 
 export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
+  
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -27,7 +30,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${stats.totalEarnings.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{money(stats.totalEarnings)}</div>
           <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.allTimeRevenue")}</p>
         </CardContent>
       </Card>
@@ -38,8 +41,8 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${stats.earningsThisMonth.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.thisWeek")}: ${stats.earningsThisWeek.toLocaleString()}</p>
+          <div className="text-2xl font-bold">{money(stats.earningsThisMonth)}</div>
+          <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.thisWeek")}: {money(stats.earningsThisWeek)}</p>
         </CardContent>
       </Card>
 
@@ -49,7 +52,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-orange-600">${stats.unpaidEarnings.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-orange-600">{money(stats.unpaidEarnings)}</div>
           <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.pendingAppointments")}</p>
         </CardContent>
       </Card>
@@ -60,7 +63,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
           <Wallet className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">${stats.netEarnings.toLocaleString()}</div>
+          <div className="text-2xl font-bold text-green-600">{money(stats.netEarnings)}</div>
           <p className="text-xs text-muted-foreground">{t("doctor.financialStats.overview.afterPlatformFee")}</p>
         </CardContent>
       </Card>
@@ -83,7 +86,7 @@ export const FinancialOverview = ({ stats }: FinancialOverviewProps) => {
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">{t("doctor.financialStats.overview.platformCommission")}</p>
-            <p className="text-lg font-semibold text-destructive">${stats.platformCommission.toLocaleString()}</p>
+            <p className="text-lg font-semibold text-destructive">{money(stats.platformCommission)}</p>
           </div>
         </CardContent>
       </Card>

@@ -5,6 +5,7 @@ import { DollarSign, Clock, TrendingUp, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Service {
   id: string;
@@ -23,6 +24,7 @@ interface PerformanceServicesProps {
 
 export function PerformanceServices({ services }: PerformanceServicesProps) {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
   const [sortBy, setSortBy] = useState<"bookings" | "revenue" | "conversionRate">("bookings");
   const [filterCategory, setFilterCategory] = useState<string>("all");
 
@@ -63,7 +65,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
                 <p className="text-sm text-muted-foreground">{t("doctor.performance.services.totalBookings")}</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-green-600">${topService.revenue.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-green-600">{money(topService.revenue)}</p>
                 <p className="text-sm text-muted-foreground">{t("doctor.performance.services.revenue")}</p>
               </div>
               <div className="text-center">
@@ -166,7 +168,7 @@ export function PerformanceServices({ services }: PerformanceServicesProps) {
                   <DollarSign className="w-4 h-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">{t("doctor.performance.services.revenue")}</p>
-                    <p className="text-lg font-bold text-green-600">${service.revenue.toLocaleString()}</p>
+                    <p className="text-lg font-bold text-green-600">{money(service.revenue)}</p>
                   </div>
                 </div>
 

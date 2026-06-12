@@ -3,6 +3,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface EarningsHistory {
   date: string;
@@ -16,6 +17,7 @@ interface FinancialChartProps {
 
 export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
   const [chartType, setChartType] = useState<'line' | 'bar'>('line');
 
   const hasData = earningsHistory.length > 0;
@@ -67,7 +69,7 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip 
-                formatter={(value: number) => hasData ? `$${value.toLocaleString()}` : '0'}
+                formatter={(value: number) => hasData ? money(value) : '0'}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--background))', 
@@ -98,7 +100,7 @@ export const FinancialChart = ({ earningsHistory }: FinancialChartProps) => {
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip 
-                formatter={(value: number) => hasData ? `$${value.toLocaleString()}` : '0'}
+                formatter={(value: number) => hasData ? money(value) : '0'}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--background))', 

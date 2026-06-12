@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Award, Calendar, DollarSign } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface FinancialInsightsProps {
   insights: {
@@ -15,6 +16,8 @@ interface FinancialInsightsProps {
 
 export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
   const { t } = useTranslation("dashboard");
+  const { format: money } = useCurrency();
+  
   
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -30,7 +33,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
             <>
               <p className="text-lg font-semibold">{insights.mostProfitableService.serviceName}</p>
               <p className="text-2xl font-bold text-green-600">
-                ${insights.mostProfitableService.totalRevenue.toLocaleString()}
+                {money(insights.mostProfitableService.totalRevenue)}
               </p>
               <p className="text-sm text-muted-foreground">
                 {insights.mostProfitableService.bookings} {t("doctor.financialStats.insights.bookings")}
@@ -50,7 +53,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">${insights.revenuePerHour.toFixed(2)}</p>
+          <p className="text-2xl font-bold">{money(insights.revenuePerHour)}</p>
           <p className="text-sm text-muted-foreground">
             {t("doctor.financialStats.insights.basedOnHours", { hours: insights.totalHours.toFixed(1) })}
           </p>
@@ -91,7 +94,7 @@ export const FinancialInsights = ({ insights }: FinancialInsightsProps) => {
                 <div key={index} className="flex justify-between items-center">
                   <span className="text-sm">{day.date}</span>
                   <span className="font-semibold text-green-600">
-                    ${day.earnings.toLocaleString()}
+                    {money(day.earnings)}
                   </span>
                 </div>
               ))}

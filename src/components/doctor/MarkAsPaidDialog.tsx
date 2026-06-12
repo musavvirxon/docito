@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { generateInvoiceNumber, PaymentMethod, useRecordPayment } from '@/hooks/useRecordPayment';
 import { downloadInvoicePdf } from '@/lib/api/invoice-api';
 import { toast } from 'sonner';
+import { useCurrency } from '@/hooks/useCurrency';
 
 export interface MarkAsPaidContext {
   appointmentId?: string | null;
@@ -37,6 +38,7 @@ const methodOptions: { value: PaymentMethod; label: string }[] = [
 
 export const MarkAsPaidDialog = ({ open, onOpenChange, context, onSuccess }: Props) => {
   const { recordPayment, submitting } = useRecordPayment();
+  const { format: money } = useCurrency();
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [amount, setAmount] = useState<number>(0);
   const [invoiceNumber, setInvoiceNumber] = useState<string>('');
@@ -111,7 +113,7 @@ export const MarkAsPaidDialog = ({ open, onOpenChange, context, onSuccess }: Pro
               <div className="font-medium">{context.patientName || 'Patient'}</div>
               <div className="text-muted-foreground">{context.serviceName || 'Service'}</div>
               <div className="text-xs text-muted-foreground mt-1">
-                Balance due: ${remaining.toLocaleString()}
+                Balance due: {money(remaining)}
               </div>
             </div>
 
