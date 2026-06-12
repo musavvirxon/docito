@@ -41,14 +41,6 @@ const statusBadge = (s: ProcedureStatus) => {
   }
 };
 
-const fmtMoney = (n: number | null) => {
-  if (n == null) return '—';
-  try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-  } catch {
-    return `$${n.toFixed(2)}`;
-  }
-};
 
 export function AppointmentProceduresPanel({
   appointmentId,
