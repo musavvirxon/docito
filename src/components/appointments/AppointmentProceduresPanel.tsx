@@ -16,6 +16,7 @@ import {
   type ProcedureStatus,
   type UnifiedProcedure,
 } from '@/hooks/useAppointmentProcedures';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   appointmentId: string;
