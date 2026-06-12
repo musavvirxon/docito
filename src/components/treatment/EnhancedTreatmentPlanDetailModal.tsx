@@ -452,17 +452,9 @@ const EnhancedTreatmentPlanDetailModal = ({
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
-  const formatCurrency = (amount: number) => {
-    try {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        currencyDisplay: "symbol",
-      }).format(amount);
-    } catch {
-      return `$${amount.toFixed(2)}`;
-    }
-  };
+  const { format: formatCurrency } = useCurrency();
+
+
 
   const getUnitCost = (proc: TreatmentPlanProcedure) => {
     return toNumber(proc.cost ?? proc.procedure?.default_cost ?? proc.procedure?.price ?? 0);
