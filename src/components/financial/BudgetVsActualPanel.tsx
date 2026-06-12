@@ -3,6 +3,7 @@
 // - Uses RPC finance_budget_get(budget_period_id)
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -32,14 +33,14 @@ type BudgetRow = {
 
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(v);
-  } catch {
-    return `${currency} ${v.toFixed(2)}`;
+  return __ctxMoney(v, String(currency)); ${v.toFixed(2)}`;
   }
 }
 
 export default function BudgetVsActualPanel(props: { budgetPeriodId: string | null }) {
+  const { format: __ctxMoneyMajor } = useCurrency();
+  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
+
   const { budgetPeriodId } = props;
 
   const [loading, setLoading] = useState(false);

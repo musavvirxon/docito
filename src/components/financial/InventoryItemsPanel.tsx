@@ -4,6 +4,7 @@
 // - Uses RPC inventory_adjust_stock_v2 with "Post to finance" toggle
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -47,14 +48,14 @@ function parseQty(v: string) {
 
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(v);
-  } catch {
-    return `${currency} ${v.toFixed(2)}`;
+  return __ctxMoney(v, String(currency)); ${v.toFixed(2)}`;
   }
 }
 
 export default function InventoryItemsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __ctxMoneyMajor } = useCurrency();
+  const __ctxMoney = (v: number, src?: string) => __ctxMoneyMajor(v, src);
+
   const { entityType, entityId } = props;
 
   const [loading, setLoading] = useState(false);
