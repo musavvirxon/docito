@@ -16,6 +16,7 @@ import {
   type ProcedureStatus,
   type UnifiedProcedure,
 } from '@/hooks/useAppointmentProcedures';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   appointmentId: string;
@@ -40,14 +41,6 @@ const statusBadge = (s: ProcedureStatus) => {
   }
 };
 
-const fmtMoney = (n: number | null) => {
-  if (n == null) return '—';
-  try {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-  } catch {
-    return `$${n.toFixed(2)}`;
-  }
-};
 
 export function AppointmentProceduresPanel({
   appointmentId,
@@ -60,6 +53,8 @@ export function AppointmentProceduresPanel({
 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [seedTeeth, setSeedTeeth] = useState<number[]>(initialTeeth || []);
+  const { format: money } = useCurrency();
+  const fmtMoney = (n: number | null) => (n == null ? '—' : money(n));
 
   const { items, loading, totalCost, refresh, addProcedure, updateStatus, removeProcedure } =
     useAppointmentProcedures({ appointmentId, doctorId, patientId, doctorPatientId });
@@ -146,6 +141,8 @@ function ProcedureRow({
   onStatus: (s: ProcedureStatus) => void;
   onRemove: () => void;
 }) {
+  const { format: money } = useCurrency();
+  const fmtMoney = (n: number | null) => (n == null ? '—' : money(n));
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 p-3 rounded-lg bg-muted/40">
       <div className="min-w-0 flex-1">

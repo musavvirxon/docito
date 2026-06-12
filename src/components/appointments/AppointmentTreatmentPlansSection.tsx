@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import EnhancedCreateTreatmentPlanModal from '@/components/treatment/EnhancedCreateTreatmentPlanModal';
 import EnhancedTreatmentPlanDetailModal from '@/components/treatment/EnhancedTreatmentPlanDetailModal';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   doctorId: string;
@@ -45,8 +46,8 @@ const statusBadge = (status: string) => {
   return map[status] || map.draft;
 };
 
-const formatCurrency = (n: number | null) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n || 0));
+
+
 
 export function AppointmentTreatmentPlansSection({
   doctorId,
@@ -60,6 +61,8 @@ export function AppointmentTreatmentPlansSection({
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [selected, setSelected] = useState<TreatmentPlanRow | null>(null);
+  const { format: money } = useCurrency();
+  const formatCurrency = (n: number | null) => money(Number(n || 0));
 
   const hasPatient = Boolean(patientId || doctorPatientId);
 

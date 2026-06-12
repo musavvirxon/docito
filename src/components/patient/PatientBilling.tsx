@@ -74,15 +74,8 @@ type PayInvoiceResponse = {
 };
 type ConfirmPiResponse = { ok: boolean; error?: string; status?: string };
 
-function formatMoney(amount: number, currency: string) {
-  const n = Number(amount || 0);
-  const cur = String(currency || "USD").toUpperCase();
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: cur, maximumFractionDigits: 2 }).format(n);
-  } catch {
-    return `${n.toFixed(2)} ${cur}`;
-  }
-}
+// formatMoney is now provided per-component via useCurrency context
+
 
 function statusBadge(status: string) {
   const s = String(status || "").toLowerCase();
@@ -122,7 +115,7 @@ export const PatientBilling = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { format: ctxFmtMajor } = useCurrency();
-  const formatMoney = (amount: number, _currency: string) => ctxFmtMajor(Number(amount || 0));
+  const formatMoney = (amount: number, sourceCurrency: string) => ctxFmtMajor(Number(amount || 0), sourceCurrency);
 
 
   const [loading, setLoading] = useState(true);
@@ -391,7 +384,7 @@ export const PatientBilling = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Outstanding</p>
-                <p className="text-2xl font-bold text-yellow-600">{formatMoney(outstanding, currency)}</p>
+                <p className="text-2xl font-bold text-yellow-600">{ctxFmtMajor(outstanding, currency)}</p>
               </div>
               <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-900/20">
                 <Clock className="h-6 w-6 text-yellow-600" />
@@ -405,7 +398,7 @@ export const PatientBilling = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Paid total</p>
-                <p className="text-2xl font-bold text-green-600">{formatMoney(paidTotal, currency)}</p>
+                <p className="text-2xl font-bold text-green-600">{ctxFmtMajor(paidTotal, currency)}</p>
               </div>
               <div className="p-3 rounded-full bg-green-50 dark:bg-green-900/20">
                 <CheckCircle2 className="h-6 w-6 text-green-600" />
@@ -530,7 +523,7 @@ export const PatientBilling = () => {
 
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <div className="font-semibold text-lg">{formatMoney(inv.total_amount, inv.currency)}</div>
+                          <div className="font-semibold text-lg">{ctxFmtMajor(inv.total_amount, inv.currency)}</div>
                           <div className="text-xs text-muted-foreground uppercase">{inv.currency}</div>
                         </div>
 
@@ -588,7 +581,7 @@ export const PatientBilling = () => {
                     >
                       {p.status}
                     </Badge>
-                    <div className="font-semibold">{formatMoney(p.amount, p.currency)}</div>
+                    <div className="font-semibold">{ctxFmtMajor(p.amount, p.currency)}</div>
                   </div>
                 </CardContent>
               </Card>

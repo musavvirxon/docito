@@ -1,6 +1,7 @@
 // src/components/treatment/EnhancedCreateTreatmentPlanModal.tsx
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,15 +50,9 @@ const formatDuration = (minutes: number) => {
   return `${h}h ${m}m`;
 };
 
-const formatCurrency = (amount: number) => {
-  const n = Number(amount);
-  const safe = Number.isFinite(n) ? n : 0;
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(safe);
-  } catch {
-    return `$${safe.toFixed(2)}`;
-  }
-};
+// formatCurrency now provided inside the component via useCurrency
+
+
 
 const procedureFormSchema = z.object({
   procedure_id: z.string().min(1, "Select a procedure"),
@@ -134,6 +129,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 }: EnhancedCreateTreatmentPlanModalProps) => {
   const { user } = useAuth();
   const { t } = useTranslation("dashboard");
+  const { format: formatCurrency } = useCurrency();
   const { procedures } = useProcedures();
   const { profile } = useDoctorProfile();
 
