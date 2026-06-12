@@ -129,6 +129,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 }: EnhancedCreateTreatmentPlanModalProps) => {
   const { user } = useAuth();
   const { t } = useTranslation("dashboard");
+  const { format: formatCurrency } = useCurrency();
   const { procedures } = useProcedures();
   const { profile } = useDoctorProfile();
 
