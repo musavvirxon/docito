@@ -72,10 +72,13 @@ function normalizeCurrency(v: string) {
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
+
   } catch {
-    const sign = v < 0 ? "-" : "";
-    return `${sign}${currency || "USD"} ${Math.abs(v).toFixed(2)}`;
+
+    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
+
   }
 }
 
@@ -86,6 +89,7 @@ function monthLabel(dateStr: string) {
 }
 
 export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+
   const { entityType, entityId } = props;
 
   const now = useMemo(() => new Date(), []);

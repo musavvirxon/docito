@@ -33,9 +33,13 @@ type IncomeRow = {
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
+
   } catch {
-    return `${currency || "USD"} ${v.toFixed(2)}`;
+
+    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
+
   }
 }
 
@@ -82,6 +86,7 @@ function isReversalRow(r: IncomeRow) {
 }
 
 export default function IncomeEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+
   const { entityType, entityId } = props;
 
   const today = useMemo(() => new Date(), []);

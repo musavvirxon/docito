@@ -28,9 +28,13 @@ type BreakdownRow = {
 function formatMoney(currency: string, cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(v);
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(v);
+
   } catch {
-    return `${currency} ${v.toFixed(2)}`;
+
+    return `${(currency) || "USD"} ${Number(v).toFixed(2)}`;
+
   }
 }
 
@@ -66,6 +70,7 @@ function utcNowMonth() {
 }
 
 export default function ExpenseBreakdownPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+
   const { entityType, entityId } = props;
 
   const [loading, setLoading] = useState(false);

@@ -38,9 +38,13 @@ type TemplateRow = {
 function formatMoney(currency: string, cents: number) {
   const value = (Number(cents || 0) || 0) / 100;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(value);
+
   } catch {
-    return `${currency} ${value.toFixed(2)}`;
+
+    return `${(currency) || "USD"} ${Number(value).toFixed(2)}`;
+
   }
 }
 
@@ -55,6 +59,7 @@ function parseMoneyToCents(input: string) {
 }
 
 export default function RecurringTemplatesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+
   const { entityType, entityId } = props;
 
   const [loading, setLoading] = useState(false);
