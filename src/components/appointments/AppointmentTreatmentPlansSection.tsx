@@ -61,6 +61,8 @@ export function AppointmentTreatmentPlansSection({
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [selected, setSelected] = useState<TreatmentPlanRow | null>(null);
+  const { format: money } = useCurrency();
+  const formatCurrency = (n: number | null) => money(Number(n || 0));
 
   const hasPatient = Boolean(patientId || doctorPatientId);
 
