@@ -141,6 +141,8 @@ function ProcedureRow({
   onStatus: (s: ProcedureStatus) => void;
   onRemove: () => void;
 }) {
+  const { format: money } = useCurrency();
+  const fmtMoney = (n: number | null) => (n == null ? '—' : money(n));
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 p-3 rounded-lg bg-muted/40">
       <div className="min-w-0 flex-1">
