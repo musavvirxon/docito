@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProcedurePrescription } from "@/hooks/useProcedurePrescription";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Procedure {
   id: string;
@@ -151,12 +152,7 @@ export const ProcedurePrescriptionModal = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

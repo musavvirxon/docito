@@ -70,6 +70,7 @@ import { useAppointmentReviews } from '@/hooks/useAppointmentReviews';
 import { ReviewsList } from '@/components/reviews/ReviewsList';
 import { LeaveReviewForm } from '@/components/reviews/LeaveReviewForm';
 import { DoctorReplyBox } from '@/components/reviews/DoctorReplyBox';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
@@ -464,15 +465,16 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     }
   }, [appointment, isVideoAppointment, isDentist, canManagePrescriptions, activeTab, handleTabChange]);
 
+  const { format: fmtCurrency } = useCurrency();
   const formatMoney = useCallback((amount: number | null | undefined) => {
     const n = Number(amount ?? 0);
     const safe = Number.isFinite(n) ? n : 0;
     try {
-      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(safe);
+      return fmtCurrency(safe);
     } catch {
       return `$${safe.toFixed(2)}`;
     }
-  }, []);
+  }, [fmtCurrency]);
 
   const dentalStatusBadgeClass = useCallback((status: AppointmentDentalProcedureRow['status']) => {
     switch (status) {

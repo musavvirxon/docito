@@ -60,6 +60,7 @@ import CancelAppointmentDialog from "./CancelAppointmentDialog";
 import PatientInfoTab from "./PatientInfoTab";
 import { RescheduleAppointmentModal } from "@/components/appointments/RescheduleAppointmentModal";
 import type { CalendarAppointment } from "./types";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface AppointmentProcedure {
   id: string;
@@ -326,8 +327,7 @@ const AppointmentModal = memo(
     const [editDuration, setEditDuration] = useState("");
     const [editCost, setEditCost] = useState("");
 
-    const formatCurrency = (amount: number) =>
-      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+    const { format: formatCurrency } = useCurrency();
 
     const initials =
       appointment?.patient_name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "P";

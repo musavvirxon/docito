@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { FileText, Clock, DollarSign, AlertTriangle, CheckCircle, X } from "lucide-react";
 import { useProcedurePrescription } from "@/hooks/useProcedurePrescription";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ProcedureConsentModalProps {
   open: boolean;
@@ -77,12 +78,7 @@ export const ProcedureConsentModal = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const defaultConsentText = `
 INFORMED CONSENT FOR MEDICAL PROCEDURE

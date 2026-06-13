@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ConsentSigningModalProps {
   open: boolean;
@@ -218,12 +219,7 @@ By signing below, I acknowledge that I have read, understood, and agree to this 
     `;
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

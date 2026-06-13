@@ -13,6 +13,7 @@ import AddProcedureModal from "@/components/procedure/AddProcedureModal";
 import EditProcedureModal from "@/components/procedure/EditProcedureModal";
 import ToothSelector from "@/components/procedure/ToothSelector";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Procedure {
   id: string;
@@ -267,12 +268,7 @@ const ProcedureLibrary = () => {
     ? procedures.reduce((sum, p) => sum + (p.default_cost || 0), 0) / procedures.length 
     : 0;
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const getCategoryBadgeColor = (category: string) => {
     const colors: Record<string, string> = {

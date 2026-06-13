@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import EnhancedTreatmentPlanDetailModal from "./EnhancedTreatmentPlanDetailModal";
 import MedicationManagementModal from "./MedicationManagementModal";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface TreatmentPlan {
   id: string;
@@ -132,12 +133,7 @@ export const TreatmentPlanCard = ({ treatmentPlan, patientId, onUpdate, onMessag
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const getProgressPercentage = () => {
     if (!treatmentPlan.procedures?.total) return 0;

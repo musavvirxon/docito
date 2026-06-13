@@ -19,6 +19,7 @@ import { getProcedureCategoryLabel } from "@/lib/procedureCategories";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Procedure {
   id: string;
@@ -406,12 +407,7 @@ const DoctorProcedureLibrarySection = () => {
   const averageFee = procedures.length > 0 ? procedures.reduce((sum, proc) => sum + (proc.default_cost || 0), 0) / procedures.length : 0;
 
   // Format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   return <div className="space-y-6">
       {/* Header */}

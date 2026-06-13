@@ -7,6 +7,7 @@ import { Clock, DollarSign, FileText, AlertCircle, CheckCircle, X } from "lucide
 import { useRealTime } from "@/contexts/RealTimeContext";
 import { ProcedureConsentModal } from "@/components/consent/ProcedureConsentModal";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export const RealTimeProcedureNotification = () => {
   const { notifications, markAsRead } = useRealTime();
@@ -35,12 +36,7 @@ export const RealTimeProcedureNotification = () => {
     markAsRead(notificationId);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   if (procedureNotifications.length === 0) {
     return null;

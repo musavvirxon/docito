@@ -21,6 +21,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { format } from "date-fns";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface TreatmentPlanSectionProps {
   procedures: ToothProcedureHistory[];
@@ -61,12 +62,10 @@ export const TreatmentPlanSection = ({
   isEditable,
   onUpdateStatus,
 }: TreatmentPlanSectionProps) => {
+  const { format: fmtCur } = useCurrency();
   const formatCurrency = (amount: number | null | undefined) => {
     if (amount == null) return "-";
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
+    return fmtCur(amount);
   };
 
   const groupedProcedures = {
