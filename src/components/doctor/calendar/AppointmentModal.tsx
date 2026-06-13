@@ -326,8 +326,7 @@ const AppointmentModal = memo(
     const [editDuration, setEditDuration] = useState("");
     const [editCost, setEditCost] = useState("");
 
-    const formatCurrency = (amount: number) =>
-      new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+    const { format: formatCurrency } = useCurrency();
 
     const initials =
       appointment?.patient_name?.split(" ").map((n) => n[0]).join("").toUpperCase() || "P";

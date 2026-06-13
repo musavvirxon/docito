@@ -70,6 +70,7 @@ import { useAppointmentReviews } from '@/hooks/useAppointmentReviews';
 import { ReviewsList } from '@/components/reviews/ReviewsList';
 import { LeaveReviewForm } from '@/components/reviews/LeaveReviewForm';
 import { DoctorReplyBox } from '@/components/reviews/DoctorReplyBox';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface AppointmentSessionPageProps {
   appointmentId?: string;
