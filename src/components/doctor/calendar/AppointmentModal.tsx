@@ -60,6 +60,7 @@ import CancelAppointmentDialog from "./CancelAppointmentDialog";
 import PatientInfoTab from "./PatientInfoTab";
 import { RescheduleAppointmentModal } from "@/components/appointments/RescheduleAppointmentModal";
 import type { CalendarAppointment } from "./types";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface AppointmentProcedure {
   id: string;
