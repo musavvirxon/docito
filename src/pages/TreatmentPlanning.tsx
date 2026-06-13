@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import EnhancedCreateTreatmentPlanModal from "@/components/treatment/EnhancedCreateTreatmentPlanModal";
 import EnhancedTreatmentPlanDetailModal from "@/components/treatment/EnhancedTreatmentPlanDetailModal";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface TreatmentPlan {
   id: string;
@@ -208,12 +209,7 @@ const TreatmentPlanning = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {

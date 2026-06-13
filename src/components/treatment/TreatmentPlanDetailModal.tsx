@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AddProcedureToPlanModal from "./AddProcedureToPlanModal";
 import FileAttachmentSection from "@/components/files/FileAttachmentSection";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface TreatmentPlan {
   id: string;
@@ -152,12 +153,7 @@ const TreatmentPlanDetailModal = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount);
-  };
+  const { format: formatCurrency } = useCurrency();
 
   const getStatusBadgeColor = (status: string) => {
     const colors: Record<string, string> = {
