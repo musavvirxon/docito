@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { User, LayoutDashboard, Calendar, History, Pill, FolderOpen, FileText } from "lucide-react";
@@ -30,6 +31,7 @@ interface PatientDashboardViewProps {
 
 const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboardViewProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation("patients");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [patientData, setPatientData] = useState<any>(null);
@@ -94,7 +96,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
       }
     } catch (err) {
       console.error("Error fetching patient data:", err);
-      toast.error("Failed to load patient data");
+      toast.error(t("view.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -123,10 +125,10 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
         })),
         doctorName: doctorName || undefined,
       });
-      toast.success("PDF downloaded successfully");
+      toast.success(t("view.pdfSuccess"));
     } catch (err) {
       console.error("Error generating PDF:", err);
-      toast.error("Failed to generate PDF");
+      toast.error(t("view.pdfFailed"));
     } finally {
       setIsDownloadingPDF(false);
     }
@@ -148,7 +150,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
     return (
       <div className="text-center py-12">
         <User className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-        <p className="text-muted-foreground">Patient not found</p>
+        <p className="text-muted-foreground">{t("view.notFound")}</p>
       </div>
     );
   }
@@ -168,44 +170,43 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
     ...appointments.map((a) => ({
       id: a.id,
       type: "appointment" as const,
-      title: `Appointment - ${a.status}`,
+      title: t("view.timeline.appointmentTitle", { status: a.status }),
       date: a.appointment_date,
-      description: a.notes || "No notes",
+      description: a.notes || t("view.timeline.noNotes"),
     })),
     ...prescriptions.map((p) => ({
       id: p.id,
       type: "prescription" as const,
-      title: `Prescription: ${p.medication}`,
+      title: t("view.timeline.prescriptionTitle", { medication: p.medication }),
       date: p.start_date,
       description: `${p.dosage} - ${p.frequency}`,
     })),
     ...files.map((f) => ({
       id: f.id,
       type: "file" as const,
-      title: `File uploaded: ${f.name}`,
+      title: t("view.timeline.fileUploaded", { name: f.name }),
       date: f.date,
-      description: f.category || "Document",
+      description: f.category || t("view.timeline.document"),
     })),
     ...notes.map((n) => ({
       id: n.id,
       type: "note" as const,
-      title: "Note added",
+      title: t("view.timeline.noteAdded"),
       date: n.created_at,
       description: n.content.substring(0, 100) + (n.content.length > 100 ? "..." : ""),
     })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const handleAddPrescription = () => {
-    // For now, show a toast - in a full implementation, open a modal
-    toast.info("Add prescription modal coming soon");
+    toast.info(t("view.comingSoon.addPrescription"));
   };
 
   const handleExportPDF = () => {
-    toast.info("PDF export coming soon");
+    toast.info(t("view.comingSoon.exportPdf"));
   };
 
   const handleSendToPatient = () => {
-    toast.info("Send to patient coming soon");
+    toast.info(t("view.comingSoon.sendToPatient"));
   };
 
   return (
@@ -214,7 +215,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
         patient={patientData}
         onBack={onBack}
         onEdit={() => setEditModalOpen(true)}
-        onDelete={() => toast.info("Delete patient coming soon")}
+        onDelete={() => toast.info(t("view.comingSoon.deletePatient"))}
         onDownloadPDF={handleDownloadPDF}
         onPrint={() => window.print()}
         isDownloading={isDownloadingPDF}
@@ -232,13 +233,13 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start overflow-x-auto flex-nowrap">
-          <TabsTrigger value="overview" className="gap-2"><LayoutDashboard className="w-4 h-4" />Overview</TabsTrigger>
-          <TabsTrigger value="profile" className="gap-2"><User className="w-4 h-4" />Profile</TabsTrigger>
-          <TabsTrigger value="appointments" className="gap-2"><Calendar className="w-4 h-4" />Appointments</TabsTrigger>
-          <TabsTrigger value="history" className="gap-2"><History className="w-4 h-4" />History</TabsTrigger>
-          <TabsTrigger value="prescriptions" className="gap-2"><Pill className="w-4 h-4" />Prescriptions</TabsTrigger>
-          <TabsTrigger value="files" className="gap-2"><FolderOpen className="w-4 h-4" />Files</TabsTrigger>
-          <TabsTrigger value="notes" className="gap-2"><FileText className="w-4 h-4" />Notes</TabsTrigger>
+          <TabsTrigger value="overview" className="gap-2"><LayoutDashboard className="w-4 h-4" />{t("view.tabs.overview")}</TabsTrigger>
+          <TabsTrigger value="profile" className="gap-2"><User className="w-4 h-4" />{t("view.tabs.profile")}</TabsTrigger>
+          <TabsTrigger value="appointments" className="gap-2"><Calendar className="w-4 h-4" />{t("view.tabs.appointments")}</TabsTrigger>
+          <TabsTrigger value="history" className="gap-2"><History className="w-4 h-4" />{t("view.tabs.history")}</TabsTrigger>
+          <TabsTrigger value="prescriptions" className="gap-2"><Pill className="w-4 h-4" />{t("view.tabs.prescriptions")}</TabsTrigger>
+          <TabsTrigger value="files" className="gap-2"><FolderOpen className="w-4 h-4" />{t("view.tabs.files")}</TabsTrigger>
+          <TabsTrigger value="notes" className="gap-2"><FileText className="w-4 h-4" />{t("view.tabs.notes")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -264,7 +265,7 @@ const PatientDashboardView = ({ patientId, patientType, onBack }: PatientDashboa
         <TabsContent value="appointments" className="mt-6">
           <AppointmentsTab 
             appointments={appointments.map(a => ({ ...a, date: a.appointment_date }))} 
-            onSchedule={() => toast.info("Schedule coming soon")} 
+            onSchedule={() => toast.info(t("view.comingSoon.schedule"))} 
             onReschedule={() => {}} 
             onCancel={() => {}} 
             onView={() => {}} 
