@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, Pill, DollarSign, User, Stethoscope } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "react-i18next";
 
 interface OverviewStats {
   nextAppointment: {
@@ -24,9 +25,11 @@ interface QuickOverviewCardsProps {
 
 const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
   const { format: formatMoney } = useCurrency();
+  const { t, i18n } = useTranslation("patients");
+  const dateLocale = i18n.language || "en";
   const cards = [
     {
-      title: "Next Appointment",
+      title: t("overview.nextAppointment"),
       icon: Calendar,
       color: "text-primary",
       bgColor: "bg-primary/10",
@@ -34,7 +37,7 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
         <div>
           <p className="text-lg font-bold">
             {stats.nextAppointment.date
-              ? new Date(stats.nextAppointment.date).toLocaleDateString("en-US", {
+              ? new Date(stats.nextAppointment.date).toLocaleDateString(dateLocale, {
                   month: "short",
                   day: "numeric",
                 })
@@ -52,11 +55,11 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
           )}
         </div>
       ) : (
-        <p className="text-lg font-bold text-muted-foreground">No upcoming</p>
+        <p className="text-lg font-bold text-muted-foreground">{t("overview.noUpcoming")}</p>
       ),
     },
     {
-      title: "Last Visit",
+      title: t("overview.lastVisit"),
       icon: Clock,
       color: "text-secondary",
       bgColor: "bg-secondary/10",
@@ -64,7 +67,7 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
         <div>
           <p className="text-lg font-bold">
             {stats.lastVisit.date
-              ? new Date(stats.lastVisit.date).toLocaleDateString("en-US", {
+              ? new Date(stats.lastVisit.date).toLocaleDateString(dateLocale, {
                   month: "short",
                   day: "numeric",
                 })
@@ -77,11 +80,11 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
           )}
         </div>
       ) : (
-        <p className="text-lg font-bold text-muted-foreground">No visits yet</p>
+        <p className="text-lg font-bold text-muted-foreground">{t("overview.noVisits")}</p>
       ),
     },
     {
-      title: "Active Prescriptions",
+      title: t("overview.activePrescriptions"),
       icon: Pill,
       color: "text-accent",
       bgColor: "bg-accent/10",
@@ -89,13 +92,13 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
         <div>
           <p className="text-2xl font-bold">{stats.activePrescriptions}</p>
           <p className="text-xs text-muted-foreground">
-            {stats.activePrescriptions === 1 ? "medication" : "medications"}
+            {stats.activePrescriptions === 1 ? t("overview.medication") : t("overview.medications")}
           </p>
         </div>
       ),
     },
     {
-      title: "Outstanding Balance",
+      title: t("overview.outstandingBalance"),
       icon: DollarSign,
       color: stats.outstandingBalance > 0 ? "text-amber-600" : "text-emerald-600",
       bgColor: stats.outstandingBalance > 0 ? "bg-amber-100 dark:bg-amber-900/20" : "bg-emerald-100 dark:bg-emerald-900/20",
@@ -105,7 +108,7 @@ const QuickOverviewCards = ({ stats }: QuickOverviewCardsProps) => {
             {formatMoney(stats.outstandingBalance)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {stats.outstandingBalance === 0 ? "All paid" : "Amount due"}
+            {stats.outstandingBalance === 0 ? t("overview.allPaid") : t("overview.amountDue")}
           </p>
         </div>
       ),
