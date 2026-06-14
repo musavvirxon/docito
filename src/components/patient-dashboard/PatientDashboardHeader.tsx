@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,11 +54,13 @@ const PatientDashboardHeader = ({
   onPrint,
   isDownloading,
 }: PatientDashboardHeaderProps) => {
+  const { t } = useTranslation("patients");
   const initials = patient.full_name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase() || "P";
+
 
   return (
     <motion.div
@@ -74,7 +77,7 @@ const PatientDashboardHeader = ({
           className="self-start md:hidden"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
+          {t("header.back")}
         </Button>
 
         {/* Main content */}
@@ -95,7 +98,7 @@ const PatientDashboardHeader = ({
               </h1>
               <div className="flex gap-2 justify-center sm:justify-start">
                 <Badge variant="outline" className="text-xs">
-                  ID: {patient.id.slice(0, 8)}
+                  {t("header.id")}: {patient.id.slice(0, 8)}
                 </Badge>
                 {patient.status && (
                   <Badge
@@ -114,7 +117,7 @@ const PatientDashboardHeader = ({
 
             {/* Demographics */}
             <p className="text-sm text-muted-foreground mb-3">
-              {patient.age && <span>{patient.age} years old</span>}
+              {patient.age && <span>{t("header.yearsOld", { age: patient.age })}</span>}
               {patient.gender && (
                 <span className="capitalize"> • {patient.gender}</span>
               )}
@@ -130,7 +133,7 @@ const PatientDashboardHeader = ({
                   onClick={() => window.open(`tel:${patient.phone}`)}
                 >
                   <Phone className="w-4 h-4" />
-                  <span className="hidden sm:inline">Call</span>
+                  <span className="hidden sm:inline">{t("header.actions.call")}</span>
                 </Button>
               )}
               {patient.email && (
@@ -141,7 +144,7 @@ const PatientDashboardHeader = ({
                   onClick={() => window.open(`mailto:${patient.email}`)}
                 >
                   <Mail className="w-4 h-4" />
-                  <span className="hidden sm:inline">Email</span>
+                  <span className="hidden sm:inline">{t("header.actions.email")}</span>
                 </Button>
               )}
               {patient.phone && (
@@ -156,7 +159,7 @@ const PatientDashboardHeader = ({
                   }
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">WhatsApp</span>
+                  <span className="hidden sm:inline">{t("header.actions.whatsapp")}</span>
                 </Button>
               )}
             </div>
@@ -174,7 +177,7 @@ const PatientDashboardHeader = ({
               className="gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              {t("header.back")}
             </Button>
           </div>
 
@@ -191,23 +194,23 @@ const PatientDashboardHeader = ({
                 ) : (
                   <Download className="w-4 h-4 mr-2" />
                 )}
-                Download Summary PDF
+                {t("header.actions.downloadSummary")}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onPrint}>
                 <Printer className="w-4 h-4 mr-2" />
-                Print
+                {t("header.actions.print")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onEdit}>
                 <Edit className="w-4 h-4 mr-2" />
-                Edit Patient
+                {t("header.actions.editPatient")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={onDelete}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Patient
+                {t("header.actions.deletePatient")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

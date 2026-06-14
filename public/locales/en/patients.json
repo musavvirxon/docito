@@ -76,5 +76,61 @@
       "noValid": "No valid rows to import",
       "importFailed": "Failed to import patients"
     }
+  },
+  "view": {
+    "notFound": "Patient not found",
+    "loadFailed": "Failed to load patient data",
+    "pdfSuccess": "PDF downloaded successfully",
+    "pdfFailed": "Failed to generate PDF",
+    "comingSoon": {
+      "deletePatient": "Delete patient coming soon",
+      "addPrescription": "Add prescription modal coming soon",
+      "exportPdf": "PDF export coming soon",
+      "sendToPatient": "Send to patient coming soon",
+      "schedule": "Schedule coming soon"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "profile": "Profile",
+      "appointments": "Appointments",
+      "history": "History",
+      "prescriptions": "Prescriptions",
+      "files": "Files",
+      "notes": "Notes"
+    },
+    "timeline": {
+      "appointmentTitle": "Appointment - {{status}}",
+      "noNotes": "No notes",
+      "prescriptionTitle": "Prescription: {{medication}}",
+      "fileUploaded": "File uploaded: {{name}}",
+      "document": "Document",
+      "noteAdded": "Note added"
+    }
+  },
+  "header": {
+    "back": "Back",
+    "yearsOld": "{{age}} years old",
+    "actions": {
+      "call": "Call",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "downloadSummary": "Download Summary PDF",
+      "print": "Print",
+      "editPatient": "Edit Patient",
+      "deletePatient": "Delete Patient"
+    },
+    "id": "ID"
+  },
+  "overview": {
+    "nextAppointment": "Next Appointment",
+    "noUpcoming": "No upcoming",
+    "lastVisit": "Last Visit",
+    "noVisits": "No visits yet",
+    "activePrescriptions": "Active Prescriptions",
+    "medication": "medication",
+    "medications": "medications",
+    "outstandingBalance": "Outstanding Balance",
+    "allPaid": "All paid",
+    "amountDue": "Amount due"
   }
 }

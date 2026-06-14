@@ -1,105 +1,83 @@
-## Goal
+# Plan: Full i18n Coverage for Patient, Doctor & Clinic Admin Dashboards
 
-Fix three independent regressions in priority order: public links → currency → i18n. This will land in 3 sequential passes so progress is visible and reviewable. The plan below is the contract for all three.
+## Current State (audit)
 
----
+| Area | Files w/ `useTranslation` | Total |
+|---|---|---|
+| `src/pages/PatientDashboard.tsx` | 1/1 (partial keys) | 1 |
+| `src/pages/DoctorDashboard.tsx` | 1/1 | 1 |
+| `src/pages/AdminDashboard.tsx` | 1/1 | 1 |
+| `src/components/doctor/**` | 71/75 | 75 |
+| `src/components/dashboard/**` (clinic admin shell) | 13/29 | 29 |
+| `src/components/patient/**` | 4/18 | 18 |
+| `src/components/patient-dashboard/**` | 0/11 | 11 |
+| `src/components/clinic/**` | 0/7 | 7 |
+| `src/components/admin/**` | 1/3 | 3 |
 
-## Phase 1 — Public booking & doctor profile links (production "doctor not found")
+Doctor dashboard is largely covered. Patient & clinic admin surfaces are the main gap (~55 files with hardcoded English strings).
 
-**Diagnosis** (confirmed by hitting the production REST API):
-- `doctor_public_profile_view` is reachable by anon (200 OK).
-- Lookups are `.eq()` on `custom_profile_link` / `username`, which are **case-sensitive** in Postgres. Real data contains mixed case (e.g. `dr.John.Doe1`). Typing `dr.john.doe1` returns `[]` → "doctor not found".
-- Same code path is used by `/book-appointment/:doctorId` via `resolveDoctorIdFromSlug` (`src/lib/doctorSlug.ts`) and by `/doctor/:slug` (`src/pages/doctor/DoctorPublicProfile.tsx`).
-- Routes under non-language paths (`/doctor/:slug`, `/book-appointment/:doctorId`) exist in `App.tsx` but only as a fallback tree (lines 286–316); production canonical URLs from `getBookingUrl()` point at `https://docito.app/book-appointment/<slug>` with no language prefix, so the fallback tree must work.
+Locales already exist for 11 languages: `en, de, es, pt, ja, ko, tr, uz, ru, ar, zh` (+ namespaces `dashboard`, `admin`, `patients`, `doctor*`, `finance`, `common`, etc.).
 
-**Changes**
-1. `src/lib/doctorSlug.ts` — switch slug lookups from `.eq()` to `.ilike()` (case-insensitive exact match) on `custom_profile_link` and `username`. Keep UUID path as `.eq("id", …)`. Try `doctor_public_profile_view` first, then `doctor_profiles_view` as today.
-2. `src/pages/doctor/DoctorPublicProfile.tsx` — same `.ilike()` switch in the inline lookup loop. Also normalize the slug (trim, decode `%2E`/dots safely) before querying.
-3. Verify both URL families resolve in production by curling `…/rest/v1/doctor_public_profile_view?custom_profile_link=ilike.dr.john.doe1`.
-4. Confirm the non-prefixed routes `/doctor/:slug`, `/dr/:slug`, `/book-appointment/:doctorId` are present in the fallback `<Routes>` block (they are — lines 286–316). No App.tsx changes needed.
+## Scope
 
-No DB migration. No new dependency.
+In: visible strings (labels, buttons, headings, toasts, empty states, table headers, modal copy, tab names, tooltips) inside the three dashboards and their subcomponents.
 
----
+Out: backend/error codes from Supabase, console logs, dev-only text, PDF generators (already parameterized), finance bookkeeping panels (kept on source currency/locale per existing policy).
 
-## Phase 2 — Currency propagation (remaining 80+ files)
+## Approach
 
-`useCurrency()` exists and is wired through `CurrencyContext`. The earlier pass covered ~20 files. A grep finds ~60 more places still using hardcoded `$…toFixed(2)` or `Intl.NumberFormat('en-US',{currency:'USD'})`.
+### Phase 1 — Namespace layout
+Reuse existing namespaces; add only what's missing.
+- `dashboard` → clinic admin shell + `src/components/dashboard/*` + `src/components/admin/*` + `src/components/clinic/*` (extend existing `dashboard.json`).
+- `patients` → patient dashboard shell + `src/components/patient-dashboard/*` + `src/components/patient/*` (extend existing `patients.json` significantly).
+- `doctor` → fill the 4 remaining doctor components.
 
-**Strategy** — replace each hardcoded formatter with `useCurrency().format(...)` or `formatCents(...)`. Source currency is preserved per row when the DB stores one (`row.currency`); display currency comes from the context. No conversion — only symbol/locale.
+### Phase 2 — String extraction (per file)
+For each file lacking `useTranslation`:
+1. Add `import { useTranslation } from "react-i18next"` and `const { t } = useTranslation("<ns>")`.
+2. Replace literal JSX text, `placeholder=`, `aria-label=`, `title=`, toast messages, and `Intl`-free format strings with `t("path.key")`.
+3. Use interpolation (`{{count}}`, `{{name}}`) for dynamic values; pluralization where applicable.
+4. Keep `defaultValue:` fallbacks for safety on first render.
 
-**Files to update** (batched 8–12 per turn):
+Date/number/currency: keep current helpers (`useCurrency`, `formatAppointmentForViewer`, `date-fns` locales) — no change.
 
-Batch A — patient & appointment surfaces:
-- `src/components/patient/PatientBilling.tsx`, `PatientTreatmentPlanModal.tsx`, `PatientTreatmentPlansSection.tsx`
-- `src/components/patient-dashboard/QuickOverviewCards.tsx`, `tabs/HistoryTab.tsx`
-- `src/components/appointments/AppointmentProceduresPanel.tsx`, `AppointmentTreatmentPlansSection.tsx`, `DentalProcedurePicker.tsx`
-- `src/pages/AppointmentSession.tsx`
+### Phase 3 — Key authoring
+- Add new keys to `public/locales/en/<ns>.json` first (source of truth).
+- Mirror keys to the other 10 locales. Initial values: human-translated for `en`; machine-aided translations for `de, es, pt, ja, ko, tr, uz, ru, ar, zh`, then a quick pass for high-visibility surfaces (tab names, primary CTAs, empty states).
+- RTL (`ar`) re-checked for any direction-sensitive copy.
 
-Batch B — treatment & procedures:
-- `src/components/treatment/TreatmentPlanCard.tsx`, `TreatmentPlanDetailModal.tsx`, `AddProcedureToPlanModal.tsx`
-- `src/components/visit/tabs/TreatmentTab.tsx`
-- `src/components/consent/ProcedureConsentModal.tsx`, `ConsentSigningModal.tsx`
-- `src/components/appointment/ProcedurePrescriptionModal.tsx`, `RealTimeProcedureNotification.tsx`
-- `src/pages/TreatmentPlanning.tsx`, `ProcedureLibrary.tsx`
+### Phase 4 — Verification
+- `rg "[A-Z][a-z]+ [A-Z]?[a-z]+"` style sweep over touched files to catch leftover literals.
+- Manual switch through `en → ar → ja` in preview for each dashboard's main tabs.
+- Build check.
 
-Batch C — clinic / lab / imaging / pharmacy:
-- `src/components/clinic/ClinicServicesManager.tsx`
-- `src/components/billing/SuperbillsManager.tsx`
-- `src/components/admin/ProviderFinancialTab.tsx`
-- `src/components/lab/LabAnalytics.tsx`, `TestOrderCreator.tsx`
-- `src/components/imaging/ImagingAnalytics.tsx`, `ImagingBillingSection.tsx`
-- `src/components/pharmacy/PharmacyDeliveryOrders.tsx`
-- `src/hooks/usePharmacyStaffDashboard.ts`
+## Files to update (high level, ~55)
 
-Batch D — admin dashboard finance blocks:
-- `src/pages/AdminDashboard.tsx` (lines 3282, 3284, 4275–4277, 4314, 4336, 4922, 4939, 4947, 4955)
+Patient surface (`patients` ns):
+- `src/pages/PatientDashboard.tsx` (extend keys)
+- `src/components/patient-dashboard/{PatientDashboardHeader,PatientDashboardView,QuickOverviewCards,EditPatientModal}.tsx` + `tabs/*`
+- `src/components/patient/{PatientBilling,PatientDiagnoses,PatientMedicalRecords,PatientRecordsUnified,PatientReferralsSection,PatientSelector,PatientSettingsPanel,PatientTestResultsSection,PatientTreatmentPlanModal,PatientTreatmentPlans,PatientTreatmentPlansSection,SearchBar,SearchResults,MedicalHistory,DoctorSearchSection,CreatePatientModal,CreateFacilityPatientModal,FacilityPatientSelector}.tsx`
 
-Batch E — PDFs (display only, no conversion):
-- `src/utils/generateInvoicePdf.ts`, `generateAppointmentPdf.ts` — accept `displayCurrency` parameter, pass `useCurrency().currency` from the caller; format via `formatCents()`/`formatCurrency()` from `@/lib/currency`.
+Clinic admin surface (`dashboard` ns):
+- `src/components/dashboard/*` — 16 remaining files (`AddLocationModal, AddServiceModal, ClinicBillingSection, ComprehensiveRegistrationModal, ContentCard, CreateClinicModal, DashboardFooter, DashboardTopBar, DashboardTopNav, DoctorRestrictionsSettings, EmptyState, InviteProviderModal, JoinRequestsSection, PageHeader, PracticeAnalyticsSection, SecuritySettings, SettingsDialog, StatsGrid, VerificationDocumentsModal, VerificationSuccessModal, ViewRequirementsModal`).
+- `src/components/clinic/*` — all 7 files.
+- `src/components/admin/{TransactionsTable, patients/*}.tsx`.
 
-Hooks not allowed in plain `.ts` utilities (`usePharmacyStaffDashboard` is a hook so OK; for `LabAnalytics` keep its inner helper but pass `currency` from props/context).
+Doctor surface (`doctor` ns):
+- 4 remaining files in `src/components/doctor/**` (identify via `rg -L useTranslation`).
 
----
+## Delivery order
 
-## Phase 3 — i18n sweep across Doctor, Clinic-Admin, Patient dashboards
+1. Patient dashboard (biggest gap, user-facing) → ship.
+2. Clinic admin shell + clinic/* → ship.
+3. Remaining doctor files + admin/* → ship.
+4. Translation sweep for the 10 non-English locales → ship.
 
-**Plan**
-1. Run a scan (`scripts/phase0-audit.mjs` already exists — extend if needed) that lists every JSX text node and `toast()` string under:
-   - `src/components/doctor/**`, `src/pages/Doctor*.tsx`
-   - `src/components/clinic/**`, `src/components/admin/**`, `src/pages/AdminDashboard.tsx`
-   - `src/components/patient/**`, `src/components/patient-dashboard/**`, `src/pages/Patient*.tsx`
-2. Group keys by feature; add missing keys to existing namespaces (`doctor`, `dashboard`, `patients`, `admin`, `finance`, `common`) — create new sub-namespaces only when a namespace exceeds ~300 keys.
-3. Translate to all 11 languages (`en, ru, uz, ar, tr, es, de, zh, pt, ja, ko`) using existing translation conventions (don't re-translate brand names).
-4. Wire `useTranslation(ns)` + `t("key")` in each component. Toasts use the same hook.
-5. Verify with a final scan that no English literal >2 words remains in those trees outside intentional brand/proper-noun strings.
-
-This phase is the largest and will be delivered in several turns (one dashboard tree per turn).
-
----
-
-## Out of scope
-
-- No DB schema or RLS changes.
-- No new edge functions.
-- No FX conversion changes (display-only currency stands).
-- No design-system, routing, or auth refactors.
-
----
+Each phase is independently mergeable; preview stays functional with English fallbacks the whole way.
 
 ## Technical notes
 
-- `.ilike(col, value)` in PostgREST: pass the literal slug — no `%` wildcards, exact case-insensitive match. PostgREST encodes dots fine in the value position.
-- `useCurrency().format(amount, sourceCurrency?)` is the canonical formatter for major-unit values; `formatCents(cents, sourceCurrency?)` for cent-stored values.
-- For PDF generators (non-React), pass `{ displayCurrency, sourceCurrency }` from the caller; never call hooks inside.
-- i18n keys follow existing dotted style; reuse `common:buttons.*` and `common:status.*` where possible to avoid duplication.
-
----
-
-## Execution order
-
-1. Phase 1 (single turn).
-2. Phase 2 — batches A–E (≈5 turns).
-3. Phase 3 — doctor → clinic-admin → patient (≈3–4 turns).
-
-I will pause after Phase 1 for you to verify the production link before continuing.
+- All new keys land under the existing namespaces — no i18next config changes.
+- `defaultValue` is included on every `t()` so missing keys never produce blank UI during the rollout.
+- No business-logic changes; presentation only.
+- No new dependencies.
