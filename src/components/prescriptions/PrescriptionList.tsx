@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/select';
 import { Search, Eye, Send, FileText, Pill } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   doctorId?: string;
@@ -38,6 +39,7 @@ interface Props {
 }
 
 export default function PrescriptionList({ doctorId, patientId, showSendToPharmacy = true }: Props) {
+  const { t } = useTranslation('prescriptions');
   const { prescriptions, loading, sendToPharmacy } = usePrescriptions({ doctorId, patientId });
   const { pharmacies } = usePharmacy();
   
@@ -65,7 +67,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
       expired: 'destructive',
       cancelled: 'destructive',
     };
-    return <Badge variant={variants[status] || 'outline'}>{status.replace(/_/g, ' ')}</Badge>;
+    return <Badge variant={variants[status] || 'outline'}>{t(`statuses.${status}`, { defaultValue: status.replace(/_/g, ' ') })}</Badge>;
   };
 
   const viewDetails = (prescription: Prescription) => {
@@ -101,7 +103,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Prescriptions
+            {t('list.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -111,21 +113,21 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 className="pl-10"
-                placeholder="Search prescriptions..."
+                placeholder={t('list.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
+                <SelectValue placeholder={t('list.filterByStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="sent_to_pharmacy">Sent to Pharmacy</SelectItem>
-                <SelectItem value="fulfilled">Fulfilled</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="all">{t('list.allStatus')}</SelectItem>
+                <SelectItem value="pending">{t('statuses.pending')}</SelectItem>
+                <SelectItem value="sent_to_pharmacy">{t('statuses.sent_to_pharmacy')}</SelectItem>
+                <SelectItem value="fulfilled">{t('statuses.fulfilled')}</SelectItem>
+                <SelectItem value="expired">{t('statuses.expired')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -135,19 +137,19 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Rx Number</TableHead>
-                  <TableHead>Medications</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Refills</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('list.headers.rxNumber')}</TableHead>
+                  <TableHead>{t('list.headers.medications')}</TableHead>
+                  <TableHead>{t('list.headers.status')}</TableHead>
+                  <TableHead>{t('list.headers.refills')}</TableHead>
+                  <TableHead>{t('list.headers.date')}</TableHead>
+                  <TableHead className="text-right">{t('list.headers.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredPrescriptions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                      No prescriptions found
+                      {t('list.noPrescriptions')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -157,7 +159,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Pill className="h-4 w-4 text-muted-foreground" />
-                          {prescription.items?.length || 0} medication(s)
+                          {t('list.medicationsCount', { count: prescription.items?.length || 0 })}
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(prescription.status)}</TableCell>
@@ -175,7 +177,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
                           {showSendToPharmacy && prescription.status === 'pending' && !prescription.pharmacy_id && (
                             <Button size="sm" onClick={() => openSendDialog(prescription)}>
                               <Send className="h-4 w-4 mr-1" />
-                              Send
+                              {t('list.send')}
                             </Button>
                           )}
                         </div>
@@ -193,7 +195,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Prescription Details</DialogTitle>
+            <DialogTitle>{t('list.detailsTitle')}</DialogTitle>
             <DialogDescription>
               {selectedPrescription?.prescription_number}
             </DialogDescription>
@@ -203,24 +205,24 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">{t('list.status')}</p>
                   <p>{getStatusBadge(selectedPrescription.status)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Prescribed On</p>
+                  <p className="text-sm text-muted-foreground">{t('list.prescribedOn')}</p>
                   <p className="font-medium">
                     {format(new Date(selectedPrescription.prescribed_at), 'MMMM d, yyyy')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Refills Remaining</p>
+                  <p className="text-sm text-muted-foreground">{t('list.refillsRemaining')}</p>
                   <p className="font-medium">
-                    {selectedPrescription.refills_remaining} of {selectedPrescription.refills_total}
+                    {t('list.refillsOf', { remaining: selectedPrescription.refills_remaining, total: selectedPrescription.refills_total })}
                   </p>
                 </div>
                 {selectedPrescription.expires_at && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Expires</p>
+                    <p className="text-sm text-muted-foreground">{t('list.expires')}</p>
                     <p className="font-medium">
                       {format(new Date(selectedPrescription.expires_at), 'MMMM d, yyyy')}
                     </p>
@@ -229,7 +231,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
               </div>
 
               <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Medications</h4>
+                <h4 className="font-medium mb-3">{t('list.medications')}</h4>
                 <ul className="space-y-3">
                   {selectedPrescription.items?.map((item, idx) => (
                     <li key={idx} className="p-3 bg-muted/50 rounded-lg">
@@ -246,7 +248,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
                         <div className="text-right">
                           <p className="font-medium">{item.quantity} {item.unit}</p>
                           {item.substitutions_allowed && (
-                            <Badge variant="outline" className="text-xs">Subs OK</Badge>
+                            <Badge variant="outline" className="text-xs">{t('list.subsOk')}</Badge>
                           )}
                         </div>
                       </div>
@@ -257,7 +259,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
 
               {selectedPrescription.notes && (
                 <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">Notes</h4>
+                  <h4 className="font-medium mb-2">{t('list.notes')}</h4>
                   <p className="text-muted-foreground">{selectedPrescription.notes}</p>
                 </div>
               )}
@@ -266,7 +268,7 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
-              Close
+              {t('list.close')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -276,18 +278,18 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
       <Dialog open={isSendDialogOpen} onOpenChange={setIsSendDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Send to Pharmacy</DialogTitle>
+            <DialogTitle>{t('list.sendToPharmacyTitle')}</DialogTitle>
             <DialogDescription>
-              Select a pharmacy to send this prescription to
+              {t('list.sendToPharmacyDescription')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <p className="text-sm font-medium">Select Pharmacy</p>
+              <p className="text-sm font-medium">{t('list.selectPharmacy')}</p>
               <Select value={selectedPharmacy} onValueChange={setSelectedPharmacy}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a pharmacy" />
+                  <SelectValue placeholder={t('list.choosePharmacy')} />
                 </SelectTrigger>
                 <SelectContent>
                   {pharmacies.map((pharmacy) => (
@@ -307,10 +309,10 @@ export default function PrescriptionList({ doctorId, patientId, showSendToPharma
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsSendDialogOpen(false)}>
-              Cancel
+              {t('list.cancel')}
             </Button>
             <Button onClick={handleSendToPharmacy} disabled={!selectedPharmacy || sending}>
-              {sending ? 'Sending...' : 'Send Prescription'}
+              {sending ? t('list.sending') : t('list.sendPrescription')}
             </Button>
           </DialogFooter>
         </DialogContent>

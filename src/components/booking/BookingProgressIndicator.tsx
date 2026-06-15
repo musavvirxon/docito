@@ -1,4 +1,5 @@
 import { CheckCircle, Circle, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface BookingStep {
@@ -14,6 +15,7 @@ interface BookingProgressIndicatorProps {
 }
 
 export const BookingProgressIndicator = ({ steps, className }: BookingProgressIndicatorProps) => {
+  const { t } = useTranslation("booking");
   return (
     <div className={cn("py-4", className)}>
       <div className="flex items-center justify-between">
@@ -28,7 +30,7 @@ export const BookingProgressIndicator = ({ steps, className }: BookingProgressIn
                   step.current && !step.completed && "bg-primary border-primary text-primary-foreground",
                   !step.completed && !step.current && "bg-background border-muted-foreground text-muted-foreground"
                 )}
-                aria-label={`Step ${index + 1}: ${step.title}`}
+                aria-label={t("step", { n: index + 1, title: step.title })}
               >
                 {step.completed ? (
                   <CheckCircle className="w-4 h-4" />

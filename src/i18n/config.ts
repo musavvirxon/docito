@@ -90,6 +90,8 @@ export const I18N_NAMESPACES = [
   "pharmacy",
   "pricing_matrix",
   "clinic",
+  "booking",
+  "prescriptions",
 ] as const;
 
 export const rtlLanguages = ["ar", "he", "fa", "ur"];

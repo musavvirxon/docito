@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface AppointmentDetails {
@@ -76,6 +77,7 @@ export function CurrentAppointmentPopup({
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation('booking');
 
   // Fetch appointment details
   useEffect(() => {
@@ -125,8 +127,8 @@ export function CurrentAppointmentPopup({
         console.error('Error fetching appointment:', err);
         toast({
           variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load appointment details',
+          title: t('current.title'),
+          description: t('current.loadFailed'),
         });
       } finally {
         setLoading(false);
@@ -151,7 +153,7 @@ export function CurrentAppointmentPopup({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [open, appointmentId, toast]);
+  }, [open, appointmentId, toast, t]);
 
   const handleCancel = async () => {
     if (!appointment) return;
@@ -166,8 +168,8 @@ export function CurrentAppointmentPopup({
       if (error) throw error;
 
       toast({
-        title: 'Appointment Cancelled',
-        description: 'Your appointment has been cancelled successfully.',
+        title: t('current.cancelledTitle'),
+        description: t('current.cancelledDescription'),
       });
       
       setAppointment(prev => prev ? { ...prev, status: 'canceled' } : null);
@@ -175,8 +177,8 @@ export function CurrentAppointmentPopup({
     } catch (err: any) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to cancel appointment',
+        title: t('current.title'),
+        description: t('current.cancelFailed'),
       });
     } finally {
       setCancelling(false);
@@ -195,9 +197,9 @@ export function CurrentAppointmentPopup({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Appointment Details</DialogTitle>
+          <DialogTitle>{t('current.title')}</DialogTitle>
           <DialogDescription>
-            {loading ? 'Loading...' : appointment?.practice?.name || 'Your upcoming appointment'}
+            {loading ? t('current.loading') : appointment?.practice?.name || t('current.upcoming')}
           </DialogDescription>
         </DialogHeader>
 
@@ -208,18 +210,18 @@ export function CurrentAppointmentPopup({
         ) : !appointment ? (
           <div className="text-center py-8">
             <AlertCircle className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground">Appointment not found</p>
+            <p className="text-muted-foreground">{t('current.notFound')}</p>
           </div>
         ) : (
           <div className="space-y-4">
             {/* Status Badge */}
             <div className="flex items-center justify-between">
               <Badge className={cn('capitalize', statusColors[appointment.status])}>
-                {appointment.status.replace('_', ' ')}
+                {t(`current.status.${appointment.status}`, { defaultValue: appointment.status.replace('_', ' ') })}
               </Badge>
               {isPast(parseISO(`${appointment.appointment_date}T${appointment.end_time}`)) && 
                 appointment.status === 'confirmed' && (
-                <Badge variant="outline">Past</Badge>
+                <Badge variant="outline">{t('current.past')}</Badge>
               )}
             </div>
 
@@ -250,7 +252,7 @@ export function CurrentAppointmentPopup({
                 <User className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium">
-                    Dr. {appointment.doctor.user?.full_name || 'Unknown'}
+                    {t('popup.drPrefix', { name: appointment.doctor.user?.full_name || t('current.unknownDoctor') })}
                   </p>
                   <p className="text-sm text-muted-foreground">{appointment.doctor.specialty}</p>
                 </div>
@@ -278,7 +280,7 @@ export function CurrentAppointmentPopup({
               <div className="flex items-start gap-3">
                 <FileText className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium">Notes</p>
+                  <p className="font-medium">{t('current.notesLabel')}</p>
                   <p className="text-sm text-muted-foreground">{appointment.notes}</p>
                 </div>
               </div>
@@ -297,7 +299,7 @@ export function CurrentAppointmentPopup({
                     // TODO: Implement reschedule flow
                   }}
                 >
-                  Reschedule
+                  {t('current.reschedule')}
                 </Button>
               )}
               {canCancel && (
@@ -311,12 +313,12 @@ export function CurrentAppointmentPopup({
                   {cancelling ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Cancelling...
+                      {t('current.cancelling')}
                     </>
                   ) : (
                     <>
                       <X className="h-4 w-4 mr-1" />
-                      Cancel
+                      {t('current.cancel')}
                     </>
                   )}
                 </Button>
@@ -327,7 +329,7 @@ export function CurrentAppointmentPopup({
                 className="ml-auto"
                 onClick={() => onOpenChange(false)}
               >
-                Close
+                {t('current.close')}
               </Button>
             </div>
           </div>
