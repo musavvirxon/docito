@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -68,6 +69,7 @@ interface HistoryTabProps {
 }
 
 const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const { user } = useAuth();
   const [dentalProcedures, setDentalProcedures] = useState<DentalProcedureHistoryRow[]>([]);
   const [loadingDentalProcedures, setLoadingDentalProcedures] = useState(false);
@@ -90,7 +92,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
         setDentalProcedures((data as any) || []);
       } catch (err: any) {
         console.error("Error loading dental procedures:", err);
-        toast.error("Failed to load dental procedure history");
+        toast.error(t("tabs.history.loadFailed"));
         setDentalProcedures([]);
       } finally {
         setLoadingDentalProcedures(false);
@@ -199,7 +201,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
         {empty ? (
           <div className="text-center py-6">
             <Icon className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-            <p className="text-sm text-muted-foreground">{emptyText || "No records found"}</p>
+            <p className="text-sm text-muted-foreground">{emptyText || t("tabs.history.noRecords")}</p>
           </div>
         ) : (
           children
@@ -213,10 +215,10 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Medical History */}
         <Section
-          title="Medical History"
+          title={t("tabs.history.medicalHistory")}
           icon={Heart}
           empty={medicalHistory.length === 0}
-          emptyText="No medical history recorded"
+          emptyText={t("tabs.history.noMedicalHistory")}
         >
           <ScrollArea className="h-[300px] pr-4">
             <div className="space-y-3">
@@ -239,7 +241,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                       </div>
                       {item.date && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(item.date).toLocaleDateString()}
+                          {new Date(item.date).toLocaleDateString(i18n.language)}
                         </p>
                       )}
                       {item.notes && <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>}
@@ -253,10 +255,10 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
 
         {/* Dental History (Procedures + Notes) */}
         <Section
-          title="Dental History"
+          title={t("tabs.history.dentalHistory")}
           icon={CircleDot}
           empty={!loadingDentalProcedures && dentalProcedures.length === 0 && dentalHistory.length === 0}
-          emptyText="No dental procedures recorded yet"
+          emptyText={t("tabs.history.noDental")}
         >
           <div className="space-y-4">
             {/* Procedures */}
@@ -264,19 +266,19 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
               <div className="min-w-0">
                 <p className="text-sm font-medium flex items-center gap-2">
                   <CircleDot className="w-4 h-4 text-primary" />
-                  Procedures
+                  {t("tabs.history.procedures")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {dentalProcedureSummary.summaryParts.length
                     ? dentalProcedureSummary.summaryParts.join(" • ")
-                    : "No procedures yet."}
+                    : t("tabs.history.noProcedures")}
                 </p>
               </div>
 
               <div className="shrink-0 text-right">
                 <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
                   <DollarSign className="w-3.5 h-3.5" />
-                  Total
+                  {t("tabs.history.total")}
                 </p>
                 <p className="font-semibold text-sm">{formatMoney(dentalProcedureSummary.totalCost)}</p>
               </div>
@@ -285,7 +287,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
             {loadingDentalProcedures && (
               <div className="text-sm text-muted-foreground flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading procedure history...
+                {t("tabs.history.loadingProcedures")}
               </div>
             )}
 
@@ -294,14 +296,14 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                 <div className="space-y-3">
                   {dentalProcedures.map((row) => {
                     const when = row.performed_at || row.created_at;
-                    const dateLabel = when ? new Date(when).toLocaleDateString() : "";
+                    const dateLabel = when ? new Date(when).toLocaleDateString(i18n.language) : "";
                     const teeth = Array.isArray(row.tooth_numbers)
                       ? row.tooth_numbers.slice().sort((a, b) => a - b)
                       : [];
 
                     const apptLabel =
                       row.appointment?.appointment_date && row.appointment?.start_time
-                        ? `${new Date(row.appointment.appointment_date).toLocaleDateString()} • ${row.appointment.start_time}`
+                        ? `${new Date(row.appointment.appointment_date).toLocaleDateString(i18n.language)} • ${row.appointment.start_time}`
                         : null;
 
                     return (
@@ -324,7 +326,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                             </Badge>
                             {teeth.length > 0 && (
                               <Badge variant="outline" className="text-xs">
-                                Teeth: {teeth.join(", ")}
+                                {t("tabs.history.teeth", { list: teeth.join(", ") })}
                               </Badge>
                             )}
                           </div>
@@ -351,7 +353,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                 <div>
                   <p className="text-sm font-medium flex items-center gap-2">
                     <Bone className="w-4 h-4 text-primary" />
-                    Notes
+                    {t("tabs.history.notes")}
                   </p>
 
                   <ScrollArea className="h-[180px] pr-4 mt-2">
@@ -374,7 +376,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                             {item.details && <p className="text-xs text-muted-foreground mt-1">{item.details}</p>}
                             {item.date && (
                               <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(item.date).toLocaleDateString()}
+                                {new Date(item.date).toLocaleDateString(i18n.language)}
                               </p>
                             )}
                           </div>
@@ -387,14 +389,14 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
             )}
 
             <p className="text-xs text-muted-foreground">
-              Note: patients can view procedure history, but not the full dental chart.
+              {t("tabs.history.patientViewNote")}
             </p>
           </div>
         </Section>
       </div>
 
       {/* Diagnoses Log */}
-      <Section title="Diagnoses Log" icon={Stethoscope} empty={diagnosesLog.length === 0} emptyText="No diagnoses recorded">
+      <Section title={t("tabs.history.diagnosesLog")} icon={Stethoscope} empty={diagnosesLog.length === 0} emptyText={t("tabs.history.noDiagnoses")}>
         <ScrollArea className="h-[400px] pr-4">
           <div className="relative">
             <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
@@ -414,7 +416,7 @@ const HistoryTab = ({ medicalHistory, dentalHistory, diagnosesLog }: HistoryTabP
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h4 className="font-medium text-sm">{diagnosis.diagnosis}</h4>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(diagnosis.date).toLocaleDateString()}
+                        {new Date(diagnosis.date).toLocaleDateString(i18n.language)}
                       </span>
                     </div>
                     {diagnosis.doctor_name && <p className="text-xs text-muted-foreground">Dr. {diagnosis.doctor_name}</p>}
