@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,6 +27,7 @@ interface ClinicLabDashboardProps {
 }
 
 export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
+  const { t } = useTranslation('clinic');
   const { labOrders, fetchLabOrders, updateOrderStatus, uploadResult, loading } = useClinicLabOrders();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState('pending');
@@ -70,8 +71,8 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
   };
 
   const getPriorityBadge = (priority: string) => {
-    if (priority === 'stat') return <Badge variant="destructive">STAT</Badge>;
-    if (priority === 'urgent') return <Badge variant="outline" className="border-orange-500 text-orange-500">Urgent</Badge>;
+    if (priority === 'stat') return <Badge variant="destructive">{t('labDashboard.priority.stat')}</Badge>;
+    if (priority === 'urgent') return <Badge variant="outline" className="border-orange-500 text-orange-500">{t('labDashboard.priority.urgent')}</Badge>;
     return null;
   };
 
@@ -116,7 +117,7 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.pending}</p>
-                <p className="text-sm text-muted-foreground">Pending Orders</p>
+                <p className="text-sm text-muted-foreground">{t('labDashboard.stats.pending')}</p>
               </div>
             </div>
           </CardContent>
@@ -129,7 +130,7 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.processing}</p>
-                <p className="text-sm text-muted-foreground">Processing</p>
+                <p className="text-sm text-muted-foreground">{t('labDashboard.stats.processing')}</p>
               </div>
             </div>
           </CardContent>
@@ -142,7 +143,7 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.completed}</p>
-                <p className="text-sm text-muted-foreground">Completed Today</p>
+                <p className="text-sm text-muted-foreground">{t('labDashboard.stats.completedToday')}</p>
               </div>
             </div>
           </CardContent>
@@ -156,17 +157,17 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle>Lab Orders</CardTitle>
+                <CardTitle>{t('labDashboard.title')}</CardTitle>
                 <Button variant="outline" size="sm" onClick={() => fetchLabOrders(clinicId)}>
                   <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
+                  {t('labDashboard.refresh')}
                 </Button>
               </div>
               <div className="flex gap-4 mt-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search orders..."
+                    placeholder={t('labDashboard.searchPh')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9"
@@ -177,16 +178,16 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
             <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="w-full justify-start px-4">
-                  <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
-                  <TabsTrigger value="processing">Processing ({stats.processing})</TabsTrigger>
-                  <TabsTrigger value="completed">Completed ({stats.completed})</TabsTrigger>
+                  <TabsTrigger value="pending">{t('labDashboard.tabs.pending', { count: stats.pending })}</TabsTrigger>
+                  <TabsTrigger value="processing">{t('labDashboard.tabs.processing', { count: stats.processing })}</TabsTrigger>
+                  <TabsTrigger value="completed">{t('labDashboard.tabs.completed', { count: stats.completed })}</TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="h-[500px]">
                   <div className="divide-y">
                     {filteredOrders.length === 0 ? (
                       <div className="p-6 text-center text-muted-foreground">
-                        No orders found
+                        {t('labDashboard.empty')}
                       </div>
                     ) : (
                       filteredOrders.map(order => (
@@ -226,7 +227,7 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle>
-              {selectedOrder ? 'Order Details' : 'Select Order'}
+              {selectedOrder ? t('labDashboard.details') : t('labDashboard.selectPrompt')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -242,29 +243,28 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Test Type</p>
+                    <p className="text-muted-foreground">{t('labDashboard.fields.testType')}</p>
                     <p className="font-medium capitalize">{selectedOrder.test_type}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Priority</p>
+                    <p className="text-muted-foreground">{t('labDashboard.fields.priority')}</p>
                     <p className="font-medium capitalize">{selectedOrder.priority}</p>
                   </div>
                 </div>
 
                 {selectedOrder.clinical_notes && (
                   <div>
-                    <p className="text-muted-foreground text-sm">Clinical Notes</p>
+                    <p className="text-muted-foreground text-sm">{t('labDashboard.fields.clinicalNotes')}</p>
                     <p className="text-sm bg-muted p-2 rounded mt-1">{selectedOrder.clinical_notes}</p>
                   </div>
                 )}
 
-                {/* Actions based on status */}
                 {selectedOrder.status === 'pending' && (
                   <Button 
                     className="w-full" 
                     onClick={() => handleStatusUpdate(selectedOrder.id, 'sample_collected')}
                   >
-                    Mark Sample Collected
+                    {t('labDashboard.actions.markCollected')}
                   </Button>
                 )}
 
@@ -273,35 +273,35 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
                     className="w-full" 
                     onClick={() => handleStatusUpdate(selectedOrder.id, 'processing')}
                   >
-                    Start Processing
+                    {t('labDashboard.actions.startProcessing')}
                   </Button>
                 )}
 
                 {selectedOrder.status === 'processing' && (
                   <div className="space-y-4 pt-4 border-t">
-                    <h4 className="font-medium">Enter Results</h4>
+                    <h4 className="font-medium">{t('labDashboard.results.enter')}</h4>
                     
                     <div className="space-y-2">
-                      <Label>Result Value</Label>
+                      <Label>{t('labDashboard.results.resultValue')}</Label>
                       <Textarea
                         value={resultForm.result_text}
                         onChange={(e) => setResultForm(prev => ({ ...prev, result_text: e.target.value }))}
-                        placeholder="Enter test results..."
+                        placeholder={t('labDashboard.results.resultValuePh')}
                         rows={3}
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Reference Range</Label>
+                      <Label>{t('labDashboard.results.referenceRange')}</Label>
                       <Input
                         value={resultForm.reference_range}
                         onChange={(e) => setResultForm(prev => ({ ...prev, reference_range: e.target.value }))}
-                        placeholder="e.g., 70-100 mg/dL"
+                        placeholder={t('labDashboard.results.referenceRangePh')}
                       />
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <Label>Abnormal Result</Label>
+                      <Label>{t('labDashboard.results.abnormal')}</Label>
                       <Switch
                         checked={resultForm.is_abnormal}
                         onCheckedChange={(checked) => setResultForm(prev => ({ ...prev, is_abnormal: checked }))}
@@ -309,7 +309,7 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Upload Report (PDF)</Label>
+                      <Label>{t('labDashboard.results.uploadReport')}</Label>
                       <Input
                         type="file"
                         accept=".pdf"
@@ -324,27 +324,27 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
                       disabled={!resultForm.result_text}
                     >
                       <Upload className="h-4 w-4 mr-2" />
-                      Submit Results
+                      {t('labDashboard.results.submit')}
                     </Button>
                   </div>
                 )}
 
                 {selectedOrder.status === 'completed' && (
                   <div className="space-y-2 pt-4 border-t">
-                    <h4 className="font-medium">Results</h4>
+                    <h4 className="font-medium">{t('labDashboard.results.title')}</h4>
                     <div className="bg-muted p-3 rounded-lg text-sm">
-                      {selectedOrder.result_text || 'No text results'}
+                      {selectedOrder.result_text || t('labDashboard.results.noText')}
                     </div>
                     {selectedOrder.is_abnormal && (
                       <Badge variant="destructive" className="flex items-center gap-1 w-fit">
                         <AlertTriangle className="h-3 w-3" />
-                        Abnormal
+                        {t('labDashboard.results.abnormalBadge')}
                       </Badge>
                     )}
                     {selectedOrder.result_url && (
                       <Button variant="outline" size="sm" asChild>
                         <a href={selectedOrder.result_url} target="_blank" rel="noopener noreferrer">
-                          View Report PDF
+                          {t('labDashboard.results.viewReport')}
                         </a>
                       </Button>
                     )}
@@ -355,7 +355,7 @@ export function ClinicLabDashboard({ clinicId }: ClinicLabDashboardProps) {
               <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <FlaskConical className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Select an order to view details</p>
+                  <p>{t('labDashboard.selectHint')}</p>
                 </div>
               </div>
             )}

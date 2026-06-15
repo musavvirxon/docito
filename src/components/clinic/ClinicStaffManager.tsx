@@ -2,6 +2,7 @@
 // Direct-query staff management for clinic/practice admins (same pattern as LabStaffManager)
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,18 +101,21 @@ function normalizePermissions(raw: any): PermissionKey[] {
   return [];
 }
 
-function relativeTimeLabel(value?: string | null) {
-  if (!value) return "Unknown time";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "Unknown time";
-  const diff = Date.now() - d.getTime();
-  const min = Math.round(Math.abs(diff) / 60000);
-  const hr = Math.round(Math.abs(diff) / 3600000);
-  const day = Math.round(Math.abs(diff) / 86400000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min}m ago`;
-  if (hr < 24) return `${hr}h ago`;
-  return `${day}d ago`;
+function useRelativeTime() {
+  const { t } = useTranslation("clinic");
+  return (value?: string | null) => {
+    if (!value) return t("staffManager.time.unknown");
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return t("staffManager.time.unknown");
+    const diff = Date.now() - d.getTime();
+    const min = Math.round(Math.abs(diff) / 60000);
+    const hr = Math.round(Math.abs(diff) / 3600000);
+    const day = Math.round(Math.abs(diff) / 86400000);
+    if (min < 1) return t("staffManager.time.justNow");
+    if (min < 60) return t("staffManager.time.minutes", { n: min });
+    if (hr < 24) return t("staffManager.time.hours", { n: hr });
+    return t("staffManager.time.days", { n: day });
+  };
 }
 
 function getProfileName(profile?: ProfileRow | null, fallbackEmail?: string) {
@@ -147,7 +151,10 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerProps) {
+  const { t } = useTranslation("clinic");
+  const relativeTimeLabel = useRelativeTime();
   const sb: any = supabase as any;
+
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -279,7 +286,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       setAuditTrail(auditItems);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to load staff data");
+      toast.error(e?.message || t("staffManager.toasts.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -314,7 +321,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
   async function handleInviteSubmit(e: React.FormEvent) {
     e.preventDefault();
     const email = inviteEmail.trim().toLowerCase();
-    if (!email || !email.includes("@")) { toast.error("Enter a valid email"); return; }
+    if (!email || !email.includes("@")) { toast.error(t("staffManager.toasts.invalidEmail")); return; }
 
     setInviteLoading(true);
     try {
@@ -328,14 +335,14 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         invite_type: "email",
       });
       if (error) throw error;
-      toast.success("Invitation created");
+      toast.success(t("staffManager.toasts.inviteCreated"));
       setInviteEmail("");
       setInviteRole("receptionist");
       setInvitePermissions(defaultPermissionsForRole("receptionist"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to create invitation");
+      toast.error(e?.message || t("staffManager.toasts.inviteFailed"));
     } finally {
       setInviteLoading(false);
     }
@@ -351,11 +358,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         updated_at: toIsoNow(),
       }).eq("id", rowId);
       if (error) throw error;
-      toast.success("Staff updated");
+      toast.success(t("staffManager.toasts.updated"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update staff");
+      toast.error(e?.message || t("staffManager.toasts.updateFailed"));
     } finally {
       setSavingRowId(null);
     }
@@ -367,11 +374,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     try {
       const { error } = await sb.from("clinic_staff").update({ status, updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
-      toast.success(`Staff status updated to ${humanize(status)}`);
+      toast.success(t("staffManager.toasts.statusUpdated", { status: humanize(status) }));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update staff status");
+      toast.error(e?.message || t("staffManager.toasts.statusFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -382,14 +389,14 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     setActingRowId(rowId);
     try {
       const soft = await sb.from("clinic_staff").update({ status: "removed", updated_at: toIsoNow() }).eq("id", rowId);
-      if (!soft.error) { toast.success("Staff removed"); await loadData(false); setActingRowId(null); return; }
+      if (!soft.error) { toast.success(t("staffManager.toasts.removed")); await loadData(false); setActingRowId(null); return; }
       const hard = await sb.from("clinic_staff").delete().eq("id", rowId);
       if (hard.error) throw hard.error;
-      toast.success("Staff removed");
+      toast.success(t("staffManager.toasts.removed"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to remove staff");
+      toast.error(e?.message || t("staffManager.toasts.removeFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -406,11 +413,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         const { error } = await sb.from("clinic_staff").update({ status: "cancelled", updated_at: toIsoNow() }).eq("id", rowId);
         if (error) throw error;
       }
-      toast.success("Invitation cancelled");
+      toast.success(t("staffManager.toasts.inviteCancelled"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to cancel invitation");
+      toast.error(e?.message || t("staffManager.toasts.cancelFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -423,11 +430,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       const table = row._source === "staff_invitations" ? "staff_invitations" : "clinic_staff";
       const { error } = await sb.from(table).update({ status: "pending", updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
-      toast.success("Invitation resent");
+      toast.success(t("staffManager.toasts.inviteResent"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to resend invite");
+      toast.error(e?.message || t("staffManager.toasts.resendFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -437,8 +444,8 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Staff Management</CardTitle>
-          <CardDescription>Select a practice first.</CardDescription>
+          <CardTitle>{t("staffManager.title")}</CardTitle>
+          <CardDescription>{t("staffManager.selectPractice")}</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -448,43 +455,43 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Active Staff</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Pending Invitations</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Inactive / Disabled</div><div className="text-2xl font-semibold">{inactiveRows.length}</div></div><Power className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Admin / Managers</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "manager"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.active")}</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.pending")}</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.inactive")}</div><div className="text-2xl font-semibold">{inactiveRows.length}</div></div><Power className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.admins")}</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "manager"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
       </div>
 
       {/* Invite Staff */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" /> Invite Staff</CardTitle>
-          <CardDescription>Create staff invitations, assign role, and pre-configure permissions.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" /> {t("staffManager.invite.title")}</CardTitle>
+          <CardDescription>{t("staffManager.invite.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleInviteSubmit} className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Email</label>
+                <label className="text-sm font-medium">{t("staffManager.invite.email")}</label>
                 <div className="relative">
                   <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="staff@clinic.com" className="w-full h-10 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder={t("staffManager.invite.emailPh")} className="w-full h-10 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Role</label>
+                <label className="text-sm font-medium">{t("staffManager.invite.role")}</label>
                 <select value={inviteRole} onChange={(e) => setInviteRole((e.target.value as StaffRole) || "receptionist")} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
-                  {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{humanize(role)}</option>))}
+                  {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{t(`staffManager.roles.${role}`)}</option>))}
                 </select>
               </div>
               <div className="flex items-end">
                 <button type="submit" disabled={inviteLoading} className="w-full h-10 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2 text-sm font-medium">
                   {inviteLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                  Send Invite
+                  {t("staffManager.invite.send")}
                 </button>
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-sm font-medium mb-3">Permission Preset</div>
+              <div className="text-sm font-medium mb-3">{t("staffManager.invite.preset")}</div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {PERMISSION_KEYS.map((key) => {
                   const checked = invitePermissions.includes(key);
@@ -504,12 +511,12 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       {/* Pending Invitations */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Clock3 className="h-5 w-5" /> Pending Invitations</CardTitle>
-          <CardDescription>Manage pending invites, resend, or revoke before activation.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Clock3 className="h-5 w-5" /> {t("staffManager.pending.title")}</CardTitle>
+          <CardDescription>{t("staffManager.pending.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {pendingRows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No pending invitations.</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.pending.empty")}</div>
           ) : (
             <div className="space-y-3">
               {pendingRows.map((row) => {
@@ -520,15 +527,15 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
                   <div key={rowId} className="rounded-lg border p-4">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                       <div className="min-w-0">
-                        <div className="font-medium truncate">{email || "Pending invite"}</div>
+                        <div className="font-medium truncate">{email || t("staffManager.pending.fallback")}</div>
                         <div className="text-sm text-muted-foreground">{humanize(normalizeStatus(row.status))} • {humanize(getStaffRole(row))} • {relativeTimeLabel(row.created_at)}</div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button type="button" onClick={() => resendInvite(row)} disabled={isBusy} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          {isBusy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Resend
+                          {isBusy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} {t("staffManager.pending.resend")}
                         </button>
                         <button type="button" onClick={() => cancelInvite(row)} disabled={isBusy} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          <XCircle className="h-4 w-4" /> Cancel
+                          <XCircle className="h-4 w-4" /> {t("staffManager.pending.cancel")}
                         </button>
                       </div>
                     </div>
@@ -545,25 +552,25 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         <CardHeader>
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5" /> Active Staff Management</CardTitle>
-              <CardDescription>Edit roles, permissions, deactivate, or remove staff.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5" /> {t("staffManager.active.title")}</CardTitle>
+              <CardDescription>{t("staffManager.active.description")}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative min-w-[240px]">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search staff..." className="w-full h-9 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("staffManager.active.searchPh")} className="w-full h-9 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <button type="button" onClick={() => loadData(false)} disabled={refreshing} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                {refreshing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Refresh
+                {refreshing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} {t("staffManager.active.refresh")}
               </button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading staff…</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.active.loading")}</div>
           ) : filteredActiveRows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No active staff found.</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.active.empty")}</div>
           ) : (
             <div className="space-y-4">
               {filteredActiveRows.map((row) => {
@@ -584,7 +591,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
                       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <div className="min-w-0">
                           <div className="font-medium truncate">{displayName}</div>
-                          <div className="text-sm text-muted-foreground truncate">{email || "No email"} • {humanize(status)} • Added {relativeTimeLabel(row.created_at)}</div>
+                          <div className="text-sm text-muted-foreground truncate">{email || t("staffManager.active.noEmail")} • {humanize(status)} • {t("staffManager.active.added", { when: relativeTimeLabel(row.created_at) })}</div>
                         </div>
                         <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs border", status === "active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200")}>
                           <CheckCircle2 className="h-3.5 w-3.5" /> {humanize(status)}
@@ -593,14 +600,14 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
 
                       <div className="grid gap-4 xl:grid-cols-[240px,1fr]">
                         <div className="space-y-1.5">
-                          <label className="text-sm font-medium">Role</label>
+                          <label className="text-sm font-medium">{t("staffManager.active.role")}</label>
                           <select value={currentRole} onChange={(e) => setDraftRoles((prev) => ({ ...prev, [rowId]: e.target.value }))} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
-                            {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{humanize(role)}</option>))}
+                            {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{t(`staffManager.roles.${role}`)}</option>))}
                           </select>
-                          <button type="button" onClick={() => { const role = (draftRoles[rowId] || "viewer") as StaffRole; setDraftPermissions((prev) => ({ ...prev, [rowId]: defaultPermissionsForRole(role) })); }} className="text-xs text-primary hover:underline">Reset permissions from role preset</button>
+                          <button type="button" onClick={() => { const role = (draftRoles[rowId] || "viewer") as StaffRole; setDraftPermissions((prev) => ({ ...prev, [rowId]: defaultPermissionsForRole(role) })); }} className="text-xs text-primary hover:underline">{t("staffManager.active.resetPerms")}</button>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-sm font-medium">Permissions</label>
+                          <label className="text-sm font-medium">{t("staffManager.active.permissions")}</label>
                           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                             {PERMISSION_KEYS.map((key) => {
                               const checked = currentPerms.includes(key);
@@ -617,13 +624,13 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
 
                       <div className="flex flex-wrap gap-2">
                         <button type="button" onClick={() => saveRow(row)} disabled={isSaving} className="h-9 px-3 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60 text-sm inline-flex items-center gap-1.5">
-                          {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
+                          {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("staffManager.active.save")}
                         </button>
                         <button type="button" onClick={() => setRowStatus(row, "inactive")} disabled={isActing} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          <Power className="h-4 w-4" /> Deactivate
+                          <Power className="h-4 w-4" /> {t("staffManager.active.deactivate")}
                         </button>
                         <button type="button" onClick={() => removeRow(row)} disabled={isActing} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          <Trash2 className="h-4 w-4" /> Remove
+                          <Trash2 className="h-4 w-4" /> {t("staffManager.active.remove")}
                         </button>
                       </div>
                     </div>
@@ -638,12 +645,12 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       {/* Audit Trail */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" /> Staff Audit Trail</CardTitle>
-          <CardDescription>Recent staff and invitation activity.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" /> {t("staffManager.audit.title")}</CardTitle>
+          <CardDescription>{t("staffManager.audit.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {auditTrail.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No staff audit activity found.</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.audit.empty")}</div>
           ) : (
             <div className="space-y-3">
               {auditTrail.map((item) => (

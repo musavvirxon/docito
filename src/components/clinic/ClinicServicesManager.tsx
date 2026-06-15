@@ -1,5 +1,6 @@
 // File: src/components/clinic/ClinicServicesManager.tsx
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +102,7 @@ function formatMoney(cents: number, currency: string): string {
 }
 
 export default function ClinicServicesManager({ practiceId }: Props) {
+  const { t } = useTranslation("clinic");
   const [services, setServices] = useState<ClinicService[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -116,7 +118,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       .eq("practice_id", practiceId)
       .order("created_at", { ascending: false });
     if (error) {
-      toast.error(error.message || "Failed to load services");
+      toast.error(error.message || t("servicesManager.toasts.loadFailed"));
     } else {
       setServices((data || []) as ClinicService[]);
     }
@@ -154,7 +156,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
 
   const handleSubmit = async () => {
     if (!form.name.trim()) {
-      toast.error("Service name is required");
+      toast.error(t("servicesManager.toasts.nameRequired"));
       return;
     }
     setSaving(true);
@@ -164,7 +166,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       if (form.deposit_required) {
         if (form.deposit_type === "percent") {
           const pct = Math.min(100, Math.max(0, Number(form.deposit_value) || 0));
-          deposit_cents = Math.round(pct); // store percent as integer 0-100 in deposit_cents
+          deposit_cents = Math.round(pct);
         } else {
           deposit_cents = parseMoney(form.deposit_value);
         }
@@ -190,16 +192,16 @@ export default function ClinicServicesManager({ practiceId }: Props) {
           .update(payload)
           .eq("id", form.id);
         if (error) throw error;
-        toast.success("Service updated");
+        toast.success(t("servicesManager.toasts.updated"));
       } else {
         const { error } = await supabase.from("clinic_services").insert(payload);
         if (error) throw error;
-        toast.success("Service added");
+        toast.success(t("servicesManager.toasts.added"));
       }
       setDialogOpen(false);
       await load();
     } catch (e: any) {
-      toast.error(e?.message || "Failed to save service");
+      toast.error(e?.message || t("servicesManager.toasts.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -211,20 +213,20 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       .update({ is_active: next })
       .eq("id", svc.id);
     if (error) {
-      toast.error(error.message || "Failed to update");
+      toast.error(error.message || t("servicesManager.toasts.updateFailed"));
       return;
     }
     setServices((prev) => prev.map((s) => (s.id === svc.id ? { ...s, is_active: next } : s)));
   };
 
   const handleDelete = async (svc: ClinicService) => {
-    if (!confirm(`Delete service "${svc.name}"?`)) return;
+    if (!confirm(t("servicesManager.toasts.confirmDelete", { name: svc.name }))) return;
     const { error } = await supabase.from("clinic_services").delete().eq("id", svc.id);
     if (error) {
-      toast.error(error.message || "Failed to delete");
+      toast.error(error.message || t("servicesManager.toasts.deleteFailed"));
       return;
     }
-    toast.success("Service deleted");
+    toast.success(t("servicesManager.toasts.deleted"));
     setServices((prev) => prev.filter((s) => s.id !== svc.id));
   };
 
@@ -240,13 +242,13 @@ export default function ClinicServicesManager({ practiceId }: Props) {
     <Card>
       <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <CardTitle>Services & Pricing</CardTitle>
+          <CardTitle>{t("servicesManager.title")}</CardTitle>
           <CardDescription>
-            Manage the services your clinic offers, their pricing, and deposit requirements.
+            {t("servicesManager.description")}
           </CardDescription>
         </div>
         <Button onClick={openCreate} className="gap-2 self-start md:self-auto">
-          <Plus className="h-4 w-4" /> Add service
+          <Plus className="h-4 w-4" /> {t("servicesManager.addService")}
         </Button>
       </CardHeader>
       <CardContent>
@@ -256,21 +258,20 @@ export default function ClinicServicesManager({ practiceId }: Props) {
           </div>
         ) : empty ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No services yet. Add your first service to start accepting bookings with the right
-            pricing and deposit rules.
+            {t("servicesManager.empty")}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Deposit</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("servicesManager.columns.name")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.category")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.duration")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.price")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.deposit")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.active")}</TableHead>
+                  <TableHead className="text-right">{t("servicesManager.columns.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -287,7 +288,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                     <TableCell>
                       {svc.category ? <Badge variant="secondary">{svc.category}</Badge> : "—"}
                     </TableCell>
-                    <TableCell>{svc.duration_minutes ?? 30} min</TableCell>
+                    <TableCell>{t("servicesManager.minutes", { count: svc.duration_minutes ?? 30 })}</TableCell>
                     <TableCell>{formatMoney(svc.price_cents, svc.currency)}</TableCell>
                     <TableCell>{depositLabel(svc)}</TableCell>
                     <TableCell>
@@ -315,32 +316,32 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{form.id ? "Edit service" : "Add service"}</DialogTitle>
+            <DialogTitle>{form.id ? t("servicesManager.dialog.editTitle") : t("servicesManager.dialog.addTitle")}</DialogTitle>
             <DialogDescription>
-              Define the service, its price, and whether patients must pay a deposit to book.
+              {t("servicesManager.dialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5 md:col-span-2">
-                <Label>Name</Label>
+                <Label>{t("servicesManager.dialog.name")}</Label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Teeth whitening"
+                  placeholder={t("servicesManager.dialog.namePh")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Category</Label>
+                <Label>{t("servicesManager.dialog.category")}</Label>
                 <Input
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  placeholder="Cosmetic"
+                  placeholder={t("servicesManager.dialog.categoryPh")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Duration (minutes)</Label>
+                <Label>{t("servicesManager.dialog.duration")}</Label>
                 <Input
                   type="number"
                   min={5}
@@ -351,7 +352,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                 />
               </div>
               <div className="space-y-1.5 md:col-span-2">
-                <Label>Description</Label>
+                <Label>{t("servicesManager.dialog.descLabel")}</Label>
                 <Textarea
                   rows={2}
                   value={form.description}
@@ -359,7 +360,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Currency</Label>
+                <Label>{t("servicesManager.dialog.currency")}</Label>
                 <Select
                   value={form.currency}
                   onValueChange={(v) => setForm((f) => ({ ...f, currency: v }))}
@@ -377,7 +378,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Price</Label>
+                <Label>{t("servicesManager.dialog.price")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -392,9 +393,9 @@ export default function ClinicServicesManager({ practiceId }: Props) {
             <div className="rounded-md border p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm">Deposit required</Label>
+                  <Label className="text-sm">{t("servicesManager.dialog.depositRequired")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Require patients to pay a deposit to confirm a booking.
+                    {t("servicesManager.dialog.depositHelp")}
                   </p>
                 </div>
                 <Switch
@@ -405,7 +406,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
               {form.deposit_required && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label>Type</Label>
+                    <Label>{t("servicesManager.dialog.type")}</Label>
                     <Select
                       value={form.deposit_type}
                       onValueChange={(v) =>
@@ -416,14 +417,14 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="fixed">Fixed amount</SelectItem>
-                        <SelectItem value="percent">Percent of price</SelectItem>
+                        <SelectItem value="fixed">{t("servicesManager.dialog.typeFixed")}</SelectItem>
+                        <SelectItem value="percent">{t("servicesManager.dialog.typePercent")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
                     <Label>
-                      {form.deposit_type === "percent" ? "Percent (0–100)" : "Amount"}
+                      {form.deposit_type === "percent" ? t("servicesManager.dialog.percentLabel") : t("servicesManager.dialog.amountLabel")}
                     </Label>
                     <Input
                       type="number"
@@ -441,7 +442,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
             </div>
 
             <div className="flex items-center justify-between rounded-md border p-3">
-              <Label className="text-sm">Active</Label>
+              <Label className="text-sm">{t("servicesManager.dialog.active")}</Label>
               <Switch
                 checked={form.is_active}
                 onCheckedChange={(v) => setForm((f) => ({ ...f, is_active: v }))}
@@ -451,10 +452,10 @@ export default function ClinicServicesManager({ practiceId }: Props) {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-              Cancel
+              {t("servicesManager.dialog.cancel")}
             </Button>
             <Button onClick={handleSubmit} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : form.id ? "Save" : "Add"}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : form.id ? t("servicesManager.dialog.save") : t("servicesManager.dialog.add")}
             </Button>
           </DialogFooter>
         </DialogContent>
