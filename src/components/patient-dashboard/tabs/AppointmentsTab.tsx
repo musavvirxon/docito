@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ const AppointmentsTab = ({
   onCancel,
   onView,
 }: AppointmentsTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const now = new Date();
 
   const upcomingAppointments = appointments.filter(
@@ -96,12 +98,12 @@ const AppointmentsTab = ({
             <div className="flex sm:flex-col items-center gap-2 sm:gap-0 text-center bg-primary/5 rounded-lg p-3 shrink-0">
               <Calendar className="w-4 h-4 text-primary sm:mb-1" />
               <p className="text-lg font-bold text-primary">
-                {new Date(appointment.date).toLocaleDateString("en-US", {
+                {new Date(appointment.date).toLocaleDateString(i18n.language, {
                   day: "numeric",
                 })}
               </p>
               <p className="text-xs text-muted-foreground">
-                {new Date(appointment.date).toLocaleDateString("en-US", {
+                {new Date(appointment.date).toLocaleDateString(i18n.language, {
                   month: "short",
                   year: "numeric",
                 })}
@@ -126,7 +128,7 @@ const AppointmentsTab = ({
                   )}
                 </div>
                 <Badge variant="outline" className={getStatusColor(appointment.status)}>
-                  {appointment.status}
+                  {t(`tabs.appointments.status.${appointment.status}`)}
                 </Badge>
               </div>
 
@@ -149,7 +151,7 @@ const AppointmentsTab = ({
                   {appointment.diagnosis && (
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">
-                        Diagnosis
+                        {t("tabs.appointments.diagnosis")}
                       </p>
                       <p className="text-sm">{appointment.diagnosis}</p>
                     </div>
@@ -157,7 +159,7 @@ const AppointmentsTab = ({
                   {appointment.treatment && (
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">
-                        Treatment
+                        {t("tabs.appointments.treatment")}
                       </p>
                       <p className="text-sm">{appointment.treatment}</p>
                     </div>
@@ -173,7 +175,7 @@ const AppointmentsTab = ({
                   onClick={() => onView(appointment)}
                 >
                   <Eye className="w-3.5 h-3.5 mr-1.5" />
-                  View
+                  {t("tabs.appointments.view")}
                 </Button>
                 {!isPast && appointment.status !== "cancelled" && (
                   <>
@@ -183,7 +185,7 @@ const AppointmentsTab = ({
                       onClick={() => onReschedule(appointment)}
                     >
                       <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-                      Reschedule
+                      {t("tabs.appointments.reschedule")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -192,7 +194,7 @@ const AppointmentsTab = ({
                       onClick={() => onCancel(appointment)}
                     >
                       <X className="w-3.5 h-3.5 mr-1.5" />
-                      Cancel
+                      {t("tabs.appointments.cancel")}
                     </Button>
                   </>
                 )}
@@ -229,10 +231,10 @@ const AppointmentsTab = ({
       className="space-y-6"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Appointments</h2>
+        <h2 className="text-lg font-semibold">{t("tabs.appointments.title")}</h2>
         <Button onClick={onSchedule} className="gap-2">
           <Plus className="w-4 h-4" />
-          Schedule Appointment
+          {t("tabs.appointments.schedule")}
         </Button>
       </div>
 
@@ -240,11 +242,11 @@ const AppointmentsTab = ({
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="upcoming" className="gap-2">
             <CalendarCheck className="w-4 h-4" />
-            Upcoming ({upcomingAppointments.length})
+            {t("tabs.appointments.upcoming", { count: upcomingAppointments.length })}
           </TabsTrigger>
           <TabsTrigger value="past" className="gap-2">
             <CalendarX className="w-4 h-4" />
-            Past ({pastAppointments.length})
+            {t("tabs.appointments.past", { count: pastAppointments.length })}
           </TabsTrigger>
         </TabsList>
 
@@ -252,8 +254,8 @@ const AppointmentsTab = ({
           {upcomingAppointments.length === 0 ? (
             <EmptyState
               icon={CalendarCheck}
-              title="No upcoming appointments"
-              description="Schedule a new appointment for this patient"
+              title={t("tabs.appointments.emptyUpcomingTitle")}
+              description={t("tabs.appointments.emptyUpcomingDesc")}
             />
           ) : (
             <div className="space-y-4">
@@ -270,8 +272,8 @@ const AppointmentsTab = ({
           {pastAppointments.length === 0 ? (
             <EmptyState
               icon={CalendarX}
-              title="No past appointments"
-              description="Past appointments will appear here"
+              title={t("tabs.appointments.emptyPastTitle")}
+              description={t("tabs.appointments.emptyPastDesc")}
             />
           ) : (
             <ScrollArea className="h-[600px]">
