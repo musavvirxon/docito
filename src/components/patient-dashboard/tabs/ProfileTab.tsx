@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +55,7 @@ interface ProfileTabProps {
 }
 
 const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const Section = ({
     title,
     icon: Icon,
@@ -105,12 +107,12 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
     >
       {/* Demographics Section */}
       <Section
-        title="Demographics"
+        title={t("tabs.profile.demographics")}
         icon={User}
         action={
           <Button variant="ghost" size="sm" onClick={onEdit}>
             <Edit className="w-4 h-4 mr-2" />
-            Edit
+            {t("tabs.profile.edit")}
           </Button>
         }
       >
@@ -125,40 +127,43 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <InfoRow label="Full Name" value={profile.full_name} />
+            <InfoRow label={t("tabs.profile.fullName")} value={profile.full_name} />
             <InfoRow
-              label="Date of Birth"
+              label={t("tabs.profile.dateOfBirth")}
               value={
                 profile.date_of_birth
-                  ? `${new Date(profile.date_of_birth).toLocaleDateString()} (${profile.age} years)`
+                  ? t("tabs.profile.dobValue", {
+                      date: new Date(profile.date_of_birth).toLocaleDateString(i18n.language),
+                      age: profile.age,
+                    })
                   : undefined
               }
               icon={Calendar}
             />
-            <InfoRow label="Gender" value={profile.gender} />
-            <InfoRow label="Nationality" value={profile.nationality} />
-            <InfoRow label="Profession" value={profile.profession} />
+            <InfoRow label={t("tabs.profile.gender")} value={profile.gender} />
+            <InfoRow label={t("tabs.profile.nationality")} value={profile.nationality} />
+            <InfoRow label={t("tabs.profile.profession")} value={profile.profession} />
           </div>
         </div>
       </Section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Contact Information */}
-        <Section title="Contact Information" icon={Phone}>
+        <Section title={t("tabs.profile.contact")} icon={Phone}>
           <div className="space-y-1">
-            <InfoRow label="Phone" value={profile.phone} icon={Phone} />
+            <InfoRow label={t("tabs.profile.phone")} value={profile.phone} icon={Phone} />
             <Separator />
-            <InfoRow label="Email" value={profile.email} icon={Mail} />
+            <InfoRow label={t("tabs.profile.email")} value={profile.email} icon={Mail} />
             <Separator />
-            <InfoRow label="Address" value={profile.address} icon={MapPin} />
+            <InfoRow label={t("tabs.profile.address")} value={profile.address} icon={MapPin} />
             <Separator />
             <div className="pt-2">
               <p className="text-xs text-muted-foreground mb-2 font-medium">
-                Emergency Contact
+                {t("tabs.profile.emergencyContact")}
               </p>
               <div className="bg-destructive/5 rounded-lg p-3 border border-destructive/10">
                 <p className="font-medium text-sm">
-                  {profile.emergency_contact_name || "Not provided"}
+                  {profile.emergency_contact_name || t("tabs.profile.notProvided")}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {profile.emergency_contact_phone || "—"}
@@ -169,10 +174,10 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
         </Section>
 
         {/* Medical Information */}
-        <Section title="Medical Information" icon={Heart}>
+        <Section title={t("tabs.profile.medical")} icon={Heart}>
           <div className="space-y-3">
             <InfoRow
-              label="Blood Group"
+              label={t("tabs.profile.bloodGroup")}
               value={profile.blood_group}
               icon={Droplets}
             />
@@ -183,7 +188,7 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                 <p className="text-xs text-muted-foreground font-medium">
-                  Allergies
+                  {t("tabs.profile.allergies")}
                 </p>
               </div>
               {profile.allergies ? (
@@ -200,7 +205,7 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No allergies recorded
+                  {t("tabs.profile.noAllergies")}
                 </p>
               )}
             </div>
@@ -211,11 +216,11 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
               <div className="flex items-center gap-2 mb-2">
                 <Activity className="w-4 h-4 text-primary" />
                 <p className="text-xs text-muted-foreground font-medium">
-                  Chronic Conditions
+                  {t("tabs.profile.chronicConditions")}
                 </p>
               </div>
               <p className="text-sm whitespace-pre-wrap">
-                {profile.chronic_conditions || "None recorded"}
+                {profile.chronic_conditions || t("tabs.profile.noneRecorded")}
               </p>
             </div>
             <Separator />
@@ -225,11 +230,11 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
               <div className="flex items-center gap-2 mb-2">
                 <Pill className="w-4 h-4 text-accent" />
                 <p className="text-xs text-muted-foreground font-medium">
-                  Current Medications
+                  {t("tabs.profile.currentMedications")}
                 </p>
               </div>
               <p className="text-sm whitespace-pre-wrap">
-                {profile.current_medications || "None recorded"}
+                {profile.current_medications || t("tabs.profile.noneRecorded")}
               </p>
             </div>
 
@@ -239,7 +244,7 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
                 <Separator />
                 <div className="py-2">
                   <p className="text-xs text-muted-foreground font-medium mb-2">
-                    Important Alerts
+                    {t("tabs.profile.importantAlerts")}
                   </p>
                   <div className="space-y-2">
                     {profile.important_alerts.map((alert, i) => (
@@ -259,44 +264,44 @@ const ProfileTab = ({ profile, onEdit }: ProfileTabProps) => {
         </Section>
 
         {/* Lifestyle Info */}
-        <Section title="Lifestyle Information" icon={Activity}>
+        <Section title={t("tabs.profile.lifestyle")} icon={Activity}>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <Cigarette className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Smoking</p>
+              <p className="text-xs text-muted-foreground">{t("tabs.profile.smoking")}</p>
               <p className="text-sm font-medium capitalize">
-                {profile.smoking || "Unknown"}
+                {profile.smoking || t("tabs.profile.unknown")}
               </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <Wine className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Alcohol</p>
+              <p className="text-xs text-muted-foreground">{t("tabs.profile.alcohol")}</p>
               <p className="text-sm font-medium capitalize">
-                {profile.alcohol || "Unknown"}
+                {profile.alcohol || t("tabs.profile.unknown")}
               </p>
             </div>
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <Activity className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">Activity</p>
+              <p className="text-xs text-muted-foreground">{t("tabs.profile.activity")}</p>
               <p className="text-sm font-medium capitalize">
-                {profile.activity_level || "Unknown"}
+                {profile.activity_level || t("tabs.profile.unknown")}
               </p>
             </div>
           </div>
         </Section>
 
         {/* Insurance Information */}
-        <Section title="Insurance Information" icon={Shield}>
+        <Section title={t("tabs.profile.insurance")} icon={Shield}>
           <div className="space-y-1">
-            <InfoRow label="Provider" value={profile.insurance_provider} />
+            <InfoRow label={t("tabs.profile.provider")} value={profile.insurance_provider} />
             <Separator />
-            <InfoRow label="Policy Number" value={profile.insurance_policy} />
+            <InfoRow label={t("tabs.profile.policyNumber")} value={profile.insurance_policy} />
             <Separator />
             <InfoRow
-              label="Expiry Date"
+              label={t("tabs.profile.expiryDate")}
               value={
                 profile.insurance_expiry
-                  ? new Date(profile.insurance_expiry).toLocaleDateString()
+                  ? new Date(profile.insurance_expiry).toLocaleDateString(i18n.language)
                   : undefined
               }
             />
