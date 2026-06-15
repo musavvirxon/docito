@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ToothSVG } from '@/components/dental/ToothSVG';
@@ -11,6 +12,7 @@ import {
 } from '@/components/dental/types';
 import { useDentalChart } from '@/hooks/useDentalChart';
 import { Activity, Loader2 } from 'lucide-react';
+
 
 interface Props {
   patientId: string;
@@ -25,6 +27,7 @@ interface Props {
  * clinical history so a clinician can quickly see what's been done.
  */
 export function PatientCurrentStateChart({ patientId }: Props) {
+  const { t } = useTranslation('appointments');
   const { toothRecords, procedureHistory, loading } = useDentalChart(patientId);
 
   const byTooth = useMemo(() => {
@@ -82,7 +85,7 @@ export function PatientCurrentStateChart({ patientId }: Props) {
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-[260px]">
                   <div className="space-y-1.5">
-                    <p className="font-semibold text-xs">Tooth {num}</p>
+                    <p className="font-semibold text-xs">{t('currentState.tooth', { number: num })}</p>
                     <p className="text-[11px] flex items-center gap-1">
                       <span
                         className="w-2 h-2 rounded-full"
@@ -92,12 +95,12 @@ export function PatientCurrentStateChart({ patientId }: Props) {
                     </p>
                     {entry?.diagnosis && (
                       <p className="text-[11px] text-muted-foreground">
-                        <span className="font-medium text-foreground">Dx:</span> {entry.diagnosis}
+                        <span className="font-medium text-foreground">{t('currentState.dx')}</span> {entry.diagnosis}
                       </p>
                     )}
                     {entry?.procedures.length ? (
                       <div className="text-[11px] space-y-0.5 border-t pt-1">
-                        <span className="font-medium text-foreground">History:</span>
+                        <span className="font-medium text-foreground">{t('currentState.history')}</span>
                         {entry.procedures.slice(0, 5).map((p, i) => (
                           <div key={i} className="flex justify-between gap-2">
                             <span>{p.name}</span>
@@ -106,7 +109,7 @@ export function PatientCurrentStateChart({ patientId }: Props) {
                         ))}
                         {entry.procedures.length > 5 && (
                           <span className="text-muted-foreground">
-                            +{entry.procedures.length - 5} more
+                            {t('currentState.more', { count: entry.procedures.length - 5 })}
                           </span>
                         )}
                       </div>
@@ -125,31 +128,31 @@ export function PatientCurrentStateChart({ patientId }: Props) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Activity className="h-4 w-4" /> Current Dental State
+          <Activity className="h-4 w-4" /> {t('currentState.title')}
           <span className="text-[11px] text-muted-foreground font-normal">
-            — hover a tooth for diagnoses & procedure history
+            {t('currentState.subtitle')}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground gap-2 text-sm">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t('currentState.loading')}
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex justify-center gap-3 flex-wrap">
-              {renderQuadrant(PERMANENT_TEETH.upperRight, 'permanent', 'Q1 (UR)')}
+              {renderQuadrant(PERMANENT_TEETH.upperRight, 'permanent', t('currentState.quadrants.q1'))}
               <div className="w-px bg-border self-stretch" />
-              {renderQuadrant(PERMANENT_TEETH.upperLeft, 'permanent', 'Q2 (UL)')}
+              {renderQuadrant(PERMANENT_TEETH.upperLeft, 'permanent', t('currentState.quadrants.q2'))}
             </div>
             <div className="flex justify-center">
               <div className="w-4/5 h-px bg-border" />
             </div>
             <div className="flex justify-center gap-3 flex-wrap">
-              {renderQuadrant(PERMANENT_TEETH.lowerRight, 'permanent', 'Q4 (LR)')}
+              {renderQuadrant(PERMANENT_TEETH.lowerRight, 'permanent', t('currentState.quadrants.q4'))}
               <div className="w-px bg-border self-stretch" />
-              {renderQuadrant(PERMANENT_TEETH.lowerLeft, 'permanent', 'Q3 (LL)')}
+              {renderQuadrant(PERMANENT_TEETH.lowerLeft, 'permanent', t('currentState.quadrants.q3'))}
             </div>
             <div className="pt-2">
               <DentalChartLegend />
