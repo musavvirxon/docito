@@ -36,13 +36,14 @@ interface PatientSelectorProps {
 const PatientSelector = ({
   value,
   onSelect,
-  placeholder = "Search by name, email, or phone",
+  placeholder,
   className = "",
   required = false,
   allowCreate = true,
 }: PatientSelectorProps) => {
   const { user } = useAuth();
-  const { t } = useTranslation("dashboard");
+  const { t } = useTranslation("patients");
+  const effectivePlaceholder = placeholder ?? t("selector.searchPlaceholder");
 
   const [doctorId, setDoctorId] = useState<string | null>(null);
 
@@ -144,7 +145,7 @@ const PatientSelector = ({
       setRegisteredPatients(reg);
     } catch (e: any) {
       console.error(e);
-      toast.error("Failed to load patients");
+      toast.error(t("selector.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -182,7 +183,7 @@ const PatientSelector = ({
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
         <Input
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           value={inputValue}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -204,7 +205,7 @@ const PatientSelector = ({
               size="sm"
               onClick={() => setShowCreateModal(true)}
               className="h-7 w-7 p-0"
-              title="Add new patient"
+              title={t("selector.addNewPatient")}
             >
               <UserPlus className="w-4 h-4" />
             </Button>
@@ -213,7 +214,7 @@ const PatientSelector = ({
       </div>
 
       {required && !value && (
-        <p className="text-xs text-destructive mt-1">Patient is required</p>
+        <p className="text-xs text-destructive mt-1">{t("selector.patientRequired")}</p>
       )}
 
       {showDropdown && (
@@ -222,19 +223,19 @@ const PatientSelector = ({
             <div className="border-b p-2">
               <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
                 <TabsList className="grid grid-cols-3 h-8">
-                  <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-                  <TabsTrigger value="registered" className="text-xs">Registered</TabsTrigger>
-                  <TabsTrigger value="doctor_added" className="text-xs">Doctor-added</TabsTrigger>
+                  <TabsTrigger value="all" className="text-xs">{t("selector.all")}</TabsTrigger>
+                  <TabsTrigger value="registered" className="text-xs">{t("selector.registered")}</TabsTrigger>
+                  <TabsTrigger value="doctor_added" className="text-xs">{t("selector.doctorAdded")}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
             <div className="max-h-60 overflow-y-auto">
               {loading ? (
-                <div className="p-4 text-center text-muted-foreground">Loading patients...</div>
+                <div className="p-4 text-center text-muted-foreground">{t("selector.loading")}</div>
               ) : filteredPatients.length === 0 ? (
                 <div className="p-4 text-center">
-                  <p className="text-muted-foreground mb-3">No patients found</p>
+                  <p className="text-muted-foreground mb-3">{t("selector.noPatientsFound")}</p>
                   {allowCreate && (
                     <Button
                       size="sm"
@@ -244,7 +245,7 @@ const PatientSelector = ({
                       }}
                     >
                       <UserPlus className="w-4 h-4 mr-2" />
-                      {t("doctor.booking.addNewPatient", "Add New Patient")}
+                      {t("selector.addNewPatientButton")}
                     </Button>
                   )}
                 </div>
@@ -279,7 +280,7 @@ const PatientSelector = ({
                       </div>
 
                       <Badge variant="outline" className="text-xs">
-                        {p.source === "registered" ? "Registered" : "Doctor-added"}
+                        {p.source === "registered" ? t("selector.registered") : t("selector.doctorAdded")}
                       </Badge>
                     </div>
                   ))}
