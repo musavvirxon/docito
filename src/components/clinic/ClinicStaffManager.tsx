@@ -2,6 +2,7 @@
 // Direct-query staff management for clinic/practice admins (same pattern as LabStaffManager)
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,18 +101,21 @@ function normalizePermissions(raw: any): PermissionKey[] {
   return [];
 }
 
-function relativeTimeLabel(value?: string | null) {
-  if (!value) return "Unknown time";
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "Unknown time";
-  const diff = Date.now() - d.getTime();
-  const min = Math.round(Math.abs(diff) / 60000);
-  const hr = Math.round(Math.abs(diff) / 3600000);
-  const day = Math.round(Math.abs(diff) / 86400000);
-  if (min < 1) return "just now";
-  if (min < 60) return `${min}m ago`;
-  if (hr < 24) return `${hr}h ago`;
-  return `${day}d ago`;
+function useRelativeTime() {
+  const { t } = useTranslation("clinic");
+  return (value?: string | null) => {
+    if (!value) return t("staffManager.time.unknown");
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return t("staffManager.time.unknown");
+    const diff = Date.now() - d.getTime();
+    const min = Math.round(Math.abs(diff) / 60000);
+    const hr = Math.round(Math.abs(diff) / 3600000);
+    const day = Math.round(Math.abs(diff) / 86400000);
+    if (min < 1) return t("staffManager.time.justNow");
+    if (min < 60) return t("staffManager.time.minutes", { n: min });
+    if (hr < 24) return t("staffManager.time.hours", { n: hr });
+    return t("staffManager.time.days", { n: day });
+  };
 }
 
 function getProfileName(profile?: ProfileRow | null, fallbackEmail?: string) {
