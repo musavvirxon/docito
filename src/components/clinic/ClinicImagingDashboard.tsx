@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ const MODALITY_ICONS: Record<string, string> = {
 };
 
 export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps) {
+  const { t } = useTranslation('clinic');
   const { imagingOrders, fetchImagingOrders, updateOrderStatus, uploadResult, loading } = useClinicImagingOrders();
   const { uploadFile, uploading } = useFileUpload();
   const [activeTab, setActiveTab] = useState('pending');
@@ -78,8 +80,8 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
   };
 
   const getPriorityBadge = (priority: string) => {
-    if (priority === 'stat') return <Badge variant="destructive">STAT</Badge>;
-    if (priority === 'urgent') return <Badge variant="outline" className="border-orange-500 text-orange-500">Urgent</Badge>;
+    if (priority === 'stat') return <Badge variant="destructive">{t('imagingDashboard.priority.stat')}</Badge>;
+    if (priority === 'urgent') return <Badge variant="outline" className="border-orange-500 text-orange-500">{t('imagingDashboard.priority.urgent')}</Badge>;
     return null;
   };
 
@@ -138,7 +140,7 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.pending}</p>
-                <p className="text-sm text-muted-foreground">Pending Orders</p>
+                <p className="text-sm text-muted-foreground">{t('imagingDashboard.stats.pending')}</p>
               </div>
             </div>
           </CardContent>
@@ -151,7 +153,7 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.in_progress}</p>
-                <p className="text-sm text-muted-foreground">In Progress</p>
+                <p className="text-sm text-muted-foreground">{t('imagingDashboard.stats.inProgress')}</p>
               </div>
             </div>
           </CardContent>
@@ -164,31 +166,29 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.completed}</p>
-                <p className="text-sm text-muted-foreground">Completed Today</p>
+                <p className="text-sm text-muted-foreground">{t('imagingDashboard.stats.completedToday')}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Orders List */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle>Imaging Orders</CardTitle>
+                <CardTitle>{t('imagingDashboard.title')}</CardTitle>
                 <Button variant="outline" size="sm" onClick={() => fetchImagingOrders(clinicId)}>
                   <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh
+                  {t('imagingDashboard.refresh')}
                 </Button>
               </div>
               <div className="flex gap-4 mt-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search orders..."
+                    placeholder={t('imagingDashboard.searchPh')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-9"
@@ -199,16 +199,16 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
             <CardContent className="p-0">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="w-full justify-start px-4">
-                  <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
-                  <TabsTrigger value="in_progress">In Progress ({stats.in_progress})</TabsTrigger>
-                  <TabsTrigger value="completed">Completed ({stats.completed})</TabsTrigger>
+                  <TabsTrigger value="pending">{t('imagingDashboard.tabs.pending', { count: stats.pending })}</TabsTrigger>
+                  <TabsTrigger value="in_progress">{t('imagingDashboard.tabs.inProgress', { count: stats.in_progress })}</TabsTrigger>
+                  <TabsTrigger value="completed">{t('imagingDashboard.tabs.completed', { count: stats.completed })}</TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="h-[500px]">
                   <div className="divide-y">
                     {filteredOrders.length === 0 ? (
                       <div className="p-6 text-center text-muted-foreground">
-                        No orders found
+                        {t('imagingDashboard.empty')}
                       </div>
                     ) : (
                       filteredOrders.map(order => (
@@ -228,7 +228,7 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
                               </div>
                               <p className="font-medium">{order.exam_name}</p>
                               <p className="text-sm text-muted-foreground">
-                                {order.modality.toUpperCase()} • {order.body_part || 'N/A'} • {format(new Date(order.created_at), 'MMM d, HH:mm')}
+                                {order.modality.toUpperCase()} • {order.body_part || t('imagingDashboard.na')} • {format(new Date(order.created_at), 'MMM d, HH:mm')}
                               </p>
                             </div>
                             <Badge variant="outline" className={getStatusBadge(order.status)}>
@@ -245,11 +245,10 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
           </Card>
         </div>
 
-        {/* Order Details / Result Entry */}
         <Card>
           <CardHeader>
             <CardTitle>
-              {selectedOrder ? 'Order Details' : 'Select Order'}
+              {selectedOrder ? t('imagingDashboard.details') : t('imagingDashboard.selectPrompt')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -269,62 +268,61 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-muted-foreground">Modality</p>
+                      <p className="text-muted-foreground">{t('imagingDashboard.fields.modality')}</p>
                       <p className="font-medium uppercase">{selectedOrder.modality}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Body Part</p>
-                      <p className="font-medium">{selectedOrder.body_part || 'N/A'}</p>
+                      <p className="text-muted-foreground">{t('imagingDashboard.fields.bodyPart')}</p>
+                      <p className="font-medium">{selectedOrder.body_part || t('imagingDashboard.na')}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Priority</p>
+                      <p className="text-muted-foreground">{t('imagingDashboard.fields.priority')}</p>
                       <p className="font-medium capitalize">{selectedOrder.priority}</p>
                     </div>
                   </div>
 
                   {selectedOrder.clinical_notes && (
                     <div>
-                      <p className="text-muted-foreground text-sm">Clinical Notes</p>
+                      <p className="text-muted-foreground text-sm">{t('imagingDashboard.fields.clinicalNotes')}</p>
                       <p className="text-sm bg-muted p-2 rounded mt-1">{selectedOrder.clinical_notes}</p>
                     </div>
                   )}
 
-                  {/* Actions based on status */}
                   {(selectedOrder.status === 'pending' || selectedOrder.status === 'scheduled') && (
                     <Button 
                       className="w-full" 
                       onClick={() => handleStatusUpdate(selectedOrder.id, 'in_progress')}
                     >
-                      Start Examination
+                      {t('imagingDashboard.actions.startExam')}
                     </Button>
                   )}
 
                   {selectedOrder.status === 'in_progress' && (
                     <div className="space-y-4 pt-4 border-t">
-                      <h4 className="font-medium">Upload Results</h4>
+                      <h4 className="font-medium">{t('imagingDashboard.results.upload')}</h4>
                       
                       <div className="space-y-2">
-                        <Label>Impression</Label>
+                        <Label>{t('imagingDashboard.results.impression')}</Label>
                         <Textarea
                           value={resultForm.impression}
                           onChange={(e) => setResultForm(prev => ({ ...prev, impression: e.target.value }))}
-                          placeholder="Brief diagnostic impression..."
+                          placeholder={t('imagingDashboard.results.impressionPh')}
                           rows={2}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Findings</Label>
+                        <Label>{t('imagingDashboard.results.findings')}</Label>
                         <Textarea
                           value={resultForm.findings}
                           onChange={(e) => setResultForm(prev => ({ ...prev, findings: e.target.value }))}
-                          placeholder="Detailed findings..."
+                          placeholder={t('imagingDashboard.results.findingsPh')}
                           rows={4}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Upload Images</Label>
+                        <Label>{t('imagingDashboard.results.uploadImages')}</Label>
                         <Input
                           type="file"
                           accept="image/*,.dcm"
@@ -337,7 +335,7 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
                             {resultForm.result_images.map((url, i) => (
                               <div key={i} className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs">
                                 <ImageIcon className="h-3 w-3" />
-                                Image {i + 1}
+                                {t('imagingDashboard.results.imageLabel', { index: i + 1 })}
                               </div>
                             ))}
                           </div>
@@ -345,7 +343,7 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Upload Report (PDF)</Label>
+                        <Label>{t('imagingDashboard.results.uploadReport')}</Label>
                         <Input
                           type="file"
                           accept=".pdf"
@@ -360,30 +358,30 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
                         disabled={!resultForm.impression && !resultForm.findings}
                       >
                         <Upload className="h-4 w-4 mr-2" />
-                        Submit Results
+                        {t('imagingDashboard.results.submit')}
                       </Button>
                     </div>
                   )}
 
                   {selectedOrder.status === 'completed' && (
                     <div className="space-y-3 pt-4 border-t">
-                      <h4 className="font-medium">Results</h4>
+                      <h4 className="font-medium">{t('imagingDashboard.results.title')}</h4>
                       {selectedOrder.impression && (
                         <div>
-                          <p className="text-muted-foreground text-sm">Impression</p>
+                          <p className="text-muted-foreground text-sm">{t('imagingDashboard.results.impression')}</p>
                           <p className="text-sm bg-muted p-2 rounded mt-1">{selectedOrder.impression}</p>
                         </div>
                       )}
                       {selectedOrder.findings && (
                         <div>
-                          <p className="text-muted-foreground text-sm">Findings</p>
+                          <p className="text-muted-foreground text-sm">{t('imagingDashboard.results.findings')}</p>
                           <p className="text-sm bg-muted p-2 rounded mt-1">{selectedOrder.findings}</p>
                         </div>
                       )}
                       {selectedOrder.result_url && (
                         <Button variant="outline" size="sm" asChild>
                           <a href={selectedOrder.result_url} target="_blank" rel="noopener noreferrer">
-                            View Report PDF
+                            {t('imagingDashboard.results.viewReport')}
                           </a>
                         </Button>
                       )}
@@ -395,7 +393,7 @@ export function ClinicImagingDashboard({ clinicId }: ClinicImagingDashboardProps
               <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                 <div className="text-center">
                   <ScanLine className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Select an order to view details</p>
+                  <p>{t('imagingDashboard.selectHint')}</p>
                 </div>
               </div>
             )}
