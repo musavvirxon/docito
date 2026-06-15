@@ -239,5 +239,15 @@
   "devBanner": {
     "label": "🚧 Development Mode: All fields are optional for quick testing",
     "fillDummy": "🎭 Fill Dummy Data"
+  },
+  "languageSwitcher": {
+    "trigger": "Change language",
+    "selected": "Selected",
+    "toast": {
+      "changedTitle": "Language changed",
+      "changedDescription": "Switched to {{language}}",
+      "errorTitle": "Error",
+      "errorDescription": "Failed to change language"
+    }
   }
 }
