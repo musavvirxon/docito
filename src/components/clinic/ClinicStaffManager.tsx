@@ -151,7 +151,10 @@ function buildSyntheticAudit(rows: StaffRow[], profilesById: Record<string, Prof
 }
 
 export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerProps) {
+  const { t } = useTranslation("clinic");
+  const relativeTimeLabel = useRelativeTime();
   const sb: any = supabase as any;
+
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
