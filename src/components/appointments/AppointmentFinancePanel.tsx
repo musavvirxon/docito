@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CreditCard, DollarSign, CheckCircle, AlertCircle, Plus, Receipt, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,7 @@ export function AppointmentFinancePanel({
   doctorName,
   procedures = [],
 }: Props) {
+  const { t } = useTranslation('appointments');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
   const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
   const finance = useAppointmentFinance(appointmentId, patientId || undefined);
@@ -61,15 +63,15 @@ export function AppointmentFinancePanel({
 
   const status =
     finance.outstanding <= 0 && finance.totalBilled > 0
-      ? { label: 'Paid', variant: 'default' as const }
+      ? { label: t('finance.status.paid'), variant: 'default' as const }
       : finance.outstanding > 0
-        ? { label: 'Outstanding', variant: 'outline' as const }
-        : { label: 'No charges', variant: 'secondary' as const };
+        ? { label: t('finance.status.outstanding'), variant: 'outline' as const }
+        : { label: t('finance.status.noCharges'), variant: 'secondary' as const };
 
   const handleRecordPayment = async () => {
     const n = Number(amount);
     if (!Number.isFinite(n) || n <= 0) {
-      toast.error('Enter a valid amount');
+      toast.error(t('finance.errors.enterValidAmount'));
       return;
     }
     try {
@@ -78,14 +80,14 @@ export function AppointmentFinancePanel({
       setAmount('');
       setNotes('');
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to record payment');
+      toast.error(e?.message || t('finance.errors.recordFailed'));
     }
   };
 
   const handleApplyDiscount = async () => {
     const n = Number(discountAmt);
     if (!Number.isFinite(n) || n <= 0) {
-      toast.error('Enter a valid discount');
+      toast.error(t('finance.errors.enterValidDiscount'));
       return;
     }
     try {
@@ -94,7 +96,7 @@ export function AppointmentFinancePanel({
       setDiscountAmt('');
       setDiscountReason('');
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to apply discount');
+      toast.error(e?.message || t('finance.errors.discountFailed'));
     }
   };
 
@@ -102,7 +104,7 @@ export function AppointmentFinancePanel({
     try {
       await finance.markFullyPaid('cash');
     } catch (e: any) {
-      toast.error(e?.message || 'Failed');
+      toast.error(e?.message || t('finance.errors.markFailed'));
     }
   };
 
@@ -119,11 +121,11 @@ export function AppointmentFinancePanel({
               name:
                 (p.code ? `[${p.code}] ` : '') +
                 p.name +
-                (p.toothNumbers?.length ? ` (Teeth ${p.toothNumbers.join(',')})` : ''),
+                (p.toothNumbers?.length ? ` (${t('finance.teethLabel', { list: p.toothNumbers.join(',') })})` : ''),
               code: p.code || undefined,
               amount: p.cost || 0,
             }))
-          : [{ name: 'Consultation', amount: finance.totalBilled }],
+          : [{ name: t('finance.consultation'), amount: finance.totalBilled }],
         totalBilled: finance.totalBilled,
         totalDiscount: finance.totalDiscounts,
         totalPaid: finance.totalPaid,
@@ -134,10 +136,10 @@ export function AppointmentFinancePanel({
           amount: Number(p.amount) || 0,
         })),
       }, i18n.language);
-      toast.success('Invoice PDF generated');
+      toast.success(t('finance.invoiceSuccess'));
     } catch (e: any) {
       console.error(e);
-      toast.error('Failed to generate invoice');
+      toast.error(t('finance.errors.invoiceFailed'));
     }
   };
 
@@ -146,7 +148,7 @@ export function AppointmentFinancePanel({
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4" /> Patient Finance
+            <CreditCard className="h-4 w-4" /> {t('finance.title')}
           </span>
           <Badge variant={status.variant}>{status.label}</Badge>
         </CardTitle>
@@ -154,15 +156,15 @@ export function AppointmentFinancePanel({
 
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <Kpi label="Amount to bill" value={fmt(amountToBill, finance.currency)} icon={DollarSign} />
-          <Kpi label="Paid" value={fmt(finance.totalPaid, finance.currency)} icon={CheckCircle} tone="success" />
+          <Kpi label={t('finance.kpi.amountToBill')} value={fmt(amountToBill, finance.currency)} icon={DollarSign} />
+          <Kpi label={t('finance.kpi.paid')} value={fmt(finance.totalPaid, finance.currency)} icon={CheckCircle} tone="success" />
           <Kpi
-            label="Discounts"
+            label={t('finance.kpi.discounts')}
             value={fmt(finance.totalDiscounts, finance.currency)}
             icon={Receipt}
           />
           <Kpi
-            label="Outstanding"
+            label={t('finance.kpi.outstanding')}
             value={fmt(finance.outstanding, finance.currency)}
             icon={AlertCircle}
             tone={finance.outstanding > 0 ? 'warn' : 'success'}
@@ -171,16 +173,16 @@ export function AppointmentFinancePanel({
 
         {finance.priorBalance > 0 && (
           <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
-            Prior unpaid balance: <strong>{fmt(finance.priorBalance, finance.currency)}</strong>
+            {t('finance.priorBalance')} <strong>{fmt(finance.priorBalance, finance.currency)}</strong>
           </div>
         )}
 
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
-            <Plus className="h-4 w-4" /> Record Payment
+            <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
           </Button>
           <Button size="sm" variant="outline" onClick={() => setDiscOpen(true)}>
-            Apply Discount
+            {t('finance.applyDiscount')}
           </Button>
           <Button
             size="sm"
@@ -188,23 +190,23 @@ export function AppointmentFinancePanel({
             onClick={handleMarkPaid}
             disabled={finance.outstanding <= 0}
           >
-            Mark Fully Paid
+            {t('finance.markFullyPaid')}
           </Button>
           <Button size="sm" variant="outline" onClick={handleInvoicePdf} className="gap-1">
-            <FileText className="h-4 w-4" /> Invoice PDF
+            <FileText className="h-4 w-4" /> {t('finance.invoicePdf')}
           </Button>
         </div>
 
         {finance.payments.length > 0 && (
           <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">Recent payments</p>
+            <p className="text-xs font-medium text-muted-foreground">{t('finance.recentPayments')}</p>
             {finance.payments.slice(0, 5).map((p) => (
               <div
                 key={p.id}
                 className="flex items-center justify-between text-xs rounded border px-2 py-1"
               >
                 <span className="truncate">
-                  {p.payment_method || 'payment'}{' '}
+                  {p.payment_method || t('finance.paymentFallback')}{' '}
                   {p.paid_at ? `· ${new Date(p.paid_at).toLocaleDateString()}` : ''}
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
@@ -212,7 +214,7 @@ export function AppointmentFinancePanel({
                     {fmt(Number(p.amount) || 0, finance.currency)}
                   </span>
                   <Badge variant="outline" className="text-[10px]">
-                    {p.status || 'completed'}
+                    {p.status || t('finance.completed')}
                   </Badge>
                 </span>
               </div>
@@ -225,11 +227,11 @@ export function AppointmentFinancePanel({
       <Dialog open={payOpen} onOpenChange={setPayOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Record Payment</DialogTitle>
+            <DialogTitle>{t('finance.dialog.recordTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Amount</Label>
+              <Label>{t('finance.dialog.amount')}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -239,30 +241,30 @@ export function AppointmentFinancePanel({
               />
             </div>
             <div>
-              <Label>Method</Label>
+              <Label>{t('finance.dialog.method')}</Label>
               <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="card">Card</SelectItem>
-                  <SelectItem value="insurance">Insurance</SelectItem>
-                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="cash">{t('finance.dialog.methods.cash')}</SelectItem>
+                  <SelectItem value="card">{t('finance.dialog.methods.card')}</SelectItem>
+                  <SelectItem value="insurance">{t('finance.dialog.methods.insurance')}</SelectItem>
+                  <SelectItem value="bank_transfer">{t('finance.dialog.methods.bank_transfer')}</SelectItem>
+                  <SelectItem value="other">{t('finance.dialog.methods.other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Notes</Label>
+              <Label>{t('finance.dialog.notes')}</Label>
               <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setPayOpen(false)}>
-              Cancel
+              {t('finance.dialog.cancel')}
             </Button>
-            <Button onClick={handleRecordPayment}>Record</Button>
+            <Button onClick={handleRecordPayment}>{t('finance.dialog.record')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -271,11 +273,11 @@ export function AppointmentFinancePanel({
       <Dialog open={discOpen} onOpenChange={setDiscOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Apply Discount</DialogTitle>
+            <DialogTitle>{t('finance.dialog.discountTitle')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>Amount</Label>
+              <Label>{t('finance.dialog.amount')}</Label>
               <Input
                 type="number"
                 inputMode="decimal"
@@ -285,19 +287,19 @@ export function AppointmentFinancePanel({
               />
             </div>
             <div>
-              <Label>Reason</Label>
+              <Label>{t('finance.dialog.reason')}</Label>
               <Input
                 value={discountReason}
                 onChange={(e) => setDiscountReason(e.target.value)}
-                placeholder="Loyalty, promotion, etc."
+                placeholder={t('finance.dialog.reasonPlaceholder')}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDiscOpen(false)}>
-              Cancel
+              {t('finance.dialog.cancel')}
             </Button>
-            <Button onClick={handleApplyDiscount}>Apply</Button>
+            <Button onClick={handleApplyDiscount}>{t('finance.dialog.apply')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth = [], onSubmit }: Props) {
+  const { t } = useTranslation('appointments');
   const { services } = useDoctorServices();
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
@@ -77,19 +79,19 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Procedure</DialogTitle>
+          <DialogTitle>{t('addProcedure.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           {serviceOptions.length > 0 && (
             <div>
-              <Label>Pick from your services</Label>
+              <Label>{t('addProcedure.pickFromServices')}</Label>
               <Select onValueChange={handlePickService}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a procedure or enter custom" />
+                  <SelectValue placeholder={t('addProcedure.chooseOrCustom')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="__custom">— Custom procedure —</SelectItem>
+                  <SelectItem value="__custom">{t('addProcedure.customProcedure')}</SelectItem>
                   {serviceOptions.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
@@ -103,52 +105,52 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="md:col-span-2">
-              <Label>Name *</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Composite filling" />
+              <Label>{t('addProcedure.name')}</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('addProcedure.namePlaceholder')} />
             </div>
             <div>
-              <Label>Cost</Label>
+              <Label>{t('addProcedure.cost')}</Label>
               <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <Label>Status</Label>
+            <Label>{t('addProcedure.status')}</Label>
             <Select value={status} onValueChange={(v) => setStatus(v as ProcedureStatus)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="planned">Planned</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="planned">{t('addProcedure.statuses.planned')}</SelectItem>
+                <SelectItem value="in_progress">{t('addProcedure.statuses.in_progress')}</SelectItem>
+                <SelectItem value="completed">{t('addProcedure.statuses.completed')}</SelectItem>
+                <SelectItem value="cancelled">{t('addProcedure.statuses.cancelled')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {isDentist && (
             <div>
-              <Label>Teeth (FDI) — optional</Label>
+              <Label>{t('addProcedure.teethLabel')}</Label>
               <p className="text-xs text-muted-foreground mb-2">
-                Select tooth numbers this procedure applies to. Leave empty for non-tooth procedures.
+                {t('addProcedure.teethHint')}
               </p>
               <ToothSelector selectedTeeth={teeth} onChange={setTeeth} />
             </div>
           )}
 
           <div>
-            <Label>Notes</Label>
+            <Label>{t('addProcedure.notes')}</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
-            Cancel
+            {t('addProcedure.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={submitting || !name.trim()}>
-            {submitting ? 'Adding…' : 'Add Procedure'}
+            {submitting ? t('addProcedure.adding') : t('addProcedure.add')}
           </Button>
         </DialogFooter>
       </DialogContent>

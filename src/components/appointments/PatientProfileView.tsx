@@ -92,7 +92,7 @@ export const PatientProfileView = ({
   compact = false,
   viewerEntity,
 }: PatientProfileViewProps) => {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation(['dashboard', 'appointments']);
   const [loading, setLoading] = useState(true);
   const [patient, setPatient] = useState<PatientData | null>(null);
   const [appointments, setAppointments] = useState<AppointmentHistoryItem[]>([]);
@@ -130,7 +130,7 @@ export const PatientProfileView = ({
         if (profile) {
           setPatient({
             id: profile.user_id,
-            full_name: profile.full_name || 'Unknown Patient',
+            full_name: profile.full_name || t('appointments:profile.unknownPatient'),
             email: profile.email,
             phone: profile.phone,
             date_of_birth: profile.date_of_birth,
@@ -271,7 +271,7 @@ export const PatientProfileView = ({
     return (
       <div className="text-center py-12 text-muted-foreground">
         <User className="h-12 w-12 mx-auto mb-3 opacity-50" />
-        <p>Patient not found</p>
+        <p>{t('appointments:profile.notFound')}</p>
       </div>
     );
   }
@@ -292,7 +292,7 @@ export const PatientProfileView = ({
       {onBack && (
         <Button variant="ghost" onClick={onBack} className="gap-2 -ml-2">
           <ArrowLeft className="h-4 w-4" />
-          Back
+          {t('appointments:profile.back')}
         </Button>
       )}
 
@@ -316,7 +316,7 @@ export const PatientProfileView = ({
                 {age && (
                   <Badge variant="secondary" className="gap-1">
                     <Calendar className="h-3 w-3" />
-                    {age} years old
+                    {t('appointments:profile.yearsOld', { age })}
                   </Badge>
                 )}
                 {patient.gender && (
@@ -326,7 +326,7 @@ export const PatientProfileView = ({
                 )}
                 {patientType === 'direct' && (
                   <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                    Direct Patient
+                    {t('appointments:profile.directPatient')}
                   </Badge>
                 )}
               </div>
@@ -368,7 +368,7 @@ export const PatientProfileView = ({
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-red-800 dark:text-red-200">Allergies</p>
+                  <p className="font-medium text-red-800 dark:text-red-200">{t('appointments:profile.allergies')}</p>
                   <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                     {patient.allergies}
                   </p>
@@ -457,7 +457,7 @@ export const PatientProfileView = ({
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Pill className="h-4 w-4 text-primary" />
-                    Current Medications
+                    {t('appointments:profile.currentMedications')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -472,7 +472,7 @@ export const PatientProfileView = ({
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Phone className="h-4 w-4 text-primary" />
-                    Emergency Contact
+                    {t('appointments:profile.emergencyContact')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -495,17 +495,17 @@ export const PatientProfileView = ({
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-primary" />
-                    Recent Appointments
+                    {t('appointments:profile.recentAppointments')}
                   </span>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('appointments')}>
-                    View All
+                    {t('appointments:profile.viewAll')}
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {appointments.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No appointment history</p>
+                  <p className="text-sm text-muted-foreground">{t('appointments:profile.noAppointments')}</p>
                 ) : (
                   <div className="space-y-2">
                     {appointments.slice(0, 3).map((appt) => (
@@ -542,7 +542,7 @@ export const PatientProfileView = ({
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Heart className="h-4 w-4 text-primary" />
-                    Medical History
+                    {t('appointments:profile.medicalHistory')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -556,7 +556,7 @@ export const PatientProfileView = ({
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Stethoscope className="h-4 w-4 text-primary" />
-                    Dental History
+                    {t('appointments:profile.dentalHistory')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -568,7 +568,7 @@ export const PatientProfileView = ({
             {!patient.medical_history && !patient.dental_history && (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No medical history recorded</p>
+                <p>{t('appointments:profile.noMedicalHistory')}</p>
               </div>
             )}
           </div>
@@ -648,7 +648,7 @@ export const PatientProfileView = ({
                 {prescriptions.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Pill className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No prescriptions found</p>
+                    <p>{t('appointments:profile.noPrescriptions')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -657,7 +657,7 @@ export const PatientProfileView = ({
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="font-medium">
-                              Rx #{rx.prescription_number || rx.id.slice(0, 8).toUpperCase()}
+                              {t('appointments:profile.rxNumber', { number: rx.prescription_number || rx.id.slice(0, 8).toUpperCase() })}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               {format(new Date(rx.created_at), 'MMM d, yyyy')}
@@ -673,9 +673,9 @@ export const PatientProfileView = ({
                                 setDownloadingPdf(rx.id);
                                 try {
                                   await downloadPrescriptionPdf(rx.id, rx.prescription_number);
-                                  toast.success('Prescription PDF downloaded');
+                                  toast.success(t('appointments:profile.rxDownloaded'));
                                 } catch (err: any) {
-                                  toast.error(err.message || 'Failed to download PDF');
+                                  toast.error(err.message || t('appointments:profile.rxDownloadFailed'));
                                 } finally {
                                   setDownloadingPdf(null);
                                 }
@@ -705,7 +705,7 @@ export const PatientProfileView = ({
                 {labResults.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <TestTube className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No lab results available</p>
+                    <p>{t('appointments:profile.noLabResults')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -752,7 +752,7 @@ export const PatientProfileView = ({
                 {imagingResults.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     <Image className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>No imaging results available</p>
+                    <p>{t('appointments:profile.noImagingResults')}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">

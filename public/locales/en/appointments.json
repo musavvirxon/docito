@@ -1,0 +1,204 @@
+{
+  "addProcedure": {
+    "title": "Add Procedure",
+    "pickFromServices": "Pick from your services",
+    "chooseOrCustom": "Choose a procedure or enter custom",
+    "customProcedure": "— Custom procedure —",
+    "name": "Name *",
+    "namePlaceholder": "e.g. Composite filling",
+    "cost": "Cost",
+    "status": "Status",
+    "statuses": {
+      "planned": "Planned",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "teethLabel": "Teeth (FDI) — optional",
+    "teethHint": "Select tooth numbers this procedure applies to. Leave empty for non-tooth procedures.",
+    "notes": "Notes",
+    "cancel": "Cancel",
+    "adding": "Adding…",
+    "add": "Add Procedure"
+  },
+  "finance": {
+    "title": "Patient Finance",
+    "status": {
+      "paid": "Paid",
+      "outstanding": "Outstanding",
+      "noCharges": "No charges"
+    },
+    "kpi": {
+      "amountToBill": "Amount to bill",
+      "paid": "Paid",
+      "discounts": "Discounts",
+      "outstanding": "Outstanding"
+    },
+    "priorBalance": "Prior unpaid balance:",
+    "recordPayment": "Record Payment",
+    "applyDiscount": "Apply Discount",
+    "markFullyPaid": "Mark Fully Paid",
+    "invoicePdf": "Invoice PDF",
+    "recentPayments": "Recent payments",
+    "paymentFallback": "payment",
+    "completed": "completed",
+    "consultation": "Consultation",
+    "teethLabel": "Teeth {{list}}",
+    "errors": {
+      "enterValidAmount": "Enter a valid amount",
+      "enterValidDiscount": "Enter a valid discount",
+      "recordFailed": "Failed to record payment",
+      "discountFailed": "Failed to apply discount",
+      "markFailed": "Failed",
+      "invoiceFailed": "Failed to generate invoice"
+    },
+    "invoiceSuccess": "Invoice PDF generated",
+    "dialog": {
+      "recordTitle": "Record Payment",
+      "discountTitle": "Apply Discount",
+      "amount": "Amount",
+      "method": "Method",
+      "notes": "Notes",
+      "reason": "Reason",
+      "reasonPlaceholder": "Loyalty, promotion, etc.",
+      "cancel": "Cancel",
+      "record": "Record",
+      "apply": "Apply",
+      "methods": {
+        "cash": "Cash",
+        "card": "Card",
+        "insurance": "Insurance",
+        "bank_transfer": "Bank Transfer",
+        "other": "Other"
+      }
+    }
+  },
+  "procedures": {
+    "title": "Procedures",
+    "refresh": "Refresh",
+    "addProcedure": "Add Procedure",
+    "loading": "Loading…",
+    "empty": "No procedures recorded for this appointment yet.",
+    "total": "Total",
+    "teethPrefix": "Teeth:",
+    "generalBadge": "General",
+    "remove": "Remove",
+    "statuses": {
+      "planned": "Planned",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
+  "treatmentPlans": {
+    "title": "Treatment Plans",
+    "refresh": "Refresh",
+    "newPlan": "New Plan",
+    "noPatientLinked": "No patient linked to this appointment.",
+    "noPlans": "No treatment plans for this patient yet.",
+    "deleteConfirm": "Delete this treatment plan?",
+    "deleteFailed": "Delete failed: ",
+    "deleteSuccess": "Treatment plan deleted",
+    "loadFailed": "Failed to load treatment plans",
+    "view": "View",
+    "delete": "Delete"
+  },
+  "dentalPicker": {
+    "title": "Add Dental Procedure",
+    "pickFromServices": "Pick from your services",
+    "chooseOrCustom": "Choose a service or enter a custom one",
+    "customProcedure": "— Custom procedure —",
+    "name": "Procedure name *",
+    "namePlaceholder": "e.g. Composite filling",
+    "unitCost": "Unit cost",
+    "teethLabel": "Teeth (FDI)",
+    "teethHint": "— select one or more. Cost is multiplied by the number of teeth.",
+    "addedProcedures": "Added Procedures",
+    "itemsTotal_one": "{{count}} item · Total ",
+    "itemsTotal_other": "{{count}} items · Total ",
+    "empty": "No procedures added yet for this appointment.",
+    "teethPrefix": "Teeth:",
+    "removeProcedure": "Remove procedure",
+    "toothCount_one": "{{count}} tooth",
+    "toothCount_other": "{{count}} teeth",
+    "total": "Total:",
+    "save": "Save Procedure"
+  },
+  "clinicalHistory": {
+    "title": "Patient Clinical History",
+    "subtitle": "— across all doctors & appointments",
+    "empty": "No past diagnoses or procedures recorded for this patient.",
+    "diagnosesCount": "Diagnoses ({{count}})",
+    "proceduresCount": "Procedures ({{count}})",
+    "drPrefix": "Dr. {{name}}"
+  },
+  "currentState": {
+    "title": "Current Dental State",
+    "subtitle": "— hover a tooth for diagnoses & procedure history",
+    "loading": "Loading…",
+    "tooth": "Tooth {{number}}",
+    "dx": "Dx:",
+    "history": "History:",
+    "more": "+{{count}} more",
+    "quadrants": {
+      "q1": "Q1 (UR)",
+      "q2": "Q2 (UL)",
+      "q3": "Q3 (LL)",
+      "q4": "Q4 (LR)"
+    }
+  },
+  "toothDiagnosis": {
+    "title": "Add Tooth Diagnosis",
+    "teethLabel": "Teeth (FDI)",
+    "teethHint": "— select one or more teeth.",
+    "diagnosis": "Diagnosis *",
+    "chooseFromLibrary": "Choose from your library…",
+    "libraryEmpty": "Your diagnosis library is empty",
+    "addNew": "+ Add new diagnosis…",
+    "newDiagnosisName": "New diagnosis name *",
+    "newDiagnosisPlaceholder": "e.g. Distal caries",
+    "newDiagnosisHint": "This will be saved to your diagnosis library for future reuse.",
+    "selected_one": "{{count}} tooth selected",
+    "selected_other": "{{count}} teeth selected",
+    "save": "Save Diagnosis",
+    "errors": {
+      "enterName": "Enter a diagnosis name",
+      "chooseOrAdd": "Choose a diagnosis or add a new one",
+      "selectTooth": "Select at least one tooth"
+    },
+    "savedFor_one": "Diagnosis saved for {{count}} tooth",
+    "savedFor_other": "Diagnosis saved for {{count}} teeth"
+  },
+  "profile": {
+    "back": "Back",
+    "notFound": "Patient not found",
+    "yearsOld": "{{age}} years old",
+    "directPatient": "Direct Patient",
+    "allergies": "Allergies",
+    "currentMedications": "Current Medications",
+    "emergencyContact": "Emergency Contact",
+    "recentAppointments": "Recent Appointments",
+    "viewAll": "View All",
+    "noAppointments": "No appointment history",
+    "medicalHistory": "Medical History",
+    "dentalHistory": "Dental History",
+    "noMedicalHistory": "No medical history recorded",
+    "noPrescriptions": "No prescriptions found",
+    "noLabResults": "No lab results available",
+    "noImagingResults": "No imaging results available",
+    "rxNumber": "Rx #{{number}}",
+    "rxDownloaded": "Prescription PDF downloaded",
+    "rxDownloadFailed": "Failed to download PDF",
+    "unknownPatient": "Unknown Patient"
+  },
+  "reschedule": {
+    "currentSlotLabel": "Current slot",
+    "newSlotLabel": "New slot",
+    "errors": {
+      "selectDateTime": "Please select a date and time",
+      "fetchSlotsFailed": "Failed to fetch available slots",
+      "rescheduleFailed": "Failed to reschedule appointment"
+    },
+    "rescheduledPrefix": "[Rescheduled: {{date}}] "
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Loader2, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,13 +25,8 @@ interface Props {
   onRemove?: (item: UnifiedProcedure) => Promise<void> | void;
 }
 
-/**
- * Inline (big) procedure adder for the Dental tab.
- * Total cost = unit cost × max(selected teeth, 1).
- * Saving creates a `tooth_procedure_history` row and an auto-billed
- * `billing_transactions` charge (handled inside `useAppointmentProcedures.addProcedure`).
- */
 export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures = [], onRemove }: Props) {
+  const { t } = useTranslation('appointments');
   const { services, loading: loadingServices } = useDoctorServices();
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
@@ -39,7 +35,6 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
   const [submitting, setSubmitting] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
 
-  // Sync incoming chart selection
   useEffect(() => {
     setTeeth(initialTeeth.map(String));
   }, [initialTeeth.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -57,10 +52,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
     if (svc) {
       setProcedureId(svc.id);
       setName(svc.name);
-      const cost =
-        (svc as any).default_cost ??
-        (svc as any).price ??
-        null;
+      const cost = (svc as any).default_cost ?? (svc as any).price ?? null;
       if (cost != null) setUnitCost(String(cost));
     }
   };
@@ -92,25 +84,23 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
 
   const { format: fmtMoney } = useCurrency();
 
-
-
   return (
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Plus className="h-4 w-4" /> Add Dental Procedure
+          <Plus className="h-4 w-4" /> {t('dentalPicker.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {serviceOptions.length > 0 && (
           <div className="space-y-1.5">
-            <Label>Pick from your services</Label>
+            <Label>{t('dentalPicker.pickFromServices')}</Label>
             <Select onValueChange={handlePickService} disabled={loadingServices}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a service or enter a custom one" />
+                <SelectValue placeholder={t('dentalPicker.chooseOrCustom')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__custom">— Custom procedure —</SelectItem>
+                <SelectItem value="__custom">{t('dentalPicker.customProcedure')}</SelectItem>
                 {serviceOptions.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}
@@ -124,15 +114,15 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="md:col-span-2 space-y-1.5">
-            <Label>Procedure name *</Label>
+            <Label>{t('dentalPicker.name')}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Composite filling"
+              placeholder={t('dentalPicker.namePlaceholder')}
             />
           </div>
           <div className="space-y-1.5">
-            <Label>Unit cost</Label>
+            <Label>{t('dentalPicker.unitCost')}</Label>
             <Input
               type="number"
               inputMode="decimal"
@@ -146,9 +136,9 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
 
         <div className="space-y-1.5">
           <Label>
-            Teeth (FDI){' '}
+            {t('dentalPicker.teethLabel')}{' '}
             <span className="text-xs text-muted-foreground font-normal">
-              — select one or more. Cost is multiplied by the number of teeth.
+              {t('dentalPicker.teethHint')}
             </span>
           </Label>
           <ToothSelector selectedTeeth={teeth} onChange={setTeeth} />
@@ -156,9 +146,9 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
 
         <div className="space-y-2">
           <Label className="flex items-center justify-between">
-            <span>Added Procedures</span>
+            <span>{t('dentalPicker.addedProcedures')}</span>
             <span className="text-xs text-muted-foreground font-normal">
-              {procedures.length} item{procedures.length === 1 ? '' : 's'} · Total{' '}
+              {t('dentalPicker.itemsTotal', { count: procedures.length })}
               <span className="font-semibold text-foreground">
                 {fmtMoney(procedures.reduce((s, p) => s + (p.cost || 0), 0))}
               </span>
@@ -166,7 +156,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
           </Label>
           {procedures.length === 0 ? (
             <p className="text-xs text-muted-foreground border rounded-md p-3">
-              No procedures added yet for this appointment.
+              {t('dentalPicker.empty')}
             </p>
           ) : (
             <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
@@ -180,7 +170,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
                       <span className="font-medium text-sm truncate">{p.name}</span>
                       {p.toothNumbers.length > 0 && (
                         <Badge variant="outline" className="text-[10px]">
-                          Teeth: {p.toothNumbers.slice().sort((a, b) => a - b).join(', ')}
+                          {t('dentalPicker.teethPrefix')} {p.toothNumbers.slice().sort((a, b) => a - b).join(', ')}
                         </Badge>
                       )}
                     </div>
@@ -203,7 +193,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
                           setRemovingId(null);
                         }
                       }}
-                      aria-label="Remove procedure"
+                      aria-label={t('dentalPicker.removeProcedure')}
                     >
                       {removingId === p.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -221,12 +211,12 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
         <div className="flex items-center justify-between border-t pt-3 gap-3 flex-wrap">
           <div className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{Math.max(teeth.length, 1)}</span>{' '}
-            {teeth.length === 1 ? 'tooth' : 'teeth'} ×{' '}
+            {t('dentalPicker.toothCount', { count: teeth.length || 1 })} ×{' '}
             <span className="font-medium text-foreground">{fmtMoney(unit)}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-sm">
-              <span className="text-muted-foreground mr-1">Total:</span>
+              <span className="text-muted-foreground mr-1">{t('dentalPicker.total')}</span>
               <span className="font-semibold tabular-nums">{fmtMoney(total)}</span>
             </div>
             <Button
@@ -235,7 +225,7 @@ export function DentalProcedurePicker({ initialTeeth = [], onSubmit, procedures 
               className="gap-2"
             >
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              Save Procedure
+              {t('dentalPicker.save')}
             </Button>
           </div>
         </div>

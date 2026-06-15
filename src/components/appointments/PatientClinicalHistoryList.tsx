@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, Stethoscope, Activity, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+
 
 interface Props {
   patientId: string;
@@ -37,10 +39,12 @@ interface ProcedureItem {
  * the diagnosis tab so they have full clinical context.
  */
 export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: Props) {
+  const { t } = useTranslation('appointments');
   const [loading, setLoading] = useState(true);
   const [diagnoses, setDiagnoses] = useState<DiagnosisItem[]>([]);
   const [procedures, setProcedures] = useState<ProcedureItem[]>([]);
   const [doctorMap, setDoctorMap] = useState<Record<string, { name: string; specialty?: string }>>({});
+
 
   useEffect(() => {
     let cancelled = false;
@@ -168,7 +172,7 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center gap-2">
-            <History className="h-4 w-4" /> Patient Clinical History
+            <History className="h-4 w-4" /> {t('clinicalHistory.title')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -185,23 +189,23 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <History className="h-4 w-4" /> Patient Clinical History
+          <History className="h-4 w-4" /> {t('clinicalHistory.title')}
           <span className="text-[11px] text-muted-foreground font-normal">
-            — across all doctors & appointments
+            {t('clinicalHistory.subtitle')}
           </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {isEmpty ? (
           <div className="py-6 text-center text-sm text-muted-foreground">
-            No past diagnoses or procedures recorded for this patient.
+            {t('clinicalHistory.empty')}
           </div>
         ) : (
           <div className="space-y-4">
             {diagnoses.length > 0 && (
               <div className="space-y-2">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                  <Stethoscope className="h-3.5 w-3.5" /> Diagnoses ({diagnoses.length})
+                  <Stethoscope className="h-3.5 w-3.5" /> {t('clinicalHistory.diagnosesCount', { count: diagnoses.length })}
                 </div>
                 <div className="space-y-2">
                   {diagnoses.map((d) => {
@@ -230,7 +234,7 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
                         )}
                         {doc && (
                           <p className="text-[11px] text-muted-foreground">
-                            Dr. {doc.name}
+                            {t('clinicalHistory.drPrefix', { name: doc.name })}
                             {doc.specialty ? ` · ${doc.specialty}` : ''}
                           </p>
                         )}
@@ -244,7 +248,7 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
             {procedures.length > 0 && (
               <div className="space-y-2">
                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                  <Activity className="h-3.5 w-3.5" /> Procedures ({procedures.length})
+                  <Activity className="h-3.5 w-3.5" /> {t('clinicalHistory.proceduresCount', { count: procedures.length })}
                 </div>
                 <div className="space-y-2">
                   {procedures.map((p) => {
@@ -268,7 +272,7 @@ export function PatientClinicalHistoryList({ patientId, excludeAppointmentId }: 
                         </div>
                         {doc && (
                           <p className="text-[11px] text-muted-foreground">
-                            Dr. {doc.name}
+                            {t('clinicalHistory.drPrefix', { name: doc.name })}
                             {doc.specialty ? ` · ${doc.specialty}` : ''}
                           </p>
                         )}
