@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Plus, Trash2, Pill, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
 
 interface Props {
@@ -24,29 +25,11 @@ interface Props {
   onSuccess?: (prescriptionId: string) => void;
 }
 
-const FREQUENCIES = [
-  { value: 'once_daily', label: 'Once daily' },
-  { value: 'twice_daily', label: 'Twice daily' },
-  { value: 'three_times_daily', label: 'Three times daily' },
-  { value: 'four_times_daily', label: 'Four times daily' },
-  { value: 'every_6_hours', label: 'Every 6 hours' },
-  { value: 'every_8_hours', label: 'Every 8 hours' },
-  { value: 'every_12_hours', label: 'Every 12 hours' },
-  { value: 'as_needed', label: 'As needed (PRN)' },
-  { value: 'weekly', label: 'Once weekly' },
-];
-
-const UNITS = [
-  { value: 'tablets', label: 'Tablets' },
-  { value: 'capsules', label: 'Capsules' },
-  { value: 'ml', label: 'mL' },
-  { value: 'mg', label: 'mg' },
-  { value: 'drops', label: 'Drops' },
-  { value: 'puffs', label: 'Puffs' },
-  { value: 'patches', label: 'Patches' },
-];
+const FREQUENCY_KEYS = ['once_daily','twice_daily','three_times_daily','four_times_daily','every_6_hours','every_8_hours','every_12_hours','as_needed','weekly'] as const;
+const UNIT_KEYS = ['tablets','capsules','ml','mg','drops','puffs','patches'] as const;
 
 export default function PrescriptionCreator({ patientId, doctorId, appointmentId, onSuccess }: Props) {
+  const { t } = useTranslation('prescriptions');
   const { createPrescription } = usePrescriptions();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
