@@ -72,7 +72,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
 
   const handleSubmit = async () => {
     if (!patientId?.trim() || !doctorId?.trim()) {
-      toast.error('Missing patient or doctor information');
+      toast.error(t('creator.missingInfo'));
       return;
     }
 
@@ -82,7 +82,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
     );
 
     if (validItems.length === 0) {
-      toast.error('Please add at least one medication');
+      toast.error(t('creator.atLeastOne'));
       return;
     }
 
@@ -140,10 +140,10 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Pill className="h-5 w-5" />
-          Create Prescription
+          {t('creator.title')}
         </CardTitle>
         <CardDescription>
-          Add medications and create a new prescription for the patient
+          {t('creator.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -152,7 +152,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
           {items.map((item, index) => (
             <div key={index} className="border rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">Medication {index + 1}</h4>
+                <h4 className="font-medium">{t('creator.medication', { n: index + 1 })}</h4>
                 {items.length > 1 && (
                   <Button 
                     size="sm" 
@@ -166,34 +166,34 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Medication Name *</Label>
+                  <Label>{t('creator.medicationName')}</Label>
                   <Input
                     value={item.medication_name}
                     onChange={(e) => updateItem(index, 'medication_name', e.target.value)}
-                    placeholder="e.g., Amoxicillin"
+                    placeholder={t('creator.medicationNamePlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Medication Code</Label>
+                  <Label>{t('creator.medicationCode')}</Label>
                   <Input
                     value={item.medication_code || ''}
                     onChange={(e) => updateItem(index, 'medication_code', e.target.value)}
-                    placeholder="Optional NDC/code"
+                    placeholder={t('creator.medicationCodePlaceholder')}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Dosage *</Label>
+                  <Label>{t('creator.dosage')}</Label>
                   <Input
                     value={item.dosage}
                     onChange={(e) => updateItem(index, 'dosage', e.target.value)}
-                    placeholder="e.g., 500mg"
+                    placeholder={t('creator.dosagePlaceholder')}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Frequency *</Label>
+                  <Label>{t('creator.frequency')}</Label>
                   <Select
                     value={item.frequency}
                     onValueChange={(value) => updateItem(index, 'frequency', value)}
@@ -202,9 +202,9 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {FREQUENCIES.map((freq) => (
-                        <SelectItem key={freq.value} value={freq.value}>
-                          {freq.label}
+                      {FREQUENCY_KEYS.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {t(`creator.frequencies.${key}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -212,7 +212,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
-                    <Label>Quantity *</Label>
+                    <Label>{t('creator.quantity')}</Label>
                     <Input
                       type="number"
                       value={item.quantity}
@@ -220,7 +220,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Unit</Label>
+                    <Label>{t('creator.unit')}</Label>
                     <Select
                       value={item.unit || 'tablets'}
                       onValueChange={(value) => updateItem(index, 'unit', value)}
@@ -229,9 +229,9 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {UNITS.map((unit) => (
-                          <SelectItem key={unit.value} value={unit.value}>
-                            {unit.label}
+                        {UNIT_KEYS.map((key) => (
+                          <SelectItem key={key} value={key}>
+                            {t(`creator.units.${key}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -241,19 +241,19 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
               </div>
 
               <div className="space-y-2">
-                <Label>Instructions</Label>
+                <Label>{t('creator.instructions')}</Label>
                 <Input
                   value={item.instructions || ''}
                   onChange={(e) => updateItem(index, 'instructions', e.target.value)}
-                  placeholder="e.g., Take with food"
+                  placeholder={t('creator.instructionsPlaceholder')}
                 />
               </div>
 
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Allow Substitutions</Label>
+                  <Label>{t('creator.allowSubs')}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Allow pharmacy to substitute generic equivalents
+                    {t('creator.allowSubsHint')}
                   </p>
                 </div>
                 <Switch
@@ -266,7 +266,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
 
           <Button variant="outline" onClick={addItem} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
-            Add Another Medication
+            {t('creator.addAnother')}
           </Button>
         </div>
 
@@ -274,7 +274,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
         <div className="border-t pt-4 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Number of Refills</Label>
+              <Label>{t('creator.refills')}</Label>
               <Select
                 value={refills.toString()}
                 onValueChange={(value) => setRefills(parseInt(value))}
@@ -285,7 +285,7 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
                 <SelectContent>
                   {[0, 1, 2, 3, 4, 5, 6, 11].map((num) => (
                     <SelectItem key={num} value={num.toString()}>
-                      {num} refill{num !== 1 ? 's' : ''}
+                      {t('creator.refillsCount', { count: num })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -294,11 +294,11 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
           </div>
 
           <div className="space-y-2">
-            <Label>Additional Notes</Label>
+            <Label>{t('creator.additionalNotes')}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Any additional instructions or notes for the pharmacist..."
+              placeholder={t('creator.notesPlaceholder')}
               rows={3}
             />
           </div>
@@ -311,11 +311,11 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
             disabled={isSubmitting}
           >
             {isSubmitting ? (
-              'Creating...'
+              t('creator.creating')
             ) : (
               <>
                 <Send className="h-4 w-4 mr-2" />
-                Create Prescription
+                {t('creator.createPrescription')}
               </>
             )}
           </Button>
