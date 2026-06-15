@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,6 @@ import {
   Download,
   ExternalLink,
   Calendar,
-  Building2
 } from 'lucide-react';
 import { useClinicLabOrders } from '@/hooks/useClinicLabOrders';
 import { useClinicImagingOrders } from '@/hooks/useClinicImagingOrders';
