@@ -2810,6 +2810,128 @@
         "Sat": "Sat",
         "Sun": "Sun"
       }
+    },
+    "restrictions": {
+      "title": "Doctor Restrictions",
+      "description": "Define clinic-level restrictions that apply to all doctors",
+      "saving": "Saving...",
+      "save": "Save Restrictions",
+      "summary": {
+        "title": "Active Restrictions Summary",
+        "workingHours": "Working hours:",
+        "allowedSpecialties": "Allowed Specialties:",
+        "mandatoryProcedures": "Mandatory Procedures:"
+      },
+      "workingHours": {
+        "title": "Working Hours Restriction",
+        "description": "Set clinic-wide working hours for all doctors",
+        "start": "Start Time",
+        "end": "End Time",
+        "days": "Working Days",
+        "helper": "Doctors will not be able to set availability outside these hours or on non-working days."
+      },
+      "specialty": {
+        "title": "Specialty Restriction",
+        "description": "Control which specialties are allowed or blocked",
+        "allowed": "Allowed Specialties",
+        "blocked": "Blocked Specialties",
+        "selectPlaceholder": "Select specialty",
+        "add": "Add"
+      },
+      "procedure": {
+        "title": "Procedure & Services Restriction",
+        "description": "Define mandatory and blocked procedures",
+        "mandatory": "Mandatory Procedures",
+        "mandatoryHelp": "Applied automatically to all doctors (locked/uneditable)",
+        "blocked": "Blocked Procedures",
+        "blockedHelp": "Cannot be added or performed by any doctor",
+        "selectPlaceholder": "Select procedure",
+        "add": "Add"
+      },
+      "notes": {
+        "title": "Policy Notes",
+        "description": "Optional notes describing clinic policy",
+        "placeholder": "Describe your clinic's restriction policy..."
+      }
+    },
+    "registration": {
+      "title": "Practice Verification - Complete Details",
+      "stepDescription": "Step {{current}} of {{total}} - Provide accurate information for verification",
+      "steps": {
+        "basic": "Basic Info",
+        "business": "Business Info",
+        "services": "Services",
+        "agreements": "Agreements"
+      },
+      "back": "Back",
+      "next": "Next",
+      "cancel": "Cancel",
+      "submit": "Submit for Verification",
+      "submitting": "Submitting...",
+      "errors": {
+        "agreeRequired": "You must agree to the Terms of Service and Privacy Policy",
+        "fillRequired": "Please fill in all required fields",
+        "submitFailed": "Failed to submit verification"
+      },
+      "success": "Verification information submitted! You'll be redirected to upload required documents.",
+      "step1": {
+        "name": "Practice Name",
+        "namePh": "Central Medical Clinic",
+        "legal": "Legal Business Name",
+        "legalPh": "Central Medical Clinic LLC",
+        "type": "Practice Type",
+        "typePh": "Select type",
+        "size": "Practice Size",
+        "sizePh": "Select size",
+        "country": "Country",
+        "state": "State/Region",
+        "statePh": "California",
+        "city": "City",
+        "cityPh": "Los Angeles",
+        "zip": "ZIP Code",
+        "zipPh": "90001",
+        "address": "Street Address",
+        "addressPh": "123 Medical Street",
+        "email": "Email Address",
+        "emailPh": "contact@clinic.com",
+        "phone": "Phone Number",
+        "phonePh": "+1 (555) 123-4567",
+        "website": "Website (Optional)",
+        "websitePh": "https://yourpractice.com"
+      },
+      "step2": {
+        "regNo": "Business Registration Number",
+        "regNoPh": "BR-123456789",
+        "taxId": "Tax ID / VAT Number",
+        "taxIdPh": "12-3456789",
+        "year": "Year Established",
+        "yearPh": "2020",
+        "owner": "Business Owner / Director Name",
+        "ownerPh": "Dr. John Smith",
+        "description": "Business Description",
+        "descriptionPh": "Brief description of your practice and services..."
+      },
+      "step3": {
+        "specialties": "Specialties",
+        "specialtiesPh": "Select specialties",
+        "customSpecialty": "Custom Specialty (if not listed)",
+        "customSpecialtyPh": "Enter custom specialty",
+        "services": "Services Offered",
+        "servicesPh": "Enter service name",
+        "add": "Add"
+      },
+      "step4": {
+        "hear": "How did you hear about us?",
+        "hearPh": "Select option",
+        "updates": "I agree to receive updates, newsletters, and promotional communications",
+        "termsLabel": "I agree to the",
+        "tos": "Terms of Service",
+        "and": "and",
+        "privacy": "Privacy Policy",
+        "required": "(required)",
+        "termsWarn": "You must agree to the Terms of Service to continue"
+      },
+      "required": "*"
     }
   }
 }
