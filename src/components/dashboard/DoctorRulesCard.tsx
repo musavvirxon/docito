@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -28,6 +29,7 @@ interface Props {
 }
 
 const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
+  const { t } = useTranslation('dashboard');
   const { restrictions, loading, save } = useDoctorRestrictions(practiceId, doctorId);
   const [saving, setSaving] = useState(false);
 
@@ -104,41 +106,43 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
     );
   }
 
+  const subtitle = t('shell.doctorRules.subtitle', {
+    forName: doctorName ? t('shell.doctorRules.forName', { name: doctorName }) : '',
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">Rules & Limits</h2>
-          <p className="text-sm text-muted-foreground">
-            Per-doctor policy{doctorName ? ` for ${doctorName}` : ''}. Overrides practice defaults.
-          </p>
+          <h2 className="text-xl font-bold">{t('shell.doctorRules.title')}</h2>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </div>
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving…</> : <><Save className="w-4 h-4 mr-2" />Save</>}
+          {saving ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t('shell.doctorRules.saving')}</>) : (<><Save className="w-4 h-4 mr-2" />{t('shell.doctorRules.save')}</>)}
         </Button>
       </div>
 
       {/* Booking caps + approval */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2"><Shield className="w-4 h-4" />Booking Limits</CardTitle>
-          <CardDescription>Cap how many appointments this doctor can take.</CardDescription>
+          <CardTitle className="text-base flex items-center gap-2"><Shield className="w-4 h-4" />{t('shell.doctorRules.limits.title')}</CardTitle>
+          <CardDescription>{t('shell.doctorRules.limits.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Max appointments / day</Label>
-              <Input type="number" min={0} value={maxDaily} onChange={e => setMaxDaily(e.target.value)} placeholder="No limit" />
+              <Label>{t('shell.doctorRules.limits.maxDaily')}</Label>
+              <Input type="number" min={0} value={maxDaily} onChange={e => setMaxDaily(e.target.value)} placeholder={t('shell.doctorRules.limits.noLimit')} />
             </div>
             <div>
-              <Label>Max appointments / week</Label>
-              <Input type="number" min={0} value={maxWeekly} onChange={e => setMaxWeekly(e.target.value)} placeholder="No limit" />
+              <Label>{t('shell.doctorRules.limits.maxWeekly')}</Label>
+              <Input type="number" min={0} value={maxWeekly} onChange={e => setMaxWeekly(e.target.value)} placeholder={t('shell.doctorRules.limits.noLimit')} />
             </div>
           </div>
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>
-              <p className="text-sm font-medium">Require admin approval</p>
-              <p className="text-xs text-muted-foreground">New bookings stay pending until an admin confirms.</p>
+              <p className="text-sm font-medium">{t('shell.doctorRules.limits.approval')}</p>
+              <p className="text-xs text-muted-foreground">{t('shell.doctorRules.limits.approvalHelp')}</p>
             </div>
             <Switch checked={requiresApproval} onCheckedChange={setRequiresApproval} />
           </div>
@@ -152,8 +156,8 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-primary" />
               <div>
-                <CardTitle>Working Hours</CardTitle>
-                <CardDescription>Restrict the hours/days this doctor can be booked.</CardDescription>
+                <CardTitle>{t('shell.doctorRules.hours.title')}</CardTitle>
+                <CardDescription>{t('shell.doctorRules.hours.description')}</CardDescription>
               </div>
             </div>
             <Switch checked={whEnabled} onCheckedChange={setWhEnabled} />
@@ -162,23 +166,21 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
         {whEnabled && (
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div><Label>Start</Label><Input type="time" value={whStart} onChange={e => setWhStart(e.target.value)} /></div>
-              <div><Label>End</Label><Input type="time" value={whEnd} onChange={e => setWhEnd(e.target.value)} /></div>
+              <div><Label>{t('shell.doctorRules.hours.start')}</Label><Input type="time" value={whStart} onChange={e => setWhStart(e.target.value)} /></div>
+              <div><Label>{t('shell.doctorRules.hours.end')}</Label><Input type="time" value={whEnd} onChange={e => setWhEnd(e.target.value)} /></div>
             </div>
             <div>
-              <Label>Working Days</Label>
+              <Label>{t('shell.doctorRules.hours.days')}</Label>
               <div className="flex gap-2 mt-2 flex-wrap">
                 {DAYS_OF_WEEK.map(d => (
                   <Button key={d} type="button" size="sm"
-                    variant={whDays.includes(d) ? 'default' : 'outline'} onClick={() => toggleDay(d)}>{d}</Button>
+                    variant={whDays.includes(d) ? 'default' : 'outline'} onClick={() => toggleDay(d)}>{t(`shell.doctorRules.days.${d}`)}</Button>
                 ))}
               </div>
             </div>
             <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg">
               <AlertCircle className="w-4 h-4 mt-0.5 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Patients won't see slots outside these hours.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('shell.doctorRules.hours.helper')}</p>
             </div>
           </CardContent>
         )}
@@ -191,8 +193,8 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
             <div className="flex items-center gap-3">
               <Briefcase className="w-5 h-5 text-primary" />
               <div>
-                <CardTitle>Specialty Restrictions</CardTitle>
-                <CardDescription>Allow only certain specialties or explicitly block some.</CardDescription>
+                <CardTitle>{t('shell.doctorRules.specialty.title')}</CardTitle>
+                <CardDescription>{t('shell.doctorRules.specialty.description')}</CardDescription>
               </div>
             </div>
             <Switch checked={spEnabled} onCheckedChange={setSpEnabled} />
@@ -201,17 +203,17 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
         {spEnabled && (
           <CardContent className="space-y-6">
             <div>
-              <Label>Allowed</Label>
+              <Label>{t('shell.doctorRules.specialty.allowed')}</Label>
               <div className="flex gap-2 mt-2">
                 <Select value={newAllowedSp} onValueChange={setNewAllowedSp}>
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Select specialty" /></SelectTrigger>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder={t('shell.doctorRules.specialty.selectPlaceholder')} /></SelectTrigger>
                   <SelectContent>
                     {SPECIALTY_OPTIONS.filter(s => !allowedSp.includes(s)).map(s => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button disabled={!newAllowedSp} onClick={() => { setAllowedSp([...allowedSp, newAllowedSp]); setNewAllowedSp(''); }}>Add</Button>
+                <Button disabled={!newAllowedSp} onClick={() => { setAllowedSp([...allowedSp, newAllowedSp]); setNewAllowedSp(''); }}>{t('shell.doctorRules.specialty.add')}</Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {allowedSp.map(s => (
@@ -223,17 +225,17 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
             </div>
             <Separator />
             <div>
-              <Label>Blocked</Label>
+              <Label>{t('shell.doctorRules.specialty.blocked')}</Label>
               <div className="flex gap-2 mt-2">
                 <Select value={newBlockedSp} onValueChange={setNewBlockedSp}>
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Select specialty" /></SelectTrigger>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder={t('shell.doctorRules.specialty.selectPlaceholder')} /></SelectTrigger>
                   <SelectContent>
                     {SPECIALTY_OPTIONS.filter(s => !blockedSp.includes(s)).map(s => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button disabled={!newBlockedSp} onClick={() => { setBlockedSp([...blockedSp, newBlockedSp]); setNewBlockedSp(''); }}>Add</Button>
+                <Button disabled={!newBlockedSp} onClick={() => { setBlockedSp([...blockedSp, newBlockedSp]); setNewBlockedSp(''); }}>{t('shell.doctorRules.specialty.add')}</Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {blockedSp.map(s => (
@@ -254,8 +256,8 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-primary" />
               <div>
-                <CardTitle>Procedures</CardTitle>
-                <CardDescription>Mandatory or blocked procedures for this doctor.</CardDescription>
+                <CardTitle>{t('shell.doctorRules.procedure.title')}</CardTitle>
+                <CardDescription>{t('shell.doctorRules.procedure.description')}</CardDescription>
               </div>
             </div>
             <Switch checked={prEnabled} onCheckedChange={setPrEnabled} />
@@ -264,17 +266,17 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
         {prEnabled && (
           <CardContent className="space-y-6">
             <div>
-              <Label>Mandatory</Label>
+              <Label>{t('shell.doctorRules.procedure.mandatory')}</Label>
               <div className="flex gap-2 mt-2">
                 <Select value={newMandatory} onValueChange={setNewMandatory}>
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Select procedure" /></SelectTrigger>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder={t('shell.doctorRules.procedure.selectPlaceholder')} /></SelectTrigger>
                   <SelectContent>
                     {PROCEDURE_OPTIONS.filter(p => !mandatoryPr.includes(p)).map(p => (
                       <SelectItem key={p} value={p}>{p}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button disabled={!newMandatory} onClick={() => { setMandatoryPr([...mandatoryPr, newMandatory]); setNewMandatory(''); }}>Add</Button>
+                <Button disabled={!newMandatory} onClick={() => { setMandatoryPr([...mandatoryPr, newMandatory]); setNewMandatory(''); }}>{t('shell.doctorRules.procedure.add')}</Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {mandatoryPr.map(p => (
@@ -286,17 +288,17 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
             </div>
             <Separator />
             <div>
-              <Label>Blocked</Label>
+              <Label>{t('shell.doctorRules.procedure.blocked')}</Label>
               <div className="flex gap-2 mt-2">
                 <Select value={newBlocked} onValueChange={setNewBlocked}>
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Select procedure" /></SelectTrigger>
+                  <SelectTrigger className="flex-1"><SelectValue placeholder={t('shell.doctorRules.procedure.selectPlaceholder')} /></SelectTrigger>
                   <SelectContent>
                     {PROCEDURE_OPTIONS.filter(p => !blockedPr.includes(p)).map(p => (
                       <SelectItem key={p} value={p}>{p}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <Button disabled={!newBlocked} onClick={() => { setBlockedPr([...blockedPr, newBlocked]); setNewBlocked(''); }}>Add</Button>
+                <Button disabled={!newBlocked} onClick={() => { setBlockedPr([...blockedPr, newBlocked]); setNewBlocked(''); }}>{t('shell.doctorRules.procedure.add')}</Button>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
                 {blockedPr.map(p => (
@@ -312,11 +314,11 @@ const DoctorRulesCard = ({ practiceId, doctorId, doctorName }: Props) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Notes</CardTitle>
-          <CardDescription>Optional internal notes about this doctor's rules.</CardDescription>
+          <CardTitle className="text-base">{t('shell.doctorRules.notes.title')}</CardTitle>
+          <CardDescription>{t('shell.doctorRules.notes.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[100px]" placeholder="Internal notes…" />
+          <Textarea value={notes} onChange={e => setNotes(e.target.value)} className="min-h-[100px]" placeholder={t('shell.doctorRules.notes.placeholder')} />
         </CardContent>
       </Card>
     </div>

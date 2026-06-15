@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Users, Clock, TrendingUp, Settings } from "lucide-react";
+import { useTranslation, Trans } from "react-i18next";
 
 interface VerificationSuccessModalProps {
   open: boolean;
@@ -19,24 +20,14 @@ const VerificationSuccessModal = ({
   onOpenChange,
   practiceName,
 }: VerificationSuccessModalProps) => {
+  const { t } = useTranslation("dashboard");
+
   const features = [
-    {
-      icon: Users,
-      text: "Add and manage doctors and staff",
-    },
-    {
-      icon: Clock,
-      text: "Set clinic hours and service restrictions",
-    },
-    {
-      icon: TrendingUp,
-      text: "Access financial and performance stats",
-    },
-    {
-      icon: Settings,
-      text: "Update your profile and settings",
-    },
-  ];
+    { icon: Users, key: "manageStaff" },
+    { icon: Clock, key: "setHours" },
+    { icon: TrendingUp, key: "stats" },
+    { icon: Settings, key: "updateProfile" },
+  ] as const;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,36 +37,41 @@ const VerificationSuccessModal = ({
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <DialogTitle className="text-2xl text-center">
-            🎉 Congratulations!
+            {t("shell.verificationSuccess.congrats", "🎉 Congratulations!")}
           </DialogTitle>
           <DialogDescription className="text-center text-base">
-            <span className="font-semibold">{practiceName}</span> has been successfully verified.
+            <Trans
+              ns="dashboard"
+              i18nKey="shell.verificationSuccess.verifiedMsg"
+              values={{ practiceName }}
+              components={[<span className="font-semibold" />]}
+            />
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <p className="text-sm font-medium text-muted-foreground">You can now:</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            {t("shell.verificationSuccess.youCanNow", "You can now:")}
+          </p>
           <div className="space-y-3">
-            {features.map((feature, index) => {
+            {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <div key={index} className="flex items-center gap-3">
+                <div key={feature.key} className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-green-50 rounded-full flex items-center justify-center flex-shrink-0">
                     <Icon className="w-4 h-4 text-green-600" />
                   </div>
-                  <p className="text-sm">{feature.text}</p>
+                  <p className="text-sm">
+                    {t(`shell.verificationSuccess.features.${feature.key}`)}
+                  </p>
                 </div>
               );
             })}
           </div>
         </div>
 
-        <Button
-          onClick={() => onOpenChange(false)}
-          className="w-full"
-          size="lg"
-        >
-          Go to Dashboard
+        <Button onClick={() => onOpenChange(false)} className="w-full" size="lg">
+          {t("shell.verificationSuccess.goDashboard", "Go to Dashboard")}
         </Button>
       </DialogContent>
     </Dialog>
