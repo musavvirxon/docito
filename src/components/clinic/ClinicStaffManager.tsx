@@ -286,7 +286,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       setAuditTrail(auditItems);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to load staff data");
+      toast.error(e?.message || t("staffManager.toasts.loadFailed"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -321,7 +321,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
   async function handleInviteSubmit(e: React.FormEvent) {
     e.preventDefault();
     const email = inviteEmail.trim().toLowerCase();
-    if (!email || !email.includes("@")) { toast.error("Enter a valid email"); return; }
+    if (!email || !email.includes("@")) { toast.error(t("staffManager.toasts.invalidEmail")); return; }
 
     setInviteLoading(true);
     try {
@@ -335,14 +335,14 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         invite_type: "email",
       });
       if (error) throw error;
-      toast.success("Invitation created");
+      toast.success(t("staffManager.toasts.inviteCreated"));
       setInviteEmail("");
       setInviteRole("receptionist");
       setInvitePermissions(defaultPermissionsForRole("receptionist"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to create invitation");
+      toast.error(e?.message || t("staffManager.toasts.inviteFailed"));
     } finally {
       setInviteLoading(false);
     }
@@ -358,11 +358,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         updated_at: toIsoNow(),
       }).eq("id", rowId);
       if (error) throw error;
-      toast.success("Staff updated");
+      toast.success(t("staffManager.toasts.updated"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update staff");
+      toast.error(e?.message || t("staffManager.toasts.updateFailed"));
     } finally {
       setSavingRowId(null);
     }
@@ -374,11 +374,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     try {
       const { error } = await sb.from("clinic_staff").update({ status, updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
-      toast.success(`Staff status updated to ${humanize(status)}`);
+      toast.success(t("staffManager.toasts.statusUpdated", { status: humanize(status) }));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to update staff status");
+      toast.error(e?.message || t("staffManager.toasts.statusFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -389,14 +389,14 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     setActingRowId(rowId);
     try {
       const soft = await sb.from("clinic_staff").update({ status: "removed", updated_at: toIsoNow() }).eq("id", rowId);
-      if (!soft.error) { toast.success("Staff removed"); await loadData(false); setActingRowId(null); return; }
+      if (!soft.error) { toast.success(t("staffManager.toasts.removed")); await loadData(false); setActingRowId(null); return; }
       const hard = await sb.from("clinic_staff").delete().eq("id", rowId);
       if (hard.error) throw hard.error;
-      toast.success("Staff removed");
+      toast.success(t("staffManager.toasts.removed"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to remove staff");
+      toast.error(e?.message || t("staffManager.toasts.removeFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -413,11 +413,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         const { error } = await sb.from("clinic_staff").update({ status: "cancelled", updated_at: toIsoNow() }).eq("id", rowId);
         if (error) throw error;
       }
-      toast.success("Invitation cancelled");
+      toast.success(t("staffManager.toasts.inviteCancelled"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to cancel invitation");
+      toast.error(e?.message || t("staffManager.toasts.cancelFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -430,11 +430,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       const table = row._source === "staff_invitations" ? "staff_invitations" : "clinic_staff";
       const { error } = await sb.from(table).update({ status: "pending", updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
-      toast.success("Invitation resent");
+      toast.success(t("staffManager.toasts.inviteResent"));
       await loadData(false);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message || "Failed to resend invite");
+      toast.error(e?.message || t("staffManager.toasts.resendFailed"));
     } finally {
       setActingRowId(null);
     }
@@ -444,8 +444,8 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Staff Management</CardTitle>
-          <CardDescription>Select a practice first.</CardDescription>
+          <CardTitle>{t("staffManager.title")}</CardTitle>
+          <CardDescription>{t("staffManager.selectPractice")}</CardDescription>
         </CardHeader>
       </Card>
     );
