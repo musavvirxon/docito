@@ -58,7 +58,7 @@ interface TreatmentPlan {
 
 export const PatientTreatmentPlans = () => {
   const { user } = useAuth();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation("patients");
   const { format: fmtMoney } = useCurrency();
   const [plans, setPlans] = useState<TreatmentPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +113,7 @@ export const PatientTreatmentPlans = () => {
       setPlanProcedures(data || []);
     } catch (error) {
       console.error('Error fetching procedures:', error);
-      toast.error('Failed to load procedures');
+      toast.error(t('treatmentPlans.loadProceduresFailed'));
     } finally {
       setLoadingProcedures(false);
     }
@@ -125,7 +125,7 @@ export const PatientTreatmentPlans = () => {
   };
 
   const handleDownloadPDF = async (plan: TreatmentPlan) => {
-    toast.loading('Generating PDF...', { id: 'tp-pdf' });
+    toast.loading(t('treatmentPlans.generatingPdf'), { id: 'tp-pdf' });
     try {
       const locale = (i18n.language || 'en').toLowerCase();
       const code = (plan.verification_code || plan.id || '').slice(0, 18);
@@ -137,34 +137,34 @@ export const PatientTreatmentPlans = () => {
         fileName,
       });
 
-      toast.success('PDF downloaded successfully', { id: 'tp-pdf' });
+      toast.success(t('treatmentPlans.pdfSuccess'), { id: 'tp-pdf' });
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      toast.error('Failed to download PDF', { id: 'tp-pdf' });
+      toast.error(t('treatmentPlans.pdfFailed'), { id: 'tp-pdf' });
     }
   };
 
   const getStatusConfig = (status: string) => {
     const configs: Record<string, { color: string; icon: React.ElementType; label: string }> = {
-      pending: { 
-        color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', 
-        icon: Clock, 
-        label: 'Pending' 
+      pending: {
+        color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+        icon: Clock,
+        label: t('treatmentPlans.statusLabels.pending'),
       },
-      active: { 
-        color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', 
-        icon: AlertCircle, 
-        label: 'In Progress' 
+      active: {
+        color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+        icon: AlertCircle,
+        label: t('treatmentPlans.statusLabels.active'),
       },
-      completed: { 
-        color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', 
-        icon: CheckCircle2, 
-        label: 'Completed' 
+      completed: {
+        color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+        icon: CheckCircle2,
+        label: t('treatmentPlans.statusLabels.completed'),
       },
-      cancelled: { 
-        color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', 
-        icon: AlertCircle, 
-        label: 'Cancelled' 
+      cancelled: {
+        color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+        icon: AlertCircle,
+        label: t('treatmentPlans.statusLabels.cancelled'),
       },
     };
     return configs[status] || configs.pending;
@@ -193,17 +193,17 @@ export const PatientTreatmentPlans = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Treatment Plans</h2>
-        <p className="text-muted-foreground">View your treatment plans and track progress</p>
+        <h2 className="text-2xl font-bold">{t('treatmentPlans.title')}</h2>
+        <p className="text-muted-foreground">{t('treatmentPlans.subtitle')}</p>
       </div>
 
       {plans.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="font-semibold mb-2">No Treatment Plans</h3>
+            <h3 className="font-semibold mb-2">{t('treatmentPlans.emptyTitle')}</h3>
             <p className="text-muted-foreground text-sm">
-              Your treatment plans will appear here after your doctor creates them
+              {t('treatmentPlans.emptyDesc')}
             </p>
           </CardContent>
         </Card>
@@ -252,7 +252,7 @@ export const PatientTreatmentPlans = () => {
                       {plan.status === 'active' && (
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Progress</span>
+                            <span className="text-muted-foreground">{t('treatmentPlans.progress')}</span>
                             <span className="font-medium">{progress}%</span>
                           </div>
                           <Progress value={progress} className="h-2" />
@@ -262,12 +262,12 @@ export const PatientTreatmentPlans = () => {
                       <div className="flex flex-wrap gap-4 text-sm">
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Calendar className="h-4 w-4" />
-                          <span>Created {format(new Date(plan.created_at), 'MMM dd, yyyy')}</span>
+                          <span>{t('treatmentPlans.created', { date: new Date(plan.created_at).toLocaleDateString(i18n.language, { month: 'short', day: '2-digit', year: 'numeric' }) })}</span>
                         </div>
                         {plan.total_cost && plan.total_cost > 0 && (
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <DollarSign className="h-4 w-4" />
-                            <span>${plan.total_cost.toLocaleString()}</span>
+                            <span>{fmtMoney(plan.total_cost)}</span>
                           </div>
                         )}
                         {plan.doctor && (
@@ -284,23 +284,23 @@ export const PatientTreatmentPlans = () => {
 
                   {isSelected && (
                     <div className="mt-6 pt-6 border-t space-y-4">
-                      <h4 className="font-medium">Treatment Procedures</h4>
+                      <h4 className="font-medium">{t('treatmentPlans.treatmentProcedures')}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Click "View Full Plan" to see all procedures and details
+                        {t('treatmentPlans.clickToView')}
                       </p>
                       <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" className="gap-2" onClick={() => handleViewPlan(plan)}>
                           <Eye className="h-4 w-4" />
-                          View Full Plan
+                          {t('treatmentPlans.viewFullPlan')}
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           className="gap-2"
                           onClick={() => handleDownloadPDF(plan)}
                         >
                           <Download className="h-4 w-4" />
-                          Download PDF
+                          {t('treatmentPlans.downloadPdf')}
                         </Button>
                       </div>
                     </div>
@@ -321,7 +321,7 @@ export const PatientTreatmentPlans = () => {
               {viewPlan?.title}
             </DialogTitle>
             <DialogDescription>
-              View your treatment plan details and procedures
+              {t('treatmentPlans.dialogDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -329,26 +329,26 @@ export const PatientTreatmentPlans = () => {
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="p-4 rounded-lg bg-muted">
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge className="mt-1">{viewPlan.status}</Badge>
+                  <p className="text-sm text-muted-foreground">{t('treatmentPlans.status')}</p>
+                  <Badge className="mt-1">{getStatusConfig(viewPlan.status).label}</Badge>
                 </div>
                 <div className="p-4 rounded-lg bg-muted">
-                  <p className="text-sm text-muted-foreground">Total Cost</p>
+                  <p className="text-sm text-muted-foreground">{t('treatmentPlans.totalCost')}</p>
                   <p className="font-semibold mt-1">
-                    {viewPlan.total_cost ? fmtMoney(viewPlan.total_cost) : 'N/A'}
+                    {viewPlan.total_cost ? fmtMoney(viewPlan.total_cost) : t('treatmentPlans.na')}
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted">
-                  <p className="text-sm text-muted-foreground">Created</p>
+                  <p className="text-sm text-muted-foreground">{t('treatmentPlans.createdLabel')}</p>
                   <p className="font-semibold mt-1">
-                    {format(new Date(viewPlan.created_at), 'MMM dd, yyyy')}
+                    {new Date(viewPlan.created_at).toLocaleDateString(i18n.language, { month: 'short', day: '2-digit', year: 'numeric' })}
                   </p>
                 </div>
               </div>
 
               {viewPlan.notes && (
                 <div>
-                  <h4 className="font-medium mb-2">Notes</h4>
+                  <h4 className="font-medium mb-2">{t('treatmentPlans.notes')}</h4>
                   <p className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
                     {viewPlan.notes}
                   </p>
@@ -356,37 +356,37 @@ export const PatientTreatmentPlans = () => {
               )}
 
               <div>
-                <h4 className="font-medium mb-3">Procedures</h4>
+                <h4 className="font-medium mb-3">{t('treatmentPlans.procedures')}</h4>
                 {loadingProcedures ? (
                   <div className="space-y-2">
                     <Skeleton className="h-10 w-full" />
                     <Skeleton className="h-10 w-full" />
                   </div>
                 ) : planProcedures.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No procedures in this plan</p>
+                  <p className="text-sm text-muted-foreground">{t('treatmentPlans.noProcedures')}</p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Procedure</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Cost</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>{t('treatmentPlans.procedure')}</TableHead>
+                        <TableHead>{t('treatmentPlans.category')}</TableHead>
+                        <TableHead>{t('treatmentPlans.cost')}</TableHead>
+                        <TableHead>{t('treatmentPlans.status')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {planProcedures.map((proc) => (
                         <TableRow key={proc.id}>
                           <TableCell className="font-medium">
-                            {proc.procedure?.name || 'N/A'}
+                            {proc.procedure?.name || t('treatmentPlans.na')}
                           </TableCell>
-                          <TableCell>{proc.procedure?.category || 'N/A'}</TableCell>
+                          <TableCell>{proc.procedure?.category || t('treatmentPlans.na')}</TableCell>
                           <TableCell>
-                            {proc.cost ? fmtMoney(proc.cost) : 'N/A'}
+                            {proc.cost ? fmtMoney(proc.cost) : t('treatmentPlans.na')}
                           </TableCell>
                           <TableCell>
                             <Badge variant={proc.status === 'completed' ? 'default' : 'secondary'}>
-                              {proc.status}
+                              {getStatusConfig(proc.status).label}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -397,15 +397,15 @@ export const PatientTreatmentPlans = () => {
               </div>
 
               <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => handleDownloadPDF(viewPlan)}
                   className="gap-2"
                 >
                   <Download className="h-4 w-4" />
-                  Download PDF
+                  {t('treatmentPlans.downloadPdf')}
                 </Button>
-                <Button onClick={() => setViewPlan(null)}>Close</Button>
+                <Button onClick={() => setViewPlan(null)}>{t('treatmentPlans.close')}</Button>
               </div>
             </div>
           )}
