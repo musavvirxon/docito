@@ -242,13 +242,13 @@ export default function ClinicServicesManager({ practiceId }: Props) {
     <Card>
       <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <CardTitle>Services & Pricing</CardTitle>
+          <CardTitle>{t("servicesManager.title")}</CardTitle>
           <CardDescription>
-            Manage the services your clinic offers, their pricing, and deposit requirements.
+            {t("servicesManager.description")}
           </CardDescription>
         </div>
         <Button onClick={openCreate} className="gap-2 self-start md:self-auto">
-          <Plus className="h-4 w-4" /> Add service
+          <Plus className="h-4 w-4" /> {t("servicesManager.addService")}
         </Button>
       </CardHeader>
       <CardContent>
@@ -258,21 +258,20 @@ export default function ClinicServicesManager({ practiceId }: Props) {
           </div>
         ) : empty ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-            No services yet. Add your first service to start accepting bookings with the right
-            pricing and deposit rules.
+            {t("servicesManager.empty")}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Deposit</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("servicesManager.columns.name")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.category")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.duration")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.price")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.deposit")}</TableHead>
+                  <TableHead>{t("servicesManager.columns.active")}</TableHead>
+                  <TableHead className="text-right">{t("servicesManager.columns.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -289,7 +288,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                     <TableCell>
                       {svc.category ? <Badge variant="secondary">{svc.category}</Badge> : "—"}
                     </TableCell>
-                    <TableCell>{svc.duration_minutes ?? 30} min</TableCell>
+                    <TableCell>{t("servicesManager.minutes", { count: svc.duration_minutes ?? 30 })}</TableCell>
                     <TableCell>{formatMoney(svc.price_cents, svc.currency)}</TableCell>
                     <TableCell>{depositLabel(svc)}</TableCell>
                     <TableCell>
@@ -317,32 +316,32 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{form.id ? "Edit service" : "Add service"}</DialogTitle>
+            <DialogTitle>{form.id ? t("servicesManager.dialog.editTitle") : t("servicesManager.dialog.addTitle")}</DialogTitle>
             <DialogDescription>
-              Define the service, its price, and whether patients must pay a deposit to book.
+              {t("servicesManager.dialog.description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="space-y-1.5 md:col-span-2">
-                <Label>Name</Label>
+                <Label>{t("servicesManager.dialog.name")}</Label>
                 <Input
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  placeholder="Teeth whitening"
+                  placeholder={t("servicesManager.dialog.namePh")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Category</Label>
+                <Label>{t("servicesManager.dialog.category")}</Label>
                 <Input
                   value={form.category}
                   onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                  placeholder="Cosmetic"
+                  placeholder={t("servicesManager.dialog.categoryPh")}
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Duration (minutes)</Label>
+                <Label>{t("servicesManager.dialog.duration")}</Label>
                 <Input
                   type="number"
                   min={5}
