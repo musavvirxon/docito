@@ -53,6 +53,7 @@ export function AppointmentProceduresPanel({
   initialTeeth,
   onProceduresChanged,
 }: Props) {
+  const { t } = useTranslation('appointments');
   const [modalOpen, setModalOpen] = useState(false);
   const [seedTeeth, setSeedTeeth] = useState<number[]>(initialTeeth || []);
   const { format: money } = useCurrency();
@@ -66,7 +67,7 @@ export function AppointmentProceduresPanel({
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Stethoscope className="h-4 w-4" /> Procedures
+            <Stethoscope className="h-4 w-4" /> {t('procedures.title')}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -78,7 +79,7 @@ export function AppointmentProceduresPanel({
               disabled={loading}
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('procedures.refresh')}
             </Button>
             <Button
               size="sm"
@@ -88,7 +89,7 @@ export function AppointmentProceduresPanel({
               }}
               className="gap-2"
             >
-              <Plus className="h-4 w-4" /> Add Procedure
+              <Plus className="h-4 w-4" /> {t('procedures.addProcedure')}
             </Button>
           </div>
         </CardTitle>
@@ -97,10 +98,10 @@ export function AppointmentProceduresPanel({
       <CardContent className="space-y-3">
         {loading && items.length === 0 ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+            <Loader2 className="h-4 w-4 animate-spin" /> {t('procedures.loading')}
           </div>
         ) : items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No procedures recorded for this appointment yet.</p>
+          <p className="text-sm text-muted-foreground">{t('procedures.empty')}</p>
         ) : (
           <div className="space-y-2">
             {items.map((p) => (
@@ -115,7 +116,7 @@ export function AppointmentProceduresPanel({
         )}
 
         <div className="flex items-center justify-between border-t pt-3">
-          <span className="text-sm text-muted-foreground">Total</span>
+          <span className="text-sm text-muted-foreground">{t('procedures.total')}</span>
           <span className="text-sm font-semibold">{fmtMoney(totalCost)}</span>
         </div>
       </CardContent>
@@ -134,6 +135,7 @@ export function AppointmentProceduresPanel({
   );
 }
 
+
 function ProcedureRow({
   item,
   onStatus,
@@ -143,6 +145,7 @@ function ProcedureRow({
   onStatus: (s: ProcedureStatus) => void;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation('appointments');
   const { format: money } = useCurrency();
   const fmtMoney = (n: number | null) => (n == null ? '—' : money(n));
   return (
@@ -155,14 +158,14 @@ function ProcedureRow({
               {item.code}
             </Badge>
           )}
-          <Badge className={statusBadge(item.status)}>{item.status.replace('_', ' ')}</Badge>
+          <Badge className={statusBadge(item.status)}>{t(`procedures.statuses.${item.status}`, { defaultValue: item.status.replace('_', ' ') })}</Badge>
           {item.toothNumbers.length > 0 && (
             <Badge variant="outline" className="text-xs">
-              Teeth: {item.toothNumbers.slice().sort((a, b) => a - b).join(', ')}
+              {t('procedures.teethPrefix')} {item.toothNumbers.slice().sort((a, b) => a - b).join(', ')}
             </Badge>
           )}
           {item.source === 'general' && (
-            <Badge variant="outline" className="text-[10px]">General</Badge>
+            <Badge variant="outline" className="text-[10px]">{t('procedures.generalBadge')}</Badge>
           )}
         </div>
         {item.notes && <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>}
@@ -175,13 +178,13 @@ function ProcedureRow({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="planned">Planned</SelectItem>
-            <SelectItem value="in_progress">In Progress</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="planned">{t('procedures.statuses.planned')}</SelectItem>
+            <SelectItem value="in_progress">{t('procedures.statuses.in_progress')}</SelectItem>
+            <SelectItem value="completed">{t('procedures.statuses.completed')}</SelectItem>
+            <SelectItem value="cancelled">{t('procedures.statuses.cancelled')}</SelectItem>
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRemove} aria-label="Remove">
+        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRemove} aria-label={t('procedures.remove')}>
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </div>
