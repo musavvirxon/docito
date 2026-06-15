@@ -1,5 +1,6 @@
 // File: src/components/NotificationDropdown.tsx
 import { Bell, Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { DASHBOARD_ROUTES } from "@/lib/rbac";
 
 export const NotificationDropdown = () => {
+  const { t } = useTranslation("common");
   const { items: notifications, unreadCount, markRead, markAllRead } = useNotifications({
     limit: 50,
     unreadOnly: false,
@@ -33,22 +35,18 @@ export const NotificationDropdown = () => {
   };
 
   const handleNotificationClick = (notification: NotificationRow) => {
-    // Best-effort mark read (do not block navigation)
     void markRead(notification.id);
 
-    // If a related_id looks like a URL path, navigate to it
     if (notification.related_id && notification.related_id.startsWith("/")) {
       openUrl(notification.related_id);
       return;
     }
 
-    // Appointment notifications → open the appointment session
     if (notification.entity_type === "appointment" && notification.entity_id) {
       navigate(`/appointment-session/${notification.entity_id}`);
       return;
     }
 
-    // Fallback: go to role dashboard
     navigate(DASHBOARD_ROUTES[activeRole] ?? "/dashboard");
   };
 
@@ -70,11 +68,11 @@ export const NotificationDropdown = () => {
 
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between px-2 py-2">
-          <h3 className="font-semibold">Notifications</h3>
+          <h3 className="font-semibold">{t("notificationsPanel.title")}</h3>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" onClick={() => markAllRead()} className="h-8 text-xs">
               <Check className="h-3 w-3 mr-1" />
-              Mark all read
+              {t("notificationsPanel.markAllRead")}
             </Button>
           )}
         </div>
@@ -83,7 +81,7 @@ export const NotificationDropdown = () => {
 
         <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">No notifications yet</div>
+            <div className="py-8 text-center text-muted-foreground text-sm">{t("notificationsPanel.empty")}</div>
           ) : (
             notifications.map((notification) => (
               <DropdownMenuItem

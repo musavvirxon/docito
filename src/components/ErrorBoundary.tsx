@@ -1,6 +1,7 @@
 import React from "react";
+import { withTranslation, WithTranslation } from "react-i18next";
 
-type Props = {
+type Props = WithTranslation & {
   children: React.ReactNode;
   fallback?: (error: unknown) => React.ReactNode;
 };
@@ -10,7 +11,7 @@ type State = {
   error: unknown;
 };
 
-export class ErrorBoundary extends React.Component<Props, State> {
+class ErrorBoundaryInner extends React.Component<Props, State> {
   state: State = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: unknown): State {
@@ -18,7 +19,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: unknown) {
-    // Keep console visibility for debugging
     // eslint-disable-next-line no-console
     console.error("UI crashed:", error);
   }
@@ -27,13 +27,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
     if (!this.state.hasError) return this.props.children;
     if (this.props.fallback) return this.props.fallback(this.state.error);
 
+    const { t } = this.props;
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-lg border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-foreground">Something went wrong</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            The dashboard hit an error while rendering. You can reload the page to recover.
-          </p>
+          <h2 className="text-lg font-semibold text-foreground">{t("errorBoundary.title")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("errorBoundary.description")}</p>
           <pre className="mt-4 max-h-40 overflow-auto rounded-md bg-muted p-3 text-xs text-foreground">
             {String((this.state.error as any)?.message ?? this.state.error)}
           </pre>
@@ -42,13 +41,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
               onClick={() => window.location.reload()}
             >
-              Reload
+              {t("errorBoundary.reload")}
             </button>
             <button
               className="inline-flex items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground"
               onClick={() => this.setState({ hasError: false, error: null })}
             >
-              Try again
+              {t("errorBoundary.tryAgain")}
             </button>
           </div>
         </div>
@@ -56,3 +55,5 @@ export class ErrorBoundary extends React.Component<Props, State> {
     );
   }
 }
+
+export const ErrorBoundary = withTranslation("common")(ErrorBoundaryInner);
