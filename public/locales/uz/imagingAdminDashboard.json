@@ -30,7 +30,15 @@
       "cancel": "Bekor qilish",
       "save": "Saqlash",
       "add": "Qo'shish",
-      "actions": "Harakatlar"
+      "actions": "Harakatlar",
+      "loading": "Loading...",
+      "imagingCenter": "Imaging Center",
+      "signInRequired": "Sign In Required",
+      "signInDescription": "Please sign in to access the imaging center dashboard.",
+      "signIn": "Sign In",
+      "noCenter": "No Imaging Center Found",
+      "noCenterDescription": "You don't have an imaging center associated with your account.",
+      "registerCenter": "Register Imaging Center"
     },
     "numbers": {
       "zero": "0",
@@ -47,7 +55,9 @@
       "finalized": "Tasdiqlandi",
       "critical": "Kritik",
       "cancelled": "Bekor qilindi",
-      "processing": "Ishlov berilmoqda"
+      "processing": "Ishlov berilmoqda",
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification"
     },
     "time": {
       "last30Days": "Oxirgi 30 kun",
@@ -73,12 +83,31 @@
     },
     "overview": {
       "title": "Umumiy ko'rinish",
+      "description": "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.",
       "analytics": "Analitika",
       "stats": {
         "totalOrders": "Jami buyurtmalar",
         "pendingScheduled": "Kutilayotgan / Rejalashtirilgan",
+        "scheduledToday": "Scheduled Today",
+        "scheduledTodayDesc": "Scans scheduled for today",
         "inProgress": "Jarayonda",
-        "completed": "Yakunlandi"
+        "inProgressDesc": "Checked-in + active workflow",
+        "pendingReports": "Pending Reports",
+        "pendingReportsDesc": "Images ready / awaiting report",
+        "completed": "Yakunlandi",
+        "completedDesc": "Reports completed today",
+        "deliveredToday": "Delivered Today",
+        "deliveredTodayDesc": "Results delivered today",
+        "incoming7d": "Incoming (7d)",
+        "incoming7dDesc": "New imaging referrals (7 days)",
+        "completionRate7d": "Completion Rate (7d)",
+        "completionRate7dDesc": "Completed/delivered vs incoming",
+        "avgQueueAge": "Avg Queue Age",
+        "avgQueueAgeDesc": "Open order age average",
+        "activeStaff": "Active Staff",
+        "activeStaffDesc": "Active imaging staff members",
+        "activeEquipment": "Active Equipment",
+        "activeEquipmentDesc": "Operational modalities/devices"
       },
       "queue": {
         "pendingQueue": "Kutish navbati",
@@ -87,6 +116,42 @@
         "completed": "Yakunlandi",
         "urgent": "Shoshilinch / STAT",
         "overdue": "Muddati o'tgan (>48s)"
+      },
+      "todaysQueue": {
+        "title": "Today's Queue",
+        "description": "Scheduled scans and same-day referrals",
+        "empty": "No scans queued today",
+        "emptyDescription": "Today's scheduled scans and same-day imaging referrals will appear here."
+      },
+      "workflowBreakdown": {
+        "title": "Workflow Breakdown",
+        "description": "Current imaging order status distribution",
+        "empty": "No workflow data",
+        "emptyDescription": "Orders will appear here once referrals are received."
+      },
+      "equipmentStatus": {
+        "title": "Equipment Status",
+        "description": "Scanner availability and utilization",
+        "empty": "No equipment registered",
+        "emptyDescription": "Register your imaging equipment to track availability and utilization."
+      },
+      "recentCompleted": {
+        "title": "Recently Completed",
+        "description": "Latest completed scans and delivered reports",
+        "empty": "No completed orders yet",
+        "emptyDescription": "Completed imaging orders will appear here."
+      },
+      "modalityBacklog": {
+        "title": "Modality Backlog",
+        "description": "Open orders by modality type",
+        "empty": "No backlog data",
+        "emptyDescription": "Open orders by modality will appear here."
+      },
+      "staffSnapshot": {
+        "title": "Staff Snapshot",
+        "description": "Active team members by role",
+        "empty": "No staff data",
+        "emptyDescription": "Your team overview will appear here."
       },
       "recentOrders": {
         "title": "Oxirgi buyurtmalar",
@@ -114,25 +179,23 @@
     },
     "analytics": {
       "title": "Analitika",
-      "last30Days": "Oxirgi 30 kun",
-      "last90Days": "Oxirgi 90 kun",
       "refresh": "Yangilash",
       "export": "Eksport",
-      "exportCSV": "CSV eksport qilish",
-      "partialData": "Qisman ma'lumot",
       "metrics": {
         "totalScans": "Jami skanerlashlar",
         "completed": "yakunlandi",
         "pending": "kutilmoqda",
         "vsPrev": "oldingiga nisbatan 0%",
         "netRevenue": "Sof foyda",
-        "revenueBreakdown": "0.00 so'm daromad • 0.00 so'm qaytarish",
+        "revenueDetail": "$0.00 revenue • $0.00 refunds",
         "avgReportTime": "O'rtacha hisobot vaqti",
         "avgAcceptTime": "Qabul qilish vaqti: 0s",
         "opsHealth": "Operatsion holat",
-        "utilization": "0% yuklama",
+        "util": "0% util",
         "backlog": "0 to'planib qolgan",
-        "open": "0 ochiq"
+        "open": "0 ochiq",
+        "revenueBreakdown": "0.00 so'm daromad • 0.00 so'm qaytarish",
+        "utilization": "0% yuklama"
       },
       "charts": {
         "dailyTrend": "Kunlik tendensiya",
@@ -156,6 +219,7 @@
         "revenueByModality": "Yo'nalish bo'yicha daromad",
         "revenueByModalityDesc": "Qayd etilgan billing tranzaksiyalari asosida",
         "empty": "Hozircha ma'lumot yo'q.",
+        "noRevenue": "No modality revenue data available yet.",
         "noModalityRevenue": "Yo'nalish bo'yicha daromad ma'lumotlari hali mavjud emas."
       },
       "billingAdvanced": {
@@ -182,11 +246,16 @@
           "revenueTypeMix": "Daromad turi tarkibi"
         },
         "empty": "Ma'lumot yo'q"
-      }
+      },
+      "last30Days": "Oxirgi 30 kun",
+      "last90Days": "Oxirgi 90 kun",
+      "exportCSV": "CSV eksport qilish",
+      "partialData": "Qisman ma'lumot"
     },
     "workflow": {
       "title": "Ish jarayoni",
       "subtitle": "Navbatsiz buyurtmalar yarating va rejalashtirishdan hisobotgacha boshqaring.",
+      "newWalkIn": "New Walk-in Order",
       "newOrder": "Yangi navbatsiz buyurtma",
       "refresh": "Yangilash",
       "search": "Bemor, buyurtma raqami yoki tadqiqot bo'yicha qidirish...",
@@ -226,11 +295,45 @@
         "create": "Buyurtma yaratish"
       }
     },
+    "orderForm": {
+      "title": "New Manual Imaging Order",
+      "fields": {
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)",
+        "modality": "Modality",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "priority": "Priority",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
+      "placeholders": {
+        "phone": "+1 415 555 2671",
+        "email": "email@example.com",
+        "dob": "mm/dd/yyyy",
+        "study": "Chest X-Ray, Brain MRI...",
+        "bodyPart": "Chest, Brain, Knee...",
+        "time": "e.g. 09:00-11:00",
+        "reference": "INV-1029",
+        "notes": "Notes about this entry…"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "submit": "Create Imaging Order"
+      }
+    },
     "reports": {
       "search": "Hisobotlarni qidirish...",
       "all": "Barcha hisobotlar",
+      "allReports": "All Reports",
       "refresh": "Yangilash",
       "export": "Eksport",
+      "empty": "No reports found",
       "table": {
         "order": "Buyurtma",
         "patient": "Bemor",
@@ -240,6 +343,15 @@
         "radiologist": "Radiolog",
         "actions": "Harakatlar",
         "empty": "Hisobotlar topilmadi"
+      },
+      "columns": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions"
       },
       "stats": {
         "pending": "Kutilmoqda",
@@ -254,6 +366,16 @@
       "search": "Uskunalarni qidirish...",
       "refresh": "Yangilash",
       "add": "Qo'shish",
+      "empty": "No equipment found",
+      "capacity": "Capacity",
+      "day": "day",
+      "util": "util",
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "offline": "Offline",
+        "retired": "Retired"
+      },
       "table": {
         "name": "Nomi",
         "modality": "Yo'nalish",
@@ -261,6 +383,12 @@
         "capacity": "Quvvat/kun",
         "actions": "Harakatlar",
         "empty": "Uskunalar topilmadi"
+      },
+      "columns": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day"
       },
       "modal": {
         "title": "Uskuna qo'shish",
@@ -274,6 +402,17 @@
         "scanTypes": "Skanerlash turlari (vergul bilan ajrating)",
         "cancel": "Bekor qilish",
         "save": "Saqlash"
+      },
+      "form": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)"
       }
     },
     "finances": {
@@ -336,6 +475,32 @@
         "save": "Saqlash"
       }
     },
+    "billing": {
+      "partial": "Billing view is partially populated",
+      "warning": "Some tables may be unavailable in your schema or current permissions.",
+      "metrics": {
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstanding": "Outstanding Invoices",
+        "holds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage"
+      },
+      "charts": {
+        "revenueTrend": "Revenue Trend",
+        "statusMix": "Transaction Status Mix",
+        "types": "Transaction Types",
+        "invoiceStatus": "Invoice Status",
+        "plans": "Subscription Plans",
+        "methods": "Payment Methods",
+        "providers": "Providers / Gateways",
+        "recent": "Recent Transactions",
+        "success": "Daily Transaction Success",
+        "revenueType": "Revenue Type Mix"
+      }
+    },
     "referrals": {
       "title": "Yo'llanmalar",
       "new": "Yangi yo'llanma",
@@ -353,6 +518,14 @@
       }
     },
     "staff": {
+      "active": {
+        "title": "Faol xodimlarni boshqarish",
+        "subtitle": "Rollarni tahrirlash, o'chirish yoki ruxsatni cheklash.",
+        "search": "Xodimlarni qidirish...",
+        "refresh": "Yangilash",
+        "empty": "Faol xodimlar topilmadi."
+      },
+      "total": "total",
       "stats": {
         "active": "Faol xodimlar",
         "pending": "Kutilayotgan taklifnomalar",
@@ -372,13 +545,6 @@
         "title": "Kutilayotgan taklifnomalar",
         "subtitle": "Faollashtirishdan oldin taklifnomalarni qayta yuboring yoki bekor qiling.",
         "empty": "Kutilayotgan taklifnomalar yo'q."
-      },
-      "active": {
-        "title": "Faol xodimlarni boshqarish",
-        "subtitle": "Rollarni tahrirlash, o'chirish yoki ruxsatni cheklash.",
-        "search": "Xodimlarni qidirish...",
-        "refresh": "Yangilash",
-        "empty": "Faol xodimlar topilmadi."
       },
       "audit": {
         "title": "Audit jurnali",
@@ -1040,6 +1206,16 @@
           "scan": "QR-kodni skanerlash"
         }
       }
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": {
+        "title": "Imaging Center Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
     }
   }
 }

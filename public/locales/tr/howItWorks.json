@@ -19,6 +19,89 @@
         "appointments_7d": "5400"
       }
     },
+    "rolesIntro": {
+      "subtitle": "Tek platform, bakım yolculuğundaki her rolü birbirine bağlar.",
+      "cards": {
+        "platform": {
+          "title": "Tek platform",
+          "desc": "Hastalar, doktorlar, klinikler, laboratuvarlar, görüntüleme merkezleri ve eczaneler — hepsi tek bir iş akışında."
+        },
+        "dashboards": {
+          "title": "Rol panelleri",
+          "desc": "Her rol, yalnızca ihtiyacı olanı gören özel bir arayüz alır."
+        },
+        "trust": {
+          "title": "Tasarımla güven",
+          "desc": "Doğrulanmış sağlayıcılar, rol tabanlı erişim, şifreli depolama ve tam denetim izleri."
+        }
+      }
+    },
+    "automation": {
+      "title": "Manuel işi azaltan otomasyon",
+      "items": {
+        "scheduling": {
+          "title": "Akıllı zamanlama ve hatırlatıcılar",
+          "desc": "Onaylar, hatırlatıcılar ve akıllı yeniden zamanlama ile randevu kaçırmayı azaltın."
+        },
+        "checkin": {
+          "title": "Check-in ve kuyruk yönetimi",
+          "desc": "Hastaları net durum ve sahiplik ile iş akışlarından geçirin."
+        },
+        "documentation": {
+          "title": "Ziyaret şablonları ve belgeleme",
+          "desc": "Tanıdan reçete, dosya ve klinik notlara kadar yapılandırılmış akışlar."
+        },
+        "referrals": {
+          "title": "Sevkler ve bakım koordinasyonu",
+          "desc": "Sevkleri ve siparişleri takiple doğru tesise yönlendirin."
+        },
+        "results": {
+          "title": "Tanı sonuçları teslimi",
+          "desc": "Laboratuvar ve görüntüleme sonuçlarını doğru rollere güvenli iletini."
+        },
+        "fulfillment": {
+          "title": "Reçete karşılama iş akışı",
+          "desc": "Hazırlama, teslim alma, teslimat ve onayları takip edin."
+        }
+      },
+      "tag": "Personele hazır operasyonlar"
+    },
+    "faq": {
+      "title": "Sıkça Sorulan Sorular",
+      "q1": {
+        "question": "Personel nasıl erişim kazanır?",
+        "answer": "Yöneticiler personeli davet eder ve en az ayrıcalıklı rollerle atar."
+      },
+      "q2": {
+        "question": "Personel, doktor ve hastalar ne görür?",
+        "answer": "RBAC verileri role göre sınırlandırır; erişim denetlenebilir."
+      },
+      "q3": {
+        "question": "Sevkler zamanlamayla nasıl bağlantılıdır?",
+        "answer": "Sevkler, tesis kuyruklarına ve zamanlamaya akan talepler oluşturabilir."
+      },
+      "q4": {
+        "question": "Sonuçlar nasıl iletilir?",
+        "answer": "Sonuçlar yetkili rollerle paylaşılır ve bildirimlerle panolarda görünür."
+      },
+      "q5": {
+        "question": "Eczaneler karşılamayı nasıl onaylar?",
+        "answer": "Eczaneler karşılama durumunu günceller ve tamamlamayı onaylar."
+      },
+      "q6": {
+        "question": "Veriler güvenli mi?",
+        "answer": "Docito, hasta verilerini korumak için şifreli depolama, RBAC ve denetim izleri kullanır."
+      },
+      "q7": {
+        "question": "Sigorta kullanabilir miyim?",
+        "answer": "Sigorta desteği sağlayıcılara ve bölgeye göre değişir."
+      },
+      "q8": {
+        "question": "Mobil uygulama var mı?",
+        "answer": "Mobil deneyimler bugün mevcut; yerel uygulamalar yakında geliyor."
+      },
+      "subtitle": "Docito'nun nasıl çalıştığına dair yaygın sorular"
+    },
     "flow": {
       "title": "Her rol için evrensel bir akış",
       "step1Title": "Ara",
@@ -71,10 +154,22 @@
           "Sevk ve takiplerin doğru sağlayıcıya yönlendirilmesi."
         ],
         "features": [
-          { "title": "Birleşik arama", "desc": "Bakım, tetkik, görüntüleme ve karşılama için tek arama." },
-          { "title": "Randevu zaman çizelgesi", "desc": "İstekten tamamlanmaya kadar adımları takip edin." },
-          { "title": "Sonuç merkezi", "desc": "Lab + görüntüleme sonuçları güvenle teslim edilir." },
-          { "title": "Reçete akışı", "desc": "Eczaneye gönderin ve karşılama durumunu doğrulayın." }
+          {
+            "title": "Birleşik arama",
+            "desc": "Bakım, tetkik, görüntüleme ve karşılama için tek arama."
+          },
+          {
+            "title": "Randevu zaman çizelgesi",
+            "desc": "İstekten tamamlanmaya kadar adımları takip edin."
+          },
+          {
+            "title": "Sonuç merkezi",
+            "desc": "Lab + görüntüleme sonuçları güvenle teslim edilir."
+          },
+          {
+            "title": "Reçete akışı",
+            "desc": "Eczaneye gönderin ve karşılama durumunu doğrulayın."
+          }
         ],
         "trust": "Bilgileriniz rol tabanlı erişim ve denetim izleriyle her adımda korunur."
       },
@@ -90,10 +185,22 @@
           "Sevk ve sonuçların iş akışınıza teslimi."
         ],
         "features": [
-          { "title": "Takvim kontrolü", "desc": "Uygunluk, tamponlar ve ziyaret türleri." },
-          { "title": "Şablonlar", "desc": "Tanı → tedavi → reçeteler → dosyalar → notlar." },
-          { "title": "Sevkler", "desc": "Lab/görüntülemeye gönderin ve takip edin." },
-          { "title": "Güvenli paylaşım", "desc": "Sonuçları doğru role güvenle paylaşın." }
+          {
+            "title": "Takvim kontrolü",
+            "desc": "Uygunluk, tamponlar ve ziyaret türleri."
+          },
+          {
+            "title": "Şablonlar",
+            "desc": "Tanı → tedavi → reçeteler → dosyalar → notlar."
+          },
+          {
+            "title": "Sevkler",
+            "desc": "Lab/görüntülemeye gönderin ve takip edin."
+          },
+          {
+            "title": "Güvenli paylaşım",
+            "desc": "Sonuçları doğru role güvenle paylaşın."
+          }
         ],
         "trust": "RBAC yalnızca yetkililerin erişmesini sağlar; tüm erişimler denetlenebilir."
       },
@@ -109,10 +216,22 @@
           "Operasyon raporları ve analitik yüzeyler."
         ],
         "features": [
-          { "title": "Yönetim paneli", "desc": "Doktorları, hizmetleri ve politikaları yönetin." },
-          { "title": "Personel rolleri", "desc": "En az ayrıcalıkla davet ve yetkilendirme." },
-          { "title": "Kuyruk görünürlüğü", "desc": "Darboğaz ve yükü hızlıca görün." },
-          { "title": "Analitik", "desc": "Randevular, tamamlanma ve operasyon sinyalleri." }
+          {
+            "title": "Yönetim paneli",
+            "desc": "Doktorları, hizmetleri ve politikaları yönetin."
+          },
+          {
+            "title": "Personel rolleri",
+            "desc": "En az ayrıcalıkla davet ve yetkilendirme."
+          },
+          {
+            "title": "Kuyruk görünürlüğü",
+            "desc": "Darboğaz ve yükü hızlıca görün."
+          },
+          {
+            "title": "Analitik",
+            "desc": "Randevular, tamamlanma ve operasyon sinyalleri."
+          }
         ],
         "trust": "Kuruluşlar doğrulanabilir; erişim rol bazında sınırlandırılır ve kayıt altına alınır."
       },
@@ -128,10 +247,22 @@
           "Belge toplama ve yapılandırılmış devirler."
         ],
         "features": [
-          { "title": "Check-in", "desc": "Hızlı geliş, durum güncellemeleri ve oda yönlendirme." },
-          { "title": "İş kuyruğu", "desc": "Sahiplik ve SLA ile tek görev listesi." },
-          { "title": "Mesajlaşma", "desc": "Bağlamlı notlar ve devirler." },
-          { "title": "Ön form", "desc": "Ziyaret öncesi veri toplama." }
+          {
+            "title": "Check-in",
+            "desc": "Hızlı geliş, durum güncellemeleri ve oda yönlendirme."
+          },
+          {
+            "title": "İş kuyruğu",
+            "desc": "Sahiplik ve SLA ile tek görev listesi."
+          },
+          {
+            "title": "Mesajlaşma",
+            "desc": "Bağlamlı notlar ve devirler."
+          },
+          {
+            "title": "Ön form",
+            "desc": "Ziyaret öncesi veri toplama."
+          }
         ],
         "trust": "Personel erişimi yalnızca atanmış tesisler ve izinli modüllerle sınırlıdır."
       },
@@ -147,10 +278,22 @@
           "Tamamlama ve takip bildirimleri."
         ],
         "features": [
-          { "title": "İstek alımı", "desc": "Net iş listeleri ve durum güncellemeleri." },
-          { "title": "Sonuç yayınlama", "desc": "Klinisyen ve hastalara güvenli teslim." },
-          { "title": "Süre takibi", "desc": "SLA’lar için operasyonel şeffaflık." },
-          { "title": "Dosya depolama", "desc": "Raporları ve dosyaları güvenle ekleyin." }
+          {
+            "title": "İstek alımı",
+            "desc": "Net iş listeleri ve durum güncellemeleri."
+          },
+          {
+            "title": "Sonuç yayınlama",
+            "desc": "Klinisyen ve hastalara güvenli teslim."
+          },
+          {
+            "title": "Süre takibi",
+            "desc": "SLA’lar için operasyonel şeffaflık."
+          },
+          {
+            "title": "Dosya depolama",
+            "desc": "Raporları ve dosyaları güvenle ekleyin."
+          }
         ],
         "trust": "Doğrulanmış lab profilleri, şifreli depolama ve sonuç erişimi için denetim izleri."
       },
@@ -166,10 +309,22 @@
           "Durum değişimi bildirimleri."
         ],
         "features": [
-          { "title": "Atanmış işler", "desc": "Sadece kendi kuyruğunuza odaklanın." },
-          { "title": "Yüklemeler", "desc": "Az adımla sonuç ekleme." },
-          { "title": "Durum otomasyonu", "desc": "Manuel işi azaltın." },
-          { "title": "Eskalasyon", "desc": "Sorunları bağlamla hızlı yükseltin." }
+          {
+            "title": "Atanmış işler",
+            "desc": "Sadece kendi kuyruğunuza odaklanın."
+          },
+          {
+            "title": "Yüklemeler",
+            "desc": "Az adımla sonuç ekleme."
+          },
+          {
+            "title": "Durum otomasyonu",
+            "desc": "Manuel işi azaltın."
+          },
+          {
+            "title": "Eskalasyon",
+            "desc": "Sorunları bağlamla hızlı yükseltin."
+          }
         ],
         "trust": "Personel izinleri yalnızca gerekli isteklere ve hasta verisine görünürlük sağlar."
       },
@@ -185,10 +340,22 @@
           "Durum takibi ve raporlama."
         ],
         "features": [
-          { "title": "İstek panosu", "desc": "İstekten tamamlanmaya net bir boru hattı." },
-          { "title": "Çalışma dosyaları", "desc": "Güvenli yükleme ve teslim." },
-          { "title": "Raporlama", "desc": "Kapasite ve akış için operasyonel anlık görüntüler." },
-          { "title": "Sevk döngüsü", "desc": "Doktora geri bildirimle döngüyü kapatın." }
+          {
+            "title": "İstek panosu",
+            "desc": "İstekten tamamlanmaya net bir boru hattı."
+          },
+          {
+            "title": "Çalışma dosyaları",
+            "desc": "Güvenli yükleme ve teslim."
+          },
+          {
+            "title": "Raporlama",
+            "desc": "Kapasite ve akış için operasyonel anlık görüntüler."
+          },
+          {
+            "title": "Sevk döngüsü",
+            "desc": "Doktora geri bildirimle döngüyü kapatın."
+          }
         ],
         "trust": "Dosyalara yalnızca yetkili roller erişebilir; tüm işlemler denetlenebilir."
       },
@@ -204,10 +371,22 @@
           "Sonuç yayınlama akışları."
         ],
         "features": [
-          { "title": "İş kuyruğu", "desc": "Yalnızca atanmış çalışmalar." },
-          { "title": "Hızlı güncelleme", "desc": "Durumlar ve notlar tek yerde." },
-          { "title": "Yükleme", "desc": "Doğru rollere güvenli teslim." },
-          { "title": "İstisnalar", "desc": "Sorunları bağlamla işaretleyin." }
+          {
+            "title": "İş kuyruğu",
+            "desc": "Yalnızca atanmış çalışmalar."
+          },
+          {
+            "title": "Hızlı güncelleme",
+            "desc": "Durumlar ve notlar tek yerde."
+          },
+          {
+            "title": "Yükleme",
+            "desc": "Doğru rollere güvenli teslim."
+          },
+          {
+            "title": "İstisnalar",
+            "desc": "Sorunları bağlamla işaretleyin."
+          }
         ],
         "trust": "En az ayrıcalık: yalnızca gerekli veriye erişim."
       },
@@ -223,10 +402,22 @@
           "Hasta ve klinik bildirimleri."
         ],
         "features": [
-          { "title": "Rx gelen kutusu", "desc": "Gelen reçeteleri merkezileştirin." },
-          { "title": "Karşılama adımları", "desc": "Hazırla → hazır → teslim edildi." },
-          { "title": "İkameler", "desc": "Değişimleri doktorla koordine edin." },
-          { "title": "Raporlama", "desc": "Talep için operasyonel metrikler." }
+          {
+            "title": "Rx gelen kutusu",
+            "desc": "Gelen reçeteleri merkezileştirin."
+          },
+          {
+            "title": "Karşılama adımları",
+            "desc": "Hazırla → hazır → teslim edildi."
+          },
+          {
+            "title": "İkameler",
+            "desc": "Değişimleri doktorla koordine edin."
+          },
+          {
+            "title": "Raporlama",
+            "desc": "Talep için operasyonel metrikler."
+          }
         ],
         "trust": "Doğrulanmış eczaneler, şifreli dosyalar ve hassas eylemler için denetim kayıtları."
       },
@@ -242,23 +433,24 @@
           "Hasta iletişim tetikleri."
         ],
         "features": [
-          { "title": "Atanmış kuyruk", "desc": "Eyleme dönük öğelere odaklanın." },
-          { "title": "Tek dokunuş", "desc": "Adımları hızlıca ilerletin." },
-          { "title": "İstisnalar", "desc": "Eksik stok veya soruları bağlamla işaretleyin." },
-          { "title": "Onaylar", "desc": "Klinik ve hasta için döngüyü kapatın." }
+          {
+            "title": "Atanmış kuyruk",
+            "desc": "Eyleme dönük öğelere odaklanın."
+          },
+          {
+            "title": "Tek dokunuş",
+            "desc": "Adımları hızlıca ilerletin."
+          },
+          {
+            "title": "İstisnalar",
+            "desc": "Eksik stok veya soruları bağlamla işaretleyin."
+          },
+          {
+            "title": "Onaylar",
+            "desc": "Klinik ve hasta için döngüyü kapatın."
+          }
         ],
         "trust": "Erişim, karşılamaya gereken minimum veriyle sınırlıdır."
-      }
-    },
-    "automation": {
-      "title": "Manuel işi azaltan otomasyon",
-      "items": {
-        "scheduling": { "title": "Akıllı planlama ve hatırlatmalar", "desc": "Onaylar, hatırlatmalar ve akıllı yeniden planlama ile no-show’u azaltın." },
-        "checkin": { "title": "Check-in ve kuyruk yönetimi", "desc": "Net durumlar ve sahiplikle hasta akışını yönetin." },
-        "documentation": { "title": "Ziyaret şablonları ve dokümantasyon", "desc": "Tanıdan reçeteye, dosyalara ve notlara kadar yapılandırılmış akış." },
-        "referrals": { "title": "Sevk ve bakım koordinasyonu", "desc": "Sevkleri doğru tesise takip ile yönlendirin." },
-        "results": { "title": "Tanı sonuç teslimi", "desc": "Lab ve görüntüleme sonuçlarını doğru rollere güvenle teslim edin." },
-        "fulfillment": { "title": "Reçete karşılama akışı", "desc": "Hazırlama, teslim/tesellüm ve onayları takip edin." }
       }
     },
     "security": {
@@ -271,49 +463,6 @@
         "compliance": "HIPAA/GDPR’ye hazır duruş"
       }
     },
-    "faq": {
-      "title": "SSS",
-      "q1": { "question": "Personel nasıl erişim alır?", "answer": "Yöneticiler personeli davet eder ve en az ayrıcalıkla rol atar." },
-      "q2": { "question": "Personel vs doktor vs hasta ne görebilir?", "answer": "RBAC, veriyi role göre sınırlar; erişimler denetlenebilir." },
-      "q3": { "question": "Sevkler planlamaya nasıl bağlanır?", "answer": "Sevkler, tesis kuyruklarına ve planlamaya düşen istekler oluşturabilir." },
-      "q4": { "question": "Sonuçlar nasıl iletilir?", "answer": "Sonuçlar yetkili rollere paylaşılır ve bildirimlerle panolarda görünür." },
-      "q5": { "question": "Eczaneler karşılama nasıl onaylar?", "answer": "Eczaneler adımları günceller ve tamamlandığını onaylar." },
-      "q6": { "question": "Veri güvenli mi?", "answer": "Docito, şifreleme, RBAC ve denetim izleriyle veriyi korur." },
-      "q7": { "question": "Sigorta kullanabilir miyim?", "answer": "Sigorta desteği sağlayıcıya ve bölgeye bağlıdır; seçenekler randevuda görünebilir." },
-      "q8": { "question": "Mobil uygulama var mı?", "answer": "Mobil web deneyimi hazır; yerel uygulamalar yakında." }
-    },
-    "rolesIntro": {
-  "subtitle": "Tek platform, bakım yolculuğundaki her rolü birbirine bağlar.",
-  "cards": {
-    "platform": { "title": "Tek platform", "desc": "Hastalar, doktorlar, klinikler, laboratuvarlar, görüntüleme merkezleri ve eczaneler — hepsi tek bir iş akışında." },
-    "dashboards": { "title": "Rol panelleri", "desc": "Her rol, yalnızca ihtiyacı olanı gören özel bir arayüz alır." },
-    "trust": { "title": "Tasarımla güven", "desc": "Doğrulanmış sağlayıcılar, rol tabanlı erişim, şifreli depolama ve tam denetim izleri." }
-  }
-},
-"automation": {
-  "tag": "Personele hazır operasyonlar",
-  "title": "Manuel işi azaltan otomasyon",
-  "items": {
-    "scheduling": { "title": "Akıllı zamanlama ve hatırlatıcılar", "desc": "Onaylar, hatırlatıcılar ve akıllı yeniden zamanlama ile randevu kaçırmayı azaltın." },
-    "checkin": { "title": "Check-in ve kuyruk yönetimi", "desc": "Hastaları net durum ve sahiplik ile iş akışlarından geçirin." },
-    "documentation": { "title": "Ziyaret şablonları ve belgeleme", "desc": "Tanıdan reçete, dosya ve klinik notlara kadar yapılandırılmış akışlar." },
-    "referrals": { "title": "Sevkler ve bakım koordinasyonu", "desc": "Sevkleri ve siparişleri takiple doğru tesise yönlendirin." },
-    "results": { "title": "Tanı sonuçları teslimi", "desc": "Laboratuvar ve görüntüleme sonuçlarını doğru rollere güvenli iletini." },
-    "fulfillment": { "title": "Reçete karşılama iş akışı", "desc": "Hazırlama, teslim alma, teslimat ve onayları takip edin." }
-  }
-},
-"faq": {
-  "title": "Sıkça Sorulan Sorular",
-  "subtitle": "Docito'nun nasıl çalıştığına dair yaygın sorular",
-  "q1": { "question": "Personel nasıl erişim kazanır?", "answer": "Yöneticiler personeli davet eder ve en az ayrıcalıklı rollerle atar." },
-  "q2": { "question": "Personel, doktor ve hastalar ne görür?", "answer": "RBAC verileri role göre sınırlandırır; erişim denetlenebilir." },
-  "q3": { "question": "Sevkler zamanlamayla nasıl bağlantılıdır?", "answer": "Sevkler, tesis kuyruklarına ve zamanlamaya akan talepler oluşturabilir." },
-  "q4": { "question": "Sonuçlar nasıl iletilir?", "answer": "Sonuçlar yetkili rollerle paylaşılır ve bildirimlerle panolarda görünür." },
-  "q5": { "question": "Eczaneler karşılamayı nasıl onaylar?", "answer": "Eczaneler karşılama durumunu günceller ve tamamlamayı onaylar." },
-  "q6": { "question": "Veriler güvenli mi?", "answer": "Docito, hasta verilerini korumak için şifreli depolama, RBAC ve denetim izleri kullanır." },
-  "q7": { "question": "Sigorta kullanabilir miyim?", "answer": "Sigorta desteği sağlayıcılara ve bölgeye göre değişir." },
-  "q8": { "question": "Mobil uygulama var mı?", "answer": "Mobil deneyimler bugün mevcut; yerel uygulamalar yakında geliyor." }
-},
     "cta": {
       "title": "Docito’ya hazır mısınız?",
       "subtitle": "Aramayla başlayın — ya da doğrulanmış sağlayıcı olarak katılın ve klinik iş akışlarını güçlendirin.",

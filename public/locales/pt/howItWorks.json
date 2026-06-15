@@ -19,6 +19,89 @@
         "appointments_7d": "5400"
       }
     },
+    "rolesIntro": {
+      "subtitle": "Uma plataforma que conecta todos os papéis na jornada de cuidados.",
+      "cards": {
+        "platform": {
+          "title": "Uma plataforma",
+          "desc": "Pacientes, médicos, clínicas, laboratórios, centros de imagem e farmácias — todos conectados num único fluxo."
+        },
+        "dashboards": {
+          "title": "Painéis por papel",
+          "desc": "Cada papel tem uma vista personalizada: apenas o necessário, nada a mais."
+        },
+        "trust": {
+          "title": "Confiança pelo design",
+          "desc": "Provedores verificados, acesso baseado em papéis, armazenamento encriptado e trilhas de auditoria completas."
+        }
+      }
+    },
+    "automation": {
+      "title": "Automação que reduz o trabalho manual",
+      "items": {
+        "scheduling": {
+          "title": "Agendamento inteligente e lembretes",
+          "desc": "Reduza faltas com confirmações, lembretes e reagendamento inteligente."
+        },
+        "checkin": {
+          "title": "Check-in e gestão de filas",
+          "desc": "Mova pacientes pelos fluxos com estados claros e responsabilidades definidas."
+        },
+        "documentation": {
+          "title": "Modelos de consulta e documentação",
+          "desc": "Fluxos estruturados do diagnóstico às receitas, ficheiros e notas clínicas."
+        },
+        "referrals": {
+          "title": "Referências e coordenação de cuidados",
+          "desc": "Encaminhe referências e pedidos para a unidade certa com rastreamento."
+        },
+        "results": {
+          "title": "Entrega de resultados de diagnóstico",
+          "desc": "Entregue resultados de laboratório e imagem com segurança aos papéis certos."
+        },
+        "fulfillment": {
+          "title": "Fluxo de dispensa de receitas",
+          "desc": "Rastreie preparação, levantamento, entrega e confirmações."
+        }
+      },
+      "tag": "Operações prontas para a equipa"
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "q1": {
+        "question": "Como os funcionários obtêm acesso?",
+        "answer": "Os administradores convidam o pessoal e atribuem papéis com mínimos privilégios."
+      },
+      "q2": {
+        "question": "O que veem funcionários, médicos e pacientes?",
+        "answer": "O RBAC limita dados por papel; o acesso pode ser auditado."
+      },
+      "q3": {
+        "question": "Como as referências se ligam ao agendamento?",
+        "answer": "As referências podem gerar pedidos que fluem para filas e agendamentos."
+      },
+      "q4": {
+        "question": "Como são entregues os resultados?",
+        "answer": "Os resultados são partilhados com papéis autorizados e aparecem nos dashboards com notificações."
+      },
+      "q5": {
+        "question": "Como as farmácias confirmam a dispensa?",
+        "answer": "As farmácias atualizam o estado de dispensa e confirmam a conclusão."
+      },
+      "q6": {
+        "question": "Os dados são seguros?",
+        "answer": "O Docito usa armazenamento encriptado, RBAC e trilhas de auditoria."
+      },
+      "q7": {
+        "question": "Posso usar seguro?",
+        "answer": "O suporte a seguros depende dos provedores e da região."
+      },
+      "q8": {
+        "question": "Existe app móvel?",
+        "answer": "As experiências móveis estão disponíveis hoje; as apps nativas chegam em breve."
+      },
+      "subtitle": "Perguntas comuns sobre como o Docito funciona"
+    },
     "flow": {
       "title": "Um fluxo universal para cada função",
       "step1Title": "Buscar",
@@ -71,10 +154,22 @@
           "Encaminhamentos e follow-ups direcionados ao provedor correto."
         ],
         "features": [
-          { "title": "Busca unificada", "desc": "Uma busca para cuidado, diagnósticos, imagem e dispensação." },
-          { "title": "Linha do tempo", "desc": "Acompanhe cada etapa do pedido até a conclusão." },
-          { "title": "Central de resultados", "desc": "Resultados de laboratório + imagem entregues com segurança." },
-          { "title": "Fluxo de prescrições", "desc": "Envie à farmácia e confirme a dispensação." }
+          {
+            "title": "Busca unificada",
+            "desc": "Uma busca para cuidado, diagnósticos, imagem e dispensação."
+          },
+          {
+            "title": "Linha do tempo",
+            "desc": "Acompanhe cada etapa do pedido até a conclusão."
+          },
+          {
+            "title": "Central de resultados",
+            "desc": "Resultados de laboratório + imagem entregues com segurança."
+          },
+          {
+            "title": "Fluxo de prescrições",
+            "desc": "Envie à farmácia e confirme a dispensação."
+          }
         ],
         "trust": "Suas informações são protegidas por acesso por função e trilhas de auditoria em cada etapa."
       },
@@ -90,10 +185,22 @@
           "Encaminhamentos e entrega de resultados no seu fluxo."
         ],
         "features": [
-          { "title": "Controle da agenda", "desc": "Disponibilidade, buffers e tipos de consulta." },
-          { "title": "Modelos", "desc": "Diagnóstico → tratamento → prescrições → arquivos → notas." },
-          { "title": "Encaminhamentos", "desc": "Envie para laboratório/imagem com rastreio." },
-          { "title": "Compartilhamento seguro", "desc": "Compartilhe resultados com a função correta." }
+          {
+            "title": "Controle da agenda",
+            "desc": "Disponibilidade, buffers e tipos de consulta."
+          },
+          {
+            "title": "Modelos",
+            "desc": "Diagnóstico → tratamento → prescrições → arquivos → notas."
+          },
+          {
+            "title": "Encaminhamentos",
+            "desc": "Envie para laboratório/imagem com rastreio."
+          },
+          {
+            "title": "Compartilhamento seguro",
+            "desc": "Compartilhe resultados com a função correta."
+          }
         ],
         "trust": "RBAC garante acesso apenas a autorizados; todo acesso é auditável."
       },
@@ -109,10 +216,22 @@
           "Relatórios operacionais e análises."
         ],
         "features": [
-          { "title": "Console admin", "desc": "Gerencie médicos, serviços e políticas." },
-          { "title": "Funções da equipe", "desc": "Convites com mínimo privilégio." },
-          { "title": "Visibilidade de filas", "desc": "Veja gargalos e carga rapidamente." },
-          { "title": "Análises", "desc": "Agendamentos, conclusões e sinais operacionais." }
+          {
+            "title": "Console admin",
+            "desc": "Gerencie médicos, serviços e políticas."
+          },
+          {
+            "title": "Funções da equipe",
+            "desc": "Convites com mínimo privilégio."
+          },
+          {
+            "title": "Visibilidade de filas",
+            "desc": "Veja gargalos e carga rapidamente."
+          },
+          {
+            "title": "Análises",
+            "desc": "Agendamentos, conclusões e sinais operacionais."
+          }
         ],
         "trust": "Unidades podem ser verificadas; acesso é limitado por função e registrado."
       },
@@ -128,10 +247,22 @@
           "Coleta de documentos e repasses estruturados."
         ],
         "features": [
-          { "title": "Check-in", "desc": "Chegada rápida, mudanças de status e roteamento de salas." },
-          { "title": "Fila de trabalho", "desc": "Uma lista com responsáveis e SLA." },
-          { "title": "Mensagens", "desc": "Notas e repasses com contexto." },
-          { "title": "Formulários", "desc": "Coleta de dados antes da consulta." }
+          {
+            "title": "Check-in",
+            "desc": "Chegada rápida, mudanças de status e roteamento de salas."
+          },
+          {
+            "title": "Fila de trabalho",
+            "desc": "Uma lista com responsáveis e SLA."
+          },
+          {
+            "title": "Mensagens",
+            "desc": "Notas e repasses com contexto."
+          },
+          {
+            "title": "Formulários",
+            "desc": "Coleta de dados antes da consulta."
+          }
         ],
         "trust": "Acesso da equipe é restrito a unidades atribuídas e módulos permitidos."
       },
@@ -147,10 +278,22 @@
           "Notificações de conclusão e follow-up."
         ],
         "features": [
-          { "title": "Caixa de pedidos", "desc": "Listas claras e atualizações de status." },
-          { "title": "Publicação de resultados", "desc": "Entrega segura a médicos e pacientes." },
-          { "title": "Rastreio de prazos", "desc": "Transparência operacional de SLA." },
-          { "title": "Armazenamento", "desc": "Anexe laudos e arquivos com segurança." }
+          {
+            "title": "Caixa de pedidos",
+            "desc": "Listas claras e atualizações de status."
+          },
+          {
+            "title": "Publicação de resultados",
+            "desc": "Entrega segura a médicos e pacientes."
+          },
+          {
+            "title": "Rastreio de prazos",
+            "desc": "Transparência operacional de SLA."
+          },
+          {
+            "title": "Armazenamento",
+            "desc": "Anexe laudos e arquivos com segurança."
+          }
         ],
         "trust": "Perfis verificados, armazenamento criptografado e trilhas de auditoria para acesso a resultados."
       },
@@ -166,10 +309,22 @@
           "Notificações de mudanças de status."
         ],
         "features": [
-          { "title": "Trabalho atribuído", "desc": "Foque apenas na sua fila." },
-          { "title": "Envios", "desc": "Adicione resultados com poucos passos." },
-          { "title": "Automação de status", "desc": "Reduza trabalho manual." },
-          { "title": "Escalações", "desc": "Sinalize problemas com contexto." }
+          {
+            "title": "Trabalho atribuído",
+            "desc": "Foque apenas na sua fila."
+          },
+          {
+            "title": "Envios",
+            "desc": "Adicione resultados com poucos passos."
+          },
+          {
+            "title": "Automação de status",
+            "desc": "Reduza trabalho manual."
+          },
+          {
+            "title": "Escalações",
+            "desc": "Sinalize problemas com contexto."
+          }
         ],
         "trust": "Permissões limitam visibilidade ao mínimo necessário."
       },
@@ -185,10 +340,22 @@
           "Rastreio de status e relatórios."
         ],
         "features": [
-          { "title": "Painel de pedidos", "desc": "Pipeline claro do pedido à conclusão." },
-          { "title": "Arquivos do estudo", "desc": "Envio e entrega seguros." },
-          { "title": "Relatórios", "desc": "Visões operacionais de capacidade e fluxo." },
-          { "title": "Loop com solicitante", "desc": "Feche o ciclo com o médico." }
+          {
+            "title": "Painel de pedidos",
+            "desc": "Pipeline claro do pedido à conclusão."
+          },
+          {
+            "title": "Arquivos do estudo",
+            "desc": "Envio e entrega seguros."
+          },
+          {
+            "title": "Relatórios",
+            "desc": "Visões operacionais de capacidade e fluxo."
+          },
+          {
+            "title": "Loop com solicitante",
+            "desc": "Feche o ciclo com o médico."
+          }
         ],
         "trust": "Somente funções autorizadas acessam arquivos; todas as ações são auditáveis."
       },
@@ -204,10 +371,22 @@
           "Fluxos de publicação de resultados."
         ],
         "features": [
-          { "title": "Fila de trabalho", "desc": "Apenas seus estudos atribuídos." },
-          { "title": "Atualizações rápidas", "desc": "Status e notas em um só lugar." },
-          { "title": "Envios seguros", "desc": "Entrega para a função correta." },
-          { "title": "Exceções", "desc": "Marque problemas com contexto completo." }
+          {
+            "title": "Fila de trabalho",
+            "desc": "Apenas seus estudos atribuídos."
+          },
+          {
+            "title": "Atualizações rápidas",
+            "desc": "Status e notas em um só lugar."
+          },
+          {
+            "title": "Envios seguros",
+            "desc": "Entrega para a função correta."
+          },
+          {
+            "title": "Exceções",
+            "desc": "Marque problemas com contexto completo."
+          }
         ],
         "trust": "Princípio de mínimo privilégio: acesso só ao necessário."
       },
@@ -223,10 +402,22 @@
           "Notificações para pacientes e clínicas."
         ],
         "features": [
-          { "title": "Inbox de Rx", "desc": "Centralize prescrições recebidas." },
-          { "title": "Etapas de dispensação", "desc": "Preparado → pronto → entregue." },
-          { "title": "Substituições", "desc": "Coordene mudanças com médicos." },
-          { "title": "Relatórios", "desc": "Métricas operacionais de demanda." }
+          {
+            "title": "Inbox de Rx",
+            "desc": "Centralize prescrições recebidas."
+          },
+          {
+            "title": "Etapas de dispensação",
+            "desc": "Preparado → pronto → entregue."
+          },
+          {
+            "title": "Substituições",
+            "desc": "Coordene mudanças com médicos."
+          },
+          {
+            "title": "Relatórios",
+            "desc": "Métricas operacionais de demanda."
+          }
         ],
         "trust": "Farmácias verificadas, criptografia e auditoria para ações sensíveis."
       },
@@ -242,23 +433,24 @@
           "Gatilhos de comunicação ao paciente."
         ],
         "features": [
-          { "title": "Fila atribuída", "desc": "Foque em itens acionáveis." },
-          { "title": "Atualização rápida", "desc": "Avance pelas etapas rapidamente." },
-          { "title": "Exceções", "desc": "Marque falta de estoque ou dúvidas com contexto." },
-          { "title": "Confirmações", "desc": "Feche o ciclo para clínica e paciente." }
+          {
+            "title": "Fila atribuída",
+            "desc": "Foque em itens acionáveis."
+          },
+          {
+            "title": "Atualização rápida",
+            "desc": "Avance pelas etapas rapidamente."
+          },
+          {
+            "title": "Exceções",
+            "desc": "Marque falta de estoque ou dúvidas com contexto."
+          },
+          {
+            "title": "Confirmações",
+            "desc": "Feche o ciclo para clínica e paciente."
+          }
         ],
         "trust": "Acesso limitado aos dados mínimos para o fluxo de dispensação."
-      }
-    },
-    "automation": {
-      "title": "Automação que reduz trabalho manual",
-      "items": {
-        "scheduling": { "title": "Agendamento inteligente e lembretes", "desc": "Reduza faltas com confirmações, lembretes e reagendamento inteligente." },
-        "checkin": { "title": "Check-in e gestão de filas", "desc": "Mova pacientes com status claros e responsáveis." },
-        "documentation": { "title": "Modelos e documentação", "desc": "Fluxo estruturado do diagnóstico a prescrições, arquivos e notas." },
-        "referrals": { "title": "Encaminhamentos e coordenação", "desc": "Direcione encaminhamentos ao local certo com rastreio." },
-        "results": { "title": "Entrega de resultados", "desc": "Entregue resultados de laboratório e imagem com segurança à função correta." },
-        "fulfillment": { "title": "Fluxo de dispensação", "desc": "Acompanhe preparo, retirada/entrega e confirmações." }
       }
     },
     "security": {
@@ -271,49 +463,6 @@
         "compliance": "Postura pronta para HIPAA/GDPR"
       }
     },
-    "faq": {
-      "title": "Perguntas frequentes",
-      "q1": { "question": "Como a equipe recebe acesso?", "answer": "Administradores convidam a equipe e atribuem funções com mínimo privilégio." },
-      "q2": { "question": "O que a equipe vê vs médicos vs pacientes?", "answer": "RBAC limita dados por função; acessos são auditáveis." },
-      "q3": { "question": "Como encaminhamentos se ligam ao agendamento?", "answer": "Encaminhamentos podem criar solicitações que entram em filas e agenda da unidade." },
-      "q4": { "question": "Como os resultados são entregues?", "answer": "Resultados são compartilhados com funções autorizadas e aparecem no painel com notificações." },
-      "q5": { "question": "Como a farmácia confirma a dispensação?", "answer": "A farmácia atualiza o status e confirma a conclusão." },
-      "q6": { "question": "Os dados são seguros?", "answer": "Docito usa criptografia, RBAC e auditoria para proteger dados sensíveis." },
-      "q7": { "question": "Posso usar seguro?", "answer": "Depende do provedor e região; opções podem aparecer durante o agendamento." },
-      "q8": { "question": "Há app móvel?", "answer": "A experiência móvel já é otimizada; apps nativos em breve." }
-    },
-    "rolesIntro": {
-  "subtitle": "Uma plataforma que conecta todos os papéis na jornada de cuidados.",
-  "cards": {
-    "platform": { "title": "Uma plataforma", "desc": "Pacientes, médicos, clínicas, laboratórios, centros de imagem e farmácias — todos conectados num único fluxo." },
-    "dashboards": { "title": "Painéis por papel", "desc": "Cada papel tem uma vista personalizada: apenas o necessário, nada a mais." },
-    "trust": { "title": "Confiança pelo design", "desc": "Provedores verificados, acesso baseado em papéis, armazenamento encriptado e trilhas de auditoria completas." }
-  }
-},
-"automation": {
-  "tag": "Operações prontas para a equipa",
-  "title": "Automação que reduz o trabalho manual",
-  "items": {
-    "scheduling": { "title": "Agendamento inteligente e lembretes", "desc": "Reduza faltas com confirmações, lembretes e reagendamento inteligente." },
-    "checkin": { "title": "Check-in e gestão de filas", "desc": "Mova pacientes pelos fluxos com estados claros e responsabilidades definidas." },
-    "documentation": { "title": "Modelos de consulta e documentação", "desc": "Fluxos estruturados do diagnóstico às receitas, ficheiros e notas clínicas." },
-    "referrals": { "title": "Referências e coordenação de cuidados", "desc": "Encaminhe referências e pedidos para a unidade certa com rastreamento." },
-    "results": { "title": "Entrega de resultados de diagnóstico", "desc": "Entregue resultados de laboratório e imagem com segurança aos papéis certos." },
-    "fulfillment": { "title": "Fluxo de dispensa de receitas", "desc": "Rastreie preparação, levantamento, entrega e confirmações." }
-  }
-},
-"faq": {
-  "title": "Perguntas Frequentes",
-  "subtitle": "Perguntas comuns sobre como o Docito funciona",
-  "q1": { "question": "Como os funcionários obtêm acesso?", "answer": "Os administradores convidam o pessoal e atribuem papéis com mínimos privilégios." },
-  "q2": { "question": "O que veem funcionários, médicos e pacientes?", "answer": "O RBAC limita dados por papel; o acesso pode ser auditado." },
-  "q3": { "question": "Como as referências se ligam ao agendamento?", "answer": "As referências podem gerar pedidos que fluem para filas e agendamentos." },
-  "q4": { "question": "Como são entregues os resultados?", "answer": "Os resultados são partilhados com papéis autorizados e aparecem nos dashboards com notificações." },
-  "q5": { "question": "Como as farmácias confirmam a dispensa?", "answer": "As farmácias atualizam o estado de dispensa e confirmam a conclusão." },
-  "q6": { "question": "Os dados são seguros?", "answer": "O Docito usa armazenamento encriptado, RBAC e trilhas de auditoria." },
-  "q7": { "question": "Posso usar seguro?", "answer": "O suporte a seguros depende dos provedores e da região." },
-  "q8": { "question": "Existe app móvel?", "answer": "As experiências móveis estão disponíveis hoje; as apps nativas chegam em breve." }
-},
     "cta": {
       "title": "Pronto para usar o Docito?",
       "subtitle": "Comece pela busca — ou entre como provedor verificado e fortaleça seus fluxos clínicos.",

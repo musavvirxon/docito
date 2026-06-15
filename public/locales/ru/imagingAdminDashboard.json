@@ -31,6 +31,14 @@
       "save": "Сохранить",
       "add": "Добавить",
       "actions": "Действия",
+      "loading": "Loading...",
+      "imagingCenter": "Imaging Center",
+      "signInRequired": "Sign In Required",
+      "signInDescription": "Please sign in to access the imaging center dashboard.",
+      "signIn": "Sign In",
+      "noCenter": "No Imaging Center Found",
+      "noCenterDescription": "You don't have an imaging center associated with your account.",
+      "registerCenter": "Register Imaging Center",
       "submit": "Создать заказ"
     },
     "numbers": {
@@ -49,6 +57,8 @@
       "critical": "Критическое",
       "cancelled": "Отменено",
       "processing": "Обработка",
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification",
       "urgent": "Срочно / STAT",
       "overdue": "Просрочено (>48ч)"
     },
@@ -76,12 +86,31 @@
     },
     "overview": {
       "title": "Обзор",
+      "description": "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.",
       "analytics": "Аналитика",
       "stats": {
         "totalOrders": "Всего заказов",
         "pendingScheduled": "Ожидают / Запланированы",
+        "scheduledToday": "Scheduled Today",
+        "scheduledTodayDesc": "Scans scheduled for today",
         "inProgress": "В процессе",
-        "completed": "Завершено"
+        "inProgressDesc": "Checked-in + active workflow",
+        "pendingReports": "Pending Reports",
+        "pendingReportsDesc": "Images ready / awaiting report",
+        "completed": "Завершено",
+        "completedDesc": "Reports completed today",
+        "deliveredToday": "Delivered Today",
+        "deliveredTodayDesc": "Results delivered today",
+        "incoming7d": "Incoming (7d)",
+        "incoming7dDesc": "New imaging referrals (7 days)",
+        "completionRate7d": "Completion Rate (7d)",
+        "completionRate7dDesc": "Completed/delivered vs incoming",
+        "avgQueueAge": "Avg Queue Age",
+        "avgQueueAgeDesc": "Open order age average",
+        "activeStaff": "Active Staff",
+        "activeStaffDesc": "Active imaging staff members",
+        "activeEquipment": "Active Equipment",
+        "activeEquipmentDesc": "Operational modalities/devices"
       },
       "queue": {
         "pendingQueue": "Очередь ожидания",
@@ -90,6 +119,42 @@
         "completed": "Завершено",
         "urgent": "Срочно / STAT",
         "overdue": "Просрочено (>48ч)"
+      },
+      "todaysQueue": {
+        "title": "Today's Queue",
+        "description": "Scheduled scans and same-day referrals",
+        "empty": "No scans queued today",
+        "emptyDescription": "Today's scheduled scans and same-day imaging referrals will appear here."
+      },
+      "workflowBreakdown": {
+        "title": "Workflow Breakdown",
+        "description": "Current imaging order status distribution",
+        "empty": "No workflow data",
+        "emptyDescription": "Orders will appear here once referrals are received."
+      },
+      "equipmentStatus": {
+        "title": "Equipment Status",
+        "description": "Scanner availability and utilization",
+        "empty": "No equipment registered",
+        "emptyDescription": "Register your imaging equipment to track availability and utilization."
+      },
+      "recentCompleted": {
+        "title": "Recently Completed",
+        "description": "Latest completed scans and delivered reports",
+        "empty": "No completed orders yet",
+        "emptyDescription": "Completed imaging orders will appear here."
+      },
+      "modalityBacklog": {
+        "title": "Modality Backlog",
+        "description": "Open orders by modality type",
+        "empty": "No backlog data",
+        "emptyDescription": "Open orders by modality will appear here."
+      },
+      "staffSnapshot": {
+        "title": "Staff Snapshot",
+        "description": "Active team members by role",
+        "empty": "No staff data",
+        "emptyDescription": "Your team overview will appear here."
       },
       "recentOrders": {
         "title": "Последние заказы",
@@ -108,8 +173,17 @@
         "footer": "Полные тренды, время выполнения, демография, рефереры и метрики выручки доступны во вкладке «Аналитика»."
       }
     },
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Обратная связь",
+      "help": "Помощь",
+      "privacy": "Конфиденциальность",
+      "terms": "Условия"
+    },
     "analytics": {
       "title": "Аналитика",
+      "refresh": "Refresh",
+      "export": "Export",
       "metrics": {
         "totalScans": "Всего сканирований",
         "completed": "завершено",
@@ -132,23 +206,91 @@
         "workflow": "Рабочий процесс",
         "workflowDesc": "Внутренняя структура процесса",
         "referralStatus": "Статус направления",
+        "referralDesc": "Receiver-side status",
         "topReferrers": "Топ рефереров",
+        "topReferrersDesc": "Who sends you the most",
         "peakHours": "Пиковые часы",
+        "peakDesc": "Scan volume by hour of day",
         "patientDemographics": "Демография пациентов",
+        "patientDesc": "Based on referred patients",
         "gender": "Пол",
         "ageBuckets": "Возрастные группы",
         "turnaround": "Оборачиваемость по модальностям",
+        "turnaroundDesc": "Average report completion time",
         "revenueByModality": "Выручка по модальностям",
+        "revenueByModalityDesc": "Based on recorded billing transactions (if modality metadata is available)",
         "empty": "Данных пока нет.",
         "noRevenue": "Данные о выручке по модальностям пока недоступны."
+      },
+      "billingAdvanced": {
+        "title": "Billing view is partially populated",
+        "description": "Some tables may be unavailable in your schema or current permissions. Core transaction analytics still loads.",
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstandingInvoices": "Outstanding Invoices",
+        "paymentHolds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage",
+        "sections": {
+          "revenueTrend": "Revenue Trend",
+          "transactionStatus": "Transaction Status Mix",
+          "transactionTypes": "Transaction Types",
+          "invoiceStatus": "Invoice Status",
+          "plans": "Subscription Plans",
+          "paymentMethods": "Payment Methods",
+          "providers": "Providers / Gateways",
+          "recentTransactions": "Recent Transactions",
+          "dailySuccess": "Daily Transaction Success",
+          "revenueTypeMix": "Revenue Type Mix"
+        },
+        "empty": "No data"
       }
     },
     "workflow": {
       "title": "Рабочий процесс",
       "subtitle": "Создавайте заказы для пациентов без записи и управляйте процессом от планирования до выдачи отчета.",
       "newWalkIn": "Новый заказ (без записи)",
-      "searchPlaceholder": "Поиск по пациенту, номеру заказа или исследованию...",
-      "empty": "Сканирований не найдено"
+      "newOrder": "New Walk-in Order",
+      "refresh": "Refresh",
+      "search": "Search by patient, order number, or exam...",
+      "statuses": "All Statuses",
+      "empty": "Сканирований не найдено",
+      "searchPlaceholder": "Поиск по пациенту, номеру заказа или исследованию..."
+    },
+    "newOrder": {
+      "title": "New Manual Imaging Order",
+      "patient": {
+        "title": "Patient (Walk-in)",
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "phoneHint": "Enter with country code. US example: +1 415 555 2671",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)"
+      },
+      "study": {
+        "title": "Study",
+        "modality": "Modality",
+        "xray": "X-Ray",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "no": "No"
+      },
+      "schedule": {
+        "title": "Scheduling & Notes",
+        "priority": "Priority",
+        "routine": "Routine",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Imaging Order"
+      }
     },
     "orderForm": {
       "title": "Новый ручной заказ",
@@ -184,8 +326,21 @@
     },
     "reports": {
       "search": "Поиск отчетов...",
+      "all": "All Reports",
       "allReports": "Все отчеты",
+      "refresh": "Refresh",
+      "export": "Export",
       "empty": "Отчетов не найдено",
+      "table": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions",
+        "empty": "No reports found"
+      },
       "columns": {
         "order": "Заказ",
         "patient": "Пациент",
@@ -206,12 +361,44 @@
       "title": "Оборудование",
       "subtitle": "Управление сканерами и мощностью (синхронизация хранилища...)",
       "search": "Поиск оборудования...",
+      "refresh": "Refresh",
+      "add": "Add",
       "empty": "Оборудование не найдено",
+      "capacity": "Capacity",
+      "day": "day",
+      "util": "util",
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "offline": "Offline",
+        "retired": "Retired"
+      },
+      "table": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day",
+        "actions": "Actions",
+        "empty": "No equipment found"
+      },
       "columns": {
         "name": "Название",
         "modality": "Модальность",
         "status": "Статус",
         "capacity": "Мощность/день"
+      },
+      "modal": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)",
+        "cancel": "Cancel",
+        "save": "Save"
       },
       "form": {
         "title": "Добавить оборудование",
@@ -223,6 +410,66 @@
         "serial": "Серийный номер",
         "capacity": "Мощность в день",
         "scanTypes": "Типы сканирования (через запятую)"
+      }
+    },
+    "finances": {
+      "title": "Финансы",
+      "subtitle": "Управление доходами, расходами, зарплатой и экспортом.",
+      "common": {
+        "from": "From",
+        "to": "To",
+        "type": "Type",
+        "category": "Category",
+        "all": "All",
+        "refresh": "Refresh",
+        "search": "Search",
+        "export": "Export CSV"
+      },
+      "staffCompensation": {
+        "title": "Оплата персонала",
+        "add": "Добавить профиль",
+        "empty": "Профилей оплаты пока нет. Добавьте оклад, почасовую ставку или процент для сотрудников."
+      },
+      "recurring": {
+        "title": "Регулярные платежи",
+        "addRule": "Добавить правило",
+        "status": "Статус",
+        "noDue": "нет текущих правил",
+        "noRuns": "No previous runs",
+        "runDue": "Запустить правила",
+        "runNow": "Запустить сейчас",
+        "description": "Запуск создает финансовые записи для всех правил, дата которых ≤ выбранной.",
+        "empty": "Регулярных правил пока нет."
+      },
+      "ledger": {
+        "title": "Главная книга",
+        "entries": "Записи",
+        "income": "Доход",
+        "expenses": "Расходы",
+        "net": "Итог",
+        "addEntry": "Добавить запись",
+        "manual": "Вручную",
+        "date": "Дата",
+        "currency": "Валюта",
+        "amount": "Сумма",
+        "reference": "Ссылка (необязательно)",
+        "description": "Описание (необязательно)",
+        "empty": "Записей по этому фильтру не найдено.",
+        "note": "Примечание: в списке отображается до 200 записей на фильтр."
+      },
+      "compensationModal": {
+        "title": "Add Compensation Profile",
+        "staff": "Staff Member",
+        "select": "Select staff member…",
+        "type": "Compensation Type",
+        "salary": "Fixed Salary",
+        "amount": "Amount ($)",
+        "period": "Period",
+        "monthly": "Monthly",
+        "frequency": "Payout Frequency",
+        "notes": "Notes (optional)",
+        "cancel": "Cancel",
+        "save": "Save"
       }
     },
     "billing": {
@@ -251,42 +498,31 @@
         "revenueType": "Смесь типов выручки"
       }
     },
-    "finances": {
-      "title": "Финансы",
-      "subtitle": "Управление доходами, расходами, зарплатой и экспортом.",
-      "ledger": {
-        "title": "Главная книга",
-        "entries": "Записи",
-        "income": "Доход",
-        "expenses": "Расходы",
-        "net": "Итог",
-        "addEntry": "Добавить запись",
-        "manual": "Вручную",
-        "date": "Дата",
-        "currency": "Валюта",
-        "amount": "Сумма",
-        "reference": "Ссылка (необязательно)",
-        "description": "Описание (необязательно)",
-        "empty": "Записей по этому фильтру не найдено.",
-        "note": "Примечание: в списке отображается до 200 записей на фильтр."
+    "referrals": {
+      "title": "Referrals",
+      "new": "New Referral",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
       },
-      "staffCompensation": {
-        "title": "Оплата персонала",
-        "add": "Добавить профиль",
-        "empty": "Профилей оплаты пока нет. Добавьте оклад, почасовую ставку или процент для сотрудников."
-      },
-      "recurring": {
-        "title": "Регулярные платежи",
-        "addRule": "Добавить правило",
-        "status": "Статус",
-        "noDue": "нет текущих правил",
-        "runDue": "Запустить правила",
-        "runNow": "Запустить сейчас",
-        "description": "Запуск создает финансовые записи для всех правил, дата которых ≤ выбранной.",
-        "empty": "Регулярных правил пока нет."
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
       }
     },
     "staff": {
+      "active": {
+        "title": "Управление персоналом",
+        "subtitle": "Редактируйте роли, деактивируйте сотрудников или удаляйте доступ.",
+        "search": "Поиск сотрудников...",
+        "refresh": "Refresh",
+        "empty": "Активных сотрудников не найдено."
+      },
+      "total": "total",
       "stats": {
         "active": "Активный персонал",
         "pending": "Ожидающие приглашения",
@@ -298,14 +534,19 @@
         "subtitle": "Приглашайте радиологов, лаборантов и администраторов с настроенными правами доступа.",
         "email": "Email",
         "role": "Роль",
+        "technologist": "Technologist",
         "send": "Отправить приглашение",
         "preset": "Шаблон прав"
       },
-      "active": {
-        "title": "Управление персоналом",
-        "subtitle": "Редактируйте роли, деактивируйте сотрудников или удаляйте доступ.",
-        "search": "Поиск сотрудников...",
-        "empty": "Активных сотрудников не найдено."
+      "pending": {
+        "title": "Pending Invitations",
+        "subtitle": "Resend or cancel pending staff invitations before activation.",
+        "empty": "No pending invitations."
+      },
+      "audit": {
+        "title": "Staff Audit Trail",
+        "subtitle": "Recent staff and invitation activity for accountability.",
+        "empty": "No staff audit activity found."
       },
       "roles": {
         "frontDesk": {
@@ -340,12 +581,15 @@
       },
       "scan": "Отсканировать QR-код"
     },
-    "footer": {
-      "copyright": "© 2025 Docito®",
-      "feedback": "Обратная связь",
-      "help": "Помощь",
-      "privacy": "Конфиденциальность",
-      "terms": "Условия"
+    "settings": {
+      "title": "Settings",
+      "profile": {
+        "title": "Imaging Center Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
     },
     "imagingDashboard_2": {
       "menu": {

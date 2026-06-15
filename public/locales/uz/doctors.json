@@ -1464,7 +1464,11 @@
       "outlookCalendarDesc": "Microsoft Outlook bilan sinxronlash",
       "appleCalendar": "Apple Kalendar",
       "appleCalendarDesc": "Apple Kalendar bilan sinxronlash",
-      "practiceInfo": "Amaliyot ma’lumotlari",
+      "practiceInfo": {
+        "title": "Practice Information",
+        "description": "Manage your practice",
+        "comingSoon": "Practice management features coming soon..."
+      },
       "practiceInfoDesc": "Amaliyot bilan bog‘liqligingizni boshqaring",
       "practiceComingSoon": "Amaliyotni boshqarish funksiyalari tez orada...",
       "changePassword": "Parolni o‘zgartirish",
@@ -1578,5 +1582,109 @@
         }
       }
     }
+  },
+  "page": {
+    "title": "Find a Doctor",
+    "subtitle": "Search and book appointments with trusted healthcare professionals"
+  },
+  "search": {
+    "placeholder": "Search doctors, specialties, or clinics",
+    "submit": "Search",
+    "filters": "Filters",
+    "clearFilters": "Clear all filters",
+    "specialty": "Specialty",
+    "location": "Location",
+    "rating": "Rating",
+    "consultationFee": "Consultation Fee",
+    "availability": "Availability"
+  },
+  "specialties": {
+    "all": "All Specialties"
+  },
+  "filters": {
+    "distance": {
+      "label": "Distance",
+      "any": "Any distance",
+      "km50": "Within 50 km"
+    },
+    "rating": {
+      "minimum": "Minimum rating",
+      "any": "Any rating",
+      "max": "5 stars"
+    },
+    "priceRanges": {
+      "any": "Any price",
+      "0_50": "$0 - $50",
+      "50_100": "$50 - $100",
+      "100_200": "$100 - $200",
+      "200_plus": "$200+"
+    },
+    "availability": {
+      "availableToday": "Available today",
+      "acceptsNewPatients": "Accepting new patients"
+    },
+    "services": {
+      "title": "Services"
+    }
+  },
+  "profile": {
+    "about": "About",
+    "noBio": "No biography provided yet.",
+    "yearsExp": "yrs exp.",
+    "yearsExperience": "Years of experience",
+    "reviews": "reviews",
+    "verified": "Verified",
+    "acceptingPatients": "Accepting patients",
+    "videoConsult": "Video consults",
+    "bookAppointment": "Book an appointment",
+    "consultationFee": "Consultation fee",
+    "bookNow": "Book now",
+    "messageDoctor": "Message doctor",
+    "save": "Save",
+    "saved": "Saved",
+    "share": "Share",
+    "secureBookingNote": "Secure booking. Your data is encrypted and never shared.",
+    "services": "Services & conditions",
+    "availableTypes": "Available consultation types",
+    "patientReviews": "Patient reviews",
+    "noReviewsYet": "No reviews yet",
+    "basedOn": "Based on {{count}} reviews",
+    "clinicAffiliation": "Clinic affiliation"
+  },
+  "publicProfile": {
+    "about": {
+      "experienceDescription": "Dedicated healthcare professional with proven results"
+    },
+    "availability": {
+      "title": "Next available",
+      "seeAll": "See all availability"
+    },
+    "reviews": {
+      "emptyState": "Reviews appear after verified visits. Be the first to book and leave a review."
+    },
+    "trust": {
+      "headline": "Your data. Your control.",
+      "subheadline": "Security and privacy come first on every booking.",
+      "verified": {
+        "title": "Verified provider",
+        "description": "Credentials and licenses checked"
+      },
+      "encrypted": {
+        "title": "End-to-end encrypted",
+        "description": "Messages and files stay private"
+      },
+      "hipaa": {
+        "title": "HIPAA & GDPR",
+        "description": "Compliant with global standards"
+      },
+      "noSell": {
+        "title": "No data selling",
+        "description": "We never sell your information"
+      }
+    }
+  },
+  "actions": {
+    "browse": "Browse all doctors",
+    "viewClinic": "View clinic"
   }
 }
