@@ -283,5 +283,70 @@
         "treatment": "Treatment"
       }
     }
+  },
+  "edit": {
+    "title": "Edit Patient",
+    "tabs": {
+      "personal": "Personal",
+      "contact": "Contact",
+      "medical": "Medical",
+      "other": "Other"
+    },
+    "uploadPhoto": "Upload Photo",
+    "photoUploaded": "Photo uploaded",
+    "photoUploadFailed": "Failed to upload photo",
+    "fields": {
+      "fullName": "Full Name *",
+      "fullNamePlaceholder": "Enter full name",
+      "dateOfBirth": "Date of Birth",
+      "gender": "Gender",
+      "genderPlaceholder": "Select gender",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "bloodGroup": "Blood Group",
+      "bloodGroupPlaceholder": "Select blood group",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 234 567 8900",
+      "email": "Email",
+      "emailPlaceholder": "patient@example.com",
+      "address": "Address",
+      "addressPlaceholder": "Enter full address",
+      "profession": "Profession",
+      "professionPlaceholder": "e.g. Teacher, Engineer",
+      "emergencyContact": "Emergency Contact",
+      "emergencyContactName": "Contact Name",
+      "emergencyContactNamePlaceholder": "Emergency contact name",
+      "emergencyContactPhone": "Contact Phone",
+      "emergencyContactPhonePlaceholder": "Emergency contact phone",
+      "allergies": "Allergies",
+      "allergiesPlaceholder": "List allergies separated by commas (e.g., Penicillin, Latex, Peanuts)",
+      "currentMedications": "Current Medications",
+      "currentMedicationsPlaceholder": "List current medications",
+      "medicalHistory": "Medical History",
+      "medicalHistoryPlaceholder": "Past diseases, surgeries, conditions...",
+      "dentalHistory": "Dental History",
+      "dentalHistoryPlaceholder": "Previous dental treatments, issues...",
+      "notes": "Internal Notes",
+      "notesPlaceholder": "Any additional notes about this patient...",
+      "notesHint": "These notes are only visible to clinic staff."
+    },
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "updateSuccess": "Patient updated successfully",
+    "updateFailed": "Failed to update patient"
+  },
+  "selector": {
+    "searchPlaceholder": "Search by name, email, or phone",
+    "addNewPatient": "Add new patient",
+    "patientRequired": "Patient is required",
+    "all": "All",
+    "registered": "Registered",
+    "doctorAdded": "Doctor-added",
+    "loading": "Loading patients...",
+    "noPatientsFound": "No patients found",
+    "addNewPatientButton": "Add New Patient",
+    "loadFailed": "Failed to load patients"
   }
 }
