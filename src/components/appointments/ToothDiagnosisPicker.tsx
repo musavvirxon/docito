@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Stethoscope, Loader2, Plus, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,17 +33,10 @@ const PRIMARY_SET = new Set<number>([
 
 const NEW_DIAGNOSIS_VALUE = '__new__';
 
-/**
- * Lets a clinician select one or many teeth (FDI), assign a status,
- * and write a diagnosis. Diagnosis can be picked from the doctor's
- * diagnosis library or added as a new one (saved back to the library).
- * Saves to `tooth_records` (one row per tooth).
- */
 export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
+  const { t } = useTranslation('appointments');
   const { upsertToothRecord, isVerifiedDentist } = useDentalChart(patientId);
 
-  // Diagnosis library from the doctor's dashboard. Wrapped in try so the
-  // component still renders if it's used outside a DoctorDataProvider.
   let libraryDiagnoses: any[] = [];
   let addLibraryDiagnosis: ((d: any) => Promise<{ success?: boolean; error?: string }>) | null = null;
   try {
@@ -75,15 +69,14 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
     if (isAddingNew) {
       const title = newDiagnosisTitle.trim();
       if (!title) {
-        toast.error('Enter a diagnosis name');
+        toast.error(t('toothDiagnosis.errors.enterName'));
         return null;
       }
-      // Save to library so it's reusable across future appointments
       if (addLibraryDiagnosis) {
         try {
           await addLibraryDiagnosis({ title, description: null });
         } catch {
-          // Non-fatal — still proceed with saving to tooth records
+          // Non-fatal
         }
       }
       return title;
@@ -91,13 +84,13 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
     if (selectedDiagnosis) {
       return selectedDiagnosis.title || '';
     }
-    toast.error('Choose a diagnosis or add a new one');
+    toast.error(t('toothDiagnosis.errors.chooseOrAdd'));
     return null;
   };
 
   const handleSubmit = async () => {
     if (teeth.length === 0) {
-      toast.error('Select at least one tooth');
+      toast.error(t('toothDiagnosis.errors.selectTooth'));
       return;
     }
     const diagnosisText = await resolveDiagnosisText();
@@ -105,19 +98,16 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
 
     setSubmitting(true);
     try {
-      // Default status used when storing tooth_records — status field has been
-      // removed from the dentist UI; we record `caries` as a clinically-neutral
-      // marker that this tooth has an active diagnosis attached.
       const results = await Promise.all(
-        teeth.map((t) => {
-          const n = Number(t);
+        teeth.map((tNum) => {
+          const n = Number(tNum);
           const toothType = PRIMARY_SET.has(n) ? 'primary' : 'permanent';
           return upsertToothRecord(n, toothType, 'caries', diagnosisText);
         }),
       );
       const ok = results.filter(Boolean).length;
       if (ok > 0) {
-        toast.success(`Diagnosis saved for ${ok} ${ok === 1 ? 'tooth' : 'teeth'}`);
+        toast.success(t('toothDiagnosis.savedFor', { count: ok }));
         reset();
         onSaved?.();
       }
@@ -132,15 +122,15 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
     <Card>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm flex items-center gap-2">
-          <Stethoscope className="h-4 w-4" /> Add Tooth Diagnosis
+          <Stethoscope className="h-4 w-4" /> {t('toothDiagnosis.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1.5">
           <Label>
-            Teeth (FDI){' '}
+            {t('toothDiagnosis.teethLabel')}{' '}
             <span className="text-xs text-muted-foreground font-normal">
-              — select one or more teeth.
+              {t('toothDiagnosis.teethHint')}
             </span>
           </Label>
           <ToothSelector selectedTeeth={teeth} onChange={setTeeth} />
@@ -148,19 +138,19 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
 
         <div className="space-y-1.5">
           <Label className="flex items-center gap-1.5">
-            <BookOpen className="h-3.5 w-3.5" /> Diagnosis *
+            <BookOpen className="h-3.5 w-3.5" /> {t('toothDiagnosis.diagnosis')}
           </Label>
           <Select
             value={selectedDiagnosisId}
             onValueChange={(v) => setSelectedDiagnosisId(v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Choose from your library…" />
+              <SelectValue placeholder={t('toothDiagnosis.chooseFromLibrary')} />
             </SelectTrigger>
             <SelectContent>
               {libraryDiagnoses.length === 0 && (
                 <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                  Your diagnosis library is empty
+                  {t('toothDiagnosis.libraryEmpty')}
                 </div>
               )}
               {libraryDiagnoses.map((d: any) => (
@@ -169,7 +159,7 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
                 </SelectItem>
               ))}
               <SelectItem value={NEW_DIAGNOSIS_VALUE}>
-                + Add new diagnosis…
+                {t('toothDiagnosis.addNew')}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -177,25 +167,23 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
 
         {isAddingNew && (
           <div className="space-y-1.5">
-            <Label>New diagnosis name *</Label>
+            <Label>{t('toothDiagnosis.newDiagnosisName')}</Label>
             <Input
               value={newDiagnosisTitle}
               onChange={(e) => setNewDiagnosisTitle(e.target.value)}
-              placeholder="e.g. Distal caries"
+              placeholder={t('toothDiagnosis.newDiagnosisPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              This will be saved to your diagnosis library for future reuse.
+              {t('toothDiagnosis.newDiagnosisHint')}
             </p>
           </div>
         )}
 
-        {/* Read-only current state chart with full procedure & diagnosis history */}
         <PatientCurrentStateChart patientId={patientId} />
 
         <div className="flex items-center justify-between border-t pt-3 gap-3 flex-wrap">
           <div className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{teeth.length}</span>{' '}
-            {teeth.length === 1 ? 'tooth' : 'teeth'} selected
+            {t('toothDiagnosis.selected', { count: teeth.length })}
           </div>
           <Button
             onClick={handleSubmit}
@@ -208,7 +196,7 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
             className="gap-2"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            Save Diagnosis
+            {t('toothDiagnosis.save')}
           </Button>
         </div>
       </CardContent>

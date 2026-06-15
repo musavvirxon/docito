@@ -45,7 +45,7 @@ export function RescheduleAppointmentModal({
   currentTime,
   onRescheduled,
 }: RescheduleAppointmentModalProps) {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation(['appointments', 'dashboard']);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [reason, setReason] = useState('');
@@ -100,18 +100,19 @@ export function RescheduleAppointmentModal({
         );
       } catch (error) {
         console.error('Error fetching slots:', error);
-        toast.error('Failed to fetch available slots');
+        toast.error(t('appointments:reschedule.errors.fetchSlotsFailed'));
       } finally {
         setFetchingSlots(false);
       }
     };
+
 
     fetchAvailableSlots();
   }, [selectedDate, doctorId, appointmentId]);
 
   const handleReschedule = async () => {
     if (!selectedDate || !selectedTime) {
-      toast.error('Please select a date and time');
+      toast.error(t('appointments:reschedule.errors.selectDateTime'));
       return;
     }
 
@@ -127,24 +128,25 @@ export function RescheduleAppointmentModal({
           appointment_date: newDate,
           start_time: selectedTime,
           end_time: endTime,
-          notes: reason 
-            ? `[Rescheduled: ${format(new Date(), 'MMM d, yyyy')}] ${reason}`
+          notes: reason
+            ? `${t('appointments:reschedule.rescheduledPrefix', { date: format(new Date(), 'MMM d, yyyy') })}${reason}`
             : undefined,
         })
         .eq('id', appointmentId);
 
       if (error) throw error;
 
-      toast.success(t('reschedule.success', 'Appointment rescheduled successfully'));
+      toast.success(t('dashboard:reschedule.success', 'Appointment rescheduled successfully'));
       onRescheduled?.();
       onClose();
     } catch (error) {
       console.error('Error rescheduling:', error);
-      toast.error('Failed to reschedule appointment');
+      toast.error(t('appointments:reschedule.errors.rescheduleFailed'));
     } finally {
       setLoading(false);
     }
   };
+
 
   const minDate = startOfDay(addDays(new Date(), 1));
 
@@ -154,12 +156,12 @@ export function RescheduleAppointmentModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
-            {t('reschedule.title', 'Reschedule Appointment')}
+            {t('dashboard:reschedule.title', 'Reschedule Appointment')}
           </DialogTitle>
           <DialogDescription>
             {patientName && (
               <span>
-                {t('reschedule.for', 'Rescheduling appointment for')} <strong>{patientName}</strong>
+                {t('dashboard:reschedule.for', 'Rescheduling appointment for')} <strong>{patientName}</strong>
               </span>
             )}
           </DialogDescription>
@@ -169,7 +171,7 @@ export function RescheduleAppointmentModal({
           {/* Current appointment info */}
           <div className="p-3 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground mb-1">
-              {t('reschedule.currentSlot', 'Current slot')}:
+              {t('appointments:reschedule.currentSlotLabel')}:
             </p>
             <div className="flex items-center gap-2">
               <Badge variant="outline">
@@ -185,7 +187,7 @@ export function RescheduleAppointmentModal({
 
           {/* Date selection */}
           <div className="space-y-2">
-            <Label>{t('reschedule.selectDate', 'Select new date')}</Label>
+            <Label>{t('dashboard:reschedule.selectDate', 'Select new date')}</Label>
             <CalendarComponent
               mode="single"
               selected={selectedDate}
@@ -198,7 +200,7 @@ export function RescheduleAppointmentModal({
           {/* Time slots */}
           {selectedDate && (
             <div className="space-y-2">
-              <Label>{t('reschedule.selectTime', 'Select new time')}</Label>
+              <Label>{t('dashboard:reschedule.selectTime', 'Select new time')}</Label>
               {fetchingSlots ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -227,12 +229,12 @@ export function RescheduleAppointmentModal({
 
           {/* Reason */}
           <div className="space-y-2">
-            <Label htmlFor="reason">{t('reschedule.reason', 'Reason for rescheduling')} ({t('common.optional', 'optional')})</Label>
+            <Label htmlFor="reason">{t('dashboard:reschedule.reason', 'Reason for rescheduling')} ({t('dashboard:common.optional', 'optional')})</Label>
             <Textarea
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder={t('reschedule.reasonPlaceholder', 'Enter reason for rescheduling...')}
+              placeholder={t('dashboard:reschedule.reasonPlaceholder', 'Enter reason for rescheduling...')}
               rows={2}
             />
           </div>
@@ -241,7 +243,7 @@ export function RescheduleAppointmentModal({
             <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
               <p className="text-sm font-medium flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-primary" />
-                {t('reschedule.newSlot', 'New slot')}:
+                {t('appointments:reschedule.newSlotLabel')}:
               </p>
               <p className="text-sm mt-1">
                 {format(selectedDate, 'EEEE, MMMM d, yyyy')} at {selectedTime}
@@ -252,14 +254,14 @@ export function RescheduleAppointmentModal({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={loading}>
-            {t('common.cancel', 'Cancel')}
+            {t('dashboard:common.cancel', 'Cancel')}
           </Button>
           <Button 
             onClick={handleReschedule} 
             disabled={loading || !selectedDate || !selectedTime}
           >
             {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {t('reschedule.confirm', 'Confirm Reschedule')}
+            {t('dashboard:reschedule.confirm', 'Confirm Reschedule')}
           </Button>
         </DialogFooter>
       </DialogContent>
