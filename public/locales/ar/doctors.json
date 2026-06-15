@@ -1,42 +1,43 @@
 {
   "search": {
-    "title": "ابحث واحجز الأطباء",
-    "placeholder": "ابحث عن الأطباء، التخصصات، المواقع...",
+    "title": "البحث عن الأطباء",
+    "placeholder": "البحث بالاسم أو التخصص أو الموقع",
     "searching": "جارٍ البحث...",
-    "filters": "عوامل التصفية",
+    "filters": "المرشحات",
     "specialty": "التخصص",
     "location": "الموقع",
-    "rating": "الحد الأدنى للتقييم",
+    "rating": "التقييم",
     "consultationFee": "رسوم الاستشارة",
     "availability": "التوفر",
-    "clearFilters": "مسح عوامل التصفية",
-    "applyFilters": "تطبيق عوامل التصفية",
+    "clearFilters": "مسح المرشحات",
+    "applyFilters": "تطبيق المرشحات",
     "availableToday": "متاح اليوم",
     "videoConsultation": "استشارة بالفيديو",
     "acceptsInsurance": "يقبل التأمين",
     "priceRange": "نطاق السعر",
     "distance": "المسافة",
     "language": "اللغة",
-    "submit": "بحث"
+    "submit": "بحث",
+    "experience": "الخبرة"
   },
   "profile": {
-    "about": "نبذة",
-    "experience": "الخبرة",
+    "about": "نبذة عن الطبيب",
+    "experience": "سنوات الخبرة",
     "education": "التعليم",
-    "languages": "اللغات",
-    "services": "الخدمات",
-    "reviews": "المراجعات",
+    "languages": "اللغات المتحدث بها",
+    "services": "الخدمات المقدمة",
+    "reviews": "التقييمات",
     "availability": "التوفر",
-    "bookAppointment": "احجز موعدًا",
+    "bookAppointment": "حجز موعد",
     "contactDoctor": "اتصل بالطبيب",
-    "yearsExperience": "{{years}} سنوات خبرة",
+    "yearsExperience": "سنوات من الخبرة",
     "patientsHelped": "{{count}}+ مرضى تمت مساعدتهم",
     "responseTime": "يرد خلال {{time}}",
     "consultationFee": "رسوم الاستشارة",
     "nextAvailable": "أقرب توفر",
-    "viewProfile": "عرض الملف",
+    "viewProfile": "عرض الملف الشخصي",
     "videoAvailable": "استشارة فيديو متاحة",
-    "insuranceAccepted": "يقبل التأمين",
+    "insuranceAccepted": "التأمين مقبول",
     "newPatientsWelcome": "يقبل مرضى جدد",
     "verifiedDoctor": "طبيب موثّق",
     "licenseVerified": "تم التحقق من الترخيص",
@@ -45,7 +46,34 @@
     "certifications": "الشهادات",
     "contactInfo": "معلومات الاتصال",
     "officeHours": "ساعات العمل",
-    "emergencyContact": "اتصال الطوارئ"
+    "emergencyContact": "اتصال الطوارئ",
+    "specialty": "التخصص",
+    "rating": "التقييم",
+    "save": "حفظ",
+    "saved": "محفوظ",
+    "videoConsultations": "استشارات الفيديو متاحة",
+    "booking": "جاري الحجز...",
+    "videoCall": "مكالمة فيديو",
+    "tabs": {
+      "about": "حول",
+      "practiceInfo": "معلومات العيادة",
+      "services": "الخدمات",
+      "reviews": "التقييمات",
+      "availability": "التوفر"
+    },
+    "aboutDoctor": "حول د. {{name}}",
+    "directions": "الاتجاهات",
+    "servicesPricing": "الخدمات والأسعار",
+    "bookService": "حجز خدمة",
+    "patientReviews": "تقييمات المرضى",
+    "bookYourAppointment": "احجز موعدك",
+    "selectDate": "اختر التاريخ",
+    "slotsAvailable": "فترات متاحة",
+    "selectTime": "اختر الوقت",
+    "selectDateFirst": "اختر التاريخ أولاً",
+    "appointmentSummary": "ملخص الموعد",
+    "at": "في",
+    "confirmAppointment": "تأكيد الموعد"
   },
   "booking": {
     "title": "احجز موعدًا",
@@ -82,15 +110,15 @@
     "verifyInsurance": "تحقق من التأمين"
   },
   "page": {
-    "title": "ابحث عن أطباء",
-    "subtitle": "اكتشف أطباء موثّقين واحجز مواعيد فورًا",
+    "title": "ابحث عن طبيبك المثالي",
+    "subtitle": "ابحث بين آلاف المتخصصين في الرعاية الصحية المعتمدين",
     "readyToFind": "جاهز للعثور على الطبيب المناسب؟",
     "readyToFindDesc": "ابحث في شبكتنا من المتخصصين الصحيين الموثّقين واحجز موعدًا ببضع نقرات.",
     "popularSearches": "عمليات بحث شائعة",
-    "foundText": "نتيجة",
-    "showingVerified": "عرض مختصين صحيين موثّقين",
-    "noDoctors": "لم يتم العثور على أطباء",
-    "searching": "جارٍ البحث...",
+    "foundText": "طبيب تم العثور عليه",
+    "showingVerified": "عرض المتخصصين في الرعاية الصحية المعتمدين",
+    "noDoctors": "لم يتم العثور على أطباء يطابقون معاييرك",
+    "searching": "جاري البحث...",
     "error": "خطأ في البحث",
     "tryAgain": "يرجى المحاولة لاحقًا.",
     "bookNow": "احجز الآن",
@@ -100,21 +128,34 @@
     "removedFromSavedDesc": "تمت الإزالة من قائمة الأطباء المحفوظين.",
     "loginRequired": "تسجيل الدخول مطلوب",
     "loginRequiredDesc": "يرجى تسجيل الدخول لحجز موعد.",
-    "searchButton": "بحث"
+    "searchButton": "بحث",
+    "signIn": "تسجيل الدخول",
+    "showFilters": "إظهار المرشحات",
+    "hideFilters": "إخفاء المرشحات",
+    "clearAll": "مسح الكل",
+    "minRating": "الحد الأدنى للتقييم",
+    "anyRating": "أي تقييم",
+    "threeStars": "3+ نجوم",
+    "fourStars": "4+ نجوم",
+    "fourHalfStars": "4.5+ نجوم",
+    "available": "متاح للمواعيد",
+    "consultationLabel": "الاستشارة"
   },
   "specialties": {
-    "all": "كل التخصصات",
-    "generalPractice": "طب عام",
+    "all": "جميع التخصصات",
+    "generalPractice": "الطب العام",
     "cardiology": "أمراض القلب",
-    "neurology": "أمراض الأعصاب",
+    "neurology": "طب الأعصاب",
     "ophthalmology": "طب العيون",
-    "orthopedics": "العظام",
+    "orthopedics": "جراحة العظام",
     "pediatrics": "طب الأطفال",
     "dentistry": "طب الأسنان",
-    "dermatology": "الجلدية",
+    "dermatology": "الأمراض الجلدية",
     "endocrinology": "الغدد الصماء",
     "pathology": "علم الأمراض",
-    "pulmonology": "أمراض الرئة"
+    "pulmonology": "أمراض الرئة",
+    "psychiatry": "الطب النفسي",
+    "ent": "الأنف والأذن والحنجرة"
   },
   "autocomplete": {
     "labels": {
@@ -194,457 +235,6 @@
       "price_high": "السعر: من الأعلى إلى الأقل",
       "distance": "المسافة",
       "availability": "الأقرب توفرًا"
-    }
-  }
-}
-{
-  "search": {
-    "title": "البحث عن الأطباء",
-    "placeholder": "البحث بالاسم أو التخصص أو الموقع",
-    "filters": "المرشحات",
-    "availability": "التوفر",
-    "rating": "التقييم",
-    "experience": "الخبرة",
-    "consultationFee": "رسوم الاستشارة",
-    "specialty": "التخصص",
-    "location": "الموقع",
-    "applyFilters": "تطبيق المرشحات",
-    "clearFilters": "مسح المرشحات"
-  },
-  "profile": {
-    "viewProfile": "عرض الملف الشخصي",
-    "bookAppointment": "حجز موعد",
-    "specialty": "التخصص",
-    "experience": "سنوات الخبرة",
-    "consultationFee": "رسوم الاستشارة",
-    "rating": "التقييم",
-    "reviews": "التقييمات",
-    "availability": "التوفر",
-    "about": "نبذة عن الطبيب",
-    "education": "التعليم",
-    "languages": "اللغات المتحدث بها",
-    "services": "الخدمات المقدمة",
-    "save": "حفظ",
-    "saved": "محفوظ",
-    "yearsExperience": "سنوات من الخبرة",
-    "videoConsultations": "استشارات الفيديو متاحة",
-    "booking": "جاري الحجز...",
-    "videoCall": "مكالمة فيديو",
-    "tabs": {
-      "about": "حول",
-      "practiceInfo": "معلومات العيادة",
-      "services": "الخدمات",
-      "reviews": "التقييمات",
-      "availability": "التوفر"
-    },
-    "aboutDoctor": "حول د. {{name}}",
-    "certifications": "الشهادات",
-    "directions": "الاتجاهات",
-    "servicesPricing": "الخدمات والأسعار",
-    "insuranceAccepted": "التأمين مقبول",
-    "bookService": "حجز خدمة",
-    "patientReviews": "تقييمات المرضى",
-    "bookYourAppointment": "احجز موعدك",
-    "selectDate": "اختر التاريخ",
-    "slotsAvailable": "فترات متاحة",
-    "selectTime": "اختر الوقت",
-    "selectDateFirst": "اختر التاريخ أولاً",
-    "appointmentSummary": "ملخص الموعد",
-    "at": "في",
-    "confirmAppointment": "تأكيد الموعد"
-  },
-  "page": {
-    "signIn": "تسجيل الدخول",
-    "title": "ابحث عن طبيبك المثالي",
-    "subtitle": "ابحث بين آلاف المتخصصين في الرعاية الصحية المعتمدين",
-    "showFilters": "إظهار المرشحات",
-    "hideFilters": "إخفاء المرشحات",
-    "clearAll": "مسح الكل",
-    "minRating": "الحد الأدنى للتقييم",
-    "anyRating": "أي تقييم",
-    "threeStars": "3+ نجوم",
-    "fourStars": "4+ نجوم",
-    "fourHalfStars": "4.5+ نجوم",
-    "searching": "جاري البحث...",
-    "foundText": "طبيب تم العثور عليه",
-    "showingVerified": "عرض المتخصصين في الرعاية الصحية المعتمدين",
-    "noDoctors": "لم يتم العثور على أطباء يطابقون معاييرك",
-    "available": "متاح للمواعيد",
-    "consultationLabel": "الاستشارة",
-    "bookNow": "احجز الآن"
-  },
-  "specialties": {
-    "all": "جميع التخصصات",
-    "generalPractice": "الطب العام",
-    "cardiology": "أمراض القلب",
-    "dermatology": "الأمراض الجلدية",
-    "pediatrics": "طب الأطفال",
-    "orthopedics": "جراحة العظام",
-    "neurology": "طب الأعصاب",
-    "psychiatry": "الطب النفسي",
-    "dentistry": "طب الأسنان",
-    "ophthalmology": "طب العيون",
-    "ent": "الأنف والأذن والحنجرة"
-  }
-}
-{
-  "doctor": {
-    "actions": {
-      "manageProcedures": "إدارة الإجراءات",
-      "updateSchedule": "تحديث الجدول",
-      "updateSettings": "تحديث الإعدادات"
-    },
-    "appointmentDetails": {
-      "addDiagnosis": "إضافة تشخيص",
-      "addDiagnosisBtn": "إضافة",
-      "customDiagnosis": "تشخيص مخصص",
-      "date": "التاريخ",
-      "diagnosesTitle": "التشخيصات",
-      "diagnosisCode": "ICD-10 (اختياري)",
-      "diagnosisCodePlaceholder": "مثال: I10",
-      "diagnosisName": "التشخيص",
-      "diagnosisNamePlaceholder": "مثال: ارتفاع ضغط الدم",
-      "diagnosisNotes": "ملاحظات",
-      "diagnosisNotesPlaceholder": "ملاحظات اختيارية، تبرير، خطة...",
-      "inPerson": "حضوري",
-      "loadingDiagnosis": "جارٍ التحميل...",
-      "message": "مراسلة المريض",
-      "noDiagnoses": "لم تتم إضافة تشخيصات بعد.",
-      "notes": "ملاحظات",
-      "schedule": "جدولة متابعة",
-      "selectDiagnosis": "اختر من المكتبة أو أضف تشخيصاً مخصصاً",
-      "selectedDiagnosis": "تم الاختيار",
-      "status": "الحالة",
-      "telemedicine": "طب عن بُعد",
-      "time": "الوقت",
-      "title": "تفاصيل الموعد",
-      "type": "النوع",
-      "viewPatient": "عرض تفاصيل المريض"
-    },
-    "appointmentModal": {
-      "actions": {
-        "addDiagnosis": "إضافة تشخيص",
-        "cancel": "إلغاء",
-        "complete": "وضع علامة مكتمل",
-        "confirm": "تأكيد الموعد",
-        "message": "مراسلة المريض",
-        "reschedule": "إعادة الجدولة",
-        "save": "حفظ"
-      },
-      "addDiagnosis": "إضافة تشخيص",
-      "appointmentId": "معرّف الموعد",
-      "appointmentType": "نوع الموعد",
-      "cancelConfirm": {
-        "cancel": "إلغاء",
-        "confirm": "نعم، إلغاء",
-        "description": "سيتم إلغاء الموعد وإشعار المريض.",
-        "title": "هل تريد إلغاء هذا الموعد؟"
-      },
-      "close": "إغلاق",
-      "date": "التاريخ",
-      "diagnoses": "التشخيصات",
-      "diagnosisCode": "رمز ICD-10 (اختياري)",
-      "diagnosisCodePlaceholder": "مثال: K02.9",
-      "diagnosisName": "التشخيص",
-      "diagnosisNamePlaceholder": "مثال: تسوس الأسنان",
-      "diagnosisNotes": "ملاحظات",
-      "diagnosisNotesPlaceholder": "ملاحظات اختيارية...",
-      "doctorNotes": "ملاحظات الطبيب",
-      "doctorNotesPlaceholder": "أضف ملاحظات حول الزيارة...",
-      "loading": "جارٍ تحميل الموعد...",
-      "noDiagnoses": "لا توجد تشخيصات بعد",
-      "patient": "المريض",
-      "payment": {
-        "amount": "المبلغ",
-        "method": "الطريقة",
-        "paid": "مدفوع",
-        "status": "حالة الدفع",
-        "unpaid": "غير مدفوع"
-      },
-      "reason": "السبب",
-      "status": "الحالة",
-      "time": "الوقت",
-      "title": "الموعد",
-      "type": {
-        "inPerson": "حضوري",
-        "telemedicine": "طب عن بُعد"
-      }
-    },
-    "appointmentStatus": {
-      "canceled": "ملغي",
-      "completed": "مكتمل",
-      "confirmed": "مؤكد",
-      "pending": "قيد الانتظار",
-      "rescheduled": "أعيدت جدولته"
-    },
-    "calendar": {
-      "addBlock": "إضافة حظر",
-      "addEvent": "إضافة حدث",
-      "allDay": "طوال اليوم",
-      "available": "متاح",
-      "blocked": "محظور",
-      "cancel": "إلغاء",
-      "create": "إنشاء",
-      "day": "يوم",
-      "delete": "حذف",
-      "details": "التفاصيل",
-      "edit": "تعديل",
-      "end": "النهاية",
-      "eventTitle": "عنوان الحدث",
-      "month": "شهر",
-      "notes": "ملاحظات",
-      "save": "حفظ",
-      "start": "البداية",
-      "today": "اليوم",
-      "week": "أسبوع"
-    },
-    "clinic": {
-      "requestToLeave": "طلب مغادرة",
-      "verified": "موثّق"
-    },
-    "clinicFinder": {
-      "failedToLoad": "تعذر تحميل العيادات.",
-      "tryAgain": "حاول مرة أخرى"
-    },
-    "currentAppointment": {
-      "noAppointments": "لا توجد مواعيد قادمة",
-      "scheduleEmpty": "جدولك فارغ",
-      "title": "الموعد الحالي/القادم",
-      "today": "موعد اليوم",
-      "upcoming": "الموعد التالي",
-      "upcomingCount": "عدد المواعيد القادمة"
-    },
-    "dashboard": {
-      "emptyState": {
-        "description": "لا توجد عناصر بعد.",
-        "title": "لا يوجد شيء هنا"
-      },
-      "title": "لوحة الطبيب"
-    },
-    "diagnoses": {
-      "addDiagnosis": "إضافة تشخيص",
-      "categoryLabel": "الفئة",
-      "categoryPlaceholder": "مثال: طب الأسنان العام",
-      "codeLabel": "رمز ICD-10 (اختياري)",
-      "codePlaceholder": "مثال: K02.9",
-      "create": "إنشاء",
-      "delete": "حذف",
-      "descriptionLabel": "الوصف",
-      "descriptionPlaceholder": "وصف قصير...",
-      "edit": "تعديل",
-      "emptyState": "لا توجد تشخيصات بعد",
-      "nameLabel": "الاسم",
-      "namePlaceholder": "مثال: تسوس الأسنان",
-      "notesLabel": "ملاحظات",
-      "notesPlaceholder": "ملاحظات اختيارية...",
-      "save": "حفظ",
-      "searchPlaceholder": "بحث في التشخيصات...",
-      "title": "التشخيصات",
-      "titleLabel": "التشخيص",
-      "titlePlaceholder": "مثال: ارتفاع ضغط الدم"
-    },
-    "errors": {
-      "generic": "حدث خطأ ما.",
-      "tryAgain": "حاول مرة أخرى"
-    },
-    "financialStats": {
-      "chart": {
-        "earningsLabel": "الأرباح",
-        "noDataDesc": "لا توجد بيانات"
-      },
-      "insights": {
-        "tbd": "قريباً"
-      },
-      "overview": {
-        "tbd": "قريباً"
-      },
-      "payouts": {
-        "noData": "لا توجد بيانات للمدفوعات"
-      },
-      "pending": {
-        "noData": "لا توجد مدفوعات معلّقة",
-        "paymentMarked": "تم تعليم الدفع"
-      },
-      "services": {
-        "minutes": "دقائق"
-      },
-      "tabs": {
-        "byService": "حسب الخدمة",
-        "earningsChart": "مخطط الأرباح",
-        "insights": "تحليلات",
-        "payouts": "المدفوعات",
-        "pending": "معلّق"
-      }
-    },
-    "loading": "جارٍ تحميل لوحة التحكم...",
-    "messaging": {
-      "description": "تواصل مع المرضى ومقدمي الرعاية الصحية",
-      "title": "الرسائل"
-    },
-    "navigation": {
-      "calendar": "التقويم",
-      "clinicFinder": "البحث عن عيادة",
-      "dashboard": "لوحة التحكم",
-      "diagnoses": "التشخيصات",
-      "financialStats": "الإحصاءات المالية",
-      "main": "الرئيسية",
-      "messages": "الرسائل",
-      "myPatients": "مرضاي",
-      "myProfile": "ملفي",
-      "performance": "الأداء",
-      "procedureLibrary": "مكتبة الإجراءات",
-      "referrals": "الإحالات",
-      "scheduleSettings": "إعدادات الجدول",
-      "settings": "الإعدادات",
-      "treatmentPlanning": "تخطيط العلاج"
-    },
-    "noUpcomingAppointments": "لا توجد مواعيد قادمة",
-    "profileCompletion": {
-      "completeProfile": "أكمل الملف ({{percent}}%)",
-      "incomplete": "غير مكتمل",
-      "updateProfile": "تحديث الملف"
-    },
-    "profileSetup": {
-      "completeSetup": "إكمال إعداد الملف",
-      "goHome": "العودة للرئيسية",
-      "message": "يجب إعداد ملف الطبيب الخاص بك. دعنا نكمل ملفك.",
-      "required": "مطلوب إعداد الملف",
-      "retryLoading": "إعادة محاولة التحميل",
-      "settingUp": "جارٍ إعداد الملف",
-      "tryAgain": "حاول مرة أخرى",
-      "unableToLoad": "تعذر تحميل ملف الطبيب. دعنا نقوم بإعداد حسابك."
-    },
-    "quickActions": "إجراءات سريعة",
-    "referrals": {
-      "title": "الإحالات"
-    },
-    "schedule": {
-      "addTimeBlock": "إضافة حظر وقت",
-      "apply": "تطبيق",
-      "availability": "التوفر",
-      "cancel": "إلغاء",
-      "dayOff": "يوم إجازة",
-      "delete": "حذف",
-      "duration": "المدة",
-      "end": "النهاية",
-      "notes": "ملاحظات",
-      "save": "حفظ",
-      "start": "البداية",
-      "title": "إعدادات الجدول"
-    },
-    "services": {
-      "add": "إضافة",
-      "addProcedure": "إضافة إجراء",
-      "category": "الفئة",
-      "create": "إنشاء",
-      "delete": "حذف",
-      "description": "الوصف",
-      "duration": "المدة",
-      "edit": "تعديل",
-      "emptyState": "لا توجد إجراءات بعد",
-      "fee": "الرسوم",
-      "minutes": "دقيقة",
-      "name": "الاسم",
-      "save": "حفظ",
-      "searchPlaceholder": "بحث في الإجراءات...",
-      "title": "مكتبة الإجراءات"
-    },
-    "settingUp": "جارٍ إعداد ملف الطبيب...",
-    "settings": {
-      "account": {
-        "description": "إدارة تفاصيل الحساب والتفضيلات",
-        "email": "البريد الإلكتروني",
-        "language": "اللغة",
-        "phone": "الهاتف",
-        "saveChanges": "حفظ التغييرات",
-        "timezone": "المنطقة الزمنية",
-        "title": "الحساب"
-      },
-      "calendar": {
-        "description": "ربط وإدارة مزامنة التقويم",
-        "title": "التقويم"
-      },
-      "email": "البريد الإلكتروني",
-      "emailPlaceholder": "أدخل البريد الإلكتروني",
-      "language": "اللغة",
-      "notifications": "الإشعارات",
-      "personalInfo": "المعلومات الشخصية",
-      "phone": "الهاتف",
-      "phonePlaceholder": "أدخل الهاتف",
-      "practice": "العيادة",
-      "privacy": "الخصوصية",
-      "security": "الأمان",
-      "timeFormat": "تنسيق الوقت",
-      "timezone": "المنطقة الزمنية",
-      "timezoneHint": "سيعرض التقويم الأوقات بهذه المنطقة الزمنية.",
-      "title": "الإعدادات",
-      "updateDetails": "حدّث بياناتك الشخصية"
-    },
-    "stats": {
-      "allTimeBookings": "جميع الحجوزات",
-      "averageRating": "متوسط التقييم",
-      "basedOnReviews": "بناءً على {{count}} مراجعة",
-      "earnings": "الأرباح",
-      "rating": "التقييم",
-      "revenue": "الإيراد",
-      "totalAppointments": "إجمالي المواعيد",
-      "totalEarnings": "إجمالي الأرباح",
-      "totalPatients": "إجمالي المرضى",
-      "uniquePatients": "عدد المرضى الفريدين الذين تم خدمتهم"
-    },
-    "upcomingAppointments": {
-      "noAppointments": "لا توجد مواعيد قادمة",
-      "scheduleIsClear": "جدولك فارغ",
-      "title": "المواعيد القادمة"
-    },
-    "verification": {
-      "completeProfile": "أكمل الملف",
-      "message": "للنشر والظهور في نتائج البحث، يجب إكمال التحقق.",
-      "pending": "التحقق قيد الانتظار",
-      "viewProfile": "عرض الملف"
-    },
-  "page": {
-    "title": "ابحث عن طبيب",
-    "subtitle": "ابحث عن متخصصين موثوقين واحجز مواعيدك معهم"
-  },
-  "search": {
-    "placeholder": "ابحث عن أطباء أو تخصصات أو عيادات",
-    "submit": "بحث",
-    "filters": "الفلاتر",
-    "clearFilters": "مسح جميع الفلاتر",
-    "specialty": "التخصص",
-    "location": "الموقع",
-    "rating": "التقييم",
-    "consultationFee": "رسوم الاستشارة",
-    "availability": "التوفر"
-  },
-  "specialties": {
-    "all": "جميع التخصصات"
-  },
-  "filters": {
-    "distance": {
-      "label": "المسافة",
-      "any": "أي مسافة",
-      "km50": "في نطاق 50 كم"
-    },
-    "rating": {
-      "minimum": "الحد الأدنى للتقييم",
-      "any": "أي تقييم",
-      "max": "5 نجوم"
-    },
-    "priceRanges": {
-      "any": "أي سعر",
-      "0_50": "$0 - $50",
-      "50_100": "$50 - $100",
-      "100_200": "$100 - $200",
-      "200_plus": "$200+"
-    },
-    "availability": {
-      "availableToday": "متاح اليوم",
-      "acceptsNewPatients": "يقبل مرضى جدد"
-    },
-    "services": {
-      "title": "الخدمات"
     }
   }
 }

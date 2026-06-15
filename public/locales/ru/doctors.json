@@ -1,12 +1,12 @@
 {
   "search": {
-    "title": "Найти и записаться к врачу",
-    "placeholder": "Поиск врачей, специальностей, мест...",
+    "title": "Найти врачей",
+    "placeholder": "Поиск по имени, специальности или местоположению",
     "searching": "Поиск...",
     "filters": "Фильтры",
     "specialty": "Специальность",
     "location": "Местоположение",
-    "rating": "Минимальный рейтинг",
+    "rating": "Рейтинг",
     "consultationFee": "Стоимость консультации",
     "availability": "Доступность",
     "clearFilters": "Очистить фильтры",
@@ -17,19 +17,20 @@
     "priceRange": "Ценовой диапазон",
     "distance": "Расстояние",
     "language": "Язык",
-    "submit": "Искать"
+    "submit": "Искать",
+    "experience": "Опыт"
   },
   "profile": {
     "about": "О враче",
-    "experience": "Опыт",
+    "experience": "лет опыта",
     "education": "Образование",
     "languages": "Языки",
-    "services": "Услуги",
-    "reviews": "Отзывы",
+    "services": "Предоставляемые услуги",
+    "reviews": "отзывов",
     "availability": "Доступность",
     "bookAppointment": "Записаться на прием",
     "contactDoctor": "Связаться с врачом",
-    "yearsExperience": "Опыт {{years}} лет",
+    "yearsExperience": "лет опыта",
     "patientsHelped": "{{count}}+ пациентов помогли",
     "responseTime": "Отвечает в течение {{time}}",
     "consultationFee": "Стоимость консультации",
@@ -45,7 +46,34 @@
     "certifications": "Сертификаты",
     "contactInfo": "Контактная информация",
     "officeHours": "Часы работы",
-    "emergencyContact": "Экстренный контакт"
+    "emergencyContact": "Экстренный контакт",
+    "specialty": "Специальность",
+    "rating": "Рейтинг",
+    "save": "Сохранить",
+    "saved": "Сохранено",
+    "videoConsultations": "Видеоконсультации доступны",
+    "booking": "Бронирование...",
+    "videoCall": "Видеозвонок",
+    "tabs": {
+      "about": "О враче",
+      "practiceInfo": "Информация о клинике",
+      "services": "Услуги",
+      "reviews": "Отзывы",
+      "availability": "Доступность"
+    },
+    "aboutDoctor": "О докторе {{name}}",
+    "directions": "Маршрут",
+    "servicesPricing": "Услуги и Цены",
+    "bookService": "Записаться на Услугу",
+    "patientReviews": "Отзывы Пациентов",
+    "bookYourAppointment": "Запишитесь на Прием",
+    "selectDate": "Выберите Дату",
+    "slotsAvailable": "слотов доступно",
+    "selectTime": "Выберите Время",
+    "selectDateFirst": "Сначала выберите дату",
+    "appointmentSummary": "Сводка Приема",
+    "at": "в",
+    "confirmAppointment": "Подтвердить Прием"
   },
   "booking": {
     "title": "Записаться на прием",
@@ -82,14 +110,14 @@
     "verifyInsurance": "Проверить страховку"
   },
   "page": {
-    "title": "Найти врачей",
-    "subtitle": "Найдите проверенных врачей и записывайтесь на прием мгновенно",
+    "title": "Найдите Своего Идеального Врача",
+    "subtitle": "Ищите среди тысяч проверенных специалистов здравоохранения",
     "readyToFind": "Готовы найти подходящего врача?",
     "readyToFindDesc": "Ищите среди нашей сети проверенных медицинских специалистов и записывайтесь на прием всего в несколько кликов.",
     "popularSearches": "Популярные запросы",
-    "foundText": "результатов найдено",
-    "showingVerified": "Показаны проверенные медицинские специалисты",
-    "noDoctors": "Врачи не найдены",
+    "foundText": "врачей найдено",
+    "showingVerified": "Показаны проверенные специалисты здравоохранения",
+    "noDoctors": "Врачи, соответствующие вашим критериям, не найдены",
     "searching": "Поиск...",
     "error": "Ошибка поиска",
     "tryAgain": "Пожалуйста, попробуйте позже.",
@@ -100,7 +128,18 @@
     "removedFromSavedDesc": "Удалено из списка сохраненных врачей.",
     "loginRequired": "Требуется вход",
     "loginRequiredDesc": "Пожалуйста, войдите, чтобы записаться на прием.",
-    "searchButton": "Искать"
+    "searchButton": "Искать",
+    "signIn": "Войти",
+    "showFilters": "Показать фильтры",
+    "hideFilters": "Скрыть фильтры",
+    "clearAll": "Очистить все",
+    "minRating": "Минимальный рейтинг",
+    "anyRating": "Любой рейтинг",
+    "threeStars": "3+ звезд",
+    "fourStars": "4+ звезд",
+    "fourHalfStars": "4,5+ звезд",
+    "available": "Доступен для записи",
+    "consultationLabel": "Консультация"
   },
   "specialties": {
     "all": "Все специальности",
@@ -114,7 +153,9 @@
     "dermatology": "Дерматология",
     "endocrinology": "Эндокринология",
     "pathology": "Патология",
-    "pulmonology": "Пульмонология"
+    "pulmonology": "Пульмонология",
+    "psychiatry": "Психиатрия",
+    "ent": "ЛОР"
   },
   "autocomplete": {
     "labels": {
@@ -195,99 +236,7 @@
       "distance": "Расстояние",
       "availability": "Ближайшее время"
     }
-  }
-}
-{
-  "search": {
-    "title": "Найти врачей",
-    "placeholder": "Поиск по имени, специальности или местоположению",
-    "filters": "Фильтры",
-    "availability": "Доступность",
-    "rating": "Рейтинг",
-    "experience": "Опыт",
-    "consultationFee": "Стоимость консультации",
-    "specialty": "Специальность",
-    "location": "Местоположение",
-    "applyFilters": "Применить фильтры",
-    "clearFilters": "Очистить фильтры"
   },
-  "profile": {
-    "viewProfile": "Просмотреть профиль",
-    "bookAppointment": "Записаться на прием",
-    "specialty": "Специальность",
-    "experience": "лет опыта",
-    "consultationFee": "Стоимость консультации",
-    "rating": "Рейтинг",
-    "reviews": "отзывов",
-    "availability": "Доступность",
-    "about": "О враче",
-    "education": "Образование",
-    "languages": "Языки",
-    "services": "Предоставляемые услуги",
-    "save": "Сохранить",
-    "saved": "Сохранено",
-    "yearsExperience": "лет опыта",
-    "videoConsultations": "Видеоконсультации доступны",
-    "booking": "Бронирование...",
-    "videoCall": "Видеозвонок",
-    "tabs": {
-      "about": "О враче",
-      "practiceInfo": "Информация о клинике",
-      "services": "Услуги",
-      "reviews": "Отзывы",
-      "availability": "Доступность"
-    },
-    "aboutDoctor": "О докторе {{name}}",
-    "certifications": "Сертификаты",
-    "directions": "Маршрут",
-    "servicesPricing": "Услуги и Цены",
-    "insuranceAccepted": "Страховка принимается",
-    "bookService": "Записаться на Услугу",
-    "patientReviews": "Отзывы Пациентов",
-    "bookYourAppointment": "Запишитесь на Прием",
-    "selectDate": "Выберите Дату",
-    "slotsAvailable": "слотов доступно",
-    "selectTime": "Выберите Время",
-    "selectDateFirst": "Сначала выберите дату",
-    "appointmentSummary": "Сводка Приема",
-    "at": "в",
-    "confirmAppointment": "Подтвердить Прием"
-  },
-  "page": {
-    "signIn": "Войти",
-    "title": "Найдите Своего Идеального Врача",
-    "subtitle": "Ищите среди тысяч проверенных специалистов здравоохранения",
-    "showFilters": "Показать фильтры",
-    "hideFilters": "Скрыть фильтры",
-    "clearAll": "Очистить все",
-    "minRating": "Минимальный рейтинг",
-    "anyRating": "Любой рейтинг",
-    "threeStars": "3+ звезд",
-    "fourStars": "4+ звезд",
-    "fourHalfStars": "4,5+ звезд",
-    "searching": "Поиск...",
-    "foundText": "врачей найдено",
-    "showingVerified": "Показаны проверенные специалисты здравоохранения",
-    "noDoctors": "Врачи, соответствующие вашим критериям, не найдены",
-    "available": "Доступен для записи",
-    "consultationLabel": "Консультация",
-    "bookNow": "Записаться"
-  },
-  "specialties": {
-    "all": "Все специальности",
-    "generalPractice": "Общая практика",
-    "cardiology": "Кардиология",
-    "dermatology": "Дерматология",
-    "pediatrics": "Педиатрия",
-    "orthopedics": "Ортопедия",
-    "neurology": "Неврология",
-    "psychiatry": "Психиатрия",
-    "dentistry": "Стоматология",
-    "ophthalmology": "Офтальмология",
-    "ent": "ЛОР"
-  }
-}
-{
   "doctor": {
     "actions": {
       "manageProcedures": "Управлять процедурами",
@@ -603,49 +552,49 @@
       "pending": "Ожидает проверки",
       "viewProfile": "Открыть профиль"
     },
-  "page": {
-    "title": "Найти врача",
-    "subtitle": "Ищите и записывайтесь на приём к проверенным специалистам"
-  },
-  "search": {
-    "placeholder": "Поиск врачей, специальностей или клиник",
-    "submit": "Найти",
-    "filters": "Фильтры",
-    "clearFilters": "Сбросить все фильтры",
-    "specialty": "Специальность",
-    "location": "Местоположение",
-    "rating": "Рейтинг",
-    "consultationFee": "Стоимость консультации",
-    "availability": "Доступность"
-  },
-  "specialties": {
-    "all": "Все специальности"
-  },
-  "filters": {
-    "distance": {
-      "label": "Расстояние",
-      "any": "Любое расстояние",
-      "km50": "В радиусе 50 км"
+    "page": {
+      "title": "Найти врача",
+      "subtitle": "Ищите и записывайтесь на приём к проверенным специалистам"
     },
-    "rating": {
-      "minimum": "Минимальный рейтинг",
-      "any": "Любой рейтинг",
-      "max": "5 звёзд"
+    "search": {
+      "placeholder": "Поиск врачей, специальностей или клиник",
+      "submit": "Найти",
+      "filters": "Фильтры",
+      "clearFilters": "Сбросить все фильтры",
+      "specialty": "Специальность",
+      "location": "Местоположение",
+      "rating": "Рейтинг",
+      "consultationFee": "Стоимость консультации",
+      "availability": "Доступность"
     },
-    "priceRanges": {
-      "any": "Любая цена",
-      "0_50": "$0 - $50",
-      "50_100": "$50 - $100",
-      "100_200": "$100 - $200",
-      "200_plus": "$200+"
+    "specialties": {
+      "all": "Все специальности"
     },
-    "availability": {
-      "availableToday": "Доступен сегодня",
-      "acceptsNewPatients": "Принимает новых пациентов"
-    },
-    "services": {
-      "title": "Услуги"
+    "filters": {
+      "distance": {
+        "label": "Расстояние",
+        "any": "Любое расстояние",
+        "km50": "В радиусе 50 км"
+      },
+      "rating": {
+        "minimum": "Минимальный рейтинг",
+        "any": "Любой рейтинг",
+        "max": "5 звёзд"
+      },
+      "priceRanges": {
+        "any": "Любая цена",
+        "0_50": "$0 - $50",
+        "50_100": "$50 - $100",
+        "100_200": "$100 - $200",
+        "200_plus": "$200+"
+      },
+      "availability": {
+        "availableToday": "Доступен сегодня",
+        "acceptsNewPatients": "Принимает новых пациентов"
+      },
+      "services": {
+        "title": "Услуги"
+      }
     }
   }
-}
 }
