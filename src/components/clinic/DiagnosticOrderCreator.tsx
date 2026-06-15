@@ -124,12 +124,12 @@ export function DiagnosticOrderCreator({
       <DialogTrigger asChild>
         <Button variant="outline">
           <Stethoscope className="h-4 w-4 mr-2" />
-          Order Diagnostic Test
+          {t('orderCreator.trigger')}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Order Diagnostic Test</DialogTitle>
+          <DialogTitle>{t('orderCreator.title')}</DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -137,13 +137,13 @@ export function DiagnosticOrderCreator({
             {hasLabService && (
               <TabsTrigger value="lab" className="gap-2">
                 <FlaskConical className="h-4 w-4" />
-                Lab Test
+                {t('orderCreator.tabs.lab')}
               </TabsTrigger>
             )}
             {hasImagingService && (
               <TabsTrigger value="imaging" className="gap-2">
                 <ScanLine className="h-4 w-4" />
-                Imaging
+                {t('orderCreator.tabs.imaging')}
               </TabsTrigger>
             )}
           </TabsList>
@@ -151,13 +151,13 @@ export function DiagnosticOrderCreator({
           {hasLabService && (
             <TabsContent value="lab" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label>Test Category *</Label>
+                <Label>{t('orderCreator.fields.testCategory')}</Label>
                 <Select
                   value={labForm.test_type}
                   onValueChange={(value) => setLabForm(prev => ({ ...prev, test_type: value, test_name: '' }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={t('orderCreator.fields.selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {LAB_TEST_TYPES.map(type => (
@@ -171,13 +171,13 @@ export function DiagnosticOrderCreator({
 
               {selectedLabCategory && (
                 <div className="space-y-2">
-                  <Label>Test Name *</Label>
+                  <Label>{t('orderCreator.fields.testName')}</Label>
                   <Select
                     value={labForm.test_name}
                     onValueChange={(value) => setLabForm(prev => ({ ...prev, test_name: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select test" />
+                      <SelectValue placeholder={t('orderCreator.fields.selectTest')} />
                     </SelectTrigger>
                     <SelectContent>
                       {selectedLabCategory.tests.map(test => (
@@ -191,7 +191,7 @@ export function DiagnosticOrderCreator({
               )}
 
               <div className="space-y-2">
-                <Label>Priority</Label>
+                <Label>{t('orderCreator.fields.priority')}</Label>
                 <Select
                   value={labForm.priority}
                   onValueChange={(value) => setLabForm(prev => ({ ...prev, priority: value }))}
@@ -200,19 +200,19 @@ export function DiagnosticOrderCreator({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="routine">Routine</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                    <SelectItem value="stat">STAT</SelectItem>
+                    <SelectItem value="routine">{t('orderCreator.priorities.routine')}</SelectItem>
+                    <SelectItem value="urgent">{t('orderCreator.priorities.urgent')}</SelectItem>
+                    <SelectItem value="stat">{t('orderCreator.priorities.stat')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Clinical Notes</Label>
+                <Label>{t('orderCreator.fields.clinicalNotes')}</Label>
                 <Textarea
                   value={labForm.clinical_notes}
                   onChange={(e) => setLabForm(prev => ({ ...prev, clinical_notes: e.target.value }))}
-                  placeholder="Relevant clinical information..."
+                  placeholder={t('orderCreator.fields.labNotesPlaceholder')}
                   rows={3}
                 />
               </div>
@@ -223,7 +223,7 @@ export function DiagnosticOrderCreator({
                 disabled={labLoading || !labForm.test_type || !labForm.test_name}
               >
                 <FlaskConical className="h-4 w-4 mr-2" />
-                Order Lab Test
+                {t('orderCreator.submitLab')}
               </Button>
             </TabsContent>
           )}
@@ -231,13 +231,13 @@ export function DiagnosticOrderCreator({
           {hasImagingService && (
             <TabsContent value="imaging" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label>Modality *</Label>
+                <Label>{t('orderCreator.fields.modality')}</Label>
                 <Select
                   value={imagingForm.modality}
                   onValueChange={(value) => setImagingForm(prev => ({ ...prev, modality: value, exam_name: '' }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select modality" />
+                    <SelectValue placeholder={t('orderCreator.fields.selectModality')} />
                   </SelectTrigger>
                   <SelectContent>
                     {IMAGING_MODALITIES.map(mod => (
@@ -251,13 +251,13 @@ export function DiagnosticOrderCreator({
 
               {selectedImagingModality && (
                 <div className="space-y-2">
-                  <Label>Exam *</Label>
+                  <Label>{t('orderCreator.fields.exam')}</Label>
                   <Select
                     value={imagingForm.exam_name}
                     onValueChange={(value) => setImagingForm(prev => ({ ...prev, exam_name: value }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select exam" />
+                      <SelectValue placeholder={t('orderCreator.fields.selectExam')} />
                     </SelectTrigger>
                     <SelectContent>
                       {selectedImagingModality.exams.map(exam => (
@@ -271,16 +271,16 @@ export function DiagnosticOrderCreator({
               )}
 
               <div className="space-y-2">
-                <Label>Body Part</Label>
+                <Label>{t('orderCreator.fields.bodyPart')}</Label>
                 <Input
                   value={imagingForm.body_part}
                   onChange={(e) => setImagingForm(prev => ({ ...prev, body_part: e.target.value }))}
-                  placeholder="e.g., Right Knee, Chest"
+                  placeholder={t('orderCreator.fields.bodyPartPlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Priority</Label>
+                <Label>{t('orderCreator.fields.priority')}</Label>
                 <Select
                   value={imagingForm.priority}
                   onValueChange={(value) => setImagingForm(prev => ({ ...prev, priority: value }))}
@@ -289,19 +289,19 @@ export function DiagnosticOrderCreator({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="routine">Routine</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                    <SelectItem value="stat">STAT</SelectItem>
+                    <SelectItem value="routine">{t('orderCreator.priorities.routine')}</SelectItem>
+                    <SelectItem value="urgent">{t('orderCreator.priorities.urgent')}</SelectItem>
+                    <SelectItem value="stat">{t('orderCreator.priorities.stat')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label>Clinical Notes</Label>
+                <Label>{t('orderCreator.fields.clinicalNotes')}</Label>
                 <Textarea
                   value={imagingForm.clinical_notes}
                   onChange={(e) => setImagingForm(prev => ({ ...prev, clinical_notes: e.target.value }))}
-                  placeholder="Clinical indication, history..."
+                  placeholder={t('orderCreator.fields.imagingNotesPlaceholder')}
                   rows={3}
                 />
               </div>
@@ -312,7 +312,7 @@ export function DiagnosticOrderCreator({
                 disabled={imagingLoading || !imagingForm.modality || !imagingForm.exam_name}
               >
                 <ScanLine className="h-4 w-4 mr-2" />
-                Order Imaging Study
+                {t('orderCreator.submitImaging')}
               </Button>
             </TabsContent>
           )}
