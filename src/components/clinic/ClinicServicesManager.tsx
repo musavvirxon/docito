@@ -352,7 +352,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                 />
               </div>
               <div className="space-y-1.5 md:col-span-2">
-                <Label>Description</Label>
+                <Label>{t("servicesManager.dialog.descLabel")}</Label>
                 <Textarea
                   rows={2}
                   value={form.description}
@@ -360,7 +360,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>Currency</Label>
+                <Label>{t("servicesManager.dialog.currency")}</Label>
                 <Select
                   value={form.currency}
                   onValueChange={(v) => setForm((f) => ({ ...f, currency: v }))}
@@ -378,7 +378,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Price</Label>
+                <Label>{t("servicesManager.dialog.price")}</Label>
                 <Input
                   type="number"
                   step="0.01"
@@ -393,9 +393,9 @@ export default function ClinicServicesManager({ practiceId }: Props) {
             <div className="rounded-md border p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm">Deposit required</Label>
+                  <Label className="text-sm">{t("servicesManager.dialog.depositRequired")}</Label>
                   <p className="text-xs text-muted-foreground">
-                    Require patients to pay a deposit to confirm a booking.
+                    {t("servicesManager.dialog.depositHelp")}
                   </p>
                 </div>
                 <Switch
@@ -406,7 +406,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
               {form.deposit_required && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label>Type</Label>
+                    <Label>{t("servicesManager.dialog.type")}</Label>
                     <Select
                       value={form.deposit_type}
                       onValueChange={(v) =>
@@ -417,14 +417,14 @@ export default function ClinicServicesManager({ practiceId }: Props) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="fixed">Fixed amount</SelectItem>
-                        <SelectItem value="percent">Percent of price</SelectItem>
+                        <SelectItem value="fixed">{t("servicesManager.dialog.typeFixed")}</SelectItem>
+                        <SelectItem value="percent">{t("servicesManager.dialog.typePercent")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-1.5">
                     <Label>
-                      {form.deposit_type === "percent" ? "Percent (0–100)" : "Amount"}
+                      {form.deposit_type === "percent" ? t("servicesManager.dialog.percentLabel") : t("servicesManager.dialog.amountLabel")}
                     </Label>
                     <Input
                       type="number"
@@ -442,7 +442,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
             </div>
 
             <div className="flex items-center justify-between rounded-md border p-3">
-              <Label className="text-sm">Active</Label>
+              <Label className="text-sm">{t("servicesManager.dialog.active")}</Label>
               <Switch
                 checked={form.is_active}
                 onCheckedChange={(v) => setForm((f) => ({ ...f, is_active: v }))}
@@ -452,10 +452,10 @@ export default function ClinicServicesManager({ practiceId }: Props) {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
-              Cancel
+              {t("servicesManager.dialog.cancel")}
             </Button>
             <Button onClick={handleSubmit} disabled={saving}>
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : form.id ? "Save" : "Add"}
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : form.id ? t("servicesManager.dialog.save") : t("servicesManager.dialog.add")}
             </Button>
           </DialogFooter>
         </DialogContent>
