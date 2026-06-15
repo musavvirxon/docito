@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, FileText, Eye, Trash2, RefreshCcw, Users, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import EnhancedCreateTreatmentPlanModal from '@/components/treatment/EnhancedCreateTreatmentPlanModal';
 import EnhancedTreatmentPlanDetailModal from '@/components/treatment/EnhancedTreatmentPlanDetailModal';
 import { useCurrency } from '@/hooks/useCurrency';
+
 
 interface Props {
   doctorId: string;
@@ -57,12 +59,14 @@ export function AppointmentTreatmentPlansSection({
   patientName,
   canManage,
 }: Props) {
+  const { t } = useTranslation('appointments');
   const [plans, setPlans] = useState<TreatmentPlanRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [selected, setSelected] = useState<TreatmentPlanRow | null>(null);
   const { format: money } = useCurrency();
   const formatCurrency = (n: number | null) => money(Number(n || 0));
+
 
   const hasPatient = Boolean(patientId || doctorPatientId);
 
@@ -92,27 +96,28 @@ export function AppointmentTreatmentPlansSection({
       setPlans(((data || []) as any[]) as TreatmentPlanRow[]);
     } catch (err: any) {
       console.error('Load treatment plans failed', err);
-      toast.error(err?.message || 'Failed to load treatment plans');
+      toast.error(err?.message || t('treatmentPlans.loadFailed'));
       setPlans([]);
     } finally {
       setLoading(false);
     }
-  }, [doctorId, doctorAuthUserId, patientId, doctorPatientId, hasPatient]);
+  }, [doctorId, doctorAuthUserId, patientId, doctorPatientId, hasPatient, t]);
 
   useEffect(() => {
     fetchPlans();
   }, [fetchPlans]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this treatment plan?')) return;
+    if (!confirm(t('treatmentPlans.deleteConfirm'))) return;
     const { error } = await supabase.from('treatment_plans').delete().eq('id', id);
     if (error) {
-      toast.error('Delete failed: ' + error.message);
+      toast.error(t('treatmentPlans.deleteFailed') + error.message);
       return;
     }
-    toast.success('Treatment plan deleted');
+    toast.success(t('treatmentPlans.deleteSuccess'));
     fetchPlans();
   };
+
 
   const preSelectedPatientId = useMemo(
     () => patientId || doctorPatientId || undefined,
@@ -125,7 +130,7 @@ export function AppointmentTreatmentPlansSection({
         <CardTitle className="text-sm flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Treatment Plans{patientName ? ` — ${patientName}` : ''}
+            {t('treatmentPlans.title')}{patientName ? ` — ${patientName}` : ''}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -137,12 +142,12 @@ export function AppointmentTreatmentPlansSection({
               disabled={loading}
             >
               <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
+              {t('treatmentPlans.refresh')}
             </Button>
             {canManage && hasPatient && (
               <Button type="button" size="sm" className="gap-2" onClick={() => setShowCreate(true)}>
                 <Plus className="h-4 w-4" />
-                New Plan
+                {t('treatmentPlans.newPlan')}
               </Button>
             )}
           </div>
@@ -151,11 +156,11 @@ export function AppointmentTreatmentPlansSection({
       <CardContent className="space-y-3">
         {!hasPatient ? (
           <p className="text-xs text-muted-foreground border rounded-md p-3">
-            No patient linked to this appointment.
+            {t('treatmentPlans.noPatientLinked')}
           </p>
         ) : plans.length === 0 ? (
           <p className="text-xs text-muted-foreground border rounded-md p-3">
-            No treatment plans for this patient yet.
+            {t('treatmentPlans.noPlans')}
           </p>
         ) : (
           <div className="space-y-2">
@@ -195,7 +200,7 @@ export function AppointmentTreatmentPlansSection({
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => setSelected(plan)}
-                    aria-label="View"
+                    aria-label={t('treatmentPlans.view')}
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
@@ -206,7 +211,7 @@ export function AppointmentTreatmentPlansSection({
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
                       onClick={() => handleDelete(plan.id)}
-                      aria-label="Delete"
+                      aria-label={t('treatmentPlans.delete')}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
