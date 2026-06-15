@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, Stethoscope, RefreshCw, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import {
   type UnifiedProcedure,
 } from '@/hooks/useAppointmentProcedures';
 import { useCurrency } from '@/hooks/useCurrency';
+
 
 interface Props {
   appointmentId: string;
