@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,18 +59,19 @@ const FilesTab = ({
   onPreview,
   isUploading,
 }: FilesTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<PatientFile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const categories = [
-    { value: "xray", label: "X-Rays" },
-    { value: "lab", label: "Lab Results" },
-    { value: "scan", label: "Scans" },
-    { value: "report", label: "Reports" },
-    { value: "image", label: "Images" },
-    { value: "other", label: "Other" },
+    { value: "xray", label: t("tabs.files.categories.xray") },
+    { value: "lab", label: t("tabs.files.categories.lab") },
+    { value: "scan", label: t("tabs.files.categories.scan") },
+    { value: "report", label: t("tabs.files.categories.report") },
+    { value: "image", label: t("tabs.files.categories.image") },
+    { value: "other", label: t("tabs.files.categories.other") },
   ];
 
   const filteredFiles = files.filter((file) => {
@@ -152,7 +154,7 @@ const FilesTab = ({
                   </span>
                   <span className="text-xs text-muted-foreground">•</span>
                   <span className="text-xs text-muted-foreground">
-                    {new Date(file.date).toLocaleDateString()}
+                    {new Date(file.date).toLocaleDateString(i18n.language)}
                   </span>
                 </div>
               </div>
@@ -166,18 +168,18 @@ const FilesTab = ({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => onPreview(file)}>
                     <Eye className="w-4 h-4 mr-2" />
-                    Preview
+                    {t("tabs.files.preview")}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onDownload(file)}>
                     <Download className="w-4 h-4 mr-2" />
-                    Download
+                    {t("tabs.files.download")}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => onDelete(file)}
                     className="text-destructive focus:text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    {t("tabs.files.delete")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -202,7 +204,7 @@ const FilesTab = ({
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">Files & Documents</h2>
+        <h2 className="text-lg font-semibold">{t("tabs.files.title")}</h2>
         <div className="flex gap-2">
           <input
             ref={fileInputRef}
@@ -217,7 +219,7 @@ const FilesTab = ({
             disabled={isUploading}
           >
             <Upload className="w-4 h-4 mr-2" />
-            {isUploading ? "Uploading..." : "Upload File"}
+            {isUploading ? t("tabs.files.uploading") : t("tabs.files.upload")}
           </Button>
         </div>
       </div>
@@ -227,7 +229,7 @@ const FilesTab = ({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search files..."
+            placeholder={t("tabs.files.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -267,12 +269,12 @@ const FilesTab = ({
             <Upload className="w-8 h-8 text-muted-foreground" />
           </div>
           <h3 className="font-medium text-foreground mb-1">
-            {files.length === 0 ? "No files uploaded" : "No files match your search"}
+            {files.length === 0 ? t("tabs.files.noFilesUploaded") : t("tabs.files.noMatch")}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
             {files.length === 0
-              ? "Upload X-rays, lab results, scans, and other documents"
-              : "Try adjusting your search or filters"}
+              ? t("tabs.files.emptyDesc")
+              : t("tabs.files.adjustFilters")}
           </p>
           {files.length === 0 && (
             <Button
@@ -280,7 +282,7 @@ const FilesTab = ({
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-4 h-4 mr-2" />
-              Upload File
+              {t("tabs.files.upload")}
             </Button>
           )}
         </div>
@@ -311,7 +313,7 @@ const FilesTab = ({
               <div className="text-center py-12 bg-muted rounded-lg">
                 <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <p className="text-muted-foreground">
-                  Preview not available for this file type
+                  {t("tabs.files.previewUnavailable")}
                 </p>
                 <Button
                   variant="outline"
@@ -319,7 +321,7 @@ const FilesTab = ({
                   onClick={() => previewFile && onDownload(previewFile)}
                 >
                   <Download className="w-4 h-4 mr-2" />
-                  Download to view
+                  {t("tabs.files.downloadToView")}
                 </Button>
               </div>
             )}
