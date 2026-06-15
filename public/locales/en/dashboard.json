@@ -2631,6 +2631,185 @@
       "turnOffCam": "Turn off camera",
       "turnOnCam": "Turn on camera"
     }
+  },
+  "shell": {
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Feedback",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "settingsDialog": {
+      "title": "Settings"
+    },
+    "verificationSuccess": {
+      "congrats": "🎉 Congratulations!",
+      "verifiedMsg": "<0>{{practiceName}}</0> has been successfully verified.",
+      "youCanNow": "You can now:",
+      "features": {
+        "manageStaff": "Add and manage doctors and staff",
+        "setHours": "Set clinic hours and service restrictions",
+        "stats": "Access financial and performance stats",
+        "updateProfile": "Update your profile and settings"
+      },
+      "goDashboard": "Go to Dashboard"
+    },
+    "verificationDocs": {
+      "title": "Verification Documents",
+      "description": "Upload required documents for practice verification. All documents will be reviewed within 2-3 business days.",
+      "required": {
+        "business_license": {
+          "label": "Business License",
+          "description": "Valid business operating license"
+        },
+        "tax_certificate": {
+          "label": "Tax Certificate",
+          "description": "Tax registration document"
+        },
+        "professional_license": {
+          "label": "Professional License",
+          "description": "Medical/dental practice license"
+        },
+        "insurance_certificate": {
+          "label": "Insurance Certificate",
+          "description": "Professional liability insurance"
+        }
+      },
+      "status": {
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending Review",
+        "notUploaded": "Not Uploaded"
+      },
+      "rejectionReason": "Rejection reason: {{reason}}",
+      "uploading": "Uploading...",
+      "reupload": "Re-upload",
+      "upload": "Upload",
+      "footerNote": "Accepted formats: PDF, JPG, PNG (max 5MB each)",
+      "close": "Close",
+      "errors": {
+        "loadFailed": "Failed to load documents",
+        "invalidType": "Please upload PDF, JPG, or PNG files only",
+        "tooLarge": "File size must be less than 5MB",
+        "uploadFailed": "Failed to upload file",
+        "uploadFailedGeneric": "Failed to upload document"
+      },
+      "uploadSuccess": "Document uploaded successfully"
+    },
+    "viewRequirements": {
+      "title": "Verification Requirements",
+      "description": "Complete guide to practice verification and documentation requirements",
+      "requiredHeading": "Required Documents by Category",
+      "processHeading": "Verification Process",
+      "categories": {
+        "business": {
+          "name": "Business Documentation",
+          "items": [
+            "Valid Business License or Operating Permit",
+            "Tax Registration Certificate (Tax ID/VAT Number)",
+            "Business Registration Certificate",
+            "Proof of Business Address (utility bill or lease agreement)"
+          ]
+        },
+        "credentials": {
+          "name": "Professional Credentials",
+          "items": [
+            "Medical/Dental Practice License",
+            "Professional Liability Insurance Certificate",
+            "DEA Registration (if applicable)",
+            "Board Certification Documents"
+          ]
+        },
+        "compliance": {
+          "name": "Compliance Requirements",
+          "items": [
+            "HIPAA Compliance Documentation",
+            "OSHA Compliance Certificate (if applicable)",
+            "Background Check Results for Practice Owner",
+            "Facility Inspection Certificate (if applicable)"
+          ]
+        },
+        "practice": {
+          "name": "Practice Information",
+          "items": [
+            "Complete Practice Profile with accurate information",
+            "Operating Hours and Availability",
+            "Services and Specialties Offered",
+            "Staff Credentials (for all providers)"
+          ]
+        }
+      },
+      "process": [
+        "Submit all required documents through the verification portal",
+        "Our verification team reviews documents within 2-3 business days",
+        "You'll receive email notification of approval or if additional information is needed",
+        "Once approved, your practice will be visible to patients in search results",
+        "Maintain updated credentials and re-verify annually"
+      ],
+      "notesTitle": "Important Notes:",
+      "notes": [
+        "All documents must be current and valid",
+        "Documents should be clear, legible scans or photos",
+        "Accepted formats: PDF, JPG, PNG (max 5MB per file)",
+        "Keep copies of all submitted documents for your records",
+        "Verification typically takes 2-3 business days"
+      ],
+      "close": "Close"
+    },
+    "doctorRules": {
+      "title": "Rules & Limits",
+      "subtitle": "Per-doctor policy{{forName}}. Overrides practice defaults.",
+      "forName": " for {{name}}",
+      "saving": "Saving…",
+      "save": "Save",
+      "limits": {
+        "title": "Booking Limits",
+        "description": "Cap how many appointments this doctor can take.",
+        "maxDaily": "Max appointments / day",
+        "maxWeekly": "Max appointments / week",
+        "noLimit": "No limit",
+        "approval": "Require admin approval",
+        "approvalHelp": "New bookings stay pending until an admin confirms."
+      },
+      "hours": {
+        "title": "Working Hours",
+        "description": "Restrict the hours/days this doctor can be booked.",
+        "start": "Start",
+        "end": "End",
+        "days": "Working Days",
+        "helper": "Patients won't see slots outside these hours."
+      },
+      "specialty": {
+        "title": "Specialty Restrictions",
+        "description": "Allow only certain specialties or explicitly block some.",
+        "allowed": "Allowed",
+        "blocked": "Blocked",
+        "selectPlaceholder": "Select specialty",
+        "add": "Add"
+      },
+      "procedure": {
+        "title": "Procedures",
+        "description": "Mandatory or blocked procedures for this doctor.",
+        "mandatory": "Mandatory",
+        "blocked": "Blocked",
+        "selectPlaceholder": "Select procedure",
+        "add": "Add"
+      },
+      "notes": {
+        "title": "Notes",
+        "description": "Optional internal notes about this doctor's rules.",
+        "placeholder": "Internal notes…"
+      },
+      "days": {
+        "Mon": "Mon",
+        "Tue": "Tue",
+        "Wed": "Wed",
+        "Thu": "Thu",
+        "Fri": "Fri",
+        "Sat": "Sat",
+        "Sun": "Sun"
+      }
+    }
   }
 }
-
