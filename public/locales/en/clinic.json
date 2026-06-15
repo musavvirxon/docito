@@ -1,0 +1,77 @@
+{
+  "serviceSettings": {
+    "title": "Service Departments",
+    "description": "Enable in-house diagnostic services for your clinic",
+    "active": "Active",
+    "lab": {
+      "title": "In-House Laboratory",
+      "description": "Enable blood tests, diagnostics, urinalysis, and other laboratory services",
+      "technicians": "Lab Technicians",
+      "examples": "CBC, Hormones, Microbiology, etc."
+    },
+    "imaging": {
+      "title": "In-House Imaging Center",
+      "description": "Enable X-Ray, CT, MRI, Ultrasound, CBCT, and other imaging services",
+      "technicians": "Imaging Technicians",
+      "examples": "X-Ray, CT, MRI, Ultrasound, CBCT"
+    },
+    "notes": {
+      "title": "Important Notes:",
+      "items": [
+        "Enabling a service will create a new department dashboard",
+        "You can assign technicians to each department",
+        "Doctors can order tests directly from patient records",
+        "Results are automatically visible to patients once completed"
+      ]
+    }
+  },
+  "testResults": {
+    "title": "Test Results",
+    "labTab": "Lab Results ({{count}})",
+    "imagingTab": "Imaging Results ({{count}})",
+    "loading": "Loading...",
+    "emptyLab": "No lab results available",
+    "emptyImaging": "No imaging results available",
+    "abnormal": "Abnormal",
+    "completed": "Completed",
+    "result": "Result:",
+    "reference": "Reference: {{range}}",
+    "impression": "Impression:",
+    "findings": "Findings:",
+    "viewReport": "View Report",
+    "download": "Download",
+    "viewImages": "View Images ({{count}})",
+    "na": "N/A"
+  },
+  "orderCreator": {
+    "trigger": "Order Diagnostic Test",
+    "title": "Order Diagnostic Test",
+    "tabs": {
+      "lab": "Lab Test",
+      "imaging": "Imaging"
+    },
+    "fields": {
+      "testCategory": "Test Category *",
+      "selectCategory": "Select category",
+      "testName": "Test Name *",
+      "selectTest": "Select test",
+      "modality": "Modality *",
+      "selectModality": "Select modality",
+      "exam": "Exam *",
+      "selectExam": "Select exam",
+      "bodyPart": "Body Part",
+      "bodyPartPlaceholder": "e.g., Right Knee, Chest",
+      "priority": "Priority",
+      "clinicalNotes": "Clinical Notes",
+      "labNotesPlaceholder": "Relevant clinical information...",
+      "imagingNotesPlaceholder": "Clinical indication, history..."
+    },
+    "priorities": {
+      "routine": "Routine",
+      "urgent": "Urgent",
+      "stat": "STAT"
+    },
+    "submitLab": "Order Lab Test",
+    "submitImaging": "Order Imaging Study"
+  }
+}
