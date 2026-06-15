@@ -225,6 +225,15 @@
       "cookies": "쿠키",
       "about": "소개",
       "features": "기능",
+      "findDoctors": "Find Doctors",
+      "searchDoctors": "Search Doctors",
+      "specialties": "Specialties",
+      "howItWorks": "How It Works",
+      "helpCenter": "Help Center",
+      "contact": "Contact",
+      "faqs": "FAQs",
+      "support": "Support",
+      "hipaa": "HIPAA",
       "refundPolicy": "환불 정책"
     }
   },

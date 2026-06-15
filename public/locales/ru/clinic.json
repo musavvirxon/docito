@@ -1,0 +1,314 @@
+{
+  "serviceSettings": {
+    "title": "Service Departments",
+    "description": "Enable in-house diagnostic services for your clinic",
+    "active": "Active",
+    "lab": {
+      "title": "In-House Laboratory",
+      "description": "Enable blood tests, diagnostics, urinalysis, and other laboratory services",
+      "technicians": "Lab Technicians",
+      "examples": "CBC, Hormones, Microbiology, etc."
+    },
+    "imaging": {
+      "title": "In-House Imaging Center",
+      "description": "Enable X-Ray, CT, MRI, Ultrasound, CBCT, and other imaging services",
+      "technicians": "Imaging Technicians",
+      "examples": "X-Ray, CT, MRI, Ultrasound, CBCT"
+    },
+    "notes": {
+      "title": "Important Notes:",
+      "items": [
+        "Enabling a service will create a new department dashboard",
+        "You can assign technicians to each department",
+        "Doctors can order tests directly from patient records",
+        "Results are automatically visible to patients once completed"
+      ]
+    }
+  },
+  "testResults": {
+    "title": "Test Results",
+    "labTab": "Lab Results ({{count}})",
+    "imagingTab": "Imaging Results ({{count}})",
+    "loading": "Loading...",
+    "emptyLab": "No lab results available",
+    "emptyImaging": "No imaging results available",
+    "abnormal": "Abnormal",
+    "completed": "Completed",
+    "result": "Result:",
+    "reference": "Reference: {{range}}",
+    "impression": "Impression:",
+    "findings": "Findings:",
+    "viewReport": "View Report",
+    "download": "Download",
+    "viewImages": "View Images ({{count}})",
+    "na": "N/A"
+  },
+  "orderCreator": {
+    "trigger": "Order Diagnostic Test",
+    "title": "Order Diagnostic Test",
+    "tabs": {
+      "lab": "Lab Test",
+      "imaging": "Imaging"
+    },
+    "fields": {
+      "testCategory": "Test Category *",
+      "selectCategory": "Select category",
+      "testName": "Test Name *",
+      "selectTest": "Select test",
+      "modality": "Modality *",
+      "selectModality": "Select modality",
+      "exam": "Exam *",
+      "selectExam": "Select exam",
+      "bodyPart": "Body Part",
+      "bodyPartPlaceholder": "e.g., Right Knee, Chest",
+      "priority": "Priority",
+      "clinicalNotes": "Clinical Notes",
+      "labNotesPlaceholder": "Relevant clinical information...",
+      "imagingNotesPlaceholder": "Clinical indication, history..."
+    },
+    "priorities": {
+      "routine": "Routine",
+      "urgent": "Urgent",
+      "stat": "STAT"
+    },
+    "submitLab": "Order Lab Test",
+    "submitImaging": "Order Imaging Study"
+  },
+  "servicesManager": {
+    "title": "Services & Pricing",
+    "description": "Manage the services your clinic offers, their pricing, and deposit requirements.",
+    "addService": "Add service",
+    "empty": "No services yet. Add your first service to start accepting bookings with the right pricing and deposit rules.",
+    "columns": {
+      "name": "Name",
+      "category": "Category",
+      "duration": "Duration",
+      "price": "Price",
+      "deposit": "Deposit",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "minutes": "{{count}} min",
+    "dialog": {
+      "editTitle": "Edit service",
+      "addTitle": "Add service",
+      "description": "Define the service, its price, and whether patients must pay a deposit to book.",
+      "name": "Name",
+      "namePh": "Teeth whitening",
+      "category": "Category",
+      "categoryPh": "Cosmetic",
+      "duration": "Duration (minutes)",
+      "descLabel": "Description",
+      "currency": "Currency",
+      "price": "Price",
+      "depositRequired": "Deposit required",
+      "depositHelp": "Require patients to pay a deposit to confirm a booking.",
+      "type": "Type",
+      "typeFixed": "Fixed amount",
+      "typePercent": "Percent of price",
+      "percentLabel": "Percent (0–100)",
+      "amountLabel": "Amount",
+      "active": "Active",
+      "cancel": "Cancel",
+      "save": "Save",
+      "add": "Add"
+    },
+    "toasts": {
+      "loadFailed": "Failed to load services",
+      "nameRequired": "Service name is required",
+      "updated": "Service updated",
+      "added": "Service added",
+      "saveFailed": "Failed to save service",
+      "updateFailed": "Failed to update",
+      "deleteFailed": "Failed to delete",
+      "deleted": "Service deleted",
+      "confirmDelete": "Delete service \"{{name}}\"?"
+    }
+  },
+  "labDashboard": {
+    "stats": {
+      "pending": "Pending Orders",
+      "processing": "Processing",
+      "completedToday": "Completed Today"
+    },
+    "title": "Lab Orders",
+    "refresh": "Refresh",
+    "searchPh": "Search orders...",
+    "tabs": {
+      "pending": "Pending ({{count}})",
+      "processing": "Processing ({{count}})",
+      "completed": "Completed ({{count}})"
+    },
+    "empty": "No orders found",
+    "details": "Order Details",
+    "selectPrompt": "Select Order",
+    "selectHint": "Select an order to view details",
+    "fields": {
+      "testType": "Test Type",
+      "priority": "Priority",
+      "clinicalNotes": "Clinical Notes"
+    },
+    "actions": {
+      "markCollected": "Mark Sample Collected",
+      "startProcessing": "Start Processing"
+    },
+    "results": {
+      "enter": "Enter Results",
+      "resultValue": "Result Value",
+      "resultValuePh": "Enter test results...",
+      "referenceRange": "Reference Range",
+      "referenceRangePh": "e.g., 70-100 mg/dL",
+      "abnormal": "Abnormal Result",
+      "uploadReport": "Upload Report (PDF)",
+      "submit": "Submit Results",
+      "title": "Results",
+      "noText": "No text results",
+      "abnormalBadge": "Abnormal",
+      "viewReport": "View Report PDF"
+    },
+    "priority": {
+      "stat": "STAT",
+      "urgent": "Urgent"
+    }
+  },
+  "imagingDashboard": {
+    "stats": {
+      "pending": "Pending Orders",
+      "inProgress": "In Progress",
+      "completedToday": "Completed Today"
+    },
+    "title": "Imaging Orders",
+    "refresh": "Refresh",
+    "searchPh": "Search orders...",
+    "tabs": {
+      "pending": "Pending ({{count}})",
+      "inProgress": "In Progress ({{count}})",
+      "completed": "Completed ({{count}})"
+    },
+    "empty": "No orders found",
+    "details": "Order Details",
+    "selectPrompt": "Select Order",
+    "selectHint": "Select an order to view details",
+    "na": "N/A",
+    "fields": {
+      "modality": "Modality",
+      "bodyPart": "Body Part",
+      "priority": "Priority",
+      "clinicalNotes": "Clinical Notes"
+    },
+    "actions": {
+      "startExam": "Start Examination"
+    },
+    "results": {
+      "upload": "Upload Results",
+      "impression": "Impression",
+      "impressionPh": "Brief diagnostic impression...",
+      "findings": "Findings",
+      "findingsPh": "Detailed findings...",
+      "uploadImages": "Upload Images",
+      "imageLabel": "Image {{index}}",
+      "uploadReport": "Upload Report (PDF)",
+      "submit": "Submit Results",
+      "title": "Results",
+      "viewReport": "View Report PDF"
+    },
+    "priority": {
+      "stat": "STAT",
+      "urgent": "Urgent"
+    }
+  },
+  "staffManager": {
+    "selectPractice": "Select a practice first.",
+    "title": "Staff Management",
+    "stats": {
+      "active": "Active Staff",
+      "pending": "Pending Invitations",
+      "inactive": "Inactive / Disabled",
+      "admins": "Admin / Managers"
+    },
+    "invite": {
+      "title": "Invite Staff",
+      "description": "Create staff invitations, assign role, and pre-configure permissions.",
+      "email": "Email",
+      "emailPh": "staff@clinic.com",
+      "role": "Role",
+      "send": "Send Invite",
+      "preset": "Permission Preset"
+    },
+    "pending": {
+      "title": "Pending Invitations",
+      "description": "Manage pending invites, resend, or revoke before activation.",
+      "empty": "No pending invitations.",
+      "fallback": "Pending invite",
+      "resend": "Resend",
+      "cancel": "Cancel"
+    },
+    "active": {
+      "title": "Active Staff Management",
+      "description": "Edit roles, permissions, deactivate, or remove staff.",
+      "searchPh": "Search staff...",
+      "refresh": "Refresh",
+      "loading": "Loading staff…",
+      "empty": "No active staff found.",
+      "noEmail": "No email",
+      "added": "Added {{when}}",
+      "role": "Role",
+      "resetPerms": "Reset permissions from role preset",
+      "permissions": "Permissions",
+      "save": "Save Changes",
+      "deactivate": "Deactivate",
+      "remove": "Remove"
+    },
+    "audit": {
+      "title": "Staff Audit Trail",
+      "description": "Recent staff and invitation activity.",
+      "empty": "No staff audit activity found.",
+      "fallbackTitle": "Audit Event",
+      "fallbackSubtitle": "Staff activity",
+      "created": "Staff record created",
+      "updated": "Staff record updated",
+      "invited": "Invitation pending"
+    },
+    "time": {
+      "unknown": "Unknown time",
+      "justNow": "just now",
+      "minutes": "{{n}}m ago",
+      "hours": "{{n}}h ago",
+      "days": "{{n}}d ago"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "disabled": "Disabled",
+      "pending": "Pending",
+      "invited": "Invited",
+      "removed": "Removed",
+      "cancelled": "Cancelled"
+    },
+    "roles": {
+      "admin": "Admin",
+      "manager": "Manager",
+      "doctor": "Doctor",
+      "nurse": "Nurse",
+      "receptionist": "Receptionist",
+      "billing": "Billing",
+      "viewer": "Viewer"
+    },
+    "toasts": {
+      "invalidEmail": "Enter a valid email",
+      "inviteCreated": "Invitation created",
+      "inviteFailed": "Failed to create invitation",
+      "updated": "Staff updated",
+      "updateFailed": "Failed to update staff",
+      "statusUpdated": "Staff status updated to {{status}}",
+      "statusFailed": "Failed to update staff status",
+      "removed": "Staff removed",
+      "removeFailed": "Failed to remove staff",
+      "inviteCancelled": "Invitation cancelled",
+      "cancelFailed": "Failed to cancel invitation",
+      "inviteResent": "Invitation resent",
+      "resendFailed": "Failed to resend invite",
+      "loadFailed": "Failed to load staff data"
+    }
+  }
+}

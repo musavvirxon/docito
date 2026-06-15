@@ -22,10 +22,22 @@
     "title": "Diseñado para laboratorios de alto volumen",
     "subtitle": "Visibilidad, auditabilidad y rendimiento—sin sobrecarga manual",
     "cards": {
-      "orders": { "label": "Órdenes gestionadas", "value": "10K+" },
-      "turnaround": { "label": "Turnaround más rápido", "value": "Hasta 40%" },
-      "accuracy": { "label": "Menos errores", "value": "Hasta 60%" },
-      "coverage": { "label": "Cobertura entre entidades", "value": "Médicos • Clínicas • Pacientes" }
+      "orders": {
+        "label": "Órdenes gestionadas",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "Turnaround más rápido",
+        "value": "Hasta 40%"
+      },
+      "accuracy": {
+        "label": "Menos errores",
+        "value": "Hasta 60%"
+      },
+      "coverage": {
+        "label": "Cobertura entre entidades",
+        "value": "Médicos • Clínicas • Pacientes"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "Creado para todo el ecosistema de salud",
     "subtitle": "Los laboratorios no operan solos—Docito® conecta derivaciones, citas, registros y reporting.",
     "items": {
-      "doctors": { "title": "Médicos", "description": "Reciba órdenes y devuelva resultados con contexto clínico estructurado." },
-      "clinics": { "title": "Clínicas", "description": "Coordine derivaciones, programación y flujos multi-proveedor." },
-      "patients": { "title": "Pacientes", "description": "Brinde acceso seguro a resultados y archivos relacionados con la visita." },
-      "insurance": { "title": "Aseguradoras", "description": "Soporte para verificación de cobertura y vínculo entre órdenes y pólizas." }
+      "doctors": {
+        "title": "Médicos",
+        "description": "Reciba órdenes y devuelva resultados con contexto clínico estructurado."
+      },
+      "clinics": {
+        "title": "Clínicas",
+        "description": "Coordine derivaciones, programación y flujos multi-proveedor."
+      },
+      "patients": {
+        "title": "Pacientes",
+        "description": "Brinde acceso seguro a resultados y archivos relacionados con la visita."
+      },
+      "insurance": {
+        "title": "Aseguradoras",
+        "description": "Soporte para verificación de cobertura y vínculo entre órdenes y pólizas."
+      }
     }
   },
   "cta": {

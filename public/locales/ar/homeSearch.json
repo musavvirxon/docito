@@ -1,4 +1,3 @@
-
 {
   "search": {
     "voiceSearch": "بحث صوتي",
@@ -9,12 +8,30 @@
     "aiHintTerm": "cardiologist",
     "resultsLoading": "جارٍ تحميل النتائج...",
     "trendingSearches": [
-      { "label": "طبيب عام", "term": "General Practitioner" },
-      { "label": "طبيب أسنان", "term": "Dentist" },
-      { "label": "فحص نظر", "term": "Eye Exam" },
-      { "label": "تحليل دم", "term": "Blood Test" },
-      { "label": "طب القلب", "term": "Cardiology" },
-      { "label": "طب الجلد", "term": "Dermatology" }
+      {
+        "label": "طبيب عام",
+        "term": "General Practitioner"
+      },
+      {
+        "label": "طبيب أسنان",
+        "term": "Dentist"
+      },
+      {
+        "label": "فحص نظر",
+        "term": "Eye Exam"
+      },
+      {
+        "label": "تحليل دم",
+        "term": "Blood Test"
+      },
+      {
+        "label": "طب القلب",
+        "term": "Cardiology"
+      },
+      {
+        "label": "طب الجلد",
+        "term": "Dermatology"
+      }
     ]
   }
 }

@@ -238,6 +238,47 @@
         "search": "Suche Bestellung, Antrag, Police, Status...",
         "empty": "Keine Abrechnungen für die aktuellen Filter gefunden."
       }
+    },
+    "referrals": {
+      "title": "Referrals",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your pharmacy"
+      },
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your pharmacy"
+      }
+    },
+    "staff": {
+      "active": "Active Staff",
+      "pending": "Pending Invitations",
+      "inactive": "Inactive / Disabled",
+      "admins": "Admin / Managers",
+      "invite": {
+        "title": "Invite Staff"
+      },
+      "audit": {
+        "title": "Staff Audit Trail"
+      }
+    },
+    "settings": {
+      "title": "Pharmacy Settings",
+      "profile": {
+        "title": "Pharmacy Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
+    },
+    "patients": {
+      "title": "Patient View",
+      "search": "Search patients..."
+    },
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports."
     }
   }
 }

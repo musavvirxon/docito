@@ -13,13 +13,11 @@
       "verifyDocuments": "문서 검증",
       "settings": "설정"
     },
-
     "header": {
       "title": "영상진단 직원 대시보드",
       "subtitle": "Supabase에서 가져온 주문, 스캔 워크플로우 및 분석 데이터",
       "refresh": "새로고침"
     },
-
     "common": {
       "refresh": "새로고침",
       "export": "내보내기",
@@ -32,16 +30,22 @@
       "cancel": "취소",
       "save": "저장",
       "add": "추가",
-      "actions": "작업"
+      "actions": "작업",
+      "loading": "Loading...",
+      "imagingCenter": "Imaging Center",
+      "signInRequired": "Sign In Required",
+      "signInDescription": "Please sign in to access the imaging center dashboard.",
+      "signIn": "Sign In",
+      "noCenter": "No Imaging Center Found",
+      "noCenterDescription": "You don't have an imaging center associated with your account.",
+      "registerCenter": "Register Imaging Center"
     },
-
     "numbers": {
       "zero": "0",
       "zeroPercent": "0%",
       "zeroCurrency": "₩0",
       "zeroHours": "0시간"
     },
-
     "statuses": {
       "pending": "대기 중",
       "scheduled": "예약됨",
@@ -51,9 +55,10 @@
       "finalized": "최종 확정",
       "critical": "위험/긴급",
       "cancelled": "취소됨",
-      "processing": "처리 중"
+      "processing": "처리 중",
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification"
     },
-
     "time": {
       "last30Days": "최근 30일",
       "last90Days": "최근 90일",
@@ -76,18 +81,34 @@
         "23:00"
       ]
     },
-
     "overview": {
       "title": "개요",
+      "description": "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.",
       "analytics": "분석",
-
       "stats": {
         "totalOrders": "총 주문 수",
         "pendingScheduled": "대기 / 예약됨",
+        "scheduledToday": "Scheduled Today",
+        "scheduledTodayDesc": "Scans scheduled for today",
         "inProgress": "진행 중",
-        "completed": "완료"
+        "inProgressDesc": "Checked-in + active workflow",
+        "pendingReports": "Pending Reports",
+        "pendingReportsDesc": "Images ready / awaiting report",
+        "completed": "완료",
+        "completedDesc": "Reports completed today",
+        "deliveredToday": "Delivered Today",
+        "deliveredTodayDesc": "Results delivered today",
+        "incoming7d": "Incoming (7d)",
+        "incoming7dDesc": "New imaging referrals (7 days)",
+        "completionRate7d": "Completion Rate (7d)",
+        "completionRate7dDesc": "Completed/delivered vs incoming",
+        "avgQueueAge": "Avg Queue Age",
+        "avgQueueAgeDesc": "Open order age average",
+        "activeStaff": "Active Staff",
+        "activeStaffDesc": "Active imaging staff members",
+        "activeEquipment": "Active Equipment",
+        "activeEquipmentDesc": "Operational modalities/devices"
       },
-
       "queue": {
         "pendingQueue": "대기 큐",
         "scheduled": "예약됨",
@@ -96,19 +117,52 @@
         "urgent": "긴급 / STAT",
         "overdue": "기한 경과 (>48시간)"
       },
-
+      "todaysQueue": {
+        "title": "Today's Queue",
+        "description": "Scheduled scans and same-day referrals",
+        "empty": "No scans queued today",
+        "emptyDescription": "Today's scheduled scans and same-day imaging referrals will appear here."
+      },
+      "workflowBreakdown": {
+        "title": "Workflow Breakdown",
+        "description": "Current imaging order status distribution",
+        "empty": "No workflow data",
+        "emptyDescription": "Orders will appear here once referrals are received."
+      },
+      "equipmentStatus": {
+        "title": "Equipment Status",
+        "description": "Scanner availability and utilization",
+        "empty": "No equipment registered",
+        "emptyDescription": "Register your imaging equipment to track availability and utilization."
+      },
+      "recentCompleted": {
+        "title": "Recently Completed",
+        "description": "Latest completed scans and delivered reports",
+        "empty": "No completed orders yet",
+        "emptyDescription": "Completed imaging orders will appear here."
+      },
+      "modalityBacklog": {
+        "title": "Modality Backlog",
+        "description": "Open orders by modality type",
+        "empty": "No backlog data",
+        "emptyDescription": "Open orders by modality will appear here."
+      },
+      "staffSnapshot": {
+        "title": "Staff Snapshot",
+        "description": "Active team members by role",
+        "empty": "No staff data",
+        "emptyDescription": "Your team overview will appear here."
+      },
       "recentOrders": {
         "title": "최근 영상진단 주문",
         "subtitle": "최신 영상 의뢰 및 워크플로우 상태",
         "empty": "아직 영상진단 주문이 없습니다."
       },
-
       "activity": {
         "title": "활동 피드",
         "subtitle": "최근 워크플로우 업데이트",
         "empty": "최근 활동이 없습니다."
       },
-
       "queueHealth": {
         "title": "큐 상태",
         "subtitle": "최근 영상진단 주문 요약",
@@ -116,61 +170,127 @@
         "footer": "분석 탭에서 전체 트렌드, 처리 시간, 인구 통계, 의뢰처 및 매출 지표를 확인할 수 있습니다."
       }
     },
-
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Feedback",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
     "analytics": {
       "title": "분석",
       "refresh": "새로고침",
       "export": "내보내기",
-
       "metrics": {
         "totalScans": "총 스캔 수",
         "completed": "0건 완료",
         "pending": "0건 대기 중",
         "vsPrev": "이전 대비 0%",
-
         "netRevenue": "순매출",
         "revenueDetail": "매출 ₩0 • 환불 ₩0",
-
         "avgReportTime": "평균 리포트 작성 시간",
         "avgAcceptTime": "평균 접수 시간: 0시간",
-
         "opsHealth": "운영 상태",
         "util": "가동률 0%",
         "backlog": "미처리분 0건",
         "open": "진행 가능 0건"
       },
-
       "charts": {
         "dailyTrend": "일별 트렌드",
         "trendDesc": "시간 경과에 따른 스캔 수 및 매출",
-
         "modalityMix": "촬영 방식 구성",
+        "modalityDesc": "Scan distribution by modality",
         "workflow": "워크플로우",
+        "workflowDesc": "Internal workflow breakdown",
         "referralStatus": "의뢰 상태",
+        "referralDesc": "Receiver-side status",
         "topReferrers": "주요 의뢰처",
+        "topReferrersDesc": "Who sends you the most",
         "peakHours": "피크 시간대",
+        "peakDesc": "Scan volume by hour of day",
         "patientDemographics": "환자 인구 통계",
+        "patientDesc": "Based on referred patients",
         "gender": "성별",
         "ageBuckets": "연령대",
         "turnaround": "방식별 처리 시간",
+        "turnaroundDesc": "Average report completion time",
         "revenueByModality": "촬영 방식별 매출",
-
+        "revenueByModalityDesc": "Based on recorded billing transactions (if modality metadata is available)",
         "empty": "아직 데이터가 없습니다.",
         "noRevenue": "사용 가능한 촬영 방식별 매출 데이터가 없습니다."
+      },
+      "billingAdvanced": {
+        "title": "Billing view is partially populated",
+        "description": "Some tables may be unavailable in your schema or current permissions. Core transaction analytics still loads.",
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstandingInvoices": "Outstanding Invoices",
+        "paymentHolds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage",
+        "sections": {
+          "revenueTrend": "Revenue Trend",
+          "transactionStatus": "Transaction Status Mix",
+          "transactionTypes": "Transaction Types",
+          "invoiceStatus": "Invoice Status",
+          "plans": "Subscription Plans",
+          "paymentMethods": "Payment Methods",
+          "providers": "Providers / Gateways",
+          "recentTransactions": "Recent Transactions",
+          "dailySuccess": "Daily Transaction Success",
+          "revenueTypeMix": "Revenue Type Mix"
+        },
+        "empty": "No data"
       }
     },
-
     "workflow": {
       "title": "스캔 워크플로우",
       "subtitle": "방문 주문을 생성하고 예약부터 리포트 전달까지의 스캔 과정을 관리합니다.",
       "newWalkIn": "새 방문 주문",
-      "searchPlaceholder": "환자명, 주문 번호 또는 검사명으로 검색...",
-      "empty": "스캔 내역을 찾을 수 없습니다."
+      "newOrder": "New Walk-in Order",
+      "refresh": "Refresh",
+      "search": "Search by patient, order number, or exam...",
+      "statuses": "All Statuses",
+      "empty": "스캔 내역을 찾을 수 없습니다.",
+      "searchPlaceholder": "환자명, 주문 번호 또는 검사명으로 검색..."
     },
-
+    "newOrder": {
+      "title": "New Manual Imaging Order",
+      "patient": {
+        "title": "Patient (Walk-in)",
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "phoneHint": "Enter with country code. US example: +1 415 555 2671",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)"
+      },
+      "study": {
+        "title": "Study",
+        "modality": "Modality",
+        "xray": "X-Ray",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "no": "No"
+      },
+      "schedule": {
+        "title": "Scheduling & Notes",
+        "priority": "Priority",
+        "routine": "Routine",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Imaging Order"
+      }
+    },
     "orderForm": {
       "title": "새 수동 영상진단 주문",
-
       "fields": {
         "fullName": "성명 *",
         "phone": "전화번호 *",
@@ -186,7 +306,6 @@
         "reason": "사유 (선택 사항)",
         "clinicalNotes": "임상 소견 (선택 사항)"
       },
-
       "placeholders": {
         "phone": "+82 10 1234 5678",
         "email": "email@example.com",
@@ -197,18 +316,28 @@
         "reference": "INV-1029",
         "notes": "항목에 대한 메모..."
       },
-
       "actions": {
         "cancel": "취소",
         "submit": "영상진단 주문 생성"
       }
     },
-
     "reports": {
       "search": "리포트 검색...",
+      "all": "All Reports",
       "allReports": "모든 리포트",
+      "refresh": "Refresh",
+      "export": "Export",
       "empty": "리포트를 찾을 수 없습니다.",
-
+      "table": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions",
+        "empty": "No reports found"
+      },
       "columns": {
         "order": "주문",
         "patient": "환자",
@@ -217,22 +346,57 @@
         "status": "상태",
         "radiologist": "영상의학 전문의",
         "actions": "작업"
+      },
+      "stats": {
+        "pending": "Pending",
+        "drafts": "Drafts",
+        "finalized": "Finalized",
+        "critical": "Critical"
       }
     },
-
     "equipment": {
       "title": "장비",
       "subtitle": "스캐너 관리 및 가동 능력 (저장소 동기화 중...)",
       "search": "장비 검색...",
+      "refresh": "Refresh",
+      "add": "Add",
       "empty": "장비를 찾을 수 없습니다.",
-
+      "capacity": "Capacity",
+      "day": "day",
+      "util": "util",
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "offline": "Offline",
+        "retired": "Retired"
+      },
+      "table": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day",
+        "actions": "Actions",
+        "empty": "No equipment found"
+      },
       "columns": {
         "name": "장비명",
         "modality": "방식",
         "status": "상태",
         "capacity": "일일 처리 용량"
       },
-
+      "modal": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
       "form": {
         "title": "장비 추가",
         "name": "장비명",
@@ -245,11 +409,69 @@
         "scanTypes": "스캔 유형 (쉼표로 구분)"
       }
     },
-
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports.",
+      "common": {
+        "from": "From",
+        "to": "To",
+        "type": "Type",
+        "category": "Category",
+        "all": "All",
+        "refresh": "Refresh",
+        "search": "Search",
+        "export": "Export CSV"
+      },
+      "staffCompensation": {
+        "title": "Staff Compensation",
+        "add": "Add Profile",
+        "empty": "No compensation profiles yet. Add salary, hourly, or percentage-based pay for your staff."
+      },
+      "recurring": {
+        "title": "Recurring",
+        "addRule": "Add rule",
+        "status": "Status",
+        "noDue": "no due rules",
+        "noRuns": "No previous runs",
+        "runDue": "Run due rules",
+        "runNow": "Run due now",
+        "description": "Running creates finance entries for all rules with next_run_date ≤ selected date (catch-up supported).",
+        "empty": "No recurring rules yet."
+      },
+      "ledger": {
+        "title": "Ledger",
+        "entries": "Entries",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "addEntry": "Add entry",
+        "manual": "Manual",
+        "date": "Date",
+        "currency": "Currency",
+        "amount": "Amount",
+        "reference": "Reference (optional)",
+        "description": "Description (optional)",
+        "empty": "No entries found for this filter.",
+        "note": "Note: this list shows up to 200 entries per filter."
+      },
+      "compensationModal": {
+        "title": "Add Compensation Profile",
+        "staff": "Staff Member",
+        "select": "Select staff member…",
+        "type": "Compensation Type",
+        "salary": "Fixed Salary",
+        "amount": "Amount ($)",
+        "period": "Period",
+        "monthly": "Monthly",
+        "frequency": "Payout Frequency",
+        "notes": "Notes (optional)",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
     "billing": {
       "partial": "청구 보기가 부분적으로 로드되었습니다.",
       "warning": "스키마나 현재 권한으로 인해 일부 테이블을 사용할 수 없을 수 있습니다.",
-
       "metrics": {
         "processedRevenue": "처리된 매출",
         "transactions": "거래 건수",
@@ -260,7 +482,6 @@
         "subscriptions": "활성 구독",
         "risk": "리스크 / 매출 손실"
       },
-
       "charts": {
         "revenueTrend": "매출 트렌드",
         "statusMix": "거래 상태 구성",
@@ -274,13 +495,98 @@
         "revenueType": "매출 유형 구성"
       }
     },
-
+    "referrals": {
+      "title": "Referrals",
+      "new": "New Referral",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      },
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      }
+    },
+    "staff": {
+      "active": {
+        "title": "Active Staff Management",
+        "subtitle": "Edit roles and permissions, deactivate staff, or remove access.",
+        "search": "Search staff...",
+        "refresh": "Refresh",
+        "empty": "No active staff found."
+      },
+      "total": "total",
+      "stats": {
+        "active": "Active Staff",
+        "pending": "Pending Invitations",
+        "inactive": "Inactive / Disabled",
+        "admins": "Admins / Managers"
+      },
+      "invite": {
+        "title": "Invite Imaging Staff",
+        "subtitle": "Invite radiologists, technologists, billing, and front-desk team members with pre-configured permissions.",
+        "email": "Email",
+        "role": "Role",
+        "technologist": "Technologist",
+        "send": "Send Invite",
+        "preset": "Permission Preset"
+      },
+      "pending": {
+        "title": "Pending Invitations",
+        "subtitle": "Resend or cancel pending staff invitations before activation.",
+        "empty": "No pending invitations."
+      },
+      "audit": {
+        "title": "Staff Audit Trail",
+        "subtitle": "Recent staff and invitation activity for accountability.",
+        "empty": "No staff audit activity found."
+      },
+      "roles": {
+        "frontDesk": {
+          "title": "Front Desk / Reception",
+          "desc": "Intake, scheduling, check-in, referral verification, and queue balancing."
+        },
+        "technologist": {
+          "title": "Technologist",
+          "desc": "Scan execution, protocol adherence, patient preparation, and image quality capture."
+        },
+        "radiologist": {
+          "title": "Radiologist",
+          "desc": "Reporting, clinical review, critical findings workflows, and final sign-off."
+        },
+        "billing": {
+          "title": "Billing / Admin",
+          "desc": "Claims, invoices, payment reconciliation, and operational performance follow-up."
+        }
+      }
+    },
     "verify": {
       "title": "문서 검증",
+      "description": "Verify the authenticity of any Docito document — treatment plans, referrals, prescriptions, and patient profiles.",
       "input": "검증 코드 입력 또는 스캔",
       "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
       "verify": "확인",
+      "types": {
+        "tp": "TP - Treatment Plan",
+        "rf": "RF - Referral",
+        "rx": "RX - Prescription",
+        "pt": "PT - Patient Profile"
+      },
       "scan": "대신 QR 코드 스캔"
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": {
+        "title": "Imaging Center Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
     }
   }
 }

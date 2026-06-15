@@ -4,7 +4,11 @@
     "description": "Docito® para farmacias unifica la recepción de e-recetas, inventario y dispensación, automatización de reposiciones, notificaciones a pacientes, coordinación de entregas y cumplimiento auditable—conectando de forma segura farmacias con médicos, clínicas, pacientes, laboratorios y aseguradoras.",
     "keywords": "sistema de gestión de farmacias, plataforma de receta electrónica, software de dispensación, inventario de farmacia, automatización de reposiciones, coordinación de entrega de medicamentos, verificación de seguro, flujo de reclamaciones, software compatible con HIPAA, SaaS sanitario multilingüe"
   },
-  "nav": { "backToHome": "Volver a Docito", "signIn": "Iniciar sesión", "getStarted": "Empezar" },
+  "nav": {
+    "backToHome": "Volver a Docito",
+    "signIn": "Iniciar sesión",
+    "getStarted": "Empezar"
+  },
   "hero": {
     "badge": "Operaciones de farmacia, unificadas",
     "title1": "Gestión Moderna",
@@ -18,10 +22,22 @@
     "title": "Diseñado para farmacias de alto volumen",
     "subtitle": "Velocidad, seguridad y trazabilidad—sin sobrecarga manual",
     "cards": {
-      "rx": { "label": "Recetas procesadas", "value": "25K+" },
-      "refills": { "label": "Reposiciones más rápidas", "value": "Hasta 50%" },
-      "stock": { "label": "Menos quiebres de stock", "value": "Hasta 35%" },
-      "coverage": { "label": "Cobertura entre entidades", "value": "Médicos • Clínicas • Pacientes" }
+      "rx": {
+        "label": "Recetas procesadas",
+        "value": "25K+"
+      },
+      "refills": {
+        "label": "Reposiciones más rápidas",
+        "value": "Hasta 50%"
+      },
+      "stock": {
+        "label": "Menos quiebres de stock",
+        "value": "Hasta 35%"
+      },
+      "coverage": {
+        "label": "Cobertura entre entidades",
+        "value": "Médicos • Clínicas • Pacientes"
+      }
     }
   },
   "problems": {
@@ -29,12 +45,30 @@
     "title": "De cuellos de botella a confiabilidad",
     "subtitle": "Docito® simplifica la operación farmacéutica en un flujo único, seguro y auditable.",
     "items": {
-      "manualRx": { "problem": "Recepción manual de recetas y aclaraciones repetidas", "solution": "Recepción estructurada de e-recetas con validación y estado" },
-      "refillChaos": { "problem": "Solicitudes de reposición dispersas en llamadas y mensajes", "solution": "Flujos de reposición con aprobaciones, recordatorios y notificaciones" },
-      "inventoryBlind": { "problem": "Puntos ciegos de inventario y faltantes", "solution": "Inventario con umbrales, alertas y pronóstico" },
-      "deliveryGaps": { "problem": "Brechas en coordinación de entrega y traspasos perdidos", "solution": "Programación, seguimiento y actualizaciones al paciente" },
-      "insuranceFriction": { "problem": "Fricción en verificación y reclamaciones", "solution": "Verificación de cobertura y flujos listos para reclamación" },
-      "complianceRisk": { "problem": "Riesgo de cumplimiento y control de acceso poco claro", "solution": "RBAC + auditoría (HIPAA/GDPR-ready)" }
+      "manualRx": {
+        "problem": "Recepción manual de recetas y aclaraciones repetidas",
+        "solution": "Recepción estructurada de e-recetas con validación y estado"
+      },
+      "refillChaos": {
+        "problem": "Solicitudes de reposición dispersas en llamadas y mensajes",
+        "solution": "Flujos de reposición con aprobaciones, recordatorios y notificaciones"
+      },
+      "inventoryBlind": {
+        "problem": "Puntos ciegos de inventario y faltantes",
+        "solution": "Inventario con umbrales, alertas y pronóstico"
+      },
+      "deliveryGaps": {
+        "problem": "Brechas en coordinación de entrega y traspasos perdidos",
+        "solution": "Programación, seguimiento y actualizaciones al paciente"
+      },
+      "insuranceFriction": {
+        "problem": "Fricción en verificación y reclamaciones",
+        "solution": "Verificación de cobertura y flujos listos para reclamación"
+      },
+      "complianceRisk": {
+        "problem": "Riesgo de cumplimiento y control de acceso poco claro",
+        "solution": "RBAC + auditoría (HIPAA/GDPR-ready)"
+      }
     }
   },
   "features": {
@@ -42,12 +76,30 @@
     "title": "Todo lo que una farmacia moderna necesita",
     "subtitle": "E-recetas, dispensación, inventario, colaboración y reportes—seguro por diseño.",
     "items": {
-      "eprescriptions": { "title": "Recepción de e-recetas y estado", "description": "Reciba recetas digitales de médicos y clínicas, reduzca ambigüedad y rastree cada orden end-to-end." },
-      "dispensing": { "title": "Flujos de dispensación y preparación", "description": "Estandarice pasos con estados claros, traspasos y responsabilidad para operar con mayor seguridad." },
-      "inventory": { "title": "Inventario y gestión de stock", "description": "Gestione stock con umbrales, alertas y visibilidad por ubicaciones para reducir faltantes y desperdicio." },
-      "refills": { "title": "Automatización de reposiciones", "description": "Automatice recordatorios, aprobaciones y notificaciones para reducir llamadas y demoras." },
-      "delivery": { "title": "Coordinación de entrega y retiro", "description": "Coordine ventanas de retiro y slots de entrega con seguimiento para pacientes y equipo." },
-      "analytics": { "title": "Analítica de farmacia", "description": "Monitoree volumen, turnaround, reposiciones, salud de stock y eficiencia con métricas listas para tablero." }
+      "eprescriptions": {
+        "title": "Recepción de e-recetas y estado",
+        "description": "Reciba recetas digitales de médicos y clínicas, reduzca ambigüedad y rastree cada orden end-to-end."
+      },
+      "dispensing": {
+        "title": "Flujos de dispensación y preparación",
+        "description": "Estandarice pasos con estados claros, traspasos y responsabilidad para operar con mayor seguridad."
+      },
+      "inventory": {
+        "title": "Inventario y gestión de stock",
+        "description": "Gestione stock con umbrales, alertas y visibilidad por ubicaciones para reducir faltantes y desperdicio."
+      },
+      "refills": {
+        "title": "Automatización de reposiciones",
+        "description": "Automatice recordatorios, aprobaciones y notificaciones para reducir llamadas y demoras."
+      },
+      "delivery": {
+        "title": "Coordinación de entrega y retiro",
+        "description": "Coordine ventanas de retiro y slots de entrega con seguimiento para pacientes y equipo."
+      },
+      "analytics": {
+        "title": "Analítica de farmacia",
+        "description": "Monitoree volumen, turnaround, reposiciones, salud de stock y eficiencia con métricas listas para tablero."
+      }
     }
   },
   "howItWorks": {
@@ -55,10 +107,22 @@
     "title": "Cómo funciona",
     "subtitle": "Un flujo claro que conecta farmacias con todo el ecosistema Docito®.",
     "steps": {
-      "step1": { "title": "Recibir recetas", "description": "Médicos y clínicas envían e-recetas de forma segura con detalles estructurados." },
-      "step2": { "title": "Verificar y preparar", "description": "Revise disponibilidad y cobertura, luego prepare la dispensación con traspasos internos claros." },
-      "step3": { "title": "Dispensar y rastrear", "description": "Complete pasos con auditoría, marcas de tiempo y estados para trazabilidad." },
-      "step4": { "title": "Entregar o retirar", "description": "Coordine entrega o retiro y notifique al paciente cuando el pedido esté listo." }
+      "step1": {
+        "title": "Recibir recetas",
+        "description": "Médicos y clínicas envían e-recetas de forma segura con detalles estructurados."
+      },
+      "step2": {
+        "title": "Verificar y preparar",
+        "description": "Revise disponibilidad y cobertura, luego prepare la dispensación con traspasos internos claros."
+      },
+      "step3": {
+        "title": "Dispensar y rastrear",
+        "description": "Complete pasos con auditoría, marcas de tiempo y estados para trazabilidad."
+      },
+      "step4": {
+        "title": "Entregar o retirar",
+        "description": "Coordine entrega o retiro y notifique al paciente cuando el pedido esté listo."
+      }
     }
   },
   "integrations": {
@@ -66,10 +130,22 @@
     "title": "Creado para todo el ecosistema de salud",
     "subtitle": "Las farmacias no operan solas—Docito® conecta recetas, citas, registros, laboratorios y seguro.",
     "items": {
-      "doctors": { "title": "Médicos", "description": "Reciba e-recetas y aclaraciones con contexto clínico estructurado." },
-      "clinics": { "title": "Clínicas", "description": "Coordine flujos multi-proveedor, seguimientos y comunicación con pacientes." },
-      "patients": { "title": "Pacientes", "description": "Brinde actualizaciones seguras de entrega/retiro y acceso a archivos relacionados." },
-      "insurance": { "title": "Aseguradoras", "description": "Soporte para verificación de cobertura y flujos listos para reclamación por receta." }
+      "doctors": {
+        "title": "Médicos",
+        "description": "Reciba e-recetas y aclaraciones con contexto clínico estructurado."
+      },
+      "clinics": {
+        "title": "Clínicas",
+        "description": "Coordine flujos multi-proveedor, seguimientos y comunicación con pacientes."
+      },
+      "patients": {
+        "title": "Pacientes",
+        "description": "Brinde actualizaciones seguras de entrega/retiro y acceso a archivos relacionados."
+      },
+      "insurance": {
+        "title": "Aseguradoras",
+        "description": "Soporte para verificación de cobertura y flujos listos para reclamación por receta."
+      }
     }
   },
   "cta": {

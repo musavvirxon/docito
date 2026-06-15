@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "헬스케어 네트워크",
-    "title": {
-      "line1": "하나의 네트워크, 하나의 환자 여정",
-      "line2": "진료가 처음부터 끝까지 연결됩니다"
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "의사, 클리닉, 검사실, 영상센터, 약국을 하나로 연결해 장소가 바뀌어도 진료가 끊기지 않게 합니다.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "14일 무료로 시작",
       "secondary": "플랫폼 둘러보기"
     },
-    "finePrint": "14일 무료 • 카드 불필요 • 언제든 취소"
+    "finePrint": "14일 무료 • 카드 불필요 • 언제든 취소",
+    "title": {
+      "line1": "하나의 네트워크, 하나의 환자 여정",
+      "line2": "진료가 처음부터 끝까지 연결됩니다"
+    },
+    "subtitle": "의사, 클리닉, 검사실, 영상센터, 약국을 하나로 연결해 장소가 바뀌어도 진료가 끊기지 않게 합니다."
   },
   "search": {
     "badge": "진료 찾기",

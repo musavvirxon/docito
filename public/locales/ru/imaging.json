@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "Врачи", "description": "" },
-      "clinics": { "title": "Клиники", "description": "" },
-      "labs": { "title": "Лаборатории", "description": "" },
-      "pharmacies": { "title": "Аптеки", "description": "" },
-      "insurance": { "title": "Страховые", "description": "" },
-      "patients": { "title": "Пациенты", "description": "" }
+      "doctors": {
+        "title": "Врачи",
+        "description": ""
+      },
+      "clinics": {
+        "title": "Клиники",
+        "description": ""
+      },
+      "labs": {
+        "title": "Лаборатории",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "Аптеки",
+        "description": ""
+      },
+      "insurance": {
+        "title": "Страховые",
+        "description": ""
+      },
+      "patients": {
+        "title": "Пациенты",
+        "description": ""
+      }
     }
   },
   "ecosystem": {

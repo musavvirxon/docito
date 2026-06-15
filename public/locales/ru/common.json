@@ -101,8 +101,13 @@
   "actions": {
     "save": "Сохранить",
     "share": "Поделиться",
-    "copied": "Скопировано!"
+    "copied": "Скопировано!",
+    "browse": "Browse all doctors",
+    "showLess": "Show less",
+    "readMore": "Read more",
+    "back": "Back"
   },
+  "today": "Today",
   "errors": {
     "notFound": "Не найдено",
     "error": "Ошибка",
@@ -132,5 +137,27 @@
       "closeMenu": "Закрыть меню",
       "openMenu": "Открыть меню"
     }
+  },
+  "billing": {
+    "title": "Billing",
+    "manageDescription": "Manage subscription, invoices, and payments.",
+    "manageClinicDescription": "Manage subscription, plans, and invoices for this clinic.",
+    "refresh": "Refresh",
+    "openPortal": "Open Billing Portal",
+    "plans": "Plans",
+    "choose": "Choose {{name}}",
+    "invoices": "Invoices",
+    "noInvoices": "No invoices yet.",
+    "view": "View",
+    "pdf": "PDF",
+    "downloadPdf": "Download PDF",
+    "created": "Created",
+    "due": "Due",
+    "paid": "Paid",
+    "nextInvoice": "Next invoice",
+    "paymentSuccess": "Payment completed. Your subscription will update shortly.",
+    "paymentCanceled": "Checkout canceled.",
+    "downloadFailed": "Failed to download invoice PDF",
+    "none": "None"
   }
 }

@@ -22,10 +22,22 @@
     "title": "Feito para laboratórios de alto volume",
     "subtitle": "Visibilidade, auditabilidade e performance — sem sobrecarga manual",
     "cards": {
-      "orders": { "label": "Pedidos gerenciados", "value": "10K+" },
-      "turnaround": { "label": "TAT mais rápido", "value": "Até 40%" },
-      "accuracy": { "label": "Menos erros", "value": "Até 60%" },
-      "coverage": { "label": "Cobertura entre entidades", "value": "Médicos • Clínicas • Pacientes" }
+      "orders": {
+        "label": "Pedidos gerenciados",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "TAT mais rápido",
+        "value": "Até 40%"
+      },
+      "accuracy": {
+        "label": "Menos erros",
+        "value": "Até 60%"
+      },
+      "coverage": {
+        "label": "Cobertura entre entidades",
+        "value": "Médicos • Clínicas • Pacientes"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "Feito para todo o ecossistema de saúde",
     "subtitle": "Laboratórios não operam sozinhos — Docito® conecta encaminhamentos, consultas, registros e relatórios.",
     "items": {
-      "doctors": { "title": "Médicos", "description": "Receba pedidos e devolva resultados com contexto clínico estruturado." },
-      "clinics": { "title": "Clínicas", "description": "Coordene encaminhamentos, agendamento e fluxos multi-prestador." },
-      "patients": { "title": "Pacientes", "description": "Ofereça acesso seguro a resultados e arquivos relacionados à visita." },
-      "insurance": { "title": "Seguradoras", "description": "Apoie verificação de cobertura e vínculo entre pedidos e apólices." }
+      "doctors": {
+        "title": "Médicos",
+        "description": "Receba pedidos e devolva resultados com contexto clínico estruturado."
+      },
+      "clinics": {
+        "title": "Clínicas",
+        "description": "Coordene encaminhamentos, agendamento e fluxos multi-prestador."
+      },
+      "patients": {
+        "title": "Pacientes",
+        "description": "Ofereça acesso seguro a resultados e arquivos relacionados à visita."
+      },
+      "insurance": {
+        "title": "Seguradoras",
+        "description": "Apoie verificação de cobertura e vínculo entre pedidos e apólices."
+      }
     }
   },
   "cta": {

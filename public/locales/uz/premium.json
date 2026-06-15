@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "Barcha tibbiy xizmatlar — bir ritmda",
-    "title": {
-      "line1": "Kamroq byurokratiya. Ko‘proq parvarish.",
-      "line2": "Butun tizimingiz uchun bitta platforma."
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Docito yozilish, tibbiy yozuvlar, laboratoriya, tasvirlash, retseptlar va to‘lovlarni bitta bemor yo‘liga birlashtiradi — klinikalar va bemorlar uchun.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "14 kun bepul sinovni boshlash",
       "secondary": "Qanday ishlaydi"
     },
-    "finePrint": "14 kun bepul • Karta kerak emas • Istalgan payt bekor qilish"
+    "finePrint": "14 kun bepul • Karta kerak emas • Istalgan payt bekor qilish",
+    "title": {
+      "line1": "Kamroq byurokratiya. Ko‘proq parvarish.",
+      "line2": "Butun tizimingiz uchun bitta platforma."
+    },
+    "subtitle": "Docito yozilish, tibbiy yozuvlar, laboratoriya, tasvirlash, retseptlar va to‘lovlarni bitta bemor yo‘liga birlashtiradi — klinikalar va bemorlar uchun."
   },
   "search": {
     "badge": "Aqlli qidiruv",

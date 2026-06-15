@@ -20,12 +20,6 @@
     "urgentCare": "رعاية عاجلة",
     "medicalCenter": "مركز طبي"
   },
-  "card": {
-    "locationAvailable": "الموقع متاح",
-    "reviews": "تقييمات",
-    "visitWebsite": "زيارة الموقع",
-    "viewPractice": "عرض العيادة"
-  },
   "providers": {
     "header": "لمقدمي الخدمة",
     "nav": {
@@ -165,5 +159,11 @@
       },
       "copyright": "© {{year}} Docito, Inc. جميع الحقوق محفوظة."
     }
+  },
+  "card": {
+    "locationAvailable": "الموقع متاح",
+    "reviews": "تقييمات",
+    "visitWebsite": "زيارة الموقع",
+    "viewPractice": "عرض العيادة"
   }
 }

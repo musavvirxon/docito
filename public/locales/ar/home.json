@@ -225,6 +225,15 @@
       "cookies": "Cookies",
       "about": "حول",
       "features": "الميزات",
+      "findDoctors": "Find Doctors",
+      "searchDoctors": "Search Doctors",
+      "specialties": "Specialties",
+      "howItWorks": "How It Works",
+      "helpCenter": "Help Center",
+      "contact": "Contact",
+      "faqs": "FAQs",
+      "support": "Support",
+      "hipaa": "HIPAA",
       "refundPolicy": "سياسة الاسترداد"
     }
   },

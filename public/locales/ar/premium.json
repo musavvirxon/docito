@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "كل رعايتك الصحية، بتناغم",
-    "title": {
-      "line1": "إدارة أقل. رعاية أكثر.",
-      "line2": "منصة واحدة للنظام الصحي بالكامل."
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Docito يربط المواعيد والسجلات والمختبرات والتصوير والوصفات والمدفوعات في رحلة مريض واحدة — للعيادات والمرضى.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "ابدأ تجربة مجانية لمدة 14 يومًا",
       "secondary": "شاهد كيف تعمل"
     },
-    "finePrint": "14 يومًا مجانًا • بدون بطاقة • إلغاء في أي وقت"
+    "finePrint": "14 يومًا مجانًا • بدون بطاقة • إلغاء في أي وقت",
+    "title": {
+      "line1": "إدارة أقل. رعاية أكثر.",
+      "line2": "منصة واحدة للنظام الصحي بالكامل."
+    },
+    "subtitle": "Docito يربط المواعيد والسجلات والمختبرات والتصوير والوصفات والمدفوعات في رحلة مريض واحدة — للعيادات والمرضى."
   },
   "search": {
     "badge": "بحث ذكي",

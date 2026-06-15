@@ -21,5 +21,23 @@
     "deletedSuccessfully": "تم الحذف بنجاح",
     "errorOccurred": "حدث خطأ. يرجى المحاولة مرة أخرى.",
     "changesDiscarded": "تم تجاهل التغييرات"
+  },
+  "appointmentSession": {
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No Show"
+    },
+    "actions": {
+      "startSession": "Start Session",
+      "endSession": "End Session",
+      "joinCall": "Join Call",
+      "reschedule": "Reschedule",
+      "markNoShow": "Mark as No-Show",
+      "confirmAppointment": "Confirm Appointment"
+    }
   }
 }

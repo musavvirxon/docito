@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "Rede de Saúde",
-    "title": {
-      "line1": "Uma rede, uma jornada do paciente",
-      "line2": "O cuidado fica conectado de ponta a ponta"
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Médicos, clínicas, laboratórios, centros de imagem e farmácias—conectados para que o cuidado não se perca entre lugares.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "Começar teste grátis de 14 dias",
       "secondary": "Explorar plataforma"
     },
-    "finePrint": "Teste grátis de 14 dias • Sem cartão • Cancele a qualquer momento"
+    "finePrint": "Teste grátis de 14 dias • Sem cartão • Cancele a qualquer momento",
+    "title": {
+      "line1": "Uma rede, uma jornada do paciente",
+      "line2": "O cuidado fica conectado de ponta a ponta"
+    },
+    "subtitle": "Médicos, clínicas, laboratórios, centros de imagem e farmácias—conectados para que o cuidado não se perca entre lugares."
   },
   "search": {
     "badge": "Encontrar cuidado",

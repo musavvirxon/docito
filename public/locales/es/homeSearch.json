@@ -1,4 +1,3 @@
-
 {
   "search": {
     "voiceSearch": "Búsqueda por voz",
@@ -9,12 +8,30 @@
     "aiHintTerm": "cardiologist",
     "resultsLoading": "Cargando resultados...",
     "trendingSearches": [
-      { "label": "Médico general", "term": "General Practitioner" },
-      { "label": "Dentista", "term": "Dentist" },
-      { "label": "Examen de la vista", "term": "Eye Exam" },
-      { "label": "Análisis de sangre", "term": "Blood Test" },
-      { "label": "Cardiología", "term": "Cardiology" },
-      { "label": "Dermatología", "term": "Dermatology" }
+      {
+        "label": "Médico general",
+        "term": "General Practitioner"
+      },
+      {
+        "label": "Dentista",
+        "term": "Dentist"
+      },
+      {
+        "label": "Examen de la vista",
+        "term": "Eye Exam"
+      },
+      {
+        "label": "Análisis de sangre",
+        "term": "Blood Test"
+      },
+      {
+        "label": "Cardiología",
+        "term": "Cardiology"
+      },
+      {
+        "label": "Dermatología",
+        "term": "Dermatology"
+      }
     ]
   }
 }

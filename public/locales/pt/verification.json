@@ -13,12 +13,24 @@
     "sourceVerificationRequired": "Pode exigir verificação de origem pelo órgão regulador ou empregador"
   },
   "ruleSets": {
-    "GLOBAL_BASE": { "name": "Verificação básica global" },
-    "REGULATOR_GOOD_STANDING_REQUIRED": { "name": "Certificado de boa conduta do regulador" },
-    "TRANSLATION_REQUIRED": { "name": "Tradução certificada" },
-    "BACKGROUND_CHECK_REQUIRED": { "name": "Verificação de antecedentes" },
-    "LANGUAGE_PROFICIENCY_REQUIRED": { "name": "Proficiência no idioma" },
-    "US_CONTROLLED_SUBSTANCES_OPTIONAL": { "name": "Substâncias controladas (EUA)" }
+    "GLOBAL_BASE": {
+      "name": "Verificação básica global"
+    },
+    "REGULATOR_GOOD_STANDING_REQUIRED": {
+      "name": "Certificado de boa conduta do regulador"
+    },
+    "TRANSLATION_REQUIRED": {
+      "name": "Tradução certificada"
+    },
+    "BACKGROUND_CHECK_REQUIRED": {
+      "name": "Verificação de antecedentes"
+    },
+    "LANGUAGE_PROFICIENCY_REQUIRED": {
+      "name": "Proficiência no idioma"
+    },
+    "US_CONTROLLED_SUBSTANCES_OPTIONAL": {
+      "name": "Substâncias controladas (EUA)"
+    }
   },
   "notes": {
     "ID_PRIMARY": "Forneça um passaporte válido ou documento de identidade nacional.",
@@ -37,27 +49,93 @@
     "EPCS_OPTIONAL": "Exigido para prescrição eletrônica de substâncias controladas em alguns estados."
   },
   "docTypes": {
-    "ID_NATIONAL": { "title": "Documento de identidade", "desc": "ID emitido pelo governo (frente/verso se aplicável)." },
-    "PASSPORT": { "title": "Passaporte", "desc": "Página do passaporte com foto." },
-    "SELFIE_LIVENESS": { "title": "Selfie / prova de vida", "desc": "Selfie nítida para corresponder ao seu documento." },
-    "PROOF_ADDRESS": { "title": "Comprovante de endereço", "desc": "Conta de serviços, extrato bancário ou carta oficial." },
-    "MED_LICENSE": { "title": "Licença profissional", "desc": "Sua licença/registro profissional válido." },
-    "LICENSE_VERIFICATION": { "title": "Verificação de licença", "desc": "Evidência ou link de verificação, se disponível." },
-    "DEGREE_DIPLOMA": { "title": "Diploma", "desc": "Diploma principal de medicina/odontologia." },
-    "INTERNSHIP_CERT": { "title": "Certificado de internato", "desc": "Se aplicável na sua jurisdição." },
-    "RESIDENCY_CERT": { "title": "Certificado de residência", "desc": "Se aplicável à sua especialidade." },
-    "SPECIALIST_CERT": { "title": "Certificado de especialista", "desc": "Certificado/registro de especialidade (se aplicável)." },
-    "GOOD_STANDING": { "title": "Certificado de boa conduta", "desc": "Emitido pelo regulador; geralmente com validade limitada." },
-    "CV": { "title": "CV / Currículo", "desc": "Seu CV profissional recente." },
-    "EMPLOYMENT_LETTER": { "title": "Carta de emprego / afiliação", "desc": "Comprova vínculo com clínica/hospital (se aplicável)." },
-    "MALPRACTICE_INSURANCE": { "title": "Seguro de responsabilidade profissional", "desc": "Certificado de seguro (se exigido)." },
-    "CRIMINAL_RECORD_CHECK": { "title": "Antecedentes criminais", "desc": "Certidão/verificação de antecedentes (se exigido)." },
-    "LANGUAGE_CERT": { "title": "Certificado de idioma", "desc": "Comprovação de proficiência (se exigido)." },
-    "LICENSE_TRANSLATION": { "title": "Tradução certificada", "desc": "Tradução certificada de licença/diplomas." },
-    "LEGALIZATION_APOSTILLE": { "title": "Apostila / legalização", "desc": "Legalização ou apostila, se exigido." },
-    "WORK_PERMIT": { "title": "Permissão de trabalho / residência", "desc": "Se você é médico estrangeiro atuando localmente." },
-    "DEA_REGISTRATION": { "title": "Registro DEA", "desc": "EUA: registro DEA para substâncias controladas." },
-    "EPCS_ENABLEMENT": { "title": "Habilitação EPCS", "desc": "EUA: prescrição eletrônica de substâncias controladas." },
-    "PDMP_CHECK": { "title": "Integração PDMP", "desc": "EUA: programa de monitoramento de prescrições (nível de sistema)." }
+    "ID_NATIONAL": {
+      "title": "Documento de identidade",
+      "desc": "ID emitido pelo governo (frente/verso se aplicável)."
+    },
+    "PASSPORT": {
+      "title": "Passaporte",
+      "desc": "Página do passaporte com foto."
+    },
+    "SELFIE_LIVENESS": {
+      "title": "Selfie / prova de vida",
+      "desc": "Selfie nítida para corresponder ao seu documento."
+    },
+    "PROOF_ADDRESS": {
+      "title": "Comprovante de endereço",
+      "desc": "Conta de serviços, extrato bancário ou carta oficial."
+    },
+    "MED_LICENSE": {
+      "title": "Licença profissional",
+      "desc": "Sua licença/registro profissional válido."
+    },
+    "LICENSE_VERIFICATION": {
+      "title": "Verificação de licença",
+      "desc": "Evidência ou link de verificação, se disponível."
+    },
+    "DEGREE_DIPLOMA": {
+      "title": "Diploma",
+      "desc": "Diploma principal de medicina/odontologia."
+    },
+    "INTERNSHIP_CERT": {
+      "title": "Certificado de internato",
+      "desc": "Se aplicável na sua jurisdição."
+    },
+    "RESIDENCY_CERT": {
+      "title": "Certificado de residência",
+      "desc": "Se aplicável à sua especialidade."
+    },
+    "SPECIALIST_CERT": {
+      "title": "Certificado de especialista",
+      "desc": "Certificado/registro de especialidade (se aplicável)."
+    },
+    "GOOD_STANDING": {
+      "title": "Certificado de boa conduta",
+      "desc": "Emitido pelo regulador; geralmente com validade limitada."
+    },
+    "CV": {
+      "title": "CV / Currículo",
+      "desc": "Seu CV profissional recente."
+    },
+    "EMPLOYMENT_LETTER": {
+      "title": "Carta de emprego / afiliação",
+      "desc": "Comprova vínculo com clínica/hospital (se aplicável)."
+    },
+    "MALPRACTICE_INSURANCE": {
+      "title": "Seguro de responsabilidade profissional",
+      "desc": "Certificado de seguro (se exigido)."
+    },
+    "CRIMINAL_RECORD_CHECK": {
+      "title": "Antecedentes criminais",
+      "desc": "Certidão/verificação de antecedentes (se exigido)."
+    },
+    "LANGUAGE_CERT": {
+      "title": "Certificado de idioma",
+      "desc": "Comprovação de proficiência (se exigido)."
+    },
+    "LICENSE_TRANSLATION": {
+      "title": "Tradução certificada",
+      "desc": "Tradução certificada de licença/diplomas."
+    },
+    "LEGALIZATION_APOSTILLE": {
+      "title": "Apostila / legalização",
+      "desc": "Legalização ou apostila, se exigido."
+    },
+    "WORK_PERMIT": {
+      "title": "Permissão de trabalho / residência",
+      "desc": "Se você é médico estrangeiro atuando localmente."
+    },
+    "DEA_REGISTRATION": {
+      "title": "Registro DEA",
+      "desc": "EUA: registro DEA para substâncias controladas."
+    },
+    "EPCS_ENABLEMENT": {
+      "title": "Habilitação EPCS",
+      "desc": "EUA: prescrição eletrônica de substâncias controladas."
+    },
+    "PDMP_CHECK": {
+      "title": "Integração PDMP",
+      "desc": "EUA: programa de monitoramento de prescrições (nível de sistema)."
+    }
   }
 }

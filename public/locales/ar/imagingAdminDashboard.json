@@ -13,13 +13,11 @@
       "verifyDocuments": "التحقق من المستندات",
       "settings": "الإعدادات"
     },
-
     "header": {
       "title": "لوحة تحكم طاقم التصوير",
       "subtitle": "الطلبات، سير عمل الفحص، والتحليلات المستخرجة من Supabase",
       "refresh": "تحديث"
     },
-
     "common": {
       "refresh": "تحديث",
       "export": "تصدير",
@@ -42,14 +40,12 @@
       "noCenterDescription": "ليس لديك مركز تصوير مرتبط بحسابك.",
       "registerCenter": "تسجيل مركز تصوير"
     },
-
     "numbers": {
       "zero": "٠",
       "zeroPercent": "٠٪",
       "zeroCurrency": "٠.٠٠ $",
       "zeroHours": "٠ ساعة"
     },
-
     "statuses": {
       "pending": "قيد الانتظار",
       "scheduled": "مجدول",
@@ -59,9 +55,10 @@
       "finalized": "نهائي",
       "critical": "حرج",
       "cancelled": "ملغى",
-      "processing": "جاري المعالجة"
+      "processing": "جاري المعالجة",
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification"
     },
-
     "time": {
       "last30Days": "آخر ٣٠ يوماً",
       "last90Days": "آخر ٩٠ يوماً",
@@ -84,18 +81,34 @@
         "٢٣:٠٠"
       ]
     },
-
     "overview": {
       "title": "نظرة عامة",
+      "description": "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.",
       "analytics": "التحليلات",
-
       "stats": {
         "totalOrders": "إجمالي الطلبات",
         "pendingScheduled": "قيد الانتظار / مجدول",
+        "scheduledToday": "Scheduled Today",
+        "scheduledTodayDesc": "Scans scheduled for today",
         "inProgress": "قيد التنفيذ",
-        "completed": "مكتمل"
+        "inProgressDesc": "Checked-in + active workflow",
+        "pendingReports": "Pending Reports",
+        "pendingReportsDesc": "Images ready / awaiting report",
+        "completed": "مكتمل",
+        "completedDesc": "Reports completed today",
+        "deliveredToday": "Delivered Today",
+        "deliveredTodayDesc": "Results delivered today",
+        "incoming7d": "Incoming (7d)",
+        "incoming7dDesc": "New imaging referrals (7 days)",
+        "completionRate7d": "Completion Rate (7d)",
+        "completionRate7dDesc": "Completed/delivered vs incoming",
+        "avgQueueAge": "Avg Queue Age",
+        "avgQueueAgeDesc": "Open order age average",
+        "activeStaff": "Active Staff",
+        "activeStaffDesc": "Active imaging staff members",
+        "activeEquipment": "Active Equipment",
+        "activeEquipmentDesc": "Operational modalities/devices"
       },
-
       "queue": {
         "pendingQueue": "قائمة الانتظار",
         "scheduled": "مجدول",
@@ -104,19 +117,52 @@
         "urgent": "عاجل / STAT",
         "overdue": "متأخر (>٤٨ ساعة)"
       },
-
+      "todaysQueue": {
+        "title": "Today's Queue",
+        "description": "Scheduled scans and same-day referrals",
+        "empty": "No scans queued today",
+        "emptyDescription": "Today's scheduled scans and same-day imaging referrals will appear here."
+      },
+      "workflowBreakdown": {
+        "title": "Workflow Breakdown",
+        "description": "Current imaging order status distribution",
+        "empty": "No workflow data",
+        "emptyDescription": "Orders will appear here once referrals are received."
+      },
+      "equipmentStatus": {
+        "title": "Equipment Status",
+        "description": "Scanner availability and utilization",
+        "empty": "No equipment registered",
+        "emptyDescription": "Register your imaging equipment to track availability and utilization."
+      },
+      "recentCompleted": {
+        "title": "Recently Completed",
+        "description": "Latest completed scans and delivered reports",
+        "empty": "No completed orders yet",
+        "emptyDescription": "Completed imaging orders will appear here."
+      },
+      "modalityBacklog": {
+        "title": "Modality Backlog",
+        "description": "Open orders by modality type",
+        "empty": "No backlog data",
+        "emptyDescription": "Open orders by modality will appear here."
+      },
+      "staffSnapshot": {
+        "title": "Staff Snapshot",
+        "description": "Active team members by role",
+        "empty": "No staff data",
+        "emptyDescription": "Your team overview will appear here."
+      },
       "recentOrders": {
         "title": "طلبات التصوير الأخيرة",
         "subtitle": "أحدث إحالات التصوير وحالة سير العمل",
         "empty": "لا توجد طلبات تصوير بعد."
       },
-
       "activity": {
         "title": "موجز النشاط",
         "subtitle": "تحديثات سير العمل الأخيرة",
         "empty": "لا يوجد نشاط حديث."
       },
-
       "queueHealth": {
         "title": "حالة قائمة الانتظار",
         "subtitle": "لقطة سريعة من طلبات التصوير الأخيرة",
@@ -124,61 +170,127 @@
         "footer": "تتوفر الاتجاهات الكاملة، وقت الإنجاز، التركيبة السكانية، المحيلون، ومقاييس الإيرادات في علامة تبويب التحليلات."
       }
     },
-
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Feedback",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
     "analytics": {
       "title": "التحليلات",
       "refresh": "تحديث",
       "export": "تصدير",
-
       "metrics": {
         "totalScans": "إجمالي الفحوصات",
         "completed": "٠ مكتمل",
         "pending": "٠ قيد الانتظار",
         "vsPrev": "٠٪ مقابل السابق",
-
         "netRevenue": "صافي الإيرادات",
         "revenueDetail": "إيرادات ٠.٠٠ $ • مستردات ٠.٠٠ $",
-
         "avgReportTime": "متوسط وقت التقرير",
         "avgAcceptTime": "متوسط وقت القبول: ٠ ساعة",
-
         "opsHealth": "الحالة التشغيلية",
         "util": "٠٪ استخدام",
         "backlog": "٠ طلبات متراكمة",
         "open": "٠ مفتوح"
       },
-
       "charts": {
         "dailyTrend": "الاتجاه اليومي",
         "trendDesc": "الفحوصات والإيرادات بمرور الوقت",
-
         "modalityMix": "مزيج التقنيات",
+        "modalityDesc": "Scan distribution by modality",
         "workflow": "سير العمل",
+        "workflowDesc": "Internal workflow breakdown",
         "referralStatus": "حالة الإحالة",
+        "referralDesc": "Receiver-side status",
         "topReferrers": "أكثر المحيلين",
+        "topReferrersDesc": "Who sends you the most",
         "peakHours": "ساعات الذروة",
+        "peakDesc": "Scan volume by hour of day",
         "patientDemographics": "التركيبة السكانية للمرضى",
+        "patientDesc": "Based on referred patients",
         "gender": "الجنس",
         "ageBuckets": "الفئات العمرية",
         "turnaround": "وقت الإنجاز حسب التقنية",
+        "turnaroundDesc": "Average report completion time",
         "revenueByModality": "الإيرادات حسب التقنية",
-
+        "revenueByModalityDesc": "Based on recorded billing transactions (if modality metadata is available)",
         "empty": "لا توجد بيانات بعد.",
         "noRevenue": "لا توجد بيانات إيرادات متاحة للتقنيات بعد."
+      },
+      "billingAdvanced": {
+        "title": "Billing view is partially populated",
+        "description": "Some tables may be unavailable in your schema or current permissions. Core transaction analytics still loads.",
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstandingInvoices": "Outstanding Invoices",
+        "paymentHolds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage",
+        "sections": {
+          "revenueTrend": "Revenue Trend",
+          "transactionStatus": "Transaction Status Mix",
+          "transactionTypes": "Transaction Types",
+          "invoiceStatus": "Invoice Status",
+          "plans": "Subscription Plans",
+          "paymentMethods": "Payment Methods",
+          "providers": "Providers / Gateways",
+          "recentTransactions": "Recent Transactions",
+          "dailySuccess": "Daily Transaction Success",
+          "revenueTypeMix": "Revenue Type Mix"
+        },
+        "empty": "No data"
       }
     },
-
     "workflow": {
       "title": "سير عمل الفحص",
       "subtitle": "إنشاء طلبات الحضور المباشر وإدارة الفحوصات من الجدولة حتى تسليم التقرير.",
       "newWalkIn": "طلب حضور مباشر جديد",
-      "searchPlaceholder": "بحث بالاسم، رقم الطلب، أو الفحص...",
-      "empty": "لم يتم العثور على فحوصات"
+      "newOrder": "New Walk-in Order",
+      "refresh": "Refresh",
+      "search": "Search by patient, order number, or exam...",
+      "statuses": "All Statuses",
+      "empty": "لم يتم العثور على فحوصات",
+      "searchPlaceholder": "بحث بالاسم، رقم الطلب، أو الفحص..."
     },
-
+    "newOrder": {
+      "title": "New Manual Imaging Order",
+      "patient": {
+        "title": "Patient (Walk-in)",
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "phoneHint": "Enter with country code. US example: +1 415 555 2671",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)"
+      },
+      "study": {
+        "title": "Study",
+        "modality": "Modality",
+        "xray": "X-Ray",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "no": "No"
+      },
+      "schedule": {
+        "title": "Scheduling & Notes",
+        "priority": "Priority",
+        "routine": "Routine",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Imaging Order"
+      }
+    },
     "orderForm": {
       "title": "طلب تصوير يدوي جديد",
-
       "fields": {
         "fullName": "الاسم الكامل *",
         "phone": "الهاتف *",
@@ -194,7 +306,6 @@
         "reason": "السبب (اختياري)",
         "clinicalNotes": "ملاحظات سريرية (اختياري)"
       },
-
       "placeholders": {
         "phone": "+966 50 000 0000",
         "email": "email@example.com",
@@ -205,18 +316,28 @@
         "reference": "INV-1029",
         "notes": "ملاحظات حول هذا الإدخال..."
       },
-
       "actions": {
         "cancel": "إلغاء",
         "submit": "إنشاء طلب تصوير"
       }
     },
-
     "reports": {
       "search": "بحث في التقارير...",
+      "all": "All Reports",
       "allReports": "جميع التقارير",
+      "refresh": "Refresh",
+      "export": "Export",
       "empty": "لم يتم العثور على تقارير",
-
+      "table": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions",
+        "empty": "No reports found"
+      },
       "columns": {
         "order": "الطلب",
         "patient": "المريض",
@@ -225,22 +346,57 @@
         "status": "الحالة",
         "radiologist": "طبيب الأشعة",
         "actions": "الإجراءات"
+      },
+      "stats": {
+        "pending": "Pending",
+        "drafts": "Drafts",
+        "finalized": "Finalized",
+        "critical": "Critical"
       }
     },
-
     "equipment": {
       "title": "المعدات",
       "subtitle": "إدارة أجهزة الفحص والسعة الاستيعابية (جاري مزامنة التخزين...)",
       "search": "بحث عن معدات...",
+      "refresh": "Refresh",
+      "add": "Add",
       "empty": "لم يتم العثور على معدات",
-
+      "capacity": "Capacity",
+      "day": "day",
+      "util": "util",
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "offline": "Offline",
+        "retired": "Retired"
+      },
+      "table": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day",
+        "actions": "Actions",
+        "empty": "No equipment found"
+      },
       "columns": {
         "name": "الاسم",
         "modality": "التقنية",
         "status": "الحالة",
         "capacity": "السعة/يوم"
       },
-
+      "modal": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
       "form": {
         "title": "إضافة معدات",
         "name": "الاسم",
@@ -253,11 +409,69 @@
         "scanTypes": "أنواع الفحص (مفصولة بفاصلة)"
       }
     },
-
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports.",
+      "common": {
+        "from": "From",
+        "to": "To",
+        "type": "Type",
+        "category": "Category",
+        "all": "All",
+        "refresh": "Refresh",
+        "search": "Search",
+        "export": "Export CSV"
+      },
+      "staffCompensation": {
+        "title": "Staff Compensation",
+        "add": "Add Profile",
+        "empty": "No compensation profiles yet. Add salary, hourly, or percentage-based pay for your staff."
+      },
+      "recurring": {
+        "title": "Recurring",
+        "addRule": "Add rule",
+        "status": "Status",
+        "noDue": "no due rules",
+        "noRuns": "No previous runs",
+        "runDue": "Run due rules",
+        "runNow": "Run due now",
+        "description": "Running creates finance entries for all rules with next_run_date ≤ selected date (catch-up supported).",
+        "empty": "No recurring rules yet."
+      },
+      "ledger": {
+        "title": "Ledger",
+        "entries": "Entries",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "addEntry": "Add entry",
+        "manual": "Manual",
+        "date": "Date",
+        "currency": "Currency",
+        "amount": "Amount",
+        "reference": "Reference (optional)",
+        "description": "Description (optional)",
+        "empty": "No entries found for this filter.",
+        "note": "Note: this list shows up to 200 entries per filter."
+      },
+      "compensationModal": {
+        "title": "Add Compensation Profile",
+        "staff": "Staff Member",
+        "select": "Select staff member…",
+        "type": "Compensation Type",
+        "salary": "Fixed Salary",
+        "amount": "Amount ($)",
+        "period": "Period",
+        "monthly": "Monthly",
+        "frequency": "Payout Frequency",
+        "notes": "Notes (optional)",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
     "billing": {
       "partial": "عرض الفوترة مكتمل جزئياً",
       "warning": "قد تكون بعض الجداول غير متاحة في مخططك أو صلاحياتك الحالية.",
-
       "metrics": {
         "processedRevenue": "الإيرادات المعالجة",
         "transactions": "المعاملات",
@@ -268,7 +482,6 @@
         "subscriptions": "الاشتراكات النشطة",
         "risk": "المخاطر / التسرب المالي"
       },
-
       "charts": {
         "revenueTrend": "اتجاه الإيرادات",
         "statusMix": "مزيج حالة المعاملات",
@@ -282,13 +495,98 @@
         "revenueType": "مزيج نوع الإيرادات"
       }
     },
-
+    "referrals": {
+      "title": "Referrals",
+      "new": "New Referral",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      },
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      }
+    },
+    "staff": {
+      "active": {
+        "title": "Active Staff Management",
+        "subtitle": "Edit roles and permissions, deactivate staff, or remove access.",
+        "search": "Search staff...",
+        "refresh": "Refresh",
+        "empty": "No active staff found."
+      },
+      "total": "total",
+      "stats": {
+        "active": "Active Staff",
+        "pending": "Pending Invitations",
+        "inactive": "Inactive / Disabled",
+        "admins": "Admins / Managers"
+      },
+      "invite": {
+        "title": "Invite Imaging Staff",
+        "subtitle": "Invite radiologists, technologists, billing, and front-desk team members with pre-configured permissions.",
+        "email": "Email",
+        "role": "Role",
+        "technologist": "Technologist",
+        "send": "Send Invite",
+        "preset": "Permission Preset"
+      },
+      "pending": {
+        "title": "Pending Invitations",
+        "subtitle": "Resend or cancel pending staff invitations before activation.",
+        "empty": "No pending invitations."
+      },
+      "audit": {
+        "title": "Staff Audit Trail",
+        "subtitle": "Recent staff and invitation activity for accountability.",
+        "empty": "No staff audit activity found."
+      },
+      "roles": {
+        "frontDesk": {
+          "title": "Front Desk / Reception",
+          "desc": "Intake, scheduling, check-in, referral verification, and queue balancing."
+        },
+        "technologist": {
+          "title": "Technologist",
+          "desc": "Scan execution, protocol adherence, patient preparation, and image quality capture."
+        },
+        "radiologist": {
+          "title": "Radiologist",
+          "desc": "Reporting, clinical review, critical findings workflows, and final sign-off."
+        },
+        "billing": {
+          "title": "Billing / Admin",
+          "desc": "Claims, invoices, payment reconciliation, and operational performance follow-up."
+        }
+      }
+    },
     "verify": {
       "title": "التحقق من المستندات",
+      "description": "Verify the authenticity of any Docito document — treatment plans, referrals, prescriptions, and patient profiles.",
       "input": "أدخل أو امسح رمز التحقق",
       "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
       "verify": "تحقق",
+      "types": {
+        "tp": "TP - Treatment Plan",
+        "rf": "RF - Referral",
+        "rx": "RX - Prescription",
+        "pt": "PT - Patient Profile"
+      },
       "scan": "امسح رمز QR بدلاً من ذلك"
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": {
+        "title": "Imaging Center Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
     }
   }
 }

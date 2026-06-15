@@ -22,10 +22,22 @@
     "title": "Für Apotheken mit hohem Volumen",
     "subtitle": "Tempo, Sicherheit und Nachvollziehbarkeit — ohne manuellen Aufwand",
     "cards": {
-      "rx": { "label": "Bearbeitete Rezepte", "value": "25K+" },
-      "refills": { "label": "Schnellere Nachfüllungen", "value": "Bis zu 50%" },
-      "stock": { "label": "Weniger Stockouts", "value": "Bis zu 35%" },
-      "coverage": { "label": "Abdeckung über Einheiten", "value": "Ärzte • Praxen • Patienten" }
+      "rx": {
+        "label": "Bearbeitete Rezepte",
+        "value": "25K+"
+      },
+      "refills": {
+        "label": "Schnellere Nachfüllungen",
+        "value": "Bis zu 50%"
+      },
+      "stock": {
+        "label": "Weniger Stockouts",
+        "value": "Bis zu 35%"
+      },
+      "coverage": {
+        "label": "Abdeckung über Einheiten",
+        "value": "Ärzte • Praxen • Patienten"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "Für das gesamte Gesundheitsökosystem gebaut",
     "subtitle": "Apotheken arbeiten nicht isoliert — Docito® verbindet Rezepte, Termine, Akten, Labore und Versicherungen.",
     "items": {
-      "doctors": { "title": "Ärzte", "description": "E-Rezepte und Rückfragen mit strukturiertem klinischem Kontext." },
-      "clinics": { "title": "Praxen/Kliniken", "description": "Multi-Provider-Workflows, Follow-ups und Patientenkommunikation koordinieren." },
-      "patients": { "title": "Patienten", "description": "Sichere Abhol-/Lieferupdates und Zugriff auf rezeptbezogene Dateien." },
-      "insurance": { "title": "Versicherung", "description": "Coverage-Verifikation und claimfähige Workflows pro Rezept." }
+      "doctors": {
+        "title": "Ärzte",
+        "description": "E-Rezepte und Rückfragen mit strukturiertem klinischem Kontext."
+      },
+      "clinics": {
+        "title": "Praxen/Kliniken",
+        "description": "Multi-Provider-Workflows, Follow-ups und Patientenkommunikation koordinieren."
+      },
+      "patients": {
+        "title": "Patienten",
+        "description": "Sichere Abhol-/Lieferupdates und Zugriff auf rezeptbezogene Dateien."
+      },
+      "insurance": {
+        "title": "Versicherung",
+        "description": "Coverage-Verifikation und claimfähige Workflows pro Rezept."
+      }
     }
   },
   "cta": {

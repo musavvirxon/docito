@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "医生", "description": "" },
-      "clinics": { "title": "诊所", "description": "" },
-      "labs": { "title": "实验室", "description": "" },
-      "pharmacies": { "title": "药房", "description": "" },
-      "insurance": { "title": "保险", "description": "" },
-      "patients": { "title": "患者", "description": "" }
+      "doctors": {
+        "title": "医生",
+        "description": ""
+      },
+      "clinics": {
+        "title": "诊所",
+        "description": ""
+      },
+      "labs": {
+        "title": "实验室",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "药房",
+        "description": ""
+      },
+      "insurance": {
+        "title": "保险",
+        "description": ""
+      },
+      "patients": {
+        "title": "患者",
+        "description": ""
+      }
     }
   },
   "ecosystem": {

@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "医師", "description": "" },
-      "clinics": { "title": "クリニック", "description": "" },
-      "labs": { "title": "検査機関", "description": "" },
-      "pharmacies": { "title": "薬局", "description": "" },
-      "insurance": { "title": "保険", "description": "" },
-      "patients": { "title": "患者", "description": "" }
+      "doctors": {
+        "title": "医師",
+        "description": ""
+      },
+      "clinics": {
+        "title": "クリニック",
+        "description": ""
+      },
+      "labs": {
+        "title": "検査機関",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "薬局",
+        "description": ""
+      },
+      "insurance": {
+        "title": "保険",
+        "description": ""
+      },
+      "patients": {
+        "title": "患者",
+        "description": ""
+      }
     }
   },
   "ecosystem": {
@@ -161,4 +179,3 @@
     }
   }
 }
-

@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "Вся ваша медицинская помощь — в одном ритме",
-    "title": {
-      "line1": "Меньше рутины. Больше заботы.",
-      "line2": "Одна платформа для всей вашей системы."
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Docito объединяет запись, медицинские записи, лаборатории, снимки, рецепты и оплаты в один путь пациента — для клиник и пациентов.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "Начать бесплатный 14-дневный пробный период",
       "secondary": "Посмотреть как это работает"
     },
-    "finePrint": "14 дней бесплатно • Без карты • Отмена в любое время"
+    "finePrint": "14 дней бесплатно • Без карты • Отмена в любое время",
+    "title": {
+      "line1": "Меньше рутины. Больше заботы.",
+      "line2": "Одна платформа для всей вашей системы."
+    },
+    "subtitle": "Docito объединяет запись, медицинские записи, лаборатории, снимки, рецепты и оплаты в один путь пациента — для клиник и пациентов."
   },
   "search": {
     "badge": "Умный поиск",

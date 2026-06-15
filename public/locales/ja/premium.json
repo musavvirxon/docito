@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "ヘルスケアネットワーク",
-    "title": {
-      "line1": "ひとつのネットワーク、ひとつの患者ジャーニー",
-      "line2": "ケアをエンドツーエンドでつなぐ"
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "医師、クリニック、検査機関、画像センター、薬局を接続し、場所をまたいでもケアが途切れないようにします。",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "14日間無料トライアルを開始",
       "secondary": "プラットフォームを見る"
     },
-    "finePrint": "14日間無料 • クレジットカード不要 • いつでも解約"
+    "finePrint": "14日間無料 • クレジットカード不要 • いつでも解約",
+    "title": {
+      "line1": "ひとつのネットワーク、ひとつの患者ジャーニー",
+      "line2": "ケアをエンドツーエンドでつなぐ"
+    },
+    "subtitle": "医師、クリニック、検査機関、画像センター、薬局を接続し、場所をまたいでもケアが途切れないようにします。"
   },
   "search": {
     "badge": "ケアを探す",

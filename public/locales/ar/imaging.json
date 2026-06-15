@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "الأطباء", "description": "" },
-      "clinics": { "title": "العيادات", "description": "" },
-      "labs": { "title": "المختبرات", "description": "" },
-      "pharmacies": { "title": "الصيدليات", "description": "" },
-      "insurance": { "title": "التأمين", "description": "" },
-      "patients": { "title": "المرضى", "description": "" }
+      "doctors": {
+        "title": "الأطباء",
+        "description": ""
+      },
+      "clinics": {
+        "title": "العيادات",
+        "description": ""
+      },
+      "labs": {
+        "title": "المختبرات",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "الصيدليات",
+        "description": ""
+      },
+      "insurance": {
+        "title": "التأمين",
+        "description": ""
+      },
+      "patients": {
+        "title": "المرضى",
+        "description": ""
+      }
     }
   },
   "ecosystem": {
