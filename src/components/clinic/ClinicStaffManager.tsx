@@ -552,25 +552,25 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         <CardHeader>
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5" /> Active Staff Management</CardTitle>
-              <CardDescription>Edit roles, permissions, deactivate, or remove staff.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><UserCog className="h-5 w-5" /> {t("staffManager.active.title")}</CardTitle>
+              <CardDescription>{t("staffManager.active.description")}</CardDescription>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative min-w-[240px]">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search staff..." className="w-full h-9 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("staffManager.active.searchPh")} className="w-full h-9 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <button type="button" onClick={() => loadData(false)} disabled={refreshing} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                {refreshing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Refresh
+                {refreshing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} {t("staffManager.active.refresh")}
               </button>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-sm text-muted-foreground">Loading staff…</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.active.loading")}</div>
           ) : filteredActiveRows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No active staff found.</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.active.empty")}</div>
           ) : (
             <div className="space-y-4">
               {filteredActiveRows.map((row) => {
@@ -591,7 +591,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
                       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                         <div className="min-w-0">
                           <div className="font-medium truncate">{displayName}</div>
-                          <div className="text-sm text-muted-foreground truncate">{email || "No email"} • {humanize(status)} • Added {relativeTimeLabel(row.created_at)}</div>
+                          <div className="text-sm text-muted-foreground truncate">{email || t("staffManager.active.noEmail")} • {humanize(status)} • {t("staffManager.active.added", { when: relativeTimeLabel(row.created_at) })}</div>
                         </div>
                         <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs border", status === "active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200")}>
                           <CheckCircle2 className="h-3.5 w-3.5" /> {humanize(status)}
@@ -600,14 +600,14 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
 
                       <div className="grid gap-4 xl:grid-cols-[240px,1fr]">
                         <div className="space-y-1.5">
-                          <label className="text-sm font-medium">Role</label>
+                          <label className="text-sm font-medium">{t("staffManager.active.role")}</label>
                           <select value={currentRole} onChange={(e) => setDraftRoles((prev) => ({ ...prev, [rowId]: e.target.value }))} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
-                            {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{humanize(role)}</option>))}
+                            {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{t(`staffManager.roles.${role}`)}</option>))}
                           </select>
-                          <button type="button" onClick={() => { const role = (draftRoles[rowId] || "viewer") as StaffRole; setDraftPermissions((prev) => ({ ...prev, [rowId]: defaultPermissionsForRole(role) })); }} className="text-xs text-primary hover:underline">Reset permissions from role preset</button>
+                          <button type="button" onClick={() => { const role = (draftRoles[rowId] || "viewer") as StaffRole; setDraftPermissions((prev) => ({ ...prev, [rowId]: defaultPermissionsForRole(role) })); }} className="text-xs text-primary hover:underline">{t("staffManager.active.resetPerms")}</button>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-sm font-medium">Permissions</label>
+                          <label className="text-sm font-medium">{t("staffManager.active.permissions")}</label>
                           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                             {PERMISSION_KEYS.map((key) => {
                               const checked = currentPerms.includes(key);
@@ -624,13 +624,13 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
 
                       <div className="flex flex-wrap gap-2">
                         <button type="button" onClick={() => saveRow(row)} disabled={isSaving} className="h-9 px-3 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60 text-sm inline-flex items-center gap-1.5">
-                          {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
+                          {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} {t("staffManager.active.save")}
                         </button>
                         <button type="button" onClick={() => setRowStatus(row, "inactive")} disabled={isActing} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          <Power className="h-4 w-4" /> Deactivate
+                          <Power className="h-4 w-4" /> {t("staffManager.active.deactivate")}
                         </button>
                         <button type="button" onClick={() => removeRow(row)} disabled={isActing} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          <Trash2 className="h-4 w-4" /> Remove
+                          <Trash2 className="h-4 w-4" /> {t("staffManager.active.remove")}
                         </button>
                       </div>
                     </div>
@@ -645,12 +645,12 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       {/* Audit Trail */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" /> Staff Audit Trail</CardTitle>
-          <CardDescription>Recent staff and invitation activity.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" /> {t("staffManager.audit.title")}</CardTitle>
+          <CardDescription>{t("staffManager.audit.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {auditTrail.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No staff audit activity found.</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.audit.empty")}</div>
           ) : (
             <div className="space-y-3">
               {auditTrail.map((item) => (
