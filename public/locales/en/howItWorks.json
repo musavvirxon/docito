@@ -75,7 +75,7 @@
   "q4": { "question": "How are results delivered?", "answer": "Results are shared to authorized roles and surfaced in dashboards with notifications." },
   "q5": { "question": "How do pharmacies confirm fulfillment?", "answer": "Pharmacies update fulfillment status (prepared/ready/delivered) and confirm completion." },
   "q6": { "question": "Is data secure?", "answer": "Docito uses encrypted storage, RBAC, and audit trails to protect patient data." },
-  "q7": { "question": "Can I use insurance?", "answer": "Insurance support depends on providers and region; coverage options may appear during booking." },
+  "q7": { "question": "Can I use insurance?", "answer": "Insurance support depends on providers and region; coverage options may appear during booking." }
 },
     "flow": {
       "title": "A universal flow, for every role",
