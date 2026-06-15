@@ -22,10 +22,22 @@
     "title": "Yüksek hacimli laboratuvarlar için üretildi",
     "subtitle": "Görünürlük, denetlenebilirlik ve performans—manuel yük olmadan",
     "cards": {
-      "orders": { "label": "Yönetilen Sipariş", "value": "10K+" },
-      "turnaround": { "label": "Daha Hızlı TAT", "value": "40%’a kadar" },
-      "accuracy": { "label": "Azalan Hata", "value": "60%’a kadar" },
-      "coverage": { "label": "Kurumlar Arası Kapsam", "value": "Doktorlar • Klinikler • Hastalar" }
+      "orders": {
+        "label": "Yönetilen Sipariş",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "Daha Hızlı TAT",
+        "value": "40%’a kadar"
+      },
+      "accuracy": {
+        "label": "Azalan Hata",
+        "value": "60%’a kadar"
+      },
+      "coverage": {
+        "label": "Kurumlar Arası Kapsam",
+        "value": "Doktorlar • Klinikler • Hastalar"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "Tüm sağlık ekosistemi için üretildi",
     "subtitle": "Laboratuvarlar tek başına çalışmaz—Docito® yönlendirmeleri, randevuları, kayıtları ve raporlamayı bağlar.",
     "items": {
-      "doctors": { "title": "Doktorlar", "description": "Sipariş alın ve sonuçları yapılandırılmış klinik bağlamla geri iletin." },
-      "clinics": { "title": "Klinikler", "description": "Yönlendirme, planlama ve çoklu sağlayıcı iş akışlarını koordine edin." },
-      "patients": { "title": "Hastalar", "description": "Hastalara sonuçlara ve ilgili dosyalara güvenli erişim sağlayın." },
-      "insurance": { "title": "Sigorta", "description": "Kapsam doğrulama ve sipariş–sigorta bağlantısını destekleyin." }
+      "doctors": {
+        "title": "Doktorlar",
+        "description": "Sipariş alın ve sonuçları yapılandırılmış klinik bağlamla geri iletin."
+      },
+      "clinics": {
+        "title": "Klinikler",
+        "description": "Yönlendirme, planlama ve çoklu sağlayıcı iş akışlarını koordine edin."
+      },
+      "patients": {
+        "title": "Hastalar",
+        "description": "Hastalara sonuçlara ve ilgili dosyalara güvenli erişim sağlayın."
+      },
+      "insurance": {
+        "title": "Sigorta",
+        "description": "Kapsam doğrulama ve sipariş–sigorta bağlantısını destekleyin."
+      }
     }
   },
   "cta": {

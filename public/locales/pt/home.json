@@ -225,6 +225,15 @@
       "cookies": "Cookies",
       "about": "Sobre",
       "features": "Recursos",
+      "findDoctors": "Find Doctors",
+      "searchDoctors": "Search Doctors",
+      "specialties": "Specialties",
+      "howItWorks": "How It Works",
+      "helpCenter": "Help Center",
+      "contact": "Contact",
+      "faqs": "FAQs",
+      "support": "Support",
+      "hipaa": "HIPAA",
       "refundPolicy": "Política de reembolso"
     }
   },

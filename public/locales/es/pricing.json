@@ -118,5 +118,21 @@
       "title": "Para Clínicas y Hospitales",
       "subtitle": "Gestiona toda tu instalación con soluciones integrales"
     }
+  },
+  "card": {
+    "free": "Free",
+    "unlimited": "Unlimited",
+    "mostPopular": "Most Popular",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "subscribe": "Subscribe",
+    "contactSales": "Contact Sales",
+    "storage": "Storage",
+    "maxRecords": "Max Records",
+    "maxDiagnoses": "Max Diagnoses",
+    "maxTreatmentSummaries": "Treatment Summaries",
+    "maxDoctors": "Doctors",
+    "maxFileSize": "Max File Size",
+    "features": "Features"
   }
 }

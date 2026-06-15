@@ -13,13 +13,11 @@
       "verifyDocuments": "書類照会",
       "settings": "設定"
     },
-
     "header": {
       "title": "画像診断スタッフダッシュボード",
       "subtitle": "Supabaseから取得したオーダー、スキャンワークフロー、分析データ",
       "refresh": "更新"
     },
-
     "common": {
       "refresh": "更新",
       "export": "エクスポート",
@@ -32,16 +30,22 @@
       "cancel": "キャンセル",
       "save": "保存",
       "add": "追加",
-      "actions": "操作"
+      "actions": "操作",
+      "loading": "Loading...",
+      "imagingCenter": "Imaging Center",
+      "signInRequired": "Sign In Required",
+      "signInDescription": "Please sign in to access the imaging center dashboard.",
+      "signIn": "Sign In",
+      "noCenter": "No Imaging Center Found",
+      "noCenterDescription": "You don't have an imaging center associated with your account.",
+      "registerCenter": "Register Imaging Center"
     },
-
     "numbers": {
       "zero": "0",
       "zeroPercent": "0%",
       "zeroCurrency": "¥0",
       "zeroHours": "0時間"
     },
-
     "statuses": {
       "pending": "保留中",
       "scheduled": "予約済み",
@@ -51,9 +55,10 @@
       "finalized": "確定",
       "critical": "緊急（パニック値）",
       "cancelled": "キャンセル済み",
-      "processing": "処理中"
+      "processing": "処理中",
+      "verified": "Verified",
+      "pendingVerification": "Pending Verification"
     },
-
     "time": {
       "last30Days": "過去30日間",
       "last90Days": "過去90日間",
@@ -76,18 +81,34 @@
         "23:00"
       ]
     },
-
     "overview": {
       "title": "概要",
+      "description": "Monitor imaging volume, workflow backlog, staff readiness, and equipment utilization.",
       "analytics": "分析",
-
       "stats": {
         "totalOrders": "総オーダー数",
         "pendingScheduled": "保留中 / 予約済み",
+        "scheduledToday": "Scheduled Today",
+        "scheduledTodayDesc": "Scans scheduled for today",
         "inProgress": "進行中",
-        "completed": "完了"
+        "inProgressDesc": "Checked-in + active workflow",
+        "pendingReports": "Pending Reports",
+        "pendingReportsDesc": "Images ready / awaiting report",
+        "completed": "完了",
+        "completedDesc": "Reports completed today",
+        "deliveredToday": "Delivered Today",
+        "deliveredTodayDesc": "Results delivered today",
+        "incoming7d": "Incoming (7d)",
+        "incoming7dDesc": "New imaging referrals (7 days)",
+        "completionRate7d": "Completion Rate (7d)",
+        "completionRate7dDesc": "Completed/delivered vs incoming",
+        "avgQueueAge": "Avg Queue Age",
+        "avgQueueAgeDesc": "Open order age average",
+        "activeStaff": "Active Staff",
+        "activeStaffDesc": "Active imaging staff members",
+        "activeEquipment": "Active Equipment",
+        "activeEquipmentDesc": "Operational modalities/devices"
       },
-
       "queue": {
         "pendingQueue": "保留中キュー",
         "scheduled": "予約済み",
@@ -96,19 +117,52 @@
         "urgent": "至急 / STAT",
         "overdue": "期限切れ (>48h)"
       },
-
+      "todaysQueue": {
+        "title": "Today's Queue",
+        "description": "Scheduled scans and same-day referrals",
+        "empty": "No scans queued today",
+        "emptyDescription": "Today's scheduled scans and same-day imaging referrals will appear here."
+      },
+      "workflowBreakdown": {
+        "title": "Workflow Breakdown",
+        "description": "Current imaging order status distribution",
+        "empty": "No workflow data",
+        "emptyDescription": "Orders will appear here once referrals are received."
+      },
+      "equipmentStatus": {
+        "title": "Equipment Status",
+        "description": "Scanner availability and utilization",
+        "empty": "No equipment registered",
+        "emptyDescription": "Register your imaging equipment to track availability and utilization."
+      },
+      "recentCompleted": {
+        "title": "Recently Completed",
+        "description": "Latest completed scans and delivered reports",
+        "empty": "No completed orders yet",
+        "emptyDescription": "Completed imaging orders will appear here."
+      },
+      "modalityBacklog": {
+        "title": "Modality Backlog",
+        "description": "Open orders by modality type",
+        "empty": "No backlog data",
+        "emptyDescription": "Open orders by modality will appear here."
+      },
+      "staffSnapshot": {
+        "title": "Staff Snapshot",
+        "description": "Active team members by role",
+        "empty": "No staff data",
+        "emptyDescription": "Your team overview will appear here."
+      },
       "recentOrders": {
         "title": "最近の画像診断オーダー",
         "subtitle": "最新の紹介状とワークフロー状況",
         "empty": "画像診断オーダーはまだありません。"
       },
-
       "activity": {
         "title": "アクティビティフィード",
         "subtitle": "最近のワークフロー更新",
         "empty": "最近のアクティビティはありません。"
       },
-
       "queueHealth": {
         "title": "キューの稼働状況",
         "subtitle": "最近のオーダーのスナップショット",
@@ -116,61 +170,127 @@
         "footer": "トレンド、ターンアラウンドタイム、患者属性、紹介元、収益メトリクスの詳細は「分析」タブで確認できます。"
       }
     },
-
+    "footer": {
+      "copyright": "© 2025 Docito®",
+      "feedback": "Feedback",
+      "help": "Help",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
     "analytics": {
       "title": "分析",
       "refresh": "更新",
       "export": "エクスポート",
-
       "metrics": {
         "totalScans": "総スキャン数",
         "completed": "完了 0件",
         "pending": "保留 0件",
         "vsPrev": "前期比 0%",
-
         "netRevenue": "純収益",
         "revenueDetail": "収益 ¥0 • 返金 ¥0",
-
         "avgReportTime": "平均レポート作成時間",
         "avgAcceptTime": "平均受付時間: 0時間",
-
         "opsHealth": "運営状況",
         "util": "稼働率 0%",
         "backlog": "バックログ 0件",
         "open": "未処理 0件"
       },
-
       "charts": {
         "dailyTrend": "日次トレンド",
         "trendDesc": "スキャン数と収益の推移",
-
         "modalityMix": "モダリティ構成比",
+        "modalityDesc": "Scan distribution by modality",
         "workflow": "ワークフロー",
+        "workflowDesc": "Internal workflow breakdown",
         "referralStatus": "紹介ステータス",
+        "referralDesc": "Receiver-side status",
         "topReferrers": "主要な紹介元",
+        "topReferrersDesc": "Who sends you the most",
         "peakHours": "ピーク時間帯",
+        "peakDesc": "Scan volume by hour of day",
         "patientDemographics": "患者属性",
+        "patientDesc": "Based on referred patients",
         "gender": "性別",
         "ageBuckets": "年齢層",
         "turnaround": "モダリティ別ターンアラウンドタイム",
+        "turnaroundDesc": "Average report completion time",
         "revenueByModality": "モダリティ別収益",
-
+        "revenueByModalityDesc": "Based on recorded billing transactions (if modality metadata is available)",
         "empty": "データがまだありません。",
         "noRevenue": "モダリティ別の収益データはまだありません。"
+      },
+      "billingAdvanced": {
+        "title": "Billing view is partially populated",
+        "description": "Some tables may be unavailable in your schema or current permissions. Core transaction analytics still loads.",
+        "processedRevenue": "Processed Revenue",
+        "transactions": "Transactions",
+        "averageTicket": "Average Ticket",
+        "collectionRate": "Collection Rate",
+        "outstandingInvoices": "Outstanding Invoices",
+        "paymentHolds": "Payment Holds",
+        "subscriptions": "Active Subscriptions",
+        "risk": "Risk / Leakage",
+        "sections": {
+          "revenueTrend": "Revenue Trend",
+          "transactionStatus": "Transaction Status Mix",
+          "transactionTypes": "Transaction Types",
+          "invoiceStatus": "Invoice Status",
+          "plans": "Subscription Plans",
+          "paymentMethods": "Payment Methods",
+          "providers": "Providers / Gateways",
+          "recentTransactions": "Recent Transactions",
+          "dailySuccess": "Daily Transaction Success",
+          "revenueTypeMix": "Revenue Type Mix"
+        },
+        "empty": "No data"
       }
     },
-
     "workflow": {
       "title": "スキャンワークフロー",
       "subtitle": "ウォークイン（直接来院）オーダーの作成や、予約からレポート送付までのスキャン管理を行います。",
       "newWalkIn": "新規ウォークインオーダー",
-      "searchPlaceholder": "患者名、オーダー番号、検査内容で検索...",
-      "empty": "スキャンが見つかりません"
+      "newOrder": "New Walk-in Order",
+      "refresh": "Refresh",
+      "search": "Search by patient, order number, or exam...",
+      "statuses": "All Statuses",
+      "empty": "スキャンが見つかりません",
+      "searchPlaceholder": "患者名、オーダー番号、検査内容で検索..."
     },
-
+    "newOrder": {
+      "title": "New Manual Imaging Order",
+      "patient": {
+        "title": "Patient (Walk-in)",
+        "fullName": "Full name *",
+        "phone": "Phone *",
+        "phoneHint": "Enter with country code. US example: +1 415 555 2671",
+        "email": "Email (optional)",
+        "dob": "Date of birth (optional)"
+      },
+      "study": {
+        "title": "Study",
+        "modality": "Modality",
+        "xray": "X-Ray",
+        "studyName": "Study name *",
+        "bodyPart": "Body part (optional)",
+        "contrast": "Contrast",
+        "no": "No"
+      },
+      "schedule": {
+        "title": "Scheduling & Notes",
+        "priority": "Priority",
+        "routine": "Routine",
+        "preferredDate": "Preferred date (optional)",
+        "preferredTime": "Preferred time slot (optional)",
+        "reason": "Reason (optional)",
+        "clinicalNotes": "Clinical notes (optional)"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create Imaging Order"
+      }
+    },
     "orderForm": {
       "title": "新規マニュアル画像診断オーダー",
-
       "fields": {
         "fullName": "氏名 *",
         "phone": "電話番号 *",
@@ -186,7 +306,6 @@
         "reason": "理由（任意）",
         "clinicalNotes": "臨床所見・備考（任意）"
       },
-
       "placeholders": {
         "phone": "+81 90 1234 5678",
         "email": "email@example.com",
@@ -197,18 +316,28 @@
         "reference": "INV-1029",
         "notes": "この入力に関するメモ..."
       },
-
       "actions": {
         "cancel": "キャンセル",
         "submit": "画像診断オーダーを作成"
       }
     },
-
     "reports": {
       "search": "レポートを検索...",
+      "all": "All Reports",
       "allReports": "すべてのレポート",
+      "refresh": "Refresh",
+      "export": "Export",
       "empty": "レポートが見つかりません",
-
+      "table": {
+        "order": "Order",
+        "patient": "Patient",
+        "exam": "Exam",
+        "modality": "Modality",
+        "status": "Status",
+        "radiologist": "Radiologist",
+        "actions": "Actions",
+        "empty": "No reports found"
+      },
       "columns": {
         "order": "オーダー",
         "patient": "患者",
@@ -217,22 +346,57 @@
         "status": "ステータス",
         "radiologist": "読影医",
         "actions": "操作"
+      },
+      "stats": {
+        "pending": "Pending",
+        "drafts": "Drafts",
+        "finalized": "Finalized",
+        "critical": "Critical"
       }
     },
-
     "equipment": {
       "title": "設備",
       "subtitle": "スキャナーの管理とキャパシティ（ストレージ同期中...）",
       "search": "設備を検索...",
+      "refresh": "Refresh",
+      "add": "Add",
       "empty": "設備が見つかりません",
-
+      "capacity": "Capacity",
+      "day": "day",
+      "util": "util",
+      "statuses": {
+        "active": "Active",
+        "maintenance": "Maintenance",
+        "offline": "Offline",
+        "retired": "Retired"
+      },
+      "table": {
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "capacity": "Capacity/day",
+        "actions": "Actions",
+        "empty": "No equipment found"
+      },
       "columns": {
         "name": "名称",
         "modality": "モダリティ",
         "status": "ステータス",
         "capacity": "1日あたりのキャパシティ"
       },
-
+      "modal": {
+        "title": "Add Equipment",
+        "name": "Name",
+        "modality": "Modality",
+        "status": "Status",
+        "manufacturer": "Manufacturer",
+        "model": "Model",
+        "serial": "Serial Number",
+        "capacity": "Capacity per day",
+        "scanTypes": "Scan types (comma-separated)",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
       "form": {
         "title": "設備を追加",
         "name": "名称",
@@ -245,11 +409,69 @@
         "scanTypes": "スキャンタイプ（カンマ区切り）"
       }
     },
-
+    "finances": {
+      "title": "Finances",
+      "subtitle": "Manage income, expenses, payroll, compensation profiles, and exports.",
+      "common": {
+        "from": "From",
+        "to": "To",
+        "type": "Type",
+        "category": "Category",
+        "all": "All",
+        "refresh": "Refresh",
+        "search": "Search",
+        "export": "Export CSV"
+      },
+      "staffCompensation": {
+        "title": "Staff Compensation",
+        "add": "Add Profile",
+        "empty": "No compensation profiles yet. Add salary, hourly, or percentage-based pay for your staff."
+      },
+      "recurring": {
+        "title": "Recurring",
+        "addRule": "Add rule",
+        "status": "Status",
+        "noDue": "no due rules",
+        "noRuns": "No previous runs",
+        "runDue": "Run due rules",
+        "runNow": "Run due now",
+        "description": "Running creates finance entries for all rules with next_run_date ≤ selected date (catch-up supported).",
+        "empty": "No recurring rules yet."
+      },
+      "ledger": {
+        "title": "Ledger",
+        "entries": "Entries",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "addEntry": "Add entry",
+        "manual": "Manual",
+        "date": "Date",
+        "currency": "Currency",
+        "amount": "Amount",
+        "reference": "Reference (optional)",
+        "description": "Description (optional)",
+        "empty": "No entries found for this filter.",
+        "note": "Note: this list shows up to 200 entries per filter."
+      },
+      "compensationModal": {
+        "title": "Add Compensation Profile",
+        "staff": "Staff Member",
+        "select": "Select staff member…",
+        "type": "Compensation Type",
+        "salary": "Fixed Salary",
+        "amount": "Amount ($)",
+        "period": "Period",
+        "monthly": "Monthly",
+        "frequency": "Payout Frequency",
+        "notes": "Notes (optional)",
+        "cancel": "Cancel",
+        "save": "Save"
+      }
+    },
     "billing": {
       "partial": "請求ビューは一部のみ表示されています",
       "warning": "スキーマまたは現在の権限により、一部のテーブルが利用できない場合があります。",
-
       "metrics": {
         "processedRevenue": "処理済み収益",
         "transactions": "取引数",
@@ -260,7 +482,6 @@
         "subscriptions": "有効なサブスクリプション",
         "risk": "リスク / 収益漏れ"
       },
-
       "charts": {
         "revenueTrend": "収益トレンド",
         "statusMix": "取引ステータス構成",
@@ -274,13 +495,98 @@
         "revenueType": "収益タイプ構成"
       }
     },
-
+    "referrals": {
+      "title": "Referrals",
+      "new": "New Referral",
+      "incoming": {
+        "title": "Incoming Referrals",
+        "subtitle": "Referrals received by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      },
+      "outgoing": {
+        "title": "Outgoing Referrals",
+        "subtitle": "Referrals sent by your imaging center",
+        "timezone": "Times shown in:",
+        "empty": "No referrals yet."
+      }
+    },
+    "staff": {
+      "active": {
+        "title": "Active Staff Management",
+        "subtitle": "Edit roles and permissions, deactivate staff, or remove access.",
+        "search": "Search staff...",
+        "refresh": "Refresh",
+        "empty": "No active staff found."
+      },
+      "total": "total",
+      "stats": {
+        "active": "Active Staff",
+        "pending": "Pending Invitations",
+        "inactive": "Inactive / Disabled",
+        "admins": "Admins / Managers"
+      },
+      "invite": {
+        "title": "Invite Imaging Staff",
+        "subtitle": "Invite radiologists, technologists, billing, and front-desk team members with pre-configured permissions.",
+        "email": "Email",
+        "role": "Role",
+        "technologist": "Technologist",
+        "send": "Send Invite",
+        "preset": "Permission Preset"
+      },
+      "pending": {
+        "title": "Pending Invitations",
+        "subtitle": "Resend or cancel pending staff invitations before activation.",
+        "empty": "No pending invitations."
+      },
+      "audit": {
+        "title": "Staff Audit Trail",
+        "subtitle": "Recent staff and invitation activity for accountability.",
+        "empty": "No staff audit activity found."
+      },
+      "roles": {
+        "frontDesk": {
+          "title": "Front Desk / Reception",
+          "desc": "Intake, scheduling, check-in, referral verification, and queue balancing."
+        },
+        "technologist": {
+          "title": "Technologist",
+          "desc": "Scan execution, protocol adherence, patient preparation, and image quality capture."
+        },
+        "radiologist": {
+          "title": "Radiologist",
+          "desc": "Reporting, clinical review, critical findings workflows, and final sign-off."
+        },
+        "billing": {
+          "title": "Billing / Admin",
+          "desc": "Claims, invoices, payment reconciliation, and operational performance follow-up."
+        }
+      }
+    },
     "verify": {
       "title": "書類照会",
+      "description": "Verify the authenticity of any Docito document — treatment plans, referrals, prescriptions, and patient profiles.",
       "input": "照会コードを入力またはスキャン",
       "placeholder": "TP-XXXX / RF-XXXX / RX-XXXX / PT-XXXX",
       "verify": "照会する",
+      "types": {
+        "tp": "TP - Treatment Plan",
+        "rf": "RF - Referral",
+        "rx": "RX - Prescription",
+        "pt": "PT - Patient Profile"
+      },
       "scan": "QRコードスキャンに切り替え"
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": {
+        "title": "Imaging Center Profile"
+      },
+      "operational": {
+        "title": "Operational Settings"
+      },
+      "save": "Save Changes"
     }
   }
 }

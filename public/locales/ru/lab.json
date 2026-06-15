@@ -4,13 +4,11 @@
     "description": "Docito® for Laboratories unifies referral-based order intake, slot scheduling, sample tracking, results delivery, and audit-ready workflows—securely connecting labs with doctors, clinics, patients, and insurance.",
     "keywords": "lab management system, laboratory workflow software, referral-based lab orders, lab appointment scheduling, lab results delivery, medical diagnostics platform, healthcare referrals, HIPAA compliant lab software, multilingual healthcare SaaS"
   },
-
   "nav": {
     "backToHome": "Back to Docito",
     "signIn": "Sign In",
     "getStarted": "Get Started"
   },
-
   "hero": {
     "badge": "Laboratory Operations, Unified",
     "title1": "Modern Lab",
@@ -20,18 +18,28 @@
     "secondaryCta": "Contact Sales",
     "trustNote": "Compliance-first, HIPAA/GDPR-ready architecture with role-based access control."
   },
-
   "stats": {
     "title": "Built for high-throughput labs",
     "subtitle": "Visibility, auditability, and performance—without manual overhead",
     "cards": {
-      "orders": { "label": "Orders Managed", "value": "10K+" },
-      "turnaround": { "label": "Faster Turnaround", "value": "Up to 40%" },
-      "accuracy": { "label": "Reduced Errors", "value": "Up to 60%" },
-      "coverage": { "label": "Cross-Entity Coverage", "value": "Doctors • Clinics • Patients" }
+      "orders": {
+        "label": "Orders Managed",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "Faster Turnaround",
+        "value": "Up to 40%"
+      },
+      "accuracy": {
+        "label": "Reduced Errors",
+        "value": "Up to 60%"
+      },
+      "coverage": {
+        "label": "Cross-Entity Coverage",
+        "value": "Doctors • Clinics • Patients"
+      }
     }
   },
-
   "problems": {
     "badge": "Replace manual workflows",
     "title": "From chaos to control",
@@ -63,7 +71,6 @@
       }
     }
   },
-
   "features": {
     "badge": "Enterprise-grade lab tooling",
     "title": "Everything a modern lab needs",
@@ -95,7 +102,6 @@
       }
     }
   },
-
   "howItWorks": {
     "badge": "Simple. Structured. Secure.",
     "title": "How it works",
@@ -119,19 +125,29 @@
       }
     }
   },
-
   "integrations": {
     "badge": "Cross-entity collaboration",
     "title": "Built for the full healthcare ecosystem",
     "subtitle": "Labs don’t operate alone—Docito® connects referrals, appointments, records, and reporting.",
     "items": {
-      "doctors": { "title": "Doctors", "description": "Receive orders and return results with structured clinical context." },
-      "clinics": { "title": "Clinics", "description": "Coordinate referrals, scheduling, and multi-provider workflows." },
-      "patients": { "title": "Patients", "description": "Give patients secure access to results and visit-related files." },
-      "insurance": { "title": "Insurance", "description": "Support verification workflows and linkage between orders and coverage." }
+      "doctors": {
+        "title": "Doctors",
+        "description": "Receive orders and return results with structured clinical context."
+      },
+      "clinics": {
+        "title": "Clinics",
+        "description": "Coordinate referrals, scheduling, and multi-provider workflows."
+      },
+      "patients": {
+        "title": "Patients",
+        "description": "Give patients secure access to results and visit-related files."
+      },
+      "insurance": {
+        "title": "Insurance",
+        "description": "Support verification workflows and linkage between orders and coverage."
+      }
     }
   },
-
   "cta": {
     "title": "Bring your lab into the Docito® network",
     "description": "Digitize operations, reduce delays, and deliver results securely—while staying compliance-first and audit-ready.",
@@ -139,7 +155,6 @@
     "secondary": "Talk to Sales",
     "note": "Verification required. Your dashboard remains visible, but actions can be gated until approval."
   },
-
   "visuals": {
     "heroAlt": "Docito laboratory dashboard preview with orders, scheduling, and results delivery"
   }

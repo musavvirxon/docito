@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "Doktorlar", "description": "" },
-      "clinics": { "title": "Klinikler", "description": "" },
-      "labs": { "title": "Laboratuvarlar", "description": "" },
-      "pharmacies": { "title": "Eczaneler", "description": "" },
-      "insurance": { "title": "Sigorta", "description": "" },
-      "patients": { "title": "Hastalar", "description": "" }
+      "doctors": {
+        "title": "Doktorlar",
+        "description": ""
+      },
+      "clinics": {
+        "title": "Klinikler",
+        "description": ""
+      },
+      "labs": {
+        "title": "Laboratuvarlar",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "Eczaneler",
+        "description": ""
+      },
+      "insurance": {
+        "title": "Sigorta",
+        "description": ""
+      },
+      "patients": {
+        "title": "Hastalar",
+        "description": ""
+      }
     }
   },
   "ecosystem": {

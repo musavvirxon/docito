@@ -20,12 +20,6 @@
     "urgentCare": "Pronto Atendimento",
     "medicalCenter": "Centro Médico"
   },
-  "card": {
-    "locationAvailable": "Localização disponível",
-    "reviews": "avaliações",
-    "visitWebsite": "Visitar Website",
-    "viewPractice": "Ver Prática"
-  },
   "providers": {
     "header": "para Provedores",
     "nav": {
@@ -165,5 +159,11 @@
       },
       "copyright": "© {{year}} Docito, Inc. Todos os direitos reservados."
     }
+  },
+  "card": {
+    "locationAvailable": "Localização disponível",
+    "reviews": "avaliações",
+    "visitWebsite": "Visitar Website",
+    "viewPractice": "Ver Prática"
   }
 }

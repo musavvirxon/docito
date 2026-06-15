@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "医疗网络",
-    "title": {
-      "line1": "一个网络，一条患者旅程",
-      "line2": "端到端保持照护连贯"
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "医生、诊所、实验室、影像中心与药房互联，避免照护在不同机构之间断档。",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "开启 14 天免费试用",
       "secondary": "探索平台"
     },
-    "finePrint": "14 天免费试用 • 无需信用卡 • 随时取消"
+    "finePrint": "14 天免费试用 • 无需信用卡 • 随时取消",
+    "title": {
+      "line1": "一个网络，一条患者旅程",
+      "line2": "端到端保持照护连贯"
+    },
+    "subtitle": "医生、诊所、实验室、影像中心与药房互联，避免照护在不同机构之间断档。"
   },
   "search": {
     "badge": "查找医疗服务",

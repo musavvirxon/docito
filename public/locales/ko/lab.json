@@ -22,10 +22,22 @@
     "title": "고처리량 검사실을 위해",
     "subtitle": "가시성, 감사 가능성, 성능—수작업 부담 없이",
     "cards": {
-      "orders": { "label": "관리된 오더", "value": "10K+" },
-      "turnaround": { "label": "TAT 단축", "value": "최대 40%" },
-      "accuracy": { "label": "오류 감소", "value": "최대 60%" },
-      "coverage": { "label": "기관 간 연동", "value": "의사 • 클리닉 • 환자" }
+      "orders": {
+        "label": "관리된 오더",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "TAT 단축",
+        "value": "최대 40%"
+      },
+      "accuracy": {
+        "label": "오류 감소",
+        "value": "최대 60%"
+      },
+      "coverage": {
+        "label": "기관 간 연동",
+        "value": "의사 • 클리닉 • 환자"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "전체 의료 생태계를 위해",
     "subtitle": "검사실은 단독으로 운영되지 않습니다—Docito®는 의뢰, 예약, 기록, 리포팅을 연결합니다.",
     "items": {
-      "doctors": { "title": "의사", "description": "구조화된 임상 문맥으로 오더를 받고 결과를 반환합니다." },
-      "clinics": { "title": "클리닉", "description": "의뢰, 예약, 다기관 워크플로를 조율합니다." },
-      "patients": { "title": "환자", "description": "결과 및 방문 관련 파일에 대한 안전한 접근을 제공합니다." },
-      "insurance": { "title": "보험", "description": "보장 확인 및 오더-보장 연계를 지원합니다." }
+      "doctors": {
+        "title": "의사",
+        "description": "구조화된 임상 문맥으로 오더를 받고 결과를 반환합니다."
+      },
+      "clinics": {
+        "title": "클리닉",
+        "description": "의뢰, 예약, 다기관 워크플로를 조율합니다."
+      },
+      "patients": {
+        "title": "환자",
+        "description": "결과 및 방문 관련 파일에 대한 안전한 접근을 제공합니다."
+      },
+      "insurance": {
+        "title": "보험",
+        "description": "보장 확인 및 오더-보장 연계를 지원합니다."
+      }
     }
   },
   "cta": {

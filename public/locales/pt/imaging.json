@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "Médicos", "description": "" },
-      "clinics": { "title": "Clínicas", "description": "" },
-      "labs": { "title": "Laboratórios", "description": "" },
-      "pharmacies": { "title": "Farmácias", "description": "" },
-      "insurance": { "title": "Seguradoras", "description": "" },
-      "patients": { "title": "Pacientes", "description": "" }
+      "doctors": {
+        "title": "Médicos",
+        "description": ""
+      },
+      "clinics": {
+        "title": "Clínicas",
+        "description": ""
+      },
+      "labs": {
+        "title": "Laboratórios",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "Farmácias",
+        "description": ""
+      },
+      "insurance": {
+        "title": "Seguradoras",
+        "description": ""
+      },
+      "patients": {
+        "title": "Pacientes",
+        "description": ""
+      }
     }
   },
   "ecosystem": {

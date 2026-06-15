@@ -88,7 +88,6 @@
       }
     },
     "ecosystem": {
-      "titletitle": "Bağlantılı Ekosistem",
       "title": "Bağlantılı Ekosistem",
       "headline": "Sorunsuz sevkler, anında sonuçlar",
       "subheadline": "Laboratuvarlara, eczanelere ve görüntüleme merkezlerine tek tıkla sevk gönderin. Sonuçları doğrudan panelinizde alın.",
@@ -109,7 +108,8 @@
           "title": "Diğer Sağlayıcılar",
           "description": "Sorunsuz sevkler ve bakım koordinasyonu"
         }
-      }
+      },
+      "titletitle": "Bağlantılı Ekosistem"
     },
     "security": {
       "title": "Güvenlik ve Güven",

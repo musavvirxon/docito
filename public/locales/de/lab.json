@@ -22,10 +22,22 @@
     "title": "Für Hochdurchsatz-Labore entwickelt",
     "subtitle": "Transparenz, Auditierbarkeit und Performance — ohne manuellen Aufwand",
     "cards": {
-      "orders": { "label": "Verwaltete Aufträge", "value": "10K+" },
-      "turnaround": { "label": "Schnellere Durchlaufzeit", "value": "Bis zu 40%" },
-      "accuracy": { "label": "Weniger Fehler", "value": "Bis zu 60%" },
-      "coverage": { "label": "Abdeckung über Einheiten", "value": "Ärzte • Praxen • Patienten" }
+      "orders": {
+        "label": "Verwaltete Aufträge",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "Schnellere Durchlaufzeit",
+        "value": "Bis zu 40%"
+      },
+      "accuracy": {
+        "label": "Weniger Fehler",
+        "value": "Bis zu 60%"
+      },
+      "coverage": {
+        "label": "Abdeckung über Einheiten",
+        "value": "Ärzte • Praxen • Patienten"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "Für das gesamte Gesundheitsökosystem gebaut",
     "subtitle": "Labore arbeiten nicht isoliert — Docito® verbindet Überweisungen, Termine, Akten und Reporting.",
     "items": {
-      "doctors": { "title": "Ärzte", "description": "Aufträge empfangen und Ergebnisse mit strukturiertem klinischen Kontext zurückgeben." },
-      "clinics": { "title": "Praxen/Kliniken", "description": "Überweisungen, Planung und Multi-Provider-Workflows koordinieren." },
-      "patients": { "title": "Patienten", "description": "Patienten sicheren Zugriff auf Ergebnisse und visitbezogene Dateien geben." },
-      "insurance": { "title": "Versicherung", "description": "Prüf-Workflows unterstützen und Aufträge mit Deckung verknüpfen." }
+      "doctors": {
+        "title": "Ärzte",
+        "description": "Aufträge empfangen und Ergebnisse mit strukturiertem klinischen Kontext zurückgeben."
+      },
+      "clinics": {
+        "title": "Praxen/Kliniken",
+        "description": "Überweisungen, Planung und Multi-Provider-Workflows koordinieren."
+      },
+      "patients": {
+        "title": "Patienten",
+        "description": "Patienten sicheren Zugriff auf Ergebnisse und visitbezogene Dateien geben."
+      },
+      "insurance": {
+        "title": "Versicherung",
+        "description": "Prüf-Workflows unterstützen und Aufträge mit Deckung verknüpfen."
+      }
     }
   },
   "cta": {

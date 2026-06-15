@@ -21,5 +21,23 @@
     "deletedSuccessfully": "Muvaffaqiyatli o'chirildi",
     "errorOccurred": "Xato yuz berdi. Iltimos, qaytadan urinib ko'ring.",
     "changesDiscarded": "O'zgarishlar bekor qilindi"
+  },
+  "appointmentSession": {
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No Show"
+    },
+    "actions": {
+      "startSession": "Start Session",
+      "endSession": "End Session",
+      "joinCall": "Join Call",
+      "reschedule": "Reschedule",
+      "markNoShow": "Mark as No-Show",
+      "confirmAppointment": "Confirm Appointment"
+    }
   }
 }

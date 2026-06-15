@@ -1,4 +1,3 @@
-
 {
   "search": {
     "voiceSearch": "Голосовой поиск",
@@ -9,12 +8,30 @@
     "aiHintTerm": "cardiologist",
     "resultsLoading": "Загрузка результатов...",
     "trendingSearches": [
-      { "label": "Врач общей практики", "term": "General Practitioner" },
-      { "label": "Стоматолог", "term": "Dentist" },
-      { "label": "Проверка зрения", "term": "Eye Exam" },
-      { "label": "Анализ крови", "term": "Blood Test" },
-      { "label": "Кардиология", "term": "Cardiology" },
-      { "label": "Дерматология", "term": "Dermatology" }
+      {
+        "label": "Врач общей практики",
+        "term": "General Practitioner"
+      },
+      {
+        "label": "Стоматолог",
+        "term": "Dentist"
+      },
+      {
+        "label": "Проверка зрения",
+        "term": "Eye Exam"
+      },
+      {
+        "label": "Анализ крови",
+        "term": "Blood Test"
+      },
+      {
+        "label": "Кардиология",
+        "term": "Cardiology"
+      },
+      {
+        "label": "Дерматология",
+        "term": "Dermatology"
+      }
     ]
   }
 }

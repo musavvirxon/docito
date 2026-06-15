@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "Tüm bakımınız, senkron",
-    "title": {
-      "line1": "Daha az bürokrasi. Daha çok bakım.",
-      "line2": "Tüm sisteminiz için tek platform."
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Docito randevu, kayıtlar, laboratuvarlar, görüntüleme, reçeteler ve ödemeleri tek bir hasta yolculuğunda birleştirir — klinikler ve hastalar için.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "14 günlük ücretsiz denemeyi başlat",
       "secondary": "Nasıl çalışır?"
     },
-    "finePrint": "14 gün ücretsiz • Kart gerekmez • İstediğiniz zaman iptal"
+    "finePrint": "14 gün ücretsiz • Kart gerekmez • İstediğiniz zaman iptal",
+    "title": {
+      "line1": "Daha az bürokrasi. Daha çok bakım.",
+      "line2": "Tüm sisteminiz için tek platform."
+    },
+    "subtitle": "Docito randevu, kayıtlar, laboratuvarlar, görüntüleme, reçeteler ve ödemeleri tek bir hasta yolculuğunda birleştirir — klinikler ve hastalar için."
   },
   "search": {
     "badge": "Akıllı Arama",

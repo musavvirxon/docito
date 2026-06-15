@@ -21,5 +21,23 @@
     "deletedSuccessfully": "Успешно удалено",
     "errorOccurred": "Произошла ошибка. Пожалуйста, попробуйте снова.",
     "changesDiscarded": "Изменения отменены"
+  },
+  "appointmentSession": {
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No Show"
+    },
+    "actions": {
+      "startSession": "Start Session",
+      "endSession": "End Session",
+      "joinCall": "Join Call",
+      "reschedule": "Reschedule",
+      "markNoShow": "Mark as No-Show",
+      "confirmAppointment": "Confirm Appointment"
+    }
   }
 }

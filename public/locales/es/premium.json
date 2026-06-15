@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "Red de Salud",
-    "title": {
-      "line1": "Una red, un recorrido del paciente",
-      "line2": "La atención se mantiene conectada de punta a punta"
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Médicos, clínicas, laboratorios, centros de imagen y farmacias—conectados para que la atención no se pierda entre lugares.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "Inicia prueba gratis de 14 días",
       "secondary": "Explorar plataforma"
     },
-    "finePrint": "Prueba gratis 14 días • Sin tarjeta • Cancela cuando quieras"
+    "finePrint": "Prueba gratis 14 días • Sin tarjeta • Cancela cuando quieras",
+    "title": {
+      "line1": "Una red, un recorrido del paciente",
+      "line2": "La atención se mantiene conectada de punta a punta"
+    },
+    "subtitle": "Médicos, clínicas, laboratorios, centros de imagen y farmacias—conectados para que la atención no se pierda entre lugares."
   },
   "search": {
     "badge": "Encontrar atención",

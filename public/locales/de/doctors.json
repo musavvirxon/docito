@@ -434,24 +434,6 @@
     "settings": {
       "title": "Einstellungen",
       "subtitle": "Kontoeinstellungen verwalten",
-      "account": "Konto",
-      "notifications": "Benachrichtigungen",
-      "privacy": "Datenschutz",
-      "security": "Sicherheit",
-      "save": "Änderungen speichern",
-      "changePassword": "Passwort ändern",
-      "currentPassword": "Aktuelles Passwort",
-      "newPassword": "Neues Passwort",
-      "confirmPassword": "Passwort bestätigen",
-      "emailNotifications": "E-Mail-Benachrichtigungen",
-      "smsNotifications": "SMS-Benachrichtigungen",
-      "appointmentReminders": "Terminerinnerungen",
-      "medicationReminders": "Medikamentenerinnerungen",
-      "marketingEmails": "Marketing-E-Mails",
-      "profileVisibility": "Profilsichtbarkeit",
-      "shareDataWithDoctors": "Daten mit Ärzten teilen",
-      "showActivityStatus": "Aktivitätsstatus anzeigen",
-      "instructions": "Kontoeinstellungen, Benachrichtigungen und Datenschutzeinstellungen verwalten",
       "account": {
         "title": "Persönliche Informationen",
         "description": "Persönliche Daten aktualisieren",
@@ -497,7 +479,21 @@
         "newPassword": "Neues Passwort",
         "confirmPassword": "Neues Passwort bestätigen",
         "updatePassword": "Passwort aktualisieren"
-      }
+      },
+      "save": "Änderungen speichern",
+      "changePassword": "Passwort ändern",
+      "currentPassword": "Aktuelles Passwort",
+      "newPassword": "Neues Passwort",
+      "confirmPassword": "Passwort bestätigen",
+      "emailNotifications": "E-Mail-Benachrichtigungen",
+      "smsNotifications": "SMS-Benachrichtigungen",
+      "appointmentReminders": "Terminerinnerungen",
+      "medicationReminders": "Medikamentenerinnerungen",
+      "marketingEmails": "Marketing-E-Mails",
+      "profileVisibility": "Profilsichtbarkeit",
+      "shareDataWithDoctors": "Daten mit Ärzten teilen",
+      "showActivityStatus": "Aktivitätsstatus anzeigen",
+      "instructions": "Kontoeinstellungen, Benachrichtigungen und Datenschutzeinstellungen verwalten"
     },
     "filters": {
       "title": "Filter",
@@ -888,7 +884,7 @@
     },
     "services": {
       "title": "Meine Leistungen",
-      "description": "Leistungen verwalten, die Sie Patienten anbieten",
+      "description": "Beschreibung",
       "assignedServices": "Zugewiesene Leistungen",
       "assignedServicesDesc": "Leistungen, die Ihnen von der Klinik zugewiesen wurden",
       "assignedByClinic": "Von der Klinikleitung zugewiesen",
@@ -900,7 +896,6 @@
       "serviceNamePlaceholder": "z.B. Allgemeine Beratung",
       "category": "Kategorie",
       "selectCategory": "Kategorie auswählen",
-      "description": "Beschreibung",
       "descriptionPlaceholder": "Beschreiben Sie die Leistung...",
       "price": "Preis ($)",
       "duration": "Dauer (in Minuten)",
@@ -1300,7 +1295,15 @@
     "settings": {
       "title": "Einstellungen",
       "description": "Kontoeinstellungen und Sicherheit verwalten",
-      "account": "Konto",
+      "account": {
+        "title": "Kontoinformationen",
+        "description": "Grundlegende Kontoinformationen aktualisieren",
+        "email": "E-Mail-Adresse",
+        "phone": "Telefonnummer",
+        "timezone": "Zeitzone",
+        "language": "Sprache",
+        "saveChanges": "Änderungen speichern"
+      },
       "notifications": "Benachrichtigungen",
       "calendar": "Kalender",
       "security": "Sicherheit",
@@ -1321,15 +1324,6 @@
         "selectTimezone": "Zeitzone auswählen",
         "selectLanguage": "Sprache auswählen",
         "saving": "Wird gespeichert...",
-        "saveChanges": "Änderungen speichern"
-      },
-      "account": {
-        "title": "Kontoinformationen",
-        "description": "Grundlegende Kontoinformationen aktualisieren",
-        "email": "E-Mail-Adresse",
-        "phone": "Telefonnummer",
-        "timezone": "Zeitzone",
-        "language": "Sprache",
         "saveChanges": "Änderungen speichern"
       },
       "personalInfo": "Persönliche Informationen",
@@ -1588,5 +1582,65 @@
     "services": {
       "title": "Leistungen"
     }
+  },
+  "profile": {
+    "about": "About",
+    "noBio": "No biography provided yet.",
+    "yearsExp": "yrs exp.",
+    "yearsExperience": "Years of experience",
+    "reviews": "reviews",
+    "verified": "Verified",
+    "acceptingPatients": "Accepting patients",
+    "videoConsult": "Video consults",
+    "bookAppointment": "Book an appointment",
+    "consultationFee": "Consultation fee",
+    "bookNow": "Book now",
+    "messageDoctor": "Message doctor",
+    "save": "Save",
+    "saved": "Saved",
+    "share": "Share",
+    "secureBookingNote": "Secure booking. Your data is encrypted and never shared.",
+    "services": "Services & conditions",
+    "availableTypes": "Available consultation types",
+    "patientReviews": "Patient reviews",
+    "noReviewsYet": "No reviews yet",
+    "basedOn": "Based on {{count}} reviews",
+    "clinicAffiliation": "Clinic affiliation"
+  },
+  "publicProfile": {
+    "about": {
+      "experienceDescription": "Dedicated healthcare professional with proven results"
+    },
+    "availability": {
+      "title": "Next available",
+      "seeAll": "See all availability"
+    },
+    "reviews": {
+      "emptyState": "Reviews appear after verified visits. Be the first to book and leave a review."
+    },
+    "trust": {
+      "headline": "Your data. Your control.",
+      "subheadline": "Security and privacy come first on every booking.",
+      "verified": {
+        "title": "Verified provider",
+        "description": "Credentials and licenses checked"
+      },
+      "encrypted": {
+        "title": "End-to-end encrypted",
+        "description": "Messages and files stay private"
+      },
+      "hipaa": {
+        "title": "HIPAA & GDPR",
+        "description": "Compliant with global standards"
+      },
+      "noSell": {
+        "title": "No data selling",
+        "description": "We never sell your information"
+      }
+    }
+  },
+  "actions": {
+    "browse": "Browse all doctors",
+    "viewClinic": "View clinic"
   }
 }

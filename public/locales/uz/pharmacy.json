@@ -22,10 +22,22 @@
     "title": "Yuqori oqimli dorixonalar uchun",
     "subtitle": "Tezlik, xavfsizlik va kuzatuvchanlik — qo‘lda ishlarni kamaytirgan holda",
     "cards": {
-      "rx": { "label": "Qayta ishlangan retseptlar", "value": "25K+" },
-      "refills": { "label": "Tezroq refill", "value": "50% gacha" },
-      "stock": { "label": "Kamroq stockout", "value": "35% gacha" },
-      "coverage": { "label": "Ekotizim bo‘ylab qamrov", "value": "Shifokorlar • Klinikalar • Bemorlar" }
+      "rx": {
+        "label": "Qayta ishlangan retseptlar",
+        "value": "25K+"
+      },
+      "refills": {
+        "label": "Tezroq refill",
+        "value": "50% gacha"
+      },
+      "stock": {
+        "label": "Kamroq stockout",
+        "value": "35% gacha"
+      },
+      "coverage": {
+        "label": "Ekotizim bo‘ylab qamrov",
+        "value": "Shifokorlar • Klinikalar • Bemorlar"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "To‘liq sog‘liqni saqlash ekotizimi uchun",
     "subtitle": "Dorixona yolg‘iz ishlamaydi — Docito® retsept, uchrashuv, yozuv, laboratoriya va sug‘urtani bog‘laydi.",
     "items": {
-      "doctors": { "title": "Shifokorlar", "description": "E-retseptlar va aniqlashtirishlarni strukturali klinik kontekst bilan oling." },
-      "clinics": { "title": "Klinikalar", "description": "Ko‘p provayderli workflow va bemor bilan aloqa jarayonlarini muvofiqlashtiring." },
-      "patients": { "title": "Bemorlar", "description": "Olib ketish/yetkazish holati bo‘yicha xavfsiz yangilanishlar va fayllarga kirish bering." },
-      "insurance": { "title": "Sug‘urta", "description": "Har bir retsept bilan bog‘langan coverage tekshiruvi va claim workflow-ni qo‘llab-quvvatlang." }
+      "doctors": {
+        "title": "Shifokorlar",
+        "description": "E-retseptlar va aniqlashtirishlarni strukturali klinik kontekst bilan oling."
+      },
+      "clinics": {
+        "title": "Klinikalar",
+        "description": "Ko‘p provayderli workflow va bemor bilan aloqa jarayonlarini muvofiqlashtiring."
+      },
+      "patients": {
+        "title": "Bemorlar",
+        "description": "Olib ketish/yetkazish holati bo‘yicha xavfsiz yangilanishlar va fayllarga kirish bering."
+      },
+      "insurance": {
+        "title": "Sug‘urta",
+        "description": "Har bir retsept bilan bog‘langan coverage tekshiruvi va claim workflow-ni qo‘llab-quvvatlang."
+      }
     }
   },
   "cta": {

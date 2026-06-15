@@ -22,10 +22,22 @@
     "title": "为高通量实验室打造",
     "subtitle": "可视化、可审计、强性能——降低人工成本",
     "cards": {
-      "orders": { "label": "已管理订单", "value": "10K+" },
-      "turnaround": { "label": "更快周转时间", "value": "最高 40%" },
-      "accuracy": { "label": "减少错误", "value": "最高 60%" },
-      "coverage": { "label": "跨机构协作覆盖", "value": "医生 • 诊所 • 患者" }
+      "orders": {
+        "label": "已管理订单",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "更快周转时间",
+        "value": "最高 40%"
+      },
+      "accuracy": {
+        "label": "减少错误",
+        "value": "最高 60%"
+      },
+      "coverage": {
+        "label": "跨机构协作覆盖",
+        "value": "医生 • 诊所 • 患者"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "为完整医疗生态而生",
     "subtitle": "实验室并非孤岛——Docito® 连接转诊、预约、记录与报表。",
     "items": {
-      "doctors": { "title": "医生", "description": "接收医嘱并回传结果，同时保留结构化临床信息。" },
-      "clinics": { "title": "诊所", "description": "协调转诊、排班与多机构流程。" },
-      "patients": { "title": "患者", "description": "为患者提供结果与就诊相关文件的安全访问。" },
-      "insurance": { "title": "保险", "description": "支持保障验证与订单/保障关联流程。" }
+      "doctors": {
+        "title": "医生",
+        "description": "接收医嘱并回传结果，同时保留结构化临床信息。"
+      },
+      "clinics": {
+        "title": "诊所",
+        "description": "协调转诊、排班与多机构流程。"
+      },
+      "patients": {
+        "title": "患者",
+        "description": "为患者提供结果与就诊相关文件的安全访问。"
+      },
+      "insurance": {
+        "title": "保险",
+        "description": "支持保障验证与订单/保障关联流程。"
+      }
     }
   },
   "cta": {

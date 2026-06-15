@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "의료진", "description": "" },
-      "clinics": { "title": "클리닉", "description": "" },
-      "labs": { "title": "검사기관", "description": "" },
-      "pharmacies": { "title": "약국", "description": "" },
-      "insurance": { "title": "보험", "description": "" },
-      "patients": { "title": "환자", "description": "" }
+      "doctors": {
+        "title": "의료진",
+        "description": ""
+      },
+      "clinics": {
+        "title": "클리닉",
+        "description": ""
+      },
+      "labs": {
+        "title": "검사기관",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "약국",
+        "description": ""
+      },
+      "insurance": {
+        "title": "보험",
+        "description": ""
+      },
+      "patients": {
+        "title": "환자",
+        "description": ""
+      }
     }
   },
   "ecosystem": {

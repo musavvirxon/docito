@@ -100,12 +100,30 @@
   },
   "integrations": {
     "items": {
-      "doctors": { "title": "Shifokorlar", "description": "" },
-      "clinics": { "title": "Klinikalar", "description": "" },
-      "labs": { "title": "Laboratoriyalar", "description": "" },
-      "pharmacies": { "title": "Dorixonalar", "description": "" },
-      "insurance": { "title": "Sug‘urta", "description": "" },
-      "patients": { "title": "Bemorlar", "description": "" }
+      "doctors": {
+        "title": "Shifokorlar",
+        "description": ""
+      },
+      "clinics": {
+        "title": "Klinikalar",
+        "description": ""
+      },
+      "labs": {
+        "title": "Laboratoriyalar",
+        "description": ""
+      },
+      "pharmacies": {
+        "title": "Dorixonalar",
+        "description": ""
+      },
+      "insurance": {
+        "title": "Sug‘urta",
+        "description": ""
+      },
+      "patients": {
+        "title": "Bemorlar",
+        "description": ""
+      }
     }
   },
   "ecosystem": {

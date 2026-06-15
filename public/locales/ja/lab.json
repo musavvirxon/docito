@@ -22,10 +22,22 @@
     "title": "高スループット検査室のために",
     "subtitle": "可視化・監査性・性能を、手作業負担なしで",
     "cards": {
-      "orders": { "label": "管理オーダー数", "value": "10K+" },
-      "turnaround": { "label": "ターンアラウンド短縮", "value": "最大40%" },
-      "accuracy": { "label": "エラー低減", "value": "最大60%" },
-      "coverage": { "label": "エンティティ横断連携", "value": "医師 • クリニック • 患者" }
+      "orders": {
+        "label": "管理オーダー数",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "ターンアラウンド短縮",
+        "value": "最大40%"
+      },
+      "accuracy": {
+        "label": "エラー低減",
+        "value": "最大60%"
+      },
+      "coverage": {
+        "label": "エンティティ横断連携",
+        "value": "医師 • クリニック • 患者"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "医療エコシステム全体のために",
     "subtitle": "ラボは単独ではありません。Docito® が紹介、予約、記録、レポートを接続します。",
     "items": {
-      "doctors": { "title": "医師", "description": "構造化された臨床文脈とともにオーダーを受け、結果を返送。" },
-      "clinics": { "title": "クリニック", "description": "紹介・予約・複数提供者のワークフローを連携。" },
-      "patients": { "title": "患者", "description": "結果と関連ファイルへの安全なアクセスを提供。" },
-      "insurance": { "title": "保険", "description": "適用確認とオーダー・補償の連携を支援。" }
+      "doctors": {
+        "title": "医師",
+        "description": "構造化された臨床文脈とともにオーダーを受け、結果を返送。"
+      },
+      "clinics": {
+        "title": "クリニック",
+        "description": "紹介・予約・複数提供者のワークフローを連携。"
+      },
+      "patients": {
+        "title": "患者",
+        "description": "結果と関連ファイルへの安全なアクセスを提供。"
+      },
+      "insurance": {
+        "title": "保険",
+        "description": "適用確認とオーダー・補償の連携を支援。"
+      }
     }
   },
   "cta": {

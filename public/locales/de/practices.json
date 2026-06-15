@@ -20,12 +20,6 @@
     "urgentCare": "Notfallversorgung",
     "medicalCenter": "Medizinisches Zentrum"
   },
-  "card": {
-    "locationAvailable": "Standort verfügbar",
-    "reviews": "Bewertungen",
-    "visitWebsite": "Website besuchen",
-    "viewPractice": "Praxis ansehen"
-  },
   "providers": {
     "header": "für Anbieter",
     "nav": {
@@ -165,5 +159,11 @@
       },
       "copyright": "© {{year}} Docito, Inc. Alle Rechte vorbehalten."
     }
+  },
+  "card": {
+    "locationAvailable": "Standort verfügbar",
+    "reviews": "Bewertungen",
+    "visitWebsite": "Website besuchen",
+    "viewPractice": "Praxis ansehen"
   }
 }

@@ -72,6 +72,7 @@
     }
   },
   "specialties": {
+    "specialtiesSubtitle": "Tüm tıbbi uzmanlık alanlarında uzman bulun",
     "title": "Tıbbi Uzmanlıklar",
     "subtitle": "Sertifikalı uzmanlarla bağlantı kurun",
     "cardiology": "Kardiyoloji",
@@ -82,8 +83,7 @@
     "ophthalmology": "Göz Hastalıkları",
     "neurology": "Nöroloji",
     "orthopedics": "Ortopedi",
-    "pediatrics": "Pediatri",
-    "specialtiesSubtitle": "Tüm tıbbi uzmanlık alanlarında uzman bulun"
+    "pediatrics": "Pediatri"
   },
   "topSpecialists": {
     "title": "Öne Çıkan Uzmanlar",
@@ -225,6 +225,15 @@
       "cookies": "Çerezler",
       "about": "Hakkında",
       "features": "Özellikler",
+      "findDoctors": "Find Doctors",
+      "searchDoctors": "Search Doctors",
+      "specialties": "Specialties",
+      "howItWorks": "How It Works",
+      "helpCenter": "Help Center",
+      "contact": "Contact",
+      "faqs": "FAQs",
+      "support": "Support",
+      "hipaa": "HIPAA",
       "refundPolicy": "İade Politikası"
     }
   },

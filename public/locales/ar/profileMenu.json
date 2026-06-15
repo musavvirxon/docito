@@ -7,13 +7,21 @@
   "switchRole": "تبديل الدور",
   "current": "الحالي",
   "signOut": "تسجيل خروج",
-
   "profile": {
     "account": "الحساب",
     "back": "رجوع",
     "signOut": "تسجيل خروج",
     "loading": "جاري التحميل…",
-
+    "currency": {
+      "title": "Currency",
+      "description": "Choose the currency used to display all amounts across treatment plans, appointments, billing and finance analytics.",
+      "label": "Display currency",
+      "preview": "Preview",
+      "note": "Source amounts in other currencies are converted automatically using daily ECB exchange rates.",
+      "saved": "Currency preference updated",
+      "failed": "Could not update currency",
+      "saving": "Saving…"
+    },
     "nameLabels": {
       "clinicName": "اسم العيادة",
       "labName": "اسم المختبر",
@@ -21,7 +29,6 @@
       "imagingName": "اسم مركز التصوير",
       "fullName": "الاسم الكامل"
     },
-
     "placeholders": {
       "clinicName": "أدخل اسم العيادة",
       "labName": "أدخل اسم المختبر",
@@ -29,17 +36,14 @@
       "imagingName": "أدخل اسم مركز التصوير",
       "fullName": "أدخل اسمك الكامل"
     },
-
     "tabs": {
       "healthProfile": "الملف الصحي"
     },
-
     "menu": {
       "settings": "الإعدادات",
       "billing": "الفواتير",
       "analytics": "التحليلات"
     },
-
     "profileSection": {
       "title": "الملف الشخصي",
       "description": "قم بتحديث معلوماتك الشخصية.",
@@ -48,7 +52,6 @@
       "phone": "الهاتف",
       "save": "حفظ الملف الشخصي"
     },
-
     "security": {
       "title": "الأمان",
       "description": "تغيير كلمة المرور الخاصة بك.",
@@ -58,7 +61,6 @@
       "update": "تحديث كلمة المرور",
       "tip": "نصيحة: استخدم مدير كلمات المرور وتجنب إعادة استخدام كلمات المرور."
     },
-
     "toasts": {
       "profileUpdated": "تم تحديث الملف الشخصي",
       "profileFailed": "فشل تحديث الملف الشخصي",
@@ -70,7 +72,6 @@
       "settingsFailed": "فشل حفظ الإعدادات",
       "settingsLoadFailed": "فشل تحميل الإعدادات"
     },
-
     "settings": {
       "title": "الإعدادات",
       "appPreferences": "تمت مزامنة تفضيلات التطبيق مع حسابك.",
@@ -94,7 +95,6 @@
       "selectLanguage": "اختر اللغة",
       "save": "حفظ"
     },
-
     "billing": {
       "title": "الفواتير",
       "description": "طرق الدفع وسجل الفواتير الخاص بك.",
@@ -107,7 +107,6 @@
       "invoices": "الفواتير",
       "noInvoices": "لا توجد فواتير بعد."
     },
-
     "analytics": {
       "title": "التحليلات",
       "description": "ملخص سريع لآخر 30 يومًا.",

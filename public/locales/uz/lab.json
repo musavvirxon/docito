@@ -22,10 +22,22 @@
     "title": "Yuqori oqimli laboratoriyalar uchun",
     "subtitle": "Ko‘rinuvchanlik, audit va unumdorlik — qo‘lda ishlarni kamaytirgan holda",
     "cards": {
-      "orders": { "label": "Boshqarilgan buyurtmalar", "value": "10K+" },
-      "turnaround": { "label": "Tezroq TAT", "value": "40% gacha" },
-      "accuracy": { "label": "Xatolar kamayishi", "value": "60% gacha" },
-      "coverage": { "label": "Ekotizim bo‘ylab qamrov", "value": "Shifokorlar • Klinikalar • Bemorlar" }
+      "orders": {
+        "label": "Boshqarilgan buyurtmalar",
+        "value": "10K+"
+      },
+      "turnaround": {
+        "label": "Tezroq TAT",
+        "value": "40% gacha"
+      },
+      "accuracy": {
+        "label": "Xatolar kamayishi",
+        "value": "60% gacha"
+      },
+      "coverage": {
+        "label": "Ekotizim bo‘ylab qamrov",
+        "value": "Shifokorlar • Klinikalar • Bemorlar"
+      }
     }
   },
   "problems": {
@@ -118,10 +130,22 @@
     "title": "To‘liq sog‘liqni saqlash ekotizimi uchun",
     "subtitle": "Laboratoriya yolg‘iz ishlamaydi — Docito® yo‘llanma, uchrashuv, yozuv va hisobotni bog‘laydi.",
     "items": {
-      "doctors": { "title": "Shifokorlar", "description": "Buyurtmalarni oling va natijalarni klinik kontekst bilan qaytaring." },
-      "clinics": { "title": "Klinikalar", "description": "Yo‘llanma, jadval va ko‘p provayderli jarayonlarni muvofiqlashtiring." },
-      "patients": { "title": "Bemorlar", "description": "Bemorlarga natija va tegishli fayllarga xavfsiz kirish bering." },
-      "insurance": { "title": "Sug‘urta", "description": "Qamrovni tekshirish va buyurtma–polis bog‘liqligini qo‘llab-quvvatlang." }
+      "doctors": {
+        "title": "Shifokorlar",
+        "description": "Buyurtmalarni oling va natijalarni klinik kontekst bilan qaytaring."
+      },
+      "clinics": {
+        "title": "Klinikalar",
+        "description": "Yo‘llanma, jadval va ko‘p provayderli jarayonlarni muvofiqlashtiring."
+      },
+      "patients": {
+        "title": "Bemorlar",
+        "description": "Bemorlarga natija va tegishli fayllarga xavfsiz kirish bering."
+      },
+      "insurance": {
+        "title": "Sug‘urta",
+        "description": "Qamrovni tekshirish va buyurtma–polis bog‘liqligini qo‘llab-quvvatlang."
+      }
     }
   },
   "cta": {

@@ -1,16 +1,21 @@
 {
   "hero": {
     "badge": "Gesundheitsnetzwerk",
-    "title": {
-      "line1": "Ein Netzwerk, eine Patient:innen-Reise",
-      "line2": "Versorgung bleibt durchgängig verbunden"
+    "docitoNetworkTitle": {
+      "line1": "Less admin. More",
+      "line2": "Care"
     },
-    "subtitle": "Ärzt:innen, Kliniken, Labore, Bildgebungszentren und Apotheken—verbunden, damit Versorgung nicht zwischen Orten verloren geht.",
+    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
     "cta": {
       "primary": "14 Tage kostenlos starten",
       "secondary": "Plattform entdecken"
     },
-    "finePrint": "14 Tage gratis • Keine Kreditkarte erforderlich • Jederzeit kündbar"
+    "finePrint": "14 Tage gratis • Keine Kreditkarte erforderlich • Jederzeit kündbar",
+    "title": {
+      "line1": "Ein Netzwerk, eine Patient:innen-Reise",
+      "line2": "Versorgung bleibt durchgängig verbunden"
+    },
+    "subtitle": "Ärzt:innen, Kliniken, Labore, Bildgebungszentren und Apotheken—verbunden, damit Versorgung nicht zwischen Orten verloren geht."
   },
   "search": {
     "badge": "Versorgung finden",
