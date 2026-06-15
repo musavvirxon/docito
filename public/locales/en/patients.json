@@ -348,5 +348,39 @@
     "noPatientsFound": "No patients found",
     "addNewPatientButton": "Add New Patient",
     "loadFailed": "Failed to load patients"
+  },
+  "treatmentPlans": {
+    "title": "Treatment Plans",
+    "subtitle": "View your treatment plans and track progress",
+    "emptyTitle": "No Treatment Plans",
+    "emptyDesc": "Your treatment plans will appear here after your doctor creates them",
+    "progress": "Progress",
+    "created": "Created {{date}}",
+    "viewFullPlan": "View Full Plan",
+    "downloadPdf": "Download PDF",
+    "clickToView": "Click \"View Full Plan\" to see all procedures and details",
+    "treatmentProcedures": "Treatment Procedures",
+    "dialogDesc": "View your treatment plan details and procedures",
+    "status": "Status",
+    "totalCost": "Total Cost",
+    "createdLabel": "Created",
+    "notes": "Notes",
+    "procedures": "Procedures",
+    "noProcedures": "No procedures in this plan",
+    "close": "Close",
+    "na": "N/A",
+    "procedure": "Procedure",
+    "category": "Category",
+    "cost": "Cost",
+    "generatingPdf": "Generating PDF...",
+    "pdfSuccess": "PDF downloaded successfully",
+    "pdfFailed": "Failed to download PDF",
+    "loadProceduresFailed": "Failed to load procedures",
+    "statusLabels": {
+      "pending": "Pending",
+      "active": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
   }
 }
