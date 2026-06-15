@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,10 +51,12 @@ export function DiagnosticOrderCreator({
   hasImagingService,
   onSuccess 
 }: DiagnosticOrderCreatorProps) {
+  const { t } = useTranslation('clinic');
   const { createLabOrder, loading: labLoading } = useClinicLabOrders();
   const { createImagingOrder, loading: imagingLoading } = useClinicImagingOrders();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(hasLabService ? 'lab' : 'imaging');
+  
   
   // Lab form state
   const [labForm, setLabForm] = useState({
