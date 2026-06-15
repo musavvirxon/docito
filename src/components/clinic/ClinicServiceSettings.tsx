@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { 
   FlaskConical, 
@@ -28,7 +28,8 @@ export function ClinicServiceSettings({
   hasImagingService,
   onServiceToggle 
 }: ClinicServiceSettingsProps) {
-  const { departments, toggleService, loading } = useClinicDepartments();
+  const { t } = useTranslation('clinic');
+  const { toggleService, loading } = useClinicDepartments();
   const [localLabEnabled, setLocalLabEnabled] = useState(hasLabService);
   const [localImagingEnabled, setLocalImagingEnabled] = useState(hasImagingService);
 
@@ -52,15 +53,17 @@ export function ClinicServiceSettings({
     }
   };
 
+  const noteItems = t('serviceSettings.notes.items', { returnObjects: true }) as string[];
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Settings2 className="h-5 w-5" />
-          Service Departments
+          {t('serviceSettings.title')}
         </CardTitle>
         <CardDescription>
-          Enable in-house diagnostic services for your clinic
+          {t('serviceSettings.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -73,25 +76,25 @@ export function ClinicServiceSettings({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Label htmlFor="lab-service" className="text-base font-medium">
-                  In-House Laboratory
+                  {t('serviceSettings.lab.title')}
                 </Label>
                 {localLabEnabled && (
                   <Badge variant="outline" className="text-green-600 border-green-600">
-                    <CheckCircle className="h-3 w-3 mr-1" /> Active
+                    <CheckCircle className="h-3 w-3 mr-1" /> {t('serviceSettings.active')}
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                Enable blood tests, diagnostics, urinalysis, and other laboratory services
+                {t('serviceSettings.lab.description')}
               </p>
               {localLabEnabled && (
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    Lab Technicians
+                    {t('serviceSettings.lab.technicians')}
                   </span>
                   <span>•</span>
-                  <span>CBC, Hormones, Microbiology, etc.</span>
+                  <span>{t('serviceSettings.lab.examples')}</span>
                 </div>
               )}
             </div>
@@ -113,25 +116,25 @@ export function ClinicServiceSettings({
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Label htmlFor="imaging-service" className="text-base font-medium">
-                  In-House Imaging Center
+                  {t('serviceSettings.imaging.title')}
                 </Label>
                 {localImagingEnabled && (
                   <Badge variant="outline" className="text-green-600 border-green-600">
-                    <CheckCircle className="h-3 w-3 mr-1" /> Active
+                    <CheckCircle className="h-3 w-3 mr-1" /> {t('serviceSettings.active')}
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                Enable X-Ray, CT, MRI, Ultrasound, CBCT, and other imaging services
+                {t('serviceSettings.imaging.description')}
               </p>
               {localImagingEnabled && (
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    Imaging Technicians
+                    {t('serviceSettings.imaging.technicians')}
                   </span>
                   <span>•</span>
-                  <span>X-Ray, CT, MRI, Ultrasound, CBCT</span>
+                  <span>{t('serviceSettings.imaging.examples')}</span>
                 </div>
               )}
             </div>
@@ -150,12 +153,9 @@ export function ClinicServiceSettings({
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
             <div className="text-sm text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">Important Notes:</p>
+              <p className="font-medium text-foreground mb-1">{t('serviceSettings.notes.title')}</p>
               <ul className="list-disc list-inside space-y-1">
-                <li>Enabling a service will create a new department dashboard</li>
-                <li>You can assign technicians to each department</li>
-                <li>Doctors can order tests directly from patient records</li>
-                <li>Results are automatically visible to patients once completed</li>
+                {noteItems.map((item, i) => <li key={i}>{item}</li>)}
               </ul>
             </div>
           </div>
