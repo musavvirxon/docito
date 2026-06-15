@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface BackButtonProps {
@@ -13,10 +14,10 @@ const BackButton = ({
   fallbackPath
 }: BackButtonProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation("common");
   const { profile } = useAuth();
-  
+
   const handleBack = () => {
-    // Get the correct dashboard path based on user role
     const getDashboardPath = () => {
       if (profile?.role === 'doctor') return '/doctor-dashboard';
       if (profile?.role === 'admin') return '/practice-dashboard';
@@ -27,13 +28,13 @@ const BackButton = ({
     navigate(targetPath);
   };
   return (
-    <Button 
-      variant="ghost" 
+    <Button
+      variant="ghost"
       onClick={handleBack}
       className={`flex items-center gap-2 ${className}`}
     >
       <ChevronLeft className="w-4 h-4" />
-      Back
+      {t("actions.back")}
     </Button>
   );
 };

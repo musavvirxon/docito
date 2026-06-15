@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, User, LogOut, Settings, Bell as BellIcon, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -25,6 +26,7 @@ import {
 } from "@/lib/rbac";
 
 const Header = () => {
+  const { t } = useTranslation("common");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -44,13 +46,13 @@ const Header = () => {
   }, [location.pathname]);
 
   const navLinks = [
-    { name: "Doctors", href: "/doctor" },
-    { name: "Medical Practices", href: "/practice" },
-    { name: "Pharmacies", href: "/pharmacy" },
-    { name: "Laboratories", href: "/lab" },
-    { name: "Imaging Centers", href: "/imaging-center" },
-    { name: "Features", href: "/features" },
-    { name: "About Us", href: "/about" },
+    { name: t("header.nav.doctors"), href: "/doctor" },
+    { name: t("header.nav.practices"), href: "/practice" },
+    { name: t("header.nav.pharmacies"), href: "/pharmacy" },
+    { name: t("header.nav.labs"), href: "/lab" },
+    { name: t("header.nav.imaging"), href: "/imaging-center" },
+    { name: t("header.nav.features"), href: "/features" },
+    { name: t("header.nav.about"), href: "/about" },
   ];
 
   const isActive = (href: string) => location.pathname === href;
@@ -76,9 +78,11 @@ const Header = () => {
   }, [effectiveActiveRole, roles.length]);
 
   const dashboardLabel = useMemo(() => {
-    if (roles.length === 1) return `${roleLabels[roles[0]] || roles[0]} Dashboard`;
-    return "Dashboard";
-  }, [roles]);
+    if (roles.length === 1) {
+      return t("header.dashboardWithRole", { role: roleLabels[roles[0]] || roles[0] });
+    }
+    return t("header.dashboard");
+  }, [roles, t]);
 
   const handleRoleClick = (role: AppRole) => {
     switchRole(role);
@@ -102,7 +106,7 @@ const Header = () => {
             <Link to="/" className="flex items-center hover:opacity-70 transition-opacity duration-200">
               <img 
                 src="/logos/horizontal/docito-horizontal-sm.png" 
-                alt="Docito" 
+                alt={t("header.logoAlt")}
                 className="h-6"
                 width={80}
                 height={24}
@@ -114,7 +118,7 @@ const Header = () => {
               <div className="flex items-center gap-6">
                 {navLinks.map((link) => (
                   <Link
-                    key={link.name}
+                    key={link.href}
                     to={link.href}
                     className={`text-xs font-medium transition-all duration-200 whitespace-nowrap ${
                       isActive(link.href) ? "text-foreground" : "text-foreground/70 hover:text-foreground"
@@ -152,7 +156,7 @@ const Header = () => {
                       {canSwitchRoles ? (
                         <>
                           <DropdownMenuSeparator />
-                          <DropdownMenuLabel className="text-xs text-muted-foreground">Your roles</DropdownMenuLabel>
+                          <DropdownMenuLabel className="text-xs text-muted-foreground">{t("header.yourRoles")}</DropdownMenuLabel>
 
                           {roles.map((role) => (
                             <DropdownMenuItem
@@ -171,19 +175,19 @@ const Header = () => {
 
                       <DropdownMenuItem onClick={() => navigate("/notifications")}>
                         <BellIcon className="mr-2 h-4 w-4" />
-                        <span>Notifications</span>
+                        <span>{t("header.notifications")}</span>
                       </DropdownMenuItem>
 
                       <DropdownMenuItem onClick={() => navigate("/settings")}>
                         <Settings className="mr-2 h-4 w-4" />
-                        <span>Settings</span>
+                        <span>{t("header.settings")}</span>
                       </DropdownMenuItem>
 
                       <DropdownMenuSeparator />
 
                       <DropdownMenuItem onClick={() => { signOut(); navigate("/"); }}>
                         <LogOut className="mr-2 h-4 w-4" />
-                        <span>Logout</span>
+                        <span>{t("header.logout")}</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -194,7 +198,7 @@ const Header = () => {
                   size="sm"
                   className="h-8 px-4 text-xs font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
                 >
-                  Register
+                  {t("header.register")}
                 </Button>
               )}
             </div>
@@ -205,7 +209,7 @@ const Header = () => {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="p-2 rounded-lg hover:bg-accent/50 transition-colors"
-                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={isMobileMenuOpen ? t("header.menu.close") : t("header.menu.open")}
               >
                 {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
@@ -226,7 +230,7 @@ const Header = () => {
                 <div className="flex flex-col gap-1">
                   {navLinks.map((link, index) => (
                     <motion.div
-                      key={link.name}
+                      key={link.href}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
@@ -265,7 +269,7 @@ const Header = () => {
 
                       {canSwitchRoles ? (
                         <div className="rounded-xl border border-border/50 overflow-hidden">
-                          <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/40">Switch role</div>
+                          <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/40">{t("header.switchRole")}</div>
                           <div className="flex flex-col">
                             {roles.map((role) => (
                               <button
@@ -294,7 +298,7 @@ const Header = () => {
                         }}
                         className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground"
                       >
-                        Logout
+                        {t("header.logout")}
                       </Button>
                     </div>
                   ) : (
@@ -305,7 +309,7 @@ const Header = () => {
                       }}
                       className="w-full h-12 text-base font-medium rounded-xl bg-primary text-primary-foreground"
                     >
-                      Register
+                      {t("header.register")}
                     </Button>
                   )}
                 </motion.div>

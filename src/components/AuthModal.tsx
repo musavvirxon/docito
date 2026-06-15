@@ -1,12 +1,11 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +15,7 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: AuthModalProps) => {
+  const { t } = useTranslation("common");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -38,14 +38,14 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
       if (error) throw error;
 
       toast({
-        title: "Success!",
-        description: "Please check your email to confirm your account.",
+        title: t("authModal.toasts.signUpSuccessTitle"),
+        description: t("authModal.toasts.signUpSuccessDesc"),
       });
       onClose();
     } catch (error: any) {
       toast({
-        title: "Sign Up Failed",
-        description: "Unable to create account. Please check your details and try again.",
+        title: t("authModal.toasts.signUpFailedTitle"),
+        description: t("authModal.toasts.signUpFailedDesc"),
         variant: "destructive",
       });
     } finally {
@@ -56,22 +56,18 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
   const handleSignIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
       toast({
-        title: "Welcome back!",
-        description: "You have successfully signed in.",
+        title: t("authModal.toasts.signInSuccessTitle"),
+        description: t("authModal.toasts.signInSuccessDesc"),
       });
       onClose();
     } catch (error: any) {
       toast({
-        title: "Sign In Failed",
-        description: "Invalid email or password. Please try again.",
+        title: t("authModal.toasts.signInFailedTitle"),
+        description: t("authModal.toasts.signInFailedDesc"),
         variant: "destructive",
       });
     } finally {
@@ -94,42 +90,24 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-            />
+            <Label htmlFor="firstName">{t("authModal.fields.firstName")}</Label>
+            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-            />
+            <Label htmlFor="lastName">{t("authModal.fields.lastName")}</Label>
+            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </div>
         </div>
         <div>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <Label htmlFor="email">{t("authModal.fields.email")}</Label>
+          <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <Label htmlFor="password">{t("authModal.fields.password")}</Label>
+          <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Creating Account..." : "Sign Up"}
+          {isLoading ? t("authModal.actions.creating") : t("authModal.actions.signUp")}
         </Button>
       </form>
     );
@@ -147,7 +125,7 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
     return (
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="signin-email" className="text-sm text-muted-foreground">Email Address</Label>
+          <Label htmlFor="signin-email" className="text-sm text-muted-foreground">{t("authModal.fields.emailAddress")}</Label>
           <Input
             id="signin-email"
             type="email"
@@ -157,7 +135,7 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
           />
         </div>
         <div>
-          <Label htmlFor="signin-password" className="text-sm text-muted-foreground">Password</Label>
+          <Label htmlFor="signin-password" className="text-sm text-muted-foreground">{t("authModal.fields.password")}</Label>
           <Input
             id="signin-password"
             type="password"
@@ -166,34 +144,32 @@ const AuthModal = ({ isOpen, onClose, userType = "patient", mode = "signin" }: A
             className="mt-1 h-12 bg-muted/30 border-0 focus-visible:ring-1 focus-visible:ring-primary"
           />
         </div>
-        <Button 
-          type="submit" 
-          className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md" 
+        <Button
+          type="submit"
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-md"
           disabled={isLoading}
         >
-          {isLoading ? "Signing In..." : "Sign In"}
+          {isLoading ? t("authModal.actions.signingIn") : t("authModal.actions.signIn")}
         </Button>
       </form>
     );
   };
 
   const getTitle = () => {
-    const action = mode === "signin" ? "Sign In" : "Registration";
-    switch (userType) {
-      case "doctor":
-        return mode === "signin" ? "Doctor Sign In" : "Doctor Registration";
-      case "practice":
-        return mode === "signin" ? "Private Practice Sign In" : "Private Practice Registration";
-      default:
-        return mode === "signin" ? "Sign In" : "Patient Registration";
+    if (mode === "signin") {
+      if (userType === "doctor") return t("authModal.titles.doctorSignIn");
+      if (userType === "practice") return t("authModal.titles.practiceSignIn");
+      return t("authModal.titles.signIn");
     }
+    if (userType === "doctor") return t("authModal.titles.doctorRegistration");
+    if (userType === "practice") return t("authModal.titles.practiceRegistration");
+    return t("authModal.titles.patientRegistration");
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md p-0 gap-0 bg-muted/95 backdrop-blur-sm">
         <div className="relative bg-background rounded-lg m-4 p-6">
-          
           {mode === "signin" ? (
             <div className="space-y-6">
               <div className="text-center">

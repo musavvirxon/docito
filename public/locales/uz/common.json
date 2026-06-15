@@ -159,5 +159,85 @@
     "paymentCanceled": "Checkout canceled.",
     "downloadFailed": "Failed to download invoice PDF",
     "none": "None"
+  },
+  "header": {
+    "nav": {
+      "doctors": "Doctors",
+      "practices": "Medical Practices",
+      "pharmacies": "Pharmacies",
+      "labs": "Laboratories",
+      "imaging": "Imaging Centers",
+      "features": "Features",
+      "about": "About Us"
+    },
+    "logoAlt": "Docito",
+    "register": "Register",
+    "logout": "Logout",
+    "yourRoles": "Your roles",
+    "switchRole": "Switch role",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "dashboard": "Dashboard",
+    "dashboardWithRole": "{{role}} Dashboard",
+    "menu": {
+      "open": "Open menu",
+      "close": "Close menu"
+    }
+  },
+  "authModal": {
+    "titles": {
+      "signIn": "Sign In",
+      "patientRegistration": "Patient Registration",
+      "doctorSignIn": "Doctor Sign In",
+      "doctorRegistration": "Doctor Registration",
+      "practiceSignIn": "Private Practice Sign In",
+      "practiceRegistration": "Private Practice Registration"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "emailAddress": "Email Address",
+      "password": "Password"
+    },
+    "actions": {
+      "signIn": "Sign In",
+      "signingIn": "Signing In...",
+      "signUp": "Sign Up",
+      "creating": "Creating Account..."
+    },
+    "toasts": {
+      "signUpSuccessTitle": "Success!",
+      "signUpSuccessDesc": "Please check your email to confirm your account.",
+      "signUpFailedTitle": "Sign Up Failed",
+      "signUpFailedDesc": "Unable to create account. Please check your details and try again.",
+      "signInSuccessTitle": "Welcome back!",
+      "signInSuccessDesc": "You have successfully signed in.",
+      "signInFailedTitle": "Sign In Failed",
+      "signInFailedDesc": "Invalid email or password. Please try again."
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "description": "The dashboard hit an error while rendering. You can reload the page to recover.",
+    "routeDescription": "An unexpected error occurred",
+    "reload": "Reload",
+    "tryAgain": "Try again",
+    "goHome": "Go Home"
+  },
+  "inactivity": {
+    "title": "Session Timeout Warning",
+    "description": "You've been inactive for a while. For your security, you'll be automatically logged out in:",
+    "callToAction": "Click \"Stay Logged In\" to continue your session.",
+    "stayLoggedIn": "Stay Logged In"
+  },
+  "notificationsPanel": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "No notifications yet"
+  },
+  "devBanner": {
+    "label": "🚧 Development Mode: All fields are optional for quick testing",
+    "fillDummy": "🎭 Fill Dummy Data"
   }
 }
