@@ -31,6 +31,7 @@ import { useBookAppointment } from "@/hooks/useBookAppointment";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface AppointmentBookingPopupProps {
@@ -77,6 +78,7 @@ export function AppointmentBookingPopup({
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useTranslation("booking");
 
   const todayStart = startOfDay(new Date());
 
@@ -282,7 +284,7 @@ export function AppointmentBookingPopup({
 
     // Fallback: embed requested procedure into notes so doctor still sees it
     const composedNotes = [
-      selectedProcedure ? `Requested Procedure: ${selectedProcedure.name}` : null,
+      selectedProcedure ? t("popup.requestedProcedureNote", { name: selectedProcedure.name }) : null,
       notes.trim() ? notes.trim() : null,
     ]
       .filter(Boolean)
@@ -364,9 +366,9 @@ export function AppointmentBookingPopup({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
-          <DialogTitle>Book Appointment</DialogTitle>
+          <DialogTitle>{t("popup.title")}</DialogTitle>
           <DialogDescription>
-            Choose a date and time. You can also request a specific procedure (if offered by this doctor).
+            {t("popup.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -375,19 +377,19 @@ export function AppointmentBookingPopup({
             <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
               <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium">Sign in required</p>
+                <p className="font-medium">{t("popup.signInRequired")}</p>
                 <p className="text-sm text-muted-foreground">
-                  Please sign in to book an appointment.
+                  {t("popup.signInDescription")}
                 </p>
               </div>
             </div>
 
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-                Cancel
+                {t("popup.cancel")}
               </Button>
               <Button className="flex-1" onClick={handleLoginRedirect}>
-                Sign In
+                {t("popup.signIn")}
               </Button>
             </div>
           </div>
@@ -405,14 +407,14 @@ export function AppointmentBookingPopup({
                 {resolvedProviderName ? (
                   <Badge variant="outline" className="inline-flex items-center gap-2">
                     <User className="h-3.5 w-3.5" />
-                    Dr. {resolvedProviderName}
+                    {t("popup.drPrefix", { name: resolvedProviderName })}
                   </Badge>
                 ) : null}
 
                 {effectiveReferralId ? (
                   <Badge variant="outline" className="inline-flex items-center gap-2">
                     <Lock className="h-3.5 w-3.5" />
-                    Referral booking
+                    {t("popup.referralBooking")}
                   </Badge>
                 ) : null}
               </div>
@@ -436,10 +438,10 @@ export function AppointmentBookingPopup({
                 <div className="p-3 rounded-lg border bg-muted/30">
                   <p className="text-sm font-medium flex items-center gap-2">
                     <CalendarIcon className="h-4 w-4 text-primary" />
-                    Selected date
+                    {t("popup.selectedDate")}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : "Choose a date"}
+                    {selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : t("popup.chooseDate")}
                   </p>
                 </div>
 
@@ -448,12 +450,12 @@ export function AppointmentBookingPopup({
                   disabled={!canProceedToTime}
                   onClick={() => setStep("time")}
                 >
-                  Continue
+                  {t("popup.continue")}
                 </Button>
 
                 <div className="text-xs text-muted-foreground flex items-center gap-2">
                   <Lock className="h-3.5 w-3.5" />
-                  Booking holds your slot temporarily until you confirm.
+                  {t("popup.holdNote")}
                 </div>
               </div>
             </div>
@@ -465,23 +467,23 @@ export function AppointmentBookingPopup({
             <div className="flex items-center justify-between gap-2">
               <div className="space-y-0.5">
                 <p className="font-medium">{format(selectedDate, "EEEE, MMMM d, yyyy")}</p>
-                <p className="text-sm text-muted-foreground">Select an available time</p>
+                <p className="text-sm text-muted-foreground">{t("popup.selectAvailableTime")}</p>
               </div>
 
               <Button variant="outline" onClick={() => setStep("date")}>
-                Back
+                {t("popup.back")}
               </Button>
             </div>
 
             {slotsLoading ? (
               <div className="py-10 flex items-center justify-center text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                Loading slots...
+                {t("popup.loadingSlots")}
               </div>
             ) : filteredSlots.length === 0 ? (
               <div className="py-10 text-center text-muted-foreground">
                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-60" />
-                <p>No available slots for this date.</p>
+                <p>{t("popup.noSlots")}</p>
               </div>
             ) : (
               <ScrollArea className="h-[280px] pr-3">
@@ -517,14 +519,14 @@ export function AppointmentBookingPopup({
 
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => setStep("date")}>
-                Back
+                {t("popup.back")}
               </Button>
               <Button
                 className="flex-1"
                 onClick={() => setStep("confirm")}
                 disabled={!canProceedToConfirm}
               >
-                Continue
+                {t("popup.continue")}
               </Button>
             </div>
           </div>
@@ -552,14 +554,14 @@ export function AppointmentBookingPopup({
                 {resolvedProviderName ? (
                   <Badge variant="outline" className="inline-flex items-center gap-2">
                     <User className="h-3.5 w-3.5" />
-                    Dr. {resolvedProviderName}
+                    {t("popup.drPrefix", { name: resolvedProviderName })}
                   </Badge>
                 ) : null}
 
                 {effectiveReferralId ? (
                   <Badge variant="outline" className="inline-flex items-center gap-2">
                     <Lock className="h-3.5 w-3.5" />
-                    Referral booking
+                    {t("popup.referralBooking")}
                   </Badge>
                 ) : null}
               </div>
@@ -598,11 +600,11 @@ export function AppointmentBookingPopup({
                     <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
                       <span className="inline-flex items-center gap-1">
                         <Stethoscope className="h-3.5 w-3.5" />
-                        {selectedProcedure.category || "Procedure"}
+                        {selectedProcedure.category || t("popup.procedure")}
                       </span>
                       <span className="inline-flex items-center gap-1">
                         <DollarSign className="h-3.5 w-3.5" />
-                        Estimate:{" "}
+                        {t("popup.estimate")}{" "}
                         {typeof (selectedProcedure.price ?? selectedProcedure.default_cost) === "number"
                           ? (selectedProcedure.price ?? selectedProcedure.default_cost)
                           : "—"}
@@ -610,7 +612,7 @@ export function AppointmentBookingPopup({
                       {typeof selectedProcedure.duration_minutes === "number" && (
                         <span className="inline-flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5" />
-                          {selectedProcedure.duration_minutes} min
+                          {t("popup.minutes", { n: selectedProcedure.duration_minutes })}
                         </span>
                       )}
                     </div>
@@ -620,10 +622,10 @@ export function AppointmentBookingPopup({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes">{t("popup.notes")}</Label>
               <Textarea
                 id="notes"
-                placeholder="Any special requests or information..."
+                placeholder={t("popup.notesPlaceholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -637,7 +639,7 @@ export function AppointmentBookingPopup({
                 onClick={() => setStep("time")}
                 disabled={bookingLoading}
               >
-                Back
+                {t("popup.back")}
               </Button>
               <Button
                 className="flex-1"
@@ -647,10 +649,10 @@ export function AppointmentBookingPopup({
                 {bookingLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Booking...
+                    {t("popup.booking")}
                   </>
                 ) : (
-                  "Confirm Booking"
+                  t("popup.confirmBooking")
                 )}
               </Button>
             </div>
@@ -662,22 +664,21 @@ export function AppointmentBookingPopup({
             <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Almost there!</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("popup.almostThere")}</h3>
             <p className="text-muted-foreground mb-4">
-              Your slot is reserved for{" "}
-              {format(parseISO(`${result.appointment_date}T${result.start_time}`), "EEEE, MMMM d")}{" "}
-              at{" "}
-              {format(parseISO(`${result.appointment_date}T${result.start_time}`), "h:mm a")}
-              . Please confirm to finalize your appointment.
+              {t("popup.slotReserved", {
+                date: format(parseISO(`${result.appointment_date}T${result.start_time}`), "EEEE, MMMM d"),
+                time: format(parseISO(`${result.appointment_date}T${result.start_time}`), "h:mm a"),
+              })}
             </p>
 
             <div className="flex gap-2 justify-center">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
+                {t("popup.cancel")}
               </Button>
               <Button onClick={() => confirmationUrl && navigate(confirmationUrl)} disabled={!confirmationUrl}>
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Confirm Appointment
+                {t("popup.confirmAppointment")}
               </Button>
             </div>
           </div>
