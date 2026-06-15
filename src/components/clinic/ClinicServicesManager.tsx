@@ -1,5 +1,6 @@
 // File: src/components/clinic/ClinicServicesManager.tsx
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +102,7 @@ function formatMoney(cents: number, currency: string): string {
 }
 
 export default function ClinicServicesManager({ practiceId }: Props) {
+  const { t } = useTranslation("clinic");
   const [services, setServices] = useState<ClinicService[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -116,7 +118,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       .eq("practice_id", practiceId)
       .order("created_at", { ascending: false });
     if (error) {
-      toast.error(error.message || "Failed to load services");
+      toast.error(error.message || t("servicesManager.toasts.loadFailed"));
     } else {
       setServices((data || []) as ClinicService[]);
     }
@@ -154,7 +156,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
 
   const handleSubmit = async () => {
     if (!form.name.trim()) {
-      toast.error("Service name is required");
+      toast.error(t("servicesManager.toasts.nameRequired"));
       return;
     }
     setSaving(true);
@@ -164,7 +166,7 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       if (form.deposit_required) {
         if (form.deposit_type === "percent") {
           const pct = Math.min(100, Math.max(0, Number(form.deposit_value) || 0));
-          deposit_cents = Math.round(pct); // store percent as integer 0-100 in deposit_cents
+          deposit_cents = Math.round(pct);
         } else {
           deposit_cents = parseMoney(form.deposit_value);
         }
@@ -190,16 +192,16 @@ export default function ClinicServicesManager({ practiceId }: Props) {
           .update(payload)
           .eq("id", form.id);
         if (error) throw error;
-        toast.success("Service updated");
+        toast.success(t("servicesManager.toasts.updated"));
       } else {
         const { error } = await supabase.from("clinic_services").insert(payload);
         if (error) throw error;
-        toast.success("Service added");
+        toast.success(t("servicesManager.toasts.added"));
       }
       setDialogOpen(false);
       await load();
     } catch (e: any) {
-      toast.error(e?.message || "Failed to save service");
+      toast.error(e?.message || t("servicesManager.toasts.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -211,20 +213,20 @@ export default function ClinicServicesManager({ practiceId }: Props) {
       .update({ is_active: next })
       .eq("id", svc.id);
     if (error) {
-      toast.error(error.message || "Failed to update");
+      toast.error(error.message || t("servicesManager.toasts.updateFailed"));
       return;
     }
     setServices((prev) => prev.map((s) => (s.id === svc.id ? { ...s, is_active: next } : s)));
   };
 
   const handleDelete = async (svc: ClinicService) => {
-    if (!confirm(`Delete service "${svc.name}"?`)) return;
+    if (!confirm(t("servicesManager.toasts.confirmDelete", { name: svc.name }))) return;
     const { error } = await supabase.from("clinic_services").delete().eq("id", svc.id);
     if (error) {
-      toast.error(error.message || "Failed to delete");
+      toast.error(error.message || t("servicesManager.toasts.deleteFailed"));
       return;
     }
-    toast.success("Service deleted");
+    toast.success(t("servicesManager.toasts.deleted"));
     setServices((prev) => prev.filter((s) => s.id !== svc.id));
   };
 
