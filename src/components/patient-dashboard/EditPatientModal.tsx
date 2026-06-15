@@ -35,6 +35,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const patientSchema = z.object({
   full_name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -72,6 +73,7 @@ const EditPatientModal = ({
   onSuccess,
 }: EditPatientModalProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation("patients");
   const [activeTab, setActiveTab] = useState("personal");
   const [saving, setSaving] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -131,10 +133,10 @@ const EditPatientModal = ({
         .getPublicUrl(filePath);
 
       setAvatarUrl(urlData.publicUrl);
-      toast.success("Photo uploaded");
+      toast.success(t("edit.photoUploaded"));
     } catch (err) {
       console.error("Error uploading avatar:", err);
-      toast.error("Failed to upload photo");
+      toast.error(t("edit.photoUploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -188,12 +190,12 @@ const EditPatientModal = ({
         if (error) throw error;
       }
 
-      toast.success("Patient updated successfully");
+      toast.success(t("edit.updateSuccess"));
       onSuccess();
       onOpenChange(false);
     } catch (err) {
       console.error("Error updating patient:", err);
-      toast.error("Failed to update patient");
+      toast.error(t("edit.updateFailed"));
     } finally {
       setSaving(false);
     }
@@ -209,7 +211,7 @@ const EditPatientModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Edit Patient</DialogTitle>
+          <DialogTitle>{t("edit.title")}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -217,19 +219,19 @@ const EditPatientModal = ({
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="personal" className="gap-2 text-xs sm:text-sm">
                 <User className="w-4 h-4" />
-                <span className="hidden sm:inline">Personal</span>
+                <span className="hidden sm:inline">{t("edit.tabs.personal")}</span>
               </TabsTrigger>
               <TabsTrigger value="contact" className="gap-2 text-xs sm:text-sm">
                 <Phone className="w-4 h-4" />
-                <span className="hidden sm:inline">Contact</span>
+                <span className="hidden sm:inline">{t("edit.tabs.contact")}</span>
               </TabsTrigger>
               <TabsTrigger value="medical" className="gap-2 text-xs sm:text-sm">
                 <Heart className="w-4 h-4" />
-                <span className="hidden sm:inline">Medical</span>
+                <span className="hidden sm:inline">{t("edit.tabs.medical")}</span>
               </TabsTrigger>
               <TabsTrigger value="other" className="gap-2 text-xs sm:text-sm">
                 <Shield className="w-4 h-4" />
-                <span className="hidden sm:inline">Other</span>
+                <span className="hidden sm:inline">{t("edit.tabs.other")}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -263,18 +265,18 @@ const EditPatientModal = ({
                       ) : (
                         <Upload className="w-4 h-4 mr-2" />
                       )}
-                      Upload Photo
+                      {t("edit.uploadPhoto")}
                     </Button>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="full_name">Full Name *</Label>
+                    <Label htmlFor="full_name">{t("edit.fields.fullName")}</Label>
                     <Input
                       id="full_name"
                       {...register("full_name")}
-                      placeholder="Enter full name"
+                      placeholder={t("edit.fields.fullNamePlaceholder")}
                     />
                     {errors.full_name && (
                       <p className="text-xs text-destructive">{errors.full_name.message}</p>
@@ -282,7 +284,7 @@ const EditPatientModal = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="date_of_birth">Date of Birth</Label>
+                    <Label htmlFor="date_of_birth">{t("edit.fields.dateOfBirth")}</Label>
                     <Input
                       id="date_of_birth"
                       type="date"
@@ -291,30 +293,30 @@ const EditPatientModal = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="gender">Gender</Label>
+                    <Label htmlFor="gender">{t("edit.fields.gender")}</Label>
                     <Select
                       value={watch("gender") || ""}
                       onValueChange={(value) => setValue("gender", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
+                        <SelectValue placeholder={t("edit.fields.genderPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="male">{t("edit.fields.male")}</SelectItem>
+                        <SelectItem value="female">{t("edit.fields.female")}</SelectItem>
+                        <SelectItem value="other">{t("edit.fields.other")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="blood_group">Blood Group</Label>
+                    <Label htmlFor="blood_group">{t("edit.fields.bloodGroup")}</Label>
                     <Select
                       value={watch("blood_group") || ""}
                       onValueChange={(value) => setValue("blood_group", value)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select blood group" />
+                        <SelectValue placeholder={t("edit.fields.bloodGroupPlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="A+">A+</SelectItem>
@@ -334,11 +336,11 @@ const EditPatientModal = ({
               <TabsContent value="contact" className="space-y-4 mt-0">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">{t("edit.fields.phone")}</Label>
                     <Input
                       id="phone"
                       {...register("phone")}
-                      placeholder="+1 234 567 8900"
+                      placeholder={t("edit.fields.phonePlaceholder")}
                     />
                     {errors.phone && (
                       <p className="text-xs text-destructive">{errors.phone.message}</p>
@@ -346,12 +348,12 @@ const EditPatientModal = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t("edit.fields.email")}</Label>
                     <Input
                       id="email"
                       type="email"
                       {...register("email")}
-                      placeholder="patient@example.com"
+                      placeholder={t("edit.fields.emailPlaceholder")}
                     />
                     {errors.email && (
                       <p className="text-xs text-destructive">{errors.email.message}</p>
@@ -360,44 +362,44 @@ const EditPatientModal = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="address">{t("edit.fields.address")}</Label>
                   <Textarea
                     id="address"
                     {...register("address")}
-                    placeholder="Enter full address"
+                    placeholder={t("edit.fields.addressPlaceholder")}
                     rows={3}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="profession">Profession</Label>
+                  <Label htmlFor="profession">{t("edit.fields.profession")}</Label>
                   <Input
                     id="profession"
                     {...register("profession")}
-                    placeholder="e.g. Teacher, Engineer"
+                    placeholder={t("edit.fields.professionPlaceholder")}
                   />
                 </div>
 
                 <div className="border-t pt-4 mt-4">
                   <h4 className="font-medium mb-3 flex items-center gap-2">
                     <Activity className="w-4 h-4 text-destructive" />
-                    Emergency Contact
+                    {t("edit.fields.emergencyContact")}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="emergency_contact_name">Contact Name</Label>
+                      <Label htmlFor="emergency_contact_name">{t("edit.fields.emergencyContactName")}</Label>
                       <Input
                         id="emergency_contact_name"
                         {...register("emergency_contact_name")}
-                        placeholder="Emergency contact name"
+                        placeholder={t("edit.fields.emergencyContactNamePlaceholder")}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="emergency_contact_phone">Contact Phone</Label>
+                      <Label htmlFor="emergency_contact_phone">{t("edit.fields.emergencyContactPhone")}</Label>
                       <Input
                         id="emergency_contact_phone"
                         {...register("emergency_contact_phone")}
-                        placeholder="Emergency contact phone"
+                        placeholder={t("edit.fields.emergencyContactPhonePlaceholder")}
                       />
                     </div>
                   </div>
@@ -406,41 +408,41 @@ const EditPatientModal = ({
 
               <TabsContent value="medical" className="space-y-4 mt-0">
                 <div className="space-y-2">
-                  <Label htmlFor="allergies">Allergies</Label>
+                  <Label htmlFor="allergies">{t("edit.fields.allergies")}</Label>
                   <Textarea
                     id="allergies"
                     {...register("allergies")}
-                    placeholder="List allergies separated by commas (e.g., Penicillin, Latex, Peanuts)"
+                    placeholder={t("edit.fields.allergiesPlaceholder")}
                     rows={2}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="current_medications">Current Medications</Label>
+                  <Label htmlFor="current_medications">{t("edit.fields.currentMedications")}</Label>
                   <Textarea
                     id="current_medications"
                     {...register("current_medications")}
-                    placeholder="List current medications"
+                    placeholder={t("edit.fields.currentMedicationsPlaceholder")}
                     rows={2}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="medical_history">Medical History</Label>
+                  <Label htmlFor="medical_history">{t("edit.fields.medicalHistory")}</Label>
                   <Textarea
                     id="medical_history"
                     {...register("medical_history")}
-                    placeholder="Past diseases, surgeries, conditions..."
+                    placeholder={t("edit.fields.medicalHistoryPlaceholder")}
                     rows={3}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dental_history">Dental History</Label>
+                  <Label htmlFor="dental_history">{t("edit.fields.dentalHistory")}</Label>
                   <Textarea
                     id="dental_history"
                     {...register("dental_history")}
-                    placeholder="Previous dental treatments, issues..."
+                    placeholder={t("edit.fields.dentalHistoryPlaceholder")}
                     rows={3}
                   />
                 </div>
@@ -448,15 +450,15 @@ const EditPatientModal = ({
 
               <TabsContent value="other" className="space-y-4 mt-0">
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Internal Notes</Label>
+                  <Label htmlFor="notes">{t("edit.fields.notes")}</Label>
                   <Textarea
                     id="notes"
                     {...register("notes")}
-                    placeholder="Any additional notes about this patient..."
+                    placeholder={t("edit.fields.notesPlaceholder")}
                     rows={5}
                   />
                   <p className="text-xs text-muted-foreground">
-                    These notes are only visible to clinic staff.
+                    {t("edit.fields.notesHint")}
                   </p>
                 </div>
               </TabsContent>
@@ -470,16 +472,16 @@ const EditPatientModal = ({
               onClick={() => onOpenChange(false)}
               disabled={saving}
             >
-              Cancel
+              {t("edit.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Saving...
+                  {t("edit.saving")}
                 </>
               ) : (
-                "Save Changes"
+                t("edit.save")
               )}
             </Button>
           </DialogFooter>
