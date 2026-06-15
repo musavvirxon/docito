@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ const PrescriptionsTab = ({
   onExportPDF,
   onSendToPatient,
 }: PrescriptionsTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const activePrescriptions = prescriptions.filter((p) => p.status === "active");
   const pastPrescriptions = prescriptions.filter((p) => p.status !== "active");
 
@@ -97,14 +99,14 @@ const PrescriptionsTab = ({
                   {prescription.status === "cancelled" && (
                     <XCircle className="w-3 h-3 mr-1" />
                   )}
-                  {prescription.status}
+                  {t(`tabs.prescriptions.status.${prescription.status}`)}
                 </Badge>
               </div>
 
               {prescription.duration && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                   <Clock className="w-3.5 h-3.5" />
-                  Duration: {prescription.duration}
+                  {t("tabs.prescriptions.duration", { value: prescription.duration })}
                 </div>
               )}
 
@@ -112,14 +114,14 @@ const PrescriptionsTab = ({
                 {prescription.doctor_name && (
                   <span className="flex items-center gap-1">
                     <User className="w-3 h-3" />
-                    Dr. {prescription.doctor_name}
+                    {t("tabs.prescriptions.doctorPrefix", { name: prescription.doctor_name })}
                   </span>
                 )}
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  {new Date(prescription.start_date).toLocaleDateString()}
+                  {new Date(prescription.start_date).toLocaleDateString(i18n.language)}
                   {prescription.end_date && (
-                    <> - {new Date(prescription.end_date).toLocaleDateString()}</>
+                    <> - {new Date(prescription.end_date).toLocaleDateString(i18n.language)}</>
                   )}
                 </span>
               </div>
@@ -141,9 +143,9 @@ const PrescriptionsTab = ({
       <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
         <Pill className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="font-medium text-foreground mb-1">No prescriptions</h3>
+      <h3 className="font-medium text-foreground mb-1">{t("tabs.prescriptions.emptyTitle")}</h3>
       <p className="text-sm text-muted-foreground">
-        Add a new prescription for this patient
+        {t("tabs.prescriptions.emptyDesc")}
       </p>
     </div>
   );
@@ -155,22 +157,22 @@ const PrescriptionsTab = ({
       className="space-y-6"
     >
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold">Prescriptions</h2>
+        <h2 className="text-lg font-semibold">{t("tabs.prescriptions.title")}</h2>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => onExportPDF(prescriptions)}>
             <Download className="w-4 h-4 mr-2" />
-            Export PDF
+            {t("tabs.prescriptions.exportPdf")}
           </Button>
           <Button
             variant="outline"
             onClick={() => onSendToPatient(activePrescriptions)}
           >
             <Send className="w-4 h-4 mr-2" />
-            Send to Patient
+            {t("tabs.prescriptions.sendToPatient")}
           </Button>
           <Button onClick={onAddPrescription}>
             <Plus className="w-4 h-4 mr-2" />
-            Add Prescription
+            {t("tabs.prescriptions.add")}
           </Button>
         </div>
       </div>
@@ -179,11 +181,11 @@ const PrescriptionsTab = ({
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="active" className="gap-2">
             <CheckCircle2 className="w-4 h-4" />
-            Active ({activePrescriptions.length})
+            {t("tabs.prescriptions.active", { count: activePrescriptions.length })}
           </TabsTrigger>
           <TabsTrigger value="past" className="gap-2">
             <Clock className="w-4 h-4" />
-            Past ({pastPrescriptions.length})
+            {t("tabs.prescriptions.past", { count: pastPrescriptions.length })}
           </TabsTrigger>
         </TabsList>
 

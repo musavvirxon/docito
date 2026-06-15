@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,7 @@ const OverviewTab = ({
   metrics,
   onViewFile,
 }: OverviewTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const getEventIcon = (type: TimelineEvent["type"]) => {
     switch (type) {
       case "appointment":
@@ -102,32 +104,32 @@ const OverviewTab = ({
       >
         <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Total Appointments</p>
+            <p className="text-xs text-muted-foreground">{t("tabs.overview.totalAppointments")}</p>
             <p className="text-2xl font-bold text-primary">{metrics.totalAppointments}</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-accent/5 to-accent/10">
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Total Prescriptions</p>
+            <p className="text-xs text-muted-foreground">{t("tabs.overview.totalPrescriptions")}</p>
             <p className="text-2xl font-bold text-accent">{metrics.totalPrescriptions}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">First Visit</p>
+            <p className="text-xs text-muted-foreground">{t("tabs.overview.firstVisit")}</p>
             <p className="text-lg font-semibold">
               {metrics.firstVisit
-                ? new Date(metrics.firstVisit).toLocaleDateString()
+                ? new Date(metrics.firstVisit).toLocaleDateString(i18n.language)
                 : "—"}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">Last Visit</p>
+            <p className="text-xs text-muted-foreground">{t("tabs.overview.lastVisit")}</p>
             <p className="text-lg font-semibold">
               {metrics.lastVisit
-                ? new Date(metrics.lastVisit).toLocaleDateString()
+                ? new Date(metrics.lastVisit).toLocaleDateString(i18n.language)
                 : "—"}
             </p>
           </CardContent>
@@ -146,7 +148,7 @@ const OverviewTab = ({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                Activity Timeline
+                {t("tabs.overview.activityTimeline")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -154,7 +156,7 @@ const OverviewTab = ({
                 {timeline.length === 0 ? (
                   <div className="text-center py-12">
                     <Clock className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
-                    <p className="text-muted-foreground">No activity yet</p>
+                    <p className="text-muted-foreground">{t("tabs.overview.noActivity")}</p>
                   </div>
                 ) : (
                   <div className="relative">
@@ -188,7 +190,7 @@ const OverviewTab = ({
                                   )}
                                 </div>
                                 <Badge variant="outline" className="text-xs shrink-0">
-                                  {new Date(event.date).toLocaleDateString()}
+                                  {new Date(event.date).toLocaleDateString(i18n.language)}
                                 </Badge>
                               </div>
                             </div>
@@ -213,14 +215,14 @@ const OverviewTab = ({
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="w-4 h-4 text-primary" />
-                Recent Files
+                {t("tabs.overview.recentFiles")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentFiles.length === 0 ? (
                 <div className="text-center py-8">
                   <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No files uploaded</p>
+                  <p className="text-sm text-muted-foreground">{t("tabs.overview.noFilesUploaded")}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -238,7 +240,7 @@ const OverviewTab = ({
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{file.name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(file.date).toLocaleDateString()}
+                            {new Date(file.date).toLocaleDateString(i18n.language)}
                           </p>
                         </div>
                         <Button

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +66,7 @@ const NotesTab = ({
   onDeleteNote,
   onTogglePin,
 }: NotesTabProps) => {
+  const { t, i18n } = useTranslation("patients");
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [newNote, setNewNote] = useState({
@@ -78,11 +80,11 @@ const NotesTab = ({
   const regularNotes = notes.filter((n) => !n.is_pinned);
 
   const availableTags = [
-    { value: "important", label: "Important", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
-    { value: "follow-up", label: "Follow-up", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
-    { value: "urgent", label: "Urgent", color: "bg-destructive/10 text-destructive" },
-    { value: "medication", label: "Medication", color: "bg-primary/10 text-primary" },
-    { value: "treatment", label: "Treatment", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
+    { value: "important", label: t("tabs.notes.tagOptions.important"), color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
+    { value: "follow-up", label: t("tabs.notes.tagOptions.followUp"), color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+    { value: "urgent", label: t("tabs.notes.tagOptions.urgent"), color: "bg-destructive/10 text-destructive" },
+    { value: "medication", label: t("tabs.notes.tagOptions.medication"), color: "bg-primary/10 text-primary" },
+    { value: "treatment", label: t("tabs.notes.tagOptions.treatment"), color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" },
   ];
 
   const getTagStyle = (tag: string) => {
@@ -134,7 +136,7 @@ const NotesTab = ({
               {note.is_private && (
                 <Badge variant="outline" className="gap-1 text-xs">
                   <Lock className="w-3 h-3" />
-                  Private
+                  {t("tabs.notes.private")}
                 </Badge>
               )}
               {note.tags.map((tag) => (
@@ -155,25 +157,25 @@ const NotesTab = ({
                   {note.is_pinned ? (
                     <>
                       <PinOff className="w-4 h-4 mr-2" />
-                      Unpin
+                      {t("tabs.notes.unpin")}
                     </>
                   ) : (
                     <>
                       <Pin className="w-4 h-4 mr-2" />
-                      Pin
+                      {t("tabs.notes.pin")}
                     </>
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setEditingNote(note)}>
                   <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  {t("tabs.notes.edit")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => onDeleteNote(note.id)}
                   className="text-destructive focus:text-destructive"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+                  {t("tabs.notes.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -186,13 +188,13 @@ const NotesTab = ({
           <div className="flex items-center justify-between mt-4 pt-3 border-t text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              {new Date(note.created_at).toLocaleDateString()}{" "}
-              {new Date(note.created_at).toLocaleTimeString([], {
+              {new Date(note.created_at).toLocaleDateString(i18n.language)}{" "}
+              {new Date(note.created_at).toLocaleTimeString(i18n.language, {
                 hour: "2-digit",
                 minute: "2-digit",
               })}
             </span>
-            {note.author_name && <span>By {note.author_name}</span>}
+            {note.author_name && <span>{t("tabs.notes.by", { name: note.author_name })}</span>}
           </div>
         </CardContent>
       </Card>
@@ -207,14 +209,14 @@ const NotesTab = ({
     >
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Notes</h2>
+          <h2 className="text-lg font-semibold">{t("tabs.notes.title")}</h2>
           <p className="text-sm text-muted-foreground">
-            Private notes are only visible to clinic staff
+            {t("tabs.notes.privateHint")}
           </p>
         </div>
         <Button onClick={() => setShowAddModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
-          Add Note
+          {t("tabs.notes.add")}
         </Button>
       </div>
 
@@ -224,13 +226,13 @@ const NotesTab = ({
             <div className="p-4 rounded-full bg-muted/50 w-fit mx-auto mb-4">
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="font-medium text-foreground mb-1">No notes yet</h3>
+            <h3 className="font-medium text-foreground mb-1">{t("tabs.notes.emptyTitle")}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Add internal notes about this patient
+              {t("tabs.notes.emptyDesc")}
             </p>
             <Button variant="outline" onClick={() => setShowAddModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Add First Note
+              {t("tabs.notes.addFirst")}
             </Button>
           </CardContent>
         </Card>
@@ -241,7 +243,7 @@ const NotesTab = ({
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
                 <Pin className="w-4 h-4" />
-                Pinned Notes
+                {t("tabs.notes.pinned")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <AnimatePresence>
@@ -258,7 +260,7 @@ const NotesTab = ({
             <div>
               {pinnedNotes.length > 0 && (
                 <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                  All Notes
+                  {t("tabs.notes.all")}
                 </h3>
               )}
               <ScrollArea className="h-[500px]">
@@ -279,12 +281,12 @@ const NotesTab = ({
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Note</DialogTitle>
+            <DialogTitle>{t("tabs.notes.addModalTitle")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
             <Textarea
-              placeholder="Write your note here..."
+              placeholder={t("tabs.notes.placeholder")}
               value={newNote.content}
               onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
               rows={6}
@@ -292,7 +294,7 @@ const NotesTab = ({
             />
 
             <div>
-              <p className="text-sm font-medium mb-2">Tags</p>
+              <p className="text-sm font-medium mb-2">{t("tabs.notes.tags")}</p>
               <div className="flex flex-wrap gap-2 mb-2">
                 {newNote.tags.map((tag) => (
                   <Badge
@@ -334,17 +336,17 @@ const NotesTab = ({
                 className="rounded"
               />
               <label htmlFor="private" className="text-sm">
-                Private note (only visible to clinic staff)
+                {t("tabs.notes.privateLabel")}
               </label>
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddModal(false)}>
-              Cancel
+              {t("tabs.notes.cancel")}
             </Button>
             <Button onClick={handleSubmit} disabled={!newNote.content.trim()}>
-              Add Note
+              {t("tabs.notes.add")}
             </Button>
           </DialogFooter>
         </DialogContent>
