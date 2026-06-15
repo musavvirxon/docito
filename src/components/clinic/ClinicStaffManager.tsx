@@ -455,43 +455,43 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Active Staff</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Pending Invitations</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Inactive / Disabled</div><div className="text-2xl font-semibold">{inactiveRows.length}</div></div><Power className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
-        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">Admin / Managers</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "manager"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.active")}</div><div className="text-2xl font-semibold">{activeRows.length}</div></div><Users className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.pending")}</div><div className="text-2xl font-semibold">{pendingRows.length}</div></div><Clock3 className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.inactive")}</div><div className="text-2xl font-semibold">{inactiveRows.length}</div></div><Power className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
+        <Card><CardContent className="p-4 flex items-center justify-between"><div><div className="text-sm text-muted-foreground">{t("staffManager.stats.admins")}</div><div className="text-2xl font-semibold">{activeRows.filter((r) => ["admin", "manager"].includes(String(getStaffRole(r)).toLowerCase())).length}</div></div><Shield className="h-5 w-5 text-muted-foreground" /></CardContent></Card>
       </div>
 
       {/* Invite Staff */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" /> Invite Staff</CardTitle>
-          <CardDescription>Create staff invitations, assign role, and pre-configure permissions.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" /> {t("staffManager.invite.title")}</CardTitle>
+          <CardDescription>{t("staffManager.invite.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleInviteSubmit} className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Email</label>
+                <label className="text-sm font-medium">{t("staffManager.invite.email")}</label>
                 <div className="relative">
                   <Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="staff@clinic.com" className="w-full h-10 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                  <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder={t("staffManager.invite.emailPh")} className="w-full h-10 rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium">Role</label>
+                <label className="text-sm font-medium">{t("staffManager.invite.role")}</label>
                 <select value={inviteRole} onChange={(e) => setInviteRole((e.target.value as StaffRole) || "receptionist")} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
-                  {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{humanize(role)}</option>))}
+                  {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{t(`staffManager.roles.${role}`)}</option>))}
                 </select>
               </div>
               <div className="flex items-end">
                 <button type="submit" disabled={inviteLoading} className="w-full h-10 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2 text-sm font-medium">
                   {inviteLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                  Send Invite
+                  {t("staffManager.invite.send")}
                 </button>
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-sm font-medium mb-3">Permission Preset</div>
+              <div className="text-sm font-medium mb-3">{t("staffManager.invite.preset")}</div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {PERMISSION_KEYS.map((key) => {
                   const checked = invitePermissions.includes(key);
@@ -511,12 +511,12 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       {/* Pending Invitations */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Clock3 className="h-5 w-5" /> Pending Invitations</CardTitle>
-          <CardDescription>Manage pending invites, resend, or revoke before activation.</CardDescription>
+          <CardTitle className="flex items-center gap-2"><Clock3 className="h-5 w-5" /> {t("staffManager.pending.title")}</CardTitle>
+          <CardDescription>{t("staffManager.pending.description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {pendingRows.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No pending invitations.</div>
+            <div className="text-sm text-muted-foreground">{t("staffManager.pending.empty")}</div>
           ) : (
             <div className="space-y-3">
               {pendingRows.map((row) => {
@@ -527,15 +527,15 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
                   <div key={rowId} className="rounded-lg border p-4">
                     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                       <div className="min-w-0">
-                        <div className="font-medium truncate">{email || "Pending invite"}</div>
+                        <div className="font-medium truncate">{email || t("staffManager.pending.fallback")}</div>
                         <div className="text-sm text-muted-foreground">{humanize(normalizeStatus(row.status))} • {humanize(getStaffRole(row))} • {relativeTimeLabel(row.created_at)}</div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <button type="button" onClick={() => resendInvite(row)} disabled={isBusy} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          {isBusy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} Resend
+                          {isBusy ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />} {t("staffManager.pending.resend")}
                         </button>
                         <button type="button" onClick={() => cancelInvite(row)} disabled={isBusy} className="h-9 px-3 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground text-sm inline-flex items-center gap-1.5 disabled:opacity-60">
-                          <XCircle className="h-4 w-4" /> Cancel
+                          <XCircle className="h-4 w-4" /> {t("staffManager.pending.cancel")}
                         </button>
                       </div>
                     </div>
