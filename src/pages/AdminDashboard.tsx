@@ -2306,7 +2306,7 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
                         <div className="text-2xl font-bold">
-                          {services.length > 0 ? `$${Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)}` : '$0'}
+                          {services.length > 0 ? money(Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)) : money(0)}
                         </div>
                         <p className="text-sm text-muted-foreground">Avg Price</p>
                       </CardContent>
