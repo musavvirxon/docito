@@ -63,6 +63,7 @@ import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeIn
 import { useEntitySettings } from "@/hooks/useEntitySettings";
 import { useFinanceEntries } from "@/hooks/useFinanceEntries";
 import { useFinanceCategories } from "@/hooks/useFinanceCategories";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
