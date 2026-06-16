@@ -4985,7 +4985,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>No Recent Bookings</CardTitle></CardHeader>
                       <CardContent>
                         {zeroBookingServices.length > 0 ? (
-                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">${s.price || s.cost || 0}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>Review</Button></div>))}</div>
+                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">{money(Number(s.price || s.cost || 0))}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>Review</Button></div>))}</div>
                         ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>All services have bookings!</p></div>}
                       </CardContent>
                     </Card>
