@@ -25,6 +25,7 @@ type CategoryRow = {
   kind: "income" | "expense" | "payroll";
   name: string;
 
+};
 type ExpenseRow = {
   id: string;
   amount_cents: number; // can be negative for reversals
@@ -76,6 +77,7 @@ function isReversalRow(r: ExpenseRow) {
   return Boolean(md.reversal_of || md["reversal_of"]);
 }
 
+};
 export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

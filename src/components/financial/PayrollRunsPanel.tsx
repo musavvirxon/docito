@@ -55,6 +55,7 @@ function parseMoneyToCents(input: string) {
   return Math.round(n * 100);
 }
 
+};
 export default function PayrollRunsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

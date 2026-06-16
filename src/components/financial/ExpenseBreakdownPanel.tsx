@@ -56,6 +56,7 @@ function utcNowMonth() {
   return `${y}-${m}`;
 }
 
+};
 export default function ExpenseBreakdownPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

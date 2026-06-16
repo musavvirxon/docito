@@ -21,6 +21,7 @@ type CategoryRow = {
   kind: "income" | "expense" | "payroll";
   name: string;
 
+};
 type BudgetRow = {
   id: string;
   month: string; // date
@@ -30,6 +31,7 @@ type BudgetRow = {
   currency: string;
   updated_at: string;
 
+};
 type VsRow = {
   month: string; // date
   entry_type: EntryType;
@@ -72,6 +74,7 @@ function monthLabel(dateStr: string) {
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short" });
 }
 
+};
 export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

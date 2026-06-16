@@ -28,6 +28,7 @@ type PurchaseRow = {
   finance_entry_id: string | null;
   notes: string | null;
 
+};
 type PurchaseItemRow = {
   id: string;
   purchase_id: string;
@@ -38,6 +39,7 @@ type PurchaseItemRow = {
   notes: string | null;
   items?: { id: string; name: string; unit: string } | null;
 
+};
 type ItemRow = {
   id: string;
   name: string;
@@ -45,6 +47,7 @@ type ItemRow = {
   current_stock_qty: number;
   min_stock_qty: number;
 
+};
 type LowStockRow = {
   id: string;
   name: string;
@@ -74,6 +77,7 @@ function toIdempotencyKey() {
   return `pur_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+};
 type DraftPurchaseItem = {
   key: string;
   itemId: string;
@@ -85,6 +89,7 @@ function rowKey() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+};
 export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

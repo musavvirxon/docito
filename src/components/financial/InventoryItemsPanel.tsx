@@ -28,6 +28,7 @@ type ItemRow = {
   is_active: boolean;
   notes: string | null;
 
+};
 type AdjRow = {
   id: string;
   item_id: string;
@@ -43,6 +44,7 @@ function parseQty(v: string) {
   if (!Number.isFinite(n)) return null;
   return n;
 }
+};
 export default function InventoryItemsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

@@ -24,6 +24,7 @@ type CategoryRow = {
   name: string;
   kind: "income" | "expense" | "payroll";
 
+};
 type RecurringRow = {
   id: string;
   category_id: string;
@@ -64,6 +65,7 @@ function monthLabel(n: number) {
   return map[n - 1] ?? String(n);
 }
 
+};
 export default function RecurringExpensesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

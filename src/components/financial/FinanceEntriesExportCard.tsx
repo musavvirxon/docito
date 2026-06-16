@@ -56,6 +56,7 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+};
 export default function FinanceEntriesExportCard(props: { entityType: FinanceEntityType; entityId: string; defaultDays?: number }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

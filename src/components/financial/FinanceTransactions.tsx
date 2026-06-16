@@ -18,6 +18,7 @@ type Props = {
   entityId: string;
   locationId?: string | null;
 
+};
 type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
 
 type FinanceEntryRow = {
@@ -29,6 +30,7 @@ type FinanceEntryRow = {
   description: string | null;
   category_id: string | null;
 
+};
 type CategoryRow = {
   id: string;
   name: string;
@@ -40,6 +42,7 @@ function isoForDaysAgo(days: number) {
   return d.toISOString();
 }
 
+};
 export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

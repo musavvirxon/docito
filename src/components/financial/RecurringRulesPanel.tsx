@@ -54,6 +54,7 @@ type RuleRow = {
   active: boolean;
   updated_at: string;
 
+};
 type RunRow = {
   run_id: string;
   rule_id: string;
@@ -63,6 +64,7 @@ type RunRow = {
   error: string | null;
   created_at: string;
 
+};
 type EntityRunRow = {
   id: string;
   source: "pg_cron" | "edge_cron" | "manual";
@@ -74,6 +76,7 @@ type EntityRunRow = {
   error_count: number;
   notes: string | null;
 
+};
 type FinanceEntryRow = {
   id: string;
   entry_type: "income" | "expense" | "payroll";
@@ -83,6 +86,7 @@ type FinanceEntryRow = {
   description: string | null;
   reference: string | null;
 
+};
 type StatusRow = {
   due_rules_count: number;
   next_due_date: string | null;
@@ -93,6 +97,7 @@ type StatusRow = {
   last_skipped_count: number | null;
   last_error_count: number | null;
 
+};
 type ExportRow = {
   run_date: string;
   status: string;
@@ -171,6 +176,7 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   URL.revokeObjectURL(url);
 }
 
+};
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

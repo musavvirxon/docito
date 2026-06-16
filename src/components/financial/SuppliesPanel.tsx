@@ -23,6 +23,7 @@ type PurchaseRow = {
   notes: string | null;
   finance_entry_id: string | null;
 
+};
 type PurchaseItemRow = {
   id: string;
   purchase_id: string;
@@ -76,6 +77,7 @@ function qtyNumber(v: string) {
   return Math.round(n * 1000) / 1000;
 }
 
+};
 type DraftItem = { name: string; qty: string; unitCost: string };
 
 export default function SuppliesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
