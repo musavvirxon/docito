@@ -4950,7 +4950,7 @@ const AdminDashboard = () => {
                   <Card className="rounded-xl">
                     <CardHeader><CardTitle>Average Revenue per Appointment</CardTitle></CardHeader>
                     <CardContent>
-                      <div className="text-center py-4"><p className="text-4xl font-bold">${appointments.length > 0 ? ((totalRevCents / 100) / appointments.length).toFixed(2) : '0.00'}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
+                      <div className="text-center py-4"><p className="text-4xl font-bold">{appointments.length > 0 ? money((totalRevCents / 100) / appointments.length) : money(0)}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
                       {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center">Insufficient data to calculate.</p>}
                     </CardContent>
                   </Card>
