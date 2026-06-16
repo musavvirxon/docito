@@ -536,7 +536,7 @@ const AdminDashboard = () => {
       { label: t("admin.metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
       { label: t("admin.metrics.locations"), value: stats.locations.toString(), icon: MapPin },
     ],
-    [stats, t]
+    [stats, t, money]
   );
 
   const getVerificationStatusColor = (status: string) => {
