@@ -47,6 +47,7 @@ export function SuperbillsManager({
 }: Props) {
   const { superbills, loading, reload, stats } = useSuperbills({ practiceId, doctorId, patientId });
   const { create, submitting } = useCreateSuperbill();
+  const { formatCents: money } = useCurrency();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     patient: '',
