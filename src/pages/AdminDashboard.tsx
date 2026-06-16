@@ -3045,7 +3045,7 @@ const AdminDashboard = () => {
                       })}>Create Invoice</Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {[['Total Invoiced', `$${totalInvoiced.toLocaleString()}`], ['Paid', `$${totalPaid.toLocaleString()}`], ['Outstanding', `$${(totalInvoiced - totalPaid).toLocaleString()}`]].map(([label, val]) => (
+                      {[['Total Invoiced', money(totalInvoiced)], ['Paid', money(totalPaid)], ['Outstanding', money(totalInvoiced - totalPaid)]].map(([label, val]) => (
                         <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
                           <div className="text-2xl font-bold">{val}</div><p className="text-sm text-muted-foreground">{label}</p>
                         </CardContent></Card>
