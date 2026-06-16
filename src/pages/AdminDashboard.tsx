@@ -4934,7 +4934,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>Revenue by Provider</CardTitle></CardHeader>
                       <CardContent>
                         {revByDoctorList.length > 0 ? (
-                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">${d.total.toFixed(2)} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
+                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">{money(d.total)} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
                         ) : <p className="text-sm text-muted-foreground">No paid transactions linked to providers yet.</p>}
                       </CardContent>
                     </Card>
