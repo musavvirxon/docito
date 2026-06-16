@@ -5125,9 +5125,9 @@ const AdminDashboard = () => {
                             if (reportMetrics.includes('Unique Patients')) rows.push({ metric: 'Unique Patients', value: new Set(filteredAppts.map((a: any) => a.patient_id || a.patient_name)).size, unit: 'patients' });
                             if (reportMetrics.includes('New Patients')) rows.push({ metric: 'New Patients', value: patients.length, unit: 'patients' });
                             if (reportMetrics.includes('Cancellation Rate')) rows.push({ metric: 'Cancellation Rate', value: filteredAppts.length > 0 ? (filteredAppts.filter((a: any) => norm(a.status) === 'cancelled').length / filteredAppts.length * 100).toFixed(1) + '%' : '0%', unit: '' });
-                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: '$' + revenue.toFixed(2), unit: '' });
+                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: money(revenue), unit: '' });
                             if (reportMetrics.includes('Avg Revenue per Appointment')) {
-                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? '$' + (revenue / filteredAppts.length).toFixed(2) : '$0.00', unit: '' });
+                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? money(revenue / filteredAppts.length) : money(0), unit: '' });
                             }
                             if (reportMetrics.includes('Patient Retention')) rows.push({ metric: 'Patient Retention', value: 'N/A', unit: '(requires historical data)' });
                             if (reportMetrics.includes('Provider Performance')) {
