@@ -2056,7 +2056,7 @@ const AdminDashboard = () => {
                               {services.slice(0, 3).map(s => (
                                 <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
                                   <span className="font-medium">{s.name}</span>
-                                  <span className="text-muted-foreground ml-2">${s.price}</span>
+                                  <span className="text-muted-foreground ml-2">{money(Number(s.price || 0))}</span>
                                 </div>
                               ))}
                             </div>
