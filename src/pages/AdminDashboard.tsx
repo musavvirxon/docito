@@ -3448,8 +3448,7 @@ const AdminDashboard = () => {
       case "billing": {
         const bData: any = billing.data;
         const bTxs: any[] = bData?.transactions || [];
-        const fmtCents = (cents: number) =>
-          `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        const fmtCents = (cents: number) => moneyCents(cents);
 
         const billingTabs: { key: typeof billingTab; label: string }[] = [
           { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
