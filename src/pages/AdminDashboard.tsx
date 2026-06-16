@@ -2439,7 +2439,7 @@ const AdminDashboard = () => {
                                     <Badge variant="secondary" className="text-xs">{s.category || 'Other'}</Badge>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <span className="text-sm font-semibold">${s.price}</span>
+                                    <span className="text-sm font-semibold">{money(Number(s.price || 0))}</span>
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
                                     if (!confirm('Archive this service?')) return;
                                     const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', s.id);
