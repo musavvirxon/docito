@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Settings, TrendingUp, DollarSign, Target, Calculator } from "lucide-react";
 import { useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import FinancialInputsModal from "./FinancialInputsModal";
 import { useTranslation } from "react-i18next";
 
@@ -29,14 +30,13 @@ interface AdvancedFinancialMetricsProps {
 }
 
 const AdvancedFinancialMetrics = ({ metrics, revenue, onUpdateInputs }: AdvancedFinancialMetricsProps) => {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
   const { t } = useTranslation("dashboard");
   const [showInputsModal, setShowInputsModal] = useState(false);
 
   const na = t("doctor.performance.notAvailable");
 
-  const formatCurrency = (value: number | null) => {
-    if (value === null) return na;
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+  const formatCurrency = (v: any) => __money(Number(v ?? 0));).format(value);
   };
 
   const formatPercentage = (value: number | null) => {

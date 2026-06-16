@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,7 @@ interface Props {
 type StaffMember = { user_id: string; full_name: string; role: string };
 
 export default function CompensationManager({ entityType, entityId }: Props) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
   const { user } = useAuth();
   const { rows, loading, refresh } = useCompensationProfiles({ entityType, entityId });
   const [staffList, setStaffList] = useState<StaffMember[]>([]);

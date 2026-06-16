@@ -5,6 +5,7 @@
 // - Keeps UI consistent with other admin/finance panels
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -25,19 +26,7 @@ type BreakdownRow = {
   amount_cents: number; // bigint -> number in JS (safe for typical ranges)
 };
 
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(v);
-
-  } catch {
-
-    return `${(currency) || "USD"} ${Number(v).toFixed(2)}`;
-
-  }
-}
-
+function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function monthToDate(month: string) {
   // month: YYYY-MM -> YYYY-MM-01
   if (!/^\d{4}-\d{2}$/.test(month)) return null;
@@ -70,6 +59,7 @@ function utcNowMonth() {
 }
 
 export default function ExpenseBreakdownPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
 
   const { entityType, entityId } = props;
 

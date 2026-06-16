@@ -6,6 +6,7 @@
 // - Manual "Run now" uses Edge Function finance-recurring-run
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -56,19 +57,7 @@ function centsToMajorString(cents: number) {
   return v.toFixed(2);
 }
 
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(v);
-
-  } catch {
-
-    return `${(currency) || "USD"} ${Number(v).toFixed(2)}`;
-
-  }
-}
-
+function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function weekdayLabel(n: number) {
   const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   return map[n] ?? String(n);
@@ -80,6 +69,7 @@ function monthLabel(n: number) {
 }
 
 export default function RecurringExpensesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
 
   const { entityType, entityId } = props;
 

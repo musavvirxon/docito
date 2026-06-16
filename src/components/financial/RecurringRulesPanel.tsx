@@ -2,6 +2,7 @@
 // B33: Add export (CSV) for recurring runs by date range
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -135,19 +136,7 @@ function normalizeCurrency(v: string) {
   return s || "USD";
 }
 
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
-
-  } catch {
-
-    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
-
-  }
-}
-
+function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function dowLabel(dow: number | null) {
   const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   if (dow === null || dow < 0 || dow > 6) return "—";
@@ -191,6 +180,7 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
 }
 
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
 
   const { entityType, entityId } = props;
 

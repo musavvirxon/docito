@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -65,19 +66,7 @@ function parseMajorToCents(v: string) {
   return Math.round(n * 100);
 }
 
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
-
-  } catch {
-
-    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
-
-  }
-}
-
+function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function middayUtcISO(dateStr: string) {
   return new Date(`${dateStr}T12:00:00.000Z`).toISOString();
 }
@@ -94,6 +83,7 @@ function qtyNumber(v: string) {
 type DraftItem = { name: string; qty: string; unitCost: string };
 
 export default function SuppliesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
 
   const { entityType, entityId } = props;
 

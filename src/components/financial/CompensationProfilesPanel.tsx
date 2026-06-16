@@ -1,6 +1,7 @@
 // File: src/components/financial/CompensationProfilesPanel.tsx
 
 import { useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { Plus, RefreshCw, Pencil, Trash2, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,10 +19,7 @@ import CompensationProfileDialog, { type CompensationProfileDraft } from "@/comp
 
 type CompType = "salary" | "hourly";
 
-const formatCurrency = (cents: number | null | undefined, currency: string = "USD") => {
-  const v = Number(cents || 0) / 100;
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(v);
+const formatCurrency = (v: any) => __money(Number(v ?? 0));).format(v);
   } catch {
     return `${v.toFixed(2)} ${currency}`;
   }
@@ -33,6 +31,7 @@ interface Props {
 }
 
 export default function CompensationProfilesPanel({ entityType, entityId }: Props) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<CompensationProfileRow | null>(null);
 

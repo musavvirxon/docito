@@ -5,6 +5,7 @@
 // - Keeps UI consistent, minimal, admin-oriented
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -56,15 +57,7 @@ type LowStockRow = {
   shortage_qty: number;
 };
 
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(v);
-  } catch {
-    return `${currency} ${v.toFixed(2)}`;
-  }
-}
-
+function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function monthKeyUTC(ts: string) {
   const d = new Date(ts);
   const y = d.getUTCFullYear();
@@ -99,6 +92,7 @@ function rowKey() {
 }
 
 export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
   const { entityType, entityId } = props;
 
   const [loading, setLoading] = useState(false);
