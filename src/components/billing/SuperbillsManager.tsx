@@ -148,7 +148,7 @@ export function SuperbillsManager({
                     <tr key={sb.id} className="border-b border-border/50 hover:bg-muted/30">
                       <td className="py-2.5 font-medium">{sb.superbill_number}</td>
                       <td className="py-2.5">{sb.service_date}</td>
-                      <td className="py-2.5">${((sb.total_amount_cents || 0) / 100).toFixed(2)}</td>
+                      <td className="py-2.5">{money(sb.total_amount_cents || 0)}</td>
                       <td className="py-2.5"><Badge className={STATUS_COLOR[sb.status]}>{sb.status}</Badge></td>
                       <td className="py-2.5">
                         <div className="flex gap-1">
