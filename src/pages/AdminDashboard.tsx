@@ -4331,7 +4331,7 @@ const AdminDashboard = () => {
                               <span className="text-muted-foreground w-14 flex-shrink-0">{dateStr}</span>
                               <Badge variant={e.type === 'income' ? 'default' : e.type === 'payroll' ? 'secondary' : 'destructive'} className="text-xs">{e.type}</Badge>
                               <span className="flex-1 truncate">{e.category || '—'}</span>
-                              <span className="font-medium">${(e.amount || 0).toFixed(2)}</span>
+                              <span className="font-medium">{money(e.amount || 0)}</span>
                             </div>
                           );
                         }) : (
