@@ -97,6 +97,9 @@ type DraftItem = { name: string; qty: string; unitCost: string };
 export default function SuppliesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
 
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
+
 
   const today = useMemo(() => new Date(), []);
   const [dateFrom, setDateFrom] = useState(() => isoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30)));
