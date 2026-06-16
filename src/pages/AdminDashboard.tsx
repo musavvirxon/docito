@@ -175,6 +175,7 @@ function SectionWrapper({ children, locked, onRequestVerify, message }: { childr
 
 const AdminDashboard = () => {
   const { t } = useTranslation("dashboard");
+  const { format: money, formatCents: moneyCents } = useCurrency();
   const navigate = useNavigate();
 
   const {
