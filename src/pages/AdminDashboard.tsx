@@ -4311,7 +4311,7 @@ const AdminDashboard = () => {
                           <div key={cat.name} className="flex items-center gap-3 mb-3">
                             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: catColors[i % catColors.length] }} />
                             <span className="text-sm flex-1">{cat.name}</span>
-                            <span className="text-sm font-medium">${cat.total.toFixed(2)}</span>
+                            <span className="text-sm font-medium">{money(cat.total, ((practice as any)?.currency || 'USD').toUpperCase())}</span>
                             <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
                               <div className="h-full rounded-full" style={{ width: `${finExpenses > 0 ? (cat.total / finExpenses * 100) : 0}%`, backgroundColor: catColors[i % catColors.length] }} />
                             </div>
