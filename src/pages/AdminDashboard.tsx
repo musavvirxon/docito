@@ -3645,9 +3645,7 @@ const AdminDashboard = () => {
                             {(billing.data as any).transactions.map((tx: any) => {
                               const patientName =
                                 tx?.metadata?.patient_name || tx?.metadata?.customer_name || tx?.metadata?.payer_name || "—";
-                              const fmt = `$${(Number(tx.amount_cents || 0) / 100).toLocaleString(undefined, {
-                                maximumFractionDigits: 2,
-                              })}`;
+                              const fmt = fmtCents(tx.amount_cents || 0, tx.currency);
                               const statusLower = String(tx.status || "").toLowerCase();
                               const isPaid = statusLower === "completed" || statusLower === "paid";
                               const isPending = statusLower === "pending";
