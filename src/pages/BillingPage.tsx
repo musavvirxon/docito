@@ -10,6 +10,7 @@ import { Loader2, CreditCard, ExternalLink, RefreshCw, CheckCircle2, XCircle, Do
 import { useTranslation } from "react-i18next";
 import { downloadInvoicePdf } from "@/lib/api/invoice-api";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 function badgeVariant(status: string) {
   const s = String(status || "").toLowerCase();
