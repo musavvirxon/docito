@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { format } from "date-fns";
 import { ListChecks, Loader2, RefreshCcw, Filter, ArrowDownUp } from "lucide-react";
 import { toast } from "sonner";
@@ -17,8 +16,8 @@ type Props = {
   entityType: FinanceEntityType;
   entityId: string;
   locationId?: string | null;
-
 };
+
 type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
 
 type FinanceEntryRow = {
@@ -29,13 +28,27 @@ type FinanceEntryRow = {
   currency: string;
   description: string | null;
   category_id: string | null;
-
 };
+
 type CategoryRow = {
   id: string;
   name: string;
   kind: string;
 };
+
+function formatCents(cents: number, currency: string) {
+  const cur = (currency || "USD").toUpperCase();
+  const value = (Number(cents || 0) || 0) / 100;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (cur) || "USD" }).format(value);
+
+  } catch {
+
+    return `${(cur) || "USD"} ${Number(value).toFixed(2)}`;
+
+  }
+}
 
 function isoForDaysAgo(days: number) {
   const now = new Date();
@@ -44,11 +57,6 @@ function isoForDaysAgo(days: number) {
 }
 
 export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
-  const { format: __money, formatCents: __moneyCents } = __useCurrency();
-  // __money-helpers
-  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const [type, setType] = useState<EntryType | "all">("all");
@@ -243,6 +251,7 @@ export default function FinanceTransactions({ entityType, entityId, locationId }
                   const dateLabel = (() => {
                     try {
                       return format(new Date(r.occurred_at), "MMM d, yyyy");
+                    } catch {
                       return r.occurred_at;
                     }
                   })();

@@ -10,7 +10,6 @@ import { Loader2, CreditCard, ExternalLink, RefreshCw, CheckCircle2, XCircle, Do
 import { useTranslation } from "react-i18next";
 import { downloadInvoicePdf } from "@/lib/api/invoice-api";
 import { toast } from "sonner";
-import { useCurrency } from "@/hooks/useCurrency";
 
 function badgeVariant(status: string) {
   const s = String(status || "").toLowerCase();
@@ -22,7 +21,6 @@ function badgeVariant(status: string) {
 
 export default function BillingPage() {
   const { t } = useTranslation('common');
-  const { formatCents: moneyCents } = useCurrency();
   const { permissions } = useStaffContext();
   const [sp] = useSearchParams();
 
@@ -120,7 +118,10 @@ export default function BillingPage() {
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="text-2xl font-bold">
-                          {moneyCents(p.amount_cents)}
+                          {(p.amount_cents / 100).toLocaleString(undefined, {
+                            style: "currency",
+                            currency: p.currency.toUpperCase(),
+                          })}
                           <span className="text-sm text-muted-foreground font-normal">/{p.interval}</span>
                         </div>
                         <Button className="w-full" onClick={() => actions.startCheckout(p.code)}>
@@ -144,7 +145,10 @@ export default function BillingPage() {
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{inv.status}</Badge>
                             <div className="font-medium">
-                              {moneyCents(inv.amount_due_cents)}
+                              {(inv.amount_due_cents / 100).toLocaleString(undefined, {
+                                style: "currency",
+                                currency: inv.currency.toUpperCase(),
+                              })}
                             </div>
                           </div>
                           <div className="text-xs text-muted-foreground">

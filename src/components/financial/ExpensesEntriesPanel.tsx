@@ -4,7 +4,6 @@
 // - Uses RPC finance_entry_create_reversal for refund/reversal (creates negative expense linked to original)
 
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -24,8 +23,8 @@ type CategoryRow = {
   id: string;
   kind: "income" | "expense" | "payroll";
   name: string;
-
 };
+
 type ExpenseRow = {
   id: string;
   amount_cents: number; // can be negative for reversals
@@ -35,6 +34,19 @@ type ExpenseRow = {
   description: string | null;
   metadata: any;
 };
+
+function formatMoney(currency: string, cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
+
+  } catch {
+
+    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
+
+  }
+}
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -79,11 +91,6 @@ function isReversalRow(r: ExpenseRow) {
 }
 
 export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __money, formatCents: __moneyCents } = __useCurrency();
-  // __money-helpers
-  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -154,6 +161,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
     setFormCategoryName("");
     setFormDescription("");
     setFormReference("");
+  };
 
   const resetRefund = () => {
     setRefundOriginal(null);
@@ -161,6 +169,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
     setRefundDescription("Refund/Reversal");
     setRefundReference("");
     setRefundIdempotencyKey("");
+  };
 
   const loadCategories = async () => {
     const { data, error } = await supabase
@@ -174,6 +183,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
 
     if (error) throw error;
     setCategories((data || []) as any);
+  };
 
   const loadExpenses = async () => {
     if (!entityId) return;
@@ -217,6 +227,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
   const openCreate = () => {
     resetForm();
     setOpen(true);
+  };
 
   const openEdit = (r: ExpenseRow) => {
     setEditId(r.id);
@@ -228,6 +239,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
     setFormDescription(r.description || "");
     setFormReference(String((r.metadata && (r.metadata.reference || r.metadata["reference"])) || "") || "");
     setOpen(true);
+  };
 
   const openRefund = (r: ExpenseRow) => {
     setRefundOriginal(r);
@@ -236,6 +248,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
     setRefundReference("");
     setRefundIdempotencyKey(`expense_refund_${r.id}_${Date.now()}`);
     setRefundOpen(true);
+  };
 
   const save = async () => {
     if (!canSave) return;
@@ -278,6 +291,7 @@ export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityT
     } finally {
       setSaving(false);
     }
+  };
 
   const createRefund = async () => {
     if (!canRefund || !refundOriginal) return;

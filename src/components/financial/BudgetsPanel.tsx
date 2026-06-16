@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -20,8 +19,8 @@ type CategoryRow = {
   id: string;
   kind: "income" | "expense" | "payroll";
   name: string;
-
 };
+
 type BudgetRow = {
   id: string;
   month: string; // date
@@ -30,8 +29,8 @@ type BudgetRow = {
   amount_cents: number;
   currency: string;
   updated_at: string;
-
 };
+
 type VsRow = {
   month: string; // date
   entry_type: EntryType;
@@ -69,6 +68,20 @@ function normalizeCurrency(v: string) {
   const s = String(v || "").trim().toUpperCase();
   return s || "USD";
 }
+
+function formatMoney(currency: string, cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
+
+  } catch {
+
+    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
+
+  }
+}
+
 function monthLabel(dateStr: string) {
   const d = new Date(`${dateStr}T00:00:00.000Z`);
   if (Number.isNaN(d.getTime())) return dateStr;
@@ -76,11 +89,6 @@ function monthLabel(dateStr: string) {
 }
 
 export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __money, formatCents: __moneyCents } = __useCurrency();
-  // __money-helpers
-  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -126,6 +134,7 @@ export default function BudgetsPanel(props: { entityType: FinanceEntityType; ent
 
     if (error) throw error;
     setCategories((data || []) as any);
+  };
 
   const load = async () => {
     if (!canLoad) return;
@@ -181,10 +190,12 @@ export default function BudgetsPanel(props: { entityType: FinanceEntityType; ent
     setFormCategoryId("overall");
     setFormCurrency(currencyHint || "USD");
     setFormAmount("");
+  };
 
   const openCreate = () => {
     resetForm();
     setOpen(true);
+  };
 
   const openEdit = (b: BudgetRow) => {
     setEditBudgetId(b.id);
@@ -194,6 +205,7 @@ export default function BudgetsPanel(props: { entityType: FinanceEntityType; ent
     setFormCurrency(String(b.currency || "USD").toUpperCase());
     setFormAmount(((Number(b.amount_cents || 0) || 0) / 100).toFixed(2));
     setOpen(true);
+  };
 
   const canSave = useMemo(() => {
     const cents = parseMajorToCents(formAmount);
@@ -238,6 +250,7 @@ export default function BudgetsPanel(props: { entityType: FinanceEntityType; ent
     } finally {
       setSaving(false);
     }
+  };
 
   const vsFiltered = useMemo(() => {
     if (filterEntryType === "all") return vs;

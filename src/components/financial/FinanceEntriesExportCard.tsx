@@ -1,6 +1,5 @@
 // File: src/components/financial/FinanceEntriesExportCard.tsx
 import { useMemo, useState } from "react";
-import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -57,12 +56,18 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+function formatMoney(currency: string, cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(v);
+  } catch {
+    const sign = v < 0 ? "-" : "";
+    return `${sign}${currency || "USD"} ${Math.abs(v).toFixed(2)}`;
+  }
+}
+
 export default function FinanceEntriesExportCard(props: { entityType: FinanceEntityType; entityId: string; defaultDays?: number }) {
-  const { format: __money, formatCents: __moneyCents } = __useCurrency();
-  // __money-helpers
-  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
   const { entityType, entityId } = props;
   const days = Math.max(1, Math.min(props.defaultDays ?? 90, 3650));
 

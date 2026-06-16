@@ -5,7 +5,6 @@
 // - Keeps UI consistent with other admin/finance panels
 
 import { useEffect, useMemo, useState } from "react";
-import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -25,6 +24,19 @@ type BreakdownRow = {
   category_name: string;
   amount_cents: number; // bigint -> number in JS (safe for typical ranges)
 };
+
+function formatMoney(currency: string, cents: number) {
+  const v = (Number(cents || 0) || 0) / 100;
+  try {
+
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(v);
+
+  } catch {
+
+    return `${(currency) || "USD"} ${Number(v).toFixed(2)}`;
+
+  }
+}
 
 function monthToDate(month: string) {
   // month: YYYY-MM -> YYYY-MM-01
@@ -58,11 +70,6 @@ function utcNowMonth() {
 }
 
 export default function ExpenseBreakdownPanel(props: { entityType: FinanceEntityType; entityId: string }) {
-  const { format: __money, formatCents: __moneyCents } = __useCurrency();
-  // __money-helpers
-  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
-  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
