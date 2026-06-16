@@ -29,8 +29,8 @@ type BudgetRow = {
   variance_amount_cents: number;
 
   budget_line_id: string;
-
 };
+
 export default function BudgetVsActualPanel(props: { budgetPeriodId: string | null }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

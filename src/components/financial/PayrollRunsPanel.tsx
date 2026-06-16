@@ -38,6 +38,7 @@ type PayrollRunRow = {
   total_deductions_cents: number;
   finance_entry_id: string | null;
   created_at: string;
+};
 
 function yyyyMmDd(d: Date) {
   const y = d.getFullYear();
@@ -55,7 +56,6 @@ function parseMoneyToCents(input: string) {
   return Math.round(n * 100);
 }
 
-};
 export default function PayrollRunsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

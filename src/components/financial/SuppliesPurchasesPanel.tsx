@@ -84,12 +84,12 @@ type DraftPurchaseItem = {
   qty: string;
   unitCostMajor: string;
   notes: string;
+};
 
 function rowKey() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-};
 export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

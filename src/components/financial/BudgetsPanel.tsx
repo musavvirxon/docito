@@ -40,6 +40,7 @@ type VsRow = {
   budget_cents: number;
   actual_cents: number;
   variance_cents: number;
+};
 
 function isoMonth(d: Date) {
   const y = d.getFullYear();
@@ -74,7 +75,6 @@ function monthLabel(dateStr: string) {
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short" });
 }
 
-};
 export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

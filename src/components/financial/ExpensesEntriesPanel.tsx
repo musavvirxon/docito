@@ -34,6 +34,7 @@ type ExpenseRow = {
   category_id: string | null;
   description: string | null;
   metadata: any;
+};
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -77,7 +78,6 @@ function isReversalRow(r: ExpenseRow) {
   return Boolean(md.reversal_of || md["reversal_of"]);
 }
 
-};
 export default function ExpensesEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

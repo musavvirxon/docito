@@ -113,6 +113,7 @@ type ExportRow = {
   entry_reference: string | null;
   run_error: string | null;
   run_created_at: string | null;
+};
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -176,7 +177,6 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   URL.revokeObjectURL(url);
 }
 
-};
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

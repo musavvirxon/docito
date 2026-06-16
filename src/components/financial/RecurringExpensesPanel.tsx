@@ -41,6 +41,7 @@ type RecurringRow = {
   next_run_at: string;
   notes: string | null;
   created_at: string;
+};
 
 function parseMajorToCents(v: string) {
   const s = String(v || "").trim();
@@ -65,7 +66,6 @@ function monthLabel(n: number) {
   return map[n - 1] ?? String(n);
 }
 
-};
 export default function RecurringExpensesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

@@ -36,6 +36,7 @@ type AdjRow = {
   reason: string;
   note: string | null;
   occurred_at: string;
+};
 
 function parseQty(v: string) {
   const s = String(v || "").trim().replace(/,/g, ".");
@@ -44,7 +45,6 @@ function parseQty(v: string) {
   if (!Number.isFinite(n)) return null;
   return n;
 }
-};
 export default function InventoryItemsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers

@@ -35,6 +35,7 @@ type CategoryRow = {
   id: string;
   name: string;
   kind: string;
+};
 
 function isoForDaysAgo(days: number) {
   const now = new Date();
@@ -42,7 +43,6 @@ function isoForDaysAgo(days: number) {
   return d.toISOString();
 }
 
-};
 export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
   // __money-helpers
