@@ -1537,7 +1537,7 @@ const AdminDashboard = () => {
                                 <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span className="font-medium truncate">{svc.name}</span>
                                   <Badge variant="outline">{svc.category || '—'}</Badge>
-                                  <span>{svc.price != null ? `$${svc.price}` : '—'}</span>
+                                  <span>{svc.price != null ? money(Number(svc.price)) : '—'}</span>
                                   <span>{svc.duration ? `${svc.duration} min` : '—'}</span>
                                   <Badge variant="secondary">{svc.is_active === false ? 'Inactive' : 'Active'}</Badge>
                                 </div>
