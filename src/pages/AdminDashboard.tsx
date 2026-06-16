@@ -1973,25 +1973,25 @@ const AdminDashboard = () => {
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Lowest Price</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
+                              {services.length > 0 ? money(Math.min(...services.map(s => s.price || 0))) : money(0)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Highest Price</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
+                              {services.length > 0 ? money(Math.max(...services.map(s => s.price || 0))) : money(0)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Average Price</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
+                              {services.length > 0 ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)) : money(0)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Total Revenue Potential</span>
                             <span className="text-lg font-bold">
-                              ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                              {money(services.reduce((sum, s) => sum + (s.price || 0), 0))}
                             </span>
                           </div>
                         </div>
