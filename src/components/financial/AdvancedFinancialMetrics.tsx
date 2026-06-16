@@ -36,8 +36,7 @@ const AdvancedFinancialMetrics = ({ metrics, revenue, onUpdateInputs }: Advanced
 
   const na = t("doctor.performance.notAvailable");
 
-  const formatCurrency = (v: any) => __money(Number(v ?? 0));).format(value);
-  };
+  const formatCurrency = (v: any) => __money(Number(v ?? 0));
 
   const formatPercentage = (value: number | null) => {
     if (value === null) return na;
