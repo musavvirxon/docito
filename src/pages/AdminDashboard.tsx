@@ -3281,9 +3281,9 @@ const AdminDashboard = () => {
                             {formatPatientDate(patient.last_visit)}
                           </div>
                           <div className="hidden md:flex flex-col items-end text-xs whitespace-nowrap">
-                            <span className="text-green-600 font-semibold">${(patient.total_paid || 0).toFixed(2)}</span>
+                            <span className="text-green-600 font-semibold">{money(patient.total_paid || 0, ((practice as any)?.currency || 'USD').toUpperCase())}</span>
                             {patient.total_outstanding > 0 && (
-                              <span className="text-orange-600">${patient.total_outstanding.toFixed(2)} due</span>
+                              <span className="text-orange-600">{money(patient.total_outstanding, ((practice as any)?.currency || 'USD').toUpperCase())} due</span>
                             )}
                           </div>
                           <Badge className={patient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>
