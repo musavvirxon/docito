@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 import type { StaffPayment } from "@/hooks/useStaffDashboard";
 
 type Props = {
@@ -13,19 +14,6 @@ type Props = {
   onRefresh: () => void;
   canManageBilling?: boolean;
 };
-
-function formatCurrency(amountCents: number, currency: string = "USD") {
-  const value = Number(amountCents || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: String(currency || "USD").toUpperCase(),
-      maximumFractionDigits: 2,
-    }).format(value);
-  } catch {
-    return `$${value.toFixed(2)}`;
-  }
-}
 
 export default function BillingSection({ payments, onRefresh, canManageBilling = false }: Props) {
   const { t } = useTranslation('dashboard');
