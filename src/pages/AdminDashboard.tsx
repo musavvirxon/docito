@@ -1135,7 +1135,7 @@ const AdminDashboard = () => {
                               ['License Number', selectedProvider.license_number],
                               ['Languages', Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
                               ['Years of Experience', selectedProvider.years_experience ? `${selectedProvider.years_experience} yrs` : '—'],
-                              ['Consultation Fee', selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
+                              ['Consultation Fee', selectedProvider.consultation_fee != null ? money(Number(selectedProvider.consultation_fee)) : '—'],
                               ['Consultation Types', Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
                               ['Accepts New Patients', selectedProvider.accepts_new_patients ? 'Yes' : 'No'],
                               ['Verified', selectedProvider.verified ? 'Yes' : 'No'],
