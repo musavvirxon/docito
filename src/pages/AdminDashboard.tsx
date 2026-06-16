@@ -3071,7 +3071,7 @@ const AdminDashboard = () => {
                                 <tr key={p.id} className="border-b border-border last:border-0">
                                   <td className="p-3">{formatPatientDate(p.created_at || p.date)}</td>
                                   <td className="p-3">{p.description || p.service_name || '—'}</td>
-                                  <td className="p-3">${(p.amount || 0).toLocaleString()}</td>
+                                  <td className="p-3">{money(p.amount || 0)}</td>
                                   <td className="p-3"><Badge variant="outline" className="capitalize">{p.status}</Badge></td>
                                 </tr>
                               ))}
