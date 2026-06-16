@@ -38,7 +38,6 @@ type PayrollRunRow = {
   total_deductions_cents: number;
   finance_entry_id: string | null;
   created_at: string;
-};
 
 function yyyyMmDd(d: Date) {
   const y = d.getFullYear();
@@ -46,8 +45,6 @@ function yyyyMmDd(d: Date) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
-
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function parseMoneyToCents(input: string) {
   const s = String(input || "").trim();
   if (!s) return null;
@@ -60,6 +57,10 @@ function parseMoneyToCents(input: string) {
 
 export default function PayrollRunsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -112,7 +113,6 @@ export default function PayrollRunsPanel(props: { entityType: FinanceEntityType;
     } finally {
       setLoading(false);
     }
-  };
 
   const createRun = async () => {
     if (!canCreate) return;
@@ -151,7 +151,6 @@ export default function PayrollRunsPanel(props: { entityType: FinanceEntityType;
     } finally {
       setCreating(false);
     }
-  };
 
   const payRun = async (runId: string) => {
     try {

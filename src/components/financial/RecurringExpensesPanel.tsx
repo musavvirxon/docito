@@ -23,7 +23,6 @@ type CategoryRow = {
   id: string;
   name: string;
   kind: "income" | "expense" | "payroll";
-};
 
 type RecurringRow = {
   id: string;
@@ -41,7 +40,6 @@ type RecurringRow = {
   next_run_at: string;
   notes: string | null;
   created_at: string;
-};
 
 function parseMajorToCents(v: string) {
   const s = String(v || "").trim();
@@ -56,8 +54,6 @@ function centsToMajorString(cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
   return v.toFixed(2);
 }
-
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function weekdayLabel(n: number) {
   const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   return map[n] ?? String(n);
@@ -70,6 +66,10 @@ function monthLabel(n: number) {
 
 export default function RecurringExpensesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -145,7 +145,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setLoading(false);
     }
-  };
 
   const createRecurring = async () => {
     if (!canCreate) return;
@@ -172,7 +171,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
         autopost,
         is_active: isActive,
         created_by: uid,
-      };
 
       const { error } = await supabase.from("finance_recurring_expenses").insert(payload);
       if (error) throw error;
@@ -187,7 +185,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
       console.error(e);
       toast.error(e?.message || "Failed to create recurring expense");
     }
-  };
 
   const patchRow = async (id: string, patch: Partial<RecurringRow>) => {
     setSavingId(id);
@@ -203,7 +200,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setSavingId(null);
     }
-  };
 
   const deleteRow = async (id: string) => {
     setSavingId(id);
@@ -219,7 +215,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setSavingId(null);
     }
-  };
 
   const runNow = async (dryRun: boolean) => {
     setRunning(true);
@@ -242,7 +237,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setRunning(false);
     }
-  };
 
   const categoryNameById = useMemo(() => {
     const map = new Map<string, string>();

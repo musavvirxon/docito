@@ -17,7 +17,6 @@ type Props = {
   entityType: FinanceEntityType;
   entityId: string;
   locationId?: string | null;
-};
 
 type EntryType = "income" | "expense" | "payroll" | "transfer" | "adjustment";
 
@@ -29,15 +28,12 @@ type FinanceEntryRow = {
   currency: string;
   description: string | null;
   category_id: string | null;
-};
 
 type CategoryRow = {
   id: string;
   name: string;
   kind: string;
-};
 
-function formatCents(v: any) { return __moneyCents(Number(v ?? 0)); }
 function isoForDaysAgo(days: number) {
   const now = new Date();
   const d = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
@@ -46,6 +42,10 @@ function isoForDaysAgo(days: number) {
 
 export default function FinanceTransactions({ entityType, entityId, locationId }: Props) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const [range, setRange] = useState<"7d" | "30d" | "90d">("30d");
   const [type, setType] = useState<EntryType | "all">("all");

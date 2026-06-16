@@ -24,7 +24,6 @@ type CategoryRow = {
   id: string;
   kind: "income" | "expense" | "payroll";
   name: string;
-};
 
 type PayrollRow = {
   id: string;
@@ -34,9 +33,7 @@ type PayrollRow = {
   category_id: string | null;
   description: string | null;
   metadata: any;
-};
 
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function isoDate(d: Date) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -81,6 +78,10 @@ function isReversalRow(r: PayrollRow) {
 
 export default function PayrollEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -151,7 +152,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setFormCategoryName("");
     setFormDescription("");
     setFormReference("");
-  };
 
   const resetRev = () => {
     setRevOriginal(null);
@@ -159,7 +159,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setRevDescription("Correction/Reversal");
     setRevReference("");
     setRevIdempotencyKey("");
-  };
 
   const loadCategories = async () => {
     const { data, error } = await supabase
@@ -173,7 +172,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
 
     if (error) throw error;
     setCategories((data || []) as any);
-  };
 
   const loadPayroll = async () => {
     if (!entityId) return;
@@ -217,7 +215,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
   const openCreate = () => {
     resetForm();
     setOpen(true);
-  };
 
   const openEdit = (r: PayrollRow) => {
     setEditId(r.id);
@@ -229,7 +226,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setFormDescription(r.description || "");
     setFormReference(String((r.metadata && (r.metadata.reference || r.metadata["reference"])) || "") || "");
     setOpen(true);
-  };
 
   const openReverse = (r: PayrollRow) => {
     setRevOriginal(r);
@@ -238,7 +234,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setRevReference("");
     setRevIdempotencyKey(`payroll_reverse_${r.id}_${Date.now()}`);
     setRevOpen(true);
-  };
 
   const save = async () => {
     if (!canSave) return;
@@ -281,7 +276,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setSaving(false);
     }
-  };
 
   const createReversal = async () => {
     if (!canReverse || !revOriginal) return;

@@ -27,6 +27,10 @@ interface Props {
 
 export default function CompensationProfilesPanel({ entityType, entityId }: Props) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<CompensationProfileRow | null>(null);
 
@@ -40,12 +44,10 @@ export default function CompensationProfilesPanel({ entityType, entityId }: Prop
   const handleCreate = () => {
     setEditing(null);
     setOpen(true);
-  };
 
   const handleEdit = (row: CompensationProfileRow) => {
     setEditing(row);
     setOpen(true);
-  };
 
   const handleDelete = async (row: CompensationProfileRow) => {
     const ok = window.confirm("Deactivate this profile? (Recommended) Click Cancel to keep it.\n\nNote: Delete is permanent.");
@@ -66,7 +68,6 @@ export default function CompensationProfilesPanel({ entityType, entityId }: Prop
       console.error(e);
       toast.error(e?.message || "Failed to update profile");
     }
-  };
 
   const handleSave = async (draft: CompensationProfileDraft) => {
     const payload: any = {
@@ -78,7 +79,6 @@ export default function CompensationProfilesPanel({ entityType, entityId }: Prop
       effective_from: draft.effectiveFrom,
       is_active: draft.isActive,
       notes: draft.notes || null,
-    };
 
     // store currency for display / future use (not enforced by DB; kept in metadata-style column? none exists)
     // we store currency by writing finance entries separately; still useful in UI; keep it in notes only.

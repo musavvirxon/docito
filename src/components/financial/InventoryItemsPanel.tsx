@@ -27,7 +27,6 @@ type ItemRow = {
   avg_unit_cost_cents: number;
   is_active: boolean;
   notes: string | null;
-};
 
 type AdjRow = {
   id: string;
@@ -36,7 +35,6 @@ type AdjRow = {
   reason: string;
   note: string | null;
   occurred_at: string;
-};
 
 function parseQty(v: string) {
   const s = String(v || "").trim().replace(/,/g, ".");
@@ -45,10 +43,12 @@ function parseQty(v: string) {
   if (!Number.isFinite(n)) return null;
   return n;
 }
-
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 export default function InventoryItemsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -116,7 +116,6 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
     } finally {
       setLoading(false);
     }
-  };
 
   const fetchHistory = async (itemId: string) => {
     setLoadingHistory(true);
@@ -176,7 +175,6 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
         is_active: true,
         notes: newNotes.trim() ? newNotes.trim() : null,
         created_by: uid,
-      };
 
       const { error } = await supabase.from("inventory_items").insert(payload);
       if (error) throw error;
@@ -194,7 +192,6 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
     } finally {
       setSaving(false);
     }
-  };
 
   const updateSelected = async (patch: Partial<ItemRow>) => {
     if (!selected) return;
@@ -210,7 +207,6 @@ export default function InventoryItemsPanel(props: { entityType: FinanceEntityTy
     } finally {
       setSaving(false);
     }
-  };
 
   const adjustStock = async (deltaSign: 1 | -1) => {
     if (!selected) return;

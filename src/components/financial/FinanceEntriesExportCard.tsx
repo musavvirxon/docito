@@ -27,7 +27,6 @@ type ExportRow = {
   reference: string | null;
   created_at: string | null;
   updated_at: string | null;
-};
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -57,10 +56,12 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
   a.remove();
   URL.revokeObjectURL(url);
 }
-
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 export default function FinanceEntriesExportCard(props: { entityType: FinanceEntityType; entityId: string; defaultDays?: number }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
   const { entityType, entityId } = props;
   const days = Math.max(1, Math.min(props.defaultDays ?? 90, 3650));
 

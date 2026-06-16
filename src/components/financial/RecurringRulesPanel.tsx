@@ -53,7 +53,6 @@ type RuleRow = {
   next_run_date: string;
   active: boolean;
   updated_at: string;
-};
 
 type RunRow = {
   run_id: string;
@@ -63,7 +62,6 @@ type RunRow = {
   finance_entry_id: string | null;
   error: string | null;
   created_at: string;
-};
 
 type EntityRunRow = {
   id: string;
@@ -75,7 +73,6 @@ type EntityRunRow = {
   skipped_count: number;
   error_count: number;
   notes: string | null;
-};
 
 type FinanceEntryRow = {
   id: string;
@@ -85,7 +82,6 @@ type FinanceEntryRow = {
   occurred_at: string;
   description: string | null;
   reference: string | null;
-};
 
 type StatusRow = {
   due_rules_count: number;
@@ -96,7 +92,6 @@ type StatusRow = {
   last_created_count: number | null;
   last_skipped_count: number | null;
   last_error_count: number | null;
-};
 
 type ExportRow = {
   run_date: string;
@@ -113,7 +108,6 @@ type ExportRow = {
   entry_reference: string | null;
   run_error: string | null;
   run_created_at: string | null;
-};
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -135,8 +129,6 @@ function normalizeCurrency(v: string) {
   const s = String(v || "").trim().toUpperCase();
   return s || "USD";
 }
-
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function dowLabel(dow: number | null) {
   const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   if (dow === null || dow < 0 || dow > 6) return "—";
@@ -181,6 +173,10 @@ function downloadCsv(filename: string, rows: Record<string, unknown>[]) {
 
 export default function RecurringRulesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -253,7 +249,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
 
     if (error) throw error;
     setCategories((data || []) as any);
-  };
 
   const loadRuns = async () => {
     const { data, error } = await supabase.rpc("finance_recurring_rule_runs_list", {
@@ -264,7 +259,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
 
     if (error) throw error;
     setRuns(((data || []) as any) as RunRow[]);
-  };
 
   const loadEntityRuns = async () => {
     const { data, error } = await supabase.rpc("finance_recurring_entity_runs_list", {
@@ -275,7 +269,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
 
     if (error) throw error;
     setEntityRuns(((data || []) as any) as EntityRunRow[]);
-  };
 
   const loadStatus = async () => {
     if (!entityId) return;
@@ -308,7 +301,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setStatusLoading(false);
     }
-  };
 
   const load = async () => {
     if (!canLoad) return;
@@ -362,12 +354,10 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     setFormDescription("");
     setFormCategoryId("uncategorized");
     setFormCategoryName("Utilities");
-  };
 
   const openCreate = () => {
     resetForm();
     setOpen(true);
-  };
 
   const openEdit = (r: RuleRow) => {
     setEditId(r.id);
@@ -385,7 +375,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     setFormCategoryId(r.category_id ? r.category_id : "uncategorized");
     setFormCategoryName(r.category_name || "Utilities");
     setOpen(true);
-  };
 
   const canSave = useMemo(() => {
     if (!entityId) return false;
@@ -464,7 +453,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setSaving(false);
     }
-  };
 
   const deactivate = async (ruleId: string) => {
     try {
@@ -480,7 +468,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
       console.error(e);
       toast.error(e?.message || "Failed to deactivate rule");
     }
-  };
 
   const runDue = async () => {
     if (!entityId) return;
@@ -515,7 +502,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setRunning(false);
     }
-  };
 
   const openDetails = async (er: EntityRunRow) => {
     setDetailsRun(er);
@@ -556,7 +542,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setDetailsLoading(false);
     }
-  };
 
   const exportRuns = async () => {
     if (!entityId) return;
@@ -609,7 +594,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setExporting(false);
     }
-  };
 
   const statusLine = useMemo(() => {
     if (statusLoading) return "Loading status…";

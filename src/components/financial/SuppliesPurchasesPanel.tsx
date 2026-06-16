@@ -27,7 +27,6 @@ type PurchaseRow = {
   status: string;
   finance_entry_id: string | null;
   notes: string | null;
-};
 
 type PurchaseItemRow = {
   id: string;
@@ -38,7 +37,6 @@ type PurchaseItemRow = {
   line_total_cents: number;
   notes: string | null;
   items?: { id: string; name: string; unit: string } | null;
-};
 
 type ItemRow = {
   id: string;
@@ -46,7 +44,6 @@ type ItemRow = {
   unit: string;
   current_stock_qty: number;
   min_stock_qty: number;
-};
 
 type LowStockRow = {
   id: string;
@@ -55,9 +52,7 @@ type LowStockRow = {
   current_stock_qty: number;
   min_stock_qty: number;
   shortage_qty: number;
-};
 
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function monthKeyUTC(ts: string) {
   const d = new Date(ts);
   const y = d.getUTCFullYear();
@@ -85,7 +80,6 @@ type DraftPurchaseItem = {
   qty: string;
   unitCostMajor: string;
   notes: string;
-};
 
 function rowKey() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -93,6 +87,10 @@ function rowKey() {
 
 export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
   const { entityType, entityId } = props;
 
   const [loading, setLoading] = useState(false);
@@ -164,7 +162,6 @@ export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntit
     } finally {
       setLoading(false);
     }
-  };
 
   const fetchPurchaseItems = async (purchaseId: string) => {
     try {
@@ -232,15 +229,12 @@ export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntit
 
   const addDraftItem = () => {
     setDraftItems((prev) => [...prev, { key: rowKey(), itemId: "", qty: "1", unitCostMajor: "", notes: "" }]);
-  };
 
   const removeDraftItem = (key: string) => {
     setDraftItems((prev) => prev.filter((x) => x.key !== key));
-  };
 
   const updateDraftItem = (key: string, patch: Partial<DraftPurchaseItem>) => {
     setDraftItems((prev) => prev.map((x) => (x.key === key ? { ...x, ...patch } : x)));
-  };
 
   const createPurchase = async () => {
     if (!canCreatePurchase) return;

@@ -24,9 +24,7 @@ type BreakdownRow = {
   category_id: string;
   category_name: string;
   amount_cents: number; // bigint -> number in JS (safe for typical ranges)
-};
 
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function monthToDate(month: string) {
   // month: YYYY-MM -> YYYY-MM-01
   if (!/^\d{4}-\d{2}$/.test(month)) return null;
@@ -60,6 +58,10 @@ function utcNowMonth() {
 
 export default function ExpenseBreakdownPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 

@@ -22,7 +22,6 @@ type PurchaseRow = {
   total_cents: number;
   notes: string | null;
   finance_entry_id: string | null;
-};
 
 type PurchaseItemRow = {
   id: string;
@@ -31,7 +30,6 @@ type PurchaseItemRow = {
   qty: number;
   unit_cost_cents: number;
   line_total_cents: number;
-};
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -65,8 +63,6 @@ function parseMajorToCents(v: string) {
   if (n < 0) return null;
   return Math.round(n * 100);
 }
-
-function formatMoney(v: any) { return __money(Number(v ?? 0)); }
 function middayUtcISO(dateStr: string) {
   return new Date(`${dateStr}T12:00:00.000Z`).toISOString();
 }
@@ -84,6 +80,10 @@ type DraftItem = { name: string; qty: string; unitCost: string };
 
 export default function SuppliesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -130,7 +130,6 @@ export default function SuppliesPanel(props: { entityType: FinanceEntityType; en
       { name: "", qty: "1", unitCost: "" },
       { name: "", qty: "1", unitCost: "" },
     ]);
-  };
 
   const loadPurchases = async () => {
     if (!entityId) return;
@@ -159,7 +158,6 @@ export default function SuppliesPanel(props: { entityType: FinanceEntityType; en
     } finally {
       setLoading(false);
     }
-  };
 
   const loadItems = async (purchaseId: string) => {
     try {
@@ -190,7 +188,6 @@ export default function SuppliesPanel(props: { entityType: FinanceEntityType; en
     if (next && !itemsByPurchase[p.id]) {
       await loadItems(p.id);
     }
-  };
 
   const canSave = useMemo(() => {
     if (!entityId) return false;
