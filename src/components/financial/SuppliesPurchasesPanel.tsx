@@ -5,6 +5,7 @@
 // - Keeps UI consistent, minimal, admin-oriented
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -26,8 +27,8 @@ type PurchaseRow = {
   status: string;
   finance_entry_id: string | null;
   notes: string | null;
-};
 
+};
 type PurchaseItemRow = {
   id: string;
   purchase_id: string;
@@ -37,16 +38,16 @@ type PurchaseItemRow = {
   line_total_cents: number;
   notes: string | null;
   items?: { id: string; name: string; unit: string } | null;
-};
 
+};
 type ItemRow = {
   id: string;
   name: string;
   unit: string;
   current_stock_qty: number;
   min_stock_qty: number;
-};
 
+};
 type LowStockRow = {
   id: string;
   name: string;
@@ -54,16 +55,6 @@ type LowStockRow = {
   current_stock_qty: number;
   min_stock_qty: number;
   shortage_qty: number;
-};
-
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(v);
-  } catch {
-    return `${currency} ${v.toFixed(2)}`;
-  }
-}
 
 function monthKeyUTC(ts: string) {
   const d = new Date(ts);
@@ -86,6 +77,7 @@ function toIdempotencyKey() {
   return `pur_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+};
 type DraftPurchaseItem = {
   key: string;
   itemId: string;
@@ -99,6 +91,11 @@ function rowKey() {
 }
 
 export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
   const { entityType, entityId } = props;
 
   const [loading, setLoading] = useState(false);
@@ -170,7 +167,6 @@ export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntit
     } finally {
       setLoading(false);
     }
-  };
 
   const fetchPurchaseItems = async (purchaseId: string) => {
     try {
@@ -238,15 +234,12 @@ export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntit
 
   const addDraftItem = () => {
     setDraftItems((prev) => [...prev, { key: rowKey(), itemId: "", qty: "1", unitCostMajor: "", notes: "" }]);
-  };
 
   const removeDraftItem = (key: string) => {
     setDraftItems((prev) => prev.filter((x) => x.key !== key));
-  };
 
   const updateDraftItem = (key: string, patch: Partial<DraftPurchaseItem>) => {
     setDraftItems((prev) => prev.map((x) => (x.key === key ? { ...x, ...patch } : x)));
-  };
 
   const createPurchase = async () => {
     if (!canCreatePurchase) return;

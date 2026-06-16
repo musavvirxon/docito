@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +24,11 @@ interface Props {
 type StaffMember = { user_id: string; full_name: string; role: string };
 
 export default function CompensationManager({ entityType, entityId }: Props) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
   const { user } = useAuth();
   const { rows, loading, refresh } = useCompensationProfiles({ entityType, entityId });
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
@@ -92,7 +98,6 @@ export default function CompensationManager({ entityType, entityId }: Props) {
         }
 
         setStaffList(members);
-      } catch {
         setStaffList([]);
       } finally {
         setStaffLoading(false);
@@ -110,7 +115,6 @@ export default function CompensationManager({ entityType, entityId }: Props) {
     setFormPercentageOf("doctor_revenue");
     setFormPayout("monthly");
     setFormNotes("");
-  };
 
   const handleAdd = async () => {
     if (!formUserId) { toast.error("Select a staff member"); return; }
@@ -150,7 +154,6 @@ export default function CompensationManager({ entityType, entityId }: Props) {
     } finally {
       setSaving(false);
     }
-  };
 
   const toggleActive = async (row: CompensationProfileRow) => {
     try {
@@ -163,7 +166,6 @@ export default function CompensationManager({ entityType, entityId }: Props) {
     } catch (e: any) {
       toast.error(e?.message || "Failed to update");
     }
-  };
 
   const fmtCents = (cents: number | null) =>
     cents != null ? `$${(cents / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "—";
@@ -171,7 +173,6 @@ export default function CompensationManager({ entityType, entityId }: Props) {
   const getStaffName = (uid: string) => {
     const s = staffList.find((m) => m.user_id === uid);
     return s?.full_name || uid.slice(0, 8);
-  };
 
   const getCompLabel = (row: CompensationProfileRow) => {
     if (row.compensation_type === "salary") {

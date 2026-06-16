@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -174,6 +175,7 @@ function SectionWrapper({ children, locked, onRequestVerify, message }: { childr
 
 const AdminDashboard = () => {
   const { t } = useTranslation("dashboard");
+  const { format: money, formatCents: moneyCents } = useCurrency();
   const navigate = useNavigate();
 
   const {
@@ -527,14 +529,14 @@ const AdminDashboard = () => {
       { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
       {
         label: t("admin.metrics.revenueThisMonth"),
-        value: `$${stats.totalRevenue.toLocaleString()}`,
+        value: money(stats.totalRevenue),
         icon: DollarSign,
       },
       { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
       { label: t("admin.metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
       { label: t("admin.metrics.locations"), value: stats.locations.toString(), icon: MapPin },
     ],
-    [stats, t]
+    [stats, t, money]
   );
 
   const getVerificationStatusColor = (status: string) => {
@@ -891,7 +893,7 @@ const AdminDashboard = () => {
                             <p className="text-sm font-medium truncate">{service.name}</p>
                             <p className="text-xs text-muted-foreground truncate">{service.category}</p>
                           </div>
-                          <span className="text-sm font-medium">${service.price}</span>
+                          <span className="text-sm font-medium">{money(Number(service.price || 0))}</span>
                         </div>
                       ))}
                     </div>
@@ -1133,7 +1135,7 @@ const AdminDashboard = () => {
                               ['License Number', selectedProvider.license_number],
                               ['Languages', Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
                               ['Years of Experience', selectedProvider.years_experience ? `${selectedProvider.years_experience} yrs` : '—'],
-                              ['Consultation Fee', selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
+                              ['Consultation Fee', selectedProvider.consultation_fee != null ? money(Number(selectedProvider.consultation_fee)) : '—'],
                               ['Consultation Types', Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
                               ['Accepts New Patients', selectedProvider.accepts_new_patients ? 'Yes' : 'No'],
                               ['Verified', selectedProvider.verified ? 'Yes' : 'No'],
@@ -1535,7 +1537,7 @@ const AdminDashboard = () => {
                                 <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span className="font-medium truncate">{svc.name}</span>
                                   <Badge variant="outline">{svc.category || '—'}</Badge>
-                                  <span>{svc.price != null ? `$${svc.price}` : '—'}</span>
+                                  <span>{svc.price != null ? money(Number(svc.price)) : '—'}</span>
                                   <span>{svc.duration ? `${svc.duration} min` : '—'}</span>
                                   <Badge variant="secondary">{svc.is_active === false ? 'Inactive' : 'Active'}</Badge>
                                 </div>
@@ -1798,8 +1800,8 @@ const AdminDashboard = () => {
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">
                       {services.length > 0
-                        ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
-                        : "$0"}
+                        ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length))
+                        : money(0)}
                     </div>
                     <p className="text-sm text-muted-foreground">Avg. Price</p>
                   </CardContent>
@@ -1815,7 +1817,7 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">
-                      ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                      {money(services.reduce((sum, s) => sum + (s.price || 0), 0))}
                     </div>
                     <p className="text-sm text-muted-foreground">Revenue Potential</p>
                   </CardContent>
@@ -1896,7 +1898,7 @@ const AdminDashboard = () => {
                                 <div className="text-sm text-muted-foreground sm:col-span-1">
                                   {service.duration ? `${service.duration} min` : '—'}
                                 </div>
-                                <div className="font-semibold sm:col-span-1">${service.price}</div>
+                                <div className="font-semibold sm:col-span-1">{money(Number(service.price || 0))}</div>
                                 <div className="sm:col-span-1">
                                   {(service as any).is_online !== false ? (
                                     <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">Online</Badge>
@@ -1971,25 +1973,25 @@ const AdminDashboard = () => {
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Lowest Price</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
+                              {services.length > 0 ? money(Math.min(...services.map(s => s.price || 0))) : money(0)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Highest Price</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
+                              {services.length > 0 ? money(Math.max(...services.map(s => s.price || 0))) : money(0)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Average Price</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
+                              {services.length > 0 ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)) : money(0)}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">Total Revenue Potential</span>
                             <span className="text-lg font-bold">
-                              ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                              {money(services.reduce((sum, s) => sum + (s.price || 0), 0))}
                             </span>
                           </div>
                         </div>
@@ -2054,7 +2056,7 @@ const AdminDashboard = () => {
                               {services.slice(0, 3).map(s => (
                                 <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
                                   <span className="font-medium">{s.name}</span>
-                                  <span className="text-muted-foreground ml-2">${s.price}</span>
+                                  <span className="text-muted-foreground ml-2">{money(Number(s.price || 0))}</span>
                                 </div>
                               ))}
                             </div>
@@ -2155,7 +2157,7 @@ const AdminDashboard = () => {
                                   <td className="py-3 font-medium">{s.name}</td>
                                   <td className="py-3"><Badge variant="secondary" className="text-xs">{s.category || 'Uncategorized'}</Badge></td>
                                   <td className="py-3 text-muted-foreground">{s.duration ? `${s.duration} min` : '—'}</td>
-                                  <td className="py-3 font-semibold">${s.price}</td>
+                                  <td className="py-3 font-semibold">{money(Number(s.price || 0))}</td>
                                   <td className="py-3"><Badge variant="outline" className="text-xs">Fixed</Badge></td>
                                   <td className="py-3"><Badge variant="secondary" className="text-xs">None</Badge></td>
                                   <td className="py-3 text-right">
@@ -2304,7 +2306,7 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
                         <div className="text-2xl font-bold">
-                          {services.length > 0 ? `$${Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)}` : '$0'}
+                          {services.length > 0 ? money(Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)) : money(0)}
                         </div>
                         <p className="text-sm text-muted-foreground">Avg Price</p>
                       </CardContent>
@@ -2400,7 +2402,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex items-center gap-4">
                                   <span className="text-sm text-muted-foreground">{r.bookings} bookings</span>
-                                  <span className="text-sm font-semibold">${(r.bookings * (r.price || 0)).toLocaleString()}</span>
+                                  <span className="text-sm font-semibold">{money(r.bookings * (r.price || 0))}</span>
                                 </div>
                               </div>
                             ))}
@@ -2437,7 +2439,7 @@ const AdminDashboard = () => {
                                     <Badge variant="secondary" className="text-xs">{s.category || 'Other'}</Badge>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <span className="text-sm font-semibold">${s.price}</span>
+                                    <span className="text-sm font-semibold">{money(Number(s.price || 0))}</span>
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
                                     if (!confirm('Archive this service?')) return;
                                     const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', s.id);
@@ -3043,7 +3045,7 @@ const AdminDashboard = () => {
                       })}>Create Invoice</Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {[['Total Invoiced', `$${totalInvoiced.toLocaleString()}`], ['Paid', `$${totalPaid.toLocaleString()}`], ['Outstanding', `$${(totalInvoiced - totalPaid).toLocaleString()}`]].map(([label, val]) => (
+                      {[['Total Invoiced', money(totalInvoiced)], ['Paid', money(totalPaid)], ['Outstanding', money(totalInvoiced - totalPaid)]].map(([label, val]) => (
                         <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
                           <div className="text-2xl font-bold">{val}</div><p className="text-sm text-muted-foreground">{label}</p>
                         </CardContent></Card>
@@ -3069,7 +3071,7 @@ const AdminDashboard = () => {
                                 <tr key={p.id} className="border-b border-border last:border-0">
                                   <td className="p-3">{formatPatientDate(p.created_at || p.date)}</td>
                                   <td className="p-3">{p.description || p.service_name || '—'}</td>
-                                  <td className="p-3">${(p.amount || 0).toLocaleString()}</td>
+                                  <td className="p-3">{money(p.amount || 0)}</td>
                                   <td className="p-3"><Badge variant="outline" className="capitalize">{p.status}</Badge></td>
                                 </tr>
                               ))}
@@ -3279,9 +3281,9 @@ const AdminDashboard = () => {
                             {formatPatientDate(patient.last_visit)}
                           </div>
                           <div className="hidden md:flex flex-col items-end text-xs whitespace-nowrap">
-                            <span className="text-green-600 font-semibold">${(patient.total_paid || 0).toFixed(2)}</span>
+                            <span className="text-green-600 font-semibold">{money(patient.total_paid || 0)}</span>
                             {patient.total_outstanding > 0 && (
-                              <span className="text-orange-600">${patient.total_outstanding.toFixed(2)} due</span>
+                              <span className="text-orange-600">{money(patient.total_outstanding)} due</span>
                             )}
                           </div>
                           <Badge className={patient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>
@@ -3446,8 +3448,7 @@ const AdminDashboard = () => {
       case "billing": {
         const bData: any = billing.data;
         const bTxs: any[] = bData?.transactions || [];
-        const fmtCents = (cents: number) =>
-          `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        const fmtCents = (cents: number) => moneyCents(cents);
 
         const billingTabs: { key: typeof billingTab; label: string }[] = [
           { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
@@ -3592,8 +3593,7 @@ const AdminDashboard = () => {
                         ) : billing.data ? (
                           (() => {
                             const b: any = billing.data;
-                            const fmt = (cents: number) =>
-                              `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+                            const fmt = (cents: number) => moneyCents(cents);
                             return (
                               <div className="space-y-4">
                                 <div className="flex justify-between">
@@ -3643,9 +3643,7 @@ const AdminDashboard = () => {
                             {(billing.data as any).transactions.map((tx: any) => {
                               const patientName =
                                 tx?.metadata?.patient_name || tx?.metadata?.customer_name || tx?.metadata?.payer_name || "—";
-                              const fmt = `$${(Number(tx.amount_cents || 0) / 100).toLocaleString(undefined, {
-                                maximumFractionDigits: 2,
-                              })}`;
+                              const fmt = moneyCents(Number(tx.amount_cents || 0));
                               const statusLower = String(tx.status || "").toLowerCase();
                               const isPaid = statusLower === "completed" || statusLower === "paid";
                               const isPending = statusLower === "pending";
@@ -4272,9 +4270,9 @@ const AdminDashboard = () => {
               {financeTab === 'overview' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">${finIncome.toFixed(2)}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">${finExpenses.toFixed(2)}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>${finNet.toFixed(2)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">{money(finIncome)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">{money(finExpenses)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>{money(finNet)}</p></CardContent></Card>
                     <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Entries</p><p className="text-2xl font-bold text-foreground">{financeEntries.length}</p></CardContent></Card>
                   </div>
 
@@ -4311,7 +4309,7 @@ const AdminDashboard = () => {
                           <div key={cat.name} className="flex items-center gap-3 mb-3">
                             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: catColors[i % catColors.length] }} />
                             <span className="text-sm flex-1">{cat.name}</span>
-                            <span className="text-sm font-medium">${cat.total.toFixed(2)}</span>
+                            <span className="text-sm font-medium">{money(cat.total)}</span>
                             <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
                               <div className="h-full rounded-full" style={{ width: `${finExpenses > 0 ? (cat.total / finExpenses * 100) : 0}%`, backgroundColor: catColors[i % catColors.length] }} />
                             </div>
@@ -4333,7 +4331,7 @@ const AdminDashboard = () => {
                               <span className="text-muted-foreground w-14 flex-shrink-0">{dateStr}</span>
                               <Badge variant={e.type === 'income' ? 'default' : e.type === 'payroll' ? 'secondary' : 'destructive'} className="text-xs">{e.type}</Badge>
                               <span className="flex-1 truncate">{e.category || '—'}</span>
-                              <span className="font-medium">${(e.amount || 0).toFixed(2)}</span>
+                              <span className="font-medium">{money(e.amount || 0)}</span>
                             </div>
                           );
                         }) : (
@@ -4919,7 +4917,7 @@ const AdminDashboard = () => {
               {analyticsTab === 'financial' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Revenue', value: `$${(totalRevCents / 100).toFixed(2)}` }, { label: 'Pending', value: `$${(pendingCents / 100).toFixed(2)}`, color: 'text-yellow-600' }, { label: 'Refunds', value: `$${(refundCents / 100).toFixed(2)}`, color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
+                    {[{ label: 'Total Revenue', value: moneyCents(totalRevCents) }, { label: 'Pending', value: moneyCents(pendingCents), color: 'text-yellow-600' }, { label: 'Refunds', value: moneyCents(refundCents), color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p>{billing.loading ? <Loader2 className="h-4 w-4 animate-spin mt-1" /> : <p className={`text-2xl font-bold ${(kpi as any).color || ''}`}>{kpi.value}</p>}</CardContent></Card>
                     ))}
                   </div>
@@ -4936,7 +4934,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>Revenue by Provider</CardTitle></CardHeader>
                       <CardContent>
                         {revByDoctorList.length > 0 ? (
-                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">${d.total.toFixed(2)} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
+                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">{money(d.total)} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
                         ) : <p className="text-sm text-muted-foreground">No paid transactions linked to providers yet.</p>}
                       </CardContent>
                     </Card>
@@ -4944,7 +4942,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>Payment Method Breakdown</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(payMethodBreakdown).length > 0 ? (
-                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · ${data.total.toFixed(2)}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
+                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · {money(data.total)}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
                         ) : <p className="text-sm text-muted-foreground">No transaction data.</p>}
                       </CardContent>
                     </Card>
@@ -4952,7 +4950,7 @@ const AdminDashboard = () => {
                   <Card className="rounded-xl">
                     <CardHeader><CardTitle>Average Revenue per Appointment</CardTitle></CardHeader>
                     <CardContent>
-                      <div className="text-center py-4"><p className="text-4xl font-bold">${appointments.length > 0 ? ((totalRevCents / 100) / appointments.length).toFixed(2) : '0.00'}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
+                      <div className="text-center py-4"><p className="text-4xl font-bold">{appointments.length > 0 ? money((totalRevCents / 100) / appointments.length) : money(0)}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
                       {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center">Insufficient data to calculate.</p>}
                     </CardContent>
                   </Card>
@@ -4970,7 +4968,7 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>Most Booked Services</CardTitle></CardHeader>
                     <CardContent>
                       {mostBooked.length > 0 ? (
-                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">Service</th><th className="pb-2 font-medium">Category</th><th className="pb-2 font-medium">Bookings</th><th className="pb-2 font-medium">Est. Revenue</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">${((svc as any)?.price || (svc as any)?.cost || 0) * count}</td></tr>); })}</tbody></table></div>
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">Service</th><th className="pb-2 font-medium">Category</th><th className="pb-2 font-medium">Bookings</th><th className="pb-2 font-medium">Est. Revenue</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">{money(((svc as any)?.price || (svc as any)?.cost || 0) * count)}</td></tr>); })}</tbody></table></div>
                       ) : <p className="text-sm text-muted-foreground">No booking data available yet.</p>}
                     </CardContent>
                   </Card>
@@ -4987,7 +4985,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>No Recent Bookings</CardTitle></CardHeader>
                       <CardContent>
                         {zeroBookingServices.length > 0 ? (
-                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">${s.price || s.cost || 0}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>Review</Button></div>))}</div>
+                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">{money(Number(s.price || s.cost || 0))}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>Review</Button></div>))}</div>
                         ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>All services have bookings!</p></div>}
                       </CardContent>
                     </Card>
@@ -5127,9 +5125,9 @@ const AdminDashboard = () => {
                             if (reportMetrics.includes('Unique Patients')) rows.push({ metric: 'Unique Patients', value: new Set(filteredAppts.map((a: any) => a.patient_id || a.patient_name)).size, unit: 'patients' });
                             if (reportMetrics.includes('New Patients')) rows.push({ metric: 'New Patients', value: patients.length, unit: 'patients' });
                             if (reportMetrics.includes('Cancellation Rate')) rows.push({ metric: 'Cancellation Rate', value: filteredAppts.length > 0 ? (filteredAppts.filter((a: any) => norm(a.status) === 'cancelled').length / filteredAppts.length * 100).toFixed(1) + '%' : '0%', unit: '' });
-                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: '$' + revenue.toFixed(2), unit: '' });
+                            if (reportMetrics.includes('Total Revenue')) rows.push({ metric: 'Total Revenue', value: money(revenue), unit: '' });
                             if (reportMetrics.includes('Avg Revenue per Appointment')) {
-                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? '$' + (revenue / filteredAppts.length).toFixed(2) : '$0.00', unit: '' });
+                              rows.push({ metric: 'Avg Revenue per Appointment', value: filteredAppts.length > 0 ? money(revenue / filteredAppts.length) : money(0), unit: '' });
                             }
                             if (reportMetrics.includes('Patient Retention')) rows.push({ metric: 'Patient Retention', value: 'N/A', unit: '(requires historical data)' });
                             if (reportMetrics.includes('Provider Performance')) {

@@ -2,6 +2,7 @@
 // Step 32: Minimal UI to create payroll run + mark paid (creates finance ledger payroll entry)
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -45,20 +46,6 @@ function yyyyMmDd(d: Date) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
-
-function formatMoney(currency: string, cents: number) {
-  const value = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(value);
-
-  } catch {
-
-    return `${(currency) || "USD"} ${Number(value).toFixed(2)}`;
-
-  }
-}
-
 function parseMoneyToCents(input: string) {
   const s = String(input || "").trim();
   if (!s) return null;
@@ -70,6 +57,11 @@ function parseMoneyToCents(input: string) {
 }
 
 export default function PayrollRunsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -122,7 +114,6 @@ export default function PayrollRunsPanel(props: { entityType: FinanceEntityType;
     } finally {
       setLoading(false);
     }
-  };
 
   const createRun = async () => {
     if (!canCreate) return;
@@ -161,7 +152,6 @@ export default function PayrollRunsPanel(props: { entityType: FinanceEntityType;
     } finally {
       setCreating(false);
     }
-  };
 
   const payRun = async (runId: string) => {
     try {

@@ -4,6 +4,7 @@
 // - Uses RPC finance_entry_create_reversal for reversal (creates negative payroll entry linked to original)
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -23,8 +24,8 @@ type CategoryRow = {
   id: string;
   kind: "income" | "expense" | "payroll";
   name: string;
-};
 
+};
 type PayrollRow = {
   id: string;
   amount_cents: number; // can be negative for reversals
@@ -34,19 +35,6 @@ type PayrollRow = {
   description: string | null;
   metadata: any;
 };
-
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency || "USD") || "USD" }).format(v);
-
-  } catch {
-
-    return `${(currency || "USD") || "USD"} ${Number(v).toFixed(2)}`;
-
-  }
-}
 
 function isoDate(d: Date) {
   const y = d.getFullYear();
@@ -91,6 +79,11 @@ function isReversalRow(r: PayrollRow) {
 }
 
 export default function PayrollEntriesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -161,7 +154,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setFormCategoryName("");
     setFormDescription("");
     setFormReference("");
-  };
 
   const resetRev = () => {
     setRevOriginal(null);
@@ -169,7 +161,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setRevDescription("Correction/Reversal");
     setRevReference("");
     setRevIdempotencyKey("");
-  };
 
   const loadCategories = async () => {
     const { data, error } = await supabase
@@ -183,7 +174,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
 
     if (error) throw error;
     setCategories((data || []) as any);
-  };
 
   const loadPayroll = async () => {
     if (!entityId) return;
@@ -227,7 +217,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
   const openCreate = () => {
     resetForm();
     setOpen(true);
-  };
 
   const openEdit = (r: PayrollRow) => {
     setEditId(r.id);
@@ -239,7 +228,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setFormDescription(r.description || "");
     setFormReference(String((r.metadata && (r.metadata.reference || r.metadata["reference"])) || "") || "");
     setOpen(true);
-  };
 
   const openReverse = (r: PayrollRow) => {
     setRevOriginal(r);
@@ -248,7 +236,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     setRevReference("");
     setRevIdempotencyKey(`payroll_reverse_${r.id}_${Date.now()}`);
     setRevOpen(true);
-  };
 
   const save = async () => {
     if (!canSave) return;
@@ -291,7 +278,6 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
     } finally {
       setSaving(false);
     }
-  };
 
   const createReversal = async () => {
     if (!canReverse || !revOriginal) return;

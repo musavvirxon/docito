@@ -6,6 +6,7 @@
 // - Manual "Run now" uses Edge Function finance-recurring-run
 
 import { useEffect, useMemo, useState } from "react";
+import { useCurrency as __useCurrency } from "@/hooks/useCurrency";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
@@ -22,8 +23,8 @@ type CategoryRow = {
   id: string;
   name: string;
   kind: "income" | "expense" | "payroll";
-};
 
+};
 type RecurringRow = {
   id: string;
   category_id: string;
@@ -55,20 +56,6 @@ function centsToMajorString(cents: number) {
   const v = (Number(cents || 0) || 0) / 100;
   return v.toFixed(2);
 }
-
-function formatMoney(currency: string, cents: number) {
-  const v = (Number(cents || 0) || 0) / 100;
-  try {
-
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: (currency) || "USD" }).format(v);
-
-  } catch {
-
-    return `${(currency) || "USD"} ${Number(v).toFixed(2)}`;
-
-  }
-}
-
 function weekdayLabel(n: number) {
   const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   return map[n] ?? String(n);
@@ -80,6 +67,11 @@ function monthLabel(n: number) {
 }
 
 export default function RecurringExpensesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
+  const { format: __money, formatCents: __moneyCents } = __useCurrency();
+  // __money-helpers
+  const formatMoney = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCurrency = (v: any, _c?: any) => __money(Number(v ?? 0));
+  const formatCents = (v: any, _c?: any) => __moneyCents(Number(v ?? 0));
 
   const { entityType, entityId } = props;
 
@@ -155,7 +147,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setLoading(false);
     }
-  };
 
   const createRecurring = async () => {
     if (!canCreate) return;
@@ -182,7 +173,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
         autopost,
         is_active: isActive,
         created_by: uid,
-      };
 
       const { error } = await supabase.from("finance_recurring_expenses").insert(payload);
       if (error) throw error;
@@ -197,7 +187,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
       console.error(e);
       toast.error(e?.message || "Failed to create recurring expense");
     }
-  };
 
   const patchRow = async (id: string, patch: Partial<RecurringRow>) => {
     setSavingId(id);
@@ -213,7 +202,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setSavingId(null);
     }
-  };
 
   const deleteRow = async (id: string) => {
     setSavingId(id);
@@ -229,7 +217,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setSavingId(null);
     }
-  };
 
   const runNow = async (dryRun: boolean) => {
     setRunning(true);
@@ -252,7 +239,6 @@ export default function RecurringExpensesPanel(props: { entityType: FinanceEntit
     } finally {
       setRunning(false);
     }
-  };
 
   const categoryNameById = useMemo(() => {
     const map = new Map<string, string>();
