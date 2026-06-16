@@ -17,6 +17,7 @@ type Props = {
 
 export default function BillingSection({ payments, onRefresh, canManageBilling = false }: Props) {
   const { t } = useTranslation('dashboard');
+  const { formatCents: formatCurrency } = useCurrency();
 
   const STATUS_CONFIG: Record<string, { label: string; className: string; icon: any }> = {
     pending: { label: t('staff.billing.status.pending', 'Pending'), className: "bg-yellow-100 text-yellow-800", icon: Clock },
