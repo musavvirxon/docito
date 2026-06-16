@@ -101,6 +101,9 @@ function rowKey() {
 
 export default function SuppliesPurchasesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
+
 
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
