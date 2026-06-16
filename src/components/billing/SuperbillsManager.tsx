@@ -61,7 +61,7 @@ export function SuperbillsManager({
     notes: '',
   });
 
-  const totalCharged = useMemo(() => (stats.totalCents / 100).toFixed(2), [stats.totalCents]);
+  const totalCharged = useMemo(() => money(stats.totalCents), [stats.totalCents, money]);
 
   const handleCreate = async () => {
     const selectedPatient = patients.find(p => p.name === form.patient || p.id === form.patient);
