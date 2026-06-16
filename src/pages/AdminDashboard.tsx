@@ -3595,8 +3595,7 @@ const AdminDashboard = () => {
                         ) : billing.data ? (
                           (() => {
                             const b: any = billing.data;
-                            const fmt = (cents: number) =>
-                              `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+                            const fmt = (cents: number) => fmtCents(cents);
                             return (
                               <div className="space-y-4">
                                 <div className="flex justify-between">
