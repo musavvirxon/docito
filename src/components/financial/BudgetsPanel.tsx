@@ -92,6 +92,9 @@ function monthLabel(dateStr: string) {
 export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
 
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
+
 
   const now = useMemo(() => new Date(), []);
   const [monthFrom, setMonthFrom] = useState(() => isoMonth(new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))));
