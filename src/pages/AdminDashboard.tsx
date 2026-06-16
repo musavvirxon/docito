@@ -4942,7 +4942,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>Payment Method Breakdown</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(payMethodBreakdown).length > 0 ? (
-                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · ${data.total.toFixed(2)}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
+                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · {money(data.total)}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
                         ) : <p className="text-sm text-muted-foreground">No transaction data.</p>}
                       </CardContent>
                     </Card>
