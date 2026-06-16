@@ -2856,6 +2856,7 @@ export type Database = {
           consultation_fee: number | null
           consultation_types: string[] | null
           created_at: string | null
+          currency: string
           custom_profile_link: string | null
           id: string
           languages: string[] | null
@@ -2886,6 +2887,7 @@ export type Database = {
           consultation_fee?: number | null
           consultation_types?: string[] | null
           created_at?: string | null
+          currency?: string
           custom_profile_link?: string | null
           id?: string
           languages?: string[] | null
@@ -2916,6 +2918,7 @@ export type Database = {
           consultation_fee?: number | null
           consultation_types?: string[] | null
           created_at?: string | null
+          currency?: string
           custom_profile_link?: string | null
           id?: string
           languages?: string[] | null
@@ -3271,6 +3274,7 @@ export type Database = {
           metadata: Json | null
           occurred_at: string
           reference: string | null
+          source: string
           updated_at: string
           updated_by: string | null
         }
@@ -3289,6 +3293,7 @@ export type Database = {
           metadata?: Json | null
           occurred_at?: string
           reference?: string | null
+          source?: string
           updated_at?: string
           updated_by?: string | null
         }
@@ -3307,6 +3312,7 @@ export type Database = {
           metadata?: Json | null
           occurred_at?: string
           reference?: string | null
+          source?: string
           updated_at?: string
           updated_by?: string | null
         }
@@ -5760,6 +5766,7 @@ export type Database = {
           amount_due: number | null
           appointment_id: string | null
           created_at: string
+          currency: string
           doctor_id: string | null
           id: string
           invoice_id: string | null
@@ -5776,6 +5783,7 @@ export type Database = {
           amount_due?: number | null
           appointment_id?: string | null
           created_at?: string
+          currency?: string
           doctor_id?: string | null
           id?: string
           invoice_id?: string | null
@@ -5792,6 +5800,7 @@ export type Database = {
           amount_due?: number | null
           appointment_id?: string | null
           created_at?: string
+          currency?: string
           doctor_id?: string | null
           id?: string
           invoice_id?: string | null
@@ -6758,6 +6767,7 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string | null
+          currency: string
           description: string | null
           description_ar: string | null
           description_en: string | null
@@ -6803,6 +6813,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string | null
+          currency?: string
           description?: string | null
           description_ar?: string | null
           description_en?: string | null
@@ -6848,6 +6859,7 @@ export type Database = {
           city?: string | null
           country?: string | null
           created_at?: string | null
+          currency?: string
           description?: string | null
           description_ar?: string | null
           description_en?: string | null
@@ -8246,6 +8258,7 @@ export type Database = {
           compensation_type: string
           created_at: string
           created_by: string | null
+          currency: string
           effective_from: string
           entity_id: string
           entity_type: string
@@ -8264,6 +8277,7 @@ export type Database = {
           compensation_type: string
           created_at?: string
           created_by?: string | null
+          currency?: string
           effective_from?: string
           entity_id: string
           entity_type: string
@@ -8282,6 +8296,7 @@ export type Database = {
           compensation_type?: string
           created_at?: string
           created_by?: string | null
+          currency?: string
           effective_from?: string
           entity_id?: string
           entity_type?: string

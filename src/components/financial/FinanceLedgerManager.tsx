@@ -71,7 +71,7 @@ export default function FinanceLedgerManager(props: { entityType: FinanceEntityT
 
   const { entityType, entityId } = props;
   const { formatCents: ctxFmtCents } = useCurrency();
-  const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
 
 
   const today = useMemo(() => new Date(), []);

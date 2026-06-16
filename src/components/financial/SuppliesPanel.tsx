@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,9 @@ type DraftItem = { name: string; qty: string; unitCost: string };
 export default function SuppliesPanel(props: { entityType: FinanceEntityType; entityId: string }) {
 
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
+
 
   const today = useMemo(() => new Date(), []);
   const [dateFrom, setDateFrom] = useState(() => isoDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30)));

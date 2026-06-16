@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,8 @@ function formatMoney(currency: string, cents: number) {
 export default function FinanceEntriesExportCard(props: { entityType: FinanceEntityType; entityId: string; defaultDays?: number }) {
   const { entityType, entityId } = props;
   const days = Math.max(1, Math.min(props.defaultDays ?? 90, 3650));
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
 
   const today = useMemo(() => new Date(), []);
   const [dateTo, setDateTo] = useState(() => isoDate(today));

@@ -102,7 +102,7 @@ export default function FinanceLedgerPanel(props: { entityType: FinanceEntityTyp
 
   const { entityType, entityId } = props;
   const { formatCents: ctxFmtCents } = useCurrency();
-  const formatMoney = (_currency: string, cents: number) => ctxFmtCents(cents);
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);

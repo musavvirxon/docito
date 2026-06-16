@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Plus, Download, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { useCurrency } from '@/hooks/useCurrency';
 import {
   useSuperbills,
   useCreateSuperbill,
@@ -46,6 +47,7 @@ export function SuperbillsManager({
 }: Props) {
   const { superbills, loading, reload, stats } = useSuperbills({ practiceId, doctorId, patientId });
   const { create, submitting } = useCreateSuperbill();
+  const { formatCents: money } = useCurrency();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     patient: '',
@@ -59,7 +61,7 @@ export function SuperbillsManager({
     notes: '',
   });
 
-  const totalCharged = useMemo(() => (stats.totalCents / 100).toFixed(2), [stats.totalCents]);
+  const totalCharged = useMemo(() => money(stats.totalCents), [stats.totalCents, money]);
 
   const handleCreate = async () => {
     const selectedPatient = patients.find(p => p.name === form.patient || p.id === form.patient);
@@ -110,7 +112,7 @@ export function SuperbillsManager({
         <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Generated</p><p className="text-xl font-bold">{stats.total}</p></CardContent></Card>
         <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Submitted</p><p className="text-xl font-bold text-yellow-600">{stats.submitted}</p></CardContent></Card>
         <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Reimbursed</p><p className="text-xl font-bold text-green-600">{stats.paid}</p></CardContent></Card>
-        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total Charged</p><p className="text-xl font-bold">${totalCharged}</p></CardContent></Card>
+        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total Charged</p><p className="text-xl font-bold">{totalCharged}</p></CardContent></Card>
       </div>
 
       <Card className="rounded-xl">
@@ -146,7 +148,7 @@ export function SuperbillsManager({
                     <tr key={sb.id} className="border-b border-border/50 hover:bg-muted/30">
                       <td className="py-2.5 font-medium">{sb.superbill_number}</td>
                       <td className="py-2.5">{sb.service_date}</td>
-                      <td className="py-2.5">${((sb.total_amount_cents || 0) / 100).toFixed(2)}</td>
+                      <td className="py-2.5">{money(sb.total_amount_cents || 0)}</td>
                       <td className="py-2.5"><Badge className={STATUS_COLOR[sb.status]}>{sb.status}</Badge></td>
                       <td className="py-2.5">
                         <div className="flex gap-1">

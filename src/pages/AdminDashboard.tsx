@@ -63,6 +63,7 @@ import { usePracticeInsights, type DailyTrendPoint } from "@/hooks/usePracticeIn
 import { useEntitySettings } from "@/hooks/useEntitySettings";
 import { useFinanceEntries } from "@/hooks/useFinanceEntries";
 import { useFinanceCategories } from "@/hooks/useFinanceCategories";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -175,6 +176,7 @@ function SectionWrapper({ children, locked, onRequestVerify, message }: { childr
 const AdminDashboard = () => {
   const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
+  const { format: money, formatCents: moneyCents } = useCurrency();
 
   const {
     practice,
@@ -527,7 +529,7 @@ const AdminDashboard = () => {
       { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
       {
         label: t("admin.metrics.revenueThisMonth"),
-        value: `$${stats.totalRevenue.toLocaleString()}`,
+        value: money(stats.totalRevenue, ((practice as any)?.currency || 'USD').toUpperCase()),
         icon: DollarSign,
       },
       { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
@@ -3279,9 +3281,9 @@ const AdminDashboard = () => {
                             {formatPatientDate(patient.last_visit)}
                           </div>
                           <div className="hidden md:flex flex-col items-end text-xs whitespace-nowrap">
-                            <span className="text-green-600 font-semibold">${(patient.total_paid || 0).toFixed(2)}</span>
+                            <span className="text-green-600 font-semibold">{money(patient.total_paid || 0, ((practice as any)?.currency || 'USD').toUpperCase())}</span>
                             {patient.total_outstanding > 0 && (
-                              <span className="text-orange-600">${patient.total_outstanding.toFixed(2)} due</span>
+                              <span className="text-orange-600">{money(patient.total_outstanding, ((practice as any)?.currency || 'USD').toUpperCase())} due</span>
                             )}
                           </div>
                           <Badge className={patient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>
@@ -3446,8 +3448,9 @@ const AdminDashboard = () => {
       case "billing": {
         const bData: any = billing.data;
         const bTxs: any[] = bData?.transactions || [];
-        const fmtCents = (cents: number) =>
-          `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        const practiceCurrency = (practice as any)?.currency || 'USD';
+        const fmtCents = (cents: number, srcCurrency?: string) =>
+          moneyCents(Number(cents || 0), (srcCurrency || practiceCurrency).toUpperCase());
 
         const billingTabs: { key: typeof billingTab; label: string }[] = [
           { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
@@ -3592,8 +3595,7 @@ const AdminDashboard = () => {
                         ) : billing.data ? (
                           (() => {
                             const b: any = billing.data;
-                            const fmt = (cents: number) =>
-                              `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+                            const fmt = (cents: number) => fmtCents(cents);
                             return (
                               <div className="space-y-4">
                                 <div className="flex justify-between">
@@ -3643,9 +3645,7 @@ const AdminDashboard = () => {
                             {(billing.data as any).transactions.map((tx: any) => {
                               const patientName =
                                 tx?.metadata?.patient_name || tx?.metadata?.customer_name || tx?.metadata?.payer_name || "—";
-                              const fmt = `$${(Number(tx.amount_cents || 0) / 100).toLocaleString(undefined, {
-                                maximumFractionDigits: 2,
-                              })}`;
+                              const fmt = fmtCents(tx.amount_cents || 0, tx.currency);
                               const statusLower = String(tx.status || "").toLowerCase();
                               const isPaid = statusLower === "completed" || statusLower === "paid";
                               const isPending = statusLower === "pending";
@@ -4272,9 +4272,9 @@ const AdminDashboard = () => {
               {financeTab === 'overview' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">${finIncome.toFixed(2)}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">${finExpenses.toFixed(2)}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>${finNet.toFixed(2)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">{money(finIncome, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">{money(finExpenses, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>{money(finNet, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
                     <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Entries</p><p className="text-2xl font-bold text-foreground">{financeEntries.length}</p></CardContent></Card>
                   </div>
 
@@ -4311,7 +4311,7 @@ const AdminDashboard = () => {
                           <div key={cat.name} className="flex items-center gap-3 mb-3">
                             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: catColors[i % catColors.length] }} />
                             <span className="text-sm flex-1">{cat.name}</span>
-                            <span className="text-sm font-medium">${cat.total.toFixed(2)}</span>
+                            <span className="text-sm font-medium">{money(cat.total, ((practice as any)?.currency || 'USD').toUpperCase())}</span>
                             <div className="w-20 h-2 rounded-full bg-muted overflow-hidden">
                               <div className="h-full rounded-full" style={{ width: `${finExpenses > 0 ? (cat.total / finExpenses * 100) : 0}%`, backgroundColor: catColors[i % catColors.length] }} />
                             </div>
@@ -4333,7 +4333,7 @@ const AdminDashboard = () => {
                               <span className="text-muted-foreground w-14 flex-shrink-0">{dateStr}</span>
                               <Badge variant={e.type === 'income' ? 'default' : e.type === 'payroll' ? 'secondary' : 'destructive'} className="text-xs">{e.type}</Badge>
                               <span className="flex-1 truncate">{e.category || '—'}</span>
-                              <span className="font-medium">${(e.amount || 0).toFixed(2)}</span>
+                              <span className="font-medium">{money(e.amount || 0, (e.currency || (practice as any)?.currency || 'USD').toUpperCase())}</span>
                             </div>
                           );
                         }) : (
@@ -4919,7 +4919,7 @@ const AdminDashboard = () => {
               {analyticsTab === 'financial' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Revenue', value: `$${(totalRevCents / 100).toFixed(2)}` }, { label: 'Pending', value: `$${(pendingCents / 100).toFixed(2)}`, color: 'text-yellow-600' }, { label: 'Refunds', value: `$${(refundCents / 100).toFixed(2)}`, color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
+                    {[{ label: 'Total Revenue', value: moneyCents(totalRevCents, ((practice as any)?.currency || 'USD').toUpperCase()) }, { label: 'Pending', value: moneyCents(pendingCents, ((practice as any)?.currency || 'USD').toUpperCase()), color: 'text-yellow-600' }, { label: 'Refunds', value: moneyCents(refundCents, ((practice as any)?.currency || 'USD').toUpperCase()), color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p>{billing.loading ? <Loader2 className="h-4 w-4 animate-spin mt-1" /> : <p className={`text-2xl font-bold ${(kpi as any).color || ''}`}>{kpi.value}</p>}</CardContent></Card>
                     ))}
                   </div>
@@ -4936,7 +4936,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>Revenue by Provider</CardTitle></CardHeader>
                       <CardContent>
                         {revByDoctorList.length > 0 ? (
-                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">${d.total.toFixed(2)} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
+                          <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">{money(d.total, ((practice as any)?.currency || 'USD').toUpperCase())} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
                         ) : <p className="text-sm text-muted-foreground">No paid transactions linked to providers yet.</p>}
                       </CardContent>
                     </Card>
@@ -4944,7 +4944,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>Payment Method Breakdown</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(payMethodBreakdown).length > 0 ? (
-                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · ${data.total.toFixed(2)}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
+                          <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · {money(data.total, ((practice as any)?.currency || 'USD').toUpperCase())}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
                         ) : <p className="text-sm text-muted-foreground">No transaction data.</p>}
                       </CardContent>
                     </Card>
@@ -4952,7 +4952,7 @@ const AdminDashboard = () => {
                   <Card className="rounded-xl">
                     <CardHeader><CardTitle>Average Revenue per Appointment</CardTitle></CardHeader>
                     <CardContent>
-                      <div className="text-center py-4"><p className="text-4xl font-bold">${appointments.length > 0 ? ((totalRevCents / 100) / appointments.length).toFixed(2) : '0.00'}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
+                      <div className="text-center py-4"><p className="text-4xl font-bold">{appointments.length > 0 ? moneyCents(totalRevCents / appointments.length, ((practice as any)?.currency || 'USD').toUpperCase()) : moneyCents(0, ((practice as any)?.currency || 'USD').toUpperCase())}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
                       {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center">Insufficient data to calculate.</p>}
                     </CardContent>
                   </Card>

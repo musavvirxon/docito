@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.fn_session_to_finance_entry() FROM PUBLIC, anon, authenticated;

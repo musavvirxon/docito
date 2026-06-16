@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
 import { toast } from "sonner";
+import { useCurrency } from "@/hooks/useCurrency";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,9 @@ function monthLabel(dateStr: string) {
 export default function BudgetsPanel(props: { entityType: FinanceEntityType; entityId: string }) {
 
   const { entityType, entityId } = props;
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
+
 
   const now = useMemo(() => new Date(), []);
   const [monthFrom, setMonthFrom] = useState(() => isoMonth(new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))));
