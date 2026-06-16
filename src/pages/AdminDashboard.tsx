@@ -4917,7 +4917,7 @@ const AdminDashboard = () => {
               {analyticsTab === 'financial' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Revenue', value: `$${(totalRevCents / 100).toFixed(2)}` }, { label: 'Pending', value: `$${(pendingCents / 100).toFixed(2)}`, color: 'text-yellow-600' }, { label: 'Refunds', value: `$${(refundCents / 100).toFixed(2)}`, color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
+                    {[{ label: 'Total Revenue', value: moneyCents(totalRevCents) }, { label: 'Pending', value: moneyCents(pendingCents), color: 'text-yellow-600' }, { label: 'Refunds', value: moneyCents(refundCents), color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p>{billing.loading ? <Loader2 className="h-4 w-4 animate-spin mt-1" /> : <p className={`text-2xl font-bold ${(kpi as any).color || ''}`}>{kpi.value}</p>}</CardContent></Card>
                     ))}
                   </div>
