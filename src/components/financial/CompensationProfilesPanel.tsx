@@ -19,11 +19,6 @@ import CompensationProfileDialog, { type CompensationProfileDraft } from "@/comp
 
 type CompType = "salary" | "hourly";
 
-const formatCurrency = (v: any) => __money(Number(v ?? 0));).format(v);
-  } catch {
-    return `${v.toFixed(2)} ${currency}`;
-  }
-};
 
 interface Props {
   entityType: FinanceEntityType;
