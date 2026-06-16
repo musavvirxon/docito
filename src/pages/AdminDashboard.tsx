@@ -529,7 +529,7 @@ const AdminDashboard = () => {
       { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
       {
         label: t("admin.metrics.revenueThisMonth"),
-        value: `$${stats.totalRevenue.toLocaleString()}`,
+        value: money(stats.totalRevenue, ((practice as any)?.currency || 'USD').toUpperCase()),
         icon: DollarSign,
       },
       { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
