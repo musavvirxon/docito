@@ -98,7 +98,6 @@ export default function CompensationManager({ entityType, entityId }: Props) {
         }
 
         setStaffList(members);
-      } catch {
         setStaffList([]);
       } finally {
         setStaffLoading(false);

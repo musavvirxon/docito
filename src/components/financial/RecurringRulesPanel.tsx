@@ -302,7 +302,6 @@ export default function RecurringRulesPanel(props: { entityType: FinanceEntityTy
             }
           : null,
       );
-    } catch {
       setStatus(null);
     } finally {
       setStatusLoading(false);

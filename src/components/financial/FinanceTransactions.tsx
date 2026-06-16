@@ -243,7 +243,6 @@ export default function FinanceTransactions({ entityType, entityId, locationId }
                   const dateLabel = (() => {
                     try {
                       return format(new Date(r.occurred_at), "MMM d, yyyy");
-                    } catch {
                       return r.occurred_at;
                     }
                   })();
