@@ -19,7 +19,6 @@ import CompensationProfileDialog, { type CompensationProfileDraft } from "@/comp
 
 type CompType = "salary" | "hourly";
 
-
 interface Props {
   entityType: FinanceEntityType;
   entityId: string;
