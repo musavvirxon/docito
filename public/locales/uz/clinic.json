@@ -1,314 +1,299 @@
 {
   "serviceSettings": {
-    "title": "Service Departments",
-    "description": "Enable in-house diagnostic services for your clinic",
-    "active": "Active",
+    "title": "Xizmat bo'limlari",
+    "description": "Klinikangiz uchun ichki diagnostika xizmatlarini yoqing",
+    "active": "Faol",
     "lab": {
-      "title": "In-House Laboratory",
-      "description": "Enable blood tests, diagnostics, urinalysis, and other laboratory services",
-      "technicians": "Lab Technicians",
-      "examples": "CBC, Hormones, Microbiology, etc."
+      "title": "Ichki laboratoriya",
+      "description": "Qon tahlillari, diagnostika, siydik tahlili va boshqa laboratoriya xizmatlarini yoqing",
+      "technicians": "Laboratoriya texniklari",
+      "examples": "KQA, Gormonlar, Mikrobiologiya va boshqalar."
     },
     "imaging": {
-      "title": "In-House Imaging Center",
-      "description": "Enable X-Ray, CT, MRI, Ultrasound, CBCT, and other imaging services",
-      "technicians": "Imaging Technicians",
-      "examples": "X-Ray, CT, MRI, Ultrasound, CBCT"
+      "title": "Ichki tasvirlash markazi",
+      "description": "Rentgen, KT, MRT, Ultratovush, KBKT va boshqa tasvirlash xizmatlarini yoqing",
+      "technicians": "Tasvirlash texniklari",
+      "examples": "Rentgen, KT, MRT, Ultratovush, KBKT"
     },
     "notes": {
-      "title": "Important Notes:",
+      "title": "Muhim eslatmalar:",
       "items": [
-        "Enabling a service will create a new department dashboard",
-        "You can assign technicians to each department",
-        "Doctors can order tests directly from patient records",
-        "Results are automatically visible to patients once completed"
+        "Xizmatni yoqish yangi bo'lim boshqaruv panelini yaratadi",
+        "Har bir bo'limga texniklar tayinlashingiz mumkin",
+        "Shifokorlar bemor yozuvlaridan to'g'ridan-to'g'ri tahlil buyurtma qilishlari mumkin",
+        "Natijalar bajarilgandan so'ng bemorga avtomatik ravishda ko'rinadi"
       ]
     }
   },
   "testResults": {
-    "title": "Test Results",
-    "labTab": "Lab Results ({{count}})",
-    "imagingTab": "Imaging Results ({{count}})",
-    "loading": "Loading...",
-    "emptyLab": "No lab results available",
-    "emptyImaging": "No imaging results available",
-    "abnormal": "Abnormal",
-    "completed": "Completed",
-    "result": "Result:",
-    "reference": "Reference: {{range}}",
-    "impression": "Impression:",
-    "findings": "Findings:",
-    "viewReport": "View Report",
-    "download": "Download",
-    "viewImages": "View Images ({{count}})",
-    "na": "N/A"
+    "title": "Tahlil natijalari",
+    "labTab": "Laboratoriya natijalari ({{count}})",
+    "imagingTab": "Tasvirlash natijalari ({{count}})",
+    "loading": "Yuklanmoqda...",
+    "emptyLab": "Laboratoriya natijalari mavjud emas",
+    "emptyImaging": "Tasvirlash natijalari mavjud emas",
+    "abnormal": "Anormal",
+    "completed": "Bajarildi",
+    "result": "Natija:",
+    "reference": "Me'yor: {{range}}",
+    "impression": "Xulosa:",
+    "findings": "Topilmalar:",
+    "viewReport": "Hisobotni ko'rish",
+    "download": "Yuklab olish",
+    "viewImages": "Tasvirlarni ko'rish ({{count}})",
+    "na": "Mavjud emas"
   },
   "orderCreator": {
-    "trigger": "Order Diagnostic Test",
-    "title": "Order Diagnostic Test",
-    "tabs": {
-      "lab": "Lab Test",
-      "imaging": "Imaging"
-    },
+    "trigger": "Diagnostika testi buyurtma qilish",
+    "title": "Diagnostika testi buyurtma qilish",
+    "tabs": { "lab": "Laboratoriya testi", "imaging": "Tasvirlash" },
     "fields": {
-      "testCategory": "Test Category *",
-      "selectCategory": "Select category",
-      "testName": "Test Name *",
-      "selectTest": "Select test",
-      "modality": "Modality *",
-      "selectModality": "Select modality",
-      "exam": "Exam *",
-      "selectExam": "Select exam",
-      "bodyPart": "Body Part",
-      "bodyPartPlaceholder": "e.g., Right Knee, Chest",
-      "priority": "Priority",
-      "clinicalNotes": "Clinical Notes",
-      "labNotesPlaceholder": "Relevant clinical information...",
-      "imagingNotesPlaceholder": "Clinical indication, history..."
+      "testCategory": "Test toifasi *",
+      "selectCategory": "Toifani tanlang",
+      "testName": "Test nomi *",
+      "selectTest": "Testni tanlang",
+      "modality": "Usul *",
+      "selectModality": "Usulni tanlang",
+      "exam": "Tekshiruv *",
+      "selectExam": "Tekshiruvni tanlang",
+      "bodyPart": "Tana qismi",
+      "bodyPartPlaceholder": "Masalan, O'ng tizza, Ko'krak",
+      "priority": "Muhimlik darajasi",
+      "clinicalNotes": "Klinik izohlar",
+      "labNotesPlaceholder": "Tegishli klinik ma'lumotlar...",
+      "imagingNotesPlaceholder": "Klinik ko'rsatma, anamnez..."
     },
-    "priorities": {
-      "routine": "Routine",
-      "urgent": "Urgent",
-      "stat": "STAT"
-    },
-    "submitLab": "Order Lab Test",
-    "submitImaging": "Order Imaging Study"
+    "priorities": { "routine": "Oddiy", "urgent": "Shoshilinch", "stat": "ZUDLIK" },
+    "submitLab": "Laboratoriya testini buyurtma qilish",
+    "submitImaging": "Tasvirlash tekshiruvini buyurtma qilish"
   },
   "servicesManager": {
-    "title": "Services & Pricing",
-    "description": "Manage the services your clinic offers, their pricing, and deposit requirements.",
-    "addService": "Add service",
-    "empty": "No services yet. Add your first service to start accepting bookings with the right pricing and deposit rules.",
+    "title": "Xizmatlar va narxlar",
+    "description": "Klinikangiz taklif qiladigan xizmatlar, ularning narxlari va depozit talablarini boshqaring.",
+    "addService": "Xizmat qo'shish",
+    "empty": "Hali xizmatlar yo'q. To'g'ri narx va depozit qoidalari bilan buyurtma qabul qilishni boshlash uchun birinchi xizmatni qo'shing.",
     "columns": {
-      "name": "Name",
-      "category": "Category",
-      "duration": "Duration",
-      "price": "Price",
-      "deposit": "Deposit",
-      "active": "Active",
-      "actions": "Actions"
+      "name": "Nomi",
+      "category": "Toifasi",
+      "duration": "Davomiyligi",
+      "price": "Narxi",
+      "deposit": "Depozit",
+      "active": "Faol",
+      "actions": "Amallar"
     },
-    "minutes": "{{count}} min",
+    "minutes": "{{count}} daqiqa",
     "dialog": {
-      "editTitle": "Edit service",
-      "addTitle": "Add service",
-      "description": "Define the service, its price, and whether patients must pay a deposit to book.",
-      "name": "Name",
-      "namePh": "Teeth whitening",
-      "category": "Category",
-      "categoryPh": "Cosmetic",
-      "duration": "Duration (minutes)",
-      "descLabel": "Description",
-      "currency": "Currency",
-      "price": "Price",
-      "depositRequired": "Deposit required",
-      "depositHelp": "Require patients to pay a deposit to confirm a booking.",
-      "type": "Type",
-      "typeFixed": "Fixed amount",
-      "typePercent": "Percent of price",
-      "percentLabel": "Percent (0–100)",
-      "amountLabel": "Amount",
-      "active": "Active",
-      "cancel": "Cancel",
-      "save": "Save",
-      "add": "Add"
+      "editTitle": "Xizmatni tahrirlash",
+      "addTitle": "Xizmat qo'shish",
+      "description": "Xizmatni, uning narxini va bemorlar buyurtmani tasdiqlash uchun depozit to'lashi kerakligini belgilang.",
+      "name": "Nomi",
+      "namePh": "Tishlarni oqartirish",
+      "category": "Toifasi",
+      "categoryPh": "Kosmetik",
+      "duration": "Davomiyligi (daqiqalarda)",
+      "descLabel": "Tavsif",
+      "currency": "Valyuta",
+      "price": "Narxi",
+      "depositRequired": "Depozit talab qilinadi",
+      "depositHelp": "Bemorlardan buyurtmani tasdiqlash uchun depozit to'lashni talab qiling.",
+      "type": "Turi",
+      "typeFixed": "Belgilangan miqdor",
+      "typePercent": "Narxning foizi",
+      "percentLabel": "Foiz (0–100)",
+      "amountLabel": "Miqdor",
+      "active": "Faol",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "add": "Qo'shish"
     },
     "toasts": {
-      "loadFailed": "Failed to load services",
-      "nameRequired": "Service name is required",
-      "updated": "Service updated",
-      "added": "Service added",
-      "saveFailed": "Failed to save service",
-      "updateFailed": "Failed to update",
-      "deleteFailed": "Failed to delete",
-      "deleted": "Service deleted",
-      "confirmDelete": "Delete service \"{{name}}\"?"
+      "loadFailed": "Xizmatlarni yuklash muvaffaqiyatsiz tugadi",
+      "nameRequired": "Xizmat nomi talab qilinadi",
+      "updated": "Xizmat yangilandi",
+      "added": "Xizmat qo'shildi",
+      "saveFailed": "Xizmatni saqlash muvaffaqiyatsiz tugadi",
+      "updateFailed": "Yangilash muvaffaqiyatsiz tugadi",
+      "deleteFailed": "O'chirish muvaffaqiyatsiz tugadi",
+      "deleted": "Xizmat o'chirildi",
+      "confirmDelete": "\"{{name}}\" xizmatini o'chirilsinmi?"
     }
   },
   "labDashboard": {
     "stats": {
-      "pending": "Pending Orders",
-      "processing": "Processing",
-      "completedToday": "Completed Today"
+      "pending": "Kutilayotgan buyurtmalar",
+      "processing": "Jarayonda",
+      "completedToday": "Bugun bajarildi"
     },
-    "title": "Lab Orders",
-    "refresh": "Refresh",
-    "searchPh": "Search orders...",
+    "title": "Laboratoriya buyurtmalari",
+    "refresh": "Yangilash",
+    "searchPh": "Buyurtmalarni qidirish...",
     "tabs": {
-      "pending": "Pending ({{count}})",
-      "processing": "Processing ({{count}})",
-      "completed": "Completed ({{count}})"
+      "pending": "Kutilayotgan ({{count}})",
+      "processing": "Jarayonda ({{count}})",
+      "completed": "Bajarildi ({{count}})"
     },
-    "empty": "No orders found",
-    "details": "Order Details",
-    "selectPrompt": "Select Order",
-    "selectHint": "Select an order to view details",
+    "empty": "Buyurtmalar topilmadi",
+    "details": "Buyurtma tafsilotlari",
+    "selectPrompt": "Buyurtmani tanlang",
+    "selectHint": "Tafsilotlarni ko'rish uchun buyurtmani tanlang",
     "fields": {
-      "testType": "Test Type",
-      "priority": "Priority",
-      "clinicalNotes": "Clinical Notes"
+      "testType": "Test turi",
+      "priority": "Muhimlik darajasi",
+      "clinicalNotes": "Klinik izohlar"
     },
     "actions": {
-      "markCollected": "Mark Sample Collected",
-      "startProcessing": "Start Processing"
+      "markCollected": "Namuna olindi deb belgilash",
+      "startProcessing": "Qayta ishlashni boshlash"
     },
     "results": {
-      "enter": "Enter Results",
-      "resultValue": "Result Value",
-      "resultValuePh": "Enter test results...",
-      "referenceRange": "Reference Range",
-      "referenceRangePh": "e.g., 70-100 mg/dL",
-      "abnormal": "Abnormal Result",
-      "uploadReport": "Upload Report (PDF)",
-      "submit": "Submit Results",
-      "title": "Results",
-      "noText": "No text results",
-      "abnormalBadge": "Abnormal",
-      "viewReport": "View Report PDF"
+      "enter": "Natijalarni kiritish",
+      "resultValue": "Natija qiymati",
+      "resultValuePh": "Tahlil natijalarini kiriting...",
+      "referenceRange": "Me'yor oralig'i",
+      "referenceRangePh": "Masalan, 70-100 mg/dL",
+      "abnormal": "Anormal natija",
+      "uploadReport": "Hisobotni yuklash (PDF)",
+      "submit": "Natijalarni yuborish",
+      "title": "Natijalar",
+      "noText": "Matnli natijalar yo'q",
+      "abnormalBadge": "Anormal",
+      "viewReport": "PDF hisobotini ko'rish"
     },
-    "priority": {
-      "stat": "STAT",
-      "urgent": "Urgent"
-    }
+    "priority": { "stat": "ZUDLIK", "urgent": "Shoshilinch" }
   },
   "imagingDashboard": {
     "stats": {
-      "pending": "Pending Orders",
-      "inProgress": "In Progress",
-      "completedToday": "Completed Today"
+      "pending": "Kutilayotgan buyurtmalar",
+      "inProgress": "Jarayonda",
+      "completedToday": "Bugun bajarildi"
     },
-    "title": "Imaging Orders",
-    "refresh": "Refresh",
-    "searchPh": "Search orders...",
+    "title": "Tasvirlash buyurtmalari",
+    "refresh": "Yangilash",
+    "searchPh": "Buyurtmalarni qidirish...",
     "tabs": {
-      "pending": "Pending ({{count}})",
-      "inProgress": "In Progress ({{count}})",
-      "completed": "Completed ({{count}})"
+      "pending": "Kutilayotgan ({{count}})",
+      "inProgress": "Jarayonda ({{count}})",
+      "completed": "Bajarildi ({{count}})"
     },
-    "empty": "No orders found",
-    "details": "Order Details",
-    "selectPrompt": "Select Order",
-    "selectHint": "Select an order to view details",
-    "na": "N/A",
+    "empty": "Buyurtmalar topilmadi",
+    "details": "Buyurtma tafsilotlari",
+    "selectPrompt": "Buyurtmani tanlang",
+    "selectHint": "Tafsilotlarni ko'rish uchun buyurtmani tanlang",
+    "na": "Mavjud emas",
     "fields": {
-      "modality": "Modality",
-      "bodyPart": "Body Part",
-      "priority": "Priority",
-      "clinicalNotes": "Clinical Notes"
+      "modality": "Usul",
+      "bodyPart": "Tana qismi",
+      "priority": "Muhimlik darajasi",
+      "clinicalNotes": "Klinik izohlar"
     },
-    "actions": {
-      "startExam": "Start Examination"
-    },
+    "actions": { "startExam": "Tekshiruvni boshlash" },
     "results": {
-      "upload": "Upload Results",
-      "impression": "Impression",
-      "impressionPh": "Brief diagnostic impression...",
-      "findings": "Findings",
-      "findingsPh": "Detailed findings...",
-      "uploadImages": "Upload Images",
-      "imageLabel": "Image {{index}}",
-      "uploadReport": "Upload Report (PDF)",
-      "submit": "Submit Results",
-      "title": "Results",
-      "viewReport": "View Report PDF"
+      "upload": "Natijalarni yuklash",
+      "impression": "Xulosa",
+      "impressionPh": "Qisqacha diagnostik xulosa...",
+      "findings": "Topilmalar",
+      "findingsPh": "Batafsil topilmalar...",
+      "uploadImages": "Tasvirlarni yuklash",
+      "imageLabel": "Tasvir {{index}}",
+      "uploadReport": "Hisobotni yuklash (PDF)",
+      "submit": "Natijalarni yuborish",
+      "title": "Natijalar",
+      "viewReport": "PDF hisobotini ko'rish"
     },
-    "priority": {
-      "stat": "STAT",
-      "urgent": "Urgent"
-    }
+    "priority": { "stat": "ZUDLIK", "urgent": "Shoshilinch" }
   },
   "staffManager": {
-    "selectPractice": "Select a practice first.",
-    "title": "Staff Management",
+    "selectPractice": "Avval amaliyotni tanlang.",
+    "title": "Xodimlarni boshqarish",
     "stats": {
-      "active": "Active Staff",
-      "pending": "Pending Invitations",
-      "inactive": "Inactive / Disabled",
-      "admins": "Admin / Managers"
+      "active": "Faol xodimlar",
+      "pending": "Kutilayotgan taklifnomalar",
+      "inactive": "Faol emas / O'chirilgan",
+      "admins": "Admin / Menejerlar"
     },
     "invite": {
-      "title": "Invite Staff",
-      "description": "Create staff invitations, assign role, and pre-configure permissions.",
-      "email": "Email",
-      "emailPh": "staff@clinic.com",
-      "role": "Role",
-      "send": "Send Invite",
-      "preset": "Permission Preset"
+      "title": "Xodimni taklif qilish",
+      "description": "Xodim taklifnomalarini yarating, rol tayinlang va ruxsatlarni oldindan sozlang.",
+      "email": "Elektron pochta",
+      "emailPh": "xodim@klinika.com",
+      "role": "Rol",
+      "send": "Taklifnoma yuborish",
+      "preset": "Ruxsat shabloni"
     },
     "pending": {
-      "title": "Pending Invitations",
-      "description": "Manage pending invites, resend, or revoke before activation.",
-      "empty": "No pending invitations.",
-      "fallback": "Pending invite",
-      "resend": "Resend",
-      "cancel": "Cancel"
+      "title": "Kutilayotgan taklifnomalar",
+      "description": "Kutilayotgan taklifnomalarni boshqaring, qayta yuboring yoki faollashtirishdan oldin bekor qiling.",
+      "empty": "Kutilayotgan taklifnomalar yo'q.",
+      "fallback": "Kutilayotgan taklifnoma",
+      "resend": "Qayta yuborish",
+      "cancel": "Bekor qilish"
     },
     "active": {
-      "title": "Active Staff Management",
-      "description": "Edit roles, permissions, deactivate, or remove staff.",
-      "searchPh": "Search staff...",
-      "refresh": "Refresh",
-      "loading": "Loading staff…",
-      "empty": "No active staff found.",
-      "noEmail": "No email",
-      "added": "Added {{when}}",
-      "role": "Role",
-      "resetPerms": "Reset permissions from role preset",
-      "permissions": "Permissions",
-      "save": "Save Changes",
-      "deactivate": "Deactivate",
-      "remove": "Remove"
+      "title": "Faol xodimlarni boshqarish",
+      "description": "Rollar va ruxsatlarni tahrirlang, xodimlarni o'chiriting yoki olib tashlang.",
+      "searchPh": "Xodimlarni qidirish...",
+      "refresh": "Yangilash",
+      "loading": "Xodimlar yuklanmoqda…",
+      "empty": "Faol xodimlar topilmadi.",
+      "noEmail": "Elektron pochta yo'q",
+      "added": "{{when}} qo'shildi",
+      "role": "Rol",
+      "resetPerms": "Rol shablonidan ruxsatlarni tiklash",
+      "permissions": "Ruxsatlar",
+      "save": "O'zgarishlarni saqlash",
+      "deactivate": "O'chirish",
+      "remove": "Olib tashlash"
     },
     "audit": {
-      "title": "Staff Audit Trail",
-      "description": "Recent staff and invitation activity.",
-      "empty": "No staff audit activity found.",
-      "fallbackTitle": "Audit Event",
-      "fallbackSubtitle": "Staff activity",
-      "created": "Staff record created",
-      "updated": "Staff record updated",
-      "invited": "Invitation pending"
+      "title": "Xodimlar audit jurnali",
+      "description": "Xodimlar va taklifnomalar bo'yicha so'nggi faoliyat.",
+      "empty": "Xodimlar audit faoliyati topilmadi.",
+      "fallbackTitle": "Audit hodisasi",
+      "fallbackSubtitle": "Xodim faoliyati",
+      "created": "Xodim yozuvi yaratildi",
+      "updated": "Xodim yozuvi yangilandi",
+      "invited": "Taklifnoma kutilmoqda"
     },
     "time": {
-      "unknown": "Unknown time",
-      "justNow": "just now",
-      "minutes": "{{n}}m ago",
-      "hours": "{{n}}h ago",
-      "days": "{{n}}d ago"
+      "unknown": "Noma'lum vaqt",
+      "justNow": "hozir",
+      "minutes": "{{n}} daqiqa oldin",
+      "hours": "{{n}} soat oldin",
+      "days": "{{n}} kun oldin"
     },
     "status": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "disabled": "Disabled",
-      "pending": "Pending",
-      "invited": "Invited",
-      "removed": "Removed",
-      "cancelled": "Cancelled"
+      "active": "Faol",
+      "inactive": "Faol emas",
+      "disabled": "O'chirilgan",
+      "pending": "Kutilmoqda",
+      "invited": "Taklif qilingan",
+      "removed": "Olib tashlangan",
+      "cancelled": "Bekor qilingan"
     },
     "roles": {
       "admin": "Admin",
-      "manager": "Manager",
-      "doctor": "Doctor",
-      "nurse": "Nurse",
-      "receptionist": "Receptionist",
-      "billing": "Billing",
-      "viewer": "Viewer"
+      "manager": "Menejer",
+      "doctor": "Shifokor",
+      "nurse": "Hamshira",
+      "receptionist": "Qabul xodimi",
+      "billing": "Moliya xodimi",
+      "viewer": "Kuzatuvchi"
     },
     "toasts": {
-      "invalidEmail": "Enter a valid email",
-      "inviteCreated": "Invitation created",
-      "inviteFailed": "Failed to create invitation",
-      "updated": "Staff updated",
-      "updateFailed": "Failed to update staff",
-      "statusUpdated": "Staff status updated to {{status}}",
-      "statusFailed": "Failed to update staff status",
-      "removed": "Staff removed",
-      "removeFailed": "Failed to remove staff",
-      "inviteCancelled": "Invitation cancelled",
-      "cancelFailed": "Failed to cancel invitation",
-      "inviteResent": "Invitation resent",
-      "resendFailed": "Failed to resend invite",
-      "loadFailed": "Failed to load staff data"
+      "invalidEmail": "To'g'ri elektron pochta manzilini kiriting",
+      "inviteCreated": "Taklifnoma yaratildi",
+      "inviteFailed": "Taklifnoma yaratish muvaffaqiyatsiz tugadi",
+      "updated": "Xodim yangilandi",
+      "updateFailed": "Xodimni yangilash muvaffaqiyatsiz tugadi",
+      "statusUpdated": "Xodim holati {{status}} ga yangilandi",
+      "statusFailed": "Xodim holatini yangilash muvaffaqiyatsiz tugadi",
+      "removed": "Xodim olib tashlandi",
+      "removeFailed": "Xodimni olib tashlash muvaffaqiyatsiz tugadi",
+      "inviteCancelled": "Taklifnoma bekor qilindi",
+      "cancelFailed": "Taklifnomani bekor qilish muvaffaqiyatsiz tugadi",
+      "inviteResent": "Taklifnoma qayta yuborildi",
+      "resendFailed": "Taklifnomani qayta yuborish muvaffaqiyatsiz tugadi",
+      "loadFailed": "Xodimlar ma'lumotlarini yuklash muvaffaqiyatsiz tugadi"
     }
   }
 }
