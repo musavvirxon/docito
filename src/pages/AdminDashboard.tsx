@@ -1898,7 +1898,7 @@ const AdminDashboard = () => {
                                 <div className="text-sm text-muted-foreground sm:col-span-1">
                                   {service.duration ? `${service.duration} min` : '—'}
                                 </div>
-                                <div className="font-semibold sm:col-span-1">${service.price}</div>
+                                <div className="font-semibold sm:col-span-1">{money(Number(service.price || 0))}</div>
                                 <div className="sm:col-span-1">
                                   {(service as any).is_online !== false ? (
                                     <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">Online</Badge>
