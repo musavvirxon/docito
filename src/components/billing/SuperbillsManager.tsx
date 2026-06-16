@@ -112,7 +112,7 @@ export function SuperbillsManager({
         <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Generated</p><p className="text-xl font-bold">{stats.total}</p></CardContent></Card>
         <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Submitted</p><p className="text-xl font-bold text-yellow-600">{stats.submitted}</p></CardContent></Card>
         <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Reimbursed</p><p className="text-xl font-bold text-green-600">{stats.paid}</p></CardContent></Card>
-        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total Charged</p><p className="text-xl font-bold">${totalCharged}</p></CardContent></Card>
+        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total Charged</p><p className="text-xl font-bold">{totalCharged}</p></CardContent></Card>
       </div>
 
       <Card className="rounded-xl">
