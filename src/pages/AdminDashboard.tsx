@@ -1817,7 +1817,7 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">
-                      ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                      {money(services.reduce((sum, s) => sum + (s.price || 0), 0))}
                     </div>
                     <p className="text-sm text-muted-foreground">Revenue Potential</p>
                   </CardContent>
