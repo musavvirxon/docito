@@ -2157,7 +2157,7 @@ const AdminDashboard = () => {
                                   <td className="py-3 font-medium">{s.name}</td>
                                   <td className="py-3"><Badge variant="secondary" className="text-xs">{s.category || 'Uncategorized'}</Badge></td>
                                   <td className="py-3 text-muted-foreground">{s.duration ? `${s.duration} min` : '—'}</td>
-                                  <td className="py-3 font-semibold">${s.price}</td>
+                                  <td className="py-3 font-semibold">{money(Number(s.price || 0))}</td>
                                   <td className="py-3"><Badge variant="outline" className="text-xs">Fixed</Badge></td>
                                   <td className="py-3"><Badge variant="secondary" className="text-xs">None</Badge></td>
                                   <td className="py-3 text-right">
