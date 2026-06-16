@@ -2402,7 +2402,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex items-center gap-4">
                                   <span className="text-sm text-muted-foreground">{r.bookings} bookings</span>
-                                  <span className="text-sm font-semibold">${(r.bookings * (r.price || 0)).toLocaleString()}</span>
+                                  <span className="text-sm font-semibold">{money(r.bookings * (r.price || 0))}</span>
                                 </div>
                               </div>
                             ))}
