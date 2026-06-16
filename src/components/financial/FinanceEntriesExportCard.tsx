@@ -71,6 +71,8 @@ function formatMoney(currency: string, cents: number) {
 export default function FinanceEntriesExportCard(props: { entityType: FinanceEntityType; entityId: string; defaultDays?: number }) {
   const { entityType, entityId } = props;
   const days = Math.max(1, Math.min(props.defaultDays ?? 90, 3650));
+  const { formatCents: ctxFmtCents } = useCurrency();
+  const formatMoney = (currency: string, cents: number) => ctxFmtCents(cents, currency);
 
   const today = useMemo(() => new Date(), []);
   const [dateTo, setDateTo] = useState(() => isoDate(today));
