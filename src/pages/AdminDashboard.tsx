@@ -4272,9 +4272,9 @@ const AdminDashboard = () => {
               {financeTab === 'overview' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">${finIncome.toFixed(2)}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">${finExpenses.toFixed(2)}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>${finNet.toFixed(2)}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">{money(finIncome, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">{money(finExpenses, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>{money(finNet, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
                     <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Entries</p><p className="text-2xl font-bold text-foreground">{financeEntries.length}</p></CardContent></Card>
                   </div>
 
