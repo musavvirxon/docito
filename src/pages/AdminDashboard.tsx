@@ -3448,8 +3448,9 @@ const AdminDashboard = () => {
       case "billing": {
         const bData: any = billing.data;
         const bTxs: any[] = bData?.transactions || [];
-        const fmtCents = (cents: number) =>
-          `$${(Number(cents || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+        const practiceCurrency = (practice as any)?.currency || 'USD';
+        const fmtCents = (cents: number, srcCurrency?: string) =>
+          moneyCents(Number(cents || 0), (srcCurrency || practiceCurrency).toUpperCase());
 
         const billingTabs: { key: typeof billingTab; label: string }[] = [
           { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
