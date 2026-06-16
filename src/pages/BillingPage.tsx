@@ -22,6 +22,7 @@ function badgeVariant(status: string) {
 
 export default function BillingPage() {
   const { t } = useTranslation('common');
+  const { formatCents: moneyCents } = useCurrency();
   const { permissions } = useStaffContext();
   const [sp] = useSearchParams();
 
