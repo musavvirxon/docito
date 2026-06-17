@@ -58,6 +58,8 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
       setProcedureId(svc.id);
       setName(svc.name);
       if (svc.default_cost != null) setCost(String(svc.default_cost));
+      const svcCurrency = (svc as any).currency as string | null | undefined;
+      if (svcCurrency) setCurrency(svcCurrency);
     }
   };
 
@@ -70,6 +72,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
         procedureId,
         status,
         cost: cost.trim() === '' ? null : Number(cost),
+        currency,
         notes: notes.trim() || null,
         toothNumbers: isDentist ? teeth.map((t) => Number(t)).filter(Number.isFinite) : [],
       });
