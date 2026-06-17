@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
+import { useCurrency } from '@/hooks/useCurrency';
+import { SUPPORTED_CURRENCIES } from '@/lib/currency';
 import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
@@ -21,9 +23,11 @@ interface Props {
 export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth = [], onSubmit }: Props) {
   const { t } = useTranslation('appointments');
   const { services } = useDoctorServices();
+  const { currency: viewerCurrency } = useCurrency();
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
   const [cost, setCost] = useState<string>('');
+  const [currency, setCurrency] = useState<string>(viewerCurrency || 'USD');
   const [status, setStatus] = useState<ProcedureStatus>('planned');
   const [notes, setNotes] = useState('');
   const [teeth, setTeeth] = useState<string[]>([]);
@@ -54,6 +58,8 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
       setProcedureId(svc.id);
       setName(svc.name);
       if (svc.default_cost != null) setCost(String(svc.default_cost));
+      const svcCurrency = (svc as any).currency as string | null | undefined;
+      if (svcCurrency) setCurrency(svcCurrency);
     }
   };
 
@@ -66,6 +72,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
         procedureId,
         status,
         cost: cost.trim() === '' ? null : Number(cost),
+        currency,
         notes: notes.trim() || null,
         toothNumbers: isDentist ? teeth.map((t) => Number(t)).filter(Number.isFinite) : [],
       });
@@ -103,7 +110,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="md:col-span-2">
               <Label>{t('addProcedure.name')}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('addProcedure.namePlaceholder')} />
@@ -111,6 +118,19 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
             <div>
               <Label>{t('addProcedure.cost')}</Label>
               <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
+            </div>
+            <div>
+              <Label>Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORTED_CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>{c.code}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

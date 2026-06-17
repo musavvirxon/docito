@@ -1,68 +1,94 @@
-## Goal
-Make every finance/billing surface respect the user's selected display currency (converted from each entity's base currency), and have completed appointment sessions automatically feed the finance ledger while also being aggregated live in dashboards.
+## Goals
+Fix the procedure enum crash, group procedures by category in appointment sessions, make sure doctors can add patients + procedures + payments anywhere, support per-procedure currency override, and fix invisible button text in light ("day") mode for clinic admin sub-sections and patient buttons.
 
-## 1. Currency: store entity base, display in user's
+## 1. Drop `procedure_category` enum (root cause of `"kffssdf"` crash)
 
-### Data model
-- Add `currency` column (text, default `'USD'`) to: `practices`, `doctors`, `clinic_lab_orders`/finance entities that don't already have it. Verify which already do (`finance_entries` already has one). Backfill `'USD'`.
-- Ensure `finance_entries`, `billing_invoices`, `billing_transactions`, `payments`, `compensation_payouts`, `staff_compensation_profiles`, `payment_holds` all have a `currency` column. Backfill from parent entity.
+Migration:
+- `ALTER TABLE public.procedures ALTER COLUMN category TYPE text USING category::text;`
+- Same for any other column typed as `procedure_category` (check `procedures.category` default → set default `'general'`).
+- `DROP TYPE public.procedure_category;` after columns are migrated. Triggers/RPCs that cast `'general_consultation'::procedure_category` are rewritten to plain text.
+- Keep `DEFAULT_PROCEDURE_CATEGORIES` in `src/lib/procedureCategories.ts` as the suggestion list; custom values are saved verbatim (already normalized via `normalizeProcedureCategory`).
 
-### Frontend formatter
-- New helper `useEntityMoney(entityCurrency)` (in `src/hooks/useEntityMoney.ts`) that:
-  - reads display currency + FX rates from `CurrencyContext`
-  - returns `format(amount)` / `formatCents(cents)` that **convert** from `entityCurrency` → display currency using FX rates from `fx_rates` (already cached in CurrencyContext), then formats with the display locale.
-  - Falls back to entity currency formatting if FX unavailable.
-- Update `src/lib/currency.ts` to expose a `convertAndFormat(amount, from, to, rates, locale?)` utility.
+Code:
+- Remove `as any` casts and the `category: 'general' | 'preventive' | …` union in `src/components/doctor/AddServiceModal.tsx` and `src/hooks/useDoctorServices.ts` — switch to `string`, render full options from `mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, dbCustomValues)` so doctors see existing custom categories too.
+- Replace the hard-coded 8-value list in `AddServiceModal` with the same `mergeCategories` source already used by `EnhancedProcedureForm`/`AddProcedureModal`, plus a "Custom…" option that writes free text.
 
-### Replace hardcoded `$` / `toFixed` across finance/billing
-Refactor these files to use `useEntityMoney(entity.currency)` instead of `${x.toFixed(2)}` / `$${cents/100}`:
-- `src/pages/AdminDashboard.tsx` → `billing` and `finances` cases (KPI cards, payment summary, ledger rows, recent entries, expense breakdown, transactions table, by-method/by-status).
-- `src/pages/FinanceDashboard.tsx`
-- `src/components/billing/BillingOverview.tsx`, `PaymentHoldsSection.tsx`, `SuperbillsManager.tsx`
-- `src/components/financial/*` — every panel listed (FinanceOverview, FinanceLedgerPanel/Manager, FinanceTransactions, ExpensesPanel/EntriesPanel, IncomeEntriesPanel, PayrollPanel/EntriesPanel/RunsPanel, SuppliesPanel/PurchasesPanel, BudgetsPanel/Dashboard/Editor/VsActualPanel, ReportsPanel, RecurringRulesPanel/ExpensesPanel/TemplatesPanel, FinanceAnalyticsPanel, FinanceCategoriesManager, FinanceEntriesExportCard, FinanceEntryDialog, FinanceHub, CompensationManager/ProfileDialog/ProfilesPanel, AttendancePanel, AdvancedFinancialMetrics, ExpenseBreakdownPanel, InventoryItemsPanel, FinancialInputsModal, FinancePlaceholder, FinanceManagementSection).
-- `src/components/doctor/FinancialOverview.tsx`, `FinancialChart.tsx`, `FinancialInsights.tsx`, `FinancialPayouts.tsx`, `FinancialPending.tsx`, `FinancialServices.tsx`, `PerformanceServices.tsx`, `MarkAsPaidDialog.tsx`, `TreatmentPlanningSection.tsx`, `DoctorProcedureLibrarySection.tsx`, `calendar/AppointmentModal.tsx`, `public/ProceduresSection.tsx`, `DoctorFinancialStatsSection.tsx`.
+## 2. Add patient to any procedure (registered or manual)
 
-Each amount renders via `money(amount, sourceCurrency)`; the LanguageSwitcher / CurrencyContext already controls the target.
+Currently `AddProcedureModal` (appointment-session variant) assumes an appointment-bound patient.
+- Add an optional `patientId | manualPatient` selector in `AddProcedureModal` (used outside of session) so a doctor can pick a registered patient via `PatientPicker`, or expand `CreatePatientModal` inline for a manual entry (writes to `facility_patients` / `doctor_patients`).
+- `useAppointmentProcedures.addProcedure` already accepts `appointment_id`; extend it to also accept `patient_id` so out-of-session procedures still attach to a patient.
+- Tooth-based vs general: keep current `isDentist` switch; teeth selector is optional regardless.
 
-### Currency setting UI
-- In each entity's Settings → Finance section, add a "Base currency" Select bound to entity row (`practices.currency`, `doctors.currency`, etc.).
-- Confirm the global `CurrencySwitcher` is reachable from header (already exists via `useCurrency`).
+## 3. Procedure history grouped by category in appointment session
 
-## 2. Doctor appointment session → finance
+In `AppointmentProceduresPanel`:
+- Group current appointment's procedures by `category` (use `getProcedureCategoryLabel`).
+- Render a sticky top row of category chips (count badge each); clicking a chip scrolls/filters to that section.
+- Each section: list of procedure rows with status, tooth refs, cost+currency, edit/delete.
+- Empty categories hidden. Order: most-used categories first, then alphabetic.
 
-### Trigger / edge function
-- New DB trigger `on_appointment_session_completed_to_finance`: when an `appointment_sessions` row transitions to `ended_at IS NOT NULL` (or `status='completed'`) and a price is known, insert one `finance_entries` row:
-  - `entity_type='practice'`, `entity_id = appointment.practice_id` (and a sibling row for `entity_type='doctor'`, `entity_id = appointment.doctor_id` when independent).
-  - `type='income'`, `category='Consultation'` (or procedure name), `amount = remaining unpaid for that appointment` in entity currency, `reference = appointment_id`, `date = session.ended_at`.
-  - Idempotent: skip if a row with same `reference` and `source='appointment_session'` already exists.
-- Add `source` text column to `finance_entries` (default `'manual'`) to mark auto rows.
+## 4. Payments — doctors can record everywhere
 
-### Live aggregation in dashboards
-- Update `useFinanceEntries` (or add `useEntityFinanceAggregate`) so AdminDashboard's `finances` case and `FinanceOverview` merge:
-  - manual + auto `finance_entries`
-  - **plus** live unbilled completed sessions not yet reflected (computed from `appointment_sessions` + `procedures.price` − `payments.amount`) — surfaced as "Pending from sessions" KPI and included in Income totals with a tag.
-- Doctor's `FinancialOverview` already aggregates appointments; extend to also pull `finance_entries` where `entity_type='doctor'` so manual income/expenses show alongside session-derived totals.
+Reverse earlier removal. Audit and re-enable:
+- `AppointmentFinancePanel`: keep the "Record payment" dialog; ensure doctor role is allowed in the gate.
+- Add a "Record payment" action to:
+  - Doctor dashboard finance section (already has `IncomeEntriesPanel`; add explicit "Record payment" button writing to `payments` with `recorded_by = doctor user`).
+  - Appointment quick-preview popup (`AppointmentQuickPreview.tsx`) — small "Add payment" button opening the same dialog.
+- RLS: confirm `payments` INSERT policy permits doctors who own the appointment (or are the practice's doctor). If not, add a policy `doctors can insert payments for their appointments` keyed via `has_role`/doctor-of-appointment helper.
+- Payment dialog: currency field defaults to entity currency, but doctor can switch (drives storage in that currency; `useEntityMoney` converts for display).
 
-## 3. i18n
-- Add finance/currency keys (`finance.baseCurrency`, `finance.displayedIn`, `finance.pendingFromSessions`, etc.) to `en/finance.json` and mirror to the 10 other locales.
+## 5. Per-procedure currency override
+
+- Add `currency text` column to `appointment_procedures` and `procedures` (default null → falls back to doctor/practice base currency).
+- `AddProcedureModal` + `EnhancedProcedureForm` + `AppointmentProceduresPanel.AddProcedureModal`: add a currency `<Select>` next to the cost input, sourced from `supported_currencies`. Default = doctor/practice currency.
+- Display: use `useEntityMoney(procedure.currency ?? entity.currency)` so the viewer's selected currency is what they see while DB keeps the original.
+- Finance trigger (`trg_session_to_finance_entry`): write `finance_entries.currency` = procedure.currency override when present.
+
+## 6. Light-mode button text visibility (clinic admin sub-sections + patient buttons)
+
+Cause: buttons use hard-coded `text-white` / `text-primary-foreground` on `bg-background` or `variant="outline"` in light theme — invisible.
+- Sweep `src/components/dashboard/admin/**` and `src/components/doctor/patients/**` for `text-white`, `text-black`, `bg-white text-white`, replace with semantic `text-foreground` / appropriate variant.
+- Verify by running the preview in light mode at `/clinic-admin` sub-sections and the patient list.
 
 ## Technical details
-- All amounts stored as **major units** in `finance_entries.amount`, **cents** in `billing_*` and `payments` tables. The `useEntityMoney` hook exposes both `format(major, currency)` and `formatCents(cents, currency)`.
-- FX conversion uses the existing `fx_rates` table loaded by `CurrencyContext`; fallback to `FALLBACK_FX_RATES` from `src/lib/currency.ts`.
-- Trigger is SECURITY DEFINER, search_path locked, and writes through `service_role` grants already present on `finance_entries`.
-- Idempotency key: unique partial index `finance_entries(reference, source) WHERE source='appointment_session'`.
-
-## Out of scope
-- Rewriting payments/Stripe flows.
-- Multi-currency invoicing (invoices keep their original currency; display converts only).
 
 ```text
-[entity.currency] --stored--> finance_entries / payments
-                                     │
-                                     ▼
-                       useEntityMoney(entityCurrency)
-                                     │
-                       converts via fx_rates (CurrencyContext)
-                                     ▼
-                       displays in user's selected currency
+procedure_category (enum)  ─► text column + suggestion list
+                                │
+                                ▼
+AddServiceModal / AddProcedureModal / EnhancedProcedureForm
+  ├─ category: string (free text + suggestions)
+  └─ currency: string (override, falls back to entity base)
+
+appointment_procedures
+  + currency text NULL
+  + patient_id uuid NULL  (already? if not, add)
+
+Session UI:
+  Category Chips [General • Restorative • Surgical …]
+       │
+       ▼
+  Sections grouped by category → procedure rows
+
+Payments:
+  Doctor → Record Payment available in:
+    Session Finance Panel · Doctor Dashboard · Appointment Quick Preview
+  RLS: payments.insert allowed for doctor-of-appointment
 ```
+
+## Files to touch
+- `supabase/migrations/<new>.sql` — enum→text, currency column, RLS for payments.insert, dropping enum type.
+- `src/lib/procedureCategories.ts` — already supports free text; no change needed.
+- `src/components/doctor/AddServiceModal.tsx` — free-text categories, currency select.
+- `src/components/procedure/AddProcedureModal.tsx`, `EnhancedProcedureForm.tsx` — currency select, patient picker (out-of-session).
+- `src/components/appointments/AddProcedureModal.tsx` — currency select.
+- `src/components/appointments/AppointmentProceduresPanel.tsx` — category grouping + chip nav.
+- `src/components/appointments/AppointmentFinancePanel.tsx` — re-enable record payment for doctors, currency override.
+- `src/components/doctor/calendar/AppointmentQuickPreview.tsx` — add "Add payment" button.
+- `src/hooks/useDoctorServices.ts`, `src/hooks/useAppointmentProcedures.ts` — types loosened to `string`, currency field.
+- `src/components/dashboard/admin/**`, `src/components/doctor/patients/**` — replace hard-coded text colors with semantic tokens.
+
+## Out of scope
+- Payment provider integration (Stripe/Paddle) — payments here are manually recorded entries, not online checkout.
+- Multi-currency invoicing rewrite (kept as previous turn).

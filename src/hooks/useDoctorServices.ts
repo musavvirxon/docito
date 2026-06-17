@@ -12,6 +12,7 @@ interface DoctorService {
   default_cost?: number;
   duration_minutes: number;
   is_active: boolean;
+  currency?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -76,12 +77,13 @@ export const useDoctorServices = () => {
         .insert({
           name: serviceData.name,
           description: serviceData.description,
-          category: serviceData.category as any,
+          category: serviceData.category,
           default_cost: serviceData.default_cost,
           duration_minutes: serviceData.duration_minutes,
           is_active: serviceData.is_active,
+          currency: serviceData.currency ?? null,
           dentist_id: doctorData.id
-        })
+        } as any)
         .select()
         .single();
 
@@ -99,13 +101,10 @@ export const useDoctorServices = () => {
 
   const updateService = async (serviceId: string, updates: Partial<DoctorService>) => {
     try {
-      const updateData = {
-        ...updates,
-        category: updates.category as any
-      };
+      const updateData = { ...updates };
       const { error } = await supabase
         .from('procedures')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', serviceId);
 
       if (error) throw error;
