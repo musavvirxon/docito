@@ -101,13 +101,10 @@ export const useDoctorServices = () => {
 
   const updateService = async (serviceId: string, updates: Partial<DoctorService>) => {
     try {
-      const updateData = {
-        ...updates,
-        category: updates.category as any
-      };
+      const updateData = { ...updates };
       const { error } = await supabase
         .from('procedures')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', serviceId);
 
       if (error) throw error;
