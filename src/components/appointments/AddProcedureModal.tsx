@@ -110,7 +110,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="md:col-span-2">
               <Label>{t('addProcedure.name')}</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('addProcedure.namePlaceholder')} />
@@ -118,6 +118,19 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
             <div>
               <Label>{t('addProcedure.cost')}</Label>
               <Input type="number" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
+            </div>
+            <div>
+              <Label>Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {SUPPORTED_CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>{c.code}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
