@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
+import { useCurrency } from '@/hooks/useCurrency';
+import { SUPPORTED_CURRENCIES } from '@/lib/currency';
 import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
@@ -21,9 +23,11 @@ interface Props {
 export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth = [], onSubmit }: Props) {
   const { t } = useTranslation('appointments');
   const { services } = useDoctorServices();
+  const { currency: viewerCurrency } = useCurrency();
   const [name, setName] = useState('');
   const [procedureId, setProcedureId] = useState<string | null>(null);
   const [cost, setCost] = useState<string>('');
+  const [currency, setCurrency] = useState<string>(viewerCurrency || 'USD');
   const [status, setStatus] = useState<ProcedureStatus>('planned');
   const [notes, setNotes] = useState('');
   const [teeth, setTeeth] = useState<string[]>([]);
