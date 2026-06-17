@@ -12,6 +12,7 @@ interface DoctorService {
   default_cost?: number;
   duration_minutes: number;
   is_active: boolean;
+  currency?: string | null;
   created_at: string;
   updated_at: string;
 }
