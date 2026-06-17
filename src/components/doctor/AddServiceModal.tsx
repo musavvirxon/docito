@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useTranslation } from 'react-i18next';
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
+import { useCurrency } from "@/hooks/useCurrency";
+import { SUPPORTED_CURRENCIES } from "@/lib/currency";
+import {
+  DEFAULT_PROCEDURE_CATEGORIES,
+  mergeCategories,
+  getProcedureCategoryLabel,
+} from "@/lib/procedureCategories";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface AddServiceModalProps {
@@ -16,66 +23,94 @@ interface AddServiceModalProps {
 
 interface ServiceFormData {
   name: string;
-  category: 'general' | 'preventive' | 'restorative' | 'cosmetic' | 'orthodontic' | 'oral_surgery' | 'endodontic' | 'periodontic';
+  category: string;
   description: string;
   default_cost: number;
   duration_minutes: number;
   is_active: boolean;
+  currency: string;
 }
+
+const CUSTOM = "__custom__";
 
 const AddServiceModal = ({ isOpen, onClose }: AddServiceModalProps) => {
   const { addService } = useDoctorData();
+  const { currency: viewerCurrency } = useCurrency();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [categoryOptions, setCategoryOptions] = useState(DEFAULT_PROCEDURE_CATEGORIES);
+  const [customCategory, setCustomCategory] = useState("");
+
   const [formData, setFormData] = useState<ServiceFormData>({
-    name: '',
-    category: 'general',
-    description: '',
+    name: "",
+    category: "general",
+    description: "",
     default_cost: 0,
     duration_minutes: 30,
-    is_active: true
+    is_active: true,
+    currency: viewerCurrency || "USD",
   });
 
-  const categories = [
-    { value: 'general', label: 'General' },
-    { value: 'preventive', label: 'Preventive' },
-    { value: 'restorative', label: 'Restorative' },
-    { value: 'cosmetic', label: 'Cosmetic' },
-    { value: 'orthodontic', label: 'Orthodontic' },
-    { value: 'oral_surgery', label: 'Oral Surgery' },
-    { value: 'endodontic', label: 'Endodontic' },
-    { value: 'periodontic', label: 'Periodontic' }
-  ];
+  // Hydrate categories with any custom values existing in procedures
+  useEffect(() => {
+    if (!isOpen) return;
+    (async () => {
+      const { data } = await supabase
+        .from("procedures")
+        .select("category")
+        .not("category", "is", null);
+      const customValues = Array.from(
+        new Set((data ?? []).map((r: any) => r.category).filter(Boolean))
+      );
+      setCategoryOptions(mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, customValues));
+    })();
+  }, [isOpen]);
+
+  const isCustomSelected = useMemo(
+    () => formData.category === CUSTOM,
+    [formData.category]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name.trim()) {
-      toast.error('Service name is required');
+      toast.error("Service name is required");
+      return;
+    }
+
+    const finalCategory =
+      isCustomSelected ? customCategory.trim() : formData.category;
+    if (!finalCategory) {
+      toast.error("Please choose or enter a category");
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
-      const result = await addService(formData);
-      
+      const result = await addService({
+        ...formData,
+        category: finalCategory,
+      } as any);
+
       if (result.success) {
-        toast.success('Service added successfully');
+        toast.success("Service added successfully");
         setFormData({
-          name: '',
-          category: 'general',
-          description: '',
+          name: "",
+          category: "general",
+          description: "",
           default_cost: 0,
           duration_minutes: 30,
-          is_active: true
+          is_active: true,
+          currency: viewerCurrency || "USD",
         });
+        setCustomCategory("");
         onClose();
       } else {
-        toast.error(result.error || 'Failed to add service');
+        toast.error(result.error || "Failed to add service");
       }
     } catch (error) {
-      toast.error('Failed to add service');
+      toast.error("Failed to add service");
     } finally {
       setIsSubmitting(false);
     }
@@ -87,14 +122,14 @@ const AddServiceModal = ({ isOpen, onClose }: AddServiceModalProps) => {
         <DialogHeader>
           <DialogTitle>Add New Service</DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="serviceName">Service Name *</Label>
             <Input
               id="serviceName"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="e.g., General Consultation"
               required
             />
@@ -102,26 +137,39 @@ const AddServiceModal = ({ isOpen, onClose }: AddServiceModalProps) => {
 
           <div>
             <Label htmlFor="category">Category</Label>
-            <Select value={formData.category} onValueChange={(value: any) => setFormData(prev => ({ ...prev, category: value }))}>
+            <Select
+              value={formData.category}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
+            >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map(category => (
+                {categoryOptions.map((category) => (
                   <SelectItem key={category.value} value={category.value}>
                     {category.label}
                   </SelectItem>
                 ))}
+                <SelectItem value={CUSTOM}>+ Custom category…</SelectItem>
               </SelectContent>
             </Select>
+            {isCustomSelected && (
+              <Input
+                className="mt-2"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="Enter a custom category"
+                autoFocus
+              />
+            )}
           </div>
 
           <div>
             <Label htmlFor="description">Description</Label>
-            <Textarea 
+            <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Describe the service..."
               className="min-h-[80px]"
             />
@@ -129,36 +177,57 @@ const AddServiceModal = ({ isOpen, onClose }: AddServiceModalProps) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="price">Price ($)</Label>
-              <Input 
+              <Label htmlFor="price">Price</Label>
+              <Input
                 id="price"
                 type="number"
-                value={formData.default_cost || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, default_cost: Number(e.target.value) }))}
+                value={formData.default_cost || ""}
+                onChange={(e) => setFormData((prev) => ({ ...prev, default_cost: Number(e.target.value) }))}
                 placeholder="150"
                 min="0"
                 step="0.01"
               />
             </div>
             <div>
-              <Label htmlFor="duration">Duration (minutes)</Label>
-              <Select 
-                value={formData.duration_minutes.toString()} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, duration_minutes: Number(value) }))}
+              <Label htmlFor="currency">Currency</Label>
+              <Select
+                value={formData.currency}
+                onValueChange={(value) => setFormData((prev) => ({ ...prev, currency: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">60 minutes</SelectItem>
-                  <SelectItem value="90">90 minutes</SelectItem>
-                  <SelectItem value="120">2 hours</SelectItem>
+                  {SUPPORTED_CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.code} — {c.symbol}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Select
+              value={formData.duration_minutes.toString()}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, duration_minutes: Number(value) }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="15">15 minutes</SelectItem>
+                <SelectItem value="30">30 minutes</SelectItem>
+                <SelectItem value="45">45 minutes</SelectItem>
+                <SelectItem value="60">60 minutes</SelectItem>
+                <SelectItem value="90">90 minutes</SelectItem>
+                <SelectItem value="120">2 hours</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
@@ -166,7 +235,7 @@ const AddServiceModal = ({ isOpen, onClose }: AddServiceModalProps) => {
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Adding...' : 'Add Service'}
+              {isSubmitting ? "Adding..." : "Add Service"}
             </Button>
           </div>
         </form>
