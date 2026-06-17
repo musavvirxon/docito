@@ -183,7 +183,7 @@ export function useAppointmentProcedures({
             status: 'pending',
             amount: Math.round(totalCost),
             amount_cents: Math.round(totalCost * 100),
-            currency: 'usd',
+            currency: (input.currency || 'USD').toLowerCase(),
             description,
             metadata: {
               source: 'appointment_procedure',
