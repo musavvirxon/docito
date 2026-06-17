@@ -597,9 +597,11 @@ export type Database = {
           consent_ip_address: unknown
           consent_signed_at: string | null
           created_at: string
+          currency: string | null
           estimated_cost: number | null
           id: string
           patient_consent_status: string | null
+          patient_id: string | null
           prescribed_at: string
           prescribed_by: string | null
           procedure_id: string | null
@@ -612,9 +614,11 @@ export type Database = {
           consent_ip_address?: unknown
           consent_signed_at?: string | null
           created_at?: string
+          currency?: string | null
           estimated_cost?: number | null
           id?: string
           patient_consent_status?: string | null
+          patient_id?: string | null
           prescribed_at?: string
           prescribed_by?: string | null
           procedure_id?: string | null
@@ -627,9 +631,11 @@ export type Database = {
           consent_ip_address?: unknown
           consent_signed_at?: string | null
           created_at?: string
+          currency?: string | null
           estimated_cost?: number | null
           id?: string
           patient_consent_status?: string | null
+          patient_id?: string | null
           prescribed_at?: string
           prescribed_by?: string | null
           procedure_id?: string | null
@@ -650,6 +656,13 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_procedures_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -7223,9 +7236,10 @@ export type Database = {
       }
       procedures: {
         Row: {
-          category: Database["public"]["Enums"]["procedure_category"] | null
+          category: string | null
           code: string | null
           created_at: string | null
+          currency: string | null
           default_cost: number | null
           default_notes_template: string | null
           default_time_interval: number | null
@@ -7254,9 +7268,10 @@ export type Database = {
           what_to_expect: string | null
         }
         Insert: {
-          category?: Database["public"]["Enums"]["procedure_category"] | null
+          category?: string | null
           code?: string | null
           created_at?: string | null
+          currency?: string | null
           default_cost?: number | null
           default_notes_template?: string | null
           default_time_interval?: number | null
@@ -7285,9 +7300,10 @@ export type Database = {
           what_to_expect?: string | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["procedure_category"] | null
+          category?: string | null
           code?: string | null
           created_at?: string | null
+          currency?: string | null
           default_cost?: number | null
           default_notes_template?: string | null
           default_time_interval?: number | null
@@ -11479,61 +11495,6 @@ export type Database = {
         | "medical_records"
         | "billing_payments"
         | "account_management"
-      procedure_category:
-        | "general"
-        | "preventive"
-        | "restorative"
-        | "cosmetic"
-        | "orthodontic"
-        | "oral_surgery"
-        | "endodontic"
-        | "periodontic"
-        | "preventive_care"
-        | "prosthodontic"
-        | "general_consultation"
-        | "diagnostic_testing"
-        | "diagnostic"
-        | "vaccination"
-        | "chronic_disease"
-        | "acute_care"
-        | "follow_up"
-        | "minor_surgery"
-        | "physical_therapy"
-        | "mental_health"
-        | "womens_health"
-        | "pediatric_care"
-        | "geriatric_care"
-        | "cardiology"
-        | "dermatology"
-        | "orthopedics"
-        | "neurology"
-        | "gastroenterology"
-        | "pulmonology"
-        | "endocrinology"
-        | "nephrology"
-        | "urology"
-        | "ophthalmology"
-        | "ent"
-        | "allergy_immunology"
-        | "dental_examination"
-        | "dental_cleaning"
-        | "dental_checkup"
-        | "crowns_bridges"
-        | "root_canal"
-        | "extractions"
-        | "dental_implants"
-        | "dentures"
-        | "orthodontics"
-        | "periodontics"
-        | "cosmetic_dental"
-        | "cosmetic_dentistry"
-        | "teeth_whitening"
-        | "veneers"
-        | "pediatric_dentistry"
-        | "pediatric_dental"
-        | "tmj_treatment"
-        | "emergency_dental"
-        | "implantology"
       procedure_type:
         | "single_visit"
         | "multi_visit"
@@ -11759,62 +11720,6 @@ export const Constants = {
         "medical_records",
         "billing_payments",
         "account_management",
-      ],
-      procedure_category: [
-        "general",
-        "preventive",
-        "restorative",
-        "cosmetic",
-        "orthodontic",
-        "oral_surgery",
-        "endodontic",
-        "periodontic",
-        "preventive_care",
-        "prosthodontic",
-        "general_consultation",
-        "diagnostic_testing",
-        "diagnostic",
-        "vaccination",
-        "chronic_disease",
-        "acute_care",
-        "follow_up",
-        "minor_surgery",
-        "physical_therapy",
-        "mental_health",
-        "womens_health",
-        "pediatric_care",
-        "geriatric_care",
-        "cardiology",
-        "dermatology",
-        "orthopedics",
-        "neurology",
-        "gastroenterology",
-        "pulmonology",
-        "endocrinology",
-        "nephrology",
-        "urology",
-        "ophthalmology",
-        "ent",
-        "allergy_immunology",
-        "dental_examination",
-        "dental_cleaning",
-        "dental_checkup",
-        "crowns_bridges",
-        "root_canal",
-        "extractions",
-        "dental_implants",
-        "dentures",
-        "orthodontics",
-        "periodontics",
-        "cosmetic_dental",
-        "cosmetic_dentistry",
-        "teeth_whitening",
-        "veneers",
-        "pediatric_dentistry",
-        "pediatric_dental",
-        "tmj_treatment",
-        "emergency_dental",
-        "implantology",
       ],
       procedure_type: [
         "single_visit",
