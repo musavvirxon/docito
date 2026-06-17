@@ -77,12 +77,13 @@ export const useDoctorServices = () => {
         .insert({
           name: serviceData.name,
           description: serviceData.description,
-          category: serviceData.category as any,
+          category: serviceData.category,
           default_cost: serviceData.default_cost,
           duration_minutes: serviceData.duration_minutes,
           is_active: serviceData.is_active,
+          currency: serviceData.currency ?? null,
           dentist_id: doctorData.id
-        })
+        } as any)
         .select()
         .single();
 
