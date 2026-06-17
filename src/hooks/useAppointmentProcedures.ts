@@ -161,6 +161,7 @@ export function useAppointmentProcedures({
               procedure_notes: input.notes || input.name,
               estimated_cost: totalCost,
               status: 'completed',
+              currency: input.currency || null,
               prescribed_by: authUser?.user?.id || doctorId,
               prescribed_at: new Date().toISOString(),
             } as any)
