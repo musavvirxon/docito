@@ -9,8 +9,10 @@ export interface UnifiedProcedure {
   source: 'dental' | 'general';
   name: string;
   code: string | null;
+  category: string | null;
   status: ProcedureStatus;
   cost: number | null;
+  currency: string | null;
   notes: string | null;
   toothNumbers: number[];
   procedureId: string | null;
@@ -23,6 +25,7 @@ export interface AddProcedureInput {
   procedureId?: string | null;
   status?: ProcedureStatus;
   cost?: number | null;
+  currency?: string | null;
   notes?: string | null;
   toothNumbers?: number[];
 }
