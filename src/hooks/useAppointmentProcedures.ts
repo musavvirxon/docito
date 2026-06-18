@@ -26,6 +26,7 @@ export interface AddProcedureInput {
   status?: ProcedureStatus;
   cost?: number | null;
   currency?: string | null;
+  category?: string | null;
   notes?: string | null;
   toothNumbers?: number[];
 }
