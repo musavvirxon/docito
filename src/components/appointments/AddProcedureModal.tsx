@@ -10,6 +10,11 @@ import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
 import { useCurrency } from '@/hooks/useCurrency';
 import { SUPPORTED_CURRENCIES } from '@/lib/currency';
+import {
+  DEFAULT_PROCEDURE_CATEGORIES,
+  mergeCategories,
+  getProcedureCategoryLabel,
+} from '@/lib/procedureCategories';
 import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
@@ -28,6 +33,8 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
   const [procedureId, setProcedureId] = useState<string | null>(null);
   const [cost, setCost] = useState<string>('');
   const [currency, setCurrency] = useState<string>(viewerCurrency || 'USD');
+  const [category, setCategory] = useState<string>('general_consultation');
+  const [customCategory, setCustomCategory] = useState<string>('');
   const [status, setStatus] = useState<ProcedureStatus>('planned');
   const [notes, setNotes] = useState('');
   const [teeth, setTeeth] = useState<string[]>([]);
@@ -43,10 +50,19 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
       setStatus('planned');
       setNotes('');
       setTeeth([]);
+      setCategory('general_consultation');
+      setCustomCategory('');
     }
   }, [open, initialTeeth]);
 
   const serviceOptions = useMemo(() => services || [], [services]);
+
+  const categoryOptions = useMemo(() => {
+    const fromServices = (services || [])
+      .map((s: any) => s.category)
+      .filter((c: any): c is string => typeof c === 'string' && c.length > 0);
+    return mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, fromServices);
+  }, [services]);
 
   const handlePickService = (id: string) => {
     if (id === '__custom') {
@@ -60,11 +76,15 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
       if (svc.default_cost != null) setCost(String(svc.default_cost));
       const svcCurrency = (svc as any).currency as string | null | undefined;
       if (svcCurrency) setCurrency(svcCurrency);
+      const svcCategory = (svc as any).category as string | null | undefined;
+      if (svcCategory) setCategory(svcCategory);
     }
   };
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
+    const finalCategory =
+      category === '__custom' ? customCategory.trim() || null : category || null;
     setSubmitting(true);
     try {
       await onSubmit({
@@ -73,6 +93,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
         status,
         cost: cost.trim() === '' ? null : Number(cost),
         currency,
+        category: finalCategory,
         notes: notes.trim() || null,
         toothNumbers: isDentist ? teeth.map((t) => Number(t)).filter(Number.isFinite) : [],
       });
@@ -132,6 +153,29 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label>Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+                <SelectItem value="__custom">— Custom category —</SelectItem>
+              </SelectContent>
+            </Select>
+            {category === '__custom' && (
+              <Input
+                className="mt-2"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                placeholder="Enter a custom category"
+              />
+            )}
           </div>
 
           <div>

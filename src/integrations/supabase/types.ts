@@ -594,6 +594,7 @@ export type Database = {
       appointment_procedures: {
         Row: {
           appointment_id: string | null
+          category: string | null
           consent_ip_address: unknown
           consent_signed_at: string | null
           created_at: string
@@ -611,6 +612,7 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
+          category?: string | null
           consent_ip_address?: unknown
           consent_signed_at?: string | null
           created_at?: string
@@ -628,6 +630,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
+          category?: string | null
           consent_ip_address?: unknown
           consent_signed_at?: string | null
           created_at?: string
@@ -9092,6 +9095,7 @@ export type Database = {
       tooth_procedure_history: {
         Row: {
           appointment_id: string | null
+          category: string | null
           cost: number | null
           created_at: string
           doctor_id: string | null
@@ -9108,6 +9112,7 @@ export type Database = {
         }
         Insert: {
           appointment_id?: string | null
+          category?: string | null
           cost?: number | null
           created_at?: string
           doctor_id?: string | null
@@ -9124,6 +9129,7 @@ export type Database = {
         }
         Update: {
           appointment_id?: string | null
+          category?: string | null
           cost?: number | null
           created_at?: string
           doctor_id?: string | null

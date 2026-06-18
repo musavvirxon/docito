@@ -452,89 +452,102 @@ const DoctorProceduresSection = () => {
                     </Button>
                   </div>
                 ) : (
-                  procedures.map((procedure, index) => (
-                    <Card key={procedure.id} className="border-border">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold">{procedure.name}</h3>
-                              <Badge variant={procedure.isBookable ? "default" : "secondary"}>
-                                {procedure.isBookable ? "Bookable" : "Not Bookable"}
-                              </Badge>
-                              <Badge variant="outline">{procedure.category}</Badge>
-                              {procedure.isSystemConsultation && (
-                                <Badge variant="secondary">From verification</Badge>
-                              )}
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-3">
-                              {procedure.description}
-                            </p>
-                            
-                            <div className="flex items-center gap-4 text-sm">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4 text-muted-foreground" />
-                                <span>{procedure.duration} min</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                                <span>${procedure.fee}</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            {/* Bookable toggle */}
-                            <Switch
-                              checked={procedure.isBookable}
-                              onCheckedChange={(checked) => updateProcedure(procedure.id, { isBookable: checked })}
-                            />
-                            
-                            {/* Edit button */}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditingProcedure(procedure);
-                                setIsEditDialogOpen(true);
-                              }}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            
-                            {/* Delete button — hidden for system consultation */}
-                            {!procedure.isSystemConsultation && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button size="sm" variant="ghost" className="text-destructive">
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Procedure</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to delete "{procedure.name}"? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => deleteProcedure(procedure.id)}
-                                      className="bg-destructive text-destructive-foreground"
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            )}
-                          </div>
+                  Object.entries(
+                    procedures.reduce<Record<string, Procedure[]>>((acc, p) => {
+                      const key = p.category || 'Uncategorized';
+                      (acc[key] = acc[key] || []).push(p);
+                      return acc;
+                    }, {})
+                  )
+                    .sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+                    .map(([cat, list]) => (
+                      <section key={cat} className="space-y-2">
+                        <div className="flex items-center gap-2 pt-2 sticky top-0 bg-background/90 backdrop-blur z-10">
+                          <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                            {cat}
+                          </h4>
+                          <span className="text-xs text-muted-foreground">· {list.length}</span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        {list.map((procedure) => (
+                          <Card key={procedure.id} className="border-border">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <h3 className="font-semibold">{procedure.name}</h3>
+                                    <Badge variant={procedure.isBookable ? "default" : "secondary"}>
+                                      {procedure.isBookable ? "Bookable" : "Not Bookable"}
+                                    </Badge>
+                                    <Badge variant="outline">{procedure.category}</Badge>
+                                    {procedure.isSystemConsultation && (
+                                      <Badge variant="secondary">From verification</Badge>
+                                    )}
+                                  </div>
+
+                                  <p className="text-sm text-muted-foreground mb-3">
+                                    {procedure.description}
+                                  </p>
+
+                                  <div className="flex items-center gap-4 text-sm">
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="w-4 h-4 text-muted-foreground" />
+                                      <span>{procedure.duration} min</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <DollarSign className="w-4 h-4 text-muted-foreground" />
+                                      <span>${procedure.fee}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <Switch
+                                    checked={procedure.isBookable}
+                                    onCheckedChange={(checked) => updateProcedure(procedure.id, { isBookable: checked })}
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setEditingProcedure(procedure);
+                                      setIsEditDialogOpen(true);
+                                    }}
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </Button>
+                                  {!procedure.isSystemConsultation && (
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button size="sm" variant="ghost" className="text-destructive">
+                                          <Trash2 className="w-4 h-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Procedure</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete "{procedure.name}"? This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => deleteProcedure(procedure.id)}
+                                            className="bg-destructive text-destructive-foreground"
+                                          >
+                                            Delete
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </section>
+                    ))
                 )}
               </div>
             </CardContent>
