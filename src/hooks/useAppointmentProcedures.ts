@@ -138,13 +138,11 @@ export function useAppointmentProcedures({
               appointment_id: appointmentId,
               doctor_id: doctorId,
               patient_id: targetPatient,
-              // procedure_id intentionally omitted: it FKs to public.dental_procedures,
-              // while input.procedureId comes from the doctor's services library.
-              // The human-readable name is preserved in procedure_name.
               procedure_name: input.name,
               tooth_numbers: teeth,
               status: 'completed',
               cost: totalCost,
+              category: input.category || null,
               notes: input.notes || null,
               performed_at: new Date().toISOString(),
             } as any)
@@ -157,12 +155,11 @@ export function useAppointmentProcedures({
             .from('appointment_procedures')
             .insert({
               appointment_id: appointmentId,
-              // procedure_id omitted: FKs to public.procedures and would fail
-              // for IDs sourced from the doctor's own services library.
               procedure_notes: input.notes || input.name,
               estimated_cost: totalCost,
               status: 'completed',
               currency: input.currency || null,
+              category: input.category || null,
               prescribed_by: authUser?.user?.id || doctorId,
               prescribed_at: new Date().toISOString(),
             } as any)
