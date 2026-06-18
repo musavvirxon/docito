@@ -10,6 +10,11 @@ import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDoctorServices } from '@/hooks/useDoctorServices';
 import { useCurrency } from '@/hooks/useCurrency';
 import { SUPPORTED_CURRENCIES } from '@/lib/currency';
+import {
+  DEFAULT_PROCEDURE_CATEGORIES,
+  mergeCategories,
+  getProcedureCategoryLabel,
+} from '@/lib/procedureCategories';
 import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
 
 interface Props {
