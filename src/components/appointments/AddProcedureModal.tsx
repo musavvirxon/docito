@@ -192,16 +192,6 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
               </SelectContent>
             </Select>
           </div>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="planned">{t('addProcedure.statuses.planned')}</SelectItem>
-                <SelectItem value="in_progress">{t('addProcedure.statuses.in_progress')}</SelectItem>
-                <SelectItem value="completed">{t('addProcedure.statuses.completed')}</SelectItem>
-                <SelectItem value="cancelled">{t('addProcedure.statuses.cancelled')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           {isDentist && (
             <div>
