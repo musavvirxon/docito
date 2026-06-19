@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDoctorPatientPDF } from "./PatientSummaryPDF";
 import { PatientPaymentsList } from "@/components/PatientPaymentsList";
+import { AdHocAddProcedureButton } from "./AdHocAddProcedureButton";
 import { toast } from "sonner";
 
 interface DoctorPatientDetailSectionProps {
@@ -178,6 +179,13 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
               )}
             </div>
             <div className="flex flex-col gap-2 items-center md:items-end">
+              {doctorId && (
+                <AdHocAddProcedureButton
+                  doctorId={doctorId}
+                  doctorPatientId={patient.id}
+                  label="Add Procedure"
+                />
+              )}
               <Button variant="outline" size="sm">
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Patient
