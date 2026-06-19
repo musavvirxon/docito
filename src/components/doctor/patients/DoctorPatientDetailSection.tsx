@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDoctorPatientPDF } from "./PatientSummaryPDF";
 import { PatientPaymentsList } from "@/components/PatientPaymentsList";
+import { AdHocAddProcedureButton } from "./AdHocAddProcedureButton";
 import { toast } from "sonner";
 
 interface DoctorPatientDetailSectionProps {
