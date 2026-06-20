@@ -27,6 +27,7 @@ const Legal = lazy(() => import("@/pages/Legal"));
 const LegalDetail = lazy(() => import("@/pages/LegalDetail"));
 const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
 const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
+const DashboardFeedback = lazy(() => import("@/pages/dashboard/Feedback"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
@@ -49,6 +50,7 @@ const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 
 const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
 const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
+const DoctorSignUp = lazy(() => import("@/pages/DoctorSignUp"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
 const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
@@ -187,6 +189,8 @@ export default function App() {
                   <Route element={<PublicLayout />}>
                     <Route index element={<PremiumHome />} />
                     <Route path="auth" element={<Auth />} />
+                    <Route path="doctor-signup" element={<DoctorSignUp />} />
+                    <Route path="doctor/signup" element={<DoctorSignUp />} />
                     <Route path="accept-invite/:token" element={<AcceptInvite />} />
                     <Route path="accept-invite" element={<AcceptInvite />} />
                     <Route path="doctor" element={<DoctorLandingPage />} />
@@ -282,6 +286,8 @@ export default function App() {
                     element={<AppointmentSession />}
                   />
                   <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="dashboard/feedback" element={<DashboardFeedback />} />
+                  <Route path="report-bug" element={<DashboardFeedback />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
                 ))}
@@ -289,6 +295,8 @@ export default function App() {
                 <Route element={<PublicLayout />}>
                   <Route index element={<PremiumHome />} />
                   <Route path="auth" element={<Auth />} />
+                  <Route path="doctor-signup" element={<DoctorSignUp />} />
+                  <Route path="doctor/signup" element={<DoctorSignUp />} />
                   <Route path="accept-invite/:token" element={<AcceptInvite />} />
                   <Route path="accept-invite" element={<AcceptInvite />} />
                   <Route path="doctor" element={<DoctorLandingPage />} />
@@ -385,6 +393,8 @@ export default function App() {
                   element={<AppointmentSession />}
                 />
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="dashboard/feedback" element={<DashboardFeedback />} />
+                <Route path="report-bug" element={<DashboardFeedback />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </RouteErrorBoundary>
