@@ -107,21 +107,26 @@ const DoctorDashboardContent = () => {
   }
 
   if (!doctorProfile) {
+    // No doctor row yet — push the user through the full doctor onboarding
+    // form so they can complete their professional profile.
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Card className="max-w-md border-0 shadow-2xl">
           <CardContent className="p-8 text-center space-y-4">
-            <div className="h-16 w-16 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto">
-              <AlertCircle className="h-8 w-8 text-destructive" />
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+              <UserPlus className="h-8 w-8 text-primary" />
             </div>
-            <h2 className="text-xl font-semibold">{t("doctor.profileSetup.settingUp")}</h2>
-            <p className="text-muted-foreground">{t("doctor.profileSetup.unableToLoad")}</p>
+            <h2 className="text-xl font-semibold">{t("doctor.profileSetup.settingUp", "Finish setting up your doctor profile")}</h2>
+            <p className="text-muted-foreground">{t("doctor.profileSetup.unableToLoad", "We need a few details (specialty, license, etc.) before your dashboard is ready.")}</p>
             <div className="space-y-2 pt-4">
-              <Button onClick={refreshAll} className="w-full">
-                {t("doctor.profileSetup.retryLoading")}
+              <Button onClick={() => navigate("/doctor-signup")} className="w-full">
+                {t("doctor.profileSetup.completeProfile", "Complete my profile")}
+              </Button>
+              <Button variant="ghost" onClick={refreshAll} className="w-full">
+                {t("doctor.profileSetup.retryLoading", "Retry loading")}
               </Button>
               <Button variant="ghost" onClick={() => navigate("/")} className="w-full">
-                {t("doctor.profileSetup.goHome")}
+                {t("doctor.profileSetup.goHome", "Go home")}
               </Button>
             </div>
           </CardContent>
