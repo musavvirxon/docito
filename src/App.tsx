@@ -27,6 +27,7 @@ const Legal = lazy(() => import("@/pages/Legal"));
 const LegalDetail = lazy(() => import("@/pages/LegalDetail"));
 const CookiePolicy = lazy(() => import("@/pages/CookiePolicy"));
 const FeedbackCenter = lazy(() => import("@/pages/FeedbackCenter"));
+const DashboardFeedback = lazy(() => import("@/pages/dashboard/Feedback"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
