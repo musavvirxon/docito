@@ -283,6 +283,8 @@ export default function App() {
                     element={<AppointmentSession />}
                   />
                   <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="dashboard/feedback" element={<DashboardFeedback />} />
+                  <Route path="report-bug" element={<DashboardFeedback />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
                 ))}
