@@ -189,6 +189,8 @@ export default function App() {
                   <Route element={<PublicLayout />}>
                     <Route index element={<PremiumHome />} />
                     <Route path="auth" element={<Auth />} />
+                    <Route path="doctor-signup" element={<DoctorSignUp />} />
+                    <Route path="doctor/signup" element={<DoctorSignUp />} />
                     <Route path="accept-invite/:token" element={<AcceptInvite />} />
                     <Route path="accept-invite" element={<AcceptInvite />} />
                     <Route path="doctor" element={<DoctorLandingPage />} />
