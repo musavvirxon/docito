@@ -50,6 +50,7 @@ const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 
 const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
 const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
+const DoctorSignUp = lazy(() => import("@/pages/DoctorSignUp"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
 const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
