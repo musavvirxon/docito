@@ -750,21 +750,54 @@ function asNumber(v: unknown): number | null {
  * Sanitize text for PDF rendering – replace characters that cannot be encoded
  * in WinAnsi (Helvetica fallback) or may cause pdf-lib to throw.
  */
+// Map of Latin-extended chars (Turkish, Polish, Czech, Romanian, etc.)
+// that WinAnsi (Helvetica fallback) cannot encode. Transliterates to ASCII
+// equivalents so the PDF renders without throwing.
+const TRANSLIT_MAP: Record<string, string> = {
+  "İ": "I", "ı": "i", "Ş": "S", "ş": "s", "Ğ": "G", "ğ": "g",
+  "Ç": "C", "ç": "c", "Ü": "U", "ü": "u", "Ö": "O", "ö": "o",
+  "Ä": "A", "ä": "a", "ß": "ss",
+  "Ą": "A", "ą": "a", "Ć": "C", "ć": "c", "Ę": "E", "ę": "e",
+  "Ł": "L", "ł": "l", "Ń": "N", "ń": "n", "Ó": "O", "ó": "o",
+  "Ś": "S", "ś": "s", "Ź": "Z", "ź": "z", "Ż": "Z", "ż": "z",
+  "Č": "C", "č": "c", "Ď": "D", "ď": "d", "Ě": "E", "ě": "e",
+  "Ň": "N", "ň": "n", "Ř": "R", "ř": "r", "Š": "S", "š": "s",
+  "Ť": "T", "ť": "t", "Ů": "U", "ů": "u", "Ý": "Y", "ý": "y",
+  "Ž": "Z", "ž": "z",
+  "Ă": "A", "ă": "a", "Â": "A", "â": "a", "Î": "I", "î": "i",
+  "Ț": "T", "ț": "t", "Ț": "T", "ţ": "t", "Ș": "S", "ș": "s",
+  "Á": "A", "á": "a", "É": "E", "é": "e", "Í": "I", "í": "i",
+  "Ú": "U", "ú": "u", "Ñ": "N", "ñ": "n",
+  "À": "A", "à": "a", "È": "E", "è": "e", "Ì": "I", "ì": "i",
+  "Ò": "O", "ò": "o", "Ù": "U", "ù": "u", "Ê": "E", "ê": "e",
+  "Ô": "O", "ô": "o", "Û": "U", "û": "u", "Ë": "E", "ë": "e",
+  "Ï": "I", "ï": "i",
+};
+
 function sanitizeForPdf(s: string): string {
-  return String(s || "")
-    .replace(/\u2192/g, "->")   // →
-    .replace(/\u2190/g, "<-")   // ←
-    .replace(/\u2194/g, "<->")  // ↔
-    .replace(/\u2013/g, "-")    // en dash
-    .replace(/\u2014/g, "--")   // em dash —
-    .replace(/\u2018/g, "'")    // left single quote
-    .replace(/\u2019/g, "'")    // right single quote
-    .replace(/\u201C/g, '"')    // left double quote
-    .replace(/\u201D/g, '"')    // right double quote
-    .replace(/\u2026/g, "...")  // ellipsis
-    .replace(/\u00B7/g, ".")    // middle dot
-    .replace(/\u2022/g, "-")    // bullet
-    .replace(/\u00A0/g, " ");   // non-breaking space
+  let out = String(s || "")
+    .replace(/\u2192/g, "->")
+    .replace(/\u2190/g, "<-")
+    .replace(/\u2194/g, "<->")
+    .replace(/\u2013/g, "-")
+    .replace(/\u2014/g, "--")
+    .replace(/\u2018/g, "'")
+    .replace(/\u2019/g, "'")
+    .replace(/\u201C/g, '"')
+    .replace(/\u201D/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/\u00B7/g, ".")
+    .replace(/\u2022/g, "-")
+    .replace(/\u00A0/g, " ");
+
+  // Transliterate Latin-extended chars not in WinAnsi
+  out = out.replace(/[\u0100-\u024F]/g, (ch) => TRANSLIT_MAP[ch] ?? "?");
+
+  // Strip any remaining non-WinAnsi codepoints (CJK, Arabic, etc.) — replace
+  // with "?" so pdf-lib's WinAnsi encoder never throws. RTL/CJK locales rely
+  // on the embedded TTF font path; this is a last-resort safety net.
+  out = out.replace(/[^\u0000-\u00FF]/g, "?");
+  return out;
 }
 
 function safeText(v: unknown, fallback = "-"): string {
