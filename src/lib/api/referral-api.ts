@@ -28,6 +28,9 @@ function sanitizeLocale(input: string): string {
   }
 }
 
+const sanitizeFileName = (name: string): string =>
+  String(name || 'referral').replace(/[^\w.\-]+/g, '_').replace(/_+/g, '_').slice(0, 120);
+
 export async function downloadReferralPdf({ referralId, locale, fileName }: DownloadReferralPdfArgs) {
   const effectiveLocale = sanitizeLocale(locale || inferDashboardLocale());
 
@@ -36,29 +39,50 @@ export async function downloadReferralPdf({ referralId, locale, fileName }: Down
     try { displayCurrency = window.localStorage.getItem('preferred_currency') || undefined; } catch { /* noop */ }
   }
 
-  const { data, error } = await supabase.functions.invoke('referral-generate-pdf', {
-    body: {
+  const session = await supabase.auth.getSession();
+  const token = session.data.session?.access_token;
+  if (!token) throw new Error('Not authenticated');
+
+  const supabaseUrl =
+    (import.meta as any).env?.VITE_SUPABASE_URL ||
+    'https://gswwpjdtgsxzcsnrxutu.supabase.co';
+  const anonKey =
+    (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdzd3dwamR0Z3N4emNzbnJ4dXR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3OTI4MTUsImV4cCI6MjA3MzM2ODgxNX0.YEjg25_0LlzWQoh-SIk-kq_mxcvUoyhODSQ__4DJfSw';
+
+  // Use direct fetch — `supabase.functions.invoke` does not reliably surface
+  // binary (application/pdf) response bodies as Blob, which is why downloads
+  // were failing with a generic "download error".
+  const res = await fetch(`${supabaseUrl}/functions/v1/referral-generate-pdf`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'apikey': anonKey,
+      'Accept': 'application/pdf',
+    },
+    body: JSON.stringify({
       referral_id: referralId,
       locale: effectiveLocale,
       display_currency: displayCurrency,
-    },
+    }),
   });
 
-  if (error) throw error;
-  if (!data) throw new Error('No PDF data received');
+  if (!res.ok) {
+    const errText = await res.text().catch(() => 'Unknown error');
+    throw new Error(`PDF generation failed (${res.status}): ${errText}`);
+  }
 
-  const blob = data instanceof Blob ? data : new Blob([JSON.stringify(data)], { type: 'application/pdf' });
+  const blob = await res.blob();
   const blobUrl = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = blobUrl;
-  a.download = `${(fileName || `referral_${referralId.slice(0, 8)}`).replace(/\s+/g, '_')}.pdf`;
+  a.download = sanitizeFileName(`${fileName || `referral_${referralId.slice(0, 8)}`}.pdf`);
   document.body.appendChild(a);
   a.click();
   a.remove();
 
-  setTimeout(() => {
-    URL.revokeObjectURL(blobUrl);
-  }, 2000);
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
 }
 
 // --- Helper functions used by ReferralCard and other components ---
