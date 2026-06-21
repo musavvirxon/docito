@@ -52,17 +52,17 @@ export const useDoctorPatients = () => {
         .from('doctors')
         .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!doctorData) {
         setPatients([]);
         return;
       }
 
-      // Collect patient user_ids from appointments (any status) + referrals where
-      // this doctor is referrer or receiver. This ensures patients added via referral
-      // or with non-confirmed appointments still show in the prescription / patients UI.
-      const [apptRes, sentRefRes, recvRefRes] = await Promise.all([
+      // Collect patient user_ids from appointments + referrals + manually-added
+      // patients (doctor_patients). Manually-added patients have no auth user
+      // and use their own row id as the identifier.
+      const [apptRes, sentRefRes, recvRefRes, managedRes] = await Promise.all([
         supabase
           .from('appointments')
           .select('patient_id')
@@ -78,6 +78,11 @@ export const useDoctorPatients = () => {
           .select('patient_id')
           .eq('receiver_entity_id', doctorData.id)
           .not('patient_id', 'is', null),
+        supabase
+          .from('doctor_patients')
+          .select('id, full_name, email, phone, date_of_birth, gender, address, profile_photo_url, created_at, updated_at, merged_into_user_id')
+          .eq('doctor_id', doctorData.id)
+          .is('merged_into_user_id', null),
       ]);
 
       const idSet = new Set<string>();
@@ -85,25 +90,21 @@ export const useDoctorPatients = () => {
       (sentRefRes.data || []).forEach((r: any) => r.patient_id && idSet.add(r.patient_id));
       (recvRefRes.data || []).forEach((r: any) => r.patient_id && idSet.add(r.patient_id));
 
-      if (idSet.size === 0) {
-        setPatients([]);
-        return;
-      }
-
       const uniquePatientIds = Array.from(idSet);
 
-      // Get patient profiles
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('user_id', uniquePatientIds);
+      let profileData: any[] = [];
+      if (uniquePatientIds.length > 0) {
+        const { data, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .in('user_id', uniquePatientIds);
+        if (profileError) throw profileError;
+        profileData = data || [];
+      }
 
-      if (profileError) throw profileError;
-
-      // Get appointment statistics for each patient
-      const patientsWithStats = await Promise.all(
-        (profileData || []).map(async (profile) => {
-          // Get appointment count and dates
+      // Linked-user patients with appointment statistics
+      const linkedPatients: Patient[] = await Promise.all(
+        profileData.map(async (profile) => {
           const { data: aptData } = await supabase
             .from('appointments')
             .select('appointment_date, status')
@@ -113,16 +114,16 @@ export const useDoctorPatients = () => {
 
           const totalVisits = aptData?.filter(apt => apt.status === 'completed').length || 0;
           const lastVisit = aptData?.[0]?.appointment_date;
-          const nextAppointment = aptData?.find(apt => 
+          const nextAppointment = aptData?.find(apt =>
             apt.status === 'confirmed' && new Date(apt.appointment_date) > new Date()
           )?.appointment_date;
 
-          const age = profile.date_of_birth 
+          const age = profile.date_of_birth
             ? new Date().getFullYear() - new Date(profile.date_of_birth).getFullYear()
             : undefined;
 
-          const status: 'active' | 'inactive' = lastVisit && 
-            new Date(lastVisit) > new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000) // 6 months
+          const status: 'active' | 'inactive' = lastVisit &&
+            new Date(lastVisit) > new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)
             ? 'active' : 'inactive';
 
           return {
@@ -141,9 +142,36 @@ export const useDoctorPatients = () => {
             lastVisit,
             nextAppointment,
             totalVisits,
-            status
+            status,
           };
         })
+      );
+
+      // Manually-added (doctor-managed) patients
+      const managedPatients: Patient[] = (managedRes.data || []).map((r: any) => {
+        const age = r.date_of_birth
+          ? new Date().getFullYear() - new Date(r.date_of_birth).getFullYear()
+          : undefined;
+        return {
+          id: r.id,
+          user_id: r.id, // use doctor_patients.id as the patient identifier
+          full_name: r.full_name,
+          email: r.email || '',
+          phone: r.phone || undefined,
+          date_of_birth: r.date_of_birth || undefined,
+          gender: r.gender || undefined,
+          avatar_url: r.profile_photo_url || undefined,
+          address: r.address || undefined,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
+          age,
+          totalVisits: 0,
+          status: 'active' as const,
+        };
+      });
+
+      const patientsWithStats = [...linkedPatients, ...managedPatients].sort((a, b) =>
+        (a.full_name || '').localeCompare(b.full_name || ''),
       );
 
       setPatients(patientsWithStats);
