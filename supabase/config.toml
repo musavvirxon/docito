@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.treatment-plan-generate-pdf]
 verify_jwt = false
+
+[functions.referral-generate-pdf]
+verify_jwt = false
