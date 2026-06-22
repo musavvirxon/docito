@@ -940,17 +940,8 @@ async function canUserAccessTreatmentPlan(context: any, plan: any): Promise<bool
 /**
  * Font embedding for multiple locales.
  */
-async function embedLocaleFont(pdf: PDFDocument, locale: Locale): Promise<PDFFont> {
-  // Use Docito embedded TTF for consistent premium look, but fall back to standard fonts if embed fails.
-  try {
-    pdf.registerFontkit(fontkit);
-    const bytes = b64ToBytes(DOCITO_FONT_TTF_BASE64);
-    if (bytes.length > 0) {
-      return await pdf.embedFont(bytes, { subset: true });
-    }
-  } catch {
-    // ignore
-  }
+async function embedLocaleFont(pdf: PDFDocument, _locale: Locale): Promise<PDFFont> {
+  // Standard WinAnsi Helvetica; sanitizeForPdf transliterates non-WinAnsi chars.
   return await pdf.embedFont(StandardFonts.Helvetica);
 }
 
