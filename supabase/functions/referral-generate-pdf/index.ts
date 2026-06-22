@@ -1536,8 +1536,8 @@ serve(async (req) => {
         "Content-Disposition": `attachment; filename="${fileName}"`,
       },
     });
-  } catch (e) {
-    console.error("referral-generate-pdf error", e);
-    return errorResponse("Failed to generate PDF", 500);
+  } catch (e: any) {
+    console.error("referral-generate-pdf FATAL", e?.stack || String(e));
+    return errorResponse(`Failed to generate PDF: ${e?.message || String(e)}`, 500);
   }
 });
