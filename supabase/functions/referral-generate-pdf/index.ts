@@ -11,19 +11,11 @@
  */
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
-import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
-// @ts-ignore - optional RTL support
-let arabicReshaper: any = null;
-// @ts-ignore - optional RTL support
-let bidi: any = null;
-try {
-  arabicReshaper = (await import("https://esm.sh/arabic-reshaper@3.0.0")).default;
-  bidi = (await import("https://esm.sh/bidi-js@1.0.3")).default;
-} catch {
-  // RTL reshaping not available - graceful fallback
-}
+import { PDFDocument, StandardFonts, rgb } from "npm:pdf-lib@1.17.1";
+import QRCode from "npm:qrcode@1.5.3";
+// RTL libs removed — transliteration via sanitizeForPdf handles fallback.
+const arabicReshaper: any = { reshape: (s: string) => s };
+const bidi: any = { fromString: (s: string) => s };
 
 import {
   secureHandler,
@@ -31,7 +23,29 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
-import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64, DOCITO_FONT_TTF_BASE64 } from "../invoice-generate-pdf/assets.ts";
+import { DOCITO_LOGO_PNG_BASE64 } from "./assets.ts";
+const DOCITO_LOGO_FULL_PNG_BASE64 = "";
+
+// --- WinAnsi sanitization (transliterate Latin-extended, strip CJK/Arabic) ---
+const TRANSLIT_MAP: Record<string, string> = {
+  "İ":"I","ı":"i","Ş":"S","ş":"s","Ğ":"G","ğ":"g","Ç":"C","ç":"c","Ö":"O","ö":"o","Ü":"U","ü":"u",
+  "Ą":"A","ą":"a","Ć":"C","ć":"c","Ę":"E","ę":"e","Ł":"L","ł":"l","Ń":"N","ń":"n","Ś":"S","ś":"s","Ź":"Z","ź":"z","Ż":"Z","ż":"z",
+  "Č":"C","č":"c","Ď":"D","ď":"d","Ě":"E","ě":"e","Ň":"N","ň":"n","Ř":"R","ř":"r","Š":"S","š":"s","Ť":"T","ť":"t","Ů":"U","ů":"u","Ž":"Z","ž":"z",
+  "Ș":"S","ș":"s","Ț":"T","ț":"t","Ă":"A","ă":"a","Â":"A","â":"a","Î":"I","î":"i",
+  "А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ё":"E","Ж":"Zh","З":"Z","И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P","Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"Kh","Ц":"Ts","Ч":"Ch","Ш":"Sh","Щ":"Shch","Ъ":"","Ы":"Y","Ь":"","Э":"E","Ю":"Yu","Я":"Ya",
+  "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t","у":"u","ф":"f","х":"kh","ц":"ts","ч":"ch","ш":"sh","щ":"shch","ъ":"","ы":"y","ь":"","э":"e","ю":"yu","я":"ya",
+};
+function sanitizeForPdf(s: string): string {
+  if (!s) return "";
+  let out = "";
+  for (const ch of String(s)) {
+    if (TRANSLIT_MAP[ch] !== undefined) { out += TRANSLIT_MAP[ch]; continue; }
+    const c = ch.charCodeAt(0);
+    if (c <= 0x7e || (c >= 0xa0 && c <= 0xff)) { out += ch; continue; }
+    out += "?";
+  }
+  return out;
+}
 
 type Locale = "en" | "ru" | "uz" | "tr" | "ar" | "ja" | "ko" | "zh" | "es" | "pt" | "de";
 
@@ -1177,16 +1191,27 @@ serve(async (req) => {
 
     // PDF setup
     const pdfDoc = await PDFDocument.create();
+
+    // Monkey-patch addPage so every page's drawText/font widthOfTextAtSize
+    // pre-sanitizes strings to WinAnsi-safe ASCII (Helvetica cannot encode
+    // Turkish/Cyrillic/etc. and pdf-lib throws otherwise).
+    const _origAddPage = pdfDoc.addPage.bind(pdfDoc);
+    (pdfDoc as any).addPage = (...args: any[]) => {
+      const p: any = _origAddPage(...args);
+      const origDraw = p.drawText.bind(p);
+      p.drawText = (text: string, opts: any) => origDraw(sanitizeForPdf(String(text ?? "")), opts);
+      return p;
+    };
+
     let primaryFont: any;
     let boldFont: any;
-    if (canUseStandardFont(locale)) {
-      primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    } else {
-      pdfDoc.registerFontkit(fontkit);
-      const fontBytes = await getPrimaryFontBytes(locale);
-      primaryFont = await pdfDoc.embedFont(fontBytes, { subset: true });
-      boldFont = primaryFont;
+    primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Wrap font width measurement to use sanitized text for accurate wrapping.
+    for (const f of [primaryFont, boldFont]) {
+      const origW = f.widthOfTextAtSize.bind(f);
+      f.widthOfTextAtSize = (t: string, sz: number) => origW(sanitizeForPdf(String(t ?? "")), sz);
     }
 
     // Optional Docito logos
@@ -1512,8 +1537,8 @@ serve(async (req) => {
         "Content-Disposition": `attachment; filename="${fileName}"`,
       },
     });
-  } catch (e) {
-    console.error("referral-generate-pdf error", e);
-    return errorResponse("Failed to generate PDF", 500);
+  } catch (e: any) {
+    console.error("referral-generate-pdf FATAL", e?.stack || String(e));
+    return errorResponse(`Failed to generate PDF: ${e?.message || String(e)}`, 500);
   }
 });

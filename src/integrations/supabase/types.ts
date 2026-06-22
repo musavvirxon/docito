@@ -6961,6 +6961,77 @@ export type Database = {
           },
         ]
       }
+      prescription_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          doctor_id: string
+          id: string
+          is_shared: boolean
+          medications: Json
+          name: string
+          notes: string | null
+          practice_id: string | null
+          refills: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          doctor_id: string
+          id?: string
+          is_shared?: boolean
+          medications?: Json
+          name: string
+          notes?: string | null
+          practice_id?: string | null
+          refills?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          doctor_id?: string
+          id?: string
+          is_shared?: boolean
+          medications?: Json
+          name?: string
+          notes?: string | null
+          practice_id?: string | null
+          refills?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescription_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescription_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescription_templates_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescription_templates_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescriptions: {
         Row: {
           appointment_id: string | null

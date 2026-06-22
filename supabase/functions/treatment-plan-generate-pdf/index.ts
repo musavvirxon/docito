@@ -2,11 +2,12 @@
 // Path: supabase/functions/treatment-plan-generate-pdf/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
-import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
-import reshaper from "https://esm.sh/arabic-persian-reshaper@1.0.0";
-import bidiFactory from "https://esm.sh/bidi-js@1.0.2";
+import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "npm:pdf-lib@1.17.1";
+import QRCode from "npm:qrcode@1.5.3";
+
+// Optional RTL helpers — stubbed out (transliteration covers RTL fallback).
+const reshaper: any = { convertArabic: (s: string) => s };
+const bidiFactory: any = () => ({ getEmbeddingLevels: () => ({ levels: [] }), getReorderedString: (s: string) => s });
 
 import {
   corsHeaders,
@@ -15,7 +16,7 @@ import {
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
 
-import { DOCITO_FONT_TTF_BASE64, DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
+import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
 
 type Locale =
   | "en"
@@ -939,17 +940,8 @@ async function canUserAccessTreatmentPlan(context: any, plan: any): Promise<bool
 /**
  * Font embedding for multiple locales.
  */
-async function embedLocaleFont(pdf: PDFDocument, locale: Locale): Promise<PDFFont> {
-  // Use Docito embedded TTF for consistent premium look, but fall back to standard fonts if embed fails.
-  try {
-    pdf.registerFontkit(fontkit);
-    const bytes = b64ToBytes(DOCITO_FONT_TTF_BASE64);
-    if (bytes.length > 0) {
-      return await pdf.embedFont(bytes, { subset: true });
-    }
-  } catch {
-    // ignore
-  }
+async function embedLocaleFont(pdf: PDFDocument, _locale: Locale): Promise<PDFFont> {
+  // Standard WinAnsi Helvetica; sanitizeForPdf transliterates non-WinAnsi chars.
   return await pdf.embedFont(StandardFonts.Helvetica);
 }
 
@@ -1927,6 +1919,7 @@ async function generateTreatmentPlanPdf(params: {
 }
 
 serve(async (req: Request) => {
+  try {
   const sec = await secureHandler(req, "treatment-plan-generate-pdf", {
     requireAuth: true,
     allowedMethods: ["POST", "OPTIONS"],
@@ -2308,4 +2301,8 @@ serve(async (req: Request) => {
       "Cache-Control": "no-store",
     },
   });
+  } catch (err: any) {
+    console.error("[treatment-plan-generate-pdf] FATAL", err?.stack || String(err));
+    return errorResponse(`PDF generation failed: ${err?.message || String(err)}`, 500);
+  }
 });

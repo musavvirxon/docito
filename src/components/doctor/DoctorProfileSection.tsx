@@ -85,7 +85,8 @@ export default function DoctorProfileSection() {
 
   const publicUrl = useMemo(() => {
     if (!publicSlug) return "";
-    return `/doctor/${publicSlug}`;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://docito.live";
+    return `${origin}/doctor/${publicSlug}`;
   }, [publicSlug]);
 
   const bookingLink = useMemo(() => {
