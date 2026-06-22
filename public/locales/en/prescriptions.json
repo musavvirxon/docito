@@ -88,6 +88,23 @@
       "drops": "Drops",
       "puffs": "Puffs",
       "patches": "Patches"
+    },
+    "templates": {
+      "label": "Use a template",
+      "placeholder": "Choose a saved template…",
+      "empty": "No templates yet",
+      "save": "Save as template",
+      "saveTitle": "Save prescription template",
+      "saveDescription": "Save the current medications, refills and notes as a reusable template you can apply to any future patient.",
+      "name": "Name",
+      "description": "Description (optional)",
+      "share": "Share with my practice",
+      "shareHint": "Other doctors in your practice can apply this template.",
+      "applied": "Template applied",
+      "delete": "Delete template",
+      "deleteConfirm": "Delete this template?",
+      "saving": "Saving…",
+      "nameRequired": "Name is required"
     }
   }
 }
