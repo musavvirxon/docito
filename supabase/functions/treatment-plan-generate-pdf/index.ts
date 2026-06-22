@@ -2,11 +2,12 @@
 // Path: supabase/functions/treatment-plan-generate-pdf/index.ts
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
-import fontkit from "https://esm.sh/@pdf-lib/fontkit@1.1.1";
-import QRCode from "https://esm.sh/qrcode@1.5.3";
-import reshaper from "https://esm.sh/arabic-persian-reshaper@1.0.0";
-import bidiFactory from "https://esm.sh/bidi-js@1.0.2";
+import { PDFDocument, PDFFont, PDFPage, rgb, StandardFonts } from "npm:pdf-lib@1.17.1";
+import QRCode from "npm:qrcode@1.5.3";
+
+// Optional RTL helpers — stubbed out (transliteration covers RTL fallback).
+const reshaper: any = { convertArabic: (s: string) => s };
+const bidiFactory: any = () => ({ getEmbeddingLevels: () => ({ levels: [] }), getReorderedString: (s: string) => s });
 
 import {
   corsHeaders,
@@ -15,7 +16,7 @@ import {
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
 
-import { DOCITO_FONT_TTF_BASE64, DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
+import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
 
 type Locale =
   | "en"
