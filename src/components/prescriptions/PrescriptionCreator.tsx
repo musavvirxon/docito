@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePrescriptions, PrescriptionItem } from '@/hooks/usePrescriptions';
+import { usePrescriptionTemplates, PrescriptionTemplate } from '@/hooks/usePrescriptionTemplates';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, Pill, Send } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Plus, Trash2, Pill, Send, BookmarkPlus, Bookmark } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { downloadPrescriptionPdf } from '@/lib/api/prescription-api';
