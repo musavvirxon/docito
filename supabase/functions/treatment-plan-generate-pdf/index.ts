@@ -1919,6 +1919,7 @@ async function generateTreatmentPlanPdf(params: {
 }
 
 serve(async (req: Request) => {
+  try {
   const sec = await secureHandler(req, "treatment-plan-generate-pdf", {
     requireAuth: true,
     allowedMethods: ["POST", "OPTIONS"],
