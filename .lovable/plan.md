@@ -1,94 +1,113 @@
-## Goals
-Fix the procedure enum crash, group procedures by category in appointment sessions, make sure doctors can add patients + procedures + payments anywhere, support per-procedure currency override, and fix invisible button text in light ("day") mode for clinic admin sub-sections and patient buttons.
+## Goal
 
-## 1. Drop `procedure_category` enum (root cause of `"kffssdf"` crash)
+Fix two PDF errors, display the full doctor profile URL, and let doctors save prescription templates and reuse them for any patient.
 
-Migration:
-- `ALTER TABLE public.procedures ALTER COLUMN category TYPE text USING category::text;`
-- Same for any other column typed as `procedure_category` (check `procedures.category` default → set default `'general'`).
-- `DROP TYPE public.procedure_category;` after columns are migrated. Triggers/RPCs that cast `'general_consultation'::procedure_category` are rewritten to plain text.
-- Keep `DEFAULT_PROCEDURE_CATEGORIES` in `src/lib/procedureCategories.ts` as the suggestion list; custom values are saved verbatim (already normalized via `normalizeProcedureCategory`).
+---
 
-Code:
-- Remove `as any` casts and the `category: 'general' | 'preventive' | …` union in `src/components/doctor/AddServiceModal.tsx` and `src/hooks/useDoctorServices.ts` — switch to `string`, render full options from `mergeCategories(DEFAULT_PROCEDURE_CATEGORIES, dbCustomValues)` so doctors see existing custom categories too.
-- Replace the hard-coded 8-value list in `AddServiceModal` with the same `mergeCategories` source already used by `EnhancedProcedureForm`/`AddProcedureModal`, plus a "Custom…" option that writes free text.
+## 1. Treatment plan & referral PDF errors
 
-## 2. Add patient to any procedure (registered or manual)
+**Diagnosis**
+- Both edge functions (`treatment-plan-generate-pdf` 2.3k LOC, `referral-generate-pdf` 1.5k LOC) import `pdf-lib`, `@pdf-lib/fontkit`, `qrcode`, `arabic-reshaper`, `bidi-js` from `esm.sh`, then `embedFont(...{subset:true})` against a base64 TTF re-exported from another function's `assets.ts`.
+- Logs are empty — the function is crashing during boot or before `console.log`, which matches an `esm.sh` resolution / fontkit subset failure (the same class of issue called out in the edge-function-deploy-errors and lovable-stack-overflow context).
+- Treatment plan still returns "Failed to download PDF" (generic) and referral now returns `500 {"error":"Failed to generate PDF"}` — both consistent with the outer `try/catch` swallowing the real error.
 
-Currently `AddProcedureModal` (appointment-session variant) assumes an appointment-bound patient.
-- Add an optional `patientId | manualPatient` selector in `AddProcedureModal` (used outside of session) so a doctor can pick a registered patient via `PatientPicker`, or expand `CreatePatientModal` inline for a manual entry (writes to `facility_patients` / `doctor_patients`).
-- `useAppointmentProcedures.addProcedure` already accepts `appointment_id`; extend it to also accept `patient_id` so out-of-session procedures still attach to a patient.
-- Tooth-based vs general: keep current `isDentist` switch; teeth selector is optional regardless.
+**Fix**
+1. In both functions:
+   - Replace floating `esm.sh` specifiers with `npm:` specifiers (`npm:pdf-lib@1.17.1`, `npm:@pdf-lib/fontkit@1.1.1`, `npm:qrcode@1.5.3`). Drop optional `arabic-reshaper` / `bidi-js` dynamic imports — Arabic falls back to transliteration through the existing `sanitizeForPdf` path.
+   - Stop embedding the custom TTF. Use `StandardFonts.Helvetica` / `HelveticaBold` only and rely on `sanitizeForPdf` (already present in treatment-plan; port the same helper into referral) to transliterate Turkish/Polish/Cyrillic etc. and replace remaining non-WinAnsi codepoints with `?`. This removes the fontkit subset crash and shrinks cold-start.
+   - Wrap the handler body so the catch logs `err?.stack ?? String(err)` to `console.error` and returns the message in the JSON body (only the message, not the stack) so future failures are visible in logs.
+2. Delete any `supabase/functions/*/deno.lock` for these two functions if present (per edge-function-deploy-errors guidance).
+3. Keep `verify_jwt = false` entries already in `supabase/config.toml`.
 
-## 3. Procedure history grouped by category in appointment session
+This is a targeted reliability fix — no change to the request/response contract, so the existing client `downloadTreatmentPlanPdf` / `downloadReferralPdf` continue to work.
 
-In `AppointmentProceduresPanel`:
-- Group current appointment's procedures by `category` (use `getProcedureCategoryLabel`).
-- Render a sticky top row of category chips (count badge each); clicking a chip scrolls/filters to that section.
-- Each section: list of procedure rows with status, tooth refs, cost+currency, edit/delete.
-- Empty categories hidden. Order: most-used categories first, then alphabetic.
+---
 
-## 4. Payments — doctors can record everywhere
+## 2. Profile section — full profile URL
 
-Reverse earlier removal. Audit and re-enable:
-- `AppointmentFinancePanel`: keep the "Record payment" dialog; ensure doctor role is allowed in the gate.
-- Add a "Record payment" action to:
-  - Doctor dashboard finance section (already has `IncomeEntriesPanel`; add explicit "Record payment" button writing to `payments` with `recorded_by = doctor user`).
-  - Appointment quick-preview popup (`AppointmentQuickPreview.tsx`) — small "Add payment" button opening the same dialog.
-- RLS: confirm `payments` INSERT policy permits doctors who own the appointment (or are the practice's doctor). If not, add a policy `doctors can insert payments for their appointments` keyed via `has_role`/doctor-of-appointment helper.
-- Payment dialog: currency field defaults to entity currency, but doctor can switch (drives storage in that currency; `useEntityMoney` converts for display).
+In `src/components/doctor/DoctorProfileSection.tsx` `publicUrl` is `/doctor/${slug}` (path only). Change it to an absolute URL using the canonical origin:
 
-## 5. Per-procedure currency override
-
-- Add `currency text` column to `appointment_procedures` and `procedures` (default null → falls back to doctor/practice base currency).
-- `AddProcedureModal` + `EnhancedProcedureForm` + `AppointmentProceduresPanel.AddProcedureModal`: add a currency `<Select>` next to the cost input, sourced from `supported_currencies`. Default = doctor/practice currency.
-- Display: use `useEntityMoney(procedure.currency ?? entity.currency)` so the viewer's selected currency is what they see while DB keeps the original.
-- Finance trigger (`trg_session_to_finance_entry`): write `finance_entries.currency` = procedure.currency override when present.
-
-## 6. Light-mode button text visibility (clinic admin sub-sections + patient buttons)
-
-Cause: buttons use hard-coded `text-white` / `text-primary-foreground` on `bg-background` or `variant="outline"` in light theme — invisible.
-- Sweep `src/components/dashboard/admin/**` and `src/components/doctor/patients/**` for `text-white`, `text-black`, `bg-white text-white`, replace with semantic `text-foreground` / appropriate variant.
-- Verify by running the preview in light mode at `/clinic-admin` sub-sections and the patient list.
-
-## Technical details
-
-```text
-procedure_category (enum)  ─► text column + suggestion list
-                                │
-                                ▼
-AddServiceModal / AddProcedureModal / EnhancedProcedureForm
-  ├─ category: string (free text + suggestions)
-  └─ currency: string (override, falls back to entity base)
-
-appointment_procedures
-  + currency text NULL
-  + patient_id uuid NULL  (already? if not, add)
-
-Session UI:
-  Category Chips [General • Restorative • Surgical …]
-       │
-       ▼
-  Sections grouped by category → procedure rows
-
-Payments:
-  Doctor → Record Payment available in:
-    Session Finance Panel · Doctor Dashboard · Appointment Quick Preview
-  RLS: payments.insert allowed for doctor-of-appointment
+```ts
+const ORIGIN = typeof window !== "undefined"
+  ? window.location.origin
+  : "https://docito.live";
+const publicUrl = publicSlug ? `${ORIGIN}/doctor/${publicSlug}` : "";
 ```
 
-## Files to touch
-- `supabase/migrations/<new>.sql` — enum→text, currency column, RLS for payments.insert, dropping enum type.
-- `src/lib/procedureCategories.ts` — already supports free text; no change needed.
-- `src/components/doctor/AddServiceModal.tsx` — free-text categories, currency select.
-- `src/components/procedure/AddProcedureModal.tsx`, `EnhancedProcedureForm.tsx` — currency select, patient picker (out-of-session).
-- `src/components/appointments/AddProcedureModal.tsx` — currency select.
-- `src/components/appointments/AppointmentProceduresPanel.tsx` — category grouping + chip nav.
-- `src/components/appointments/AppointmentFinancePanel.tsx` — re-enable record payment for doctors, currency override.
-- `src/components/doctor/calendar/AppointmentQuickPreview.tsx` — add "Add payment" button.
-- `src/hooks/useDoctorServices.ts`, `src/hooks/useAppointmentProcedures.ts` — types loosened to `string`, currency field.
-- `src/components/dashboard/admin/**`, `src/components/doctor/patients/**` — replace hard-coded text colors with semantic tokens.
+This updates the three render sites (lines 426, 451, 464) and the existing copy-link affordance so users see and copy a full `https://…/doctor/<slug>` URL. Booking link already uses `getBookingUrl` (absolute) — no change.
+
+---
+
+## 3. Reusable prescription templates
+
+**Schema** (migration)
+
+```sql
+CREATE TABLE public.prescription_templates (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  doctor_id uuid NOT NULL REFERENCES public.doctors(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  description text,
+  notes text,
+  refills integer NOT NULL DEFAULT 0,
+  medications jsonb NOT NULL DEFAULT '[]'::jsonb,  -- array of {name, code, dosage, frequency, quantity, unit, instructions, allow_substitutions}
+  is_shared boolean NOT NULL DEFAULT false,         -- shareable to other doctors in same practice
+  practice_id uuid REFERENCES public.practices(id) ON DELETE SET NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.prescription_templates TO authenticated;
+GRANT ALL ON public.prescription_templates TO service_role;
+
+ALTER TABLE public.prescription_templates ENABLE ROW LEVEL SECURITY;
+
+-- Owner full access
+CREATE POLICY "doctor_owns_template" ON public.prescription_templates
+  FOR ALL TO authenticated
+  USING (doctor_id IN (SELECT id FROM public.doctors WHERE user_id = auth.uid()))
+  WITH CHECK (doctor_id IN (SELECT id FROM public.doctors WHERE user_id = auth.uid()));
+
+-- Shared templates readable by other doctors in same practice
+CREATE POLICY "shared_template_practice_read" ON public.prescription_templates
+  FOR SELECT TO authenticated
+  USING (
+    is_shared
+    AND practice_id IS NOT NULL
+    AND practice_id IN (SELECT practice_id FROM public.doctors WHERE user_id = auth.uid())
+  );
+```
+
+(The "given to other patients" requirement is naturally satisfied: templates are not bound to a patient — the doctor picks a template and applies it to whichever patient they are prescribing for. The `is_shared` flag also enables sharing across colleagues in the same practice.)
+
+**UI changes in `src/components/prescriptions/PrescriptionCreator.tsx`**
+- Add a "Templates" row at the top of the creator with two controls:
+  - `Select` listing the doctor's templates (own + shared in practice) → fills medications/refills/notes when chosen.
+  - `Save as template…` button → opens a small dialog with `name`, optional `description`, and an `is_shared` toggle, then inserts a row from the current creator state.
+- Add a delete (trash) icon next to each template in the select dropdown's expanded list view (owner-only).
+
+**Hook** `src/hooks/usePrescriptionTemplates.ts`
+- `listTemplates(doctorId, practiceId)` — `select * where doctor_id = me or (is_shared and practice_id = mine)`.
+- `saveTemplate(input)` — insert.
+- `deleteTemplate(id)` — delete (RLS enforces ownership).
+- `applyTemplate(template)` — pure helper returning the creator's state shape.
+
+**i18n**
+Add `creator.templates.*` keys (label, save, saved, apply, shared, delete, deleteConfirm) to `public/locales/en/prescriptions.json`. Other locales fall back to English via i18next.
+
+---
+
+## Files touched
+
+- `supabase/functions/treatment-plan-generate-pdf/index.ts` — switch to `npm:` imports, drop custom font, add error logging.
+- `supabase/functions/referral-generate-pdf/index.ts` — same as above + port `sanitizeForPdf`.
+- `src/components/doctor/DoctorProfileSection.tsx` — absolute `publicUrl`.
+- New migration for `prescription_templates`.
+- New `src/hooks/usePrescriptionTemplates.ts`.
+- `src/components/prescriptions/PrescriptionCreator.tsx` — templates UI.
+- `public/locales/en/prescriptions.json` — new keys.
 
 ## Out of scope
-- Payment provider integration (Stripe/Paddle) — payments here are manually recorded entries, not online checkout.
-- Multi-currency invoicing rewrite (kept as previous turn).
+
+- No changes to patient lookup, signup, feedback routing, or other previously-fixed areas.
+- No new shared-across-the-platform template marketplace — sharing is limited to the doctor's own practice via `is_shared`.
