@@ -1190,10 +1190,28 @@ serve(async (req) => {
 
     // PDF setup
     const pdfDoc = await PDFDocument.create();
+
+    // Monkey-patch addPage so every page's drawText/font widthOfTextAtSize
+    // pre-sanitizes strings to WinAnsi-safe ASCII (Helvetica cannot encode
+    // Turkish/Cyrillic/etc. and pdf-lib throws otherwise).
+    const _origAddPage = pdfDoc.addPage.bind(pdfDoc);
+    (pdfDoc as any).addPage = (...args: any[]) => {
+      const p: any = _origAddPage(...args);
+      const origDraw = p.drawText.bind(p);
+      p.drawText = (text: string, opts: any) => origDraw(sanitizeForPdf(String(text ?? "")), opts);
+      return p;
+    };
+
     let primaryFont: any;
     let boldFont: any;
     primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
     boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Wrap font width measurement to use sanitized text for accurate wrapping.
+    for (const f of [primaryFont, boldFont]) {
+      const origW = f.widthOfTextAtSize.bind(f);
+      f.widthOfTextAtSize = (t: string, sz: number) => origW(sanitizeForPdf(String(t ?? "")), sz);
+    }
 
     // Optional Docito logos
     let logo: any = null;
