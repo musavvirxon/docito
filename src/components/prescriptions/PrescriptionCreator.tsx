@@ -215,6 +215,134 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Templates */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-end p-3 rounded-lg border bg-muted/30">
+          <div className="flex-1 space-y-1">
+            <Label className="text-xs">
+              {t('creator.templates.label', { defaultValue: 'Use a template' })}
+            </Label>
+            <div className="flex gap-2">
+              <Select
+                value={selectedTemplateId}
+                onValueChange={(v) => {
+                  setSelectedTemplateId(v);
+                  const tpl = templates.find((x) => x.id === v);
+                  if (tpl) applyTemplate(tpl);
+                }}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue
+                    placeholder={t('creator.templates.placeholder', {
+                      defaultValue: templates.length ? 'Choose a saved template…' : 'No saved templates',
+                    })}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.length === 0 && (
+                    <div className="px-3 py-2 text-xs text-muted-foreground">
+                      {t('creator.templates.empty', { defaultValue: 'No templates yet' })}
+                    </div>
+                  )}
+                  {templates.map((tpl) => (
+                    <SelectItem key={tpl.id} value={tpl.id}>
+                      {tpl.name}
+                      {tpl.is_shared ? ' · shared' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedTemplateId && (() => {
+                const tpl = templates.find((x) => x.id === selectedTemplateId);
+                if (!tpl || tpl.doctor_id !== doctorId) return null;
+                return (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    title={t('creator.templates.delete', { defaultValue: 'Delete template' })}
+                    onClick={async () => {
+                      const ok = window.confirm(
+                        t('creator.templates.deleteConfirm', { defaultValue: 'Delete this template?' }),
+                      );
+                      if (!ok) return;
+                      const done = await deleteTemplate(selectedTemplateId);
+                      if (done) setSelectedTemplateId('');
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                );
+              })()}
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSaveOpen(true)}
+          >
+            <BookmarkPlus className="h-4 w-4 mr-2" />
+            {t('creator.templates.save', { defaultValue: 'Save as template' })}
+          </Button>
+        </div>
+
+        <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                <Bookmark className="h-4 w-4 inline mr-2" />
+                {t('creator.templates.saveTitle', { defaultValue: 'Save prescription template' })}
+              </DialogTitle>
+              <DialogDescription>
+                {t('creator.templates.saveDescription', {
+                  defaultValue:
+                    'Save the current medications, refills and notes as a reusable template you can apply to any future patient.',
+                })}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label>{t('creator.templates.name', { defaultValue: 'Name' })}</Label>
+                <Input
+                  value={tplName}
+                  onChange={(e) => setTplName(e.target.value)}
+                  placeholder="e.g. Strep throat — adult"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('creator.templates.description', { defaultValue: 'Description (optional)' })}</Label>
+                <Textarea
+                  value={tplDescription}
+                  onChange={(e) => setTplDescription(e.target.value)}
+                  rows={2}
+                />
+              </div>
+              <div className="flex items-center justify-between rounded-md border p-3">
+                <div>
+                  <Label className="text-sm">
+                    {t('creator.templates.share', { defaultValue: 'Share with my practice' })}
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {t('creator.templates.shareHint', {
+                      defaultValue: 'Other doctors in your practice can apply this template.',
+                    })}
+                  </p>
+                </div>
+                <Switch checked={tplShared} onCheckedChange={setTplShared} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setSaveOpen(false)} disabled={savingTpl}>
+                {t('creator.cancel', { defaultValue: 'Cancel' })}
+              </Button>
+              <Button onClick={handleSaveTemplate} disabled={savingTpl}>
+                {savingTpl
+                  ? t('creator.templates.saving', { defaultValue: 'Saving…' })
+                  : t('creator.templates.save', { defaultValue: 'Save template' })}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Medication Items */}
         <div className="space-y-4">
           {items.map((item, index) => (
