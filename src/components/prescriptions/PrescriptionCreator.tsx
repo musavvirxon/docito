@@ -40,8 +40,9 @@ const UNIT_KEYS = ['tablets','capsules','ml','mg','drops','puffs','patches'] as 
 export default function PrescriptionCreator({ patientId, doctorId, appointmentId, onSuccess }: Props) {
   const { t } = useTranslation('prescriptions');
   const { createPrescription } = usePrescriptions();
+  const { templates, saveTemplate, deleteTemplate } = usePrescriptionTemplates(doctorId);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [items, setItems] = useState<Partial<PrescriptionItem>[]>([{
     medication_name: '',
     dosage: '',
@@ -51,9 +52,67 @@ export default function PrescriptionCreator({ patientId, doctorId, appointmentId
     instructions: '',
     substitutions_allowed: true,
   }]);
-  
+
   const [refills, setRefills] = useState(0);
   const [notes, setNotes] = useState('');
+
+  // Template UI state
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [tplName, setTplName] = useState('');
+  const [tplDescription, setTplDescription] = useState('');
+  const [tplShared, setTplShared] = useState(false);
+  const [savingTpl, setSavingTpl] = useState(false);
+
+  const applyTemplate = (tpl: PrescriptionTemplate) => {
+    if (!tpl) return;
+    const meds = (tpl.medications || []).map((m) => ({
+      medication_name: m.medication_name || '',
+      medication_code: m.medication_code || '',
+      dosage: m.dosage || '',
+      frequency: m.frequency || 'once_daily',
+      quantity: typeof m.quantity === 'number' ? m.quantity : 30,
+      unit: m.unit || 'tablets',
+      instructions: m.instructions || '',
+      substitutions_allowed: m.substitutions_allowed ?? true,
+    }));
+    setItems(meds.length ? meds : items);
+    setRefills(tpl.refills ?? 0);
+    setNotes(tpl.notes ?? '');
+    toast.success(t('creator.templates.applied', { defaultValue: 'Template applied' }));
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!tplName.trim()) {
+      toast.error(t('creator.templates.nameRequired', { defaultValue: 'Name is required' }));
+      return;
+    }
+    setSavingTpl(true);
+    const created = await saveTemplate({
+      name: tplName,
+      description: tplDescription,
+      notes,
+      refills,
+      is_shared: tplShared,
+      medications: items.map((i) => ({
+        medication_name: i.medication_name || '',
+        medication_code: (i as any).medication_code || '',
+        dosage: i.dosage || '',
+        frequency: i.frequency || 'once_daily',
+        quantity: typeof i.quantity === 'number' ? i.quantity : Number(i.quantity) || 0,
+        unit: i.unit || 'tablets',
+        instructions: i.instructions || '',
+        substitutions_allowed: i.substitutions_allowed ?? true,
+      })),
+    });
+    setSavingTpl(false);
+    if (created) {
+      setSaveOpen(false);
+      setTplName('');
+      setTplDescription('');
+      setTplShared(false);
+    }
+  };
 
   const addItem = () => {
     setItems([...items, {
