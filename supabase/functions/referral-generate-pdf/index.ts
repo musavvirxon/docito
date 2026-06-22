@@ -1192,15 +1192,8 @@ serve(async (req) => {
     const pdfDoc = await PDFDocument.create();
     let primaryFont: any;
     let boldFont: any;
-    if (canUseStandardFont(locale)) {
-      primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    } else {
-      pdfDoc.registerFontkit(fontkit);
-      const fontBytes = await getPrimaryFontBytes(locale);
-      primaryFont = await pdfDoc.embedFont(fontBytes, { subset: true });
-      boldFont = primaryFont;
-    }
+    primaryFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     // Optional Docito logos
     let logo: any = null;
