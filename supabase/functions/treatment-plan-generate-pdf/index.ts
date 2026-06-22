@@ -2301,4 +2301,8 @@ serve(async (req: Request) => {
       "Cache-Control": "no-store",
     },
   });
+  } catch (err: any) {
+    console.error("[treatment-plan-generate-pdf] FATAL", err?.stack || String(err));
+    return errorResponse(`PDF generation failed: ${err?.message || String(err)}`, 500);
+  }
 });
