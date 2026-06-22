@@ -23,7 +23,8 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
-import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "../invoice-generate-pdf/assets.ts";
+import { DOCITO_LOGO_PNG_BASE64 } from "./assets.ts";
+const DOCITO_LOGO_FULL_PNG_BASE64 = "";
 
 // --- WinAnsi sanitization (transliterate Latin-extended, strip CJK/Arabic) ---
 const TRANSLIT_MAP: Record<string, string> = {
