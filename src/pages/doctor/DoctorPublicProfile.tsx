@@ -111,16 +111,25 @@ export default function DoctorPublicProfile() {
         if (isUuid) lookups.push({ column: "id", value: normalized, op: "eq" });
 
         let doc: any = null;
-        for (const { column, value, op } of lookups) {
-          const query = (supabase as any).from("doctor_public_profile_view").select("*");
-          const { data, error } = await (op === "ilike" ? query.ilike(column, value) : query.eq(column, value))
-            .limit(1)
-            .maybeSingle();
-          if (error) throw error;
-          if (data) {
-            doc = data;
-            break;
+        const sources = ["doctor_public_profile_view", "doctor_profiles_view"];
+        for (const source of sources) {
+          for (const { column, value, op } of lookups) {
+            const query = (supabase as any).from(source).select("*");
+            const { data, error } = await (op === "ilike" ? query.ilike(column, value) : query.eq(column, value))
+              .limit(1)
+              .maybeSingle();
+            if (error) {
+              // Don't fail the page if the fallback view is RLS-restricted —
+              // just continue to the next lookup.
+              console.warn(`[DoctorPublicProfile] ${source}.${column} lookup error`, error);
+              continue;
+            }
+            if (data) {
+              doc = data;
+              break;
+            }
           }
+          if (doc) break;
         }
 
         if (!doc) {

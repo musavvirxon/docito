@@ -136,6 +136,23 @@ export default function DoctorPrescriptionsSection() {
 
   // Mobile sheet
   const [sheetOpen, setSheetOpen] = useState(false);
+  // Desktop (≥ lg) renders the creator/detail inline in the right column, so
+  // we must NOT also open the Sheet — otherwise the Radix overlay covers the
+  // page and looks like an empty popup window.
+  const [isDesktop, setIsDesktop] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mql.addEventListener("change", onChange);
+    setIsDesktop(mql.matches);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+  const openRightPanel = () => {
+    if (!isDesktop) setSheetOpen(true);
+  };
 
   // Stats
   const stats = useMemo(() => {
@@ -255,13 +272,13 @@ export default function DoctorPrescriptionsSection() {
     setPrefilledItems(opts?.items ?? []);
     setSelectedRxId(null);
     setRightPanel("creator");
-    setSheetOpen(true);
+    openRightPanel();
   };
 
   const openDetail = (rxId: string) => {
     setSelectedRxId(rxId);
     setRightPanel("detail");
-    setSheetOpen(true);
+    openRightPanel();
   };
 
   const handleRePrescribe = (rx: Prescription) => {
