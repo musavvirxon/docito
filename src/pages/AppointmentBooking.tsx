@@ -667,9 +667,8 @@ export default function AppointmentBooking() {
               </div>
             )}
 
-                )}
-              </div>
-            )}
+
+
 
             <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md p-3">
               <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
