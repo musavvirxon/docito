@@ -574,10 +574,10 @@ export default function AppointmentBooking() {
         </Card>
 
 
-        {/* Requested procedure (available for all doctors) */}
+        {/* Available procedures (optional) */}
         <Card>
           <CardHeader>
-            <CardTitle>Request a procedure (optional)</CardTitle>
+            <CardTitle>Available procedures (optional)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loadingProcedures ? (
@@ -588,56 +588,85 @@ export default function AppointmentBooking() {
             ) : procedures.length === 0 ? (
               <div className="text-sm text-muted-foreground">This doctor has no bookable procedures configured yet.</div>
             ) : (
-              <div className="space-y-2">
-                <Select
-                  value={selectedProcedureId}
-                  onValueChange={(v) => {
-                    setSelectedProcedureId(v);
-                    if (v === "none") return;
-                    const p = procedures.find((x) => x.id === v);
-                    if (!p?.duration_minutes) return;
-                    if (DURATION_OPTIONS_MINUTES.includes(p.duration_minutes) && p.duration_minutes !== durationMinutes) {
-                      setDurationMinutes(p.duration_minutes);
-                      setSelectedSlotStart("");
-                    }
-                  }}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {/* "No specific procedure" card */}
+                <button
+                  type="button"
+                  onClick={() => setSelectedProcedureId("none")}
+                  className={`text-left rounded-lg border p-3 transition hover:bg-muted/40 ${
+                    selectedProcedureId === "none" ? "border-primary ring-2 ring-primary/30 bg-primary/5" : ""
+                  }`}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a procedure" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No specific procedure</SelectItem>
-                    {procedures.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {selectedProcedure && (
-                  <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3">
-                    <span className="inline-flex items-center gap-1">
-                      <Stethoscope className="h-3.5 w-3.5" />
-                      {selectedProcedure.category || "Procedure"}
-                    </span>
-
-                    <span className="inline-flex items-center gap-1">
-                      <DollarSign className="h-3.5 w-3.5" />
-                      Estimated cost (charged after appointment):{" "}
-                      {typeof (selectedProcedure.price ?? selectedProcedure.default_cost) === "number"
-                        ? `$${selectedProcedure.price ?? selectedProcedure.default_cost}`
-                        : "—"}
-                    </span>
-
-                    {typeof selectedProcedure.duration_minutes === "number" && (
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        Suggested: {selectedProcedure.duration_minutes} min
-                        {DURATION_OPTIONS_MINUTES.includes(selectedProcedure.duration_minutes) ? " (auto-applied)" : ""}
-                      </span>
-                    )}
+                  <div className="font-medium text-sm">No specific procedure</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    General consultation — discuss during the visit
                   </div>
+                </button>
+
+                {procedures.map((p) => {
+                  const selected = selectedProcedureId === p.id;
+                  const cost = p.price ?? p.default_cost;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedProcedureId(p.id);
+                        if (
+                          p.duration_minutes &&
+                          DURATION_OPTIONS_MINUTES.includes(p.duration_minutes) &&
+                          p.duration_minutes !== durationMinutes
+                        ) {
+                          setDurationMinutes(p.duration_minutes);
+                          setSelectedSlotStart("");
+                        }
+                      }}
+                      className={`text-left rounded-lg border p-3 transition hover:bg-muted/40 ${
+                        selected ? "border-primary ring-2 ring-primary/30 bg-primary/5" : ""
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="font-medium text-sm leading-snug">{p.name}</div>
+                        {p.category && (
+                          <Badge variant="outline" className="capitalize shrink-0 text-[10px]">
+                            {String(p.category).replace(/_/g, " ")}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between mt-2 text-xs">
+                        <span className="inline-flex items-center gap-1 font-semibold tabular-nums">
+                          <DollarSign className="h-3.5 w-3.5" />
+                          {typeof cost === "number" ? `$${cost}` : "—"}
+                        </span>
+                        {typeof p.duration_minutes === "number" && (
+                          <span className="inline-flex items-center gap-1 text-muted-foreground">
+                            <Clock className="h-3.5 w-3.5" />
+                            {p.duration_minutes} min
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {selectedProcedure && (
+              <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3 pt-1">
+                <span className="inline-flex items-center gap-1">
+                  <Stethoscope className="h-3.5 w-3.5" />
+                  Selected: <span className="font-medium text-foreground">{selectedProcedure.name}</span>
+                </span>
+                {typeof selectedProcedure.duration_minutes === "number" &&
+                  DURATION_OPTIONS_MINUTES.includes(selectedProcedure.duration_minutes) && (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      Duration auto-applied
+                    </span>
+                  )}
+              </div>
+            )}
+
                 )}
               </div>
             )}
