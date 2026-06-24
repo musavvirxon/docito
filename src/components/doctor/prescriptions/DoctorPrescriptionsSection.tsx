@@ -278,7 +278,7 @@ export default function DoctorPrescriptionsSection() {
   const openDetail = (rxId: string) => {
     setSelectedRxId(rxId);
     setRightPanel("detail");
-    setSheetOpen(true);
+    openRightPanel();
   };
 
   const handleRePrescribe = (rx: Prescription) => {
