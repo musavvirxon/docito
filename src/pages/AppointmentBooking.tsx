@@ -553,11 +553,7 @@ export default function AppointmentBooking() {
                 </div>
               </label>
 
-              <label
-                className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/40 ${
-                  !doctor.practice_id ? "opacity-50 pointer-events-none" : ""
-                }`}
-              >
+              <label className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/40">
                 <RadioGroupItem value="in-person" id="in-person" />
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <div>
@@ -569,11 +565,14 @@ export default function AppointmentBooking() {
               </label>
             </RadioGroup>
 
-            {!doctor.practice_id && (
-              <div className="text-sm text-muted-foreground">In-person appointments require a verified practice location.</div>
+            {!doctor.practice_id && appointmentType === "in-person" && (
+              <div className="text-sm text-amber-600 dark:text-amber-400">
+                In-person appointments require a verified practice location. This doctor hasn't confirmed one yet — please choose Video or Messaging.
+              </div>
             )}
           </CardContent>
         </Card>
+
 
         {/* Requested procedure (available for all doctors) */}
         <Card>
