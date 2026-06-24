@@ -174,6 +174,21 @@ export default function AppointmentBooking() {
 
         const doctorRow = d as any;
 
+        // Fallback to public view if name is missing
+        let resolvedFullName: string | null = doctorRow.full_name ?? null;
+        let resolvedAvatar: string | null = doctorRow.avatar_url ?? null;
+        if (!resolvedFullName) {
+          const { data: pub } = await (supabase as any)
+            .from("doctor_public_profile_view")
+            .select("full_name, avatar_url")
+            .eq("id", doctorId)
+            .maybeSingle();
+          if (pub) {
+            resolvedFullName = (pub as any).full_name ?? resolvedFullName;
+            resolvedAvatar = resolvedAvatar ?? (pub as any).avatar_url ?? null;
+          }
+        }
+
         let practice_name: string | null = null;
         let practice_address: string | null = null;
 
@@ -195,8 +210,8 @@ export default function AppointmentBooking() {
           specialty: String(doctorRow.specialty ?? ""),
           consultation_fee: doctorRow.consultation_fee == null ? null : Number(doctorRow.consultation_fee),
           practice_id: doctorRow.practice_id ? String(doctorRow.practice_id) : null,
-          profile_full_name: doctorRow.full_name ?? null,
-          profile_avatar_url: doctorRow.avatar_url ?? null,
+          profile_full_name: resolvedFullName,
+          profile_avatar_url: resolvedAvatar,
           practice_name,
           practice_address,
         });
