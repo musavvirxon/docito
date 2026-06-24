@@ -214,19 +214,31 @@ export default function DoctorPublicProfile() {
     verified: doctor.practice_verified,
   } : null;
 
-  // Handlers for hero section
-  const handleBookClick = () => navigate(`/book/${doctor.id}`);
-  const handleMessageClick = () => navigate(`/messages?doctor=${doctor.id}`);
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: doctor.full_name, url: window.location.href });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({ title: "Link copied to clipboard" });
+  // Auth gate — actions require sign-in
+  const requireAuth = async (cb: () => void) => {
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) {
+      toast({ title: "Sign in required", description: "Please sign in to continue." });
+      const returnTo = window.location.pathname + window.location.search;
+      navigate(`/auth?returnTo=${encodeURIComponent(returnTo)}`);
+      return;
     }
+    cb();
   };
-  // isSaved state moved to top with other hooks
-  const handleToggleSave = () => setIsSaved(!isSaved);
+
+  const handleBookClick = () => requireAuth(() => navigate(`/book/${doctor.id}`));
+  const handleMessageClick = () => requireAuth(() => navigate(`/messages?doctor=${doctor.id}`));
+  const handleShare = () =>
+    requireAuth(() => {
+      if (navigator.share) {
+        navigator.share({ title: doctor.full_name, url: window.location.href });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        toast({ title: "Link copied to clipboard" });
+      }
+    });
+  const handleToggleSave = () => requireAuth(() => setIsSaved(!isSaved));
+
 
   // Map doctor to the format PremiumHeroSection expects
   const doctorProfileData = {
