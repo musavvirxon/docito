@@ -66,7 +66,7 @@ export default function DoctorPublicProfile() {
   const [loading, setLoading] = useState(true);
   const [doctor, setDoctor] = useState<PublicDoctorProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  
   const [isSaved, setIsSaved] = useState(false);
 
   const canonicalUrl = useMemo(() => {
