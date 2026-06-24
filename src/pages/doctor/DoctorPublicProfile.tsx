@@ -45,16 +45,8 @@ interface PublicDoctorProfile {
   practice_verified: boolean | null;
 }
 
-interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  patient_profile?: {
-    full_name: string;
-    avatar_url: string | null;
-  } | null;
-}
+
+
 
 interface Procedure {
   id: string;
@@ -74,7 +66,7 @@ export default function DoctorPublicProfile() {
   const [loading, setLoading] = useState(true);
   const [doctor, setDoctor] = useState<PublicDoctorProfile | null>(null);
   const [procedures, setProcedures] = useState<Procedure[]>([]);
-  const [reviews, setReviews] = useState<Review[]>([]);
+  
   const [isSaved, setIsSaved] = useState(false);
 
   const canonicalUrl = useMemo(() => {
@@ -161,24 +153,8 @@ export default function DoctorPublicProfile() {
           })) as Procedure[],
         );
 
-        // Reviews
-        const { data: rev, error: revErr } = await (supabase as any)
-          .from("reviews")
-          .select(
-            `
-            id,
-            rating,
-            comment,
-            created_at,
-            patient_profile:patient_id(full_name, avatar_url)
-          `,
-          )
-          .eq("doctor_id", doc.id)
-          .order("created_at", { ascending: false })
-          .limit(50);
+        // Reviews are loaded by ReviewsSection via useAppointmentReviews.
 
-        if (revErr) throw revErr;
-        setReviews((rev || []) as Review[]);
       } catch (e: any) {
         console.error("Error loading doctor public profile:", e);
         toast({
@@ -238,19 +214,31 @@ export default function DoctorPublicProfile() {
     verified: doctor.practice_verified,
   } : null;
 
-  // Handlers for hero section
-  const handleBookClick = () => navigate(`/book/${doctor.id}`);
-  const handleMessageClick = () => navigate(`/messages?doctor=${doctor.id}`);
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({ title: doctor.full_name, url: window.location.href });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast({ title: "Link copied to clipboard" });
+  // Auth gate — actions require sign-in
+  const requireAuth = async (cb: () => void) => {
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) {
+      toast({ title: "Sign in required", description: "Please sign in to continue." });
+      const returnTo = window.location.pathname + window.location.search;
+      navigate(`/auth?returnTo=${encodeURIComponent(returnTo)}`);
+      return;
     }
+    cb();
   };
-  // isSaved state moved to top with other hooks
-  const handleToggleSave = () => setIsSaved(!isSaved);
+
+  const handleBookClick = () => requireAuth(() => navigate(`/book/${doctor.id}`));
+  const handleMessageClick = () => requireAuth(() => navigate(`/messages?doctor=${doctor.id}`));
+  const handleShare = () =>
+    requireAuth(() => {
+      if (navigator.share) {
+        navigator.share({ title: doctor.full_name, url: window.location.href });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        toast({ title: "Link copied to clipboard" });
+      }
+    });
+  const handleToggleSave = () => requireAuth(() => setIsSaved(!isSaved));
+
 
   // Map doctor to the format PremiumHeroSection expects
   const doctorProfileData = {
