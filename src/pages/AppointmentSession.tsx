@@ -548,6 +548,43 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     fetchDiagnoses();
   }, [fetchDiagnoses]);
 
+  // Re-fetch whenever the user opens the Diagnoses tab so existing rows are
+  // visible immediately (not only after they add a new one).
+  useEffect(() => {
+    if (activeTab === 'diagnoses') {
+      fetchDiagnoses();
+    }
+  }, [activeTab, fetchDiagnoses]);
+
+  // Realtime sync for appointment_diagnoses on this appointment.
+  useEffect(() => {
+    if (!appointmentId) return;
+    const channel = supabase
+      .channel(
+        `appointment-diagnoses-${appointmentId}-${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2, 8)}`,
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'appointment_diagnoses',
+          filter: `appointment_id=eq.${appointmentId}`,
+        },
+        () => {
+          fetchDiagnoses();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [appointmentId, fetchDiagnoses]);
+
+
   const handleAddDiagnosis = useCallback(
     async (diag: Omit<Diagnosis, 'id' | 'createdAt'>) => {
       if (!appointmentId || !appointment?.doctor_id) return;
