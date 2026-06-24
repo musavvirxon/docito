@@ -272,7 +272,7 @@ export default function DoctorPrescriptionsSection() {
     setPrefilledItems(opts?.items ?? []);
     setSelectedRxId(null);
     setRightPanel("creator");
-    setSheetOpen(true);
+    openRightPanel();
   };
 
   const openDetail = (rxId: string) => {
