@@ -29,3 +29,10 @@ export function getBookingPath(slug: string | null | undefined): string {
   return slug ? `/book-appointment/${slug}` : '/';
 }
 
+/** Resolve a slug to a full public doctor profile URL on the patient domain. */
+export function getDoctorPublicProfileUrl(slug: string | null | undefined): string {
+  const origin = getPublicBookingOrigin();
+  return slug ? `${origin}/doctor/${slug}` : origin;
+}
+
+
