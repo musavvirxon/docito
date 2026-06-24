@@ -176,15 +176,23 @@ export default function PremiumHeroSection({
                       {t("profile.acceptingPatients")}
                     </Badge>
                   )}
-                  {doctor.consultation_types?.includes("video") && (
-                    <Badge
-                      variant="outline"
-                      className="border-purple-500/30 text-purple-600"
-                    >
-                      <Video className="w-3 h-3 mr-1" />
-                      {t("profile.videoConsult")}
-                    </Badge>
-                  )}
+                  {(doctor.consultation_types || []).map((rawType) => {
+                    const type = String(rawType).toLowerCase().replace(/-/g, "_");
+                    const map: Record<string, { icon: any; label: string; cls: string }> = {
+                      video: { icon: Video, label: "Video", cls: "border-purple-500/30 text-purple-600" },
+                      in_person: { icon: MapPin, label: "In-person", cls: "border-emerald-500/30 text-emerald-600" },
+                      messaging: { icon: MessageSquare, label: "Messaging", cls: "border-sky-500/30 text-sky-600" },
+                      home_visit: { icon: Home, label: "Home visit", cls: "border-amber-500/30 text-amber-600" },
+                    };
+                    const item = map[type] || { icon: Stethoscope, label: rawType, cls: "border-border text-foreground" };
+                    const Icon = item.icon;
+                    return (
+                      <Badge key={rawType} variant="outline" className={item.cls}>
+                        <Icon className="w-3 h-3 mr-1" />
+                        {item.label}
+                      </Badge>
+                    );
+                  })}
                 </div>
               </div>
             </div>
