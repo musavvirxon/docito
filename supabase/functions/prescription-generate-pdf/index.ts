@@ -344,29 +344,41 @@ serve(async (req) => {
       } catch { /* ignore */ }
     }
 
-    // ── Fetch prescription + items ───────────────────────────────────────────
+    // ── Fetch prescription (no FKs declared → query each relation separately)
     const { data: rx, error: rxErr } = await svc
       .from("prescriptions")
-      .select(`
-        id, prescription_number, verification_code, status,
-        patient_id, doctor_id, pharmacy_id,
-        prescribed_at, expires_at,
-        refills_remaining, refills_total, notes, diagnosis_code,
-        patient:patient_id(full_name, email, phone),
-        doctor:doctor_id(specialty, user_id, logo_url, practice_id, practices(name, address, phone, logo_url)),
-        pharmacy:pharmacy_id(name, address, phone),
-        prescription_items(
-          id, medication_name, medication_code, dosage, frequency,
-          quantity, unit, instructions, substitutions_allowed
-        )
-      `)
+      .select("*")
       .eq("id", body.prescription_id)
       .maybeSingle();
 
-    if (rxErr) return errorResponse("Failed to fetch prescription", 500);
+    if (rxErr) {
+      console.error("[prescription-generate-pdf] fetch error:", rxErr);
+      return errorResponse(`Failed to fetch prescription: ${rxErr.message}`, 500);
+    }
     if (!rx) return errorResponse("Prescription not found", 404);
 
     const r: any = rx;
+
+    // ── Fetch related entities ───────────────────────────────────────────────
+    const [itemsRes, patientRes, doctorRes, pharmacyRes] = await Promise.all([
+      svc.from("prescription_items").select("id, medication_name, medication_code, dosage, frequency, quantity, unit, instructions, substitutions_allowed").eq("prescription_id", r.id),
+      r.patient_id ? svc.from("profiles").select("full_name, email, phone").eq("user_id", r.patient_id).maybeSingle() : Promise.resolve({ data: null }),
+      r.doctor_id ? svc.from("doctors").select("specialty, user_id, logo_url, practice_id").eq("id", r.doctor_id).maybeSingle() : Promise.resolve({ data: null }),
+      r.pharmacy_id ? svc.from("pharmacies").select("name, address, phone").eq("id", r.pharmacy_id).maybeSingle() : Promise.resolve({ data: null }),
+    ]);
+    r.prescription_items = (itemsRes as any).data || [];
+    r.patient = (patientRes as any).data || {
+      full_name: r.patient_snapshot_full_name || r.patient_name,
+      email: r.patient_snapshot_email || r.patient_email,
+      phone: r.patient_snapshot_phone || r.patient_phone,
+    };
+    r.doctor = (doctorRes as any).data || null;
+    r.pharmacy = (pharmacyRes as any).data || null;
+
+    if (r.doctor?.practice_id) {
+      const { data: pr } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.doctor.practice_id).maybeSingle();
+      if (pr) r.doctor.practices = pr;
+    }
 
     // ── Authorization ────────────────────────────────────────────────────────
     const isSuperAdmin = (roles || []).includes("super_admin");
@@ -397,7 +409,7 @@ serve(async (req) => {
       } catch { /* ignore */ }
     }
 
-    const verificationCode = safe(r.verification_code || r.prescription_number, 80);
+    const verificationCode = safe(r.prescription_number, 80);
     const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");
     const verifyUrl = `${siteBase}/verify?type=prescription&code=${encodeURIComponent(verificationCode)}`;
 
