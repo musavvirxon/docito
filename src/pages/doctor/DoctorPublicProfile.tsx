@@ -153,24 +153,8 @@ export default function DoctorPublicProfile() {
           })) as Procedure[],
         );
 
-        // Reviews
-        const { data: rev, error: revErr } = await (supabase as any)
-          .from("reviews")
-          .select(
-            `
-            id,
-            rating,
-            comment,
-            created_at,
-            patient_profile:patient_id(full_name, avatar_url)
-          `,
-          )
-          .eq("doctor_id", doc.id)
-          .order("created_at", { ascending: false })
-          .limit(50);
+        // Reviews are loaded by ReviewsSection via useAppointmentReviews.
 
-        if (revErr) throw revErr;
-        setReviews((rev || []) as Review[]);
       } catch (e: any) {
         console.error("Error loading doctor public profile:", e);
         toast({
