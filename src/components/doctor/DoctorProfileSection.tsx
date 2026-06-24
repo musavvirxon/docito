@@ -85,8 +85,9 @@ export default function DoctorProfileSection() {
 
   const publicUrl = useMemo(() => {
     if (!publicSlug) return "";
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://docito.live";
-    return `${origin}/doctor/${publicSlug}`;
+    // Always use the canonical patient domain so the link is stable regardless
+    // of which dashboard host the doctor is viewing from.
+    return `https://docito.app/doctor/${publicSlug}`;
   }, [publicSlug]);
 
   const bookingLink = useMemo(() => {
