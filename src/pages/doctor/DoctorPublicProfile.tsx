@@ -45,16 +45,8 @@ interface PublicDoctorProfile {
   practice_verified: boolean | null;
 }
 
-interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  patient_profile?: {
-    full_name: string;
-    avatar_url: string | null;
-  } | null;
-}
+
+
 
 interface Procedure {
   id: string;
