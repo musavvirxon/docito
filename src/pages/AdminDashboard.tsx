@@ -45,6 +45,7 @@ import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
 import { PatientFinanceSection } from "@/components/PatientFinanceSection";
+import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -109,6 +110,7 @@ type AdminSection =
   | "patients"
   | "billing"
   | "finances"
+  | "inventory"
   | "analytics"
   | "settings";
 
