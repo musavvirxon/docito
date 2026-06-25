@@ -45,6 +45,7 @@ import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
 import { PatientFinanceSection } from "@/components/PatientFinanceSection";
+import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminDashboard } from "@/hooks/useAdminDashboard";
@@ -88,6 +89,7 @@ import {
   MessageCircle,
   Percent,
   Phone,
+  Package,
   Plus,
   Sliders,
   Star,
@@ -109,6 +111,7 @@ type AdminSection =
   | "patients"
   | "billing"
   | "finances"
+  | "inventory"
   | "analytics"
   | "settings";
 
@@ -586,6 +589,7 @@ const AdminDashboard = () => {
     { id: "patients", label: t("admin.tabs.patients"), icon: Users },
     { id: "billing", label: t("admin.tabs.billing"), icon: CreditCard },
     { id: "finances", label: t("admin.tabs.finances", { defaultValue: "Finances" }), icon: DollarSign },
+    { id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package },
     { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
     { id: "settings", label: t("admin.tabs.settings", { defaultValue: "Settings" }), icon: Settings },
   ];
@@ -4502,6 +4506,26 @@ const AdminDashboard = () => {
           </SectionWrapper>
         );
       }
+
+      case "inventory":
+        return (
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
+              {practice?.id ? (
+                <ClinicInventoryManager
+                  entityId={practice.id}
+                  canCreate
+                  canDelete
+                />
+              ) : (
+                <div className="text-center py-10 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">{t("admin.inventory.noPractice", { defaultValue: "No practice linked" })}</p>
+                </div>
+              )}
+            </div>
+          </SectionWrapper>
+        );
 
       case "analytics": {
         const analyticsTabs = [

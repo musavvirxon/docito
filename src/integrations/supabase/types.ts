@@ -1931,6 +1931,122 @@ export type Database = {
           },
         ]
       }
+      clinic_inventory: {
+        Row: {
+          avg_daily_usage: number | null
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          entity_id: string
+          expiry_date: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          quantity_in_stock: number
+          reorder_level: number
+          supplier: string | null
+          unit: string
+          unit_cost: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          avg_daily_usage?: number | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entity_id: string
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          quantity_in_stock?: number
+          reorder_level?: number
+          supplier?: string | null
+          unit?: string
+          unit_cost?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          avg_daily_usage?: number | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entity_id?: string
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          quantity_in_stock?: number
+          reorder_level?: number
+          supplier?: string | null
+          unit?: string
+          unit_cost?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      clinic_inventory_logs: {
+        Row: {
+          change_type: string
+          created_at: string
+          entity_id: string
+          id: string
+          inventory_id: string
+          notes: string | null
+          performed_by: string | null
+          quantity_after: number
+          quantity_before: number
+          quantity_change: number
+          reference_id: string | null
+          reference_type: string | null
+        }
+        Insert: {
+          change_type: string
+          created_at?: string
+          entity_id: string
+          id?: string
+          inventory_id: string
+          notes?: string | null
+          performed_by?: string | null
+          quantity_after: number
+          quantity_before: number
+          quantity_change: number
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Update: {
+          change_type?: string
+          created_at?: string
+          entity_id?: string
+          id?: string
+          inventory_id?: string
+          notes?: string | null
+          performed_by?: string | null
+          quantity_after?: number
+          quantity_before?: number
+          quantity_change?: number
+          reference_id?: string | null
+          reference_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_inventory_logs_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_inventory"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_lab_orders: {
         Row: {
           appointment_id: string | null
@@ -7202,6 +7318,51 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "procedure_files_procedure_id_fkey"
+            columns: ["procedure_id"]
+            isOneToOne: false
+            referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      procedure_inventory_requirements: {
+        Row: {
+          created_at: string
+          entity_id: string
+          id: string
+          inventory_id: string
+          procedure_id: string | null
+          procedure_name: string | null
+          quantity_required: number
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          id?: string
+          inventory_id: string
+          procedure_id?: string | null
+          procedure_name?: string | null
+          quantity_required?: number
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          id?: string
+          inventory_id?: string
+          procedure_id?: string | null
+          procedure_name?: string | null
+          quantity_required?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "procedure_inventory_requirements_inventory_id_fkey"
+            columns: ["inventory_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_inventory"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "procedure_inventory_requirements_procedure_id_fkey"
             columns: ["procedure_id"]
             isOneToOne: false
             referencedRelation: "procedures"

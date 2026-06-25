@@ -19,7 +19,9 @@
     "notes": "Notes",
     "cancel": "Cancel",
     "adding": "Adding…",
-    "add": "Add Procedure"
+    "add": "Add Procedure",
+    "inventoryTitle": "Inventory Items",
+    "inventoryHint": "These items will be auto-deducted when the procedure is completed."
   },
   "finance": {
     "title": "Patient Finance",

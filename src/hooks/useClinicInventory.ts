@@ -1,6 +1,7 @@
 // src/hooks/useClinicInventory.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase as supabaseTyped } from '@/integrations/supabase/client';
+const supabase = supabaseTyped as any;
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -164,7 +165,7 @@ export function useClinicInventory(entityId: string | null | undefined) {
 
         // Log the initial stock addition
         if (input.quantity_in_stock > 0 && data) {
-          await supabase.from('clinic_inventory_logs').insert({
+          await (supabase as any).from('clinic_inventory_logs').insert({
             inventory_id: (data as any).id,
             entity_id: entityId,
             change_type: 'addition',
@@ -246,7 +247,7 @@ export function useClinicInventory(entityId: string | null | undefined) {
 
         if (updateErr) throw updateErr;
 
-        await supabase.from('clinic_inventory_logs').insert({
+        await (supabase as any).from('clinic_inventory_logs').insert({
           inventory_id: item.id,
           entity_id: entityId,
           change_type: input.change_type,
@@ -352,7 +353,7 @@ export function useClinicInventory(entityId: string | null | undefined) {
             .update({ quantity_in_stock: after, updated_by: userId } as any)
             .eq('id', inv.id);
 
-          await supabase.from('clinic_inventory_logs').insert({
+          await (supabase as any).from('clinic_inventory_logs').insert({
             inventory_id: inv.id,
             entity_id: entityId,
             change_type: 'procedure_use',
@@ -458,7 +459,7 @@ export function useProcedureInventoryRequirements(
 
   const removeRequirement = useCallback(
     async (requirementId: string): Promise<void> => {
-      await supabase.from('procedure_inventory_requirements').delete().eq('id', requirementId);
+      await (supabase as any).from('procedure_inventory_requirements').delete().eq('id', requirementId);
       await refresh();
     },
     [refresh],

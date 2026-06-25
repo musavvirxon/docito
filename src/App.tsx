@@ -67,6 +67,7 @@ const Messages = lazy(() => import("@/pages/Messages"));
 const VideoCall = lazy(() => import("@/pages/VideoCall"));
 const AppointmentSession = lazy(() => import("@/pages/AppointmentSession"));
 const BillingPage = lazy(() => import("@/pages/BillingPage"));
+const InventoryPage = lazy(() => import("@/pages/InventoryPage"));
 
 const FinanceDashboard = lazy(() => import("@/pages/FinanceDashboard"));
 
@@ -277,6 +278,7 @@ export default function App() {
                   <Route path="notifications" element={<Notifications />} />
                   <Route path="messages" element={<Messages />} />
                   <Route path="billing" element={<BillingPage />} />
+                  <Route path="inventory" element={<InventoryPage />} />
                   <Route path="finance" element={<FinanceDashboard />} />
                   <Route path="finance-dashboard" element={<FinanceDashboard />} />
                   <Route path="video-call" element={<VideoCall />} />
