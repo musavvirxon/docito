@@ -4505,6 +4505,26 @@ const AdminDashboard = () => {
         );
       }
 
+      case "inventory":
+        return (
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <div className={sectionShellClass}>
+              {practice?.id ? (
+                <ClinicInventoryManager
+                  entityId={practice.id}
+                  canCreate
+                  canDelete
+                />
+              ) : (
+                <div className="text-center py-10 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">{t("admin.inventory.noPractice", { defaultValue: "No practice linked" })}</p>
+                </div>
+              )}
+            </div>
+          </SectionWrapper>
+        );
+
       case "analytics": {
         const analyticsTabs = [
           { key: 'overview' as const, label: 'Overview' },
