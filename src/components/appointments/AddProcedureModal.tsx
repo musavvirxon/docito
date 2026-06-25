@@ -16,16 +16,18 @@ import {
   getProcedureCategoryLabel,
 } from '@/lib/procedureCategories';
 import type { AddProcedureInput, ProcedureStatus } from '@/hooks/useAppointmentProcedures';
+import { ProcedureInventoryItems } from '@/components/inventory/ProcedureInventoryItems';
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   isDentist: boolean;
   initialTeeth?: number[];
+  entityId?: string | null;
   onSubmit: (input: AddProcedureInput) => Promise<void> | void;
 }
 
-export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth = [], onSubmit }: Props) {
+export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth = [], entityId, onSubmit }: Props) {
   const { t } = useTranslation('appointments');
   const { services } = useDoctorServices();
   const { currency: viewerCurrency } = useCurrency();
@@ -207,6 +209,12 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
             <Label>{t('addProcedure.notes')}</Label>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
           </div>
+
+          {entityId && procedureId && (
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <ProcedureInventoryItems entityId={entityId} procedureId={procedureId} />
+            </div>
+          )}
         </div>
 
         <DialogFooter>

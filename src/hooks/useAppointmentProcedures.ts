@@ -36,6 +36,7 @@ interface Params {
   doctorId?: string;
   patientId?: string | null;
   doctorPatientId?: string | null;
+  entityId?: string | null;
 }
 
 export function useAppointmentProcedures({
@@ -43,6 +44,7 @@ export function useAppointmentProcedures({
   doctorId,
   patientId,
   doctorPatientId,
+  entityId,
 }: Params) {
   const [items, setItems] = useState<UnifiedProcedure[]>([]);
   const [loading, setLoading] = useState(false);
@@ -224,13 +226,59 @@ export function useAppointmentProcedures({
             .update({ status })
             .eq('id', item.id);
         }
+
+        // Auto-deduct inventory when a procedure transitions to "completed"
+        if (status === 'completed' && entityId && appointmentId) {
+          try {
+            const sb: any = supabase;
+            let query = sb
+              .from('procedure_inventory_requirements')
+              .select('*, inventory_item:clinic_inventory(*)')
+              .eq('entity_id', entityId);
+            if (item.procedureId) query = query.eq('procedure_id', item.procedureId);
+            else query = query.eq('procedure_name', item.name);
+
+            const { data: reqs } = await query;
+            const { data: authUser } = await supabase.auth.getUser();
+            const userId = authUser?.user?.id;
+
+            for (const req of (reqs || []) as any[]) {
+              const inv = req.inventory_item;
+              if (!inv) continue;
+              const before = Number(inv.quantity_in_stock || 0);
+              const delta = Math.min(Number(req.quantity_required || 0), before);
+              const after = Math.max(0, before - delta);
+
+              await sb
+                .from('clinic_inventory')
+                .update({ quantity_in_stock: after, updated_by: userId })
+                .eq('id', inv.id);
+
+              await sb.from('clinic_inventory_logs').insert({
+                inventory_id: inv.id,
+                entity_id: entityId,
+                change_type: 'procedure_use',
+                quantity_change: -delta,
+                quantity_before: before,
+                quantity_after: after,
+                reference_id: appointmentId,
+                reference_type: 'appointment',
+                notes: `Used in: ${item.name}`,
+                performed_by: userId,
+              });
+            }
+          } catch (e) {
+            console.warn('Inventory auto-deduct failed', e);
+          }
+        }
+
         await refresh();
       } catch (err) {
         console.error('Update procedure status failed', err);
         toast.error('Failed to update procedure');
       }
     },
-    [refresh],
+    [appointmentId, entityId, refresh],
   );
 
   const removeProcedure = useCallback(
