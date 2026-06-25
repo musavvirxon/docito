@@ -1,0 +1,172 @@
+{
+  "title": "Clinic Inventory",
+  "subtitle": "Manage medications, instruments, and supplies",
+  "addItem": "Add Item",
+  "editItem": "Edit Item",
+  "deleteItem": "Delete Item",
+  "adjustStock": "Adjust Stock",
+  "viewLogs": "View History",
+  "search": "Search inventory…",
+  "filterCategory": "All Categories",
+  "filterStatus": "All Status",
+  "stockStatus": {
+    "ok": "In Stock",
+    "low": "Low Stock",
+    "critical": "Critical",
+    "out": "Out of Stock",
+    "expired": "Expired"
+  },
+  "categories": {
+    "medication": "Medication",
+    "instrument": "Instrument",
+    "supply": "Supply",
+    "consumable": "Consumable"
+  },
+  "units": {
+    "units": "Units",
+    "ml": "ml",
+    "mg": "mg",
+    "boxes": "Boxes",
+    "pieces": "Pieces",
+    "vials": "Vials",
+    "syringes": "Syringes",
+    "ampoules": "Ampoules",
+    "strips": "Strips",
+    "pairs": "Pairs"
+  },
+  "table": {
+    "name": "Name",
+    "category": "Category",
+    "quantity": "Qty in Stock",
+    "reorderLevel": "Reorder At",
+    "daysRemaining": "Est. Days Left",
+    "expiryDate": "Expiry",
+    "supplier": "Supplier",
+    "unitCost": "Unit Cost",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "daysRemaining": {
+    "label": "~{{days}} days",
+    "today": "Today",
+    "unknown": "—",
+    "noUsage": "No usage data"
+  },
+  "form": {
+    "name": "Item Name *",
+    "namePlaceholder": "e.g. Amoxicillin 500mg",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional notes about this item",
+    "category": "Category *",
+    "unit": "Unit of Measure *",
+    "quantityInStock": "Quantity in Stock *",
+    "reorderLevel": "Reorder Level",
+    "reorderLevelHint": "Alert will fire when stock falls to this level",
+    "avgDailyUsage": "Avg. Daily Usage",
+    "avgDailyUsageHint": "Leave blank to auto-calculate from usage history",
+    "expiryDate": "Expiry Date",
+    "supplier": "Supplier / Vendor",
+    "unitCost": "Unit Cost",
+    "notes": "Internal Notes",
+    "cancel": "Cancel",
+    "save": "Save Item",
+    "saving": "Saving…",
+    "add": "Add Item",
+    "adding": "Adding…"
+  },
+  "adjust": {
+    "title": "Adjust Stock — {{name}}",
+    "current": "Current stock",
+    "changeType": "Adjustment Type",
+    "types": {
+      "addition": "Add / Restock",
+      "deduction": "Deduct / Use",
+      "adjustment": "Set Exact Amount",
+      "expired": "Write Off (Expired)",
+      "damaged": "Write Off (Damaged)"
+    },
+    "quantity": "Quantity",
+    "quantityPlaceholder": "Enter amount",
+    "notes": "Reason / Notes",
+    "notesPlaceholder": "Optional reason for this adjustment",
+    "preview": "New stock will be: {{qty}} {{unit}}",
+    "previewSet": "Stock will be set to: {{qty}} {{unit}}",
+    "cancel": "Cancel",
+    "apply": "Apply Adjustment",
+    "applying": "Applying…"
+  },
+  "logs": {
+    "title": "Stock History — {{name}}",
+    "empty": "No stock changes recorded yet.",
+    "changeType": {
+      "addition": "Restocked",
+      "deduction": "Deducted",
+      "adjustment": "Adjusted",
+      "procedure_use": "Used in procedure",
+      "expired": "Written off (expired)",
+      "damaged": "Written off (damaged)"
+    },
+    "by": "by {{user}}",
+    "ago": "{{time}} ago",
+    "close": "Close"
+  },
+  "procedureItems": {
+    "title": "Required Inventory",
+    "subtitle": "Items that will be deducted when this procedure is completed",
+    "addItem": "Add Item",
+    "empty": "No inventory items linked to this procedure.",
+    "emptyHint": "Add items that are consumed during this procedure.",
+    "quantity": "Qty",
+    "available": "{{qty}} available",
+    "remove": "Remove",
+    "selectItem": "Select inventory item…",
+    "selectItemPlaceholder": "Search items…",
+    "outOfStock": "Out of stock",
+    "lowStock": "Low stock",
+    "autoDeduct": "Items will be automatically deducted when this procedure is marked Completed."
+  },
+  "lowStockAlert": {
+    "title": "Low Stock Alerts",
+    "critical": "{{count}} item critically low",
+    "criticalPlural": "{{count}} items critically low",
+    "low": "{{count}} item low",
+    "lowPlural": "{{count}} items low",
+    "viewAll": "View All",
+    "dismiss": "Dismiss",
+    "item": "{{name}} — {{qty}} {{unit}} remaining ({{days}} days)"
+  },
+  "delete": {
+    "title": "Delete \"{{name}}\"?",
+    "description": "This will permanently remove this item and all its stock history. This cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Delete"
+  },
+  "empty": {
+    "title": "No inventory items yet",
+    "description": "Add medications, instruments, and supplies to track stock levels.",
+    "action": "Add First Item"
+  },
+  "errors": {
+    "loadFailed": "Failed to load inventory",
+    "saveFailed": "Failed to save item",
+    "adjustFailed": "Failed to adjust stock",
+    "deleteFailed": "Failed to delete item",
+    "deductFailed": "Failed to deduct inventory"
+  },
+  "success": {
+    "added": "Item added to inventory",
+    "updated": "Item updated",
+    "adjusted": "Stock adjusted",
+    "deleted": "Item deleted",
+    "deducted": "Inventory updated for completed procedure"
+  },
+  "roles": {
+    "adminOnly": "Only clinic admins can add or delete items.",
+    "doctorNote": "Doctors can adjust stock quantities.",
+    "staffNote": "Reception staff can adjust stock quantities."
+  },
+  "page": {
+    "title": "Inventory Management",
+    "breadcrumb": "Inventory"
+  }
+}
