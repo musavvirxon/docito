@@ -1,40 +1,47 @@
-## Public profile + booking page fixes
+## Inventory Feature Wiring Plan
 
-### 1. Reviews not showing on public profile
-`DoctorPublicProfile.tsx` fetches from a non-existent `reviews` table while reviews actually live in `appointment_reviews`. The `ReviewsSection` already uses `useAppointmentReviews` correctly, so the parent fetch is dead code that throws and produces a misleading error toast.
-- Remove the `reviews` table fetch + local `reviews` state from `DoctorPublicProfile.tsx`.
-- Let `ReviewsSection` (which already queries `appointment_reviews` by `doctorId`) drive the list and aggregate.
+Apply the user-provided prompts in order across 5 files. No new components or DB changes — assumes `ClinicInventoryManager`, `ProcedureInventoryItems`, `useClinicInventory`, `useActiveEntityScope`, and `public/locales/en/inventory.json` already exist (or are added separately).
 
-### 2. Consultation types — icon + label visible, all info shown
-`PremiumHeroSection` only renders a "video consult" badge. Replace with a small set rendering every `consultation_types` value with an icon + label:
-- `video` → Video icon, "Video"
-- `in_person` / `in-person` → MapPin icon, "In‑person"
-- `messaging` → MessageSquare icon, "Messaging"
-- `home_visit` → Home icon, "Home visit"
-Also keep avatar visible (already wired) and ensure rating / fee / languages / years rows remain shown even when individual fields are null (skip nulls instead of hiding whole block).
+### 1. `src/App.tsx`
+- Add lazy import: `const InventoryPage = lazy(() => import("@/pages/InventoryPage"));`
+- Add protected route `/inventory` rendering `<InventoryPage />` inside the same protected-routes wrapper used by `/practices/dashboard`, `/doctor/dashboard`, `/staff-dashboard`.
 
-### 3. Action buttons require sign-in
-In `DoctorPublicProfile.tsx`, wrap `handleBookClick`, `handleMessageClick`, `handleToggleSave`, and `handleShare` with an auth check using `supabase.auth.getUser()` (or the existing `useAuth` context). If no user → `navigate('/auth?returnTo=' + encodeURIComponent(currentPath))` and toast "Sign in to continue". Share is fine for anyone, but per request gate it too.
+### 2. `src/pages/AdminDashboard.tsx`
+- Add `Package` to the lucide-react import.
+- Add `import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";`
+- Insert sidebar tab `{ id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package }` between `services` and `staff`.
+- Add a render branch after the `services` section:
+  ```
+  {activeSection === 'inventory' && <ClinicInventoryManager entityId={entityId} />}
+  ```
+  using existing `useAccessScope` / `useActiveEntityScope` to derive `entityId`.
 
-### 4. Booking page — doctor name not visible
-`doctor_profiles_view` sometimes returns `full_name = null`. Add a fallback:
-- After loading from `doctor_profiles_view`, if `full_name` is empty, query `doctor_public_profile_view` (same shape, anon-safe) by `id` and use its `full_name`.
-- Use that resolved name for both the header card and the page title.
+### 3. `src/components/appointments/AddProcedureModal.tsx`
+- Add imports: `ProcedureInventoryItems`, `useAccessScope`, `useActiveEntityScope`.
+- Inside component, derive `entityId = activeEntityId || primary?.entity_id`.
+- Render `<ProcedureInventoryItems entityId={entityId} procedureId={procedureId} />` at end of form when both exist, with i18n title/hint.
 
-### 5. Swap "Request a procedure" with visible Available procedures
-Replace the single Select dropdown in the "Request a procedure (optional)" card with a grid of selectable procedure cards (name, category badge, price, duration), mirroring the public profile's `ProceduresSection` layout but click‑to‑select:
-- Selecting a card sets `selectedProcedureId` and auto-applies its duration (existing behavior).
-- Include a "No specific procedure" option as the first card.
-- Empty state stays as today.
+### 4. `public/locales/en/appointments.json`
+- Add to `addProcedure`:
+  - `"inventoryTitle": "Required Inventory"`
+  - `"inventoryHint": "Items deducted automatically when this procedure is completed"`
 
-### 6. In‑person appointment type missing
-Currently the In‑person radio renders but is `opacity-50 pointer-events-none` when `practice_id` is null, which on small/locked layouts reads as "missing". Always render In‑person as a real, selectable option:
-- Keep the lock icon and helper text when `practice_id` is null, but allow selection (the booking RPC already enforces validity). Or, simpler: render In-person without the disabled wrapper so users can see and pick it; show the "requires verified location" note inline.
+### 5. `src/hooks/useAppointmentProcedures.ts`
+- Add imports: `useAccessScope`, `useActiveEntityScope`, `useClinicInventory`.
+- Inside hook, derive `entityId` and `const { deductForProcedure } = useClinicInventory(entityId);`
+- In `updateStatus`, after the supabase update call in BOTH the `dental` branch and the `else` branch, when `status === 'completed'`:
+  ```
+  await deductForProcedure(item.procedureId, item.name, appointmentId || '');
+  ```
+  before `await refresh()`.
 
-### Files to touch
-- `src/pages/doctor/DoctorPublicProfile.tsx` — drop dead reviews fetch; auth-gate handlers.
-- `src/components/doctor/public/PremiumHeroSection.tsx` — consultation type chips with icons.
-- `src/pages/AppointmentBooking.tsx` — doctor name fallback; procedure grid; always-visible in-person type.
+### 6. `src/i18n/config.ts`
+- If a static `ns: [...]` array exists, add `'inventory'`. If using `i18next-http-backend` dynamic loading, leave as-is.
+
+### Verification
+- Read each target file first to confirm exact insertion points and existing imports (especially the lucide import line, sidebar nav array, `updateStatus` branches, and i18n config style) before editing.
+- Confirm `InventoryPage`, `ClinicInventoryManager`, `ProcedureInventoryItems`, `useClinicInventory`, `useActiveEntityScope` paths resolve; if any are missing, stop and report rather than create them (out of scope).
 
 ### Out of scope
-No DB migrations, no edge function changes, no changes to messaging or auth pages themselves.
+- No DB migrations, edge functions, RLS, or new components.
+- No changes to other locale files (en only per instructions).
