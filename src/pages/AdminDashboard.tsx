@@ -89,6 +89,7 @@ import {
   MessageCircle,
   Percent,
   Phone,
+  Package,
   Plus,
   Sliders,
   Star,
@@ -588,6 +589,7 @@ const AdminDashboard = () => {
     { id: "patients", label: t("admin.tabs.patients"), icon: Users },
     { id: "billing", label: t("admin.tabs.billing"), icon: CreditCard },
     { id: "finances", label: t("admin.tabs.finances", { defaultValue: "Finances" }), icon: DollarSign },
+    { id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package },
     { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
     { id: "settings", label: t("admin.tabs.settings", { defaultValue: "Settings" }), icon: Settings },
   ];
