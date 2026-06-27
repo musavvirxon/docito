@@ -136,7 +136,7 @@ const AddProcedureModal = ({
 
       const { data: doctor, error: doctorError } = await supabase
         .from("doctors")
-        .select("id")
+        .select("id, practice_id")
         .eq("user_id", authUser.id)
         .single();
 
@@ -144,6 +144,7 @@ const AddProcedureModal = ({
         console.error(doctorError);
         toast.error("Doctor profile not found");
         setDentistId(null);
+        setPracticeId(null);
         if (externalCategories.length > 0) {
           setCategoryOptions(externalCategories);
         } else {
@@ -153,6 +154,7 @@ const AddProcedureModal = ({
       }
 
       setDentistId(doctor.id);
+      setPracticeId((doctor as any).practice_id ?? null);
 
       // Pull existing categories for this dentist (includes custom values stored in DB)
       const { data: rows, error: catErr } = await supabase
