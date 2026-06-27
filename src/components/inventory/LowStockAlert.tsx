@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { ClinicInventoryItem } from '@/hooks/useClinicInventory';
-import { calcDaysRemaining } from '@/hooks/useClinicInventory';
+import { calcDaysRemaining, type ClinicInventoryItem } from '@/hooks/useClinicInventory';
 
 interface Props {
   criticalItems: ClinicInventoryItem[];
@@ -23,26 +22,15 @@ export function LowStockAlert({ criticalItems, lowItems, onViewAll }: Props) {
   const topItems = [...criticalItems, ...lowItems].slice(0, 3);
 
   return (
-    <Alert
-      variant="destructive"
-      className="relative border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700"
-    >
+    <Alert className="relative border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700">
       <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
 
       <AlertTitle className="text-amber-800 dark:text-amber-300 font-semibold">
         {criticalItems.length > 0
-          ? t(
-              criticalItems.length === 1
-                ? 'lowStockAlert.critical'
-                : 'lowStockAlert.criticalPlural',
-              { count: criticalItems.length },
-            )
-          : t(
-              lowItems.length === 1
-                ? 'lowStockAlert.low'
-                : 'lowStockAlert.lowPlural',
-              { count: lowItems.length },
-            )}
+          ? t(criticalItems.length === 1 ? 'lowStockAlert.critical' : 'lowStockAlert.criticalPlural',
+              { count: criticalItems.length })
+          : t(lowItems.length === 1 ? 'lowStockAlert.low' : 'lowStockAlert.lowPlural',
+              { count: lowItems.length })}
       </AlertTitle>
 
       <AlertDescription className="mt-1 space-y-1">
@@ -59,11 +47,9 @@ export function LowStockAlert({ criticalItems, lowItems, onViewAll }: Props) {
             </p>
           );
         })}
-
         {onViewAll && (
           <Button
-            variant="link"
-            size="sm"
+            variant="link" size="sm"
             className="h-auto p-0 text-amber-700 dark:text-amber-300 text-xs mt-1"
             onClick={onViewAll}
           >
@@ -73,8 +59,7 @@ export function LowStockAlert({ criticalItems, lowItems, onViewAll }: Props) {
       </AlertDescription>
 
       <Button
-        variant="ghost"
-        size="icon"
+        variant="ghost" size="icon"
         className="absolute top-2 right-2 h-6 w-6 text-amber-600 hover:text-amber-800 hover:bg-amber-100"
         onClick={() => setDismissed(true)}
       >
