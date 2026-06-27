@@ -298,11 +298,39 @@ const AddProcedureModal = ({
         followup_interval_days: hasFollowup ? values.followup_interval_days : null,
       };
 
-      const { error } = await supabase
+      const { data: createdProc, error } = await supabase
         .from("procedures")
-        .insert([procedureData]);
+        .insert([procedureData])
+        .select("id")
+        .single();
 
       if (error) throw error;
+
+      // Persist inventory requirements
+      if (selectedInventory.length > 0 && createdProc?.id) {
+        const rows = selectedInventory
+          .map((sel) => {
+            const inv = mergedInventory.find((m) => m.id === sel.inventoryId);
+            if (!inv) return null;
+            return {
+              entity_id: inv.entity_id,
+              procedure_id: createdProc.id,
+              procedure_name: values.name,
+              inventory_id: sel.inventoryId,
+              quantity_required: sel.quantity,
+            };
+          })
+          .filter(Boolean);
+        if (rows.length) {
+          const { error: reqErr } = await (supabase as any)
+            .from("procedure_inventory_requirements")
+            .insert(rows);
+          if (reqErr) {
+            console.error("inventory linkage failed", reqErr);
+            toast.warning("Procedure created, but failed to attach some inventory items");
+          }
+        }
+      }
 
       toast.success("Procedure created successfully");
 
@@ -312,6 +340,7 @@ const AddProcedureModal = ({
       setRequiresConsent(false);
       setConsentFile(null);
       setCustomCategory("");
+      setSelectedInventory([]);
 
       onSuccess();
       onOpenChange(false);
@@ -330,6 +359,7 @@ const AddProcedureModal = ({
     setRequiresConsent(false);
     setConsentFile(null);
     setCustomCategory("");
+    setSelectedInventory([]);
     onOpenChange(false);
   };
 
