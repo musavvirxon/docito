@@ -1,29 +1,20 @@
 // src/pages/InventoryPage.tsx
 import { useTranslation } from 'react-i18next';
 import { Package } from 'lucide-react';
-import { useAccessScope } from '@/hooks/useAccessScope';
 import { useActiveEntityScope } from '@/hooks/useActiveEntityScope';
-import { ClinicInventoryManager } from '@/components/inventory/ClinicInventoryManager';
-import { hasAnyRole } from '@/lib/rbac';
+import { useAccessScope } from '@/hooks/useAccessScope';
 import { useAuth } from '@/contexts/AuthContext';
+import { ClinicInventoryManager } from '@/components/inventory/ClinicInventoryManager';
 
 export default function InventoryPage() {
   const { t } = useTranslation('inventory');
+  const { session } = useAuth();
   const { primary, loading: scopeLoading } = useAccessScope();
   const { activeEntityId } = useActiveEntityScope('clinic');
-  const { profile } = useAuth();
 
   const entityId = activeEntityId || primary?.entity_id;
-
-  const userRoles: string[] = profile?.roles
-    ? Array.isArray(profile.roles)
-      ? profile.roles
-      : [profile.roles]
-    : profile?.role
-    ? [profile.role]
-    : [];
-
-  const isAdmin = hasAnyRole(userRoles, ['clinic_admin', 'admin', 'super_admin']);
+  const role: string = (primary as any)?.scope_role ?? (primary as any)?.role ?? '';
+  const isAdmin = ['admin', 'clinic_admin', 'super_admin'].includes(role);
 
   if (scopeLoading) {
     return (
@@ -37,7 +28,7 @@ export default function InventoryPage() {
     return (
       <div className="text-center py-16 text-muted-foreground">
         <Package className="h-10 w-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">No clinic associated with your account.</p>
+        <p className="text-sm">{t('noPractice')}</p>
       </div>
     );
   }
@@ -49,11 +40,12 @@ export default function InventoryPage() {
           <Package className="h-6 w-6" />
           {t('page.title')}
         </h1>
+        <p className="text-sm text-muted-foreground mt-1">{t('subtitle')}</p>
       </div>
 
       <ClinicInventoryManager
         entityId={entityId}
-        canCreate={isAdmin || hasAnyRole(userRoles, ['doctor', 'staff'])}
+        canCreate={true}
         canDelete={isAdmin}
       />
     </div>
