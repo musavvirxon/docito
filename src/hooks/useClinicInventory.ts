@@ -530,35 +530,36 @@ export function useMergedInventory(
 
       if (clinicEntityId) {
         queries.push(
-          supabase
-            .from('clinic_inventory')
-            .select('*')
-            .eq('entity_id', clinicEntityId)
-            .eq('is_active', true)
-            .then((r) =>
-              ((r.data || []) as ClinicInventoryItem[]).map((i) => ({
-                ...i,
-                source: 'clinic' as const,
-              })),
-            ),
+          (async () => {
+            const r = await (supabase as any)
+              .from('clinic_inventory')
+              .select('*')
+              .eq('entity_id', clinicEntityId)
+              .eq('is_active', true);
+            return ((r.data || []) as ClinicInventoryItem[]).map((i) => ({
+              ...i,
+              source: 'clinic' as const,
+            }));
+          })(),
         );
       }
 
       if (doctorEntityId && doctorEntityId !== clinicEntityId) {
         queries.push(
-          supabase
-            .from('clinic_inventory')
-            .select('*')
-            .eq('entity_id', doctorEntityId)
-            .eq('is_active', true)
-            .then((r) =>
-              ((r.data || []) as ClinicInventoryItem[]).map((i) => ({
-                ...i,
-                source: 'doctor' as const,
-              })),
-            ),
+          (async () => {
+            const r = await (supabase as any)
+              .from('clinic_inventory')
+              .select('*')
+              .eq('entity_id', doctorEntityId)
+              .eq('is_active', true);
+            return ((r.data || []) as ClinicInventoryItem[]).map((i) => ({
+              ...i,
+              source: 'doctor' as const,
+            }));
+          })(),
         );
       }
+
 
       const results = await Promise.all(queries);
       const merged = results

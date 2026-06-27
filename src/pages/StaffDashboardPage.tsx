@@ -16,6 +16,9 @@ import BillingSection from "@/components/staff/BillingSection";
 import { InvitationsList } from "@/components/staff/InvitationsList";
 import AnalyticsSection from "@/components/staff/AnalyticsSection";
 import SettingsSection from "@/components/staff/SettingsSection";
+import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
+import { Package } from "lucide-react";
+
 
 import TimeClockCard from "@/components/staff/TimeClockCard";
 import AttendanceAdminPanel from "@/components/staff/AttendanceAdminPanel";
@@ -26,10 +29,12 @@ type SectionId =
   | "today"
   | "patients"
   | "billing"
+  | "inventory"
   | "analytics"
   | "settings"
   | "attendance"
   | "invites";
+
 
 function toNumber(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
@@ -76,6 +81,8 @@ export default function StaffDashboardPage() {
       { id: "today", label: t("staff.sidebar.menu.today"), visible: Boolean(permissions?.can_view_schedule) },
       { id: "patients", label: t("staff.sidebar.menu.patients"), visible: Boolean(permissions?.can_manage_patients) },
       { id: "billing", label: t("staff.sidebar.menu.billing"), visible: Boolean(permissions?.can_manage_billing) },
+      { id: "inventory", label: t("staff.sidebar.menu.inventory", { defaultValue: "Inventory" }), visible: Boolean(practice?.id) },
+
       { id: "analytics", label: t("staff.analytics.title"), visible: Boolean(practice?.id) },
       { id: "settings", label: t("staff.sidebar.settings"), visible: Boolean(isAdminLike && practice?.id) },
       { id: "attendance", label: t("staff.timeClock.title"), visible: Boolean(isAdminLike && practice?.id) },
@@ -354,7 +361,16 @@ export default function StaffDashboardPage() {
           <BillingSection payments={recentPayments} onRefresh={() => void refresh()} canManageBilling={Boolean(permissions.can_manage_billing)} />
         </TabsContent>
 
+        <TabsContent value="inventory" className="mt-6">
+          {practice?.id ? (
+            <ClinicInventoryManager entityId={practice.id} canCreate canDelete={false} />
+          ) : (
+            <p className="text-sm text-muted-foreground">No practice linked to this account.</p>
+          )}
+        </TabsContent>
+
         <TabsContent value="analytics" className="mt-6">
+
           <AnalyticsSection clinicId={practice.id} />
         </TabsContent>
 

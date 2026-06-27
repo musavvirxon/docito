@@ -54,6 +54,8 @@ const DoctorSignUp = lazy(() => import("@/pages/DoctorSignUp"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const StaffDashboard = lazy(() => import("@/pages/StaffDashboard"));
 const SuperAdminDashboard = lazy(() => import("@/pages/SuperAdminDashboard"));
+
+
 const AdminVideoBookingStatus = lazy(() => import("@/pages/AdminVideoBookingStatus"));
 
 const LabDashboardPage = lazy(() => import("@/pages/lab/LabDashboardPage"));

@@ -1,6 +1,8 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus, Package } from "lucide-react";
+import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
+
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -147,6 +149,8 @@ const DoctorDashboardContent = () => {
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "prescriptions", label: t("doctor.navigation.prescriptions", "Prescriptions"), icon: Pill },
+    { id: "inventory", label: t("doctor.navigation.inventory", "Inventory"), icon: Package },
+
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
@@ -164,6 +168,8 @@ const DoctorDashboardContent = () => {
     { id: "messages", label: t("doctor.navigation.messages"), icon: MessageSquare },
     { id: "referrals", label: t("doctor.navigation.referrals", "Referrals"), icon: ArrowRightLeft },
     { id: "prescriptions", label: t("doctor.navigation.prescriptions", "Prescriptions"), icon: Pill },
+    { id: "inventory", label: t("doctor.navigation.inventory", "Inventory"), icon: Package },
+
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
@@ -215,7 +221,34 @@ const DoctorDashboardContent = () => {
         return <DoctorPrescriptionsSection />;
       case "verify-documents":
         return <DocumentVerifySection />;
+      case "inventory": {
+        const clinicEntityId = doctorProfile?.practice_id ?? null;
+        const doctorEntityId = doctorProfile?.id ?? null;
+        const inventoryEntityId = clinicEntityId ?? doctorEntityId;
+        return (
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                <Package className="h-6 w-6" /> {t("doctor.navigation.inventory", "Inventory")}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {clinicEntityId
+                  ? "Clinic inventory and shared stock."
+                  : "Your personal instruments and medications."}
+              </p>
+            </div>
+            {inventoryEntityId ? (
+              <ClinicInventoryManager entityId={inventoryEntityId} canCreate canDelete />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No inventory available. Join a clinic or add personal items.
+              </p>
+            )}
+          </div>
+        );
+      }
       default:
+
         return (
           <div className="space-y-8">
             {/* New Patient · New Appointment CTA */}
