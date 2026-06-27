@@ -29,10 +29,12 @@ type SectionId =
   | "today"
   | "patients"
   | "billing"
+  | "inventory"
   | "analytics"
   | "settings"
   | "attendance"
   | "invites";
+
 
 function toNumber(v: unknown): number {
   if (typeof v === "number" && Number.isFinite(v)) return v;
