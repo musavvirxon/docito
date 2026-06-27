@@ -686,6 +686,174 @@ const AddProcedureModal = ({
               </div>
             ) : null}
 
+            {/* Inventory linkage */}
+            <Card className="border-emerald-200 bg-emerald-50/30 dark:bg-emerald-950/20">
+              <CardContent className="pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="w-4 h-4 text-emerald-700" />
+                    <Label className="font-medium">Instruments & Medications</Label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setPickerOpen((v) => !v);
+                      setPickerItemId("");
+                      setPickerQty(1);
+                    }}
+                  >
+                    <Plus className="w-4 h-4 mr-1" /> Add Item
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Items selected here will be auto-deducted from inventory when this procedure is completed.
+                  Reusable items will increment their use count; you'll be warned if stock is insufficient.
+                </p>
+
+                {pickerOpen && (
+                  <div className="grid grid-cols-12 gap-2 items-end p-2 rounded-md border bg-background">
+                    <div className="col-span-7">
+                      <Label className="text-xs">Item</Label>
+                      <Select value={pickerItemId} onValueChange={setPickerItemId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={mergedInventory.length ? "Select item…" : "No inventory available"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mergedInventory
+                            .filter((m) => !selectedInventory.find((s) => s.inventoryId === m.id))
+                            .map((m) => {
+                              const stock = getStockStatus(m);
+                              return (
+                                <SelectItem key={m.id} value={m.id}>
+                                  <span className="inline-flex items-center gap-2">
+                                    {m.source === "clinic" ? (
+                                      <Building2 className="w-3 h-3" />
+                                    ) : (
+                                      <UserIcon className="w-3 h-3" />
+                                    )}
+                                    {m.name} · {m.quantity_in_stock} {m.unit}
+                                    {stock !== "ok" && (
+                                      <Badge variant="outline" className="ml-1 text-[10px]">
+                                        {stock}
+                                      </Badge>
+                                    )}
+                                  </span>
+                                </SelectItem>
+                              );
+                            })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="col-span-3">
+                      <Label className="text-xs">Qty</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={pickerQty}
+                        onChange={(e) => setPickerQty(Math.max(1, parseInt(e.target.value) || 1))}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full"
+                        disabled={!pickerItemId}
+                        onClick={() => {
+                          const inv = mergedInventory.find((m) => m.id === pickerItemId);
+                          if (!inv) return;
+                          setSelectedInventory((prev) => [
+                            ...prev,
+                            { inventoryId: inv.id, quantity: pickerQty, entityScope: inv.source },
+                          ]);
+                          setPickerOpen(false);
+                          setPickerItemId("");
+                          setPickerQty(1);
+                        }}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {selectedInventory.length === 0 ? (
+                  <p className="text-xs text-muted-foreground italic">No inventory linked yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedInventory.map((sel, idx) => {
+                      const inv = mergedInventory.find((m) => m.id === sel.inventoryId);
+                      if (!inv) return null;
+                      const stock = getStockStatus(inv);
+                      const useSt = getUseStatus(inv);
+                      const insufficient = !inv.is_reusable && inv.quantity_in_stock < sel.quantity;
+                      return (
+                        <div
+                          key={sel.inventoryId}
+                          className="flex items-center gap-2 p-2 rounded-md border bg-background"
+                        >
+                          {inv.source === "clinic" ? (
+                            <Building2 className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <UserIcon className="w-4 h-4 text-muted-foreground" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">{inv.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Stock: {inv.quantity_in_stock} {inv.unit}
+                              {inv.is_reusable && inv.max_uses_per_unit
+                                ? ` · uses ${inv.current_use_count}/${inv.max_uses_per_unit}`
+                                : ""}
+                              {inv.requires_sterilization ? " · sterilizable" : ""}
+                            </div>
+                            {(insufficient || stock !== "ok" || useSt !== "ok") && (
+                              <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                                <AlertCircle className="w-3 h-3" />
+                                {insufficient
+                                  ? "Insufficient stock"
+                                  : useSt === "needs_sterilization"
+                                  ? "Needs sterilization"
+                                  : useSt === "exhausted"
+                                  ? "Max uses reached"
+                                  : stock}
+                              </div>
+                            )}
+                          </div>
+                          <Input
+                            type="number"
+                            min={1}
+                            value={sel.quantity}
+                            onChange={(e) =>
+                              setSelectedInventory((prev) =>
+                                prev.map((p, i) =>
+                                  i === idx ? { ...p, quantity: Math.max(1, parseInt(e.target.value) || 1) } : p,
+                                ),
+                              )
+                            }
+                            className="w-20 h-8"
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() =>
+                              setSelectedInventory((prev) => prev.filter((_, i) => i !== idx))
+                            }
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+
             <div className="flex justify-end space-x-2 pt-4">
               <Button type="button" variant="outline" onClick={handleClose}>
                 Cancel
