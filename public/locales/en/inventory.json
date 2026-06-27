@@ -9,19 +9,28 @@
   "search": "Search inventory…",
   "filterCategory": "All Categories",
   "filterStatus": "All Status",
+  "doctorSubtitle": "Your personal instruments and medications, plus clinic inventory when you are part of a clinic.",
+  "receptionistSubtitle": "View and manage clinic stock levels. Adjust quantities and monitor low stock.",
+  "noClinicJoined": "Join a clinic to see combined inventory here.",
+  "noPractice": "No practice linked to this account.",
+
   "stockStatus": {
     "ok": "In Stock",
     "low": "Low Stock",
     "critical": "Critical",
     "out": "Out of Stock",
-    "expired": "Expired"
+    "expired": "Expired",
+    "needsSterilization": "Needs Sterilization",
+    "exhausted": "Max Uses Reached"
   },
+
   "categories": {
     "medication": "Medication",
     "instrument": "Instrument",
     "supply": "Supply",
     "consumable": "Consumable"
   },
+
   "units": {
     "units": "Units",
     "ml": "ml",
@@ -34,6 +43,7 @@
     "strips": "Strips",
     "pairs": "Pairs"
   },
+
   "table": {
     "name": "Name",
     "category": "Category",
@@ -46,12 +56,18 @@
     "status": "Status",
     "actions": "Actions"
   },
+
   "daysRemaining": {
     "label": "~{{days}} days",
     "today": "Today",
     "unknown": "—",
     "noUsage": "No usage data"
   },
+
+  "actions": {
+    "markSterilized": "Mark Sterilized"
+  },
+
   "form": {
     "name": "Item Name *",
     "namePlaceholder": "e.g. Amoxicillin 500mg",
@@ -61,7 +77,7 @@
     "unit": "Unit of Measure *",
     "quantityInStock": "Quantity in Stock *",
     "reorderLevel": "Reorder Level",
-    "reorderLevelHint": "Alert will fire when stock falls to this level",
+    "reorderLevelHint": "Alert fires when stock falls to this level",
     "avgDailyUsage": "Avg. Daily Usage",
     "avgDailyUsageHint": "Leave blank to auto-calculate from usage history",
     "expiryDate": "Expiry Date",
@@ -72,8 +88,17 @@
     "save": "Save Item",
     "saving": "Saving…",
     "add": "Add Item",
-    "adding": "Adding…"
+    "adding": "Adding…",
+    "reuseSettings": "Reuse & Sterilization",
+    "isReusable": "Reusable instrument",
+    "isReusableHint": "Can this item be used multiple times before disposal?",
+    "maxUsesPerUnit": "Max uses per unit",
+    "maxUsesPlaceholder": "e.g. 5 — leave blank for unlimited",
+    "maxUsesHint": "How many procedures this instrument handles before replacement or sterilization.",
+    "requiresSterilization": "Requires sterilization between uses",
+    "sterilizationHint": "Staff will be prompted to mark this as sterilized before reuse."
   },
+
   "adjust": {
     "title": "Adjust Stock — {{name}}",
     "current": "Current stock",
@@ -95,6 +120,7 @@
     "apply": "Apply Adjustment",
     "applying": "Applying…"
   },
+
   "logs": {
     "title": "Stock History — {{name}}",
     "empty": "No stock changes recorded yet.",
@@ -104,27 +130,33 @@
       "adjustment": "Adjusted",
       "procedure_use": "Used in procedure",
       "expired": "Written off (expired)",
-      "damaged": "Written off (damaged)"
+      "damaged": "Written off (damaged)",
+      "sterilized": "Sterilized — use count reset"
     },
     "by": "by {{user}}",
-    "ago": "{{time}} ago",
     "close": "Close"
   },
+
   "procedureItems": {
     "title": "Required Inventory",
-    "subtitle": "Items that will be deducted when this procedure is completed",
+    "subtitle": "Items deducted when this procedure is completed",
     "addItem": "Add Item",
     "empty": "No inventory items linked to this procedure.",
-    "emptyHint": "Add items that are consumed during this procedure.",
+    "emptyHint": "Add items consumed during this procedure.",
     "quantity": "Qty",
     "available": "{{qty}} available",
     "remove": "Remove",
     "selectItem": "Select inventory item…",
-    "selectItemPlaceholder": "Search items…",
-    "outOfStock": "Out of stock",
-    "lowStock": "Low stock",
-    "autoDeduct": "Items will be automatically deducted when this procedure is marked Completed."
+    "outOfStock": "out of stock",
+    "lowStock": "low stock",
+    "needsSterilization": "needs sterilization before use",
+    "exhausted": "max uses reached — needs replacement",
+    "insufficientWarning": "Some inventory items are insufficient or need attention. Proceed anyway?",
+    "autoDeduct": "Items are automatically deducted when this procedure is marked Completed.",
+    "clinicInventory": "clinic inventory",
+    "personalInventory": "your personal inventory"
   },
+
   "lowStockAlert": {
     "title": "Low Stock Alerts",
     "critical": "{{count}} item critically low",
@@ -135,17 +167,20 @@
     "dismiss": "Dismiss",
     "item": "{{name}} — {{qty}} {{unit}} remaining ({{days}} days)"
   },
+
   "delete": {
     "title": "Delete \"{{name}}\"?",
     "description": "This will permanently remove this item and all its stock history. This cannot be undone.",
     "cancel": "Cancel",
     "confirm": "Delete"
   },
+
   "empty": {
     "title": "No inventory items yet",
     "description": "Add medications, instruments, and supplies to track stock levels.",
     "action": "Add First Item"
   },
+
   "errors": {
     "loadFailed": "Failed to load inventory",
     "saveFailed": "Failed to save item",
@@ -153,18 +188,16 @@
     "deleteFailed": "Failed to delete item",
     "deductFailed": "Failed to deduct inventory"
   },
+
   "success": {
     "added": "Item added to inventory",
     "updated": "Item updated",
     "adjusted": "Stock adjusted",
     "deleted": "Item deleted",
-    "deducted": "Inventory updated for completed procedure"
+    "deducted": "Inventory updated for completed procedure",
+    "sterilized": "Item marked as sterilized — use count reset to 0"
   },
-  "roles": {
-    "adminOnly": "Only clinic admins can add or delete items.",
-    "doctorNote": "Doctors can adjust stock quantities.",
-    "staffNote": "Reception staff can adjust stock quantities."
-  },
+
   "page": {
     "title": "Inventory Management",
     "breadcrumb": "Inventory"
