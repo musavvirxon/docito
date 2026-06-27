@@ -15,17 +15,17 @@ interface Props {
 }
 
 const STATUS_STYLE: Record<StockStatus, string> = {
-  ok: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200',
-  low: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200',
+  ok:       'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200',
+  low:      'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200',
   critical: 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-200',
-  out: 'bg-gray-500/15 text-gray-600 dark:text-gray-400 border-gray-200',
+  out:      'bg-gray-500/15 text-gray-600 dark:text-gray-400 border-gray-200',
 };
 
 const STATUS_ICON: Record<StockStatus, typeof CheckCircle> = {
-  ok: CheckCircle,
-  low: AlertTriangle,
+  ok:       CheckCircle,
+  low:      AlertTriangle,
   critical: AlertTriangle,
-  out: XCircle,
+  out:      XCircle,
 };
 
 export function InventoryStockBadge({ item, showDays = true }: Props) {
