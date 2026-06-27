@@ -32,7 +32,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 import ToothSelector from "./ToothSelector";
-import { CalendarPlus, FileText, Upload, X, AlertCircle } from "lucide-react";
+import { CalendarPlus, FileText, Upload, X, AlertCircle, Package, Plus, Trash2, Building2, User as UserIcon } from "lucide-react";
+import { useMergedInventory, getStockStatus, getUseStatus } from "@/hooks/useClinicInventory";
 
 const PROCEDURE_CATEGORY_ALIASES: Record<string, string> = {
   surgical: "oral_surgery",
