@@ -1,10 +1,11 @@
 // src/hooks/useClinicInventory.ts
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { supabase as supabaseTyped } from '@/integrations/supabase/client';
-const supabase = supabaseTyped as any;
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+
+// ── Types ──────────────────────────────────────────────────────────────────
 
 export type InventoryCategory = 'medication' | 'instrument' | 'supply' | 'consumable';
 export type InventoryChangeType =
@@ -13,11 +14,16 @@ export type InventoryChangeType =
   | 'adjustment'
   | 'procedure_use'
   | 'expired'
-  | 'damaged';
+  | 'damaged'
+  | 'sterilized';
+export type UnitStatusType = 'available' | 'in_use' | 'needs_sterilization' | 'retired';
+export type StockStatus = 'ok' | 'low' | 'critical' | 'out';
+export type UseStatus = 'ok' | 'needs_sterilization' | 'exhausted';
 
 export interface ClinicInventoryItem {
   id: string;
   entity_id: string;
+  owner_type: 'clinic' | 'doctor';
   name: string;
   description: string | null;
   category: InventoryCategory;
@@ -25,6 +31,10 @@ export interface ClinicInventoryItem {
   quantity_in_stock: number;
   reorder_level: number;
   avg_daily_usage: number | null;
+  is_reusable: boolean;
+  max_uses_per_unit: number | null;
+  requires_sterilization: boolean;
+  current_use_count: number;
   expiry_date: string | null;
   supplier: string | null;
   unit_cost: number | null;
@@ -34,6 +44,8 @@ export interface ClinicInventoryItem {
   updated_at: string;
 }
 
+export type MergedInventoryItem = ClinicInventoryItem & { source: 'clinic' | 'doctor' };
+
 export interface InventoryLog {
   id: string;
   inventory_id: string;
@@ -42,6 +54,8 @@ export interface InventoryLog {
   quantity_change: number;
   quantity_before: number;
   quantity_after: number;
+  use_count_before: number | null;
+  use_count_after: number | null;
   reference_id: string | null;
   reference_type: string | null;
   notes: string | null;
@@ -68,28 +82,30 @@ export interface AddInventoryItemInput {
   quantity_in_stock: number;
   reorder_level?: number;
   avg_daily_usage?: number | null;
+  is_reusable?: boolean;
+  max_uses_per_unit?: number | null;
+  requires_sterilization?: boolean;
   expiry_date?: string | null;
   supplier?: string | null;
   unit_cost?: number | null;
   notes?: string | null;
+  owner_type?: 'clinic' | 'doctor';
 }
 
 export interface AdjustStockInput {
   change_type: InventoryChangeType;
-  quantity: number; // for 'adjustment' this is the final amount; otherwise the delta
+  quantity: number;
   notes?: string | null;
   reference_id?: string | null;
   reference_type?: string | null;
 }
 
-// ── Days-remaining helper ──────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
+
 export function calcDaysRemaining(item: ClinicInventoryItem): number | null {
   if (!item.avg_daily_usage || item.avg_daily_usage <= 0) return null;
   return Math.floor(item.quantity_in_stock / item.avg_daily_usage);
 }
-
-// ── Stock status helper ────────────────────────────────────────────────────
-export type StockStatus = 'ok' | 'low' | 'critical' | 'out';
 
 export function getStockStatus(item: ClinicInventoryItem): StockStatus {
   if (item.quantity_in_stock <= 0) return 'out';
@@ -98,18 +114,25 @@ export function getStockStatus(item: ClinicInventoryItem): StockStatus {
   return 'ok';
 }
 
+export function getUseStatus(item: ClinicInventoryItem): UseStatus {
+  if (!item.is_reusable || !item.max_uses_per_unit) return 'ok';
+  if (item.current_use_count >= item.max_uses_per_unit) {
+    return item.requires_sterilization ? 'needs_sterilization' : 'exhausted';
+  }
+  return 'ok';
+}
+
 // ── Main hook ──────────────────────────────────────────────────────────────
+
 export function useClinicInventory(entityId: string | null | undefined) {
   const { session } = useAuth();
   const { t } = useTranslation('inventory');
   const [items, setItems] = useState<ClinicInventoryItem[]>([]);
   const [loading, setLoading] = useState(false);
-
   const userId = session?.user?.id;
 
-  // ── Fetch all active inventory items ──────────────────────────────────────
   const refresh = useCallback(async () => {
-    if (!entityId) return;
+    if (!entityId) { setItems([]); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -119,22 +142,19 @@ export function useClinicInventory(entityId: string | null | undefined) {
         .eq('is_active', true)
         .order('category', { ascending: true })
         .order('name', { ascending: true });
-
       if (error) throw error;
       setItems((data as ClinicInventoryItem[]) || []);
     } catch (err: any) {
-      console.error('useClinicInventory: fetch failed', err);
+      console.error('useClinicInventory refresh failed', err);
       toast.error(t('errors.loadFailed'));
     } finally {
       setLoading(false);
     }
   }, [entityId, t]);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
-  // ── Add a new item ────────────────────────────────────────────────────────
+  // ── Add item ─────────────────────────────────────────────────────────────
   const addItem = useCallback(
     async (input: AddInventoryItemInput): Promise<ClinicInventoryItem | null> => {
       if (!entityId || !userId) return null;
@@ -143,6 +163,7 @@ export function useClinicInventory(entityId: string | null | undefined) {
           .from('clinic_inventory')
           .insert({
             entity_id: entityId,
+            owner_type: input.owner_type || 'clinic',
             name: input.name.trim(),
             description: input.description || null,
             category: input.category,
@@ -150,6 +171,10 @@ export function useClinicInventory(entityId: string | null | undefined) {
             quantity_in_stock: input.quantity_in_stock,
             reorder_level: input.reorder_level ?? 10,
             avg_daily_usage: input.avg_daily_usage ?? null,
+            is_reusable: input.is_reusable ?? false,
+            max_uses_per_unit: input.max_uses_per_unit ?? null,
+            requires_sterilization: input.requires_sterilization ?? false,
+            current_use_count: 0,
             expiry_date: input.expiry_date || null,
             supplier: input.supplier || null,
             unit_cost: input.unit_cost ?? null,
@@ -160,12 +185,10 @@ export function useClinicInventory(entityId: string | null | undefined) {
           } as any)
           .select()
           .single();
-
         if (error) throw error;
 
-        // Log the initial stock addition
         if (input.quantity_in_stock > 0 && data) {
-          await (supabase as any).from('clinic_inventory_logs').insert({
+          await supabase.from('clinic_inventory_logs').insert({
             inventory_id: (data as any).id,
             entity_id: entityId,
             change_type: 'addition',
@@ -177,7 +200,6 @@ export function useClinicInventory(entityId: string | null | undefined) {
             performed_by: userId,
           } as any);
         }
-
         toast.success(t('success.added'));
         await refresh();
         return data as ClinicInventoryItem;
@@ -190,20 +212,16 @@ export function useClinicInventory(entityId: string | null | undefined) {
     [entityId, userId, refresh, t],
   );
 
-  // ── Update an existing item (metadata only, not quantity) ─────────────────
+  // ── Update item metadata ─────────────────────────────────────────────────
   const updateItem = useCallback(
     async (id: string, updates: Partial<AddInventoryItemInput>): Promise<boolean> => {
       if (!entityId || !userId) return false;
       try {
         const { error } = await supabase
           .from('clinic_inventory')
-          .update({
-            ...updates,
-            updated_by: userId,
-          } as any)
+          .update({ ...updates, updated_by: userId } as any)
           .eq('id', id)
           .eq('entity_id', entityId);
-
         if (error) throw error;
         toast.success(t('success.updated'));
         await refresh();
@@ -221,7 +239,6 @@ export function useClinicInventory(entityId: string | null | undefined) {
   const adjustStock = useCallback(
     async (item: ClinicInventoryItem, input: AdjustStockInput): Promise<boolean> => {
       if (!entityId || !userId) return false;
-
       const before = item.quantity_in_stock;
       let after: number;
       let delta: number;
@@ -233,21 +250,19 @@ export function useClinicInventory(entityId: string | null | undefined) {
         delta = input.quantity;
         after = before + delta;
       } else {
-        // deduction, expired, damaged, procedure_use
         delta = -Math.abs(input.quantity);
         after = Math.max(0, before + delta);
       }
 
       try {
-        const { error: updateErr } = await supabase
+        const { error } = await supabase
           .from('clinic_inventory')
           .update({ quantity_in_stock: after, updated_by: userId } as any)
           .eq('id', item.id)
           .eq('entity_id', entityId);
+        if (error) throw error;
 
-        if (updateErr) throw updateErr;
-
-        await (supabase as any).from('clinic_inventory_logs').insert({
+        await supabase.from('clinic_inventory_logs').insert({
           inventory_id: item.id,
           entity_id: entityId,
           change_type: input.change_type,
@@ -272,7 +287,98 @@ export function useClinicInventory(entityId: string | null | undefined) {
     [entityId, userId, refresh, t],
   );
 
-  // ── Soft-delete an item ───────────────────────────────────────────────────
+  // ── Mark a reusable unit as used ─────────────────────────────────────────
+  const markUnitUsed = useCallback(
+    async (item: ClinicInventoryItem, appointmentId: string): Promise<void> => {
+      if (!entityId || !userId) return;
+      const useBefore = item.current_use_count;
+      const useAfter = useBefore + 1;
+
+      await supabase
+        .from('clinic_inventory')
+        .update({ current_use_count: useAfter, updated_by: userId } as any)
+        .eq('id', item.id);
+
+      // If this exhausts the unit AND no sterilization path: deduct one from stock
+      if (
+        item.max_uses_per_unit &&
+        useAfter >= item.max_uses_per_unit &&
+        !item.requires_sterilization
+      ) {
+        const stockAfter = Math.max(0, item.quantity_in_stock - 1);
+        await supabase
+          .from('clinic_inventory')
+          .update({ quantity_in_stock: stockAfter, current_use_count: 0, updated_by: userId } as any)
+          .eq('id', item.id);
+
+        await supabase.from('clinic_inventory_logs').insert({
+          inventory_id: item.id,
+          entity_id: entityId,
+          change_type: 'deduction',
+          quantity_change: -1,
+          quantity_before: item.quantity_in_stock,
+          quantity_after: stockAfter,
+          use_count_before: useBefore,
+          use_count_after: 0,
+          reference_id: appointmentId,
+          reference_type: 'appointment',
+          notes: `Unit reached max uses (${item.max_uses_per_unit}) — auto-disposed`,
+          performed_by: userId,
+        } as any);
+      } else {
+        await supabase.from('clinic_inventory_logs').insert({
+          inventory_id: item.id,
+          entity_id: entityId,
+          change_type: 'procedure_use',
+          quantity_change: 0,
+          quantity_before: item.quantity_in_stock,
+          quantity_after: item.quantity_in_stock,
+          use_count_before: useBefore,
+          use_count_after: useAfter,
+          reference_id: appointmentId,
+          reference_type: 'appointment',
+          notes: `Use ${useAfter} of ${item.max_uses_per_unit ?? '∞'}`,
+          performed_by: userId,
+        } as any);
+      }
+      await refresh();
+    },
+    [entityId, userId, refresh],
+  );
+
+  // ── Mark item as sterilized (reset use count) ─────────────────────────────
+  const markSterilized = useCallback(
+    async (itemId: string): Promise<void> => {
+      if (!entityId || !userId) return;
+      const item = items.find((i) => i.id === itemId);
+      const useBefore = item?.current_use_count ?? 0;
+
+      await supabase
+        .from('clinic_inventory')
+        .update({ current_use_count: 0, updated_by: userId } as any)
+        .eq('id', itemId);
+
+      await supabase.from('clinic_inventory_logs').insert({
+        inventory_id: itemId,
+        entity_id: entityId,
+        change_type: 'sterilized',
+        quantity_change: 0,
+        quantity_before: item?.quantity_in_stock ?? 0,
+        quantity_after: item?.quantity_in_stock ?? 0,
+        use_count_before: useBefore,
+        use_count_after: 0,
+        reference_type: 'manual',
+        notes: 'Sterilized — use count reset to 0',
+        performed_by: userId,
+      } as any);
+
+      toast.success(t('success.sterilized'));
+      await refresh();
+    },
+    [entityId, userId, items, refresh, t],
+  );
+
+  // ── Soft-delete ───────────────────────────────────────────────────────────
   const deleteItem = useCallback(
     async (id: string): Promise<boolean> => {
       if (!entityId || !userId) return false;
@@ -282,7 +388,6 @@ export function useClinicInventory(entityId: string | null | undefined) {
           .update({ is_active: false, updated_by: userId } as any)
           .eq('id', id)
           .eq('entity_id', entityId);
-
         if (error) throw error;
         toast.success(t('success.deleted'));
         await refresh();
@@ -296,28 +401,21 @@ export function useClinicInventory(entityId: string | null | undefined) {
     [entityId, userId, refresh, t],
   );
 
-  // ── Fetch logs for a specific item ─────────────────────────────────────────
-  const fetchLogs = useCallback(
-    async (inventoryId: string): Promise<InventoryLog[]> => {
-      try {
-        const { data, error } = await supabase
-          .from('clinic_inventory_logs')
-          .select('*')
-          .eq('inventory_id', inventoryId)
-          .order('created_at', { ascending: false })
-          .limit(50);
+  // ── Fetch logs for a single item ──────────────────────────────────────────
+  const fetchLogs = useCallback(async (inventoryId: string): Promise<InventoryLog[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('clinic_inventory_logs')
+        .select('*')
+        .eq('inventory_id', inventoryId)
+        .order('created_at', { ascending: false })
+        .limit(60);
+      if (error) throw error;
+      return (data as InventoryLog[]) || [];
+    } catch { return []; }
+  }, []);
 
-        if (error) throw error;
-        return (data as InventoryLog[]) || [];
-      } catch (err: any) {
-        console.error('fetchLogs failed', err);
-        return [];
-      }
-    },
-    [],
-  );
-
-  // ── Deduct inventory for a completed procedure ────────────────────────────
+  // ── Deduct consumables when a procedure is completed ─────────────────────
   const deductForProcedure = useCallback(
     async (
       procedureId: string | null,
@@ -326,68 +424,77 @@ export function useClinicInventory(entityId: string | null | undefined) {
     ): Promise<void> => {
       if (!entityId || !userId) return;
       try {
-        // Find requirements for this procedure
         let query = supabase
           .from('procedure_inventory_requirements')
           .select('*, inventory_item:clinic_inventory(*)')
           .eq('entity_id', entityId);
 
-        if (procedureId) {
-          query = query.eq('procedure_id', procedureId);
-        } else {
-          query = query.eq('procedure_name', procedureName);
-        }
+        if (procedureId) query = query.eq('procedure_id', procedureId);
+        else query = query.eq('procedure_name', procedureName);
 
-        const { data: reqs, error } = await query;
-        if (error || !reqs?.length) return;
+        const { data: reqs } = await query;
+        if (!reqs?.length) return;
 
         for (const req of reqs as any[]) {
           const inv: ClinicInventoryItem = req.inventory_item;
           if (!inv) continue;
-          const before = inv.quantity_in_stock;
-          const delta = Math.min(req.quantity_required, before);
-          const after = Math.max(0, before - delta);
 
-          await supabase
-            .from('clinic_inventory')
-            .update({ quantity_in_stock: after, updated_by: userId } as any)
-            .eq('id', inv.id);
+          if (inv.is_reusable) {
+            // Reusable: increment use count instead of deducting stock
+            await markUnitUsed(inv, appointmentId);
+            const nextUseCount = inv.current_use_count + 1;
+            const simulatedItem = { ...inv, current_use_count: nextUseCount };
+            const useStatus = getUseStatus(simulatedItem);
+            if (useStatus === 'needs_sterilization') {
+              toast.warning(`${inv.name}: needs sterilization before next use.`);
+            } else if (useStatus === 'exhausted') {
+              toast.warning(`${inv.name}: max uses reached — removed from stock.`);
+            }
+          } else {
+            // Consumable: deduct quantity_required from stock
+            const before = inv.quantity_in_stock;
+            const delta = Math.min(req.quantity_required, before);
+            const after = Math.max(0, before - delta);
 
-          await (supabase as any).from('clinic_inventory_logs').insert({
-            inventory_id: inv.id,
-            entity_id: entityId,
-            change_type: 'procedure_use',
-            quantity_change: -delta,
-            quantity_before: before,
-            quantity_after: after,
-            reference_id: appointmentId,
-            reference_type: 'appointment',
-            notes: `Used in: ${procedureName}`,
-            performed_by: userId,
-          } as any);
+            await supabase
+              .from('clinic_inventory')
+              .update({ quantity_in_stock: after, updated_by: userId } as any)
+              .eq('id', inv.id);
+
+            await supabase.from('clinic_inventory_logs').insert({
+              inventory_id: inv.id,
+              entity_id: entityId,
+              change_type: 'procedure_use',
+              quantity_change: -delta,
+              quantity_before: before,
+              quantity_after: after,
+              reference_id: appointmentId,
+              reference_type: 'appointment',
+              notes: `Used in procedure: ${procedureName}`,
+              performed_by: userId,
+            } as any);
+          }
         }
-
         await refresh();
       } catch (err: any) {
         console.warn('deductForProcedure failed', err);
       }
     },
-    [entityId, userId, refresh],
+    [entityId, userId, refresh, markUnitUsed],
   );
 
-  // ── Derived counts ────────────────────────────────────────────────────────
+  // ── Derived stats ─────────────────────────────────────────────────────────
   const stats = useMemo(() => {
     const lowStock = items.filter((i) => getStockStatus(i) === 'low');
     const critical = items.filter((i) => getStockStatus(i) === 'critical');
     const outOfStock = items.filter((i) => getStockStatus(i) === 'out');
+    const needsSterilization = items.filter((i) => getUseStatus(i) === 'needs_sterilization');
     const expiringSoon = items.filter((i) => {
       if (!i.expiry_date) return false;
-      const days = Math.ceil(
-        (new Date(i.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
+      const days = Math.ceil((new Date(i.expiry_date).getTime() - Date.now()) / 86400000);
       return days >= 0 && days <= 30;
     });
-    return { lowStock, critical, outOfStock, expiringSoon };
+    return { lowStock, critical, outOfStock, needsSterilization, expiringSoon };
   }, [items]);
 
   return {
@@ -398,13 +505,80 @@ export function useClinicInventory(entityId: string | null | undefined) {
     addItem,
     updateItem,
     adjustStock,
+    markUnitUsed,
+    markSterilized,
     deleteItem,
     fetchLogs,
     deductForProcedure,
   };
 }
 
+// ── Merged inventory hook (clinic + doctor combined) ──────────────────────
+
+export function useMergedInventory(
+  clinicEntityId: string | null | undefined,
+  doctorEntityId: string | null | undefined,
+) {
+  const [items, setItems] = useState<MergedInventoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const refresh = useCallback(async () => {
+    if (!clinicEntityId && !doctorEntityId) { setItems([]); return; }
+    setLoading(true);
+    try {
+      const queries: Promise<MergedInventoryItem[]>[] = [];
+
+      if (clinicEntityId) {
+        queries.push(
+          supabase
+            .from('clinic_inventory')
+            .select('*')
+            .eq('entity_id', clinicEntityId)
+            .eq('is_active', true)
+            .then((r) =>
+              ((r.data || []) as ClinicInventoryItem[]).map((i) => ({
+                ...i,
+                source: 'clinic' as const,
+              })),
+            ),
+        );
+      }
+
+      if (doctorEntityId && doctorEntityId !== clinicEntityId) {
+        queries.push(
+          supabase
+            .from('clinic_inventory')
+            .select('*')
+            .eq('entity_id', doctorEntityId)
+            .eq('is_active', true)
+            .then((r) =>
+              ((r.data || []) as ClinicInventoryItem[]).map((i) => ({
+                ...i,
+                source: 'doctor' as const,
+              })),
+            ),
+        );
+      }
+
+      const results = await Promise.all(queries);
+      const merged = results
+        .flat()
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setItems(merged);
+    } catch (e) {
+      console.error('useMergedInventory failed', e);
+    } finally {
+      setLoading(false);
+    }
+  }, [clinicEntityId, doctorEntityId]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  return { items, loading, refresh };
+}
+
 // ── Procedure inventory requirements hook ─────────────────────────────────
+
 export function useProcedureInventoryRequirements(
   entityId: string | null | undefined,
   procedureId: string | null | undefined,
@@ -423,7 +597,6 @@ export function useProcedureInventoryRequirements(
         .select('*, inventory_item:clinic_inventory(*)')
         .eq('entity_id', entityId)
         .eq('procedure_id', procedureId);
-
       if (error) throw error;
       setRequirements((data as ProcedureInventoryRequirement[]) || []);
     } finally {
@@ -439,27 +612,21 @@ export function useProcedureInventoryRequirements(
       try {
         const { error } = await supabase
           .from('procedure_inventory_requirements')
-          .upsert({
-            entity_id: entityId,
-            procedure_id: procedureId,
-            inventory_id: inventoryId,
-            quantity_required: quantityRequired,
-          } as any, { onConflict: 'entity_id,procedure_id,inventory_id' });
-
+          .upsert(
+            { entity_id: entityId, procedure_id: procedureId, inventory_id: inventoryId, quantity_required: quantityRequired } as any,
+            { onConflict: 'entity_id,procedure_id,inventory_id' },
+          );
         if (error) throw error;
         await refresh();
         return true;
-      } catch (err) {
-        console.error('addRequirement failed', err);
-        return false;
-      }
+      } catch { return false; }
     },
     [entityId, procedureId, userId, refresh],
   );
 
   const removeRequirement = useCallback(
     async (requirementId: string): Promise<void> => {
-      await (supabase as any).from('procedure_inventory_requirements').delete().eq('id', requirementId);
+      await supabase.from('procedure_inventory_requirements').delete().eq('id', requirementId);
       await refresh();
     },
     [refresh],
