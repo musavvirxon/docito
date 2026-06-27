@@ -221,7 +221,34 @@ const DoctorDashboardContent = () => {
         return <DoctorPrescriptionsSection />;
       case "verify-documents":
         return <DocumentVerifySection />;
+      case "inventory": {
+        const clinicEntityId = doctorProfile?.practice_id ?? null;
+        const doctorEntityId = doctorProfile?.id ?? null;
+        const inventoryEntityId = clinicEntityId ?? doctorEntityId;
+        return (
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                <Package className="h-6 w-6" /> {t("doctor.navigation.inventory", "Inventory")}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {clinicEntityId
+                  ? "Clinic inventory and shared stock."
+                  : "Your personal instruments and medications."}
+              </p>
+            </div>
+            {inventoryEntityId ? (
+              <ClinicInventoryManager entityId={inventoryEntityId} canCreate canDelete />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No inventory available. Join a clinic or add personal items.
+              </p>
+            )}
+          </div>
+        );
+      }
       default:
+
         return (
           <div className="space-y-8">
             {/* New Patient · New Appointment CTA */}
