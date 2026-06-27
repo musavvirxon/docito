@@ -361,7 +361,16 @@ export default function StaffDashboardPage() {
           <BillingSection payments={recentPayments} onRefresh={() => void refresh()} canManageBilling={Boolean(permissions.can_manage_billing)} />
         </TabsContent>
 
+        <TabsContent value="inventory" className="mt-6">
+          {practice?.id ? (
+            <ClinicInventoryManager entityId={practice.id} canCreate canDelete={false} />
+          ) : (
+            <p className="text-sm text-muted-foreground">No practice linked to this account.</p>
+          )}
+        </TabsContent>
+
         <TabsContent value="analytics" className="mt-6">
+
           <AnalyticsSection clinicId={practice.id} />
         </TabsContent>
 
