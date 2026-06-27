@@ -85,8 +85,19 @@ const AddProcedureModal = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [dentistId, setDentistId] = useState<string | null>(null);
+  const [practiceId, setPracticeId] = useState<string | null>(null);
   const [categoryOptions, setCategoryOptions] = useState(DEFAULT_PROCEDURE_CATEGORIES);
   const [customCategory, setCustomCategory] = useState("");
+
+  // Inventory linkage state
+  const [selectedInventory, setSelectedInventory] = useState<
+    { inventoryId: string; quantity: number; entityScope: string }[]
+  >([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerItemId, setPickerItemId] = useState("");
+  const [pickerQty, setPickerQty] = useState(1);
+
+  const { items: mergedInventory } = useMergedInventory(practiceId, dentistId);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
