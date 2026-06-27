@@ -16,6 +16,9 @@ import BillingSection from "@/components/staff/BillingSection";
 import { InvitationsList } from "@/components/staff/InvitationsList";
 import AnalyticsSection from "@/components/staff/AnalyticsSection";
 import SettingsSection from "@/components/staff/SettingsSection";
+import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
+import { Package } from "lucide-react";
+
 
 import TimeClockCard from "@/components/staff/TimeClockCard";
 import AttendanceAdminPanel from "@/components/staff/AttendanceAdminPanel";
