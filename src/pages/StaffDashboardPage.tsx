@@ -81,6 +81,8 @@ export default function StaffDashboardPage() {
       { id: "today", label: t("staff.sidebar.menu.today"), visible: Boolean(permissions?.can_view_schedule) },
       { id: "patients", label: t("staff.sidebar.menu.patients"), visible: Boolean(permissions?.can_manage_patients) },
       { id: "billing", label: t("staff.sidebar.menu.billing"), visible: Boolean(permissions?.can_manage_billing) },
+      { id: "inventory", label: t("staff.sidebar.menu.inventory", { defaultValue: "Inventory" }), visible: Boolean(practice?.id) },
+
       { id: "analytics", label: t("staff.analytics.title"), visible: Boolean(practice?.id) },
       { id: "settings", label: t("staff.sidebar.settings"), visible: Boolean(isAdminLike && practice?.id) },
       { id: "attendance", label: t("staff.timeClock.title"), visible: Boolean(isAdminLike && practice?.id) },
