@@ -212,7 +212,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
 
           {entityId && procedureId && (
             <div className="rounded-lg border border-border bg-muted/30 p-3">
-              <ProcedureInventoryItems entityId={entityId} procedureId={procedureId} />
+              <ProcedureInventoryItems clinicEntityId={entityId} procedureId={procedureId} />
             </div>
           )}
         </div>
