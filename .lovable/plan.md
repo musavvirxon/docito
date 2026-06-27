@@ -1,47 +1,73 @@
-## Inventory Feature Wiring Plan
+# Inventory in Procedures + Doctor/Staff Dashboards
 
-Apply the user-provided prompts in order across 5 files. No new components or DB changes — assumes `ClinicInventoryManager`, `ProcedureInventoryItems`, `useClinicInventory`, `useActiveEntityScope`, and `public/locales/en/inventory.json` already exist (or are added separately).
+## 1. Database — add reusability + sterilization columns
 
-### 1. `src/App.tsx`
-- Add lazy import: `const InventoryPage = lazy(() => import("@/pages/InventoryPage"));`
-- Add protected route `/inventory` rendering `<InventoryPage />` inside the same protected-routes wrapper used by `/practices/dashboard`, `/doctor/dashboard`, `/staff-dashboard`.
+The `clinic_inventory` table currently has 18 columns but is missing the fields the frontend hook already references (`is_reusable`, `max_uses_per_unit`, `requires_sterilization`, `current_use_count`). One migration:
 
-### 2. `src/pages/AdminDashboard.tsx`
-- Add `Package` to the lucide-react import.
-- Add `import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";`
-- Insert sidebar tab `{ id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package }` between `services` and `staff`.
-- Add a render branch after the `services` section:
+- Add `is_reusable boolean NOT NULL DEFAULT false`
+- Add `max_uses_per_unit integer NULL`
+- Add `requires_sterilization boolean NOT NULL DEFAULT false`
+- Add `current_use_count integer NOT NULL DEFAULT 0`
+- Add an `owner_type text NOT NULL DEFAULT 'clinic'` (`'clinic' | 'doctor'`) so the same table holds doctor-personal inventory (lets `useMergedInventory` query both with one schema).
+- Add index on `(entity_id, owner_type)`.
+
+No RLS changes — existing policy already scopes by `entity_id`.
+
+## 2. `AddProcedureModal.tsx` — inventory picker
+
+Add a new section above the Cancel/Submit row inside the existing dialog:
+
+- Pull clinic entity via `useActiveEntityScope('clinic')` + `useAccessScope` (fallback to `primary?.entity_id`).
+- Use `useMergedInventory(clinicEntityId, doctorEntityId)` to get a unified list (clinic 🏥 + doctor 👤).
+- Local state: `selectedInventory[]`, `inventoryWarnings[]`, picker open/qty.
+- UI: header with "Instruments & Medications" + "Add Item" button; collapsible picker row (Select + qty input + Add); list of chosen items showing source icon, qty editor, reuse counter (`current_use_count / max_uses_per_unit`), warning icon when status ≠ ok, remove button; inline `Alert` listing warnings.
+- `checkInventory()` flags: out-of-stock, insufficient qty, critical/low, `needs_sterilization`, `exhausted`.
+- In `handleSubmit`: run `checkInventory()` first; if hard-fail (out/insufficient) show `window.confirm` to proceed anyway.
+- Reset all inventory state in the existing `open` reset effect.
+- Pass selections back via `onSubmit` payload (`inventory: [{inventoryId, quantity}]`) so they can be persisted to `procedure_inventory_requirements` (already exists) by the parent's create-procedure flow.
+
+## 3. `useAppointmentProcedures.ts` — auto-deduct on completion
+
+- Import `useClinicInventory`, resolve `entityId` via `useAccessScope` + `useActiveEntityScope('clinic')`.
+- In `updateStatus` (both dental and general branches), after the supabase `.update()` succeeds and before `refresh()`, when `status === 'completed' && entityId`:
+  ```ts
+  await deductForProcedure(item.procedureId ?? null, item.name, appointmentId ?? '');
   ```
-  {activeSection === 'inventory' && <ClinicInventoryManager entityId={entityId} />}
-  ```
-  using existing `useAccessScope` / `useActiveEntityScope` to derive `entityId`.
+  `deductForProcedure` already handles: subtract `quantity_in_stock`, increment `current_use_count` for reusables, auto-dispose at `max_uses_per_unit`, log to `clinic_inventory_logs`, and toast on warnings.
 
-### 3. `src/components/appointments/AddProcedureModal.tsx`
-- Add imports: `ProcedureInventoryItems`, `useAccessScope`, `useActiveEntityScope`.
-- Inside component, derive `entityId = activeEntityId || primary?.entity_id`.
-- Render `<ProcedureInventoryItems entityId={entityId} procedureId={procedureId} />` at end of form when both exist, with i18n title/hint.
+## 4. `DoctorDashboard.tsx` — Inventory section
 
-### 4. `public/locales/en/appointments.json`
-- Add to `addProcedure`:
-  - `"inventoryTitle": "Required Inventory"`
-  - `"inventoryHint": "Items deducted automatically when this procedure is completed"`
+- Import `Package`, `ClinicInventoryManager`.
+- Derive `clinicEntityId = doctorProfile?.practice_id`, `doctorEntityId = doctorProfile?.id`, `inventoryEntityId = clinicEntityId ?? doctorEntityId`.
+- Add `{ id: 'inventory', label: t('doctor.tabs.inventory', {defaultValue:'Inventory'}), icon: Package }` to the sidebar nav array (both clinic-joined and independent variants if both exist).
+- Render `<ClinicInventoryManager entityId={inventoryEntityId} canCreate canDelete />` when `activeSection === 'inventory'`, with a subtitle that switches text depending on whether the doctor is clinic-joined. Doctor sees their personal inventory when independent; sees clinic inventory when joined (merged view is available in the procedure picker).
 
-### 5. `src/hooks/useAppointmentProcedures.ts`
-- Add imports: `useAccessScope`, `useActiveEntityScope`, `useClinicInventory`.
-- Inside hook, derive `entityId` and `const { deductForProcedure } = useClinicInventory(entityId);`
-- In `updateStatus`, after the supabase update call in BOTH the `dental` branch and the `else` branch, when `status === 'completed'`:
-  ```
-  await deductForProcedure(item.procedureId, item.name, appointmentId || '');
-  ```
-  before `await refresh()`.
+## 5. `StaffDashboardPage.tsx` — Inventory section
 
-### 6. `src/i18n/config.ts`
-- If a static `ns: [...]` array exists, add `'inventory'`. If using `i18next-http-backend` dynamic loading, leave as-is.
+- Import `Package`, `ClinicInventoryManager`.
+- Extend the `SectionId` union with `'inventory'`.
+- Add nav entry after `billing`, visible only when `practiceId ?? practice?.id` exists.
+- Render `<ClinicInventoryManager entityId={practiceId ?? practice?.id} canCreate canDelete={false} />` in the section renderer. Receptionists can adjust stock but not delete items.
 
-### Verification
-- Read each target file first to confirm exact insertion points and existing imports (especially the lucide import line, sidebar nav array, `updateStatus` branches, and i18n config style) before editing.
-- Confirm `InventoryPage`, `ClinicInventoryManager`, `ProcedureInventoryItems`, `useClinicInventory`, `useActiveEntityScope` paths resolve; if any are missing, stop and report rather than create them (out of scope).
+## 6. `App.tsx` — route
 
-### Out of scope
-- No DB migrations, edge functions, RLS, or new components.
-- No changes to other locale files (en only per instructions).
+Add lazy import + protected route `/practices/inventory → InventoryPage` (already exists).
+
+## 7. Settings (reuse + sterilization controls)
+
+These live inside the existing inventory item form (`ClinicInventoryManager` → `AddItem`/`EditItem`). Add three controls to that form:
+
+- Toggle: "Reusable instrument" → `is_reusable`
+- Number input (shown when reusable): "Max uses before sterilization/disposal" → `max_uses_per_unit`
+- Toggle (shown when reusable): "Requires sterilization between uses" → `requires_sterilization`
+
+Doctor-personal inventory uses the same form, with `owner_type='doctor'` and `entity_id = doctor.id`.
+
+## Technical notes
+
+- Files touched: 1 migration; `src/App.tsx`, `src/pages/AdminDashboard.tsx` (already has tab from prior turn — verify only), `src/pages/DoctorDashboard.tsx`, `src/pages/StaffDashboardPage.tsx`, `src/components/appointments/AddProcedureModal.tsx`, `src/components/inventory/ClinicInventoryManager.tsx` (form fields), `src/hooks/useAppointmentProcedures.ts`.
+- `useMergedInventory`, `getStockStatus`, `getUseStatus`, `deductForProcedure` already exist and are unchanged.
+- `procedure_inventory_requirements` already exists — used to persist per-procedure inventory links so `deductForProcedure` can resolve them at completion time.
+- No changes to RLS; doctor-owned rows are protected by the same `entity_id`-scoped policy because `entity_id` is set to the doctor's id when `owner_type='doctor'`.
+
+Approve and I'll implement in one pass.

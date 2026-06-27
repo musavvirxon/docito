@@ -1937,15 +1937,20 @@ export type Database = {
           category: string
           created_at: string
           created_by: string | null
+          current_use_count: number
           description: string | null
           entity_id: string
           expiry_date: string | null
           id: string
           is_active: boolean
+          is_reusable: boolean
+          max_uses_per_unit: number | null
           name: string
           notes: string | null
+          owner_type: string
           quantity_in_stock: number
           reorder_level: number
+          requires_sterilization: boolean
           supplier: string | null
           unit: string
           unit_cost: number | null
@@ -1957,15 +1962,20 @@ export type Database = {
           category?: string
           created_at?: string
           created_by?: string | null
+          current_use_count?: number
           description?: string | null
           entity_id: string
           expiry_date?: string | null
           id?: string
           is_active?: boolean
+          is_reusable?: boolean
+          max_uses_per_unit?: number | null
           name: string
           notes?: string | null
+          owner_type?: string
           quantity_in_stock?: number
           reorder_level?: number
+          requires_sterilization?: boolean
           supplier?: string | null
           unit?: string
           unit_cost?: number | null
@@ -1977,15 +1987,20 @@ export type Database = {
           category?: string
           created_at?: string
           created_by?: string | null
+          current_use_count?: number
           description?: string | null
           entity_id?: string
           expiry_date?: string | null
           id?: string
           is_active?: boolean
+          is_reusable?: boolean
+          max_uses_per_unit?: number | null
           name?: string
           notes?: string | null
+          owner_type?: string
           quantity_in_stock?: number
           reorder_level?: number
+          requires_sterilization?: boolean
           supplier?: string | null
           unit?: string
           unit_cost?: number | null
