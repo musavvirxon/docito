@@ -112,6 +112,30 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
     return matchSearch && matchCat;
   }), [items, search, categoryFilter]);
 
+  // ── Owner profiles (who added each item) ───────────────────────────────
+  const [ownerMap, setOwnerMap] = useState<Map<string, { name: string; role: string | null }>>(new Map());
+  useEffect(() => {
+    const ids = Array.from(new Set(items.map((i) => i.created_by).filter(Boolean))) as string[];
+    if (ids.length === 0) { setOwnerMap(new Map()); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from('profiles')
+        .select('id, full_name, first_name, last_name, role')
+        .in('id', ids);
+      if (cancelled || !data) return;
+      const map = new Map<string, { name: string; role: string | null }>();
+      for (const p of data) {
+        const name = p.full_name?.trim()
+          || [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
+          || 'Unknown';
+        map.set(p.id, { name, role: p.role ?? null });
+      }
+      setOwnerMap(map);
+    })();
+    return () => { cancelled = true; };
+  }, [items]);
+
   const openAdd = useCallback(() => {
     setEditingItem(null);
     setForm(BLANK_FORM);
