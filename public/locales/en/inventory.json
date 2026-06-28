@@ -13,6 +13,15 @@
   "receptionistSubtitle": "View and manage clinic stock levels. Adjust quantities and monitor low stock.",
   "noClinicJoined": "Join a clinic to see combined inventory here.",
   "noPractice": "No practice linked to this account.",
+  "addedBy": "Added by",
+
+  "reuse": {
+    "ready": "{{ready}}/{{total}} ready",
+    "remainingActive": "{{n}} uses left on active unit",
+    "awaitingSterilization": "{{n}} awaiting sterilization",
+    "unlimited": "unlimited uses"
+  },
+
 
   "stockStatus": {
     "ok": "In Stock",
