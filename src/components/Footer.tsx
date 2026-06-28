@@ -239,13 +239,13 @@ export default function PremiumFooter() {
                 </a>
               </li>
               <li>
-                <a
-                  href="tel:+1234567890"
+                <ObfuscatedPhone
+                  parts={["OTk4", "ODgz", "NzA2", "NjIy"]}
+                  display="+998 88 370 66 22"
                   className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Phone className="w-4 h-4" />
-                  +1 (234) 567-890
-                </a>
+                </ObfuscatedPhone>
               </li>
               <li>
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
