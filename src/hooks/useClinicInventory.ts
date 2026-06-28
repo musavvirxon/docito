@@ -40,6 +40,8 @@ export interface ClinicInventoryItem {
   unit_cost: number | null;
   notes: string | null;
   is_active: boolean;
+  created_by: string | null;
+  updated_by: string | null;
   created_at: string;
   updated_at: string;
 }
