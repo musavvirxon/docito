@@ -5,6 +5,7 @@ import { Twitter, Facebook, Instagram, Linkedin, Youtube, Mail, Phone, MapPin, G
 import { Logo } from "@/components/Logo";
 import ThemeToggle from "@/components/home/ThemeToggle";
 import { languages as allLanguages } from "@/i18n/config";
+import { ObfuscatedPhone } from "@/components/shared/ObfuscatedPhone";
 
 const footerLinks = {
   platform: [
