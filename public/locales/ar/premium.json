@@ -2,10 +2,10 @@
   "hero": {
     "badge": "كل رعايتك الصحية، بتناغم",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "إدارة أقل. رعاية",
+      "line2": "أكثر."
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "شبكة رعاية صحية موحدة تربط المرضى والأطباء والعيادات والمختبرات ومراكز التصوير والصيدليات — لتوحيد الحجوزات والسجلات والإحالات والتشخيص والوصفات والفوترة والتواصل.",
     "cta": {
       "primary": "ابدأ تجربة مجانية لمدة 14 يومًا",
       "secondary": "شاهد كيف تعمل"
