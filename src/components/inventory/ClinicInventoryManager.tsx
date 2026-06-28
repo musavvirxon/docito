@@ -360,16 +360,50 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                     return (
                       <TableRow key={item.id} className={rowBg}>
                         <TableCell>
-                          <div>
-                            <span className="font-medium">{item.name}</span>
-                            {item.is_reusable && (
-                              <span className="ml-2 text-[10px] text-muted-foreground">
-                                {item.requires_sterilization ? '🔄' : '♻️'}
-                                {item.max_uses_per_unit
-                                  ? ` ${item.current_use_count}/${item.max_uses_per_unit} uses`
-                                  : ' reusable'}
-                              </span>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium">{item.name}</span>
+                              {item.owner_type === 'doctor' ? (
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">👤 personal</Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">🏥 clinic</Badge>
+                              )}
+                            </div>
+                            {item.created_by && (
+                              <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <User className="h-3 w-3" />
+                                <span>
+                                  {t('addedBy', { defaultValue: 'Added by' })}{' '}
+                                  {ownerMap.get(item.created_by)?.name ?? '…'}
+                                  {ownerMap.get(item.created_by)?.role && (
+                                    <span className="opacity-70"> · {ownerMap.get(item.created_by)?.role}</span>
+                                  )}
+                                </span>
+                              </div>
                             )}
+                            {item.is_reusable && (() => {
+                              const total = item.quantity_in_stock;
+                              const maxUses = item.max_uses_per_unit;
+                              const used = item.current_use_count ?? 0;
+                              const needsSter = item.requires_sterilization && used > 0 ? 1 : 0;
+                              const ready = Math.max(0, total - needsSter);
+                              const remainingActive = maxUses != null ? Math.max(0, maxUses - used) : null;
+                              return (
+                                <div className="text-[10px] text-muted-foreground space-y-0.5">
+                                  <div>
+                                    ♻️ {t('reuse.ready', { defaultValue: '{{ready}}/{{total}} ready', ready, total })}
+                                    {remainingActive != null
+                                      ? ` · ${t('reuse.remainingActive', { defaultValue: '{{n}} uses left on active unit', n: remainingActive })}`
+                                      : ` · ${t('reuse.unlimited', { defaultValue: 'unlimited uses' })}`}
+                                  </div>
+                                  {needsSter > 0 && (
+                                    <div className="text-purple-600 dark:text-purple-400">
+                                      🧼 {t('reuse.awaitingSterilization', { defaultValue: '{{n}} awaiting sterilization', n: needsSter })}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>
