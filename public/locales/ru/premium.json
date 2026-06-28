@@ -2,10 +2,10 @@
   "hero": {
     "badge": "Вся ваша медицинская помощь — в одном ритме",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "Меньше бюрократии. Больше",
+      "line2": "заботы."
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "Единая медицинская сеть для пациентов, врачей, клиник, лабораторий, центров визуализации и аптек — объединяет расписание, карты, направления, диагностику, рецепты, оплату и коммуникации.",
     "cta": {
       "primary": "Начать бесплатный 14-дневный пробный период",
       "secondary": "Посмотреть как это работает"

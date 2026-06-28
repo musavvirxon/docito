@@ -2,10 +2,10 @@
   "hero": {
     "badge": "医疗网络",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "更少管理，更多",
+      "line2": "关怀。"
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "一个面向患者、医生、诊所、实验室、影像中心和药房的互联医疗网络——统一预约、病历、转诊、诊断、处方、账单与沟通。",
     "cta": {
       "primary": "开启 14 天免费试用",
       "secondary": "探索平台"

@@ -2,10 +2,10 @@
   "hero": {
     "badge": "ヘルスケアネットワーク",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "事務を減らし、",
+      "line2": "ケアを増やす。"
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "患者・医師・クリニック・検査機関・画像センター・薬局をつなぐ統合医療ネットワーク。予約、記録、紹介、診断、処方、請求、コミュニケーションをひとつに。",
     "cta": {
       "primary": "14日間無料トライアルを開始",
       "secondary": "プラットフォームを見る"

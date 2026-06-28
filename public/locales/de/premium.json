@@ -2,10 +2,10 @@
   "hero": {
     "badge": "Gesundheitsnetzwerk",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "Weniger Verwaltung. Mehr",
+      "line2": "Versorgung."
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "Ein vernetztes Gesundheitsnetzwerk für Patienten, Ärzte, Kliniken, Labore, Bildgebungszentren und Apotheken — entwickelt, um Termine, Akten, Überweisungen, Diagnostik, Rezepte, Abrechnung und Kommunikation zu vereinen.",
     "cta": {
       "primary": "14 Tage kostenlos starten",
       "secondary": "Plattform entdecken"

@@ -2,10 +2,10 @@
   "hero": {
     "badge": "Red de Salud",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "Menos administración. Más",
+      "line2": "Cuidado."
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "Una red de salud conectada para pacientes, médicos, clínicas, laboratorios, centros de imagen y farmacias, creada para unificar agendas, historiales, derivaciones, diagnósticos, recetas, facturación y comunicación.",
     "cta": {
       "primary": "Inicia prueba gratis de 14 días",
       "secondary": "Explorar plataforma"

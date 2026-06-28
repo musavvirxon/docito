@@ -2,10 +2,10 @@
   "hero": {
     "badge": "Tüm bakımınız, senkron",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "Daha az idare. Daha çok",
+      "line2": "Bakım."
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "Hastalar, doktorlar, klinikler, laboratuvarlar, görüntüleme merkezleri ve eczaneler için bağlı bir sağlık ağı; randevuları, kayıtları, sevkleri, tanıyı, reçeteleri, faturalandırmayı ve iletişimi tek yerde birleştirir.",
     "cta": {
       "primary": "14 günlük ücretsiz denemeyi başlat",
       "secondary": "Nasıl çalışır?"

@@ -2,10 +2,10 @@
   "hero": {
     "badge": "Barcha tibbiy xizmatlar — bir ritmda",
     "docitoNetworkTitle": {
-      "line1": "Less admin. More",
-      "line2": "Care"
+      "line1": "Kamroq ma'muriyat. Ko'proq",
+      "line2": "G'amxo'rlik."
     },
-    "docitoNetworkSubtitle": "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
+    "docitoNetworkSubtitle": "Bemorlar, shifokorlar, klinikalar, laboratoriyalar, tasvirlash markazlari va dorixonalar uchun yagona tibbiy tarmoq — qabul, kartalar, yo'llanmalar, diagnostika, retseptlar, hisob-kitob va aloqani birlashtiradi.",
     "cta": {
       "primary": "14 kun bepul sinovni boshlash",
       "secondary": "Qanday ishlaydi"
