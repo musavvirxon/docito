@@ -522,16 +522,16 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
 
               <div>
                 <Label>{t('form.quantityInStock')}</Label>
-                <Input type="number" min="0"
-                  value={form.quantity_in_stock}
-                  onChange={(e) => setForm((f) => ({ ...f, quantity_in_stock: parseFloat(e.target.value) || 0 }))} />
+                <Input type="number" min="0" placeholder="0"
+                  value={form.quantity_in_stock === 0 ? '' : form.quantity_in_stock}
+                  onChange={(e) => setForm((f) => ({ ...f, quantity_in_stock: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 }))} />
               </div>
 
               <div>
                 <Label>{t('form.reorderLevel')}</Label>
-                <Input type="number" min="0"
-                  value={form.reorder_level}
-                  onChange={(e) => setForm((f) => ({ ...f, reorder_level: parseFloat(e.target.value) || 0 }))} />
+                <Input type="number" min="0" placeholder="0"
+                  value={form.reorder_level === 0 ? '' : form.reorder_level}
+                  onChange={(e) => setForm((f) => ({ ...f, reorder_level: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 }))} />
               </div>
 
               <div>
