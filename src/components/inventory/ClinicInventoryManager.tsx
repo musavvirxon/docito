@@ -1,10 +1,11 @@
 // src/components/inventory/ClinicInventoryManager.tsx
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Search, Pencil, Trash2, SlidersHorizontal,
-  History, Package, Loader2, AlertTriangle, RefreshCw,
+  History, Package, Loader2, AlertTriangle, RefreshCw, User,
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
