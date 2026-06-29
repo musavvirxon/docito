@@ -17,6 +17,8 @@ import { InvitationsList } from "@/components/staff/InvitationsList";
 import AnalyticsSection from "@/components/staff/AnalyticsSection";
 import SettingsSection from "@/components/staff/SettingsSection";
 import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
+import { RoomBedManager } from "@/components/rooms/RoomBedManager";
+import { useAuth } from "@/contexts/AuthContext";
 import { Package } from "lucide-react";
 
 
@@ -30,6 +32,7 @@ type SectionId =
   | "patients"
   | "billing"
   | "inventory"
+  | "rooms"
   | "analytics"
   | "settings"
   | "attendance"
@@ -53,6 +56,7 @@ function toCentsFromMajor(v: unknown): number {
 
 export default function StaffDashboardPage() {
   const { t } = useTranslation('dashboard');
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -82,6 +86,8 @@ export default function StaffDashboardPage() {
       { id: "patients", label: t("staff.sidebar.menu.patients"), visible: Boolean(permissions?.can_manage_patients) },
       { id: "billing", label: t("staff.sidebar.menu.billing"), visible: Boolean(permissions?.can_manage_billing) },
       { id: "inventory", label: t("staff.sidebar.menu.inventory", { defaultValue: "Inventory" }), visible: Boolean(practice?.id) },
+      { id: "rooms", label: "Rooms & Beds", visible: Boolean((isAdminLike || permissions?.can_manage_patients) && practice?.id) },
+
 
       { id: "analytics", label: t("staff.analytics.title"), visible: Boolean(practice?.id) },
       { id: "settings", label: t("staff.sidebar.settings"), visible: Boolean(isAdminLike && practice?.id) },
@@ -368,6 +374,15 @@ export default function StaffDashboardPage() {
             <p className="text-sm text-muted-foreground">No practice linked to this account.</p>
           )}
         </TabsContent>
+
+        <TabsContent value="rooms" className="mt-6">
+          {practice?.id ? (
+            <RoomBedManager practiceId={practice.id} userId={user?.id ?? ""} role="staff" />
+          ) : (
+            <p className="text-sm text-muted-foreground">No practice linked.</p>
+          )}
+        </TabsContent>
+
 
         <TabsContent value="analytics" className="mt-6">
 

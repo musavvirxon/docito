@@ -2,7 +2,7 @@ import {
   Home, Calendar, Users, DollarSign, Clock, Settings, 
   LogOut, Building2, ClipboardList, FileText, Stethoscope,
   Pill, FlaskConical, ScanLine, Package, TestTube, Image as ImageIcon,
-  Microscope, Syringe
+  Microscope, Syringe, BedDouble
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -89,6 +89,7 @@ export const StaffSidebar = ({
     { id: 'vitals', label: t('staff.sidebar.menu.vitals', 'Vitals & Notes'), icon: Stethoscope, visible: perms.can_view_medical_records },
     { id: 'billing', label: t('staff.sidebar.menu.billing', 'Billing & Payments'), icon: DollarSign, visible: perms.can_manage_billing },
     { id: 'intake', label: t('staff.sidebar.menu.intake', 'Patient Intake'), icon: ClipboardList, visible: perms.can_book_appointments },
+    { id: 'rooms', label: t('staff.sidebar.menu.rooms', 'Rooms & Beds'), icon: BedDouble, visible: Boolean(perms.can_manage_patients || perms.can_view_schedule) },
     { id: 'records', label: t('staff.sidebar.menu.records', 'Medical Records'), icon: FileText, visible: perms.can_view_medical_records },
   ];
 
