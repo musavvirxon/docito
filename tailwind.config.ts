@@ -147,7 +147,9 @@ export default {
     			'accordion-down': 'accordion-down 0.2s ease-out',
     			'accordion-up': 'accordion-up 0.2s ease-out',
     			'scale-in': 'scale-in 0.15s ease-out',
-    			'fade-out': 'fade-out 0.15s ease-out'
+    			'fade-out': 'fade-out 0.15s ease-out',
+    			'spin-slow': 'spin 3s linear infinite',
+    			'pulse-soft': 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite'
     		}
     	}
     },
