@@ -1,7 +1,8 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus, Package } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus, Package, BedDouble } from "lucide-react";
 import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
+import { RoomBedManager } from "@/components/rooms/RoomBedManager";
 
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
@@ -170,6 +171,7 @@ const DoctorDashboardContent = () => {
     { id: "prescriptions", label: t("doctor.navigation.prescriptions", "Prescriptions"), icon: Pill },
     { id: "inventory", label: t("doctor.navigation.inventory", "Inventory"), icon: Package },
 
+    { id: "rooms", label: t("doctor.navigation.rooms", "Rooms & Beds"), icon: BedDouble },
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
@@ -247,7 +249,17 @@ const DoctorDashboardContent = () => {
           </div>
         );
       }
+      case "rooms":
+        return (
+          <RoomBedManager
+            practiceId={doctorProfile.practice_id ?? ""}
+            userId={user?.id ?? ""}
+            role="doctor"
+            doctorId={doctorProfile.id}
+          />
+        );
       default:
+
 
         return (
           <div className="space-y-8">
