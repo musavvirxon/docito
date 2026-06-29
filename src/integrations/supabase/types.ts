@@ -1076,6 +1076,108 @@ export type Database = {
           },
         ]
       }
+      bed_assignments: {
+        Row: {
+          admitted_at: string
+          appointment_id: string | null
+          assigned_by: string
+          bed_id: string
+          created_at: string
+          discharged_at: string | null
+          doctor_id: string | null
+          id: string
+          notes: string | null
+          patient_id: string | null
+          practice_id: string
+          status: string
+        }
+        Insert: {
+          admitted_at?: string
+          appointment_id?: string | null
+          assigned_by: string
+          bed_id: string
+          created_at?: string
+          discharged_at?: string | null
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          practice_id: string
+          status?: string
+        }
+        Update: {
+          admitted_at?: string
+          appointment_id?: string | null
+          assigned_by?: string
+          bed_id?: string
+          created_at?: string
+          discharged_at?: string | null
+          doctor_id?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string | null
+          practice_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bed_assignments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_bed_id_fkey"
+            columns: ["bed_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_beds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bed_assignments_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_invoices: {
         Row: {
           amount_due_cents: number
@@ -1595,6 +1697,57 @@ export type Database = {
             columns: ["parent_bone_id"]
             isOneToOne: false
             referencedRelation: "bones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_beds: {
+        Row: {
+          bed_number: string
+          bed_type: string
+          created_at: string
+          id: string
+          notes: string | null
+          practice_id: string
+          room_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          bed_number: string
+          bed_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          practice_id: string
+          room_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          bed_number?: string
+          bed_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          practice_id?: string
+          room_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_beds_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_beds_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -2192,6 +2345,59 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_rooms: {
+        Row: {
+          capacity: number
+          color: string | null
+          created_at: string
+          floor: string | null
+          id: string
+          name: string
+          notes: string | null
+          practice_id: string
+          room_number: string | null
+          room_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          color?: string | null
+          created_at?: string
+          floor?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          practice_id: string
+          room_number?: string | null
+          room_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          color?: string | null
+          created_at?: string
+          floor?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          practice_id?: string
+          room_number?: string | null
+          room_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_rooms_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
             referencedColumns: ["id"]
           },
         ]
