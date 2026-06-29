@@ -83,7 +83,7 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
 
     try {
       // 1. Rooms
-      const { data: roomData, error: roomErr } = await supabase
+      const { data: roomData, error: roomErr } = await (supabase as any)
         .from('clinic_rooms')
         .select('*')
         .eq('practice_id', practiceId)
@@ -93,7 +93,7 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
       if (roomErr) throw roomErr;
 
       // 2. Beds
-      const { data: bedData, error: bedErr } = await supabase
+      const { data: bedData, error: bedErr } = await (supabase as any)
         .from('clinic_beds')
         .select('*')
         .eq('practice_id', practiceId)
@@ -102,7 +102,7 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
       if (bedErr) throw bedErr;
 
       // 3. Active assignments with patient/doctor names
-      const { data: assignData, error: assignErr } = await supabase
+      const { data: assignData, error: assignErr } = await (supabase as any)
         .from('bed_assignments')
         .select(`
           *,
@@ -169,19 +169,19 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
   // ── Room CRUD ───────────────────────────────────────────────────────────────
   const addRoom = useCallback(async (data: Omit<ClinicRoom, 'id' | 'created_at' | 'updated_at'>) => {
     if (!practiceId) return;
-    const { error: e } = await supabase.from('clinic_rooms').insert({ ...data, practice_id: practiceId });
+    const { error: e } = await (supabase as any).from('clinic_rooms').insert({ ...data, practice_id: practiceId });
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); return; }
     toast({ title: 'Room added' });
   }, [practiceId, toast]);
 
   const updateRoom = useCallback(async (id: string, data: Partial<ClinicRoom>) => {
-    const { error: e } = await supabase.from('clinic_rooms').update(data).eq('id', id);
+    const { error: e } = await (supabase as any).from('clinic_rooms').update(data).eq('id', id);
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); return; }
     toast({ title: 'Room updated' });
   }, [toast]);
 
   const deleteRoom = useCallback(async (id: string) => {
-    const { error: e } = await supabase.from('clinic_rooms').delete().eq('id', id);
+    const { error: e } = await (supabase as any).from('clinic_rooms').delete().eq('id', id);
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); return; }
     toast({ title: 'Room deleted' });
   }, [toast]);
@@ -189,24 +189,24 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
   // ── Bed CRUD ────────────────────────────────────────────────────────────────
   const addBed = useCallback(async (data: Omit<ClinicBed, 'id' | 'created_at' | 'updated_at' | 'current_assignment'>) => {
     if (!practiceId) return;
-    const { error: e } = await supabase.from('clinic_beds').insert({ ...data, practice_id: practiceId });
+    const { error: e } = await (supabase as any).from('clinic_beds').insert({ ...data, practice_id: practiceId });
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); return; }
     toast({ title: 'Bed added' });
   }, [practiceId, toast]);
 
   const updateBed = useCallback(async (id: string, data: Partial<ClinicBed>) => {
-    const { error: e } = await supabase.from('clinic_beds').update(data).eq('id', id);
+    const { error: e } = await (supabase as any).from('clinic_beds').update(data).eq('id', id);
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); return; }
   }, [toast]);
 
   const deleteBed = useCallback(async (id: string) => {
-    const { error: e } = await supabase.from('clinic_beds').delete().eq('id', id);
+    const { error: e } = await (supabase as any).from('clinic_beds').delete().eq('id', id);
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); return; }
     toast({ title: 'Bed removed' });
   }, [toast]);
 
   const updateBedStatus = useCallback(async (id: string, status: BedStatus) => {
-    const { error: e } = await supabase.from('clinic_beds').update({ status }).eq('id', id);
+    const { error: e } = await (supabase as any).from('clinic_beds').update({ status }).eq('id', id);
     if (e) { toast({ title: 'Error', description: e.message, variant: 'destructive' }); }
   }, [toast]);
 
@@ -220,7 +220,7 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
     notes?: string;
   }) => {
     if (!practiceId) return;
-    const { error: e } = await supabase.from('bed_assignments').insert({
+    const { error: e } = await (supabase as any).from('bed_assignments').insert({
       ...params,
       practice_id: practiceId,
       status: 'active',
@@ -231,7 +231,7 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
   }, [practiceId, updateBedStatus, toast]);
 
   const unassignBed = useCallback(async (assignmentId: string, bedId: string) => {
-    const { error: e } = await supabase
+    const { error: e } = await (supabase as any)
       .from('bed_assignments')
       .update({ status: 'discharged', discharged_at: new Date().toISOString() })
       .eq('id', assignmentId);

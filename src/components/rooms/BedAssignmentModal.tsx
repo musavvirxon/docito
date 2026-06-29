@@ -41,7 +41,7 @@ export function BedAssignmentModal({
   useEffect(() => {
     if (!open || !practiceId) return;
     setLoadingPatients(true);
-    supabase
+    (supabase as any)
       .from('patients')
       .select('id, full_name')
       .eq('practice_id', practiceId)
