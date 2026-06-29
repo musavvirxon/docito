@@ -4533,6 +4533,17 @@ const AdminDashboard = () => {
           </SectionWrapper>
         );
 
+      case "rooms":
+        return (
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <RoomBedManager
+              practiceId={practice?.id ?? ""}
+              userId={user?.id ?? ""}
+              role="admin"
+            />
+          </SectionWrapper>
+        );
+
       case "analytics": {
         const analyticsTabs = [
           { key: 'overview' as const, label: 'Overview' },
