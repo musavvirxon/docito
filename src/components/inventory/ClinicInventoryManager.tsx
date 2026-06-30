@@ -318,7 +318,7 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
           {/* Table */}
           {loading ? (
             <div className="flex items-center gap-2 py-8 justify-center text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /><span className="text-sm">Loading…</span>
+              <Loader2 className="h-4 w-4 animate-spin" /><span className="text-sm">{t('loading')}</span>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
