@@ -1,0 +1,236 @@
+{
+  "title": "Klinika ombori",
+  "subtitle": "Dori, asbob va sarf materiallarini boshqaring",
+  "addItem": "Pozitsiya qo‘shish",
+  "editItem": "Pozitsiyani tahrirlash",
+  "deleteItem": "Pozitsiyani o‘chirish",
+  "adjustStock": "Qoldiqni tuzatish",
+  "viewLogs": "Tarix",
+  "search": "Omborni qidirish…",
+  "filterCategory": "Barcha toifalar",
+  "filterStatus": "Barcha holatlar",
+  "doctorSubtitle": "Sizning shaxsiy asbob va dorilaringiz, hamda klinika ombori (agar klinika a’zosi bo‘lsangiz).",
+  "receptionistSubtitle": "Klinika qoldiqlarini ko‘ring va boshqaring. Miqdorlarni tuzating va kam qoldiqni kuzating.",
+  "noClinicJoined": "Birlashgan omborni ko‘rish uchun klinikaga qo‘shiling.",
+  "noPractice": "Ushbu hisobga klinika bog‘lanmagan.",
+  "addedBy": "Qo‘shgan",
+  "loading": "Yuklanmoqda…",
+  "personalBadge": "shaxsiy",
+  "clinicBadge": "klinika",
+  "useCount": "Ishlatilgan: {{before}} → {{after}}",
+
+  "reuse": {
+    "ready": "{{ready}}/{{total}} tayyor",
+    "remainingActive": "faol birlikda {{n}} marta qoldi",
+    "awaitingSterilization": "{{n}} ta sterilizatsiya kutmoqda",
+    "unlimited": "cheklovsiz foydalanish"
+  },
+
+  "statsPills": {
+    "total": "jami {{count}}",
+    "critical": "{{count}} muhim",
+    "low": "{{count}} kam",
+    "out": "{{count}} yo‘q",
+    "sterilize": "{{count}} sterilizatsiya",
+    "expiring": "{{count}} muddati <30 kun"
+  },
+
+  "sterilizationBanner": {
+    "title_one": "{{count}} pozitsiya sterilizatsiya talab qiladi",
+    "title_other": "{{count}} ta pozitsiya sterilizatsiya talab qiladi",
+    "itemRow": "{{name}} — ishlatilgan {{used}}/{{max}}×"
+  },
+
+  "stockStatus": {
+    "ok": "Omborda",
+    "low": "Kam",
+    "critical": "Muhim",
+    "out": "Tugagan",
+    "expired": "Muddati o‘tgan",
+    "needsSterilization": "Sterilizatsiya kerak",
+    "exhausted": "Maks. foydalanishga yetdi"
+  },
+
+  "categories": {
+    "medication": "Dori",
+    "instrument": "Asbob",
+    "supply": "Sarf material",
+    "consumable": "Iste’mol"
+  },
+
+  "units": {
+    "units": "dona",
+    "ml": "ml",
+    "mg": "mg",
+    "boxes": "quti",
+    "pieces": "dona",
+    "vials": "flakon",
+    "syringes": "shpritslar",
+    "ampoules": "ampulalar",
+    "strips": "plastinka",
+    "pairs": "juftlik"
+  },
+
+  "table": {
+    "name": "Nomi",
+    "category": "Toifa",
+    "quantity": "Miqdor",
+    "reorderLevel": "Buyurtma chegarasi",
+    "daysRemaining": "Qolgan kunlar",
+    "expiryDate": "Yaroqlilik",
+    "supplier": "Yetkazib beruvchi",
+    "unitCost": "Birlik narxi",
+    "status": "Holat",
+    "actions": "Amallar"
+  },
+
+  "daysRemaining": {
+    "label": "~{{days}} kun",
+    "today": "Bugun",
+    "unknown": "—",
+    "noUsage": "Foydalanish ma’lumoti yo‘q"
+  },
+
+  "actions": {
+    "markSterilized": "Sterilizatsiya qilindi"
+  },
+
+  "form": {
+    "name": "Nomi *",
+    "namePlaceholder": "masalan, Amoksitsillin 500 mg",
+    "description": "Tavsif",
+    "descriptionPlaceholder": "Ixtiyoriy izohlar",
+    "category": "Toifa *",
+    "unit": "O‘lchov birligi *",
+    "quantityInStock": "Omborda miqdor *",
+    "reorderLevel": "Buyurtma darajasi",
+    "reorderLevelHint": "Qoldiq shu darajaga tushganda ogohlantirish",
+    "avgDailyUsage": "O‘rtacha kunlik sarflash",
+    "avgDailyUsagePlaceholder": "masalan, 2.5",
+    "avgDailyUsageHint": "Avtomatik hisoblash uchun bo‘sh qoldiring",
+    "expiryDate": "Yaroqlilik muddati",
+    "supplier": "Yetkazib beruvchi",
+    "unitCost": "Birlik narxi",
+    "notes": "Ichki izohlar",
+    "cancel": "Bekor qilish",
+    "save": "Saqlash",
+    "saving": "Saqlanmoqda…",
+    "add": "Qo‘shish",
+    "adding": "Qo‘shilmoqda…",
+    "reuseSettings": "Qayta foydalanish va sterilizatsiya",
+    "isReusable": "Ko‘p martalik asbob",
+    "isReusableHint": "Bu pozitsiyani bir necha marta ishlatish mumkinmi?",
+    "maxUsesPerUnit": "Birlik uchun maks. foydalanish",
+    "maxUsesPlaceholder": "masalan, 5 — cheksiz uchun bo‘sh qoldiring",
+    "maxUsesHint": "Bu asbob sterilizatsiya yoki almashtirishgacha qancha protseduraga yetadi.",
+    "requiresSterilization": "Foydalanishlar orasida sterilizatsiya talab qiladi",
+    "sterilizationHint": "Qayta foydalanishdan oldin xodimga sterilizatsiyani belgilash so‘raladi."
+  },
+
+  "adjust": {
+    "title": "Qoldiqni tuzatish — {{name}}",
+    "current": "Joriy qoldiq",
+    "changeType": "O‘zgartirish turi",
+    "types": {
+      "addition": "Qo‘shish / To‘ldirish",
+      "deduction": "Ayirish / Foydalanish",
+      "adjustment": "Aniq miqdor",
+      "expired": "Hisobdan chiqarish (muddat)",
+      "damaged": "Hisobdan chiqarish (shikastlangan)"
+    },
+    "quantity": "Miqdor",
+    "quantityPlaceholder": "Miqdorni kiriting",
+    "notes": "Sabab / Izoh",
+    "notesPlaceholder": "Ixtiyoriy sabab",
+    "preview": "Yangi qoldiq: {{qty}} {{unit}}",
+    "previewSet": "Qoldiq belgilanadi: {{qty}} {{unit}}",
+    "cancel": "Bekor qilish",
+    "apply": "Qo‘llash",
+    "applying": "Qo‘llanmoqda…"
+  },
+
+  "logs": {
+    "title": "Qoldiq tarixi — {{name}}",
+    "empty": "Hali o‘zgarishlar yo‘q.",
+    "changeType": {
+      "addition": "To‘ldirildi",
+      "deduction": "Ayrildi",
+      "adjustment": "Tuzatildi",
+      "procedure_use": "Protsedurada ishlatildi",
+      "expired": "Muddati o‘tgan deb chiqarildi",
+      "damaged": "Shikastlangan deb chiqarildi",
+      "sterilized": "Sterilizatsiya — hisoblagich nolga tushdi"
+    },
+    "by": "muallif: {{user}}",
+    "close": "Yopish"
+  },
+
+  "procedureItems": {
+    "title": "Kerakli materiallar",
+    "subtitle": "Protsedura yakunlanganda hisobdan chiqariladi",
+    "addItem": "Qo‘shish",
+    "empty": "Bu protseduraga material biriktirilmagan.",
+    "emptyHint": "Protsedurada sarflanadigan materiallarni qo‘shing.",
+    "quantity": "Miqdor",
+    "available": "{{qty}} mavjud",
+    "remove": "O‘chirish",
+    "selectItem": "Pozitsiyani tanlang…",
+    "outOfStock": "tugagan",
+    "lowStock": "kam",
+    "needsSterilization": "ishlatishdan oldin sterilizatsiya kerak",
+    "exhausted": "foydalanish limiti tugadi — almashtirish kerak",
+    "insufficientWarning": "Ayrim materiallar yetarli emas. Davom etilsinmi?",
+    "autoDeduct": "Protsedura yakunlanganda materiallar avtomatik hisobdan chiqariladi.",
+    "clinicInventory": "klinika ombori",
+    "personalInventory": "shaxsiy omboringiz",
+    "clinicShort": "Klinika",
+    "mineShort": "Meniki",
+    "usesLabel": "{{used}}/{{max}} foydalanish"
+  },
+
+  "lowStockAlert": {
+    "title": "Kam qoldiq ogohlantirishlari",
+    "critical": "{{count}} pozitsiya juda kam",
+    "criticalPlural": "{{count}} ta pozitsiya juda kam",
+    "low": "{{count}} pozitsiya kam",
+    "lowPlural": "{{count}} ta pozitsiya kam",
+    "viewAll": "Hammasi",
+    "dismiss": "Yopish",
+    "item": "{{name}} — {{qty}} {{unit}} qoldi ({{days}} kun)"
+  },
+
+  "delete": {
+    "title": "«{{name}}» o‘chirilsinmi?",
+    "description": "Bu pozitsiya va uning butun tarixi qaytarib bo‘lmas tarzda o‘chiriladi.",
+    "cancel": "Bekor qilish",
+    "confirm": "O‘chirish"
+  },
+
+  "empty": {
+    "title": "Hali pozitsiyalar yo‘q",
+    "description": "Qoldiqlarni kuzatish uchun dori, asbob va materiallar qo‘shing.",
+    "action": "Birinchi pozitsiyani qo‘shing"
+  },
+
+  "errors": {
+    "loadFailed": "Omborni yuklab bo‘lmadi",
+    "saveFailed": "Pozitsiyani saqlab bo‘lmadi",
+    "adjustFailed": "Qoldiqni tuzatib bo‘lmadi",
+    "deleteFailed": "O‘chirib bo‘lmadi",
+    "deductFailed": "Qoldiqni hisobdan chiqarib bo‘lmadi"
+  },
+
+  "success": {
+    "added": "Pozitsiya qo‘shildi",
+    "updated": "Pozitsiya yangilandi",
+    "adjusted": "Qoldiq tuzatildi",
+    "deleted": "Pozitsiya o‘chirildi",
+    "deducted": "Yakunlangan protsedura bo‘yicha qoldiq yangilandi",
+    "sterilized": "Sterilizatsiya qilindi — hisoblagich nolga tushdi"
+  },
+
+  "page": {
+    "title": "Ombor boshqaruvi",
+    "breadcrumb": "Ombor"
+  }
+}
