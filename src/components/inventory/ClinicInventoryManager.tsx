@@ -287,30 +287,30 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
 
           {/* Stats pills */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-xs">{items.length} total</Badge>
+            <Badge variant="outline" className="text-xs">{t('statsPills.total', { count: items.length })}</Badge>
             {stats.critical.length > 0 && (
               <Badge className="text-xs bg-red-500/15 text-red-700 dark:text-red-300 border-red-200">
-                <AlertTriangle className="h-3 w-3 mr-1" />{stats.critical.length} critical
+                <AlertTriangle className="h-3 w-3 mr-1" />{t('statsPills.critical', { count: stats.critical.length })}
               </Badge>
             )}
             {stats.lowStock.length > 0 && (
               <Badge className="text-xs bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200">
-                {stats.lowStock.length} low
+                {t('statsPills.low', { count: stats.lowStock.length })}
               </Badge>
             )}
             {stats.outOfStock.length > 0 && (
               <Badge className="text-xs bg-gray-500/15 text-gray-600 border-gray-200">
-                {stats.outOfStock.length} out
+                {t('statsPills.out', { count: stats.outOfStock.length })}
               </Badge>
             )}
             {stats.needsSterilization.length > 0 && (
               <Badge className="text-xs bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-200">
-                {stats.needsSterilization.length} sterilize
+                {t('statsPills.sterilize', { count: stats.needsSterilization.length })}
               </Badge>
             )}
             {stats.expiringSoon.length > 0 && (
               <Badge className="text-xs bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-200">
-                {stats.expiringSoon.length} expiring &lt;30d
+                {t('statsPills.expiring', { count: stats.expiringSoon.length })}
               </Badge>
             )}
           </div>
