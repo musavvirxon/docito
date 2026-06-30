@@ -366,9 +366,9 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-medium">{item.name}</span>
                               {item.owner_type === 'doctor' ? (
-                                <Badge variant="outline" className="text-[10px] h-4 px-1">👤 personal</Badge>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">👤 {t('personalBadge')}</Badge>
                               ) : (
-                                <Badge variant="outline" className="text-[10px] h-4 px-1">🏥 clinic</Badge>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">🏥 {t('clinicBadge')}</Badge>
                               )}
                             </div>
                             {item.created_by && (
