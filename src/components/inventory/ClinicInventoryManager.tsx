@@ -540,7 +540,7 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                 <Label>{t('form.avgDailyUsage')}</Label>
                 <Input type="number" min="0" step="0.1"
                   value={form.avg_daily_usage ?? ''}
-                  placeholder="e.g. 2.5"
+                  placeholder={t('form.avgDailyUsagePlaceholder')}
                   onChange={(e) => setForm((f) => ({ ...f, avg_daily_usage: e.target.value === '' ? null : parseFloat(e.target.value) }))} />
                 <p className="text-[10px] text-muted-foreground mt-1">{t('form.avgDailyUsageHint')}</p>
               </div>
