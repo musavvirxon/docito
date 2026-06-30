@@ -123,7 +123,7 @@ export function ProcedureInventoryItems({
                       variant="outline"
                       className="text-[10px] shrink-0 border-dashed"
                     >
-                      {(inv as MergedInventoryItem).source === 'clinic' ? '🏥 Clinic' : '👤 Mine'}
+                      {(inv as MergedInventoryItem).source === 'clinic' ? `🏥 ${t('procedureItems.clinicShort')}` : `👤 ${t('procedureItems.mineShort')}`}
                     </Badge>
                   )}
 
@@ -145,7 +145,7 @@ export function ProcedureInventoryItems({
                   {/* Reuse badge */}
                   {inv?.is_reusable && inv.max_uses_per_unit && (
                     <span className="text-[10px] text-blue-600 dark:text-blue-400 shrink-0">
-                      {inv.current_use_count}/{inv.max_uses_per_unit} uses
+                      {t('procedureItems.usesLabel', { used: inv.current_use_count, max: inv.max_uses_per_unit })}
                     </span>
                   )}
 

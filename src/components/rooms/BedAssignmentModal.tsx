@@ -1,5 +1,6 @@
 // src/components/rooms/BedAssignmentModal.tsx
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -27,6 +28,7 @@ interface BedAssignmentModalProps {
 export function BedAssignmentModal({
   open, onClose, bed, room, practiceId, userId, canAssign, onAssign, onUnassign, onStatusChange,
 }: BedAssignmentModalProps) {
+  const { t } = useTranslation('rooms');
   const [patients, setPatients] = useState<{ id: string; name: string }[]>([]);
   const [selectedPatient, setSelectedPatient] = useState('');
   const [notes, setNotes] = useState('');
@@ -37,7 +39,6 @@ export function BedAssignmentModal({
   const assignment = bed?.current_assignment;
   const isOccupied = bed?.status === 'occupied';
 
-  // Fetch patients for this practice
   useEffect(() => {
     if (!open || !practiceId) return;
     setLoadingPatients(true);
@@ -46,13 +47,12 @@ export function BedAssignmentModal({
       .select('id, full_name')
       .eq('practice_id', practiceId)
       .order('full_name')
-      .then(({ data }) => {
+      .then(({ data }: any) => {
         setPatients((data ?? []).map((p: any) => ({ id: p.id, name: p.full_name })));
         setLoadingPatients(false);
       });
   }, [open, practiceId]);
 
-  // Reset form when bed changes
   useEffect(() => {
     setSelectedPatient('');
     setNotes('');
@@ -93,73 +93,76 @@ export function BedAssignmentModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BedDouble className="w-4 h-4" />
-            Bed {bed.bed_number} — {room.name}
+            {t('assign.title', { number: bed.bed_number, room: room.name })}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          {/* Current status */}
           <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
             <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
-            <span className="text-sm font-medium">{cfg.label}</span>
-            <Badge variant="outline" className="ml-auto text-xs capitalize">{bed.bed_type}</Badge>
+            <span className="text-sm font-medium">{t(`bedStatus.${cfg.i18nKey}`)}</span>
+            <Badge variant="outline" className="ml-auto text-xs">
+              {t(`bedType.${bed.bed_type}`, { defaultValue: bed.bed_type })}
+            </Badge>
           </div>
 
-          {/* Current assignment info */}
           {isOccupied && assignment && (
             <div className="rounded-lg border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/30 p-3 space-y-1">
-              <p className="text-xs font-semibold text-rose-700 dark:text-rose-400 flex items-center gap-1"><User className="w-3.5 h-3.5" />Occupied</p>
+              <p className="text-xs font-semibold text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                <User className="w-3.5 h-3.5" />{t('assign.occupied')}
+              </p>
               {assignment.patient_name && <p className="text-sm font-medium">{assignment.patient_name}</p>}
-              {assignment.doctor_name && <p className="text-xs text-muted-foreground">Assigned by Dr. {assignment.doctor_name}</p>}
-              <p className="text-xs text-muted-foreground">Since {new Date(assignment.admitted_at).toLocaleDateString()}</p>
+              {assignment.doctor_name && (
+                <p className="text-xs text-muted-foreground">{t('assign.assignedBy', { name: assignment.doctor_name })}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t('assign.since', { date: new Date(assignment.admitted_at).toLocaleDateString() })}
+              </p>
             </div>
           )}
 
-          {/* Assign patient (only for available beds) */}
           {canAssign && !isOccupied && bed.status !== 'maintenance' && bed.status !== 'cleaning' && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium">Assign Patient</h4>
+              <h4 className="text-sm font-medium">{t('assign.assignPatient')}</h4>
               <div className="space-y-1">
-                <Label className="text-xs">Patient (optional)</Label>
+                <Label className="text-xs">{t('assign.patientOptional')}</Label>
                 <Select value={selectedPatient} onValueChange={setSelectedPatient} disabled={loadingPatients}>
                   <SelectTrigger>
-                    <SelectValue placeholder={loadingPatients ? 'Loading...' : 'Select patient'} />
+                    <SelectValue placeholder={loadingPatients ? t('assign.loadingPatients') : t('assign.selectPatient')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No specific patient</SelectItem>
+                    <SelectItem value="none">{t('assign.noPatient')}</SelectItem>
                     {patients.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Notes</Label>
-                <Textarea placeholder="Admission notes..." rows={2} value={notes} onChange={e => setNotes(e.target.value)} />
+                <Label className="text-xs">{t('assign.notes')}</Label>
+                <Textarea placeholder={t('assign.notesPlaceholder')} rows={2} value={notes} onChange={e => setNotes(e.target.value)} />
               </div>
             </div>
           )}
 
-          {/* Discharge (for occupied beds) */}
           {canAssign && isOccupied && assignment && (
             <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-3 space-y-2">
               <div className="flex items-center gap-1 text-amber-700 dark:text-amber-400 text-xs font-semibold">
                 <AlertTriangle className="w-3.5 h-3.5" />
-                Discharge patient
+                {t('assign.dischargeTitle')}
               </div>
-              <p className="text-xs text-muted-foreground">This will discharge the patient and set the bed to "Cleaning".</p>
+              <p className="text-xs text-muted-foreground">{t('assign.dischargeHint')}</p>
             </div>
           )}
 
-          {/* Status change (for staff/admin) */}
           {canAssign && !isOccupied && (
             <div className="space-y-1">
-              <Label className="text-xs">Change Bed Status</Label>
+              <Label className="text-xs">{t('assign.changeStatus')}</Label>
               <Select value={newStatus} onValueChange={v => setNewStatus(v as BedStatus)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="reserved">Reserved</SelectItem>
-                  <SelectItem value="cleaning">Cleaning</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="available">{t('bedStatus.available')}</SelectItem>
+                  <SelectItem value="reserved">{t('bedStatus.reserved')}</SelectItem>
+                  <SelectItem value="cleaning">{t('bedStatus.cleaning')}</SelectItem>
+                  <SelectItem value="maintenance">{t('bedStatus.maintenance')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -167,20 +170,20 @@ export function BedAssignmentModal({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onClose}>Close</Button>
+          <Button variant="outline" onClick={onClose}>{t('close')}</Button>
           {canAssign && isOccupied && assignment && (
             <Button variant="destructive" onClick={handleUnassign} disabled={saving}>
-              {saving ? 'Discharging...' : 'Discharge Patient'}
+              {saving ? t('assign.discharging') : t('assign.discharge')}
             </Button>
           )}
           {canAssign && !isOccupied && bed.status !== 'maintenance' && bed.status !== 'cleaning' && (
             <Button onClick={handleAssign} disabled={saving}>
-              {saving ? 'Assigning...' : 'Assign to Bed'}
+              {saving ? t('assign.assigning') : t('assign.assignToBed')}
             </Button>
           )}
           {canAssign && !isOccupied && newStatus !== bed.status && (
             <Button variant="secondary" onClick={handleStatusChange} disabled={saving}>
-              {saving ? 'Updating...' : 'Update Status'}
+              {saving ? t('assign.updating') : t('assign.updateStatus')}
             </Button>
           )}
         </DialogFooter>

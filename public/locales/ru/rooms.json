@@ -1,0 +1,112 @@
+{
+  "title": "Палаты и койки",
+  "subtitleAdmin": "Управляйте палатами и назначениями коек в реальном времени.",
+  "subtitleViewer": "Просмотр доступности палат и коек вашей клиники.",
+  "refresh": "Обновить",
+  "addRoom": "Добавить палату",
+  "addBed": "Добавить койку",
+  "editRoom": "Редактировать палату",
+  "edit": "Изменить",
+  "delete": "Удалить",
+  "close": "Закрыть",
+  "cancel": "Отмена",
+  "save": "Сохранить",
+  "saveChanges": "Сохранить изменения",
+  "saving": "Сохранение...",
+  "noRooms": "Палаты ещё не добавлены.",
+  "noRoomsHint": "Используйте «Добавить палату», чтобы создать план.",
+  "noBeds": "В этой палате нет коек",
+  "noBedsConfigured": "Койки не настроены.",
+  "bedsLabel": "коек",
+  "occupiedFraction": "{{occupied}}/{{total}} занято",
+  "bed": "Койка",
+  "floor": "Этаж {{name}}",
+  "floorGround": "Первый",
+  "stats": {
+    "totalBeds": "Всего коек",
+    "available": "Свободно",
+    "occupied": "Занято",
+    "cleaning": "Уборка"
+  },
+  "view": {
+    "floorPlan": "План этажа",
+    "list": "Список"
+  },
+  "bedStatus": {
+    "available": "Свободна",
+    "occupied": "Занята",
+    "reserved": "Зарезервирована",
+    "cleaning": "Уборка",
+    "maintenance": "Обслуживание"
+  },
+  "bedType": {
+    "standard": "Стандартная",
+    "icu": "Реанимация",
+    "pediatric": "Детская",
+    "bariatric": "Бариатрическая",
+    "adjustable": "Регулируемая"
+  },
+  "roomType": {
+    "general": "Общая палата",
+    "icu": "Реанимация",
+    "private": "Отдельная палата",
+    "ward": "Общая палата",
+    "operating": "Операционная",
+    "recovery": "Послеоперационная",
+    "consultation": "Кабинет приёма",
+    "pediatric": "Детская палата"
+  },
+  "tooltip": {
+    "patient": "Пациент: {{name}}",
+    "doctor": "Д-р {{name}}"
+  },
+  "addRoomModal": {
+    "title": "Добавить палату",
+    "editTitle": "Редактировать палату",
+    "name": "Название палаты *",
+    "namePlaceholder": "напр. Палата ИТ A",
+    "roomNumber": "Номер палаты",
+    "roomNumberPlaceholder": "101",
+    "floor": "Этаж",
+    "floorPlaceholder": "1",
+    "roomType": "Тип палаты",
+    "capacity": "Вместимость",
+    "color": "Цвет палаты",
+    "notes": "Заметки",
+    "notesPlaceholder": "Любые особенности этой палаты..."
+  },
+  "addBedModal": {
+    "title": "Добавить койку",
+    "titleFor": "Добавить койку — {{room}}",
+    "editTitle": "Редактировать койку",
+    "bedNumber": "Номер койки *",
+    "bedNumberPlaceholder": "напр. 3 или A1",
+    "bedType": "Тип койки",
+    "initialStatus": "Начальный статус",
+    "notes": "Заметки",
+    "notesPlaceholder": "Любые заметки об этой койке..."
+  },
+  "assign": {
+    "title": "Койка {{number}} — {{room}}",
+    "assignPatient": "Назначить пациента",
+    "patientOptional": "Пациент (опционально)",
+    "selectPatient": "Выберите пациента",
+    "loadingPatients": "Загрузка...",
+    "noPatient": "Без конкретного пациента",
+    "notes": "Заметки",
+    "notesPlaceholder": "Заметки о поступлении...",
+    "changeStatus": "Изменить статус койки",
+    "occupied": "Занята",
+    "assignedBy": "Назначил д-р {{name}}",
+    "since": "С {{date}}",
+    "dischargeTitle": "Выписать пациента",
+    "dischargeHint": "Это выпишет пациента и переведёт койку в статус «Уборка».",
+    "discharge": "Выписать пациента",
+    "discharging": "Выписка...",
+    "assignToBed": "Назначить на койку",
+    "assigning": "Назначение...",
+    "updateStatus": "Обновить статус",
+    "updating": "Обновление..."
+  },
+  "deleteConfirm": "Удалить палату «{{name}}»? Все койки также будут удалены."
+}

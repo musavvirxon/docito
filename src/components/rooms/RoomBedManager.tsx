@@ -1,6 +1,7 @@
 // src/components/rooms/RoomBedManager.tsx
 // Main orchestrating component — used by clinic admin, doctor, and staff roles.
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRoomBed } from '@/hooks/useRoomBed';
 import { RoomFloorPlan } from './RoomFloorPlan';
 import { AddRoomModal } from './AddRoomModal';
@@ -18,16 +19,12 @@ import {
 import { cn } from '@/lib/utils';
 import type { ClinicBed, RoomWithBeds, ClinicRoom, BedStatus } from '@/hooks/useRoomBed';
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 interface RoomBedManagerProps {
   practiceId: string;
   userId: string;
   role: 'admin' | 'doctor' | 'staff';
   doctorId?: string | null;
 }
-
-// ─── Stat card ────────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: number; icon: any; color: string }) {
   return (
@@ -45,8 +42,6 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: n
   );
 }
 
-// ─── List view ────────────────────────────────────────────────────────────────
-
 const BED_STATUS_COLORS: Record<BedStatus, string> = {
   available:   'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
   occupied:    'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
@@ -56,10 +51,11 @@ const BED_STATUS_COLORS: Record<BedStatus, string> = {
 };
 
 function ListView({ rooms, onBedClick, canEdit }: { rooms: RoomWithBeds[]; onBedClick: (b: ClinicBed, r: RoomWithBeds) => void; canEdit: boolean }) {
+  const { t } = useTranslation('rooms');
   if (rooms.length === 0) return (
     <div className="flex flex-col items-center py-16 text-center gap-2">
       <BedDouble className="w-10 h-10 text-muted-foreground/40" />
-      <p className="text-sm text-muted-foreground">No rooms added yet.</p>
+      <p className="text-sm text-muted-foreground">{t('noRooms')}</p>
     </div>
   );
 
@@ -71,12 +67,17 @@ function ListView({ rooms, onBedClick, canEdit }: { rooms: RoomWithBeds[]; onBed
             style={{ borderLeftColor: room.color ?? '#6366f1', borderLeftWidth: 4 }}>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">{room.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">
-                {room.room_type}{room.room_number ? ` · #${room.room_number}` : ''}{room.floor ? ` · Floor ${room.floor}` : ''}
+              <p className="text-xs text-muted-foreground">
+                {t(`roomType.${room.room_type}`, { defaultValue: room.room_type })}
+                {room.room_number ? ` · #${room.room_number}` : ''}
+                {room.floor ? ` · ${t('floor', { name: room.floor })}` : ''}
               </p>
             </div>
             <Badge variant="outline" className="text-xs shrink-0">
-              {room.beds.filter(b => b.status === 'occupied').length}/{room.beds.length} occupied
+              {t('occupiedFraction', {
+                occupied: room.beds.filter(b => b.status === 'occupied').length,
+                total: room.beds.length,
+              })}
             </Badge>
           </div>
           {room.beds.length > 0 ? (
@@ -88,21 +89,21 @@ function ListView({ rooms, onBedClick, canEdit }: { rooms: RoomWithBeds[]; onBed
                   onClick={() => canEdit && onBedClick(bed, room)}
                 >
                   <BedDouble className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="font-medium w-16">Bed {bed.bed_number}</span>
-                  <span className="text-xs text-muted-foreground capitalize flex-1">{bed.bed_type}</span>
+                  <span className="font-medium w-16">{t('bed')} {bed.bed_number}</span>
+                  <span className="text-xs text-muted-foreground flex-1">{t(`bedType.${bed.bed_type}`, { defaultValue: bed.bed_type })}</span>
                   {bed.current_assignment?.patient_name && (
                     <span className="text-xs text-rose-600 dark:text-rose-400 truncate max-w-[120px]">
                       {bed.current_assignment.patient_name}
                     </span>
                   )}
-                  <Badge className={cn('text-[10px] px-2 capitalize', BED_STATUS_COLORS[bed.status])}>
-                    {bed.status}
+                  <Badge className={cn('text-[10px] px-2', BED_STATUS_COLORS[bed.status])}>
+                    {t(`bedStatus.${bed.status}`)}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="px-4 py-3 text-xs text-muted-foreground italic">No beds configured.</p>
+            <p className="px-4 py-3 text-xs text-muted-foreground italic">{t('noBedsConfigured')}</p>
           )}
         </Card>
       ))}
@@ -110,16 +111,14 @@ function ListView({ rooms, onBedClick, canEdit }: { rooms: RoomWithBeds[]; onBed
   );
 }
 
-// ─── RoomBedManager ───────────────────────────────────────────────────────────
-
 export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedManagerProps) {
+  const { t } = useTranslation('rooms');
   const isAdmin = role === 'admin';
   const canEdit = role === 'admin' || role === 'staff';
 
   const { rooms, stats, loading, error, refresh, addRoom, updateRoom, deleteRoom, addBed, updateBedStatus, assignBed, unassignBed } =
     useRoomBed({ practiceId, role, doctorId });
 
-  // Modal state
   const [addRoomOpen, setAddRoomOpen]     = useState(false);
   const [editRoom, setEditRoom]           = useState<RoomWithBeds | null>(null);
   const [addBedRoom, setAddBedRoom]       = useState<RoomWithBeds | null>(null);
@@ -139,38 +138,36 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
   };
 
   const handleDeleteRoom = async (room: RoomWithBeds) => {
-    if (!window.confirm(`Delete room "${room.name}"? All beds will also be deleted.`)) return;
+    if (!window.confirm(t('deleteConfirm', { name: room.name }))) return;
     await deleteRoom(room.id);
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <BedDouble className="w-5 h-5 text-primary" />
-            Rooms &amp; Beds
+            {t('title')}
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {isAdmin ? 'Manage clinic rooms and bed assignments in real-time.' : 'View room and bed availability for your clinic.'}
+            {isAdmin ? t('subtitleAdmin') : t('subtitleViewer')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
             <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
-            <span className="ml-1.5 hidden sm:inline">Refresh</span>
+            <span className="ml-1.5 hidden sm:inline">{t('refresh')}</span>
           </Button>
           {isAdmin && (
             <Button size="sm" onClick={() => setAddRoomOpen(true)}>
               <Plus className="w-3.5 h-3.5 mr-1.5" />
-              Add Room
+              {t('addRoom')}
             </Button>
           )}
         </div>
       </div>
 
-      {/* Error */}
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="w-4 h-4" />
@@ -178,19 +175,17 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
         </Alert>
       )}
 
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Total Beds"   value={stats.totalBeds}      icon={BedDouble}     color="bg-slate-500" />
-        <StatCard label="Available"    value={stats.availableBeds}  icon={CheckCircle2}  color="bg-emerald-500" />
-        <StatCard label="Occupied"     value={stats.occupiedBeds}   icon={AlertCircle}   color="bg-rose-500" />
-        <StatCard label="Cleaning"     value={stats.cleaningBeds}   icon={Sparkles}      color="bg-sky-500" />
+        <StatCard label={t('stats.totalBeds')} value={stats.totalBeds}     icon={BedDouble}    color="bg-slate-500" />
+        <StatCard label={t('stats.available')} value={stats.availableBeds} icon={CheckCircle2} color="bg-emerald-500" />
+        <StatCard label={t('stats.occupied')}  value={stats.occupiedBeds}  icon={AlertCircle}  color="bg-rose-500" />
+        <StatCard label={t('stats.cleaning')}  value={stats.cleaningBeds}  icon={Sparkles}     color="bg-sky-500" />
       </div>
 
-      {/* View tabs */}
       <Tabs value={view} onValueChange={v => setView(v as typeof view)}>
         <TabsList className="w-fit">
-          <TabsTrigger value="floorplan" className="gap-1.5"><LayoutGrid className="w-3.5 h-3.5" />Floor Plan</TabsTrigger>
-          <TabsTrigger value="list"      className="gap-1.5"><List      className="w-3.5 h-3.5" />List View</TabsTrigger>
+          <TabsTrigger value="floorplan" className="gap-1.5"><LayoutGrid className="w-3.5 h-3.5" />{t('view.floorPlan')}</TabsTrigger>
+          <TabsTrigger value="list"      className="gap-1.5"><List      className="w-3.5 h-3.5" />{t('view.list')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="floorplan" className="mt-4">
@@ -223,7 +218,6 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
         </TabsContent>
       </Tabs>
 
-      {/* Modals */}
       <AddRoomModal
         open={addRoomOpen || !!editRoom}
         onClose={() => { setAddRoomOpen(false); setEditRoom(null); }}

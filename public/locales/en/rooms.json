@@ -1,0 +1,112 @@
+{
+  "title": "Rooms & Beds",
+  "subtitleAdmin": "Manage clinic rooms and bed assignments in real-time.",
+  "subtitleViewer": "View room and bed availability for your clinic.",
+  "refresh": "Refresh",
+  "addRoom": "Add Room",
+  "addBed": "Add Bed",
+  "editRoom": "Edit Room",
+  "edit": "Edit",
+  "delete": "Delete",
+  "close": "Close",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saveChanges": "Save Changes",
+  "saving": "Saving...",
+  "noRooms": "No rooms added yet.",
+  "noRoomsHint": "Use \"Add Room\" to set up your floor plan.",
+  "noBeds": "No beds in this room",
+  "noBedsConfigured": "No beds configured.",
+  "bedsLabel": "beds",
+  "occupiedFraction": "{{occupied}}/{{total}} occupied",
+  "bed": "Bed",
+  "floor": "Floor {{name}}",
+  "floorGround": "Ground",
+  "stats": {
+    "totalBeds": "Total Beds",
+    "available": "Available",
+    "occupied": "Occupied",
+    "cleaning": "Cleaning"
+  },
+  "view": {
+    "floorPlan": "Floor Plan",
+    "list": "List View"
+  },
+  "bedStatus": {
+    "available": "Available",
+    "occupied": "Occupied",
+    "reserved": "Reserved",
+    "cleaning": "Cleaning",
+    "maintenance": "Maintenance"
+  },
+  "bedType": {
+    "standard": "Standard",
+    "icu": "ICU Bed",
+    "pediatric": "Pediatric",
+    "bariatric": "Bariatric",
+    "adjustable": "Adjustable"
+  },
+  "roomType": {
+    "general": "General Ward",
+    "icu": "ICU",
+    "private": "Private Room",
+    "ward": "Shared Ward",
+    "operating": "Operating Room",
+    "recovery": "Recovery Room",
+    "consultation": "Consultation Room",
+    "pediatric": "Pediatric Room"
+  },
+  "tooltip": {
+    "patient": "Patient: {{name}}",
+    "doctor": "Dr. {{name}}"
+  },
+  "addRoomModal": {
+    "title": "Add Room",
+    "editTitle": "Edit Room",
+    "name": "Room Name *",
+    "namePlaceholder": "e.g. ICU Ward A",
+    "roomNumber": "Room Number",
+    "roomNumberPlaceholder": "101",
+    "floor": "Floor",
+    "floorPlaceholder": "1",
+    "roomType": "Room Type",
+    "capacity": "Bed Capacity",
+    "color": "Room Color",
+    "notes": "Notes",
+    "notesPlaceholder": "Any special notes about this room..."
+  },
+  "addBedModal": {
+    "title": "Add Bed",
+    "titleFor": "Add Bed — {{room}}",
+    "editTitle": "Edit Bed",
+    "bedNumber": "Bed Number *",
+    "bedNumberPlaceholder": "e.g. 3 or A1",
+    "bedType": "Bed Type",
+    "initialStatus": "Initial Status",
+    "notes": "Notes",
+    "notesPlaceholder": "Any notes about this bed..."
+  },
+  "assign": {
+    "title": "Bed {{number}} — {{room}}",
+    "assignPatient": "Assign Patient",
+    "patientOptional": "Patient (optional)",
+    "selectPatient": "Select patient",
+    "loadingPatients": "Loading...",
+    "noPatient": "No specific patient",
+    "notes": "Notes",
+    "notesPlaceholder": "Admission notes...",
+    "changeStatus": "Change Bed Status",
+    "occupied": "Occupied",
+    "assignedBy": "Assigned by Dr. {{name}}",
+    "since": "Since {{date}}",
+    "dischargeTitle": "Discharge patient",
+    "dischargeHint": "This will discharge the patient and set the bed to \"Cleaning\".",
+    "discharge": "Discharge Patient",
+    "discharging": "Discharging...",
+    "assignToBed": "Assign to Bed",
+    "assigning": "Assigning...",
+    "updateStatus": "Update Status",
+    "updating": "Updating..."
+  },
+  "deleteConfirm": "Delete room \"{{name}}\"? All beds will also be deleted."
+}

@@ -222,11 +222,13 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
           <AlertTriangle className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-purple-800 dark:text-purple-300">
-              {stats.needsSterilization.length} item{stats.needsSterilization.length > 1 ? 's' : ''} need{stats.needsSterilization.length === 1 ? 's' : ''} sterilization
+              {t('sterilizationBanner.title', { count: stats.needsSterilization.length })}
             </p>
             {stats.needsSterilization.slice(0, 3).map((item) => (
               <div key={item.id} className="flex items-center gap-2 mt-1.5">
-                <span className="text-xs text-purple-700 dark:text-purple-300 truncate">{item.name} — used {item.current_use_count}/{item.max_uses_per_unit}×</span>
+                <span className="text-xs text-purple-700 dark:text-purple-300 truncate">
+                  {t('sterilizationBanner.itemRow', { name: item.name, used: item.current_use_count, max: item.max_uses_per_unit })}
+                </span>
                 <Button
                   variant="outline" size="sm"
                   className="h-6 text-[10px] border-purple-300 text-purple-700 hover:bg-purple-100 shrink-0"
@@ -285,30 +287,30 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
 
           {/* Stats pills */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-xs">{items.length} total</Badge>
+            <Badge variant="outline" className="text-xs">{t('statsPills.total', { count: items.length })}</Badge>
             {stats.critical.length > 0 && (
               <Badge className="text-xs bg-red-500/15 text-red-700 dark:text-red-300 border-red-200">
-                <AlertTriangle className="h-3 w-3 mr-1" />{stats.critical.length} critical
+                <AlertTriangle className="h-3 w-3 mr-1" />{t('statsPills.critical', { count: stats.critical.length })}
               </Badge>
             )}
             {stats.lowStock.length > 0 && (
               <Badge className="text-xs bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200">
-                {stats.lowStock.length} low
+                {t('statsPills.low', { count: stats.lowStock.length })}
               </Badge>
             )}
             {stats.outOfStock.length > 0 && (
               <Badge className="text-xs bg-gray-500/15 text-gray-600 border-gray-200">
-                {stats.outOfStock.length} out
+                {t('statsPills.out', { count: stats.outOfStock.length })}
               </Badge>
             )}
             {stats.needsSterilization.length > 0 && (
               <Badge className="text-xs bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-200">
-                {stats.needsSterilization.length} sterilize
+                {t('statsPills.sterilize', { count: stats.needsSterilization.length })}
               </Badge>
             )}
             {stats.expiringSoon.length > 0 && (
               <Badge className="text-xs bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-200">
-                {stats.expiringSoon.length} expiring &lt;30d
+                {t('statsPills.expiring', { count: stats.expiringSoon.length })}
               </Badge>
             )}
           </div>
@@ -316,7 +318,7 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
           {/* Table */}
           {loading ? (
             <div className="flex items-center gap-2 py-8 justify-center text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /><span className="text-sm">Loading…</span>
+              <Loader2 className="h-4 w-4 animate-spin" /><span className="text-sm">{t('loading')}</span>
             </div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
@@ -364,9 +366,9 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-medium">{item.name}</span>
                               {item.owner_type === 'doctor' ? (
-                                <Badge variant="outline" className="text-[10px] h-4 px-1">👤 personal</Badge>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">👤 {t('personalBadge')}</Badge>
                               ) : (
-                                <Badge variant="outline" className="text-[10px] h-4 px-1">🏥 clinic</Badge>
+                                <Badge variant="outline" className="text-[10px] h-4 px-1">🏥 {t('clinicBadge')}</Badge>
                               )}
                             </div>
                             {item.created_by && (
@@ -538,7 +540,7 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                 <Label>{t('form.avgDailyUsage')}</Label>
                 <Input type="number" min="0" step="0.1"
                   value={form.avg_daily_usage ?? ''}
-                  placeholder="e.g. 2.5"
+                  placeholder={t('form.avgDailyUsagePlaceholder')}
                   onChange={(e) => setForm((f) => ({ ...f, avg_daily_usage: e.target.value === '' ? null : parseFloat(e.target.value) }))} />
                 <p className="text-[10px] text-muted-foreground mt-1">{t('form.avgDailyUsageHint')}</p>
               </div>
@@ -709,7 +711,7 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                     </p>
                     {log.use_count_after != null && (
                       <p className="text-[10px] text-muted-foreground">
-                        Use count: {log.use_count_before} → {log.use_count_after}
+                        {t('useCount', { before: log.use_count_before, after: log.use_count_after })}
                       </p>
                     )}
                     {log.notes && <p className="text-xs text-muted-foreground mt-0.5">{log.notes}</p>}

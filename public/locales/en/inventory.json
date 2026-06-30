@@ -14,6 +14,10 @@
   "noClinicJoined": "Join a clinic to see combined inventory here.",
   "noPractice": "No practice linked to this account.",
   "addedBy": "Added by",
+  "loading": "Loading…",
+  "personalBadge": "personal",
+  "clinicBadge": "clinic",
+  "useCount": "Use count: {{before}} → {{after}}",
 
   "reuse": {
     "ready": "{{ready}}/{{total}} ready",
@@ -22,6 +26,20 @@
     "unlimited": "unlimited uses"
   },
 
+  "statsPills": {
+    "total": "{{count}} total",
+    "critical": "{{count}} critical",
+    "low": "{{count}} low",
+    "out": "{{count}} out",
+    "sterilize": "{{count}} sterilize",
+    "expiring": "{{count}} expiring <30d"
+  },
+
+  "sterilizationBanner": {
+    "title_one": "{{count}} item needs sterilization",
+    "title_other": "{{count}} items need sterilization",
+    "itemRow": "{{name}} — used {{used}}/{{max}}×"
+  },
 
   "stockStatus": {
     "ok": "In Stock",
@@ -88,6 +106,7 @@
     "reorderLevel": "Reorder Level",
     "reorderLevelHint": "Alert fires when stock falls to this level",
     "avgDailyUsage": "Avg. Daily Usage",
+    "avgDailyUsagePlaceholder": "e.g. 2.5",
     "avgDailyUsageHint": "Leave blank to auto-calculate from usage history",
     "expiryDate": "Expiry Date",
     "supplier": "Supplier / Vendor",
@@ -163,7 +182,10 @@
     "insufficientWarning": "Some inventory items are insufficient or need attention. Proceed anyway?",
     "autoDeduct": "Items are automatically deducted when this procedure is marked Completed.",
     "clinicInventory": "clinic inventory",
-    "personalInventory": "your personal inventory"
+    "personalInventory": "your personal inventory",
+    "clinicShort": "Clinic",
+    "mineShort": "Mine",
+    "usesLabel": "{{used}}/{{max}} uses"
   },
 
   "lowStockAlert": {
