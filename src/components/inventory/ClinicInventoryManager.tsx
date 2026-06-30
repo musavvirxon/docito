@@ -222,11 +222,13 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
           <AlertTriangle className="h-4 w-4 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-purple-800 dark:text-purple-300">
-              {stats.needsSterilization.length} item{stats.needsSterilization.length > 1 ? 's' : ''} need{stats.needsSterilization.length === 1 ? 's' : ''} sterilization
+              {t('sterilizationBanner.title', { count: stats.needsSterilization.length })}
             </p>
             {stats.needsSterilization.slice(0, 3).map((item) => (
               <div key={item.id} className="flex items-center gap-2 mt-1.5">
-                <span className="text-xs text-purple-700 dark:text-purple-300 truncate">{item.name} — used {item.current_use_count}/{item.max_uses_per_unit}×</span>
+                <span className="text-xs text-purple-700 dark:text-purple-300 truncate">
+                  {t('sterilizationBanner.itemRow', { name: item.name, used: item.current_use_count, max: item.max_uses_per_unit })}
+                </span>
                 <Button
                   variant="outline" size="sm"
                   className="h-6 text-[10px] border-purple-300 text-purple-700 hover:bg-purple-100 shrink-0"
