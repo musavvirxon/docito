@@ -711,7 +711,7 @@ export function ClinicInventoryManager({ entityId, canCreate = true, canDelete =
                     </p>
                     {log.use_count_after != null && (
                       <p className="text-[10px] text-muted-foreground">
-                        Use count: {log.use_count_before} → {log.use_count_after}
+                        {t('useCount', { before: log.use_count_before, after: log.use_count_after })}
                       </p>
                     )}
                     {log.notes && <p className="text-xs text-muted-foreground mt-0.5">{log.notes}</p>}
