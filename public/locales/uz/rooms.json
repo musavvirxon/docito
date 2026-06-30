@@ -1,0 +1,112 @@
+{
+  "title": "Xonalar va koykalar",
+  "subtitleAdmin": "Klinika xonalari va koyka tayinlovlarini real vaqtda boshqaring.",
+  "subtitleViewer": "Klinikangizdagi xonalar va koykalarning mavjudligini ko‘ring.",
+  "refresh": "Yangilash",
+  "addRoom": "Xona qo‘shish",
+  "addBed": "Koyka qo‘shish",
+  "editRoom": "Xonani tahrirlash",
+  "edit": "Tahrirlash",
+  "delete": "O‘chirish",
+  "close": "Yopish",
+  "cancel": "Bekor qilish",
+  "save": "Saqlash",
+  "saveChanges": "O‘zgarishlarni saqlash",
+  "saving": "Saqlanmoqda...",
+  "noRooms": "Hali xonalar qo‘shilmagan.",
+  "noRoomsHint": "Reja tuzish uchun «Xona qo‘shish»dan foydalaning.",
+  "noBeds": "Bu xonada koyka yo‘q",
+  "noBedsConfigured": "Koykalar sozlanmagan.",
+  "bedsLabel": "koyka",
+  "occupiedFraction": "{{occupied}}/{{total}} band",
+  "bed": "Koyka",
+  "floor": "{{name}}-qavat",
+  "floorGround": "Birinchi",
+  "stats": {
+    "totalBeds": "Jami koykalar",
+    "available": "Bo‘sh",
+    "occupied": "Band",
+    "cleaning": "Tozalanmoqda"
+  },
+  "view": {
+    "floorPlan": "Qavat rejasi",
+    "list": "Ro‘yxat"
+  },
+  "bedStatus": {
+    "available": "Bo‘sh",
+    "occupied": "Band",
+    "reserved": "Band qilingan",
+    "cleaning": "Tozalanmoqda",
+    "maintenance": "Texnik xizmat"
+  },
+  "bedType": {
+    "standard": "Standart",
+    "icu": "Reanimatsiya",
+    "pediatric": "Bolalar",
+    "bariatric": "Bariatrik",
+    "adjustable": "Sozlanuvchi"
+  },
+  "roomType": {
+    "general": "Umumiy palata",
+    "icu": "Reanimatsiya",
+    "private": "Alohida xona",
+    "ward": "Umumiy palata",
+    "operating": "Operatsiya xonasi",
+    "recovery": "Tiklanish xonasi",
+    "consultation": "Qabul xonasi",
+    "pediatric": "Bolalar palatasi"
+  },
+  "tooltip": {
+    "patient": "Bemor: {{name}}",
+    "doctor": "Dr. {{name}}"
+  },
+  "addRoomModal": {
+    "title": "Xona qo‘shish",
+    "editTitle": "Xonani tahrirlash",
+    "name": "Xona nomi *",
+    "namePlaceholder": "masalan, Reanimatsiya A",
+    "roomNumber": "Xona raqami",
+    "roomNumberPlaceholder": "101",
+    "floor": "Qavat",
+    "floorPlaceholder": "1",
+    "roomType": "Xona turi",
+    "capacity": "Koyka sig‘imi",
+    "color": "Xona rangi",
+    "notes": "Izohlar",
+    "notesPlaceholder": "Bu xona haqida qo‘shimcha izohlar..."
+  },
+  "addBedModal": {
+    "title": "Koyka qo‘shish",
+    "titleFor": "Koyka qo‘shish — {{room}}",
+    "editTitle": "Koykani tahrirlash",
+    "bedNumber": "Koyka raqami *",
+    "bedNumberPlaceholder": "masalan, 3 yoki A1",
+    "bedType": "Koyka turi",
+    "initialStatus": "Boshlang‘ich holat",
+    "notes": "Izohlar",
+    "notesPlaceholder": "Bu koyka haqida izohlar..."
+  },
+  "assign": {
+    "title": "Koyka {{number}} — {{room}}",
+    "assignPatient": "Bemorni tayinlash",
+    "patientOptional": "Bemor (ixtiyoriy)",
+    "selectPatient": "Bemorni tanlang",
+    "loadingPatients": "Yuklanmoqda...",
+    "noPatient": "Aniq bemor yo‘q",
+    "notes": "Izohlar",
+    "notesPlaceholder": "Qabul izohlari...",
+    "changeStatus": "Koyka holatini o‘zgartirish",
+    "occupied": "Band",
+    "assignedBy": "Tayinlagan: Dr. {{name}}",
+    "since": "{{date}}dan beri",
+    "dischargeTitle": "Bemorni chiqarish",
+    "dischargeHint": "Bu bemorni chiqaradi va koykani «Tozalash» holatiga o‘tkazadi.",
+    "discharge": "Bemorni chiqarish",
+    "discharging": "Chiqarilmoqda...",
+    "assignToBed": "Koykaga tayinlash",
+    "assigning": "Tayinlanmoqda...",
+    "updateStatus": "Holatni yangilash",
+    "updating": "Yangilanmoqda..."
+  },
+  "deleteConfirm": "«{{name}}» xonasi o‘chirilsinmi? Barcha koykalar ham o‘chiriladi."
+}
