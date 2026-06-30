@@ -123,7 +123,7 @@ export function ProcedureInventoryItems({
                       variant="outline"
                       className="text-[10px] shrink-0 border-dashed"
                     >
-                      {(inv as MergedInventoryItem).source === 'clinic' ? '🏥 Clinic' : '👤 Mine'}
+                      {(inv as MergedInventoryItem).source === 'clinic' ? `🏥 ${t('procedureItems.clinicShort')}` : `👤 ${t('procedureItems.mineShort')}`}
                     </Badge>
                   )}
 
