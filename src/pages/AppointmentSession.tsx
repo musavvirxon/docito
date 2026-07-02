@@ -1152,7 +1152,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     ) : (
                       <Download className="h-4 w-4" />
                     )}
-                    043/у RU
+                    {t('doctor.session.downloadRuPdf')}
                   </Button>
                   <Button
                     variant="outline"
@@ -1166,7 +1166,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     ) : (
                       <Download className="h-4 w-4" />
                     )}
-                    043/u UZ
+                    {t('doctor.session.downloadUzPdf')}
                   </Button>
                 </div>
               );
