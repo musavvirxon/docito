@@ -1456,7 +1456,13 @@
       "tabDental": "Dental",
       "tabPrescriptions": "Rx",
       "tabNotes": "Notes",
-      "quickActions": "Quick Actions",
+      "quickActions": {
+        "title": "Быстрые действия",
+        "bookFollowUp": "Повторный приём",
+        "prescription": "Рецепт",
+        "referral": "Направление",
+        "labOrder": "Лаборатория"
+      },
       "videoConsultation": "Video Consultation",
       "videoConsultationDesc": "Start or join the video call for this appointment.",
       "startVideo": "Start Video",
@@ -1472,7 +1478,98 @@
         "cancel": "Cancel",
         "skip": "Skip & finish",
         "book": "Book follow-up",
-        "skipError": "Failed to skip follow-ups"
+        "skipError": "Failed to skip follow-ups",
+        "prev": "Прошлый визит:",
+        "viewPrev": "Прошлые записи",
+        "scheduleNext": "Назначить следующий",
+        "viewPrevSoon": "Скоро",
+        "scheduleSoon": "Скоро"
+      },
+      "finish": "Завершить приём",
+      "finishing": "Завершение…",
+      "downloadRuPdf": "Скачать 043/у (RU)",
+      "downloadUzPdf": "Скачать 043/u (UZ)",
+      "tabs": {
+        "session": "Сеанс",
+        "video": "Видео",
+        "diagnoses": "Диагнозы",
+        "dental": "Стоматология",
+        "treatmentPlan": "План лечения",
+        "rx": "Рецепт",
+        "notes": "Заметки",
+        "reviews": "Отзывы"
+      },
+      "video": {
+        "title": "Видеоконсультация",
+        "desc": "Начните или присоединитесь к видеозвонку.",
+        "startCall": "Начать звонок",
+        "joinCall": "Присоединиться",
+        "copyLink": "Копировать ссылку",
+        "linkCopied": "Ссылка скопирована",
+        "ensure": "Убедитесь, что у пациента есть ссылка."
+      },
+      "inPerson": {
+        "title": "Приём очно",
+        "roomChair": "Кабинет / Кресло:",
+        "checkIn": "Регистрация:",
+        "notCheckedIn": "Не зарегистрирован",
+        "mark": "Отметить прибытие",
+        "checkedInSuccess": "Пациент зарегистрирован",
+        "checkInFailed": "Ошибка регистрации"
+      },
+      "home": {
+        "title": "Визит на дом",
+        "address": "Адрес:",
+        "openMaps": "Открыть на карте",
+        "logTravel": "Учёт времени в пути",
+        "travelSoon": "Журнал скоро появится"
+      },
+      "message": {
+        "title": "Консультация в чате",
+        "openChat": "Открыть чат",
+        "async": "Асинхронная консультация — отвечайте когда удобно.",
+        "noRegistered": "Чат недоступен — пациент должен быть зарегистрирован"
+      },
+      "findings": {
+        "title": "Клинические данные",
+        "save": "Сохранить",
+        "saving": "Сохранение…",
+        "complaint": "Жалобы",
+        "complaintPh": "Основные жалобы пациента…",
+        "extraOral": "Внешний осмотр",
+        "extraOralPh": "Лицо, лимфоузлы, ВНЧС…",
+        "oralCavity": "Состояние полости рта",
+        "oralCavityPh": "Слизистая, десна, нёбо…",
+        "labXray": "Лаб. и рентген результаты",
+        "labXrayPh": "Данные снимков, анализов…",
+        "diagnosisFree": "Диагноз (свободный текст — заменяет список в PDF)",
+        "diagnosisFreePh": "Рабочий диагноз…",
+        "mergeHint": "Эти поля вместе с процедурами и счётом объединяются в PDF формы 043/у."
+      },
+      "notes": {
+        "title": "Заметки сеанса",
+        "save": "Сохранить",
+        "placeholder": "Добавьте заметки к приёму..."
+      },
+      "dental": {
+        "title": "Стоматологические процедуры (этот приём)",
+        "refresh": "Обновить",
+        "total": "Итого:",
+        "empty": "Процедуры пока не добавлены.",
+        "loading": "Загрузка процедур...",
+        "teeth": "Зубы:",
+        "tip": "Совет: стоимость записи хранится как итог (за единицу × число зубов)."
+      },
+      "rx": {
+        "created": "Рецепт создан, PDF скачан"
+      },
+      "reviews": {
+        "appointment": "Отзыв об этом приёме",
+        "loading": "Загрузка…",
+        "noReview": "Пациент ещё не оставил отзыв.",
+        "canLeave": "Вы сможете оставить отзыв после завершения приёма.",
+        "allReviews": "Все отзывы о докторе",
+        "empty": "Отзывов пока нет."
       }
     },
     "procedureLibrary": {
@@ -1951,7 +2048,18 @@
     "diagnoses": "Диагнозы",
     "noDiagnosesYet": "Диагнозы ещё не добавлены.",
     "addDiagnosisInSession": "Добавьте новые диагнозы в сеансе приёма.",
-    "loading": "Загрузка…"
+    "loading": "Загрузка…",
+    "statusBadge": {
+      "scheduled": "Запланирован",
+      "confirmed": "Подтверждён",
+      "in_progress": "В процессе",
+      "completed": "Завершён",
+      "cancelled": "Отменён",
+      "canceled": "Отменён",
+      "no_show": "Не явился",
+      "no-show": "Не явился",
+      "pending": "Ожидание"
+    }
   },
   "appointmentModal": {
     "referral": "Referral",

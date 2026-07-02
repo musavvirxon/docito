@@ -1592,7 +1592,13 @@
       "tabDental": "Dental",
       "tabPrescriptions": "Rx",
       "tabNotes": "Notes",
-      "quickActions": "Quick Actions",
+      "quickActions": {
+        "title": "Tezkor amallar",
+        "bookFollowUp": "Takroriy qabul",
+        "prescription": "Retsept",
+        "referral": "Yo'llanma",
+        "labOrder": "Lab buyurtma"
+      },
       "videoConsultation": "Video Consultation",
       "videoConsultationDesc": "Start or join the video call for this appointment.",
       "startVideo": "Start Video",
@@ -1608,7 +1614,98 @@
         "cancel": "Cancel",
         "skip": "Skip & finish",
         "book": "Book follow-up",
-        "skipError": "Failed to skip follow-ups"
+        "skipError": "Failed to skip follow-ups",
+        "prev": "Oldingi tashrif:",
+        "viewPrev": "Oldingi yozuvlar",
+        "scheduleNext": "Keyingini rejalashtirish",
+        "viewPrevSoon": "Tez orada",
+        "scheduleSoon": "Tez orada"
+      },
+      "finish": "Qabulni yakunlash",
+      "finishing": "Yakunlanmoqda…",
+      "downloadRuPdf": "043/у (RU) yuklab olish",
+      "downloadUzPdf": "043/u (UZ) yuklab olish",
+      "tabs": {
+        "session": "Seans",
+        "video": "Video",
+        "diagnoses": "Tashxislar",
+        "dental": "Stomatologiya",
+        "treatmentPlan": "Davolash rejasi",
+        "rx": "Retsept",
+        "notes": "Eslatmalar",
+        "reviews": "Sharhlar"
+      },
+      "video": {
+        "title": "Video konsultatsiya",
+        "desc": "Video qo'ng'iroqni boshlang yoki qo'shiling.",
+        "startCall": "Qo'ng'iroqni boshlash",
+        "joinCall": "Qo'shilish",
+        "copyLink": "Havolani nusxalash",
+        "linkCopied": "Video havola nusxalandi",
+        "ensure": "Bemorda uchrashuv havolasi borligiga ishonch hosil qiling."
+      },
+      "inPerson": {
+        "title": "Yuzma-yuz qabul",
+        "roomChair": "Xona / Kreslo:",
+        "checkIn": "Ro'yxat:",
+        "notCheckedIn": "Ro'yxatga olinmagan",
+        "mark": "Kelganini belgilash",
+        "checkedInSuccess": "Bemor ro'yxatga olindi",
+        "checkInFailed": "Ro'yxatga olishda xato"
+      },
+      "home": {
+        "title": "Uyga tashrif",
+        "address": "Manzil:",
+        "openMaps": "Xaritada ochish",
+        "logTravel": "Yo'l vaqtini yozish",
+        "travelSoon": "Tez orada"
+      },
+      "message": {
+        "title": "Chat konsultatsiya",
+        "openChat": "Chatni ochish",
+        "async": "Asinxron konsultatsiya — qulay vaqtda javob bering.",
+        "noRegistered": "Chat ochilmadi — bemor ro'yxatdan o'tgan foydalanuvchi bo'lishi kerak"
+      },
+      "findings": {
+        "title": "Klinik ma'lumotlar",
+        "save": "Saqlash",
+        "saving": "Saqlanmoqda…",
+        "complaint": "Shikoyatlar",
+        "complaintPh": "Bemorning asosiy shikoyati…",
+        "extraOral": "Tashqi ko'rik",
+        "extraOralPh": "Yuz, limfa tugunlari, TMJ…",
+        "oralCavity": "Og'iz bo'shlig'i holati",
+        "oralCavityPh": "Shilliq, milk, tanglay…",
+        "labXray": "Lab va rentgen natijalari",
+        "labXrayPh": "Tasvir va tahlil natijalari…",
+        "diagnosisFree": "Tashxis (erkin matn — PDF ro'yxatini almashtiradi)",
+        "diagnosisFreePh": "Ishchi tashxis…",
+        "mergeHint": "Bu maydonlar protsedura va hisob-kitoblar bilan birga 043/u PDFga birlashtiriladi."
+      },
+      "notes": {
+        "title": "Seans eslatmalari",
+        "save": "Saqlash",
+        "placeholder": "Ushbu qabulga eslatma qo'shing..."
+      },
+      "dental": {
+        "title": "Stomatologik protseduralar (ushbu qabul)",
+        "refresh": "Yangilash",
+        "total": "Jami:",
+        "empty": "Hozircha protseduralar qo'shilmagan.",
+        "loading": "Protseduralar yuklanmoqda...",
+        "teeth": "Tishlar:",
+        "tip": "Maslahat: har bir yozuv narxi jami sifatida saqlanadi (birlik × tishlar soni)."
+      },
+      "rx": {
+        "created": "Retsept yaratildi, PDF yuklab olindi"
+      },
+      "reviews": {
+        "appointment": "Ushbu qabul haqida sharh",
+        "loading": "Yuklanmoqda…",
+        "noReview": "Bemor hali sharh qoldirmagan.",
+        "canLeave": "Qabul yakunlangach sharh qoldirishingiz mumkin.",
+        "allReviews": "Doktor haqidagi barcha sharhlar",
+        "empty": "Sharhlar yo'q."
       }
     },
     "procedureLibrary": {
@@ -2087,7 +2184,18 @@
     "diagnoses": "Tashxislar",
     "noDiagnosesYet": "Hozircha tashxislar qayd etilmagan.",
     "addDiagnosisInSession": "Yangi tashxislarni qabul seansida qo'shing.",
-    "loading": "Yuklanmoqda…"
+    "loading": "Yuklanmoqda…",
+    "statusBadge": {
+      "scheduled": "Rejalashtirilgan",
+      "confirmed": "Tasdiqlangan",
+      "in_progress": "Jarayonda",
+      "completed": "Yakunlangan",
+      "cancelled": "Bekor qilingan",
+      "canceled": "Bekor qilingan",
+      "no_show": "Kelmagan",
+      "no-show": "Kelmagan",
+      "pending": "Kutilmoqda"
+    }
   },
   "appointmentModal": {
     "referral": "Referral",
