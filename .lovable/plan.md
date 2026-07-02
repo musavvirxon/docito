@@ -1,36 +1,57 @@
-# Plan: Wire Room & Bed Management
+## Goal
+Every visible string in the Appointment Session page and the Appointment Preview popup goes through `useTranslation`, with matching English, Russian, and Uzbek translations. No raw `doctor.session.finish` keys, no hardcoded English left.
 
-Apply surgical edits to 5 existing files. No other changes.
+## Scope
+Only these two surfaces (plus their inline children):
 
-## 1. `tailwind.config.ts`
-Add to `extend.animation`:
-- `'spin-slow': 'spin 3s linear infinite'`
-- `'pulse-soft': 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite'`
+1. `src/pages/AppointmentSession.tsx` — header actions, tab labels, in‑person / video banners, Quick Actions, Clinical Findings form, Session Notes, empty states, toasts, PDF buttons ("043/y RU", "043/u UZ"), Finish Appointment button, Reviews tab.
+2. `src/components/doctor/calendar/AppointmentQuickPreview.tsx` — remaining hardcoded fragments (dialog is mostly wired but a few keys like `appointmentPreview.diagnoses`, `loading`, etc. and the status badge text `appointment.status` are not localized).
+3. Patient sidebar inside session (`PatientProfileView` tabs: Overview / Medical History / Appointments, "Recent appointments", "View all", status chips like `confirmed` / `completed`, "Direct patient" label) — only the parts rendered inside the session split view.
 
-## 2. `src/pages/AdminDashboard.tsx`
-- Import `RoomBedManager` from `@/components/rooms/RoomBedManager`
-- Add `BedDouble` to lucide-react import
-- Add `"rooms"` to `AdminSection` union (before `"analytics"`)
-- Add menu item `{ id: "rooms", label: "Rooms & Beds", icon: BedDouble }` after inventory
-- Add `case "rooms":` in switch rendering `<RoomBedManager>` wrapped in `SectionWrapper`
+Out of scope: Finance panel, Procedures panel, Treatment Plan panel, Rx / Prescription panel, Dental chart — those are separate components already covered by their own i18n namespaces.
 
-## 3. `src/pages/DoctorDashboard.tsx`
-- Import `RoomBedManager`
-- Add `BedDouble` to lucide import
-- In the **clinic-member** sidebarItems array only, insert rooms entry between inventory and performance
-- Add `case "rooms":` in `renderContent()` switch, passing `doctorId={doctorProfile.id}`
+## Approach
 
-## 4. `src/pages/StaffDashboardPage.tsx`
-- Import `RoomBedManager`
-- Add `"rooms"` to `SectionId` union (after inventory)
-- Add entry in `availableSections` useMemo (after billing) gated by `isAdminLike || permissions?.can_manage_patients`
-- Add `<TabsContent value="rooms">` after inventory tab with `RoomBedManager` or "No practice linked" fallback
+### 1. Namespace + keys
+Use the existing `dashboard` namespace (already loaded by the page) and add a single new subtree so keys stay together and easy to audit:
 
-## 5. `src/components/staff/StaffSidebar.tsx`
-- Add `BedDouble` to lucide import
-- In the **clinic** menu array, after `intake`, add rooms entry visible if `perms.can_manage_patients || perms.can_view_schedule`
+```
+dashboard.json
+└── doctor.session
+    ├── header: { finish, finishing, downloadRuPdf, downloadUzPdf, back, close }
+    ├── tabs: { session, diagnoses, dental, treatmentPlan, rx, notes, reviews }
+    ├── visit: { inPerson, video, homeVisit, roomChair, checkIn, notCheckedIn, checkedInAt, markCheckedIn }
+    ├── quickActions: { title, bookFollowUp, prescription, referral, labOrder }
+    ├── findings: { title, save, saving, complaint, complaintPh, extraOral, extraOralPh,
+    │              oralCavity, oralCavityPh, labXray, labXrayPh, diagnosisFree,
+    │              diagnosisFreePh, mergeHint }
+    ├── notes: { title, save, saving, placeholder }
+    ├── reviews: { title, empty }
+    ├── status: { scheduled, confirmed, in_progress, completed, cancelled, no_show, pending }
+    ├── patientSidebar: { title, directPatient, overview, medicalHistory, appointments,
+    │                    recent, viewAll, noAppointments }
+    └── toasts: { finished, finishError, notesSaved, notesSaveError,
+                  findingsSaved, findingsSaveError, ...existing keys kept }
+```
 
-## Notes
-- Files `useRoomBed.ts`, room components, and migration `20240701000000_rooms_and_beds.sql` already exist — no changes to those.
-- Pre-edit file reads required for AdminDashboard, DoctorDashboard, StaffDashboardPage, StaffSidebar to locate exact insertion points (lucide import line, switch positions, sidebar arrays).
-- No styling, logic, or unrelated component changes.
+Existing `doctor.session.*` keys already used in the file (`ended`, `endError`, `loading`, `loadError`, `notFoundTitle`, etc.) stay as-is; only missing ones get added.
+
+For `AppointmentQuickPreview` I extend the existing `appointmentPreview` block with `statusBadge.*` (confirmed / pending / …) and any remaining raw strings, so nothing prints a raw key.
+
+### 2. Component edits
+- Replace every hardcoded string, `title=`, `placeholder=`, `aria-label=`, and toast literal in the two files with `t('doctor.session.<path>')` / `t('appointmentPreview.<path>')`.
+- The status pill (`{appointment.status}`) becomes `t(\`appointmentPreview.statusBadge.${status}\`)`.
+- The "043/y RU" / "043/u UZ" buttons: keep the code label ("043/y", "043/u") as literal identifiers of the Uzbek official form codes, wrap only the language suffix and tooltip in `t()` — those form codes are legal identifiers, not translatable copy.
+- Patient sidebar tabs and "Recent appointments" strings inside the session view move to `doctor.session.patientSidebar.*`.
+
+### 3. Translations (en / ru / uz)
+Add the full block to all three locale files. Other 8 locales get the English strings mirrored as fallback so nothing regresses; a follow-up turn can localize them.
+
+### 4. Verification
+- After edit, `rg` for suspicious raw strings in the two files: `rg -n '>[A-Z][A-Za-z ]{2,}<' src/pages/AppointmentSession.tsx src/components/doctor/calendar/AppointmentQuickPreview.tsx` should return only dynamic data (patient names, times).
+- Reload `/appointment-session/...?tab=session` in en, ru, uz — no raw keys, no English leaking into ru/uz.
+
+## Technical notes
+- No refactor of component structure or logic — pure i18n substitution.
+- No changes to the Finance / Procedures / Treatment Plan / Rx / Dental sub-panels.
+- No backend / edge-function text is touched (nothing user-visible in this view originates from a Deno function response body).
