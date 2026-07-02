@@ -1016,14 +1016,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             {showVideoStartButton && (
               <Button onClick={startOrJoinVideo} className="gap-2">
                 <Video className="h-4 w-4" />
-                {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
+                {videoConsultation && canJoinExistingVideo ? t('doctor.session.joinVideo') : t('doctor.session.startVideo')}
               </Button>
             )}
 
             {isVideoAppointment && showVideoRoom && (
               <Button variant="outline" onClick={() => handleVideoEnd(sessionNotes)} className="gap-2">
                 <XCircle className="h-4 w-4" />
-                End Video
+                {t('doctor.session.endVideo')}
               </Button>
             )}
 
@@ -1152,7 +1152,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     ) : (
                       <Download className="h-4 w-4" />
                     )}
-                    043/у RU
+                    {t('doctor.session.downloadRuPdf')}
                   </Button>
                   <Button
                     variant="outline"
@@ -1166,7 +1166,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     ) : (
                       <Download className="h-4 w-4" />
                     )}
-                    043/u UZ
+                    {t('doctor.session.downloadUzPdf')}
                   </Button>
                 </div>
               );
@@ -1203,7 +1203,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             {appointment.status !== 'completed' && (
               <Button onClick={handleFinishAppointment} disabled={isFinishing} className="gap-2">
                 {isFinishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-                {t('doctor.session.finish', 'Finish Appointment')}
+                {isFinishing ? t('doctor.session.finishing') : t('doctor.session.finish')}
               </Button>
             )}
           </div>
@@ -1219,50 +1219,50 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                 <TabsList className="!flex !h-auto w-full flex-wrap justify-start gap-1 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
-                    Session
+                    {t('doctor.session.tabs.session')}
                   </TabsTrigger>
 
                   {isVideoAppointment && (
                     <TabsTrigger value="video" className="gap-2">
                       <Video className="h-4 w-4" />
-                      Video
+                      {t('doctor.session.tabs.video')}
                     </TabsTrigger>
                   )}
 
                   <TabsTrigger value="diagnoses" className="gap-2">
                     <Stethoscope className="h-4 w-4" />
-                    Diagnoses
+                    {t('doctor.session.tabs.diagnoses')}
                   </TabsTrigger>
 
                   {isDentist && (
                     <TabsTrigger value="dental" className="gap-2">
                       <Stethoscope className="h-4 w-4" />
-                      Dental
+                      {t('doctor.session.tabs.dental')}
                     </TabsTrigger>
                   )}
 
                   {canManagePrescriptions && (
                     <TabsTrigger value="treatmentPlan" className="gap-2">
                       <FileText className="h-4 w-4" />
-                      Treatment Plan
+                      {t('doctor.session.tabs.treatmentPlan')}
                     </TabsTrigger>
                   )}
 
                   {canManagePrescriptions && (
                     <TabsTrigger value="prescriptions" className="gap-2">
                       <Pill className="h-4 w-4" />
-                      Rx
+                      {t('doctor.session.tabs.rx')}
                     </TabsTrigger>
                   )}
 
                   <TabsTrigger value="notes" className="gap-2">
                     <FileText className="h-4 w-4" />
-                    Notes
+                    {t('doctor.session.tabs.notes')}
                   </TabsTrigger>
 
                   <TabsTrigger value="reviews" className="gap-2">
                     <Star className="h-4 w-4" />
-                    Reviews
+                    {t('doctor.session.tabs.reviews')}
                   </TabsTrigger>
                 </TabsList>
 
@@ -1306,22 +1306,22 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         return (
                           <div className="rounded-xl border border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800 p-4 space-y-2">
                             <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                              <Video className="h-4 w-4" /> Video Consultation
+                              <Video className="h-4 w-4" /> {t('doctor.session.video.title')}
                             </p>
                             <div className="flex gap-2 flex-wrap">
                               <Button size="sm" onClick={startOrJoinVideo}>
-                                {videoConsultation && canJoinExistingVideo ? 'Join Video Call' : 'Start Video Call'}
+                                {videoConsultation && canJoinExistingVideo ? t('doctor.session.video.joinCall') : t('doctor.session.video.startCall')}
                               </Button>
                               <Button size="sm" variant="outline" onClick={() => {
                                 const link = `${window.location.origin}/video-call/${videoConsultation?.id || appointment.id}`;
                                 navigator.clipboard?.writeText(link);
-                                toast.success('Video link copied');
+                                toast.success(t('doctor.session.video.linkCopied'));
                               }}>
-                                Copy Link
+                                {t('doctor.session.video.copyLink')}
                               </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              Ensure patient has the meeting link before starting.
+                              {t('doctor.session.video.ensure')}
                             </p>
                           </div>
                         );
@@ -1330,20 +1330,20 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         return (
                           <div className="rounded-xl border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 p-4">
                             <p className="text-sm font-semibold text-green-700 dark:text-green-300 flex items-center gap-2">
-                              <MapPin className="h-4 w-4" /> In-Person Visit
+                              <MapPin className="h-4 w-4" /> {t('doctor.session.inPerson.title')}
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Room / Chair: ___________ &nbsp;&nbsp; Check-in:{' '}
-                              <span className="font-medium">{(appointment as any)?.check_in_time || 'Not checked in'}</span>
+                              {t('doctor.session.inPerson.roomChair')} ___________ &nbsp;&nbsp; {t('doctor.session.inPerson.checkIn')}{' '}
+                              <span className="font-medium">{(appointment as any)?.check_in_time || t('doctor.session.inPerson.notCheckedIn')}</span>
                             </p>
                             <Button size="sm" variant="outline" className="mt-2 text-xs h-7" onClick={async () => {
                               try {
                                 await supabase.from('appointments').update({ check_in_time: new Date().toISOString() } as any).eq('id', appointment.id);
-                                toast.success('Patient checked in');
+                                toast.success(t('doctor.session.inPerson.checkedInSuccess'));
                                 fetchSessionData();
-                              } catch { toast.error('Check-in failed'); }
+                              } catch { toast.error(t('doctor.session.inPerson.checkInFailed')); }
                             }}>
-                              Mark Checked In
+                              {t('doctor.session.inPerson.mark')}
                             </Button>
                           </div>
                         );
@@ -1353,19 +1353,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         return (
                           <div className="rounded-xl border border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-800 p-4 space-y-2">
                             <p className="text-sm font-semibold text-orange-700 dark:text-orange-300 flex items-center gap-2">
-                              <Home className="h-4 w-4" /> Home Visit
+                              <Home className="h-4 w-4" /> {t('doctor.session.home.title')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              Address: <span className="font-medium">{addr || '—'}</span>
+                              {t('doctor.session.home.address')} <span className="font-medium">{addr || '—'}</span>
                             </p>
                             <div className="flex gap-2">
                               <Button size="sm" variant="outline" className="text-xs h-7"
                                 onClick={() => window.open(`https://maps.google.com?q=${encodeURIComponent(addr)}`, '_blank')}>
-                                Open in Maps
+                                {t('doctor.session.home.openMaps')}
                               </Button>
                               <Button size="sm" variant="outline" className="text-xs h-7"
-                                onClick={() => toast.info('Travel log coming soon')}>
-                                Log Travel Time
+                                onClick={() => toast.info(t('doctor.session.home.travelSoon'))}>
+                                {t('doctor.session.home.logTravel')}
                               </Button>
                             </div>
                           </div>
@@ -1375,22 +1375,22 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         return (
                           <div className="rounded-xl border border-purple-200 bg-purple-50 dark:bg-purple-950/20 dark:border-purple-800 p-4 space-y-2">
                             <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                              <RefreshCw className="h-4 w-4" /> Follow-up
+                              <RefreshCw className="h-4 w-4" /> {t('doctor.session.followUp.title')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              Previous visit:{' '}
+                              {t('doctor.session.followUp.prev')}{' '}
                               <span className="font-medium">
                                 {(appointment as any)?.previous_appointment_date || '—'}
                               </span>
                             </p>
                             <div className="flex gap-2">
                               <Button size="sm" variant="outline" className="text-xs h-7"
-                                onClick={() => toast.info('View previous visit coming soon')}>
-                                View Previous Notes
+                                onClick={() => toast.info(t('doctor.session.followUp.viewPrevSoon'))}>
+                                {t('doctor.session.followUp.viewPrev')}
                               </Button>
                               <Button size="sm" variant="outline" className="text-xs h-7"
-                                onClick={() => toast.info('Schedule next follow-up coming soon')}>
-                                Schedule Next Follow-up
+                                onClick={() => toast.info(t('doctor.session.followUp.scheduleSoon'))}>
+                                {t('doctor.session.followUp.scheduleNext')}
                               </Button>
                             </div>
                           </div>
@@ -1400,7 +1400,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         return (
                           <div className="rounded-xl border border-indigo-200 bg-indigo-50 dark:bg-indigo-950/20 dark:border-indigo-800 p-4 space-y-2">
                             <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-2">
-                              <MessageSquare className="h-4 w-4" /> Message Consultation
+                              <MessageSquare className="h-4 w-4" /> {t('doctor.session.message.title')}
                             </p>
                             <Button
                               size="sm"
@@ -1415,14 +1415,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                                 if (conv) {
                                   navigate(`/messages?c=${conv}`);
                                 } else {
-                                  toast.error('Cannot open chat — patient must be a registered user');
+                                  toast.error(t('doctor.session.message.noRegistered'));
                                 }
                               }}
                             >
-                              Open Chat Thread
+                              {t('doctor.session.message.openChat')}
                             </Button>
                             <p className="text-xs text-muted-foreground">
-                              Async consultation — respond at your convenience.
+                              {t('doctor.session.message.async')}
                             </p>
                           </div>
                         );
@@ -1433,14 +1433,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     {/* Quick Actions */}
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Quick Actions</CardTitle>
+                        <CardTitle className="text-sm">{t('doctor.session.quickActions.title')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {isVideoAppointment && !videoEnded && !showVideoRoom && (
                             <Button variant="outline" onClick={startOrJoinVideo} className="gap-2">
                               <Video className="h-4 w-4" />
-                              {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
+                              {videoConsultation && canJoinExistingVideo ? t('doctor.session.joinVideo') : t('doctor.session.startVideo')}
                             </Button>
                           )}
                           <Button
@@ -1451,21 +1451,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             }
                           >
                             <Calendar className="h-4 w-4" />
-                            Book Follow-up
+                            {t('doctor.session.quickActions.bookFollowUp')}
                           </Button>
                           {canManagePrescriptions && (
                             <Button variant="outline" className="gap-2" onClick={() => handleTabChange('prescriptions')}>
                               <Pill className="h-4 w-4" />
-                              Prescription
+                              {t('doctor.session.quickActions.prescription')}
                             </Button>
                           )}
                           <Button variant="outline" className="gap-2">
                             <FileText className="h-4 w-4" />
-                            Referral
+                            {t('doctor.session.quickActions.referral')}
                           </Button>
                           <Button variant="outline" className="gap-2">
                             <Send className="h-4 w-4" />
-                            Lab Order
+                            {t('doctor.session.quickActions.labOrder')}
                           </Button>
                         </div>
                       </CardContent>
@@ -1475,77 +1475,77 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm flex items-center justify-between">
-                          <span>Clinical Findings</span>
+                          <span>{t('doctor.session.findings.title')}</span>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleSaveClinicalFindings}
                             disabled={savingFindings || !appointmentId}
                           >
-                            {savingFindings ? 'Saving…' : 'Save'}
+                            {savingFindings ? t('doctor.session.findings.saving') : t('doctor.session.findings.save')}
                           </Button>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Complaint</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.complaint')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.complaint}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, complaint: e.target.value }))
                               }
-                              placeholder="Patient's chief complaint…"
+                              placeholder={t('doctor.session.findings.complaintPh')}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Extra-oral examination</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.extraOral')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.extraOralExam}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, extraOralExam: e.target.value }))
                               }
-                              placeholder="Face, lymph nodes, TMJ…"
+                              placeholder={t('doctor.session.findings.extraOralPh')}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Condition of oral cavity</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.oralCavity')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.oralCavityCondition}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, oralCavityCondition: e.target.value }))
                               }
-                              placeholder="Mucosa, gingiva, palate…"
+                              placeholder={t('doctor.session.findings.oralCavityPh')}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Lab & X-ray results</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.labXray')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.labXrayResults}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, labXrayResults: e.target.value }))
                               }
-                              placeholder="Imaging findings, lab values…"
+                              placeholder={t('doctor.session.findings.labXrayPh')}
                             />
                           </div>
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs">Diagnosis (free text — overrides structured list in PDF)</Label>
+                          <Label className="text-xs">{t('doctor.session.findings.diagnosisFree')}</Label>
                           <Textarea
                             rows={2}
                             value={clinicalFindings.diagnosisText}
                             onChange={(e) =>
                               setClinicalFindings((s) => ({ ...s, diagnosisText: e.target.value }))
                             }
-                            placeholder="Working diagnosis…"
+                            placeholder={t('doctor.session.findings.diagnosisFreePh')}
                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                          These fields, together with procedures and billing on this page, are merged into the 043/u summary PDF.
+                          {t('doctor.session.findings.mergeHint')}
                         </p>
                       </CardContent>
                     </Card>
@@ -1565,9 +1565,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm flex items-center justify-between">
-                          <span>Session Notes</span>
+                          <span>{t('doctor.session.notes.title')}</span>
                           <Button variant="ghost" size="sm" onClick={handleSaveNotes}>
-                            Save
+                            {t('doctor.session.notes.save')}
                           </Button>
                         </CardTitle>
                       </CardHeader>
@@ -1575,7 +1575,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <Textarea
                           value={sessionNotes}
                           onChange={(e) => setSessionNotes(e.target.value)}
-                          placeholder="Add notes for this appointment..."
+                          placeholder={t('doctor.session.notes.placeholder')}
                           className="min-h-[200px]"
                         />
                       </CardContent>

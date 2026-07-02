@@ -1456,7 +1456,13 @@
       "tabDental": "Dental",
       "tabPrescriptions": "Rx",
       "tabNotes": "Notes",
-      "quickActions": "Quick Actions",
+      "quickActions": {
+        "title": "Quick Actions",
+        "bookFollowUp": "Book Follow-up",
+        "prescription": "Prescription",
+        "referral": "Referral",
+        "labOrder": "Lab Order"
+      },
       "videoConsultation": "Video Consultation",
       "videoConsultationDesc": "Start or join the video call for this appointment.",
       "startVideo": "Start Video",
@@ -1472,7 +1478,98 @@
         "cancel": "Cancel",
         "skip": "Skip & finish",
         "book": "Book follow-up",
-        "skipError": "Failed to skip follow-ups"
+        "skipError": "Failed to skip follow-ups",
+        "prev": "Previous visit:",
+        "viewPrev": "View Previous Notes",
+        "scheduleNext": "Schedule Next Follow-up",
+        "viewPrevSoon": "View previous visit coming soon",
+        "scheduleSoon": "Schedule next follow-up coming soon"
+      },
+      "finish": "Finish Appointment",
+      "finishing": "Finishing…",
+      "downloadRuPdf": "Download 043/у (RU)",
+      "downloadUzPdf": "Download 043/u (UZ)",
+      "tabs": {
+        "session": "Session",
+        "video": "Video",
+        "diagnoses": "Diagnoses",
+        "dental": "Dental",
+        "treatmentPlan": "Treatment Plan",
+        "rx": "Rx",
+        "notes": "Notes",
+        "reviews": "Reviews"
+      },
+      "video": {
+        "title": "Video Consultation",
+        "desc": "Start or join the video call for this appointment.",
+        "startCall": "Start Video Call",
+        "joinCall": "Join Video Call",
+        "copyLink": "Copy Link",
+        "linkCopied": "Video link copied",
+        "ensure": "Ensure patient has the meeting link before starting."
+      },
+      "inPerson": {
+        "title": "In-Person Visit",
+        "roomChair": "Room / Chair:",
+        "checkIn": "Check-in:",
+        "notCheckedIn": "Not checked in",
+        "mark": "Mark Checked In",
+        "checkedInSuccess": "Patient checked in",
+        "checkInFailed": "Check-in failed"
+      },
+      "home": {
+        "title": "Home Visit",
+        "address": "Address:",
+        "openMaps": "Open in Maps",
+        "logTravel": "Log Travel Time",
+        "travelSoon": "Travel log coming soon"
+      },
+      "message": {
+        "title": "Message Consultation",
+        "openChat": "Open Chat Thread",
+        "async": "Async consultation — respond at your convenience.",
+        "noRegistered": "Cannot open chat — patient must be a registered user"
+      },
+      "findings": {
+        "title": "Clinical Findings",
+        "save": "Save",
+        "saving": "Saving…",
+        "complaint": "Complaint",
+        "complaintPh": "Patient's chief complaint…",
+        "extraOral": "Extra-oral examination",
+        "extraOralPh": "Face, lymph nodes, TMJ…",
+        "oralCavity": "Condition of oral cavity",
+        "oralCavityPh": "Mucosa, gingiva, palate…",
+        "labXray": "Lab & X-ray results",
+        "labXrayPh": "Imaging findings, lab values…",
+        "diagnosisFree": "Diagnosis (free text — overrides structured list in PDF)",
+        "diagnosisFreePh": "Working diagnosis…",
+        "mergeHint": "These fields, together with procedures and billing on this page, are merged into the 043/u summary PDF."
+      },
+      "notes": {
+        "title": "Session Notes",
+        "save": "Save",
+        "placeholder": "Add notes for this appointment..."
+      },
+      "dental": {
+        "title": "Dental Procedures (This Appointment)",
+        "refresh": "Refresh",
+        "total": "Total:",
+        "empty": "No dental procedures recorded for this appointment yet.",
+        "loading": "Loading procedures...",
+        "teeth": "Teeth:",
+        "tip": "Tip: each entry's cost is stored as total (unit cost × number of selected teeth)."
+      },
+      "rx": {
+        "created": "Prescription created & PDF downloaded"
+      },
+      "reviews": {
+        "appointment": "Review for this appointment",
+        "loading": "Loading…",
+        "noReview": "The patient hasn't left a review for this appointment yet.",
+        "canLeave": "You'll be able to leave a review once this appointment is completed.",
+        "allReviews": "All reviews for this doctor",
+        "empty": "No reviews yet."
       }
     },
     "procedureLibrary": {
@@ -1951,7 +2048,18 @@
     "diagnoses": "Diagnosen",
     "noDiagnosesYet": "Noch keine Diagnosen erfasst.",
     "addDiagnosisInSession": "Neue Diagnosen aus der Termin-Sitzung hinzufügen.",
-    "loading": "Wird geladen…"
+    "loading": "Wird geladen…",
+    "statusBadge": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "canceled": "Cancelled",
+      "no_show": "No Show",
+      "no-show": "No Show",
+      "pending": "Pending"
+    }
   },
   "appointmentModal": {
     "referral": "Referral",
