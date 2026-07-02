@@ -1016,14 +1016,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             {showVideoStartButton && (
               <Button onClick={startOrJoinVideo} className="gap-2">
                 <Video className="h-4 w-4" />
-                {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
+                {videoConsultation && canJoinExistingVideo ? t('doctor.session.joinVideo') : t('doctor.session.startVideo')}
               </Button>
             )}
 
             {isVideoAppointment && showVideoRoom && (
               <Button variant="outline" onClick={() => handleVideoEnd(sessionNotes)} className="gap-2">
                 <XCircle className="h-4 w-4" />
-                End Video
+                {t('doctor.session.endVideo')}
               </Button>
             )}
 
