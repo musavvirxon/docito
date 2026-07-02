@@ -1203,7 +1203,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             {appointment.status !== 'completed' && (
               <Button onClick={handleFinishAppointment} disabled={isFinishing} className="gap-2">
                 {isFinishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-                {t('doctor.session.finish', 'Finish Appointment')}
+                {isFinishing ? t('doctor.session.finishing') : t('doctor.session.finish')}
               </Button>
             )}
           </div>
