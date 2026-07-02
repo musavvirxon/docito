@@ -2117,7 +2117,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "Diagnósticos",
+    "noDiagnosesYet": "Nenhum diagnóstico registrado ainda.",
+    "addDiagnosisInSession": "Adicione novos diagnósticos na sessão da consulta.",
+    "loading": "Carregando…"
   },
   "appointmentModal": {
     "referral": "Referral",

@@ -1947,7 +1947,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "Диагнозы",
+    "noDiagnosesYet": "Диагнозы ещё не добавлены.",
+    "addDiagnosisInSession": "Добавьте новые диагнозы в сеансе приёма.",
+    "loading": "Загрузка…"
   },
   "appointmentModal": {
     "referral": "Referral",

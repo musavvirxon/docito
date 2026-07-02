@@ -1902,7 +1902,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "Diagnoses",
+    "noDiagnosesYet": "No diagnoses recorded yet.",
+    "addDiagnosisInSession": "Add new diagnoses from the appointment session.",
+    "loading": "Loading…"
   },
   "appointmentModal": {
     "referral": "Referral",

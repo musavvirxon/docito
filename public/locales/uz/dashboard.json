@@ -2083,7 +2083,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "Tashxislar",
+    "noDiagnosesYet": "Hozircha tashxislar qayd etilmagan.",
+    "addDiagnosisInSession": "Yangi tashxislarni qabul seansida qo'shing.",
+    "loading": "Yuklanmoqda…"
   },
   "appointmentModal": {
     "referral": "Referral",

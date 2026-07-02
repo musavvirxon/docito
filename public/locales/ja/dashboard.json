@@ -2083,7 +2083,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "診断",
+    "noDiagnosesYet": "まだ診断が記録されていません。",
+    "addDiagnosisInSession": "予約セッションから新しい診断を追加します。",
+    "loading": "読み込み中…"
   },
   "appointmentModal": {
     "referral": "Referral",

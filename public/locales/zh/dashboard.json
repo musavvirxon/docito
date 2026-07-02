@@ -2083,7 +2083,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "诊断",
+    "noDiagnosesYet": "尚未记录诊断。",
+    "addDiagnosisInSession": "在预约会话中添加新的诊断。",
+    "loading": "加载中…"
   },
   "appointmentModal": {
     "referral": "Referral",

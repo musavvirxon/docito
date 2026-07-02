@@ -1947,7 +1947,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "Diagnosen",
+    "noDiagnosesYet": "Noch keine Diagnosen erfasst.",
+    "addDiagnosisInSession": "Neue Diagnosen aus der Termin-Sitzung hinzufügen.",
+    "loading": "Wird geladen…"
   },
   "appointmentModal": {
     "referral": "Referral",
