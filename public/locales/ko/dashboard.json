@@ -2083,7 +2083,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "진단",
+    "noDiagnosesYet": "아직 등록된 진단이 없습니다.",
+    "addDiagnosisInSession": "예약 세션에서 새 진단을 추가하세요.",
+    "loading": "불러오는 중…"
   },
   "appointmentModal": {
     "referral": "Referral",

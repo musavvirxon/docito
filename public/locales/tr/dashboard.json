@@ -2083,7 +2083,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "Tanılar",
+    "noDiagnosesYet": "Henüz kayıtlı tanı yok.",
+    "addDiagnosisInSession": "Yeni tanıları randevu oturumundan ekleyin.",
+    "loading": "Yükleniyor…"
   },
   "appointmentModal": {
     "referral": "Referral",

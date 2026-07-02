@@ -2059,7 +2059,11 @@
       "apply": "Apply",
       "cancel": "Cancel",
       "history": "Payment history"
-    }
+    },
+    "diagnoses": "التشخيصات",
+    "noDiagnosesYet": "لا توجد تشخيصات مسجلة بعد.",
+    "addDiagnosisInSession": "أضف تشخيصات جديدة من جلسة الموعد.",
+    "loading": "جارٍ التحميل…"
   },
   "appointmentModal": {
     "referral": "Referral",
