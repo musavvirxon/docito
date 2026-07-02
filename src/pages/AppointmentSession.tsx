@@ -1433,14 +1433,14 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     {/* Quick Actions */}
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Quick Actions</CardTitle>
+                        <CardTitle className="text-sm">{t('doctor.session.quickActions.title')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {isVideoAppointment && !videoEnded && !showVideoRoom && (
                             <Button variant="outline" onClick={startOrJoinVideo} className="gap-2">
                               <Video className="h-4 w-4" />
-                              {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
+                              {videoConsultation && canJoinExistingVideo ? t('doctor.session.joinVideo') : t('doctor.session.startVideo')}
                             </Button>
                           )}
                           <Button
@@ -1451,21 +1451,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             }
                           >
                             <Calendar className="h-4 w-4" />
-                            Book Follow-up
+                            {t('doctor.session.quickActions.bookFollowUp')}
                           </Button>
                           {canManagePrescriptions && (
                             <Button variant="outline" className="gap-2" onClick={() => handleTabChange('prescriptions')}>
                               <Pill className="h-4 w-4" />
-                              Prescription
+                              {t('doctor.session.quickActions.prescription')}
                             </Button>
                           )}
                           <Button variant="outline" className="gap-2">
                             <FileText className="h-4 w-4" />
-                            Referral
+                            {t('doctor.session.quickActions.referral')}
                           </Button>
                           <Button variant="outline" className="gap-2">
                             <Send className="h-4 w-4" />
-                            Lab Order
+                            {t('doctor.session.quickActions.labOrder')}
                           </Button>
                         </div>
                       </CardContent>
@@ -1475,77 +1475,77 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm flex items-center justify-between">
-                          <span>Clinical Findings</span>
+                          <span>{t('doctor.session.findings.title')}</span>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleSaveClinicalFindings}
                             disabled={savingFindings || !appointmentId}
                           >
-                            {savingFindings ? 'Saving…' : 'Save'}
+                            {savingFindings ? t('doctor.session.findings.saving') : t('doctor.session.findings.save')}
                           </Button>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Complaint</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.complaint')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.complaint}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, complaint: e.target.value }))
                               }
-                              placeholder="Patient's chief complaint…"
+                              placeholder={t('doctor.session.findings.complaintPh')}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Extra-oral examination</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.extraOral')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.extraOralExam}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, extraOralExam: e.target.value }))
                               }
-                              placeholder="Face, lymph nodes, TMJ…"
+                              placeholder={t('doctor.session.findings.extraOralPh')}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Condition of oral cavity</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.oralCavity')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.oralCavityCondition}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, oralCavityCondition: e.target.value }))
                               }
-                              placeholder="Mucosa, gingiva, palate…"
+                              placeholder={t('doctor.session.findings.oralCavityPh')}
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <Label className="text-xs">Lab & X-ray results</Label>
+                            <Label className="text-xs">{t('doctor.session.findings.labXray')}</Label>
                             <Textarea
                               rows={2}
                               value={clinicalFindings.labXrayResults}
                               onChange={(e) =>
                                 setClinicalFindings((s) => ({ ...s, labXrayResults: e.target.value }))
                               }
-                              placeholder="Imaging findings, lab values…"
+                              placeholder={t('doctor.session.findings.labXrayPh')}
                             />
                           </div>
                         </div>
                         <div className="space-y-1.5">
-                          <Label className="text-xs">Diagnosis (free text — overrides structured list in PDF)</Label>
+                          <Label className="text-xs">{t('doctor.session.findings.diagnosisFree')}</Label>
                           <Textarea
                             rows={2}
                             value={clinicalFindings.diagnosisText}
                             onChange={(e) =>
                               setClinicalFindings((s) => ({ ...s, diagnosisText: e.target.value }))
                             }
-                            placeholder="Working diagnosis…"
+                            placeholder={t('doctor.session.findings.diagnosisFreePh')}
                           />
                         </div>
                         <p className="text-[11px] text-muted-foreground">
-                          These fields, together with procedures and billing on this page, are merged into the 043/u summary PDF.
+                          {t('doctor.session.findings.mergeHint')}
                         </p>
                       </CardContent>
                     </Card>
@@ -1565,9 +1565,9 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     <Card>
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm flex items-center justify-between">
-                          <span>Session Notes</span>
+                          <span>{t('doctor.session.notes.title')}</span>
                           <Button variant="ghost" size="sm" onClick={handleSaveNotes}>
-                            Save
+                            {t('doctor.session.notes.save')}
                           </Button>
                         </CardTitle>
                       </CardHeader>
@@ -1575,7 +1575,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <Textarea
                           value={sessionNotes}
                           onChange={(e) => setSessionNotes(e.target.value)}
-                          placeholder="Add notes for this appointment..."
+                          placeholder={t('doctor.session.notes.placeholder')}
                           className="min-h-[200px]"
                         />
                       </CardContent>
