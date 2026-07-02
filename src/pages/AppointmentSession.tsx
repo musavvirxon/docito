@@ -1219,50 +1219,50 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                 <TabsList className="!flex !h-auto w-full flex-wrap justify-start gap-1 mb-4">
                   <TabsTrigger value="session" className="gap-2">
                     <Activity className="h-4 w-4" />
-                    Session
+                    {t('doctor.session.tabs.session')}
                   </TabsTrigger>
 
                   {isVideoAppointment && (
                     <TabsTrigger value="video" className="gap-2">
                       <Video className="h-4 w-4" />
-                      Video
+                      {t('doctor.session.tabs.video')}
                     </TabsTrigger>
                   )}
 
                   <TabsTrigger value="diagnoses" className="gap-2">
                     <Stethoscope className="h-4 w-4" />
-                    Diagnoses
+                    {t('doctor.session.tabs.diagnoses')}
                   </TabsTrigger>
 
                   {isDentist && (
                     <TabsTrigger value="dental" className="gap-2">
                       <Stethoscope className="h-4 w-4" />
-                      Dental
+                      {t('doctor.session.tabs.dental')}
                     </TabsTrigger>
                   )}
 
                   {canManagePrescriptions && (
                     <TabsTrigger value="treatmentPlan" className="gap-2">
                       <FileText className="h-4 w-4" />
-                      Treatment Plan
+                      {t('doctor.session.tabs.treatmentPlan')}
                     </TabsTrigger>
                   )}
 
                   {canManagePrescriptions && (
                     <TabsTrigger value="prescriptions" className="gap-2">
                       <Pill className="h-4 w-4" />
-                      Rx
+                      {t('doctor.session.tabs.rx')}
                     </TabsTrigger>
                   )}
 
                   <TabsTrigger value="notes" className="gap-2">
                     <FileText className="h-4 w-4" />
-                    Notes
+                    {t('doctor.session.tabs.notes')}
                   </TabsTrigger>
 
                   <TabsTrigger value="reviews" className="gap-2">
                     <Star className="h-4 w-4" />
-                    Reviews
+                    {t('doctor.session.tabs.reviews')}
                   </TabsTrigger>
                 </TabsList>
 
