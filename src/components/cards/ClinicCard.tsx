@@ -53,7 +53,7 @@ const ClinicCard = ({
   };
 
   const handleCardClick = () => {
-    const path = `/practice/${id}`;
+    const path = `/practices/${id}`;
     if (!isAuthenticated) {
       navigate(`/auth?redirect=${encodeURIComponent(path)}`);
     } else {
@@ -165,7 +165,7 @@ const ClinicCard = ({
         {/* Right Section - Actions */}
         <div className="flex sm:flex-col gap-2 sm:justify-center flex-shrink-0">
           <Button
-            onClick={(e) => handleNavigation(e, `/practice/${id}/book`)}
+            onClick={(e) => handleNavigation(e, `/practices/${id}`)}
             size="sm"
             className="flex-1 sm:flex-none gap-1.5"
           >
@@ -175,7 +175,7 @@ const ClinicCard = ({
             <span className="sm:hidden">Book</span>
           </Button>
           <Button
-            onClick={(e) => handleNavigation(e, `/practice/${id}`)}
+            onClick={(e) => handleNavigation(e, `/practices/${id}`)}
             variant="outline"
             size="sm"
             className="flex-1 sm:flex-none gap-1.5"

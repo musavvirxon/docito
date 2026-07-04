@@ -34,6 +34,7 @@ const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
+const PracticePublicProfile = lazy(() => import("@/pages/PracticePublicProfile"));
 const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
 const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
@@ -200,6 +201,9 @@ export default function App() {
                     <Route path="doctors" element={<DoctorLandingPage />} />
                     <Route path="doctor/:slug" element={<DoctorPublicProfile />} />
                     <Route path="dr/:slug" element={<DoctorPublicProfile />} />
+                    <Route path="practice/:id" element={<PracticePublicProfile />} />
+                    <Route path="practices/:id" element={<PracticePublicProfile />} />
+                    <Route path="clinic/:id" element={<PracticePublicProfile />} />
                     <Route path="landing" element={<LandingPage />} />
                     <Route path="start" element={<LandingPage />} />
                     <Route path="pharmacy" element={<PharmacyLandingPage />} />
@@ -307,6 +311,9 @@ export default function App() {
                   <Route path="doctors" element={<DoctorLandingPage />} />
                   <Route path="doctor/:slug" element={<DoctorPublicProfile />} />
                   <Route path="dr/:slug" element={<DoctorPublicProfile />} />
+                  <Route path="practice/:id" element={<PracticePublicProfile />} />
+                  <Route path="practices/:id" element={<PracticePublicProfile />} />
+                  <Route path="clinic/:id" element={<PracticePublicProfile />} />
                   <Route path="landing" element={<LandingPage />} />
                   <Route path="start" element={<LandingPage />} />
                   <Route path="pharmacy" element={<PharmacyLandingPage />} />
