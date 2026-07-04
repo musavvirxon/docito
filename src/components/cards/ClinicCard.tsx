@@ -165,7 +165,7 @@ const ClinicCard = ({
         {/* Right Section - Actions */}
         <div className="flex sm:flex-col gap-2 sm:justify-center flex-shrink-0">
           <Button
-            onClick={(e) => handleNavigation(e, `/practice/${id}/book`)}
+            onClick={(e) => handleNavigation(e, `/practices/${id}`)}
             size="sm"
             className="flex-1 sm:flex-none gap-1.5"
           >
