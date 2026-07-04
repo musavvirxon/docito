@@ -7115,6 +7115,7 @@ export type Database = {
           agrees_to_updates: boolean | null
           appointment_count: number | null
           average_rating: number | null
+          banner_url: string | null
           business_owner: string | null
           business_registration_number: string | null
           city: string | null
@@ -7127,10 +7128,12 @@ export type Database = {
           description_ru: string | null
           description_uz: string | null
           email: string | null
+          facebook_url: string | null
           has_imaging_service: boolean | null
           has_lab_service: boolean | null
           how_heard_about_us: string | null
           id: string
+          instagram_url: string | null
           legal_business_name: string | null
           logo_url: string | null
           name: string
@@ -7147,6 +7150,7 @@ export type Database = {
           specialties: string[] | null
           state: string | null
           tax_id: string | null
+          twitter_url: string | null
           verification_status: string | null
           verified: boolean | null
           website: string | null
@@ -7161,6 +7165,7 @@ export type Database = {
           agrees_to_updates?: boolean | null
           appointment_count?: number | null
           average_rating?: number | null
+          banner_url?: string | null
           business_owner?: string | null
           business_registration_number?: string | null
           city?: string | null
@@ -7173,10 +7178,12 @@ export type Database = {
           description_ru?: string | null
           description_uz?: string | null
           email?: string | null
+          facebook_url?: string | null
           has_imaging_service?: boolean | null
           has_lab_service?: boolean | null
           how_heard_about_us?: string | null
           id?: string
+          instagram_url?: string | null
           legal_business_name?: string | null
           logo_url?: string | null
           name: string
@@ -7193,6 +7200,7 @@ export type Database = {
           specialties?: string[] | null
           state?: string | null
           tax_id?: string | null
+          twitter_url?: string | null
           verification_status?: string | null
           verified?: boolean | null
           website?: string | null
@@ -7207,6 +7215,7 @@ export type Database = {
           agrees_to_updates?: boolean | null
           appointment_count?: number | null
           average_rating?: number | null
+          banner_url?: string | null
           business_owner?: string | null
           business_registration_number?: string | null
           city?: string | null
@@ -7219,10 +7228,12 @@ export type Database = {
           description_ru?: string | null
           description_uz?: string | null
           email?: string | null
+          facebook_url?: string | null
           has_imaging_service?: boolean | null
           has_lab_service?: boolean | null
           how_heard_about_us?: string | null
           id?: string
+          instagram_url?: string | null
           legal_business_name?: string | null
           logo_url?: string | null
           name?: string
@@ -7239,6 +7250,7 @@ export type Database = {
           specialties?: string[] | null
           state?: string | null
           tax_id?: string | null
+          twitter_url?: string | null
           verification_status?: string | null
           verified?: boolean | null
           website?: string | null
