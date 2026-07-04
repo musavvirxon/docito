@@ -175,7 +175,7 @@ const ClinicCard = ({
             <span className="sm:hidden">Book</span>
           </Button>
           <Button
-            onClick={(e) => handleNavigation(e, `/practice/${id}`)}
+            onClick={(e) => handleNavigation(e, `/practices/${id}`)}
             variant="outline"
             size="sm"
             className="flex-1 sm:flex-none gap-1.5"
