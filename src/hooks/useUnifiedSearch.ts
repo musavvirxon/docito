@@ -26,6 +26,9 @@ export interface DoctorResult {
   consultationFee: number | null;
   acceptsNewPatients: boolean;
   languages: string[] | null;
+  slug?: string | null;
+  username?: string | null;
+  customProfileLink?: string | null;
 }
 
 export interface ClinicResult {
