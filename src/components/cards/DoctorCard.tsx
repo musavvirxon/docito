@@ -39,14 +39,19 @@ const DoctorCard = memo(({
   nextAvailable,
   languages = [],
   isPremium = false,
+  slug,
+  username,
+  customProfileLink,
 }: DoctorCardProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { handleBookingClick, isLoggedIn: isAuthenticated } = useBookingAuth();
   const [isHovered, setIsHovered] = useState(false);
 
+  const profileSlug = customProfileLink || username || slug || id;
+
   const handleCardClick = () => {
-    navigate(`/doctor-profile/${id}`);
+    navigate(`/doctor/${profileSlug}`);
   };
 
   const handleNavigation = (e: React.MouseEvent, path: string) => {
