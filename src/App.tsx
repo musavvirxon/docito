@@ -34,6 +34,7 @@ const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
+const PracticePublicProfile = lazy(() => import("@/pages/PracticePublicProfile"));
 const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
 const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
