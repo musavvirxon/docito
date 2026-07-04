@@ -21,6 +21,9 @@ interface DoctorCardProps {
   nextAvailable?: string;
   languages?: string[];
   isPremium?: boolean;
+  slug?: string | null;
+  username?: string | null;
+  customProfileLink?: string | null;
 }
 
 const DoctorCard = memo(({
