@@ -312,6 +312,7 @@ export default function App() {
                   <Route path="doctors" element={<DoctorLandingPage />} />
                   <Route path="doctor/:slug" element={<DoctorPublicProfile />} />
                   <Route path="dr/:slug" element={<DoctorPublicProfile />} />
+                  <Route path="doctor-profile/:slug" element={<DoctorPublicProfile />} />
                   <Route path="practice/:id" element={<PracticePublicProfile />} />
                   <Route path="practices/:id" element={<PracticePublicProfile />} />
                   <Route path="clinic/:id" element={<PracticePublicProfile />} />
