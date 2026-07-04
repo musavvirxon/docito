@@ -154,6 +154,74 @@ export function ClinicAdminWorkspaceSettings() {
               description="Appears on treatment plans, referrals & patient summary PDFs. PNG or WebP with transparency recommended (max 2 MB)."
             />
 
+            {/* ── Banner ─────────────────────────────────────────────── */}
+            <div className="space-y-2 pt-2 border-t">
+              <div>
+                <Label className="text-base">Clinic Banner Image</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Displayed at the top of your public clinic profile.
+                  Recommended: 1440 × 400 px · JPG or WebP · max 5 MB.
+                </p>
+              </div>
+              {bannerUrl && (
+                <div className="relative w-full h-32 rounded-lg overflow-hidden border">
+                  <img src={bannerUrl} alt="Banner preview" className="w-full h-full object-cover" />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => setBannerUrl("")}
+                  >
+                    ✕ Remove
+                  </Button>
+                </div>
+              )}
+              <LogoUpload
+                currentUrl={bannerUrl}
+                onUpload={(url) => setBannerUrl(url)}
+                entityType="clinic"
+                entityId={practice.id}
+                label="Banner Image"
+                description="Wide landscape image. Will be cropped to fill the banner area."
+              />
+            </div>
+
+            {/* ── Social Links ────────────────────────────────────────── */}
+            <div className="space-y-3 pt-2 border-t">
+              <div>
+                <Label className="text-base">Social Media Links</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Links shown on your public clinic profile page.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label>Instagram URL</Label>
+                <Input
+                  value={instagramUrl}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/yourclinic"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Facebook URL</Label>
+                <Input
+                  value={facebookUrl}
+                  onChange={(e) => setFacebookUrl(e.target.value)}
+                  placeholder="https://facebook.com/yourclinic"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Twitter / X URL</Label>
+                <Input
+                  value={twitterUrl}
+                  onChange={(e) => setTwitterUrl(e.target.value)}
+                  placeholder="https://x.com/yourclinic"
+                />
+              </div>
+            </div>
+
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div className="space-y-2">
                 <Label>Clinic Name</Label>
