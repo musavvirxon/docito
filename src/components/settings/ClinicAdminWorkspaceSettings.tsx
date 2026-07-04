@@ -53,6 +53,10 @@ export function ClinicAdminWorkspaceSettings() {
           setEmail(data.email || "");
           setDescription(data.description || "");
           setLogoUrl(data.logo_url || "");
+          setBannerUrl((data as any).banner_url || "");
+          setInstagramUrl((data as any).instagram_url || "");
+          setFacebookUrl((data as any).facebook_url || "");
+          setTwitterUrl((data as any).twitter_url || "");
         }
       } catch (err) {
         console.error("Error fetching practice:", err);
