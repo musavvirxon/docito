@@ -1,57 +1,19 @@
-## Goal
-Every visible string in the Appointment Session page and the Appointment Preview popup goes through `useTranslation`, with matching English, Russian, and Uzbek translations. No raw `doctor.session.finish` keys, no hardcoded English left.
+Apply the five surgical changes exactly as specified:
 
-## Scope
-Only these two surfaces (plus their inline children):
+1. **src/App.tsx** — Add `const PracticePublicProfile = lazy(() => import("@/pages/PracticePublicProfile"));` near other lazy imports. Insert three `<Route path="/practices/:id" element={<PracticePublicProfile />} />` (plus `/practice/:id` alias and slug variant per the three lines described) in BOTH the language-prefixed and non-prefixed public route blocks.
 
-1. `src/pages/AppointmentSession.tsx` — header actions, tab labels, in‑person / video banners, Quick Actions, Clinical Findings form, Session Notes, empty states, toasts, PDF buttons ("043/y RU", "043/u UZ"), Finish Appointment button, Reviews tab.
-2. `src/components/doctor/calendar/AppointmentQuickPreview.tsx` — remaining hardcoded fragments (dialog is mostly wired but a few keys like `appointmentPreview.diagnoses`, `loading`, etc. and the status badge text `appointment.status` are not localized).
-3. Patient sidebar inside session (`PatientProfileView` tabs: Overview / Medical History / Appointments, "Recent appointments", "View all", status chips like `confirmed` / `completed`, "Direct patient" label) — only the parts rendered inside the session split view.
+2. **src/components/settings/ClinicAdminWorkspaceSettings.tsx** — Add `bannerUrl`, `instagramUrl`, `facebookUrl`, `twitterUrl` state; hydrate them in the existing practice-load `useEffect`; include them in the `handleSave` `.update({...})` payload; add JSX for a Banner section (using existing BannerUpload component + preview + Remove button) and three social link `<Input>` fields, placed inside the same tab/card as the existing LogoUpload.
 
-Out of scope: Finance panel, Procedures panel, Treatment Plan panel, Rx / Prescription panel, Dental chart — those are separate components already covered by their own i18n namespaces.
+3. **public/locales/en/practicePage.json** — Merge all listed profile keys (`notFound`, `loading`, `verified`, `bookAppointment`, `callClinic`, `getDirections`, `shareProfile`, `linkCopied`, `website`, `back`, `hero`, `about`, `contact`, `hours`, `doctors`, `services`, `trust`, `social`, `seo`, `admin`) into the existing `practicePage` object without touching existing marketing keys. Note: the file on disk already contains these keys — verify and add only what's missing.
 
-## Approach
+4. **src/components/cards/ClinicCard.tsx** — Replace both `navigate('/practice/${id}...')` calls with `navigate('/practices/${id}')`.
 
-### 1. Namespace + keys
-Use the existing `dashboard` namespace (already loaded by the page) and add a single new subtree so keys stay together and easy to audit:
+5. **src/pages/FindPractices.tsx** — Confirm `PracticeCard` onClick uses `/practices/` (with 's'); fix if not.
 
-```
-dashboard.json
-└── doctor.session
-    ├── header: { finish, finishing, downloadRuPdf, downloadUzPdf, back, close }
-    ├── tabs: { session, diagnoses, dental, treatmentPlan, rx, notes, reviews }
-    ├── visit: { inPerson, video, homeVisit, roomChair, checkIn, notCheckedIn, checkedInAt, markCheckedIn }
-    ├── quickActions: { title, bookFollowUp, prescription, referral, labOrder }
-    ├── findings: { title, save, saving, complaint, complaintPh, extraOral, extraOralPh,
-    │              oralCavity, oralCavityPh, labXray, labXrayPh, diagnosisFree,
-    │              diagnosisFreePh, mergeHint }
-    ├── notes: { title, save, saving, placeholder }
-    ├── reviews: { title, empty }
-    ├── status: { scheduled, confirmed, in_progress, completed, cancelled, no_show, pending }
-    ├── patientSidebar: { title, directPatient, overview, medicalHistory, appointments,
-    │                    recent, viewAll, noAppointments }
-    └── toasts: { finished, finishError, notesSaved, notesSaveError,
-                  findingsSaved, findingsSaveError, ...existing keys kept }
-```
+### Verification
+- Read each target file first to get exact current content before editing.
+- Confirm `PracticePublicProfile.tsx`, `BannerUpload` component, and `data.banner_url`/social columns exist (or note if a migration is needed — user didn't request one, so assume columns exist).
+- After edits: check that `/practices/:id` route resolves and clinic cards navigate correctly.
 
-Existing `doctor.session.*` keys already used in the file (`ended`, `endError`, `loading`, `loadError`, `notFoundTitle`, etc.) stay as-is; only missing ones get added.
-
-For `AppointmentQuickPreview` I extend the existing `appointmentPreview` block with `statusBadge.*` (confirmed / pending / …) and any remaining raw strings, so nothing prints a raw key.
-
-### 2. Component edits
-- Replace every hardcoded string, `title=`, `placeholder=`, `aria-label=`, and toast literal in the two files with `t('doctor.session.<path>')` / `t('appointmentPreview.<path>')`.
-- The status pill (`{appointment.status}`) becomes `t(\`appointmentPreview.statusBadge.${status}\`)`.
-- The "043/y RU" / "043/u UZ" buttons: keep the code label ("043/y", "043/u") as literal identifiers of the Uzbek official form codes, wrap only the language suffix and tooltip in `t()` — those form codes are legal identifiers, not translatable copy.
-- Patient sidebar tabs and "Recent appointments" strings inside the session view move to `doctor.session.patientSidebar.*`.
-
-### 3. Translations (en / ru / uz)
-Add the full block to all three locale files. Other 8 locales get the English strings mirrored as fallback so nothing regresses; a follow-up turn can localize them.
-
-### 4. Verification
-- After edit, `rg` for suspicious raw strings in the two files: `rg -n '>[A-Z][A-Za-z ]{2,}<' src/pages/AppointmentSession.tsx src/components/doctor/calendar/AppointmentQuickPreview.tsx` should return only dynamic data (patient names, times).
-- Reload `/appointment-session/...?tab=session` in en, ru, uz — no raw keys, no English leaking into ru/uz.
-
-## Technical notes
-- No refactor of component structure or logic — pure i18n substitution.
-- No changes to the Finance / Procedures / Treatment Plan / Rx / Dental sub-panels.
-- No backend / edge-function text is touched (nothing user-visible in this view originates from a Deno function response body).
+### Out of scope
+No other files, styling, or logic. No Russian/Uzbek locale updates (user only listed the English file).
