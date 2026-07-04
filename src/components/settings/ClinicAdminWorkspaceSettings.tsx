@@ -73,7 +73,19 @@ export function ClinicAdminWorkspaceSettings() {
     try {
       const { error } = await supabase
         .from("practices")
-        .update({ name, address, city, phone, email, description, logo_url: logoUrl || null })
+        .update({
+          name,
+          address,
+          city,
+          phone,
+          email,
+          description,
+          logo_url: logoUrl || null,
+          banner_url: bannerUrl || null,
+          instagram_url: instagramUrl || null,
+          facebook_url: facebookUrl || null,
+          twitter_url: twitterUrl || null,
+        } as any)
         .eq("id", practice.id);
       if (error) throw error;
       toast.success("Clinic settings saved");
