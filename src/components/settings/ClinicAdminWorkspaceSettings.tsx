@@ -29,6 +29,10 @@ export function ClinicAdminWorkspaceSettings() {
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
   const [logoUrl, setLogoUrl] = useState<string>("");
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [twitterUrl, setTwitterUrl] = useState("");
 
   useEffect(() => {
     const fetchPractice = async () => {
