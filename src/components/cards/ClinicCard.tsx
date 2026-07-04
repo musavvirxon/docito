@@ -53,7 +53,7 @@ const ClinicCard = ({
   };
 
   const handleCardClick = () => {
-    const path = `/practice/${id}`;
+    const path = `/practices/${id}`;
     if (!isAuthenticated) {
       navigate(`/auth?redirect=${encodeURIComponent(path)}`);
     } else {
