@@ -26,6 +26,9 @@ export interface DoctorResult {
   consultationFee: number | null;
   acceptsNewPatients: boolean;
   languages: string[] | null;
+  slug?: string | null;
+  username?: string | null;
+  customProfileLink?: string | null;
 }
 
 export interface ClinicResult {
@@ -146,6 +149,9 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     consultationFee: asNumber(d?.consultationFee),
     acceptsNewPatients: asBool(d?.acceptsNewPatients ?? true),
     languages: asStringArray(d?.languages),
+    slug: d?.slug ? asString(d.slug) : null,
+    username: d?.username ? asString(d.username) : null,
+    customProfileLink: d?.custom_profile_link ? asString(d.custom_profile_link) : (d?.customProfileLink ? asString(d.customProfileLink) : null),
   }));
 
   const clinics: ClinicResult[] = clinicsRaw.map((c: any) => ({

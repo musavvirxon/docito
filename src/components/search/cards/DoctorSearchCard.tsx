@@ -23,7 +23,8 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
 
   const handleViewProfile = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const path = `/doctor-profile/${doctor.id}`;
+    const slug = (doctor as any).customProfileLink || (doctor as any).username || (doctor as any).slug || doctor.id;
+    const path = `/doctor/${slug}`;
     if (!isAuthenticated) {
       navigate(`/auth?redirect=${encodeURIComponent(path)}`);
     } else {
@@ -54,7 +55,8 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
   };
 
   const handleCardClick = () => {
-    const path = `/doctor-profile/${doctor.id}`;
+    const slug = (doctor as any).customProfileLink || (doctor as any).username || (doctor as any).slug || doctor.id;
+    const path = `/doctor/${slug}`;
     if (!isAuthenticated) {
       navigate(`/auth?redirect=${encodeURIComponent(path)}`);
     } else {
