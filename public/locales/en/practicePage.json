@@ -1,127 +1,99 @@
 {
   "practicePage": {
+    "notFound": {
+      "title": "Clinic not found",
+      "description": "This clinic profile may be private or does not exist.",
+      "back": "Go Back"
+    },
+    "loading": "Loading clinic profile…",
+    "verified": "Verified",
+    "bookAppointment": "Book Appointment",
+    "callClinic": "Call Clinic",
+    "getDirections": "Get Directions",
+    "shareProfile": "Share",
+    "linkCopied": "Link copied to clipboard",
+    "website": "Visit Website",
+    "back": "Back",
     "hero": {
-      "kicker": "Automated Practice Management",
-      "headlineLine1": "Less Admin.",
-      "headlineLine2": "More Care.",
-      "subheadline": "The all-in-one practice platform that automates scheduling, documentation, billing, and patient communications—so you can focus on what matters most.",
-      "primaryCta": "Get Started Free",
-      "secondaryCta": "Schedule Demo"
+      "established": "Est. {{year}}",
+      "reviews": "{{count}} review",
+      "reviews_plural": "{{count}} reviews",
+      "openNow": "Open Now",
+      "closedNow": "Closed Now"
     },
-    "stats": {
-      "lessAdminTime": {
-        "value": "80%",
-        "label": "Less Admin Time"
+    "about": {
+      "title": "About This Clinic",
+      "noDescription": "No description provided yet."
+    },
+    "contact": {
+      "title": "Contact & Location",
+      "getDirections": "Get Directions"
+    },
+    "hours": {
+      "title": "Opening Hours",
+      "closed": "Closed",
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    },
+    "doctors": {
+      "title": "Our Doctors",
+      "subtitle": "Meet the medical team",
+      "viewProfile": "View Profile",
+      "book": "Book",
+      "noDoctors": "No doctors listed yet.",
+      "experience": "{{years}} yrs exp.",
+      "acceptingPatients": "Accepting patients"
+    },
+    "services": {
+      "title": "Services & Specialties",
+      "subtitle": "What we treat"
+    },
+    "trust": {
+      "title": "Why Choose Us",
+      "verified": {
+        "title": "Verified Practice",
+        "description": "Identity and credentials verified by Docito"
       },
-      "patientBooking": {
-        "value": "24/7",
-        "label": "Patient Booking"
+      "secure": {
+        "title": "Secure & Private",
+        "description": "Your data is encrypted and protected"
       },
-      "fasterIntake": {
-        "value": "3x",
-        "label": "Faster Intake"
+      "rated": {
+        "title": "Patient Rated",
+        "description": "Real reviews from verified patients"
       },
-      "paperless": {
-        "value": "100%",
-        "label": "Paperless"
+      "booked": {
+        "title": "Easy Online Booking",
+        "description": "Book appointments 24/7 in seconds"
       }
     },
-    "dashboard": {
-      "title": "Practice Dashboard",
-      "headline": "Everything Automated",
-      "items": {
-        "appointments": "12 appointments auto-scheduled today",
-        "reminders": "45 reminders sent automatically",
-        "notes": "8 notes for diagnosis",
-        "invoices": "3 invoices auto-processed"
-      },
-      "timeSaved": {
-        "label": "Today's Time Saved",
-        "value": "6 hours"
-      }
+    "social": {
+      "follow": "Follow Us",
+      "instagram": "Instagram",
+      "facebook": "Facebook",
+      "twitter": "Twitter / X"
     },
-    "automation": {
-      "title": "Intelligent Automation",
-      "headline": "Your Practice on Autopilot",
-      "subheadline": "Stop wasting hours on repetitive tasks. Let our platform handle the administrative burden while you focus on patient care.",
-      "items": {
-        "smartScheduling": {
-          "title": "Smart Scheduling",
-          "description": "Automated bookings, cancellations, and rescheduling"
-        },
-        "patientCommunications": {
-          "title": "Patient Communications",
-          "description": "Automated reminders, follow-ups, and confirmations"
-        },
-        "documentation": {
-          "title": "Documentation",
-          "description": "AI-assisted notes, treatment plans, and prescriptions"
-        },
-        "billingPayments": {
-          "title": "Billing Documentation",
-          "description": "Automatic superbill generation, itemized records, and revenue tracking & analytics"
-        },
-        "analyticsReports": {
-          "title": "Analytics & Reports",
-          "description": "Real-time insights without manual data entry"
-        },
-        "staffManagement": {
-          "title": "Staff Management",
-          "description": "Role-based access, schedules, and performance tracking"
-        }
-      }
+    "seo": {
+      "titleTemplate": "{{name}} — {{city}} | Docito",
+      "descriptionTemplate": "Book an appointment at {{name}} in {{city}}. {{specialties}}. Verified clinic on Docito."
     },
-    "solution": {
-      "title": "Complete Solution",
-      "headlineLine1": "One Platform.",
-      "headlineLine2": "Everything You Need.",
-      "subheadline": "Replace your fragmented toolkit with a unified platform designed specifically for modern medical practices. From patient intake to final billing—seamlessly integrated.",
-      "bullets": {
-        "onlineScheduling": "Online appointment scheduling",
-        "recordsManagement": "Patient records management",
-        "treatmentPlanning": "Treatment planning tools",
-        "digitalPrescriptions": "Digital prescriptions",
-        "insuranceVerification": "Insurer details captured for superbills",
-        "paymentProcessing": "Billing documentation",
-        "videoConsultations": "Video consultations",
-        "labImagingOrders": "Lab & imaging orders",
-        "staffScheduling": "Staff scheduling",
-        "realTimeAnalytics": "Real-time analytics",
-        "secureMessaging": "Secure messaging",
-        "referralManagement": "Referral management"
-      }
-    },
-    "security": {
-      "title": "Enterprise-Grade Security",
-      "headline": "Built for Healthcare",
-      "subheadline": "HIPAA-compliant infrastructure with enterprise security. Your data is protected with end-to-end encryption and role-based access controls.",
-      "badges": {
-        "hipaa": {
-          "title": "HIPAA Compliant",
-          "description": "Full compliance"
-        },
-        "encryption": {
-          "title": "256-bit Encryption",
-          "description": "End-to-end"
-        },
-        "uptime": {
-          "title": "99.9% Uptime",
-          "description": "SLA guaranteed"
-        },
-        "soc2": {
-          "title": "SOC 2 Type II",
-          "description": "Certified"
-        }
-      }
-    },
-    "cta": {
-      "kicker": "Start Your Journey",
-      "headlineLine1": "Ready to Automate",
-      "headlineLine2": "Your Practice?",
-      "subheadline": "Join thousands of practices that have eliminated administrative burden and reclaimed their time for patient care.",
-      "primaryCta": "Start Free Trial",
-      "secondaryCta": "Talk to Sales",
-      "badge": "Free 14-day trial • No credit card required • Full feature access"
+    "admin": {
+      "editBanner": "Change Banner",
+      "removeBanner": "Remove Banner",
+      "bannerHint": "Recommended: 1440×400 px · JPG or WebP · max 5 MB",
+      "uploadingBanner": "Uploading…",
+      "bannerUploaded": "Banner updated",
+      "bannerRemoved": "Banner removed",
+      "editProfile": "Edit Clinic Settings",
+      "isAdmin": "You manage this clinic",
+      "uploadBanner": "Upload Banner"
     }
   }
 }
