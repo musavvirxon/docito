@@ -108,5 +108,34 @@
     "updateStatus": "Holatni yangilash",
     "updating": "Yangilanmoqda..."
   },
-  "deleteConfirm": "«{{name}}» xonasi o‘chirilsinmi? Barcha koykalar ham o‘chiriladi."
+  "deleteConfirm": "«{{name}}» xonasi o‘chirilsinmi? Barcha koykalar ham o‘chiriladi.",
+  "display": {
+    "roomsToday": "Bugungi xona tayinlovlari",
+    "noDoctorsToday": "Bugun yuzma-yuz qabullar rejalashtirilmagan.",
+    "pickRoom": "Xonani tanlang",
+    "assignSuccess": "Bugungi xona yangilandi",
+    "assignError": "Xonani yangilab bo‘lmadi",
+    "pairedDisplays": "Ulangan ekranlar",
+    "addDisplay": "Ekran qo‘shish",
+    "noDisplays": "Hali ekran ulanmagan. Qo‘shing va havolani televizor yoki monitorda oching.",
+    "defaultLabel": "Kutish xonasi ekrani",
+    "createError": "Ekranni yaratib bo‘lmadi",
+    "online": "Onlayn",
+    "offline": "Oflayn",
+    "linkCopied": "Havola nusxalandi",
+    "revokeSuccess": "Ekran uzildi",
+    "revokeError": "Ekranni uzib bo‘lmadi",
+    "loading": "Yuklanmoqda...",
+    "tapToStart": "Ekranni ishga tushirish uchun bosing",
+    "tapToStartHint": "Bu bemorlarni chaqirish e’lonlari uchun ovozni yoqadi",
+    "invalidTitle": "Ekran ulanmagan",
+    "busy": "Qabulda",
+    "free": "Bo‘sh",
+    "withDoctor": "Dr. {{name}}",
+    "now": "Hozir qabulda",
+    "next": "Keyingi",
+    "noRooms": "Bu ekran uchun hali xonalar sozlanmagan.",
+    "nowCalling": "Chaqirilmoqda",
+    "goTo": "{{room}} · Dr. {{doctor}}"
+  }
 }
