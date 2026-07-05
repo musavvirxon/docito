@@ -2253,21 +2253,24 @@
       "scheduleClear": "The schedule is clear for today.",
       "withDr": "with Dr. {{name}}",
       "status": {
-        "pending": "Pending",
-        "confirmed": "Confirmed",
-        "arrived": "Arrived",
-        "inProgress": "In Progress",
-        "completed": "Completed",
-        "canceled": "Canceled",
-        "noShow": "No Show"
+        "pending": "Ожидает",
+        "confirmed": "Подтверждено",
+        "arrived": "Прибыл",
+        "called": "Вызван",
+        "inProgress": "В процессе",
+        "completed": "Завершено",
+        "canceled": "Отменено",
+        "noShow": "Не явился"
       },
       "actions": {
-        "confirm": "Confirm",
-        "cancel": "Cancel",
-        "markArrived": "Mark Arrived",
-        "noShow": "No Show",
-        "start": "Start",
-        "complete": "Complete"
+        "confirm": "Подтвердить",
+        "cancel": "Отменить",
+        "markArrived": "Отметить прибытие",
+        "noShow": "Не явился",
+        "callNext": "Вызвать",
+        "recall": "Вызвать снова",
+        "start": "Начать",
+        "complete": "Завершить"
       }
     },
     "billing": {

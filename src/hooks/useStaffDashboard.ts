@@ -28,6 +28,9 @@ export interface StaffAppointment {
   patient_phone?: string;
   doctor_name: string;
   doctor_id: string;
+  room_name?: string;
+  queue_status?: string;
+  called_at?: string | null;
 }
 
 export interface StaffPatient {
@@ -120,7 +123,7 @@ export const useStaffDashboard = () => {
     try {
       const today = new Date().toISOString().split("T")[0];
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("appointments")
         .select(
           `
@@ -132,6 +135,10 @@ export const useStaffDashboard = () => {
           notes,
           patient_id,
           doctor_id,
+          queue_status,
+          called_at,
+          room_id,
+          clinic_rooms:room_id ( name ),
           profiles!appointments_patient_id_fkey (
             full_name,
             email,
@@ -163,6 +170,9 @@ export const useStaffDashboard = () => {
         patient_phone: apt.profiles?.phone,
         doctor_name: apt.doctors?.profiles?.full_name || "Unknown",
         doctor_id: apt.doctor_id,
+        room_name: apt.clinic_rooms?.name,
+        queue_status: apt.queue_status,
+        called_at: apt.called_at,
       })) as StaffAppointment[];
     } catch (err: any) {
       console.error("Error fetching today's appointments:", err);

@@ -45,6 +45,7 @@ import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
 import { RoomBedManager } from "@/components/rooms/RoomBedManager";
+import { QueueDisplaySettings } from "@/components/rooms/QueueDisplaySettings";
 import { useAuth } from "@/contexts/AuthContext";
 import { PatientFinanceSection } from "@/components/PatientFinanceSection";
 import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
@@ -103,6 +104,7 @@ import {
   Users,
   X,
   BedDouble,
+  Monitor,
 } from "lucide-react";
 
 type AdminSection =
@@ -116,6 +118,7 @@ type AdminSection =
   | "finances"
   | "inventory"
   | "rooms"
+  | "queueDisplays"
   | "analytics"
   | "settings";
 
@@ -596,6 +599,7 @@ const AdminDashboard = () => {
     { id: "finances", label: t("admin.tabs.finances", { defaultValue: "Finances" }), icon: DollarSign },
     { id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package },
     { id: "rooms", label: "Rooms & Beds", icon: BedDouble },
+    { id: "queueDisplays", label: "Queue displays", icon: Monitor },
     { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
     { id: "settings", label: t("admin.tabs.settings", { defaultValue: "Settings" }), icon: Settings },
   ];
@@ -4541,6 +4545,13 @@ const AdminDashboard = () => {
               userId={user?.id ?? ""}
               role="admin"
             />
+          </SectionWrapper>
+        );
+
+      case "queueDisplays":
+        return (
+          <SectionWrapper locked={!isVerified} onRequestVerify={() => setCreateClinicOpen(true)}>
+            <QueueDisplaySettings practiceId={practice?.id ?? ""} userId={user?.id ?? ""} />
           </SectionWrapper>
         );
 

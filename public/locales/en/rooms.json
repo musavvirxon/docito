@@ -108,5 +108,34 @@
     "updateStatus": "Update Status",
     "updating": "Updating..."
   },
-  "deleteConfirm": "Delete room \"{{name}}\"? All beds will also be deleted."
+  "deleteConfirm": "Delete room \"{{name}}\"? All beds will also be deleted.",
+  "display": {
+    "roomsToday": "Today's room assignments",
+    "noDoctorsToday": "No in-person appointments scheduled today.",
+    "pickRoom": "Pick a room",
+    "assignSuccess": "Room updated for today",
+    "assignError": "Couldn't update the room",
+    "pairedDisplays": "Paired displays",
+    "addDisplay": "Add display",
+    "noDisplays": "No screens paired yet. Add one, then open the link on your TV or monitor.",
+    "defaultLabel": "Waiting room display",
+    "createError": "Couldn't create the display",
+    "online": "Online",
+    "offline": "Offline",
+    "linkCopied": "Link copied",
+    "revokeSuccess": "Display disconnected",
+    "revokeError": "Couldn't revoke the display",
+    "loading": "Loading...",
+    "tapToStart": "Tap anywhere to start the display",
+    "tapToStartHint": "This unlocks sound for patient call announcements",
+    "invalidTitle": "Display not connected",
+    "busy": "In consultation",
+    "free": "Free",
+    "withDoctor": "Dr. {{name}}",
+    "now": "Now serving",
+    "next": "Next",
+    "noRooms": "No rooms are set up for this display yet.",
+    "nowCalling": "Now calling",
+    "goTo": "{{room}} · Dr. {{doctor}}"
+  }
 }

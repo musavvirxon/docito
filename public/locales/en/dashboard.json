@@ -2211,6 +2211,7 @@
         "pending": "Pending",
         "confirmed": "Confirmed",
         "arrived": "Arrived",
+        "called": "Called",
         "inProgress": "In Progress",
         "completed": "Completed",
         "canceled": "Canceled",
@@ -2221,6 +2222,8 @@
         "cancel": "Cancel",
         "markArrived": "Mark Arrived",
         "noShow": "No Show",
+        "callNext": "Call next",
+        "recall": "Recall",
         "start": "Start",
         "complete": "Complete"
       }
