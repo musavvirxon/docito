@@ -2389,21 +2389,24 @@
       "scheduleClear": "The schedule is clear for today.",
       "withDr": "with Dr. {{name}}",
       "status": {
-        "pending": "Pending",
-        "confirmed": "Confirmed",
-        "arrived": "Arrived",
-        "inProgress": "In Progress",
-        "completed": "Completed",
-        "canceled": "Canceled",
-        "noShow": "No Show"
+        "pending": "Kutilmoqda",
+        "confirmed": "Tasdiqlangan",
+        "arrived": "Kelgan",
+        "called": "Chaqirilgan",
+        "inProgress": "Jarayonda",
+        "completed": "Yakunlangan",
+        "canceled": "Bekor qilingan",
+        "noShow": "Kelmagan"
       },
       "actions": {
-        "confirm": "Confirm",
-        "cancel": "Cancel",
-        "markArrived": "Mark Arrived",
-        "noShow": "No Show",
-        "start": "Start",
-        "complete": "Complete"
+        "confirm": "Tasdiqlash",
+        "cancel": "Bekor qilish",
+        "markArrived": "Kelganini belgilash",
+        "noShow": "Kelmadi",
+        "callNext": "Chaqirish",
+        "recall": "Qayta chaqirish",
+        "start": "Boshlash",
+        "complete": "Yakunlash"
       }
     },
     "billing": {

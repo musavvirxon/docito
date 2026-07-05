@@ -250,17 +250,36 @@ export default function StaffDashboardPage() {
   const handleStatusUpdate = async (appointmentId: string, status: string) => {
     if (!permissions?.practice_id) return false;
 
+    const s = String(status).toLowerCase();
+    const isQueue = s === "arrived" || s === "called" || s === "in_progress";
+
     try {
-      const { error: upErr } = await supabase
+      const patch: Record<string, unknown> = isQueue
+        ? { queue_status: s, ...(s === "called" ? { called_at: new Date().toISOString() } : {}) }
+        : { status: s as "canceled" | "completed" | "confirmed" | "no_show" | "pending" };
+
+      const { error: upErr } = await (supabase as any)
         .from("appointments")
-        .update({ status: status as "canceled" | "completed" | "confirmed" | "no_show" | "pending" })
+        .update(patch)
         .eq("id", appointmentId)
         .eq("practice_id", permissions.practice_id);
 
       if (upErr) throw upErr;
 
-      if (String(status).toLowerCase() === "completed") {
+      if (s === "completed") {
         await postFinanceForCompletedAppointment(appointmentId);
+      }
+
+      if (s === "called") {
+        try {
+          await supabase.channel(`display:${permissions.practice_id}`).send({
+            type: "broadcast",
+            event: "call",
+            payload: {},
+          });
+        } catch (broadcastErr) {
+          console.warn("display broadcast failed:", broadcastErr);
+        }
       }
 
       toast.success("Appointment updated");

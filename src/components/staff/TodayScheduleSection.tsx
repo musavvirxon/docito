@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  Clock, Phone, Mail, CheckCircle, XCircle, PlayCircle, 
-  PauseCircle, User, ChevronRight, RefreshCw 
+import {
+  Clock, Phone, Mail, CheckCircle, XCircle, PlayCircle,
+  PauseCircle, User, ChevronRight, RefreshCw, Bell
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
@@ -18,11 +18,11 @@ interface TodayScheduleSectionProps {
   canUpdateAppointments: boolean;
 }
 
-export const TodayScheduleSection = ({ 
-  appointments, 
-  onStatusUpdate, 
+export const TodayScheduleSection = ({
+  appointments,
+  onStatusUpdate,
   onRefresh,
-  canUpdateAppointments 
+  canUpdateAppointments
 }: TodayScheduleSectionProps) => {
   const { t } = useTranslation('dashboard');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -31,6 +31,7 @@ export const TodayScheduleSection = ({
     pending: { label: t('staff.schedule.status.pending', 'Pending'), color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: Clock },
     confirmed: { label: t('staff.schedule.status.confirmed', 'Confirmed'), color: 'bg-blue-100 text-blue-800 border-blue-200', icon: CheckCircle },
     arrived: { label: t('staff.schedule.status.arrived', 'Arrived'), color: 'bg-green-100 text-green-800 border-green-200', icon: User },
+    called: { label: t('staff.schedule.status.called', 'Called'), color: 'bg-amber-100 text-amber-800 border-amber-200', icon: Bell },
     in_progress: { label: t('staff.schedule.status.inProgress', 'In Progress'), color: 'bg-purple-100 text-purple-800 border-purple-200', icon: PlayCircle },
     completed: { label: t('staff.schedule.status.completed', 'Completed'), color: 'bg-gray-100 text-gray-800 border-gray-200', icon: CheckCircle },
     canceled: { label: t('staff.schedule.status.canceled', 'Canceled'), color: 'bg-red-100 text-red-800 border-red-200', icon: XCircle },
@@ -68,7 +69,12 @@ export const TodayScheduleSection = ({
         ];
       case 'arrived':
         return [
+          { status: 'called', label: t('staff.schedule.actions.callNext', 'Call next'), variant: 'default' as const },
+        ];
+      case 'called':
+        return [
           { status: 'in_progress', label: t('staff.schedule.actions.start', 'Start'), variant: 'default' as const },
+          { status: 'called', label: t('staff.schedule.actions.recall', 'Recall'), variant: 'outline' as const },
         ];
       case 'in_progress':
         return [
@@ -105,9 +111,10 @@ export const TodayScheduleSection = ({
       ) : (
         <div className="space-y-3">
           {appointments.map((apt) => {
-            const statusConfig = STATUS_CONFIG[apt.status] || STATUS_CONFIG.pending;
+            const effectiveStatus = apt.queue_status || apt.status;
+            const statusConfig = STATUS_CONFIG[effectiveStatus] || STATUS_CONFIG.pending;
             const StatusIcon = statusConfig.icon;
-            const actions = canUpdateAppointments ? getNextActions(apt.status) : [];
+            const actions = canUpdateAppointments ? getNextActions(effectiveStatus) : [];
 
             return (
               <Card key={apt.id} className="hover:shadow-md transition-shadow">
@@ -131,8 +138,13 @@ export const TodayScheduleSection = ({
                         </Avatar>
                         <div>
                           <h4 className="font-semibold text-foreground">{apt.patient_name}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {t('staff.schedule.withDr', 'with Dr. {{name}}', { name: apt.doctor_name })}
+                          <p className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                            <span>{t('staff.schedule.withDr', 'with Dr. {{name}}', { name: apt.doctor_name })}</span>
+                            {apt.room_name && (
+                              <Badge variant="outline" className="text-xs">
+                                {apt.room_name}
+                              </Badge>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -166,10 +178,10 @@ export const TodayScheduleSection = ({
                       </Badge>
 
                       {actions.length > 0 && (
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-2 justify-end flex-wrap">
                           {actions.map((action) => (
                             <Button
-                              key={action.status}
+                              key={action.label}
                               size="sm"
                               variant={action.variant}
                               disabled={updatingId === apt.id}
