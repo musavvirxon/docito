@@ -861,6 +861,7 @@ export type Database = {
         Row: {
           appointment_date: string
           appointment_type: Database["public"]["Enums"]["appointment_type"]
+          called_at: string | null
           completed_at: string | null
           created_at: string | null
           doctor_id: string | null
@@ -873,6 +874,8 @@ export type Database = {
           patient_id: string | null
           practice_id: string | null
           procedure_id: string | null
+          queue_status: string
+          room_id: string | null
           session_type: string | null
           start_requested_by_doctor: boolean | null
           start_requested_by_patient: boolean | null
@@ -884,6 +887,7 @@ export type Database = {
         Insert: {
           appointment_date: string
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          called_at?: string | null
           completed_at?: string | null
           created_at?: string | null
           doctor_id?: string | null
@@ -896,6 +900,8 @@ export type Database = {
           patient_id?: string | null
           practice_id?: string | null
           procedure_id?: string | null
+          queue_status?: string
+          room_id?: string | null
           session_type?: string | null
           start_requested_by_doctor?: boolean | null
           start_requested_by_patient?: boolean | null
@@ -907,6 +913,7 @@ export type Database = {
         Update: {
           appointment_date?: string
           appointment_type?: Database["public"]["Enums"]["appointment_type"]
+          called_at?: string | null
           completed_at?: string | null
           created_at?: string | null
           doctor_id?: string | null
@@ -919,6 +926,8 @@ export type Database = {
           patient_id?: string | null
           practice_id?: string | null
           procedure_id?: string | null
+          queue_status?: string
+          room_id?: string | null
           session_type?: string | null
           start_requested_by_doctor?: boolean | null
           start_requested_by_patient?: boolean | null
@@ -975,6 +984,13 @@ export type Database = {
             columns: ["procedure_id"]
             isOneToOne: false
             referencedRelation: "procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -1858,6 +1874,60 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_displays: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          label: string
+          last_seen_at: string | null
+          practice_id: string
+          room_id: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_seen_at?: string | null
+          practice_id: string
+          room_id?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          last_seen_at?: string | null
+          practice_id?: string
+          room_id?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_displays_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_displays_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -11687,6 +11757,7 @@ export type Database = {
           username: string
         }[]
       }
+      get_queue_display: { Args: { _token: string }; Returns: Json }
       get_staff_invitation_by_token: {
         Args: { p_token: string }
         Returns: {
