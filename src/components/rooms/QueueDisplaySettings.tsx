@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Monitor, Plus, Trash2, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getPublicAppUrl } from "@/lib/publicUrl";
+
 
 interface QueueDisplaySettingsProps {
   practiceId: string;
