@@ -101,28 +101,52 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
 
       if (bedErr) throw bedErr;
 
-      // 3. Active assignments with patient/doctor names
+      // 3. Active assignments (hydrate patient/doctor names in follow-up queries — no PostgREST embed)
       const { data: assignData, error: assignErr } = await (supabase as any)
         .from('bed_assignments')
-        .select(`
-          *,
-          patients ( full_name ),
-          doctors ( profiles ( full_name ) )
-        `)
+        .select('*')
         .eq('practice_id', practiceId)
         .eq('status', 'active');
 
       if (assignErr) throw assignErr;
+
+      const patientIds = Array.from(
+        new Set((assignData ?? []).map((a: any) => a.patient_id).filter(Boolean)),
+      ) as string[];
+      const doctorIds = Array.from(
+        new Set((assignData ?? []).map((a: any) => a.doctor_id).filter(Boolean)),
+      ) as string[];
+
+      const [{ data: patientRows }, { data: doctorRows }] = await Promise.all([
+        patientIds.length
+          ? (supabase as any)
+              .from('profiles')
+              .select('id, full_name')
+              .in('id', patientIds)
+          : Promise.resolve({ data: [] as any[] }),
+        doctorIds.length
+          ? (supabase as any)
+              .from('doctors')
+              .select('id, profiles:user_id ( full_name )')
+              .in('id', doctorIds)
+          : Promise.resolve({ data: [] as any[] }),
+      ]);
+
+      const patientNameById = new Map<string, string>();
+      (patientRows ?? []).forEach((p: any) => patientNameById.set(p.id, p.full_name));
+      const doctorNameById = new Map<string, string>();
+      (doctorRows ?? []).forEach((d: any) => doctorNameById.set(d.id, d.profiles?.full_name ?? ''));
 
       // Map assignments by bed_id
       const assignByBed = new Map<string, BedAssignment>();
       (assignData ?? []).forEach((a: any) => {
         assignByBed.set(a.bed_id, {
           ...a,
-          patient_name: a.patients?.full_name ?? null,
-          doctor_name: a.doctors?.profiles?.full_name ?? null,
+          patient_name: a.patient_id ? patientNameById.get(a.patient_id) ?? null : null,
+          doctor_name: a.doctor_id ? doctorNameById.get(a.doctor_id) ?? null : null,
         });
       });
+
 
       // Combine
       const bedsByRoom = new Map<string, ClinicBed[]>();

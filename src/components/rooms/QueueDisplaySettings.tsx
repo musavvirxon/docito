@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Monitor, Plus, Trash2, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getPublicAppUrl } from "@/lib/publicUrl";
+
 
 interface QueueDisplaySettingsProps {
   practiceId: string;
@@ -142,7 +144,7 @@ export function QueueDisplaySettings({ practiceId, userId }: QueueDisplaySetting
     }
   };
 
-  const displayUrl = (token: string) => `${window.location.origin}/display/${token}`;
+  const displayUrl = (token: string) => `${getPublicAppUrl()}/display/${token}`;
 
   const copyLink = async (token: string) => {
     await navigator.clipboard.writeText(displayUrl(token));
