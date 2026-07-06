@@ -303,7 +303,7 @@ export const useDoctorIntegration = () => {
           .select(
             "id, doctor_id, appointment_date, start_time, end_time, status, notes, patient_id, doctor_patient_id, appointment_type"
           )
-          .eq("doctor_id", doctorProfile.id)
+          .eq("doctor_id", dId)
           .gte("appointment_date", today)
           .in("status", ["pending", "confirmed"])
           .order("appointment_date", { ascending: true })
@@ -314,11 +314,12 @@ export const useDoctorIntegration = () => {
           .select(
             "id, doctor_id, appointment_date, start_time, end_time, status, notes, patient_id, doctor_patient_id, appointment_type"
           )
-          .eq("doctor_id", doctorProfile.id)
+          .eq("doctor_id", dId)
           .order("appointment_date", { ascending: false })
           .order("start_time", { ascending: false })
           .limit(10),
       ]);
+
 
       const all = [...(upcoming || []), ...(recent || [])] as any[];
       const patientUserIds = Array.from(
