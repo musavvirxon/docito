@@ -594,7 +594,14 @@ export const useDoctorIntegration = () => {
     try {
       const p = await fetchDoctorProfile();
       if (p) {
-        await Promise.all([fetchServices(), fetchAppointments(), fetchTreatmentPlans(), fetchDiagnoses(), calculateStats()]);
+        await Promise.all([
+          fetchServices(p.id),
+          fetchAppointments(p.id),
+          fetchTreatmentPlans(p.id),
+          fetchDiagnoses(p.id),
+          calculateStats(p),
+        ]);
+
       }
     } finally {
       setLoading(false);
