@@ -380,13 +380,14 @@ export const useDoctorIntegration = () => {
   }, [doctorProfile]);
 
   // Treatment plans
-  const fetchTreatmentPlans = useCallback(async () => {
-    if (!doctorProfile) return;
+  const fetchTreatmentPlans = useCallback(async (doctorIdArg?: string) => {
+    const dId = doctorIdArg ?? doctorProfile?.id;
+    if (!dId) return;
     try {
       const { data, error } = await supabase
         .from("treatment_plans")
         .select("*")
-        .eq("doctor_id", doctorProfile.id)
+        .eq("doctor_id", dId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       setTreatmentPlans((data || []) as any);
@@ -396,13 +397,14 @@ export const useDoctorIntegration = () => {
   }, [doctorProfile]);
 
   // Stats
-  const calculateStats = useCallback(async () => {
-    if (!doctorProfile) return;
+  const calculateStats = useCallback(async (profileArg?: any) => {
+    const dp = profileArg ?? doctorProfile;
+    if (!dp) return;
     try {
       const { data: patients } = await supabase
         .from("appointments")
         .select("patient_id")
-        .eq("doctor_id", doctorProfile.id)
+        .eq("doctor_id", dp.id)
         .neq("status", "canceled");
 
       const uniquePatients = new Set((patients || []).map((p: any) => p.patient_id).filter(Boolean));
@@ -410,33 +412,34 @@ export const useDoctorIntegration = () => {
       const { data: completed } = await supabase
         .from("appointments")
         .select("id")
-        .eq("doctor_id", doctorProfile.id)
+        .eq("doctor_id", dp.id)
         .eq("status", "completed");
 
       const { data: billingRows } = await supabase
         .from("billing_transactions")
         .select("amount, amount_cents, transaction_type")
         .eq("entity_type", "doctor")
-        .eq("entity_id", doctorProfile.id);
+        .eq("entity_id", dp.id);
 
       const billedRevenue = ((billingRows as any[]) || [])
         .filter((b) => !["discount", "refund"].includes(String(b.transaction_type || "").toLowerCase()))
         .reduce((sum, b) => sum + (b.amount_cents != null ? Number(b.amount_cents) / 100 : Number(b.amount) || 0), 0);
-      const revenue = billedRevenue || (completed?.length || 0) * (doctorProfile.consultation_fee || 150);
-      const profileCompletion = calculateProfileCompletion(doctorProfile);
+      const revenue = billedRevenue || (completed?.length || 0) * (dp.consultation_fee || 150);
+      const profileCompletion = calculateProfileCompletion(dp);
 
       setStats({
         totalPatients: uniquePatients.size,
-        totalAppointments: doctorProfile.appointment_count || 0,
+        totalAppointments: dp.appointment_count || 0,
         totalRevenue: revenue,
-        averageRating: doctorProfile.average_rating || 0,
-        numReviews: doctorProfile.num_reviews || 0,
+        averageRating: dp.average_rating || 0,
+        numReviews: dp.num_reviews || 0,
         profileCompletion,
       });
     } catch (err: any) {
       console.error("Error calculating stats:", err);
     }
   }, [doctorProfile]);
+
 
   // CRUD operations
   const updateProfile = async (updates: Partial<DoctorProfile>): Promise<{ success?: boolean; error?: string }> => {
