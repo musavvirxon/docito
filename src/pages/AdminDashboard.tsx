@@ -2827,10 +2827,11 @@ const AdminDashboard = () => {
                 <div className="flex gap-1 border-b border-border mb-6 overflow-x-auto">
                   {patientTabs.map(tab => (
                     <Button key={tab.key} variant="ghost" size="sm"
-                      className={`rounded-none ${patientTab === tab.key ? 'border-b-2 border-primary font-medium' : ''}`}
+                      className={`rounded-none ${patientTab === tab.key ? 'border-b-2 border-primary font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                       onClick={() => setPatientTab(tab.key)}
                     >{tab.label}</Button>
                   ))}
+
                 </div>
 
                 {/* Tab content */}
