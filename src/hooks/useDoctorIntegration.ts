@@ -239,14 +239,15 @@ export const useDoctorIntegration = () => {
   }, [doctorIdFromProfile, profile?.role, activeRole, user]);
 
   // Services (procedures)
-  const fetchServices = useCallback(async () => {
-    if (!doctorProfile) return;
+  const fetchServices = useCallback(async (doctorIdArg?: string) => {
+    const dId = doctorIdArg ?? doctorProfile?.id;
+    if (!dId) return;
 
     try {
       const { data, error } = await supabase
         .from("procedures")
         .select("*")
-        .eq("dentist_id", doctorProfile.id)
+        .eq("dentist_id", dId)
         .eq("is_active", true)
         .order("name");
       if (error) throw error;
@@ -257,14 +258,15 @@ export const useDoctorIntegration = () => {
   }, [doctorProfile]);
 
   // Diagnosis Library (using procedure_templates table)
-  const fetchDiagnoses = useCallback(async () => {
-    if (!doctorProfile) return;
+  const fetchDiagnoses = useCallback(async (doctorIdArg?: string) => {
+    const dId = doctorIdArg ?? doctorProfile?.id;
+    if (!dId) return;
     setDiagnosisLoading(true);
     try {
       const { data, error } = await (supabase as any)
         .from("procedure_templates")
         .select("id, name, description, category, duration_minutes, default_price, is_active, created_at")
-        .eq("doctor_id", doctorProfile.id)
+        .eq("doctor_id", dId)
         .order("name", { ascending: true });
       if (error) throw error;
       // Map to expected diagnosis format
@@ -288,8 +290,10 @@ export const useDoctorIntegration = () => {
   }, [doctorProfile]);
 
   // Appointments (fast + correct patient data)
-  const fetchAppointments = useCallback(async () => {
-    if (!doctorProfile) return;
+  const fetchAppointments = useCallback(async (doctorIdArg?: string) => {
+    const dId = doctorIdArg ?? doctorProfile?.id;
+    if (!dId) return;
+
 
     try {
       const today = new Date().toISOString().split("T")[0];
