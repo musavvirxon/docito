@@ -144,7 +144,7 @@ export function QueueDisplaySettings({ practiceId, userId }: QueueDisplaySetting
     }
   };
 
-  const displayUrl = (token: string) => `${window.location.origin}/display/${token}`;
+  const displayUrl = (token: string) => `${getPublicAppUrl()}/display/${token}`;
 
   const copyLink = async (token: string) => {
     await navigator.clipboard.writeText(displayUrl(token));
