@@ -2429,6 +2429,7 @@ export type Database = {
           name: string
           notes: string | null
           practice_id: string
+          primary_doctor_id: string | null
           room_number: string | null
           room_type: string
           status: string
@@ -2443,6 +2444,7 @@ export type Database = {
           name: string
           notes?: string | null
           practice_id: string
+          primary_doctor_id?: string | null
           room_number?: string | null
           room_type?: string
           status?: string
@@ -2457,6 +2459,7 @@ export type Database = {
           name?: string
           notes?: string | null
           practice_id?: string
+          primary_doctor_id?: string | null
           room_number?: string | null
           room_type?: string
           status?: string
@@ -2468,6 +2471,27 @@ export type Database = {
             columns: ["practice_id"]
             isOneToOne: false
             referencedRelation: "practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_rooms_primary_doctor_id_fkey"
+            columns: ["primary_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_rooms_primary_doctor_id_fkey"
+            columns: ["primary_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinic_rooms_primary_doctor_id_fkey"
+            columns: ["primary_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
         ]
