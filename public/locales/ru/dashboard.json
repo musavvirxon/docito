@@ -2064,15 +2064,15 @@
   "appointmentModal": {
     "referral": "Referral",
     "waitingForAcceptance": "Waiting for patient acceptance. You can start after it becomes confirmed.",
-    "bookFollowUp": "Book Follow-up",
-    "clinicalItems": "Clinical Items",
-    "refresh": "Refresh",
-    "catalog": "Catalog",
-    "custom": "Custom",
-    "templates": "Templates",
+    "bookFollowUp": "Записать на приём",
+    "clinicalItems": "Клинические записи",
+    "refresh": "Обновить",
+    "catalog": "Каталог",
+    "custom": "Своё",
+    "templates": "Шаблоны",
     "catalogDesc": "Add your own procedures / plans during the appointment",
-    "procedures": "Procedures",
-    "treatmentPlans": "Treatment Plans",
+    "procedures": "Процедуры",
+    "treatmentPlans": "Планы лечения",
     "selectProcedure": "Select procedure",
     "loadingProcedures": "Loading procedures...",
     "searchProcedures": "Search procedures...",
@@ -2160,7 +2160,8 @@
     "failedStartConversation": "Failed to start conversation",
     "failedCancelAppointment": "Failed to cancel appointment",
     "noDuration": "No duration",
-    "noCost": "No cost"
+    "noCost": "No cost",
+    "downloadSummary": "Скачать резюме"
   },
   "staff": {
     "sidebar": {
