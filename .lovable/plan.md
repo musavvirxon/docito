@@ -1,42 +1,46 @@
-## Fix 4 issues on the practice dashboard
+## Plan
 
-### 1. Diagnoses only appear after adding a new one
+### 1. Default theme = night (dark) mode
+- **`src/contexts/ThemeContext.tsx`**: Change default `mode` from `'auto'` to `'dark'` when no saved preference exists in localStorage. User can still switch to light manually via `ThemeToggle`.
 
-**Root cause:** In `src/hooks/useDoctorIntegration.ts`, `refreshAllData` calls `fetchDoctorProfile()` then `fetchDiagnoses()` (and siblings) in parallel. Each of those fetchers is a `useCallback` closed over the `doctorProfile` state, and they early-return when `doctorProfile` is still `null`. React hasn't re-rendered between `setDoctorProfile(data)` and the follow-up calls in the same tick, so the closure still sees `null` and the fetch is skipped. Once the user adds a diagnosis later, `doctorProfile` is populated, the closure is fresh, and the list finally loads.
+### 2. Queue display link "invalid or disconnected"
+Root cause: the `get_queue_display` RPC is called with the anon client on a public route. The RPC likely requires auth or the `clinic_displays` row lookup by token is blocked by RLS / permissions.
+- Investigate `get_queue_display` function definition and `clinic_displays` grants.
+- **Migration**: Make `get_queue_display` `SECURITY DEFINER` with `search_path = public`, grant EXECUTE to `anon, authenticated`. Ensure `clinic_displays` token lookup works for anon (the function bypasses RLS as definer).
+- Verify token generation in `QueueDisplaySettings` actually inserts a row into `clinic_displays` with a matching token column.
 
-**Fix:** Use the profile returned from `fetchDoctorProfile()` directly instead of relying on state during the initial load. Refactor `fetchServices`, `fetchDiagnoses`, `fetchAppointments`, `fetchTreatmentPlans`, and `calculateStats` to accept an optional `doctorId` argument (falling back to `doctorProfile?.id`), and have `refreshAllData` pass `p.id` explicitly. Realtime `bump()` continues to call them with no argument (state is populated by then).
+### 3. Room & bed management — add room/counter data doctors work in
+- **`src/components/rooms/`** (RoomBedManagement UI): Extend the "Room" form so admins can assign one or multiple doctors to a `clinic_rooms` row (room_number/counter number is likely already a column; if not, add `room_number` / `counter_label`).
+- **Migration** (only if columns missing): add `room_number text`, `counter_label text`, and a `clinic_room_doctors` join table (room_id, doctor_id) with grants + RLS.
+- Surface the assigned room on the staff dashboard so the "Call next" broadcast + display screen already pick it up (wiring exists via `room_id` on appointments).
 
-### 2. Room & bed management: "Could not find a relationship between 'bed_assignments' and 'patients'"
+### 4. Currency stuck on `$` in appointment session procedure history, doctor profile, and booking page
+- Find the hardcoded `$` in:
+  - Appointment session "procedure added" history component
+  - Doctor profile pricing
+  - Booking page pricing
+- Replace with the existing `useCurrency()` / `CurrencyContext` `formatCurrency()` helper (already used elsewhere) so it follows the practice/user currency setting.
 
-**Root cause:** `src/hooks/useRoomBed.ts` embeds `patients ( full_name )` and `doctors ( profiles ( full_name ) )` in the `bed_assignments` select. There is no `patients` table (only `doctor_patients` / `profiles`), and the FK for `doctors.profiles` isn't set up as a nested embed either, so PostgREST rejects the whole query and the panel fails to load.
+### 5. i18n for the selected appointment detail dialog + Uzbek/Russian translations
+Add translation keys for the appointment detail dialog visible in the screenshot:
+- Tabs: Details, Clinical Items, Procedures, Treatment Plans, Patient
+- Labels: Appointment type, Video, Notes, Patient name, Patient phone
+- Actions: Book Follow-up, Download Summary, Reschedule, Cancel, Close
+- Status: Confirmed
 
-**Fix:** Fetch `bed_assignments` without embeds, then hydrate names in a follow-up step:
-- Collect distinct `patient_id`s → query `profiles` (id, full_name) in one call.
-- Collect distinct `doctor_id`s → query `doctors` joined to `profiles:user_id (full_name)` in one call.
-- Map results back into the `BedAssignment.patient_name` / `doctor_name` fields.
+Add matching keys to `public/locales/en/appointments.json`, `public/locales/ru/appointments.json`, `public/locales/uz/appointments.json`, and swap hardcoded strings in the dialog component for `t(...)` calls.
 
-### 3. Queue display link uses preview host
+### Files touched (approximate)
+- `src/contexts/ThemeContext.tsx`
+- `src/components/rooms/QueueDisplaySettings.tsx` + related room management UI
+- Appointment detail dialog component (to be located under `src/components/doctor/` or `src/components/appointments/`)
+- Procedure history + doctor profile + booking pricing components (currency)
+- `public/locales/{en,ru,uz}/appointments.json`
+- 1–2 Supabase migrations (queue display RPC grants; optional rooms schema)
 
-**Root cause:** `src/components/rooms/QueueDisplaySettings.tsx` builds the link with `${window.location.origin}/display/${token}`, which becomes the Lovable preview URL when the admin is testing there.
-
-**Fix:** Introduce a canonical public origin and use it for the display link. Add a small helper (e.g. `src/lib/publicUrl.ts`) that returns:
-- `https://docito.app` when running on any `docito.app`, `www.docito.app`, or preview/lovable/localhost host.
-- `window.location.origin` when running on `docito.live` (so that domain keeps working too).
-
-Use it as `${getPublicAppUrl()}/display/${token}` in both the copy-to-clipboard action and the visible URL row. The `/display/:token` route is already public and unprefixed, so links open correctly on the real domain regardless of where they were generated.
-
-### 4. Patient section nav buttons show white text in light mode
-
-**Investigation step, then fix:** Load `/practices/dashboard` in light mode, open the Patients section, and identify the offending nav — likely `PatientDetailSection.tsx` / `PatientListSection.tsx` sub-tabs or the `PatientRecordsUnified` tab row. Replace any hardcoded `text-white`, `bg-white`, or non-semantic color utilities on those buttons with semantic shadcn `Button` variants (`variant="outline"` for inactive, `variant="default"` for active) so the foreground color follows the theme in both modes.
-
-If the culprit turns out to be a shared `Button` variant override rather than the patient screens themselves, fix it at that variant instead of patching each caller.
-
-### Technical notes
-- No database migration needed.
-- No changes to `src/integrations/supabase/types.ts`.
-- Files touched (expected):
-  - `src/hooks/useDoctorIntegration.ts`
-  - `src/hooks/useRoomBed.ts`
-  - `src/components/rooms/QueueDisplaySettings.tsx`
-  - `src/lib/publicUrl.ts` (new)
-  - one or two files under `src/components/doctor/patients/` or `src/components/patient/` (identified during step 4)
+### Order of execution
+1. Theme default (1 file)
+2. Locate & fix hardcoded currency
+3. Queue display migration + verify
+4. Rooms UI extension (+ migration if needed)
+5. i18n keys + translations
