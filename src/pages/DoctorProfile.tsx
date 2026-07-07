@@ -64,6 +64,8 @@ const DoctorProfile = () => {
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [doctor, setDoctor] = useState<DoctorData | null>(null);
+  const { format: formatCurrencyAmount } = useCurrency();
+  const formatFee = (v: number | null) => (v == null ? '' : formatCurrencyAmount(Number(v)));
 
   useEffect(() => {
     const fetchDoctorProfile = async () => {

@@ -84,6 +84,7 @@ export default function AppointmentBooking() {
   const { t } = useTranslation(['common', 'dashboard']);
   const { doctorId: doctorSlug } = useParams();
   const navigate = useNavigate();
+  const { format: formatCurrency } = useCurrency();
 
   // Resolved canonical doctor UUID. The URL param may be a username,
   // custom_profile_link, or UUID — all UUID-typed queries must use this.
