@@ -21,6 +21,8 @@ export interface ClinicRoom {
   capacity: number;
   color: string | null;
   notes: string | null;
+  primary_doctor_id: string | null;
+  primary_doctor_name?: string | null;
   created_at: string;
   updated_at: string;
 }
