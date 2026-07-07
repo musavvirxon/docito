@@ -1,5 +1,6 @@
 // File: src/components/doctor/public/PremiumHeroSection.tsx
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 import { useNavigate } from "react-router-dom";
 import {
   Star,

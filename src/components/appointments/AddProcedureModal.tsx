@@ -125,7 +125,7 @@ export function AddProcedureModal({ open, onOpenChange, isDentist, initialTeeth 
                   {serviceOptions.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
-                      {s.default_cost ? ` · $${s.default_cost}` : ''}
+                      {s.default_cost ? ` · ${format(s.default_cost)}` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>

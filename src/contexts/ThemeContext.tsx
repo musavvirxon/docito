@@ -42,7 +42,8 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
   const [mode, setMode] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('docito-theme-mode') as ThemeMode | null;
-    return saved || 'auto';
+    // Default to night mode; user can switch to light manually.
+    return saved || 'dark';
   });
 
   const [appliedTheme, setAppliedTheme] = useState<AppliedTheme>(() => {

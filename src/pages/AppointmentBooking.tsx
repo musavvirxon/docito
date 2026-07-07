@@ -491,7 +491,7 @@ export default function AppointmentBooking() {
                   <div className="text-sm text-muted-foreground">{doctor.specialty}</div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
                     <Badge variant="secondary">Estimated fee</Badge>
-                    <span>{doctor.consultation_fee != null ? `$${doctor.consultation_fee}` : "Not set"}</span>
+                    <span>{doctor.consultation_fee != null ? formatCurrency(doctor.consultation_fee) : "Not set"}</span>
                   </div>
                   <Button
                     variant="link"
@@ -636,7 +636,7 @@ export default function AppointmentBooking() {
                       <div className="flex items-center justify-between mt-2 text-xs">
                         <span className="inline-flex items-center gap-1 font-semibold tabular-nums">
                           <DollarSign className="h-3.5 w-3.5" />
-                          {typeof cost === "number" ? `$${cost}` : "—"}
+                          {typeof cost === "number" ? formatCurrency(cost) : "—"}
                         </span>
                         {typeof p.duration_minutes === "number" && (
                           <span className="inline-flex items-center gap-1 text-muted-foreground">
