@@ -2200,15 +2200,15 @@
   "appointmentModal": {
     "referral": "Referral",
     "waitingForAcceptance": "Waiting for patient acceptance. You can start after it becomes confirmed.",
-    "bookFollowUp": "Book Follow-up",
-    "clinicalItems": "Clinical Items",
-    "refresh": "Refresh",
-    "catalog": "Catalog",
-    "custom": "Custom",
-    "templates": "Templates",
+    "bookFollowUp": "Qayta yozilish",
+    "clinicalItems": "Klinik yozuvlar",
+    "refresh": "Yangilash",
+    "catalog": "Katalog",
+    "custom": "O'zim",
+    "templates": "Shablonlar",
     "catalogDesc": "Add your own procedures / plans during the appointment",
-    "procedures": "Procedures",
-    "treatmentPlans": "Treatment Plans",
+    "procedures": "Muolajalar",
+    "treatmentPlans": "Davolash rejalari",
     "selectProcedure": "Select procedure",
     "loadingProcedures": "Loading procedures...",
     "searchProcedures": "Search procedures...",
@@ -2296,7 +2296,8 @@
     "failedStartConversation": "Failed to start conversation",
     "failedCancelAppointment": "Failed to cancel appointment",
     "noDuration": "No duration",
-    "noCost": "No cost"
+    "noCost": "No cost",
+    "downloadSummary": "Xulosani yuklab olish"
   },
   "staff": {
     "sidebar": {

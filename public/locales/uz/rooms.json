@@ -73,7 +73,11 @@
     "capacity": "Koyka sig‘imi",
     "color": "Xona rangi",
     "notes": "Izohlar",
-    "notesPlaceholder": "Bu xona haqida qo‘shimcha izohlar..."
+    "notesPlaceholder": "Bu xona haqida qo‘shimcha izohlar...",
+    "primaryDoctor": "Tayinlangan shifokor",
+    "primaryDoctorPlaceholder": "Shifokorni tanlang (ixtiyoriy)",
+    "noDoctor": "Shifokor tayinlanmagan",
+    "primaryDoctorHint": "Bemorlar bu xonada / stoyk'ada ishlaydigan shifokor sifatida ushbu shifokorni ko'radi."
   },
   "addBedModal": {
     "title": "Koyka qo‘shish",

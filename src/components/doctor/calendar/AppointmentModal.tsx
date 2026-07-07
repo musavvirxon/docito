@@ -1026,7 +1026,7 @@ const requestedProcedureName = useMemo(() => {
                 <div className="flex gap-2 flex-wrap">
                   <Button variant="outline" size="sm" onClick={handleBookFollowUp} className="gap-2">
                     <CalendarPlus className="h-4 w-4" />
-                    Book Follow-up
+                    {tm("bookFollowUp", "Book Follow-up")}
                   </Button>
                   <Button
                     variant="outline"
@@ -1036,7 +1036,7 @@ const requestedProcedureName = useMemo(() => {
                     className="gap-2"
                   >
                     {pdfLoading ? <Loader2Icon className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                    Download Summary
+                    {tm("downloadSummary", "Download Summary")}
                   </Button>
                 </div>
               </TabsContent>
@@ -1045,7 +1045,7 @@ const requestedProcedureName = useMemo(() => {
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="font-medium flex items-center gap-2">
                     <ClipboardList className="h-4 w-4" />
-                    Clinical Items
+                    {tm("clinicalItems", "Clinical Items")}
                   </div>
                   <Button
                     variant="outline"
@@ -1055,7 +1055,7 @@ const requestedProcedureName = useMemo(() => {
                     disabled={clinicalLoading || templatesLoading || catalogLoading}
                   >
                     <RefreshCw className={cn("h-4 w-4", (clinicalLoading || templatesLoading || catalogLoading) && "animate-spin")} />
-                    Refresh
+                    {tm("refresh", "Refresh")}
                   </Button>
                 </div>
 
@@ -1067,15 +1067,15 @@ const requestedProcedureName = useMemo(() => {
                         <TabsList className="w-full grid grid-cols-3">
                           <TabsTrigger value="catalog" className="gap-2">
                             <Layers className="h-4 w-4" />
-                            Catalog
+                            {tm("catalog", "Catalog")}
                           </TabsTrigger>
                           <TabsTrigger value="custom" className="gap-2">
                             <Plus className="h-4 w-4" />
-                            Custom
+                            {tm("custom", "Custom")}
                           </TabsTrigger>
                           <TabsTrigger value="templates" className="gap-2">
                             <ClipboardList className="h-4 w-4" />
-                            Templates
+                            {tm("templates", "Templates")}
                           </TabsTrigger>
                         </TabsList>
 
@@ -1094,7 +1094,7 @@ const requestedProcedureName = useMemo(() => {
                               onClick={() => setCatalogMode("procedure")}
                             >
                               <Stethoscope className="h-4 w-4" />
-                              Procedures
+                              {tm("procedures", "Procedures")}
                             </Button>
                             <Button
                               type="button"
@@ -1104,7 +1104,7 @@ const requestedProcedureName = useMemo(() => {
                               onClick={() => setCatalogMode("treatment_plan")}
                             >
                               <ClipboardList className="h-4 w-4" />
-                              Treatment Plans
+                              {tm("treatmentPlans", "Treatment Plans")}
                             </Button>
                           </div>
 

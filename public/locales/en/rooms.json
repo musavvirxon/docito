@@ -73,7 +73,11 @@
     "capacity": "Bed Capacity",
     "color": "Room Color",
     "notes": "Notes",
-    "notesPlaceholder": "Any special notes about this room..."
+    "notesPlaceholder": "Any special notes about this room...",
+    "primaryDoctor": "Assigned doctor",
+    "primaryDoctorPlaceholder": "Pick a doctor (optional)",
+    "noDoctor": "No assigned doctor",
+    "primaryDoctorHint": "Patients see this doctor as the one working in this room / counter."
   },
   "addBedModal": {
     "title": "Add Bed",

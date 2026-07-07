@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useBookingAuth } from "@/hooks/useBookingAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface DoctorData {
   id: string;
@@ -63,6 +64,8 @@ const DoctorProfile = () => {
   const [isBookingLoading, setIsBookingLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [doctor, setDoctor] = useState<DoctorData | null>(null);
+  const { format: formatCurrencyAmount } = useCurrency();
+  const formatFee = (v: number | null) => (v == null ? '' : formatCurrencyAmount(Number(v)));
 
   useEffect(() => {
     const fetchDoctorProfile = async () => {
@@ -329,7 +332,7 @@ const DoctorProfile = () => {
                   {doctor.consultation_fee && (
                     <div className="mt-4">
                       <h4 className="font-semibold mb-2">Consultation Fee</h4>
-                      <p className="text-lg text-primary font-medium">${doctor.consultation_fee}</p>
+                      <p className="text-lg text-primary font-medium">{formatFee(doctor.consultation_fee)}</p>
                     </div>
                   )}
                 </CardContent>
