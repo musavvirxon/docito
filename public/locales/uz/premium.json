@@ -2,7 +2,7 @@
   "hero": {
     "badge": "Barcha tibbiy xizmatlar — bir ritmda",
     "docitoNetworkTitle": {
-      "line1": "Kamroq ma'muriyat. Ko'proq",
+      "line1": "Kamroq qog'ozbozlik. Ko'proq",
       "line2": "G'amxo'rlik."
     },
     "docitoNetworkSubtitle": "Bemorlar, shifokorlar, klinikalar, laboratoriyalar, tasvirlash markazlari va dorixonalar uchun yagona tibbiy tarmoq — qabul, kartalar, yo'llanmalar, diagnostika, retseptlar, hisob-kitob va aloqani birlashtiradi.",
@@ -212,38 +212,22 @@
       "payments": {
         "title": "Hisob-kitob hujjatlari",
         "description": "Hisob-fakturalar, kvitansiyalar va superbill yarating — har bir uchrashuv bilan moslashtirilgan.",
-        "features": [
-          "Tafsilotli hisob-fakturalar",
-          "Kvitansiyalar va superbill",
-          "Moslashtirish"
-        ]
+        "features": ["Tafsilotli hisob-fakturalar", "Kvitansiyalar va superbill", "Moslashtirish"]
       },
       "scheduling": {
         "title": "Rejalashtirish",
         "description": "Jamoa, xonalar va bandlik bilan mos keladigan onlayn yozilish.",
-        "features": [
-          "Real vaqt slotlari",
-          "Eslatmalar",
-          "Kalendar sinxi"
-        ]
+        "features": ["Real vaqt slotlari", "Eslatmalar", "Kalendar sinxi"]
       },
       "records": {
         "title": "Yozuvlar",
         "description": "Bemorning yagona taymlayni — fayllar, qaydlar, retseptlar va natijalar — rollar bilan himoyalangan.",
-        "features": [
-          "Xavfsiz saqlash",
-          "Tez kirish",
-          "Ruxsatli ulashish"
-        ]
+        "features": ["Xavfsiz saqlash", "Tez kirish", "Ruxsatli ulashish"]
       },
       "analytics": {
         "title": "Analitika",
         "description": "Nimalar bo‘layotganini biling: yuklama, kutish vaqti, daromad va operatsion trendlar.",
-        "features": [
-          "Jonli ko‘rsatkichlar",
-          "Hisobotlar",
-          "Insights"
-        ]
+        "features": ["Jonli ko‘rsatkichlar", "Hisobotlar", "Insights"]
       }
     }
   },
