@@ -68,6 +68,7 @@ export default function PremiumHeroSection({
 }: PremiumHeroSectionProps) {
   const { t, i18n } = useTranslation(["doctors", "common"]);
   const navigate = useNavigate();
+  const { format: formatFee } = useCurrency();
   const isRTL = i18n.language === "ar";
 
   const doctorName = doctor.profiles.full_name;
@@ -213,7 +214,7 @@ export default function PremiumHeroSection({
                     {t("profile.consultationFee")}
                   </span>
                   <span className="text-xl font-bold text-foreground">
-                    ${doctor.consultation_fee}
+                    {formatFee(Number(doctor.consultation_fee))}
                   </span>
                 </div>
               )}
