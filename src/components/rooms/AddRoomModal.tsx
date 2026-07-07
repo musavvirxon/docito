@@ -7,10 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 import type { ClinicRoom, RoomType, RoomStatus, RoomWithBeds } from '@/hooks/useRoomBed';
 
 const ROOM_TYPES: RoomType[] = ['general','icu','private','ward','operating','recovery','consultation','pediatric'];
 const ROOM_COLORS = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899','#64748b'];
+const UNASSIGNED = '__unassigned__';
+
+interface DoctorOption {
+  id: string;
+  name: string;
+}
 
 interface AddRoomModalProps {
   open: boolean;
@@ -23,11 +30,28 @@ interface AddRoomModalProps {
 export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: AddRoomModalProps) {
   const { t } = useTranslation('rooms');
   const [saving, setSaving] = useState(false);
+  const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [form, setForm] = useState({
     name: '', room_number: '', floor: '',
     room_type: 'general' as RoomType, status: 'available' as RoomStatus,
     capacity: 1, color: ROOM_COLORS[0], notes: '',
+    primary_doctor_id: null as string | null,
   });
+
+  // Fetch doctors of this practice for the "primary doctor" picker.
+  useEffect(() => {
+    if (!open || !practiceId) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from('doctors')
+        .select('id, profiles:user_id ( full_name )')
+        .eq('practice_id', practiceId);
+      const opts: DoctorOption[] = (data ?? [])
+        .map((d: any) => ({ id: d.id, name: d.profiles?.full_name ?? '—' }))
+        .sort((a: DoctorOption, b: DoctorOption) => a.name.localeCompare(b.name));
+      setDoctors(opts);
+    })();
+  }, [open, practiceId]);
 
   useEffect(() => {
     if (editRoom) {
@@ -35,13 +59,14 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
         name: editRoom.name, room_number: editRoom.room_number ?? '', floor: editRoom.floor ?? '',
         room_type: editRoom.room_type, status: editRoom.status, capacity: editRoom.capacity,
         color: editRoom.color ?? ROOM_COLORS[0], notes: editRoom.notes ?? '',
+        primary_doctor_id: editRoom.primary_doctor_id ?? null,
       });
     } else {
-      setForm({ name: '', room_number: '', floor: '', room_type: 'general', status: 'available', capacity: 1, color: ROOM_COLORS[0], notes: '' });
+      setForm({ name: '', room_number: '', floor: '', room_type: 'general', status: 'available', capacity: 1, color: ROOM_COLORS[0], notes: '', primary_doctor_id: null });
     }
   }, [editRoom, open]);
 
-  const set = (k: string) => (v: string | number) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: string) => (v: string | number | null) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
@@ -56,6 +81,7 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
       capacity: form.capacity,
       color: form.color,
       notes: form.notes || null,
+      primary_doctor_id: form.primary_doctor_id,
     });
     setSaving(false);
     onClose();
@@ -98,6 +124,25 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
               <Label>{t('addRoomModal.capacity')}</Label>
               <Input type="number" min={1} max={50} value={form.capacity} onChange={e => set('capacity')(Number(e.target.value))} />
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label>{t('addRoomModal.primaryDoctor', 'Assigned doctor')}</Label>
+            <Select
+              value={form.primary_doctor_id ?? UNASSIGNED}
+              onValueChange={v => set('primary_doctor_id')(v === UNASSIGNED ? null : v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('addRoomModal.primaryDoctorPlaceholder', 'Pick a doctor (optional)')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={UNASSIGNED}>{t('addRoomModal.noDoctor', 'No assigned doctor')}</SelectItem>
+                {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {t('addRoomModal.primaryDoctorHint', 'Patients see this doctor as the one working in this room / counter.')}
+            </p>
           </div>
 
           <div className="space-y-1">

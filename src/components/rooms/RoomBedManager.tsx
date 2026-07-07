@@ -71,6 +71,7 @@ function ListView({ rooms, onBedClick, canEdit }: { rooms: RoomWithBeds[]; onBed
                 {t(`roomType.${room.room_type}`, { defaultValue: room.room_type })}
                 {room.room_number ? ` · #${room.room_number}` : ''}
                 {room.floor ? ` · ${t('floor', { name: room.floor })}` : ''}
+                {room.primary_doctor_name ? ` · Dr. ${room.primary_doctor_name}` : ''}
               </p>
             </div>
             <Badge variant="outline" className="text-xs shrink-0">

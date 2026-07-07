@@ -159,8 +159,22 @@ export function useRoomBed({ practiceId, role, doctorId }: UseRoomBedOptions) {
         bedsByRoom.set(b.room_id, arr);
       });
 
+      // Hydrate primary doctor names for rooms
+      const roomDoctorIds = Array.from(
+        new Set((roomData ?? []).map((r: any) => r.primary_doctor_id).filter(Boolean)),
+      ) as string[];
+      const { data: roomDocRows } = roomDoctorIds.length
+        ? await (supabase as any)
+            .from('doctors')
+            .select('id, profiles:user_id ( full_name )')
+            .in('id', roomDoctorIds)
+        : { data: [] as any[] };
+      const roomDoctorNameById = new Map<string, string>();
+      (roomDocRows ?? []).forEach((d: any) => roomDoctorNameById.set(d.id, d.profiles?.full_name ?? ''));
+
       const combined: RoomWithBeds[] = (roomData ?? []).map((r: any) => ({
         ...r,
+        primary_doctor_name: r.primary_doctor_id ? roomDoctorNameById.get(r.primary_doctor_id) ?? null : null,
         beds: bedsByRoom.get(r.id) ?? [],
       }));
 
