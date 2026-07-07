@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/hooks/useCurrency";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { resolveDoctorIdFromSlug, isUuid } from "@/lib/doctorSlug";
