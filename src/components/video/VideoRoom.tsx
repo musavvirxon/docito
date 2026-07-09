@@ -35,10 +35,12 @@ import {
   Stethoscope,
   MonitorPlay,
   X,
+  ExternalLink,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isInIframe, openCallInNewTab } from '@/lib/mediaEnv';
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
@@ -138,6 +140,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [showSessionEndingBanner, setShowSessionEndingBanner] = useState(false);
   const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
+  const [iframeBlocked, setIframeBlocked] = useState(false);
 
 
   /* ---------- Slot mapping ---------- */
@@ -493,7 +496,12 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const explainMediaError = (err: any, fallback: string) => {
     const name = err?.name || '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-      toast.error(t('videoConsultation.permissionDenied'));
+      if (isInIframe()) {
+        setIframeBlocked(true);
+        toast.error(t('videoConsultation.iframeBlockedTitle', 'Camera & microphone are blocked in this preview'));
+      } else {
+        toast.error(t('videoConsultation.permissionDenied'));
+      }
     } else if (name === 'NotFoundError') {
       toast.error(t('videoConsultation.noDeviceFound'));
     } else if (name === 'NotReadableError') {
@@ -520,6 +528,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     const room = requireConnected();
     if (!room) return;
     setStartingMedia(true);
+    setIframeBlocked(false);
+
+    // Probe getUserMedia synchronously in the click handler so gesture
+    // provenance is preserved. If this succeeds, hand the tracks to LiveKit
+    // (which will re-open the devices, but the permission is already granted).
+    try {
+      const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      probe.getTracks().forEach((tr) => { try { tr.stop(); } catch { /* noop */ } });
+    } catch (err: any) {
+      explainMediaError(err, 'Failed to access camera and microphone.');
+      setStartingMedia(false);
+      return;
+    }
+
     let micOk = false;
     let camOk = false;
     try {
@@ -538,6 +560,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     }
     if (micOk || camOk) setMediaStarted(true);
     setStartingMedia(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleAudio = useCallback(async () => {
@@ -903,6 +926,25 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
                   {t('videoConsultation.browserWillAsk')}
                 </p>
               </div>
+
+              {iframeBlocked && (
+                <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-left space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        'videoConsultation.iframeBlockedBody',
+                        'The video call needs to run in its own browser tab so it can request camera, microphone, and screen-share permissions.'
+                      )}
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={openCallInNewTab} className="w-full gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    {t('videoConsultation.openInNewTab', 'Open call in a new tab')}
+                  </Button>
+                </div>
+              )}
+
               <Button onClick={startMedia} disabled={startingMedia} className="gap-2">
                 {startingMedia ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -956,18 +998,16 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
           </Button>
 
-          {userRole === 'doctor' && (
-            <Button
-              variant={isScreenSharing ? 'default' : 'secondary'}
-              size="lg"
-              onClick={toggleScreenShare}
-              disabled={status !== 'connected'}
-              className="rounded-full h-12 w-12"
-              aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
-            >
-              {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
-            </Button>
-          )}
+          <Button
+            variant={isScreenSharing ? 'default' : 'secondary'}
+            size="lg"
+            onClick={toggleScreenShare}
+            disabled={status !== 'connected'}
+            className="rounded-full h-12 w-12"
+            aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
+          >
+            {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
+          </Button>
 
           {userRole === 'doctor' && (
             <Button

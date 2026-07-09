@@ -1,46 +1,36 @@
-## Plan
+## Root cause
 
-### 1. Default theme = night (dark) mode
-- **`src/contexts/ThemeContext.tsx`**: Change default `mode` from `'auto'` to `'dark'` when no saved preference exists in localStorage. User can still switch to light manually via `ThemeToggle`.
+The video call runs inside the Lovable **preview iframe**, which does not set `allow="camera; microphone; display-capture"`. Even when the browser has granted camera/mic permissions to `docito.app`, the iframe's Permissions Policy blocks `getUserMedia`/`getDisplayMedia`, so LiveKit's `setCameraEnabled` / `setMicrophoneEnabled` / `setScreenShareEnabled` throw `NotAllowedError`. That's why the toast says "permission denied" even though the browser granted access, and why neither the local self‑view nor screen share ever appears.
 
-### 2. Queue display link "invalid or disconnected"
-Root cause: the `get_queue_display` RPC is called with the anon client on a public route. The RPC likely requires auth or the `clinic_displays` row lookup by token is blocked by RLS / permissions.
-- Investigate `get_queue_display` function definition and `clinic_displays` grants.
-- **Migration**: Make `get_queue_display` `SECURITY DEFINER` with `search_path = public`, grant EXECUTE to `anon, authenticated`. Ensure `clinic_displays` token lookup works for anon (the function bypasses RLS as definer).
-- Verify token generation in `QueueDisplaySettings` actually inserts a row into `clinic_displays` with a matching token column.
+Secondary issues in `VideoRoom.tsx`:
+- `startMedia` awaits mic before requesting camera, breaking the user‑gesture chain that some browsers require for the second `getUserMedia`.
+- No proactive `navigator.permissions.query` check, so the failure mode isn't actionable.
+- The self‑view depends on the LiveKit slot getting a published local track; if publishing fails (iframe policy), the user never sees their own camera even as a preview.
 
-### 3. Room & bed management — add room/counter data doctors work in
-- **`src/components/rooms/`** (RoomBedManagement UI): Extend the "Room" form so admins can assign one or multiple doctors to a `clinic_rooms` row (room_number/counter number is likely already a column; if not, add `room_number` / `counter_label`).
-- **Migration** (only if columns missing): add `room_number text`, `counter_label text`, and a `clinic_room_doctors` join table (room_id, doctor_id) with grants + RLS.
-- Surface the assigned room on the staff dashboard so the "Call next" broadcast + display screen already pick it up (wiring exists via `room_id` on appointments).
+## Fixes
 
-### 4. Currency stuck on `$` in appointment session procedure history, doctor profile, and booking page
-- Find the hardcoded `$` in:
-  - Appointment session "procedure added" history component
-  - Doctor profile pricing
-  - Booking page pricing
-- Replace with the existing `useCurrency()` / `CurrencyContext` `formatCurrency()` helper (already used elsewhere) so it follows the practice/user currency setting.
+### 1. `src/components/video/VideoWaitingRoom.tsx`
+- On "Start camera & microphone" click, first request a **local preview stream** directly with `navigator.mediaDevices.getUserMedia({ audio: true, video: true })` inside the click handler (no `await` before it).
+- Attach that stream to a `<video muted autoplay playsinline>` element so the user immediately sees themselves — this is the local preview even before joining LiveKit.
+- Detect environment problems and show inline actionable errors instead of the generic toast:
+  - `location.protocol !== 'https:'` and not `localhost` → "Secure context required".
+  - `window.self !== window.top` and `document.featurePolicy?.allowsFeature('camera') === false` (or the getUserMedia call throws `NotAllowedError` on the first try) → show a banner: "Camera/microphone are blocked inside the preview. Open the call in a new tab." with an **Open in new tab** button that navigates to the same URL on `window.top`.
+  - `navigator.permissions.query({ name: 'camera' })` / `'microphone'` returning `denied` → "Blocked in browser settings. Click the lock icon in the address bar to allow camera & microphone."
+- Stop the preview stream (`track.stop()`) right before handing off to `onJoin`, so LiveKit can acquire the devices cleanly.
 
-### 5. i18n for the selected appointment detail dialog + Uzbek/Russian translations
-Add translation keys for the appointment detail dialog visible in the screenshot:
-- Tabs: Details, Clinical Items, Procedures, Treatment Plans, Patient
-- Labels: Appointment type, Video, Notes, Patient name, Patient phone
-- Actions: Book Follow-up, Download Summary, Reschedule, Cancel, Close
-- Status: Confirmed
+### 2. `src/components/video/VideoRoom.tsx`
+- Rewrite `startMedia` to acquire mic + camera in **a single** `getUserMedia({ audio: true, video: true })` call inside the click handler, then feed the tracks to LiveKit via `room.localParticipant.publishTrack(new LocalAudioTrack(audioTrack))` / `publishTrack(new LocalVideoTrack(videoTrack))`. This preserves the user gesture and avoids the two‑step failure.
+- On any `NotAllowedError`, check `window.self !== window.top` and, if true, surface the same "Open in new tab" affordance as the waiting room.
+- Add an always‑mounted mirrored **self‑view PIP** (bottom‑left) that binds directly to the local camera track (`room.localParticipant.getTrackPublication(Track.Source.Camera)?.videoTrack`). This guarantees the doctor/patient can see their own camera even if the slot layout is currently focused on the remote participant.
+- For screen share, keep `setScreenShareEnabled` but wrap in the same iframe‑policy detection so the user gets a clear "Open in new tab to share your screen" message instead of a bare `NotAllowedError`.
+- Ensure the screen‑share slot renders for both roles (currently only maps for `doctor`); add `patient` → `doctor-screen` fallback so a patient's shared screen is visible to the doctor.
 
-Add matching keys to `public/locales/en/appointments.json`, `public/locales/ru/appointments.json`, `public/locales/uz/appointments.json`, and swap hardcoded strings in the dialog component for `t(...)` calls.
+### 3. No backend / schema changes
 
-### Files touched (approximate)
-- `src/contexts/ThemeContext.tsx`
-- `src/components/rooms/QueueDisplaySettings.tsx` + related room management UI
-- Appointment detail dialog component (to be located under `src/components/doctor/` or `src/components/appointments/`)
-- Procedure history + doctor profile + booking pricing components (currency)
-- `public/locales/{en,ru,uz}/appointments.json`
-- 1–2 Supabase migrations (queue display RPC grants; optional rooms schema)
+Only two frontend files change. No migrations, no edge‑function edits, no new dependencies.
 
-### Order of execution
-1. Theme default (1 file)
-2. Locate & fix hardcoded currency
-3. Queue display migration + verify
-4. Rooms UI extension (+ migration if needed)
-5. i18n keys + translations
+## Verification
+
+1. In the Lovable preview: clicking "Start camera & microphone" should now show the "Open in new tab" banner instead of a silent denial.
+2. Opening the call at `https://docito.app/video/...` in a normal tab: local self‑view appears immediately after clicking Start, remote video appears when the other party joins, screen‑share button opens the OS picker and the shared screen is visible to the other side.
+3. Denying permission in the browser prompt shows the actionable "unblock in address bar" message instead of the generic toast.
