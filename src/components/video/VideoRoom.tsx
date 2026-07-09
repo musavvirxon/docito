@@ -998,18 +998,16 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             {isVideoOn ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
           </Button>
 
-          {userRole === 'doctor' && (
-            <Button
-              variant={isScreenSharing ? 'default' : 'secondary'}
-              size="lg"
-              onClick={toggleScreenShare}
-              disabled={status !== 'connected'}
-              className="rounded-full h-12 w-12"
-              aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
-            >
-              {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
-            </Button>
-          )}
+          <Button
+            variant={isScreenSharing ? 'default' : 'secondary'}
+            size="lg"
+            onClick={toggleScreenShare}
+            disabled={status !== 'connected'}
+            className="rounded-full h-12 w-12"
+            aria-label={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
+          >
+            {isScreenSharing ? <MonitorOff className="h-5 w-5" /> : <Monitor className="h-5 w-5" />}
+          </Button>
 
           {userRole === 'doctor' && (
             <Button
