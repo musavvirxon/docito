@@ -972,20 +972,6 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </div>
         )}
       </div>
-          <div className="absolute right-3 top-3 w-72 z-20">
-            <Card className="p-3 bg-card/95 backdrop-blur">
-              <h4 className="font-medium mb-2 text-sm">{t('videoConsultation.consultationNotes')}</h4>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t('videoConsultation.notesPlaceholder')}
-                className="min-h-[120px] resize-none"
-              />
-
-            </Card>
-          </div>
-        )}
-      </div>
 
       {/* Controls */}
       <div className="p-3 border-t border-border bg-card">
