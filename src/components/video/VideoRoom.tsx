@@ -926,6 +926,25 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
                   {t('videoConsultation.browserWillAsk')}
                 </p>
               </div>
+
+              {iframeBlocked && (
+                <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-left space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">
+                      {t(
+                        'videoConsultation.iframeBlockedBody',
+                        'The video call needs to run in its own browser tab so it can request camera, microphone, and screen-share permissions.'
+                      )}
+                    </p>
+                  </div>
+                  <Button size="sm" onClick={openCallInNewTab} className="w-full gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    {t('videoConsultation.openInNewTab', 'Open call in a new tab')}
+                  </Button>
+                </div>
+              )}
+
               <Button onClick={startMedia} disabled={startingMedia} className="gap-2">
                 {startingMedia ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -939,6 +958,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         )}
 
         {showNotes && userRole === 'doctor' && (
+          <div className="absolute right-3 top-3 w-72 z-20">
+            <Card className="p-3 bg-card/95 backdrop-blur">
+              <h4 className="font-medium mb-2 text-sm">{t('videoConsultation.consultationNotes')}</h4>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t('videoConsultation.notesPlaceholder')}
+                className="min-h-[120px] resize-none"
+              />
+
+            </Card>
+          </div>
+        )}
+      </div>
           <div className="absolute right-3 top-3 w-72 z-20">
             <Card className="p-3 bg-card/95 backdrop-blur">
               <h4 className="font-medium mb-2 text-sm">{t('videoConsultation.consultationNotes')}</h4>
