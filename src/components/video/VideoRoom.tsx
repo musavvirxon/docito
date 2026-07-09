@@ -35,10 +35,12 @@ import {
   Stethoscope,
   MonitorPlay,
   X,
+  ExternalLink,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isInIframe, openCallInNewTab } from '@/lib/mediaEnv';
 
 interface VideoRoomProps {
   consultation: VideoConsultation;
