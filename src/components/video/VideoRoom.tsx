@@ -496,7 +496,12 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const explainMediaError = (err: any, fallback: string) => {
     const name = err?.name || '';
     if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-      toast.error(t('videoConsultation.permissionDenied'));
+      if (isInIframe()) {
+        setIframeBlocked(true);
+        toast.error(t('videoConsultation.iframeBlockedTitle', 'Camera & microphone are blocked in this preview'));
+      } else {
+        toast.error(t('videoConsultation.permissionDenied'));
+      }
     } else if (name === 'NotFoundError') {
       toast.error(t('videoConsultation.noDeviceFound'));
     } else if (name === 'NotReadableError') {
@@ -523,6 +528,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     const room = requireConnected();
     if (!room) return;
     setStartingMedia(true);
+    setIframeBlocked(false);
+
+    // Probe getUserMedia synchronously in the click handler so gesture
+    // provenance is preserved. If this succeeds, hand the tracks to LiveKit
+    // (which will re-open the devices, but the permission is already granted).
+    try {
+      const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      probe.getTracks().forEach((tr) => { try { tr.stop(); } catch { /* noop */ } });
+    } catch (err: any) {
+      explainMediaError(err, 'Failed to access camera and microphone.');
+      setStartingMedia(false);
+      return;
+    }
+
     let micOk = false;
     let camOk = false;
     try {
@@ -541,6 +560,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     }
     if (micOk || camOk) setMediaStarted(true);
     setStartingMedia(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleAudio = useCallback(async () => {
