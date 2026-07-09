@@ -140,6 +140,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [showSessionEndingBanner, setShowSessionEndingBanner] = useState(false);
   const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
+  const [iframeBlocked, setIframeBlocked] = useState(false);
 
 
   /* ---------- Slot mapping ---------- */
