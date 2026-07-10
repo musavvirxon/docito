@@ -573,16 +573,23 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     setIframeBlocked(false);
 
     // Probe getUserMedia synchronously in the click handler so gesture
-    // provenance is preserved. If this succeeds, hand the tracks to LiveKit
-    // (which will re-open the devices, but the permission is already granted).
+    // provenance is preserved. Keep the stream and use it as an immediate
+    // local self-view so the user sees themselves even if LiveKit publish
+    // is still in flight or ultimately fails.
+    let probe: MediaStream | null = null;
     try {
-      const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-      probe.getTracks().forEach((tr) => { try { tr.stop(); } catch { /* noop */ } });
+      probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
     } catch (err: any) {
       explainMediaError(err, 'Failed to access camera and microphone.');
       setStartingMedia(false);
       return;
     }
+
+    // Attach preview to local camera slot right away.
+    const localCamSlot: SlotId = userRole === 'patient' ? 'patient-camera' : 'doctor-camera';
+    previewStreamRef.current = probe;
+    try { attachPreviewStream(localCamSlot, probe); } catch { /* noop */ }
+    setMediaStarted(true);
 
     let micOk = false;
     let camOk = false;
@@ -600,10 +607,17 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     } catch (err: any) {
       explainMediaError(err, 'Failed to start camera.');
     }
+    // If LiveKit failed to publish the camera, keep the raw preview visible
+    // so the user still sees their own image. Otherwise handleLocalPublished
+    // has already swapped it out and stopped the preview stream.
+    if (!camOk && previewStreamRef.current) {
+      // leave the preview attached
+    }
     if (micOk || camOk) setMediaStarted(true);
     setStartingMedia(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userRole]);
+
 
   const toggleAudio = useCallback(async () => {
     const room = requireConnected();
