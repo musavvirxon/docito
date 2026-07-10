@@ -671,6 +671,12 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       isScreenSharingRef.current = next;
       setIsScreenSharing(next);
       if (next) {
+        // Auto-focus the shared screen so the sharer sees their own share
+        // full-size (previously the sharer only saw a small side thumbnail).
+        setFocusedSlot('doctor-screen');
+      }
+
+      if (next) {
         const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
         const tr = pub?.track;
         if (tr) {
