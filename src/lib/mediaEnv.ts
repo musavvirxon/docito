@@ -1,5 +1,7 @@
 // Helpers for diagnosing camera/microphone access failures — mostly the
 // Lovable preview iframe, which lacks `allow="camera; microphone; display-capture"`.
+import { getPublicAppUrl } from '@/lib/publicUrl';
+
 
 export const isInIframe = (): boolean => {
   try {
@@ -29,13 +31,18 @@ export const featurePolicyBlocks = (feature: 'camera' | 'microphone' | 'display-
 
 export const openCallInNewTab = () => {
   try {
-    const url = window.location.href;
+    const origin = getPublicAppUrl();
+    const url = `${origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
     const win = window.open(url, '_blank', 'noopener,noreferrer');
     if (!win && window.top) {
-      // Popup blocked — fall back to top-level navigation.
       (window.top as Window).location.href = url;
     }
+
   } catch {
-    window.location.href = window.location.href;
+    try {
+      const win = window.open(window.location.href, '_blank', 'noopener,noreferrer');
+      if (!win) window.location.reload();
+    } catch { /* noop */ }
   }
 };
+

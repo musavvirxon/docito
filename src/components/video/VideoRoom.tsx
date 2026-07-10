@@ -92,6 +92,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const sessionStartRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
   const mediaErrorRetryRef = useRef(0);
+  // Raw MediaStream preview so the local user sees themselves immediately,
+  // even if LiveKit's publish is still in flight or fails silently.
+  const previewStreamRef = useRef<MediaStream | null>(null);
+  const previewScreenStreamRef = useRef<MediaStream | null>(null);
+
 
 
   // Stable DOM refs for each slot (always mounted — never unmounted on toggle)
@@ -190,6 +195,36 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     setSlotHasTrack((s) => (s[slot] ? s : { ...s, [slot]: true }));
   };
 
+  /** Attach a raw MediaStream to a slot (used for the local preview before
+   * LiveKit has published a track). Marked with data-preview so we can find
+   * and swap it out once the real track is published. */
+  const attachPreviewStream = (slot: SlotId, stream: MediaStream) => {
+    const node = slotNodeRefs.current[slot];
+    if (!node) return;
+    Array.from(node.querySelectorAll('video,audio')).forEach((el) => el.remove());
+    const v = document.createElement('video');
+    v.srcObject = stream;
+    v.autoplay = true;
+    v.muted = true;
+    v.playsInline = true;
+    v.setAttribute('data-preview', '1');
+    v.style.width = '100%';
+    v.style.height = '100%';
+    v.style.objectFit = 'cover';
+    node.appendChild(v);
+    setSlotHasTrack((s) => (s[slot] ? s : { ...s, [slot]: true }));
+  };
+
+  const stopPreviewStream = (which: 'camera' | 'screen') => {
+    const ref = which === 'camera' ? previewStreamRef : previewScreenStreamRef;
+    const stream = ref.current;
+    if (stream) {
+      try { stream.getTracks().forEach((t) => t.stop()); } catch { /* noop */ }
+      ref.current = null;
+    }
+  };
+
+
   const clearSlot = (slot: SlotId) => {
     const prev = slotTrackRefs.current[slot];
     if (prev) {
@@ -259,10 +294,17 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       setIsAudioOn(true);
       return;
     }
-    if (track.source === Track.Source.Camera) setIsVideoOn(true);
-    if (track.source === Track.Source.ScreenShare) setIsScreenSharing(true);
+    if (track.source === Track.Source.Camera) {
+      setIsVideoOn(true);
+      stopPreviewStream('camera');
+    }
+    if (track.source === Track.Source.ScreenShare) {
+      setIsScreenSharing(true);
+      stopPreviewStream('screen');
+    }
     const slot = sourceToSlot(track.source, true);
     if (slot) attachToSlot(slot, track, true);
+
   }, [sourceToSlot]);
 
   const handleLocalUnpublished = useCallback((pub: LocalTrackPublication) => {
@@ -484,6 +526,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           slotTrackRefs.current[s] = null;
         }
       });
+      try { stopPreviewStream('camera'); } catch { /* noop */ }
+      try { stopPreviewStream('screen'); } catch { /* noop */ }
+
       if (room.state !== ConnectionState.Disconnected) {
         room.disconnect(true).catch(() => {});
       }
@@ -531,16 +576,23 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     setIframeBlocked(false);
 
     // Probe getUserMedia synchronously in the click handler so gesture
-    // provenance is preserved. If this succeeds, hand the tracks to LiveKit
-    // (which will re-open the devices, but the permission is already granted).
+    // provenance is preserved. Keep the stream and use it as an immediate
+    // local self-view so the user sees themselves even if LiveKit publish
+    // is still in flight or ultimately fails.
+    let probe: MediaStream | null = null;
     try {
-      const probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-      probe.getTracks().forEach((tr) => { try { tr.stop(); } catch { /* noop */ } });
+      probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
     } catch (err: any) {
       explainMediaError(err, 'Failed to access camera and microphone.');
       setStartingMedia(false);
       return;
     }
+
+    // Attach preview to local camera slot right away.
+    const localCamSlot: SlotId = userRole === 'patient' ? 'patient-camera' : 'doctor-camera';
+    previewStreamRef.current = probe;
+    try { attachPreviewStream(localCamSlot, probe); } catch { /* noop */ }
+    setMediaStarted(true);
 
     let micOk = false;
     let camOk = false;
@@ -558,10 +610,17 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     } catch (err: any) {
       explainMediaError(err, 'Failed to start camera.');
     }
+    // If LiveKit failed to publish the camera, keep the raw preview visible
+    // so the user still sees their own image. Otherwise handleLocalPublished
+    // has already swapped it out and stopped the preview stream.
+    if (!camOk && previewStreamRef.current) {
+      // leave the preview attached
+    }
     if (micOk || camOk) setMediaStarted(true);
     setStartingMedia(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userRole]);
+
 
   const toggleAudio = useCallback(async () => {
     const room = requireConnected();
@@ -614,6 +673,12 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       await room.localParticipant.setScreenShareEnabled(next, { audio: true });
       isScreenSharingRef.current = next;
       setIsScreenSharing(next);
+      if (next) {
+        // Auto-focus the shared screen so the sharer sees their own share
+        // full-size (previously the sharer only saw a small side thumbnail).
+        setFocusedSlot('doctor-screen');
+      }
+
       if (next) {
         const pub = room.localParticipant.getTrackPublication(Track.Source.ScreenShare);
         const tr = pub?.track;
