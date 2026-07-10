@@ -29,13 +29,22 @@ export const featurePolicyBlocks = (feature: 'camera' | 'microphone' | 'display-
 
 export const openCallInNewTab = () => {
   try {
-    const url = window.location.href;
+    // Build the canonical URL on the real production origin so the new
+    // tab never lands back on the Lovable preview iframe host.
+    // Lazy-imported to avoid a circular dep with publicUrl.ts.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { getPublicAppUrl } = require('@/lib/publicUrl') as typeof import('@/lib/publicUrl');
+    const origin = getPublicAppUrl();
+    const url = `${origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
     const win = window.open(url, '_blank', 'noopener,noreferrer');
     if (!win && window.top) {
-      // Popup blocked — fall back to top-level navigation.
       (window.top as Window).location.href = url;
     }
   } catch {
-    window.location.href = window.location.href;
+    try {
+      const win = window.open(window.location.href, '_blank', 'noopener,noreferrer');
+      if (!win) window.location.reload();
+    } catch { /* noop */ }
   }
 };
+
