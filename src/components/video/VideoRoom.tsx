@@ -195,6 +195,36 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     setSlotHasTrack((s) => (s[slot] ? s : { ...s, [slot]: true }));
   };
 
+  /** Attach a raw MediaStream to a slot (used for the local preview before
+   * LiveKit has published a track). Marked with data-preview so we can find
+   * and swap it out once the real track is published. */
+  const attachPreviewStream = (slot: SlotId, stream: MediaStream) => {
+    const node = slotNodeRefs.current[slot];
+    if (!node) return;
+    Array.from(node.querySelectorAll('video,audio')).forEach((el) => el.remove());
+    const v = document.createElement('video');
+    v.srcObject = stream;
+    v.autoplay = true;
+    v.muted = true;
+    v.playsInline = true;
+    v.setAttribute('data-preview', '1');
+    v.style.width = '100%';
+    v.style.height = '100%';
+    v.style.objectFit = 'cover';
+    node.appendChild(v);
+    setSlotHasTrack((s) => (s[slot] ? s : { ...s, [slot]: true }));
+  };
+
+  const stopPreviewStream = (which: 'camera' | 'screen') => {
+    const ref = which === 'camera' ? previewStreamRef : previewScreenStreamRef;
+    const stream = ref.current;
+    if (stream) {
+      try { stream.getTracks().forEach((t) => t.stop()); } catch { /* noop */ }
+      ref.current = null;
+    }
+  };
+
+
   const clearSlot = (slot: SlotId) => {
     const prev = slotTrackRefs.current[slot];
     if (prev) {
