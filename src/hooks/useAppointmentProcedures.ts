@@ -129,9 +129,8 @@ export function useAppointmentProcedures({
         let createdRowId: string | null = null;
         const { data: authUser } = await supabase.auth.getUser();
         if (teeth.length > 0) {
-          const targetPatient = patientId || null;
-          if (!targetPatient) {
-            toast.error('Tooth procedures require a registered patient');
+          if (!patientId && !doctorPatientId) {
+            toast.error('Tooth procedures require a patient on this appointment');
             return;
           }
           const { data: inserted, error } = await supabase
@@ -139,7 +138,8 @@ export function useAppointmentProcedures({
             .insert({
               appointment_id: appointmentId,
               doctor_id: doctorId,
-              patient_id: targetPatient,
+              patient_id: patientId || null,
+              doctor_patient_id: patientId ? null : doctorPatientId,
               procedure_name: input.name,
               tooth_numbers: teeth,
               status: 'completed',
