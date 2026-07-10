@@ -9658,9 +9658,10 @@ export type Database = {
           cost: number | null
           created_at: string
           doctor_id: string | null
+          doctor_patient_id: string | null
           id: string
           notes: string | null
-          patient_id: string
+          patient_id: string | null
           performed_at: string | null
           procedure_id: string | null
           procedure_name: string
@@ -9675,9 +9676,10 @@ export type Database = {
           cost?: number | null
           created_at?: string
           doctor_id?: string | null
+          doctor_patient_id?: string | null
           id?: string
           notes?: string | null
-          patient_id: string
+          patient_id?: string | null
           performed_at?: string | null
           procedure_id?: string | null
           procedure_name: string
@@ -9692,9 +9694,10 @@ export type Database = {
           cost?: number | null
           created_at?: string
           doctor_id?: string | null
+          doctor_patient_id?: string | null
           id?: string
           notes?: string | null
-          patient_id?: string
+          patient_id?: string | null
           performed_at?: string | null
           procedure_id?: string | null
           procedure_name?: string
@@ -9737,6 +9740,13 @@ export type Database = {
             columns: ["doctor_id"]
             isOneToOne: false
             referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tooth_procedure_history_doctor_patient_id_fkey"
+            columns: ["doctor_patient_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_patients"
             referencedColumns: ["id"]
           },
           {
