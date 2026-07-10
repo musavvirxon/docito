@@ -1,5 +1,7 @@
 // Helpers for diagnosing camera/microphone access failures — mostly the
 // Lovable preview iframe, which lacks `allow="camera; microphone; display-capture"`.
+import { getPublicAppUrl } from '@/lib/publicUrl';
+
 
 export const isInIframe = (): boolean => {
   try {
