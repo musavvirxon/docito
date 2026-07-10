@@ -526,6 +526,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           slotTrackRefs.current[s] = null;
         }
       });
+      try { stopPreviewStream('camera'); } catch { /* noop */ }
+      try { stopPreviewStream('screen'); } catch { /* noop */ }
+
       if (room.state !== ConnectionState.Disconnected) {
         room.disconnect(true).catch(() => {});
       }
