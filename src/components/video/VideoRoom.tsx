@@ -92,6 +92,11 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const sessionStartRef = useRef<number | null>(null);
   const timerIntervalRef = useRef<number | null>(null);
   const mediaErrorRetryRef = useRef(0);
+  // Raw MediaStream preview so the local user sees themselves immediately,
+  // even if LiveKit's publish is still in flight or fails silently.
+  const previewStreamRef = useRef<MediaStream | null>(null);
+  const previewScreenStreamRef = useRef<MediaStream | null>(null);
+
 
 
   // Stable DOM refs for each slot (always mounted — never unmounted on toggle)
