@@ -294,10 +294,17 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       setIsAudioOn(true);
       return;
     }
-    if (track.source === Track.Source.Camera) setIsVideoOn(true);
-    if (track.source === Track.Source.ScreenShare) setIsScreenSharing(true);
+    if (track.source === Track.Source.Camera) {
+      setIsVideoOn(true);
+      stopPreviewStream('camera');
+    }
+    if (track.source === Track.Source.ScreenShare) {
+      setIsScreenSharing(true);
+      stopPreviewStream('screen');
+    }
     const slot = sourceToSlot(track.source, true);
     if (slot) attachToSlot(slot, track, true);
+
   }, [sourceToSlot]);
 
   const handleLocalUnpublished = useCallback((pub: LocalTrackPublication) => {
