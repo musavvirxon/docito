@@ -1,5 +1,33 @@
 {
   "practicePage": {
+    "call": "Call",
+    "pharmacy": {
+      "title": "Pharmacy",
+      "cta": "Message Pharmacy",
+      "delivery": "Delivery available",
+      "insurance": "Accepts insurance",
+      "servicesTitle": "Services",
+      "notFoundTitle": "Pharmacy not found",
+      "notFoundDescription": "We couldn't find the pharmacy you're looking for. It may have been removed or the link may be incorrect."
+    },
+    "lab": {
+      "title": "Laboratory",
+      "cta": "Message Lab",
+      "testsTitle": "Tests offered",
+      "turnaroundTitle": "Turnaround time",
+      "turnaround": "Average turnaround: {{hours}} hours",
+      "accreditationsTitle": "Accreditations",
+      "notFoundTitle": "Lab not found",
+      "notFoundDescription": "We couldn't find the lab you're looking for. It may have been removed or the link may be incorrect."
+    },
+    "imaging": {
+      "title": "Imaging Center",
+      "cta": "Message Imaging Center",
+      "proceduresTitle": "Imaging services",
+      "accreditationsTitle": "Accreditations",
+      "notFoundTitle": "Imaging center not found",
+      "notFoundDescription": "We couldn't find the imaging center you're looking for. It may have been removed or the link may be incorrect."
+    },
     "notFound": {
       "title": "Clinic not found",
       "description": "This clinic profile may be private or does not exist.",

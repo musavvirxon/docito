@@ -1,5 +1,33 @@
 {
   "practicePage": {
+    "call": "Qo‘ng‘iroq qilish",
+    "pharmacy": {
+      "title": "Dorixona",
+      "cta": "Dorixonaga xabar yozish",
+      "delivery": "Yetkazib berish mavjud",
+      "insurance": "Sug‘urta qabul qilinadi",
+      "servicesTitle": "Xizmatlar",
+      "notFoundTitle": "Dorixona topilmadi",
+      "notFoundDescription": "Siz qidirayotgan dorixonani topa olmadik. U o‘chirilgan bo‘lishi yoki havola noto‘g‘ri bo‘lishi mumkin."
+    },
+    "lab": {
+      "title": "Laboratoriya",
+      "cta": "Laboratoriyaga xabar yozish",
+      "testsTitle": "Bajariladigan tahlillar",
+      "turnaroundTitle": "Bajarilish muddati",
+      "turnaround": "O‘rtacha bajarilish: {{hours}} soat",
+      "accreditationsTitle": "Akkreditatsiyalar",
+      "notFoundTitle": "Laboratoriya topilmadi",
+      "notFoundDescription": "Siz qidirayotgan laboratoriyani topa olmadik. U o‘chirilgan bo‘lishi yoki havola noto‘g‘ri bo‘lishi mumkin."
+    },
+    "imaging": {
+      "title": "Diagnostika markazi",
+      "cta": "Diagnostika markaziga xabar yozish",
+      "proceduresTitle": "Diagnostika xizmatlari",
+      "accreditationsTitle": "Akkreditatsiyalar",
+      "notFoundTitle": "Diagnostika markazi topilmadi",
+      "notFoundDescription": "Siz qidirayotgan diagnostika markazini topa olmadik. U o‘chirilgan bo‘lishi yoki havola noto‘g‘ri bo‘lishi mumkin."
+    },
     "hero": {
       "kicker": "Avtomatlashtirilgan amaliyot boshqaruvi",
       "headlineLine1": "Kamroq admin.",
