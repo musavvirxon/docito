@@ -36,6 +36,9 @@ const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
 const PracticePublicProfile = lazy(() => import("@/pages/PracticePublicProfile"));
+const PharmacyPublicProfile = lazy(() => import("@/pages/PharmacyPublicProfile"));
+const LabPublicProfile = lazy(() => import("@/pages/LabPublicProfile"));
+const ImagingPublicProfile = lazy(() => import("@/pages/ImagingPublicProfile"));
 const PharmacyLandingPage = lazy(() => import("@/pages/pharmacy/PharmacyLandingPage"));
 const LabLandingPage = lazy(() => import("@/pages/lab/LabLandingPage"));
 const ImagingLandingPage = lazy(() => import("@/pages/imaging/ImagingLandingPage"));
@@ -207,6 +210,9 @@ export default function App() {
                     <Route path="practice/:id" element={<PracticePublicProfile />} />
                     <Route path="practices/:id" element={<PracticePublicProfile />} />
                     <Route path="clinic/:id" element={<PracticePublicProfile />} />
+                    <Route path="pharmacy/:id" element={<PharmacyPublicProfile />} />
+                    <Route path="lab/:id" element={<LabPublicProfile />} />
+                    <Route path="imaging/:id" element={<ImagingPublicProfile />} />
                     <Route path="landing" element={<LandingPage />} />
                     <Route path="start" element={<LandingPage />} />
                     <Route path="pharmacy" element={<PharmacyLandingPage />} />
@@ -318,6 +324,9 @@ export default function App() {
                   <Route path="practice/:id" element={<PracticePublicProfile />} />
                   <Route path="practices/:id" element={<PracticePublicProfile />} />
                   <Route path="clinic/:id" element={<PracticePublicProfile />} />
+                  <Route path="pharmacy/:id" element={<PharmacyPublicProfile />} />
+                  <Route path="lab/:id" element={<LabPublicProfile />} />
+                  <Route path="imaging/:id" element={<ImagingPublicProfile />} />
                   <Route path="landing" element={<LandingPage />} />
                   <Route path="start" element={<LandingPage />} />
                   <Route path="pharmacy" element={<PharmacyLandingPage />} />
