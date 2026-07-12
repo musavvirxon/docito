@@ -15,6 +15,8 @@ interface QueueEntry {
 interface QueueRoom {
   room_id: string;
   room_name: string;
+  primary_doctor_id?: string | null;
+  primary_doctor_name?: string | null;
 }
 
 interface QueueDisplayPayload {
@@ -50,8 +52,6 @@ interface QueueDisplayState {
 }
 
 const POLL_INTERVAL_MS = 4000;
-// Ignore a "called" event this old on load/reconnect, so the screen
-// doesn't replay a chime for something that happened long ago.
 const FRESH_CALL_WINDOW_MS = 60_000;
 
 function buildRooms(rooms: QueueRoom[], queue: QueueEntry[]): RoomView[] {
@@ -65,13 +65,20 @@ function buildRooms(rooms: QueueRoom[], queue: QueueEntry[]): RoomView[] {
     return {
       roomId: room.room_id,
       roomName: room.room_name,
-      doctorName: inProgress?.doctor_name || upNext?.doctor_name || null,
+      // Prefer the doctor assigned to this room in Room & Bed Management,
+      // then fall back to whoever is actively seeing patients here.
+      doctorName:
+        room.primary_doctor_name ||
+        inProgress?.doctor_name ||
+        upNext?.doctor_name ||
+        null,
       busy: Boolean(inProgress),
       currentPatient: inProgress?.patient_name || null,
       nextPatient: upNext?.patient_name || null,
     };
   });
 }
+
 
 /**
  * Drives a paired waiting-room display: polls get_queue_display() on
