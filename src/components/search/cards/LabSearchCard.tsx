@@ -31,10 +31,11 @@ const LabSearchCard = memo(({ lab, onView, onMessage }: LabSearchCardProps) => {
     e.stopPropagation();
     if (onMessage) {
       onMessage(lab);
-    } else {
-      await startConversation(lab.id);
+    } else if (lab.messageUserId) {
+      await startConversation(lab.messageUserId);
     }
   };
+
 
   return (
     <motion.div
