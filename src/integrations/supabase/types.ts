@@ -11843,14 +11843,24 @@ export type Database = {
         Returns: boolean
       }
       homepage_unified_search: {
-        Args: { search_location?: string; search_query?: string }
+        Args: { search_location: string; search_query: string }
         Returns: {
+          acceptsInsurance: boolean
+          accreditations: string[]
+          deliveryAvailable: boolean
           id: string
           image_url: string
           location: string
+          message_user_id: string
           name: string
+          practice_type: string
+          procedures: string[]
           rating: number
+          reviewCount: number
+          servicesOffered: string[]
+          specialties: string[]
           specialty: string
+          turnaroundHours: number
           type: string
           verified: boolean
         }[]
