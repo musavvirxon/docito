@@ -61,7 +61,17 @@ const PharmacySearchCard = memo(({ pharmacy, onView, onMessage }: PharmacySearch
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-foreground">{pharmacy.name}</h3>
+                <h3 className="font-semibold text-foreground flex items-center gap-1.5">
+                  {pharmacy.name}
+                  {pharmacy.verified ? (
+                    <BadgeCheck className="w-4 h-4 text-primary" aria-label="Verified" />
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                      <Clock className="w-2.5 h-2.5" /> Pending
+                    </Badge>
+                  )}
+                </h3>
+
                 
                 {pharmacy.rating && (
                   <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md">
