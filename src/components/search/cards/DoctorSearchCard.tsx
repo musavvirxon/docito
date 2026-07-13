@@ -177,7 +177,7 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
               variant="outline"
               size="sm"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !doctor.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
