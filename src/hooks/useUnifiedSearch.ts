@@ -29,6 +29,8 @@ export interface DoctorResult {
   slug?: string | null;
   username?: string | null;
   customProfileLink?: string | null;
+  verified: boolean;
+  messageUserId: string | null;
 }
 
 export interface ClinicResult {
@@ -42,6 +44,9 @@ export interface ClinicResult {
   specialties: string[] | null;
   doctorCount?: number;
   services?: string[];
+  verified: boolean;
+  practiceType: string | null;
+  messageUserId: string | null;
 }
 
 export interface PharmacyResult {
@@ -55,6 +60,8 @@ export interface PharmacyResult {
   isOpen?: boolean;
   rating: number | null;
   reviewCount: number;
+  verified: boolean;
+  messageUserId: string | null;
 }
 
 export interface LabResult {
@@ -67,6 +74,8 @@ export interface LabResult {
   servicesOffered: string[] | null;
   turnaroundHours?: number | null;
   acceptsInsurance: boolean;
+  verified: boolean;
+  messageUserId: string | null;
 }
 
 export interface ImagingResult {
@@ -79,7 +88,10 @@ export interface ImagingResult {
   procedures: string[];
   accreditations: string[] | null;
   acceptsInsurance: boolean;
+  verified: boolean;
+  messageUserId: string | null;
 }
+
 
 export type SearchResult =
   | DoctorResult
