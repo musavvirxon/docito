@@ -129,7 +129,7 @@ const PharmacySearchCard = memo(({ pharmacy, onView, onMessage }: PharmacySearch
               variant="outline"
               size="icon"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !pharmacy.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
