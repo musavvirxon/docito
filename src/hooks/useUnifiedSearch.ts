@@ -164,7 +164,10 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     slug: d?.slug ? asString(d.slug) : null,
     username: d?.username ? asString(d.username) : null,
     customProfileLink: d?.custom_profile_link ? asString(d.custom_profile_link) : (d?.customProfileLink ? asString(d.customProfileLink) : null),
+    verified: asBool(d?.verified),
+    messageUserId: d?.message_user_id ? asString(d.message_user_id) : null,
   }));
+
 
   const clinics: ClinicResult[] = clinicsRaw.map((c: any) => ({
     id: asString(c?.id),
