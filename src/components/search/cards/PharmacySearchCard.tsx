@@ -31,10 +31,11 @@ const PharmacySearchCard = memo(({ pharmacy, onView, onMessage }: PharmacySearch
     e.stopPropagation();
     if (onMessage) {
       onMessage(pharmacy);
-    } else {
-      await startConversation(pharmacy.id);
+    } else if (pharmacy.messageUserId) {
+      await startConversation(pharmacy.messageUserId);
     }
   };
+
 
   return (
     <motion.div
