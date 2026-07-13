@@ -132,7 +132,7 @@ const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardPr
               variant="outline"
               size="icon"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !clinic.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
