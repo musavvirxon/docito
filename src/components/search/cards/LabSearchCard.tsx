@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, FlaskConical, Clock, Shield, TestTube, MessageSquare, Loader2 } from 'lucide-react';
+import { MapPin, FlaskConical, Clock, Shield, TestTube, MessageSquare, Loader2, BadgeCheck } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,10 +31,11 @@ const LabSearchCard = memo(({ lab, onView, onMessage }: LabSearchCardProps) => {
     e.stopPropagation();
     if (onMessage) {
       onMessage(lab);
-    } else {
-      await startConversation(lab.id);
+    } else if (lab.messageUserId) {
+      await startConversation(lab.messageUserId);
     }
   };
+
 
   return (
     <motion.div
@@ -59,7 +60,17 @@ const LabSearchCard = memo(({ lab, onView, onMessage }: LabSearchCardProps) => {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground">{lab.name}</h3>
+              <h3 className="font-semibold text-foreground flex items-center gap-1.5">
+                {lab.name}
+                {lab.verified ? (
+                  <BadgeCheck className="w-4 h-4 text-primary" aria-label="Verified" />
+                ) : (
+                  <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                    <Clock className="w-2.5 h-2.5" /> Pending
+                  </Badge>
+                )}
+              </h3>
+
 
               {/* Location */}
               {lab.location && (
@@ -117,7 +128,7 @@ const LabSearchCard = memo(({ lab, onView, onMessage }: LabSearchCardProps) => {
               variant="outline"
               size="icon"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !lab.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

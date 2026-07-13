@@ -274,7 +274,14 @@ export default function DoctorPublicProfile() {
           <ArrowLeft className="h-4 w-4" />
           {t("common:actions.back", "Back")}
         </Button>
+        {!doctor.verified && (
+          <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+            <strong className="font-semibold">Pending verification.</strong>{' '}
+            This doctor's credentials are still being reviewed by Docito. You can view their profile, but booking may be limited until verification is complete.
+          </div>
+        )}
       </div>
+
 
       <PremiumHeroSection 
         doctor={doctorProfileData}

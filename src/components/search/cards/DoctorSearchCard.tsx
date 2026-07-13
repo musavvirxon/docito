@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, BadgeCheck, Calendar, Languages, DollarSign, MessageSquare, Loader2 } from 'lucide-react';
+import { Star, MapPin, BadgeCheck, Clock, Calendar, Languages, DollarSign, MessageSquare, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,11 +48,11 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
 
   const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Doctor ID is the doctor table ID, we need the user_id
-    // For now, we'll use the doctor.id - the RPC should handle this
-    // Note: In a real scenario, doctor.id might need to map to user_id
-    await startConversation(doctor.id);
+    const target = doctor.messageUserId;
+    if (!target) return;
+    await startConversation(target);
   };
+
 
   const handleCardClick = () => {
     const slug = (doctor as any).customProfileLink || (doctor as any).username || (doctor as any).slug || doctor.id;
@@ -100,9 +100,16 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
                 <div>
                   <h3 className="font-semibold text-foreground flex items-center gap-1.5">
                     {doctor.name}
-                    <BadgeCheck className="w-4 h-4 text-primary" />
+                    {doctor.verified ? (
+                      <BadgeCheck className="w-4 h-4 text-primary" aria-label="Verified" />
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                        <Clock className="w-2.5 h-2.5" /> Pending
+                      </Badge>
+                    )}
                   </h3>
                   <p className="text-sm text-muted-foreground">{doctor.specialty}</p>
+
                 </div>
                 
                 {doctor.rating && (
@@ -170,7 +177,7 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
               variant="outline"
               size="sm"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !doctor.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

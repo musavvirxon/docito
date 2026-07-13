@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, Building2, Stethoscope, MessageSquare, Loader2 } from 'lucide-react';
+import { Star, MapPin, Building2, Stethoscope, MessageSquare, Loader2, Clock, BadgeCheck } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,12 +31,11 @@ const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardPr
     e.stopPropagation();
     if (onMessage) {
       onMessage(clinic);
-    } else {
-      // For clinics, we'd need the admin user_id
-      // This would typically come from the clinic data
-      await startConversation(clinic.id);
+    } else if (clinic.messageUserId) {
+      await startConversation(clinic.messageUserId);
     }
   };
+
 
   const getInitials = (name: string) => {
     return name
@@ -71,7 +70,17 @@ const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardPr
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-foreground">{clinic.name}</h3>
+                <h3 className="font-semibold text-foreground flex items-center gap-1.5">
+                  {clinic.name}
+                  {clinic.verified ? (
+                    <BadgeCheck className="w-4 h-4 text-primary" aria-label="Verified" />
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                      <Clock className="w-2.5 h-2.5" /> Pending
+                    </Badge>
+                  )}
+                </h3>
+
                 
                 {clinic.rating && (
                   <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md">
@@ -123,7 +132,7 @@ const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardPr
               variant="outline"
               size="icon"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !clinic.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

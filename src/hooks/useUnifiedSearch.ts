@@ -29,6 +29,8 @@ export interface DoctorResult {
   slug?: string | null;
   username?: string | null;
   customProfileLink?: string | null;
+  verified: boolean;
+  messageUserId: string | null;
 }
 
 export interface ClinicResult {
@@ -42,6 +44,9 @@ export interface ClinicResult {
   specialties: string[] | null;
   doctorCount?: number;
   services?: string[];
+  verified: boolean;
+  practiceType: string | null;
+  messageUserId: string | null;
 }
 
 export interface PharmacyResult {
@@ -55,6 +60,8 @@ export interface PharmacyResult {
   isOpen?: boolean;
   rating: number | null;
   reviewCount: number;
+  verified: boolean;
+  messageUserId: string | null;
 }
 
 export interface LabResult {
@@ -67,6 +74,8 @@ export interface LabResult {
   servicesOffered: string[] | null;
   turnaroundHours?: number | null;
   acceptsInsurance: boolean;
+  verified: boolean;
+  messageUserId: string | null;
 }
 
 export interface ImagingResult {
@@ -79,7 +88,10 @@ export interface ImagingResult {
   procedures: string[];
   accreditations: string[] | null;
   acceptsInsurance: boolean;
+  verified: boolean;
+  messageUserId: string | null;
 }
+
 
 export type SearchResult =
   | DoctorResult
@@ -152,7 +164,10 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     slug: d?.slug ? asString(d.slug) : null,
     username: d?.username ? asString(d.username) : null,
     customProfileLink: d?.custom_profile_link ? asString(d.custom_profile_link) : (d?.customProfileLink ? asString(d.customProfileLink) : null),
+    verified: asBool(d?.verified),
+    messageUserId: d?.message_user_id ? asString(d.message_user_id) : null,
   }));
+
 
   const clinics: ClinicResult[] = clinicsRaw.map((c: any) => ({
     id: asString(c?.id),
@@ -163,6 +178,9 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     rating: asNumber(c?.rating),
     reviewCount: Number(asNumber(c?.reviewCount) ?? 0),
     specialties: asStringArray(c?.specialties) ?? (c?.specialty ? [asString(c.specialty)] : null),
+    verified: asBool(c?.verified),
+    practiceType: c?.practice_type ? asString(c.practice_type) : null,
+    messageUserId: c?.message_user_id ? asString(c.message_user_id) : null,
   }));
 
   const pharmacies: PharmacyResult[] = pharmaciesRaw.map((p: any) => ({
@@ -175,6 +193,8 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     acceptsInsurance: asBool(p?.acceptsInsurance),
     rating: asNumber(p?.rating),
     reviewCount: Number(asNumber(p?.reviewCount) ?? 0),
+    verified: asBool(p?.verified),
+    messageUserId: p?.message_user_id ? asString(p.message_user_id) : null,
   }));
 
   const labs: LabResult[] = labsRaw.map((l: any) => ({
@@ -186,6 +206,8 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     servicesOffered: asStringArray(l?.servicesOffered),
     turnaroundHours: asNumber(l?.turnaroundHours),
     acceptsInsurance: asBool(l?.acceptsInsurance),
+    verified: asBool(l?.verified),
+    messageUserId: l?.message_user_id ? asString(l.message_user_id) : null,
   }));
 
   const imaging: ImagingResult[] = imagingRaw.map((i: any) => ({
@@ -197,10 +219,13 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     procedures: asStringArray(i?.procedures) ?? [],
     accreditations: asStringArray(i?.accreditations),
     acceptsInsurance: asBool(i?.acceptsInsurance),
+    verified: asBool(i?.verified),
+    messageUserId: i?.message_user_id ? asString(i.message_user_id) : null,
   }));
 
   return { doctors, clinics, pharmacies, labs, imaging };
 }
+
 
 export function useUnifiedSearch() {
   const [results, setResults] = useState<UnifiedSearchResults>({
