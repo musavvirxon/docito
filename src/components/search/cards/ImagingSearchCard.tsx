@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Star, Shield, ScanLine, Award, MessageSquare, Loader2 } from 'lucide-react';
+import { MapPin, Star, Shield, ScanLine, Award, MessageSquare, Loader2, Clock, BadgeCheck } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
