@@ -31,12 +31,11 @@ const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardPr
     e.stopPropagation();
     if (onMessage) {
       onMessage(clinic);
-    } else {
-      // For clinics, we'd need the admin user_id
-      // This would typically come from the clinic data
-      await startConversation(clinic.id);
+    } else if (clinic.messageUserId) {
+      await startConversation(clinic.messageUserId);
     }
   };
+
 
   const getInitials = (name: string) => {
     return name
