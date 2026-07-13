@@ -178,6 +178,9 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     rating: asNumber(c?.rating),
     reviewCount: Number(asNumber(c?.reviewCount) ?? 0),
     specialties: asStringArray(c?.specialties) ?? (c?.specialty ? [asString(c.specialty)] : null),
+    verified: asBool(c?.verified),
+    practiceType: c?.practice_type ? asString(c.practice_type) : null,
+    messageUserId: c?.message_user_id ? asString(c.message_user_id) : null,
   }));
 
   const pharmacies: PharmacyResult[] = pharmaciesRaw.map((p: any) => ({
@@ -190,6 +193,8 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     acceptsInsurance: asBool(p?.acceptsInsurance),
     rating: asNumber(p?.rating),
     reviewCount: Number(asNumber(p?.reviewCount) ?? 0),
+    verified: asBool(p?.verified),
+    messageUserId: p?.message_user_id ? asString(p.message_user_id) : null,
   }));
 
   const labs: LabResult[] = labsRaw.map((l: any) => ({
@@ -201,6 +206,8 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     servicesOffered: asStringArray(l?.servicesOffered),
     turnaroundHours: asNumber(l?.turnaroundHours),
     acceptsInsurance: asBool(l?.acceptsInsurance),
+    verified: asBool(l?.verified),
+    messageUserId: l?.message_user_id ? asString(l.message_user_id) : null,
   }));
 
   const imaging: ImagingResult[] = imagingRaw.map((i: any) => ({
@@ -212,10 +219,13 @@ function normalizeRpcResults(payload: any): UnifiedSearchResults {
     procedures: asStringArray(i?.procedures) ?? [],
     accreditations: asStringArray(i?.accreditations),
     acceptsInsurance: asBool(i?.acceptsInsurance),
+    verified: asBool(i?.verified),
+    messageUserId: i?.message_user_id ? asString(i.message_user_id) : null,
   }));
 
   return { doctors, clinics, pharmacies, labs, imaging };
 }
+
 
 export function useUnifiedSearch() {
   const [results, setResults] = useState<UnifiedSearchResults>({
