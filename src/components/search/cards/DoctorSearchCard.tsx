@@ -48,11 +48,11 @@ const DoctorSearchCard = memo(({ doctor, onBook }: DoctorSearchCardProps) => {
 
   const handleMessage = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Doctor ID is the doctor table ID, we need the user_id
-    // For now, we'll use the doctor.id - the RPC should handle this
-    // Note: In a real scenario, doctor.id might need to map to user_id
-    await startConversation(doctor.id);
+    const target = doctor.messageUserId;
+    if (!target) return;
+    await startConversation(target);
   };
+
 
   const handleCardClick = () => {
     const slug = (doctor as any).customProfileLink || (doctor as any).username || (doctor as any).slug || doctor.id;
