@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, MapPin, Building2, Stethoscope, MessageSquare, Loader2 } from 'lucide-react';
+import { Star, MapPin, Building2, Stethoscope, MessageSquare, Loader2, Clock, BadgeCheck } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
