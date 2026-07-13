@@ -31,10 +31,11 @@ const ImagingSearchCard = memo(({ center, onView, onMessage }: ImagingSearchCard
     e.stopPropagation();
     if (onMessage) {
       onMessage(center);
-    } else {
-      await startConversation(center.id);
+    } else if (center.messageUserId) {
+      await startConversation(center.messageUserId);
     }
   };
+
 
   return (
     <motion.div
@@ -60,7 +61,17 @@ const ImagingSearchCard = memo(({ center, onView, onMessage }: ImagingSearchCard
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-foreground">{center.name}</h3>
+                <h3 className="font-semibold text-foreground flex items-center gap-1.5">
+                  {center.name}
+                  {center.verified ? (
+                    <BadgeCheck className="w-4 h-4 text-primary" aria-label="Verified" />
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                      <Clock className="w-2.5 h-2.5" /> Pending
+                    </Badge>
+                  )}
+                </h3>
+
                 
                 {center.rating && (
                   <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md">
@@ -125,7 +136,7 @@ const ImagingSearchCard = memo(({ center, onView, onMessage }: ImagingSearchCard
               variant="outline"
               size="icon"
               onClick={handleMessage}
-              disabled={messageLoading}
+              disabled={messageLoading || !center.messageUserId}
             >
               {messageLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
