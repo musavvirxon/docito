@@ -40,25 +40,30 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-const EmptyState = ({ hasSearched }: { hasSearched: boolean }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    className="flex flex-col items-center justify-center py-16 text-center"
-  >
-    <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-      <Search className="w-10 h-10 text-muted-foreground" />
-    </div>
-    <h3 className="text-xl font-semibold text-foreground mb-2">
-      {hasSearched ? 'No results found' : 'Start searching'}
-    </h3>
-    <p className="text-muted-foreground max-w-md">
-      {hasSearched 
-        ? 'Try adjusting your search terms or filters to find what you\'re looking for.'
-        : 'Enter a specialty, doctor name, or condition to find healthcare providers near you.'}
-    </p>
-  </motion.div>
-);
+const EmptyState = ({ hasSearched }: { hasSearched: boolean }) => {
+  const { t } = useTranslation('homeSearch');
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+        <Search className="w-10 h-10 text-muted-foreground" />
+      </div>
+      <h3 className="text-xl font-semibold text-foreground mb-2">
+        {hasSearched
+          ? t('results.emptyTitle', 'No results found')
+          : t('results.startTitle', 'Start searching')}
+      </h3>
+      <p className="text-muted-foreground max-w-md">
+        {hasSearched
+          ? t('results.emptyBody', "Try adjusting your search terms or filters to find what you're looking for.")
+          : t('results.startBody', 'Enter a specialty, doctor name, or condition to find healthcare providers near you.')}
+      </p>
+    </motion.div>
+  );
+};
 
 const ResultSection = memo(({ 
   title, 
