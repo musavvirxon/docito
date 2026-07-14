@@ -108,11 +108,12 @@ const SearchResultsContainer = memo(({
   onBookDoctor,
   className,
 }: SearchResultsContainerProps) => {
-  const totalCount = 
-    results.doctors.length + 
-    results.clinics.length + 
-    results.pharmacies.length + 
-    results.labs.length + 
+  const { t } = useTranslation('homeSearch');
+  const totalCount =
+    results.doctors.length +
+    results.clinics.length +
+    results.pharmacies.length +
+    results.labs.length +
     results.imaging.length;
 
   const resultCounts = {
@@ -144,7 +145,7 @@ const SearchResultsContainer = memo(({
           >
             <div className="flex items-center gap-2 mb-4">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              <span className="text-muted-foreground">Searching...</span>
+              <span className="text-muted-foreground">{t('results.searching', 'Searching...')}</span>
             </div>
             <LoadingSkeleton />
           </motion.div>
@@ -180,11 +181,11 @@ const SearchResultsContainer = memo(({
           >
             {/* Total Count */}
             <div className="text-sm text-muted-foreground">
-              Found <span className="font-medium text-foreground">{totalCount}</span> results
+              {t('results.foundCount', 'Found {{count}} results', { count: totalCount })}
             </div>
 
             {/* Doctors Section */}
-            <ResultSection title="Doctors" count={results.doctors.length}>
+            <ResultSection title={t('results.sections.doctors', 'Doctors')} count={results.doctors.length}>
               {results.doctors.map(doctor => (
                 <DoctorSearchCard
                   key={doctor.id}
@@ -195,28 +196,28 @@ const SearchResultsContainer = memo(({
             </ResultSection>
 
             {/* Clinics Section */}
-            <ResultSection title="Clinics" count={results.clinics.length}>
+            <ResultSection title={t('results.sections.clinics', 'Clinics')} count={results.clinics.length}>
               {results.clinics.map(clinic => (
                 <ClinicSearchCard key={clinic.id} clinic={clinic} />
               ))}
             </ResultSection>
 
             {/* Pharmacies Section */}
-            <ResultSection title="Pharmacies" count={results.pharmacies.length}>
+            <ResultSection title={t('results.sections.pharmacies', 'Pharmacies')} count={results.pharmacies.length}>
               {results.pharmacies.map(pharmacy => (
                 <PharmacySearchCard key={pharmacy.id} pharmacy={pharmacy} />
               ))}
             </ResultSection>
 
             {/* Labs Section */}
-            <ResultSection title="Laboratories" count={results.labs.length}>
+            <ResultSection title={t('results.sections.labs', 'Laboratories')} count={results.labs.length}>
               {results.labs.map(lab => (
                 <LabSearchCard key={lab.id} lab={lab} />
               ))}
             </ResultSection>
 
             {/* Imaging Section */}
-            <ResultSection title="Imaging Centers" count={results.imaging.length}>
+            <ResultSection title={t('results.sections.imaging', 'Imaging Centers')} count={results.imaging.length}>
               {results.imaging.map(center => (
                 <ImagingSearchCard key={center.id} center={center} />
               ))}
