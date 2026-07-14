@@ -70,20 +70,24 @@ const ClinicSearchCard = memo(({ clinic, onView, onMessage }: ClinicSearchCardPr
             {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-foreground flex items-center gap-1.5">
-                  {clinic.name}
-                  {clinic.verified ? (
-                    <BadgeCheck className="w-4 h-4 text-primary" aria-label="Verified" />
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
-                      <Clock className="w-2.5 h-2.5" /> Pending
-                    </Badge>
-                  )}
-                </h3>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-foreground flex items-center gap-1.5 flex-wrap">
+                    <span className="truncate">{clinic.name}</span>
+                    {clinic.verified ? (
+                      <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Verified" />
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] gap-1 px-1.5 py-0 border-amber-500/40 text-amber-600 dark:text-amber-400">
+                        <Clock className="w-2.5 h-2.5" /> Pending
+                      </Badge>
+                    )}
+                  </h3>
+                  <Badge variant="secondary" className="text-[10px] mt-1 capitalize">
+                    {clinic.practiceType || 'Clinic'}
+                  </Badge>
+                </div>
 
-                
                 {clinic.rating && (
-                  <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md">
+                  <div className="flex items-center gap-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-1 rounded-md shrink-0">
                     <Star className="w-3.5 h-3.5 fill-current" />
                     <span className="text-sm font-medium">{clinic.rating.toFixed(1)}</span>
                     {clinic.reviewCount > 0 && (

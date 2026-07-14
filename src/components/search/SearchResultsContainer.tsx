@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { Search, Loader2, AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import SearchFiltersBar from './SearchFiltersBar';
@@ -39,37 +40,43 @@ const LoadingSkeleton = () => (
   </div>
 );
 
-const EmptyState = ({ hasSearched }: { hasSearched: boolean }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    className="flex flex-col items-center justify-center py-16 text-center"
-  >
-    <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-      <Search className="w-10 h-10 text-muted-foreground" />
-    </div>
-    <h3 className="text-xl font-semibold text-foreground mb-2">
-      {hasSearched ? 'No results found' : 'Start searching'}
-    </h3>
-    <p className="text-muted-foreground max-w-md">
-      {hasSearched 
-        ? 'Try adjusting your search terms or filters to find what you\'re looking for.'
-        : 'Enter a specialty, doctor name, or condition to find healthcare providers near you.'}
-    </p>
-  </motion.div>
-);
+const EmptyState = ({ hasSearched }: { hasSearched: boolean }) => {
+  const { t } = useTranslation('homeSearch');
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="flex flex-col items-center justify-center py-16 text-center"
+    >
+      <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+        <Search className="w-10 h-10 text-muted-foreground" />
+      </div>
+      <h3 className="text-xl font-semibold text-foreground mb-2">
+        {hasSearched
+          ? t('results.emptyTitle', 'No results found')
+          : t('results.startTitle', 'Start searching')}
+      </h3>
+      <p className="text-muted-foreground max-w-md">
+        {hasSearched
+          ? t('results.emptyBody', "Try adjusting your search terms or filters to find what you're looking for.")
+          : t('results.startBody', 'Enter a specialty, doctor name, or condition to find healthcare providers near you.')}
+      </p>
+    </motion.div>
+  );
+};
 
-const ResultSection = memo(({ 
-  title, 
-  count, 
-  children 
-}: { 
-  title: string; 
-  count: number; 
-  children: React.ReactNode 
+const ResultSection = memo(({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
 }) => {
+  const { t } = useTranslation('homeSearch');
   if (count === 0) return null;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -79,7 +86,7 @@ const ResultSection = memo(({
       <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
         {title}
         <span className="text-sm font-normal text-muted-foreground">
-          ({count} {count === 1 ? 'result' : 'results'})
+          ({t('results.count', { count, defaultValue_one: '{{count}} result', defaultValue_other: '{{count}} results' })})
         </span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -101,11 +108,12 @@ const SearchResultsContainer = memo(({
   onBookDoctor,
   className,
 }: SearchResultsContainerProps) => {
-  const totalCount = 
-    results.doctors.length + 
-    results.clinics.length + 
-    results.pharmacies.length + 
-    results.labs.length + 
+  const { t } = useTranslation('homeSearch');
+  const totalCount =
+    results.doctors.length +
+    results.clinics.length +
+    results.pharmacies.length +
+    results.labs.length +
     results.imaging.length;
 
   const resultCounts = {
@@ -137,7 +145,7 @@ const SearchResultsContainer = memo(({
           >
             <div className="flex items-center gap-2 mb-4">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              <span className="text-muted-foreground">Searching...</span>
+              <span className="text-muted-foreground">{t('results.searching', 'Searching...')}</span>
             </div>
             <LoadingSkeleton />
           </motion.div>
@@ -173,11 +181,11 @@ const SearchResultsContainer = memo(({
           >
             {/* Total Count */}
             <div className="text-sm text-muted-foreground">
-              Found <span className="font-medium text-foreground">{totalCount}</span> results
+              {t('results.foundCount', 'Found {{count}} results', { count: totalCount })}
             </div>
 
             {/* Doctors Section */}
-            <ResultSection title="Doctors" count={results.doctors.length}>
+            <ResultSection title={t('results.sections.doctors', 'Doctors')} count={results.doctors.length}>
               {results.doctors.map(doctor => (
                 <DoctorSearchCard
                   key={doctor.id}
@@ -188,28 +196,28 @@ const SearchResultsContainer = memo(({
             </ResultSection>
 
             {/* Clinics Section */}
-            <ResultSection title="Clinics" count={results.clinics.length}>
+            <ResultSection title={t('results.sections.clinics', 'Clinics')} count={results.clinics.length}>
               {results.clinics.map(clinic => (
                 <ClinicSearchCard key={clinic.id} clinic={clinic} />
               ))}
             </ResultSection>
 
             {/* Pharmacies Section */}
-            <ResultSection title="Pharmacies" count={results.pharmacies.length}>
+            <ResultSection title={t('results.sections.pharmacies', 'Pharmacies')} count={results.pharmacies.length}>
               {results.pharmacies.map(pharmacy => (
                 <PharmacySearchCard key={pharmacy.id} pharmacy={pharmacy} />
               ))}
             </ResultSection>
 
             {/* Labs Section */}
-            <ResultSection title="Laboratories" count={results.labs.length}>
+            <ResultSection title={t('results.sections.labs', 'Laboratories')} count={results.labs.length}>
               {results.labs.map(lab => (
                 <LabSearchCard key={lab.id} lab={lab} />
               ))}
             </ResultSection>
 
             {/* Imaging Section */}
-            <ResultSection title="Imaging Centers" count={results.imaging.length}>
+            <ResultSection title={t('results.sections.imaging', 'Imaging Centers')} count={results.imaging.length}>
               {results.imaging.map(center => (
                 <ImagingSearchCard key={center.id} center={center} />
               ))}

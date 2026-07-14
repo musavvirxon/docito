@@ -1,86 +1,75 @@
-## Goal
 
-Fix the "not verified = 404" bug and give the five account types (doctors, clinics/hospitals, labs, imaging centers, pharmacies) consistent, honest search cards and profile pages: real verification state, working buttons, three distinct load outcomes (missing / pending / verified), and reliable logos.
+# Consolidate search onto one implementation
 
-## Root cause of the doctor 404
+Three separate search UIs exist today. This plan retires two of them and centralizes on the home-page stack (`useUnifiedSearch` + `SearchResultsContainer` + the five typed cards), then finishes the verification/messaging/i18n polish so a single fix propagates to every entry point.
 
-`doctor_public_profile_view` (primary source used by `src/pages/doctor/DoctorPublicProfile.tsx` — sources array: `["doctor_public_profile_view", "doctor_profiles_view"]`) filters `WHERE d.verified = true`. Unverified doctors return zero rows → the page shows Not Found instead of a pending state.
+Work is sequenced A → B → C → D with a build check between phases so any regression is attributable.
 
-Good news for the other four: `usePharmacyPublicProfile`, `useLabPublicProfile`, `useImagingPublicProfile`, `usePracticePublicProfile` already query the base tables and already return `verified` / `is_verified` — no view filter to strip. They just don't distinguish "missing" from "pending" in the UI yet.
+---
 
-Also: the current `homepage_unified_search` (migration `20260707120000_enrich_unified_search.sql`) already `SELECT`s a `verified` column for every type but the frontend `normalizeRpcResults` throws it away, and it never returns `practice_type` for clinics.
+## A. `SearchDoctors.tsx` (`/find-doctors`, `/search-doctors`)
 
-## Changes
+**Product decision baked in:** page stays doctor-focused but does *not* hide other entity types. It defaults `SearchFilters` to `{ doctors: true, clinics: false, pharmacies: false, labs: false, imaging: false }` and lets the user broaden via the existing `SearchFiltersBar`. Rationale: users landing on `/find-doctors` expect doctors first, but discovering an allied clinic/lab from the same query is a plus, not a bug.
 
-### 1. Database — two migrations
+Changes:
 
-**a. Recreate `doctor_public_profile_view` and `doctor_profiles_view` without the verified filter**, keeping `verified` as a normal returned column. `WITH (security_invoker=on)` per project standard. Regrant `SELECT` to `anon, authenticated`. Everything else about the views stays identical so existing consumers keep working.
+1. Rewrite `SearchDoctors.tsx`:
+   - Drop `useDoctorSearch`, `SearchResultsEnhanced`, `DoctorProfileModal`, `BookingModal` imports and state (`selectedDoctor`, `showProfileModal`, `showBookingModal`, `viewMode`, `sortBy`, `savedDoctors`).
+   - Use `useUnifiedSearch()` — pull `results`, `loading`, `error`, `filters`, `hasSearched`, `search`, `updateFilters`.
+   - Seed filters on mount with `updateFilters({ clinics: false, pharmacies: false, labs: false, imaging: false })`.
+   - Keep the local search input and location text; call `search(query, location, filters)`.
+   - Render `<SearchResultsContainer results={results} loading={loading} error={error} filters={filters} hasSearched={hasSearched} onFilterChange={(key) => updateFilters({ [key]: !filters[key] })} onBookDoctor={handleBook} />`.
+   - `handleBook(doctor)` opens `BookingModal` with the `DoctorResult` — pass `doctor.id` (the doctor id from the RPC) into the modal. Confirm `BookingModal` reads `doctor.id`/`doctor.name` fields; adapt shape if needed.
+2. Retire the old `EnhancedFilters` sidebar. The unified stack uses `SearchFiltersBar` for entity toggles. Rich filters (specialty, price, insurance, video) aren't part of the unified RPC yet — remove them from this page rather than layering a second filter system that doesn't actually filter the results. (A follow-up can extend `homepage_unified_search` to accept these; out of scope here.)
+3. Delete `useDoctorSearch.ts` and `SearchResultsEnhanced.tsx` if no other consumer imports them (verify with a repo search before removing). Keep `DoctorProfileModal` around only if still used elsewhere; from this page, "View Profile" goes through `DoctorSearchCard` → real `/doctor/:slug` route.
 
-**b. Extend `homepage_unified_search`** to also return `practice_type text` (from `practices.practice_type`, NULL for other rows). No WHERE changes — the enrich migration already doesn't filter by verified.
+---
 
-### 2. `src/hooks/useUnifiedSearch.ts`
+## B. `CategorySearch.tsx` (`/category/:category`)
 
-- Add `verified: boolean` to `DoctorResult`, `ClinicResult`, `PharmacyResult`, `LabResult`, `ImagingResult`.
-- Add `practiceType: string | null` to `ClinicResult`.
-- In `normalizeRpcResults`, read `verified` off every raw row and `practice_type` on clinic rows.
+Currently renders inline mock data. Rewrite as a thin wrapper over the unified stack that pre-seeds the query with the category.
 
-### 3. The five search cards (`src/components/search/cards/*.tsx`)
+1. On mount, call `search(category, '', filters)` where `filters` defaults to all-true (categories are cross-cutting: "cardiology" should surface doctors *and* clinics).
+2. Render heading (`{category} providers`) + `<SearchResultsContainer .../>` with the same props as home.
+3. Delete the mock `Doctor[]`, inline `<Card>` markup, and hand-rolled filter sidebar.
+4. Keep `SearchBar` at the top so users can refine the query; wire its submit to `search()` instead of navigating to `/search-results`.
 
-For each card:
-- Read `verified` from the new field. If true → keep the existing badge (or add a small verified check where `DoctorSearchCard` currently hardcodes one). If false → render a muted `Badge variant="secondary"` reading "Pending verification". Never render an unconditional verified checkmark.
-- Confirm the primary click target (`View Profile` / `View Clinic` / card body) resolves to a route that exists: `/doctor/:slug` (or username / id fallback), `/practice/:id`, `/pharmacy/:id`, `/lab/:id`, `/imaging/:id` — all five now exist per prior work.
-- `ClinicSearchCard`: use `clinic.practiceType` for the type label; if it's "hospital" (case-insensitive), swap the icon to lucide's `Hospital` and label "Hospital", otherwise keep `Building2` / "Clinic".
-- Confirm the avatar `AvatarImage src={entity.image}` path is present and `AvatarFallback` renders when null. No layout changes.
+---
 
-### 4. Messaging button — pass the right id
+## C. Verification + button wiring (finish the earlier pass)
 
-`create_direct_conversation` / `start_direct_conversation` (whichever `useMessageAction` calls) expects a `user_id`, not a facility row id. Audit:
-- Doctors: pass the doctor's `user_id`, not `doctors.id`. Add `user_id` to the doctor branch of `homepage_unified_search` and to `DoctorResult`, then have `DoctorSearchCard` call `startConversation(doctor.userId)`.
-- Practices / pharmacies / labs / imaging: these are facility entities; the message target is the facility's `admin_id` (present on each row's admin column). Same treatment — add `admin_id` to the RPC per non-doctor branch, expose as `adminId` on the result types, and pass it to `startConversation`. If `admin_id` is null, disable the Message button with a tooltip rather than firing and failing silently.
+Most of this already landed in a prior turn (verified/practiceType/messageUserId are in `useUnifiedSearch`; cards show Pending badge). Remaining gaps to close:
 
-Remove the "id might need to map to user_id" TODO comment in `DoctorSearchCard.tsx` once fixed.
+1. **Audit each of the five cards** (`DoctorSearchCard`, `ClinicSearchCard`, `PharmacySearchCard`, `LabSearchCard`, `ImagingSearchCard`) and confirm:
+   - "Message" button calls `startConversation(entity.messageUserId)` (not `entity.id`) and is disabled when null.
+   - Verified badge vs Pending badge is conditional on `entity.verified`.
+   - Remove the stale "never confirmed" comment in `DoctorSearchCard`.
+2. **`ClinicSearchCard`**: render `clinic.practiceType` (Hospital / Clinic / Urgent Care) as a small badge next to the name; fall back to "Clinic" when null.
+3. **Pending-vs-404 on profile pages** — verify current state of each and fix any still gated on `verified = true`:
+   - `DoctorPublicProfile` (already fixed in prior turn — spot-check).
+   - `PracticePublicProfile`, `PharmacyPublicProfile`, `LabPublicProfile`, `ImagingPublicProfile`: read their view/RPC; if any filter unverified rows out, ship a migration to drop that filter and render a Pending banner in the page component (same pattern as the doctor page).
+4. **DB view sanity**: re-check `doctor_profiles_view` still has the `.eq('verified', true)` in `useDoctorSearch` moot after deleting that hook — no further DB change needed for doctors. For the other four, only migrate if the view/RPC currently hides unverified rows.
 
-### 5. Three-state profile pages
+Migrations required will be surfaced via `supabase--migration` calls once the profile-page audit in C.3 identifies which views need loosening. Only ships if actually needed.
 
-Update each of `DoctorPublicProfile`, `PracticePublicProfile`, `PharmacyPublicProfile`, `LabPublicProfile`, `ImagingPublicProfile`:
+---
 
-```text
-row === null            → NotFound state (existing)
-row.verified === false  → new PendingVerification state
-row.verified === true   → full profile (existing)
-```
+## D. i18n for `SearchResultsContainer`
 
-Add a small shared component `src/components/facility/public/PendingVerificationState.tsx` that takes `{ name, logoUrl, entityType, verificationStatus? }` and renders a centered card with the logo/initials, name, and a muted message. When `verification_status` is present and meaningful (`pending` / `rejected` / `submitted`), reflect it — otherwise fall back to a generic "hasn't completed verification yet."
+Wire all hardcoded English through `react-i18next` under a new `search` namespace (or extend `homeSearch` if it already exists — check `public/locales/en/homeSearch.json`).
 
-Per-table field to check:
-- `doctors.verified` (boolean)
-- `practices.verified` + optional `practices.verification_status`
-- `pharmacies.verified` (no status text column)
-- `lab_centers.is_verified`
-- `imaging_centers.is_verified`
+Strings to key:
+- Filter bar: `"Filter by:"`, `"Doctors"`, `"Clinics"`, `"Pharmacies"`, `"Labs"`, `"Imaging"`.
+- Section titles (same five) with `"{{count}} result"` / `"{{count}} results"` via `count`-based plural.
+- Status: `"Searching..."`, `"Found {{count}} results"`, `"No results found"`, `"Start searching"`, and the two helper paragraphs.
 
-Extend `useLabPublicProfile` / `useImagingPublicProfile` / `usePharmacyPublicProfile` / `usePracticePublicProfile` to expose that verified field on the returned object (some already do — audit and align naming to `verified: boolean`). Extend the doctor profile page's lookup result to read `verified` off the (now-unfiltered) view.
+Add the new keys to at least `en` + `ru` + `uz` (project's primary trio); other locales can inherit `en` fallback for now.
 
-### 6. Photos audit
+---
 
-For each of the five types, walk RPC → normalize → card → profile page and confirm:
-- Column read matches actual DB column (`profiles.avatar_url` for doctors; `logo_url` for practices/pharmacies/lab_centers/imaging_centers).
-- `AvatarFallback` renders when the URL is null.
-- No case-mismatch (`image_url` vs `imageUrl`) between RPC output and `normalizeRpcResults`.
+## Technical notes
 
-No visual redesign — just correctness pass.
-
-## Files touched
-
-- `supabase/migrations/<new>_doctor_public_views_expose_verified.sql`
-- `supabase/migrations/<new>_unified_search_add_practice_type_and_ids.sql`
-- `src/hooks/useUnifiedSearch.ts`
-- `src/hooks/useLabPublicProfile.ts`, `useImagingPublicProfile.ts`, `usePharmacyPublicProfile.ts`, `usePracticePublicProfile.ts` (verify/expose `verified`)
-- `src/components/search/cards/DoctorSearchCard.tsx`, `ClinicSearchCard.tsx`, `PharmacySearchCard.tsx`, `LabSearchCard.tsx`, `ImagingSearchCard.tsx`
-- `src/pages/doctor/DoctorPublicProfile.tsx`, `src/pages/PracticePublicProfile.tsx`, `src/pages/PharmacyPublicProfile.tsx`, `src/pages/LabPublicProfile.tsx`, `src/pages/ImagingPublicProfile.tsx`
-- `src/components/facility/public/PendingVerificationState.tsx` (new)
-- Locale strings under `public/locales/{en,ru,uz}/practicePage.json` for the new pending/notFound copy.
-
-## Out of scope
-
-Visual redesign of cards or profile pages, review system changes, and any changes to non-search / non-profile routes.
+- **File touches:** `src/pages/SearchDoctors.tsx` (rewrite), `src/pages/CategorySearch.tsx` (rewrite), `src/components/search/SearchResultsContainer.tsx` (i18n), `src/components/search/SearchFiltersBar.tsx` (i18n), `src/components/search/cards/*SearchCard.tsx` (audit), possibly `src/hooks/useDoctorSearch.ts` + `src/components/search/SearchResultsEnhanced.tsx` (delete), locale JSONs.
+- **Type note:** `useUnifiedSearch.search(query, location, filters)` already exists — no signature change needed.
+- **Verification per phase:** after A, after B, after C, after D — run typecheck (`tsgo` via harness) and load `/find-doctors`, `/category/cardiology`, and `/` to eyeball parity. If a phase fails the check, stop before starting the next.
+- **Out of scope:** rebuilding the rich filter set (specialty/price/insurance/language) on top of the unified RPC. Called out explicitly so it doesn't get quietly dropped — file as a follow-up.

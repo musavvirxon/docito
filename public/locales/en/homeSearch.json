@@ -1,4 +1,3 @@
-
 {
   "search": {
     "voiceSearch": "Voice search",
@@ -16,5 +15,23 @@
       { "label": "Cardiology", "term": "Cardiology" },
       { "label": "Dermatology", "term": "Dermatology" }
     ]
+  },
+  "results": {
+    "filterBy": "Filter by:",
+    "searching": "Searching...",
+    "foundCount": "Found {{count}} results",
+    "count_one": "{{count}} result",
+    "count_other": "{{count}} results",
+    "emptyTitle": "No results found",
+    "emptyBody": "Try adjusting your search terms or filters to find what you're looking for.",
+    "startTitle": "Start searching",
+    "startBody": "Enter a specialty, doctor name, or condition to find healthcare providers near you.",
+    "sections": {
+      "doctors": "Doctors",
+      "clinics": "Clinics",
+      "pharmacies": "Pharmacies",
+      "labs": "Laboratories",
+      "imaging": "Imaging Centers"
+    }
   }
 }
