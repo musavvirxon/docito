@@ -65,17 +65,18 @@ const EmptyState = ({ hasSearched }: { hasSearched: boolean }) => {
   );
 };
 
-const ResultSection = memo(({ 
-  title, 
-  count, 
-  children 
-}: { 
-  title: string; 
-  count: number; 
-  children: React.ReactNode 
+const ResultSection = memo(({
+  title,
+  count,
+  children,
+}: {
+  title: string;
+  count: number;
+  children: React.ReactNode;
 }) => {
+  const { t } = useTranslation('homeSearch');
   if (count === 0) return null;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -85,7 +86,7 @@ const ResultSection = memo(({
       <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
         {title}
         <span className="text-sm font-normal text-muted-foreground">
-          ({count} {count === 1 ? 'result' : 'results'})
+          ({t('results.count', { count, defaultValue_one: '{{count}} result', defaultValue_other: '{{count}} results' })})
         </span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
