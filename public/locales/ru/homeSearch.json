@@ -8,30 +8,32 @@
     "aiHintTerm": "cardiologist",
     "resultsLoading": "Загрузка результатов...",
     "trendingSearches": [
-      {
-        "label": "Врач общей практики",
-        "term": "General Practitioner"
-      },
-      {
-        "label": "Стоматолог",
-        "term": "Dentist"
-      },
-      {
-        "label": "Проверка зрения",
-        "term": "Eye Exam"
-      },
-      {
-        "label": "Анализ крови",
-        "term": "Blood Test"
-      },
-      {
-        "label": "Кардиология",
-        "term": "Cardiology"
-      },
-      {
-        "label": "Дерматология",
-        "term": "Dermatology"
-      }
+      { "label": "Врач общей практики", "term": "General Practitioner" },
+      { "label": "Стоматолог", "term": "Dentist" },
+      { "label": "Проверка зрения", "term": "Eye Exam" },
+      { "label": "Анализ крови", "term": "Blood Test" },
+      { "label": "Кардиология", "term": "Cardiology" },
+      { "label": "Дерматология", "term": "Dermatology" }
     ]
+  },
+  "results": {
+    "filterBy": "Фильтр:",
+    "searching": "Поиск...",
+    "foundCount": "Найдено результатов: {{count}}",
+    "count_one": "{{count}} результат",
+    "count_few": "{{count}} результата",
+    "count_many": "{{count}} результатов",
+    "count_other": "{{count}} результатов",
+    "emptyTitle": "Ничего не найдено",
+    "emptyBody": "Попробуйте изменить запрос или фильтры.",
+    "startTitle": "Начните поиск",
+    "startBody": "Введите специальность, имя врача или состояние, чтобы найти медицинских специалистов рядом.",
+    "sections": {
+      "doctors": "Врачи",
+      "clinics": "Клиники",
+      "pharmacies": "Аптеки",
+      "labs": "Лаборатории",
+      "imaging": "Диагностические центры"
+    }
   }
 }
