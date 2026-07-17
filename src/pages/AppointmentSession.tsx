@@ -1280,16 +1280,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       ) : (
                         <Card>
                           <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Video Consultation</CardTitle>
+                            <CardTitle className="text-sm">{t('doctor.session.video.title', 'Video Consultation')}</CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                              Start or join the video call for this appointment.
+                              {t('doctor.session.video.desc', 'Start or join the video call for this appointment.')}
                             </p>
                             {isVideoAppointment && !videoEnded && (
                               <Button onClick={startOrJoinVideo} className="gap-2">
                                 <Video className="h-4 w-4" />
-                                {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
+                                {videoConsultation && canJoinExistingVideo
+                                  ? t('doctor.session.joinVideo', 'Join Video')
+                                  : t('doctor.session.startVideo', 'Start Video')}
                               </Button>
                             )}
                           </CardContent>
