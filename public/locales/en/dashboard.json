@@ -1433,6 +1433,12 @@
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
       "dentalProceduresLoadError": "Failed to load dental procedures",
+      "diagnosis": {
+        "added": "Diagnosis added",
+        "addFailed": "Failed to add diagnosis",
+        "removed": "Diagnosis removed",
+        "removeFailed": "Failed to remove diagnosis"
+      },
       "tabSession": "Session",
       "tabVideo": "Video",
       "tabDiagnoses": "Diagnoses",
