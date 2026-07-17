@@ -21,6 +21,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -70,35 +71,25 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: "bg-muted text-muted-foreground",
 };
 
-const FREQUENCIES = [
-  { value: "once_daily", label: "Once daily" },
-  { value: "twice_daily", label: "Twice daily" },
-  { value: "three_times_daily", label: "Three times daily" },
-  { value: "four_times_daily", label: "Four times daily" },
-  { value: "every_6_hours", label: "Every 6 hours" },
-  { value: "every_8_hours", label: "Every 8 hours" },
-  { value: "every_12_hours", label: "Every 12 hours" },
-  { value: "as_needed", label: "As needed (PRN)" },
-  { value: "weekly", label: "Once weekly" },
-];
+const FREQUENCY_VALUES = [
+  "once_daily",
+  "twice_daily",
+  "three_times_daily",
+  "four_times_daily",
+  "every_6_hours",
+  "every_8_hours",
+  "every_12_hours",
+  "as_needed",
+  "weekly",
+] as const;
 
-const UNITS = [
-  { value: "tablets", label: "Tablets" },
-  { value: "capsules", label: "Capsules" },
-  { value: "ml", label: "mL" },
-  { value: "mg", label: "mg" },
-  { value: "drops", label: "Drops" },
-  { value: "puffs", label: "Puffs" },
-  { value: "patches", label: "Patches" },
-];
+const UNIT_VALUES = ["tablets", "capsules", "ml", "mg", "drops", "puffs", "patches"] as const;
 
 type DateRange = "all" | "week" | "month" | "3months";
 type RightPanel = "creator" | "detail" | "empty";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Helpers
-
-const formatStatus = (s: string) => s.replace(/_/g, " ");
 
 const initialItem = (): Partial<PrescriptionItem> => ({
   medication_name: "",
@@ -114,6 +105,7 @@ const initialItem = (): Partial<PrescriptionItem> => ({
 // Main component
 
 export default function DoctorPrescriptionsSection() {
+  const { t } = useTranslation("prescriptions");
   const { doctorProfile } = useDoctorData();
   const doctorId = doctorProfile?.id as string | undefined;
   const { patients } = useDoctorPatients();
@@ -136,9 +128,6 @@ export default function DoctorPrescriptionsSection() {
 
   // Mobile sheet
   const [sheetOpen, setSheetOpen] = useState(false);
-  // Desktop (≥ lg) renders the creator/detail inline in the right column, so
-  // we must NOT also open the Sheet — otherwise the Radix overlay covers the
-  // page and looks like an empty popup window.
   const [isDesktop, setIsDesktop] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : true,
   );
@@ -202,7 +191,6 @@ export default function DoctorPrescriptionsSection() {
     });
   }, [prescriptions, search, patientFilter, statusFilter, dateRange]);
 
-  // Unique patients in the list (for filter)
   const patientOptions = useMemo(() => {
     const map = new Map<string, string>();
     prescriptions.forEach((p) => {
@@ -212,7 +200,6 @@ export default function DoctorPrescriptionsSection() {
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [prescriptions]);
 
-  // Medication history (derived)
   const medicationHistory = useMemo(() => {
     const map = new Map<
       string,
@@ -242,7 +229,6 @@ export default function DoctorPrescriptionsSection() {
     return Array.from(map.values()).sort((a, b) => b.count - a.count);
   }, [prescriptions]);
 
-  // Last 5 unique recently prescribed medications (for "From previous" strip)
   const recentMedications = useMemo(() => {
     const seen = new Set<string>();
     const out: PrescriptionItem[] = [];
@@ -304,6 +290,9 @@ export default function DoctorPrescriptionsSection() {
     setDateRange("all");
   };
 
+  const localizedStatus = (s: string) =>
+    t(`section.statuses.${s}`, { defaultValue: s.replace(/_/g, " ") });
+
   // ── Render ────────────────────────────────────────────────────────────────
   if (!doctorId) return null;
 
@@ -322,25 +311,23 @@ export default function DoctorPrescriptionsSection() {
             <Pill className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Prescriptions</h2>
-            <p className="text-sm text-muted-foreground">
-              Every prescription you've written, in one place
-            </p>
+            <h2 className="text-xl font-semibold tracking-tight">{t("section.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("section.subtitle")}</p>
           </div>
         </div>
         <Button onClick={() => openCreator()}>
           <Plus className="h-4 w-4 mr-2" />
-          New Prescription
+          {t("section.newPrescription")}
         </Button>
       </div>
 
       {/* Stat chips */}
       <div className="flex gap-3 overflow-x-auto pb-1">
-        <StatChip label="Total Rx" value={stats.total} />
-        <StatChip label="Active" value={stats.active} />
-        <StatChip label="Fulfilled this month" value={stats.fulfilledMonth} />
+        <StatChip label={t("section.stats.totalRx")} value={stats.total} />
+        <StatChip label={t("section.stats.active")} value={stats.active} />
+        <StatChip label={t("section.stats.fulfilledMonth")} value={stats.fulfilledMonth} />
         <StatChip
-          label="Expiring soon"
+          label={t("section.stats.expiringSoon")}
           value={stats.expiringSoon}
           accent={stats.expiringSoon > 0}
         />
@@ -356,7 +343,7 @@ export default function DoctorPrescriptionsSection() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search medication or Rx number..."
+                  placeholder={t("section.filters.searchPlaceholder")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -365,10 +352,10 @@ export default function DoctorPrescriptionsSection() {
               <div className="flex flex-wrap gap-2">
                 <Select value={patientFilter} onValueChange={setPatientFilter}>
                   <SelectTrigger className="h-9 w-auto min-w-[140px]">
-                    <SelectValue placeholder="Patient" />
+                    <SelectValue placeholder={t("section.filters.patient")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All patients</SelectItem>
+                    <SelectItem value="all">{t("section.filters.allPatients")}</SelectItem>
                     {patientOptions.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name}
@@ -379,34 +366,34 @@ export default function DoctorPrescriptionsSection() {
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="h-9 w-auto min-w-[140px]">
-                    <SelectValue placeholder="Status" />
+                    <SelectValue placeholder={t("section.filters.status")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="sent_to_pharmacy">Sent to pharmacy</SelectItem>
-                    <SelectItem value="fulfilled">Fulfilled</SelectItem>
-                    <SelectItem value="expired">Expired</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="all">{t("section.filters.allStatuses")}</SelectItem>
+                    <SelectItem value="pending">{t("section.filters.pending")}</SelectItem>
+                    <SelectItem value="sent_to_pharmacy">{t("section.filters.sentToPharmacy")}</SelectItem>
+                    <SelectItem value="fulfilled">{t("section.filters.fulfilled")}</SelectItem>
+                    <SelectItem value="expired">{t("section.filters.expired")}</SelectItem>
+                    <SelectItem value="cancelled">{t("section.filters.cancelled")}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={dateRange} onValueChange={(v) => setDateRange(v as DateRange)}>
                   <SelectTrigger className="h-9 w-auto min-w-[140px]">
-                    <SelectValue placeholder="Date range" />
+                    <SelectValue placeholder={t("section.filters.dateRange")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All time</SelectItem>
-                    <SelectItem value="week">This week</SelectItem>
-                    <SelectItem value="month">This month</SelectItem>
-                    <SelectItem value="3months">Last 3 months</SelectItem>
+                    <SelectItem value="all">{t("section.filters.allTime")}</SelectItem>
+                    <SelectItem value="week">{t("section.filters.thisWeek")}</SelectItem>
+                    <SelectItem value="month">{t("section.filters.thisMonth")}</SelectItem>
+                    <SelectItem value="3months">{t("section.filters.last3Months")}</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {hasFilters && (
                   <Button variant="ghost" size="sm" onClick={handleClearFilters}>
                     <X className="h-3.5 w-3.5 mr-1" />
-                    Clear
+                    {t("section.filters.clear")}
                   </Button>
                 )}
               </div>
@@ -426,10 +413,10 @@ export default function DoctorPrescriptionsSection() {
             <Card>
               <CardContent className="p-6 text-center space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  No prescriptions match your filters
+                  {t("section.filters.noMatch")}
                 </p>
                 <Button variant="link" size="sm" onClick={handleClearFilters}>
-                  Clear filters
+                  {t("section.filters.clearFilters")}
                 </Button>
               </CardContent>
             </Card>
@@ -443,6 +430,7 @@ export default function DoctorPrescriptionsSection() {
                     selected={rx.id === selectedRxId}
                     onView={() => openDetail(rx.id)}
                     onRePrescribe={() => handleRePrescribe(rx)}
+                    localizedStatus={localizedStatus}
                   />
                 ))}
               </div>
@@ -483,6 +471,7 @@ export default function DoctorPrescriptionsSection() {
                   onRePrescribe={() => handleRePrescribe(selectedRx)}
                   sendToPharmacy={sendToPharmacy}
                   refresh={fetchPrescriptions}
+                  localizedStatus={localizedStatus}
                 />
               ) : null}
             </CardContent>
@@ -495,7 +484,9 @@ export default function DoctorPrescriptionsSection() {
         <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto lg:hidden">
           <SheetHeader>
             <SheetTitle>
-              {rightPanel === "detail" ? "Prescription details" : "New prescription"}
+              {rightPanel === "detail"
+                ? t("section.sheet.prescriptionDetails")
+                : t("section.sheet.newPrescription")}
             </SheetTitle>
           </SheetHeader>
           <div className="mt-4">
@@ -520,6 +511,7 @@ export default function DoctorPrescriptionsSection() {
                 onRePrescribe={() => handleRePrescribe(selectedRx)}
                 sendToPharmacy={sendToPharmacy}
                 refresh={fetchPrescriptions}
+                localizedStatus={localizedStatus}
               />
             ) : null}
           </div>
@@ -559,6 +551,7 @@ function StatChip({
 }
 
 function EmptyState({ onCreate }: { onCreate: () => void }) {
+  const { t } = useTranslation("prescriptions");
   return (
     <Card>
       <CardContent className="p-10 text-center space-y-4">
@@ -566,11 +559,13 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
           <Pill className="h-7 w-7 text-primary" />
         </div>
         <div>
-          <h3 className="font-semibold">No prescriptions yet</h3>
-          <p className="text-sm text-muted-foreground">
-            Create your first prescription to get started
-          </p>
+          <h3 className="font-semibold">{t("section.empty.title")}</h3>
+          <p className="text-sm text-muted-foreground">{t("section.empty.subtitle")}</p>
         </div>
+        <Button onClick={onCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t("section.newPrescription")}
+        </Button>
       </CardContent>
     </Card>
   );
@@ -581,16 +576,19 @@ function PrescriptionRow({
   selected,
   onView,
   onRePrescribe,
+  localizedStatus,
 }: {
   rx: Prescription;
   selected: boolean;
   onView: () => void;
   onRePrescribe: () => void;
+  localizedStatus: (s: string) => string;
 }) {
+  const { t } = useTranslation("prescriptions");
   const items = rx.items || [];
   const first = items[0];
-  const extra = items.length > 1 ? `+ ${items.length - 1} more` : null;
-  const patientName = rx.patient?.full_name || "Patient";
+  const extra = items.length > 1 ? t("section.row.extraMore", { count: items.length - 1 }) : null;
+  const patientName = rx.patient?.full_name || t("section.row.patient");
   const expiresAt = rx.expires_at ? new Date(rx.expires_at) : null;
   const statusClass = STATUS_COLORS[rx.status] || "bg-muted text-muted-foreground";
 
@@ -608,7 +606,7 @@ function PrescriptionRow({
             <Pill className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
             <div className="min-w-0">
               <p className="font-medium text-sm truncate">
-                {first?.medication_name || "Untitled"}
+                {first?.medication_name || t("section.row.untitled")}
                 {first?.dosage ? ` ${first.dosage}` : ""}
                 {extra ? ` · ${extra}` : ""}
               </p>
@@ -622,7 +620,7 @@ function PrescriptionRow({
             </div>
           </div>
           <Badge className={cn("text-[10px] uppercase", statusClass)}>
-            {formatStatus(rx.status)}
+            {localizedStatus(rx.status)}
           </Badge>
         </div>
 
@@ -630,14 +628,17 @@ function PrescriptionRow({
           <div className="flex items-center gap-2">
             {expiresAt && (
               <span>
-                Expires {format(expiresAt, "MMM d")} · {rx.refills_remaining}/{rx.refills_total}{" "}
-                refills
+                {t("section.row.expires", {
+                  date: format(expiresAt, "MMM d"),
+                  remaining: rx.refills_remaining,
+                  total: rx.refills_total,
+                })}
               </span>
             )}
             {rx.appointment_id && (
-              <span title="From appointment" className="flex items-center gap-1">
+              <span className="flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" />
-                From appointment
+                {t("section.row.fromAppointment")}
               </span>
             )}
           </div>
@@ -652,7 +653,7 @@ function PrescriptionRow({
               }}
             >
               <RotateCcw className="h-3.5 w-3.5 mr-1" />
-              Re-prescribe
+              {t("section.row.rePrescribe")}
             </Button>
             <Button
               size="sm"
@@ -664,7 +665,7 @@ function PrescriptionRow({
               }}
             >
               <Eye className="h-3.5 w-3.5 mr-1" />
-              View
+              {t("section.row.view")}
             </Button>
           </div>
         </div>
@@ -680,6 +681,7 @@ function MedicationHistoryPanel({
   items: { name: string; count: number; lastDate: string; lastItem: PrescriptionItem }[];
   onPick: (item: Partial<PrescriptionItem>) => void;
 }) {
+  const { t } = useTranslation("prescriptions");
   const [open, setOpen] = useState(false);
   const visible = open ? items : items.slice(0, 5);
 
@@ -689,11 +691,13 @@ function MedicationHistoryPanel({
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Medication history
+            {t("section.history.title")}
           </h4>
           {items.length > 5 && (
             <Button variant="ghost" size="sm" onClick={() => setOpen((o) => !o)}>
-              {open ? "Collapse" : `Show all (${items.length})`}
+              {open
+                ? t("section.history.collapse")
+                : t("section.history.showAll", { count: items.length })}
             </Button>
           )}
         </div>
@@ -719,7 +723,10 @@ function MedicationHistoryPanel({
               <div className="min-w-0">
                 <p className="text-sm font-medium truncate">{m.name}</p>
                 <p className="text-xs text-muted-foreground">
-                  {m.count}× · last {format(new Date(m.lastDate), "MMM d, yyyy")}
+                  {t("section.history.timesLast", {
+                    count: m.count,
+                    date: format(new Date(m.lastDate), "MMM d, yyyy"),
+                  })}
                 </p>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -732,8 +739,7 @@ function MedicationHistoryPanel({
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Creator Panel (extends usePrescriptions.createPrescription with patient selector
-// + "From previous" quick-fill strip).
+// Creator Panel
 
 function CreatorPanel({
   doctorId,
@@ -752,6 +758,7 @@ function CreatorPanel({
   createPrescription: ReturnType<typeof usePrescriptions>["createPrescription"];
   onCreated: (rxId: string) => void;
 }) {
+  const { t } = useTranslation("prescriptions");
   const [patientId, setPatientId] = useState<string>(prefilledPatientId);
   const [items, setItems] = useState<Partial<PrescriptionItem>[]>(
     prefilledItems.length > 0 ? prefilledItems : [initialItem()],
@@ -761,7 +768,6 @@ function CreatorPanel({
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState("");
 
-  // React to pre-fill changes
   useEffect(() => {
     setPatientId(prefilledPatientId);
   }, [prefilledPatientId]);
@@ -805,14 +811,14 @@ function CreatorPanel({
 
   const handleSubmit = async () => {
     if (!patientId) {
-      toast.error("Please select a patient");
+      toast.error(t("section.toasts.selectPatient"));
       return;
     }
     const valid = items.filter(
       (i) => i.medication_name && i.dosage && i.frequency && i.quantity,
     );
     if (valid.length === 0) {
-      toast.error("Please add at least one medication");
+      toast.error(t("section.toasts.atLeastOneMed"));
       return;
     }
     setSubmitting(true);
@@ -831,7 +837,6 @@ function CreatorPanel({
           /* non-critical */
         }
         onCreated(rxId);
-        // reset
         setItems([initialItem()]);
         setRefills(0);
         setNotes("");
@@ -845,12 +850,12 @@ function CreatorPanel({
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Plus className="h-5 w-5 text-primary" />
-        <h3 className="font-semibold">New prescription</h3>
+        <h3 className="font-semibold">{t("section.creator.heading")}</h3>
       </div>
 
       {/* Patient selector */}
       <div className="space-y-2">
-        <Label>Patient *</Label>
+        <Label>{t("section.creator.patient")}</Label>
         {selectedPatient ? (
           <div className="flex items-center justify-between rounded-md border p-2">
             <div className="flex items-center gap-2 min-w-0">
@@ -870,7 +875,7 @@ function CreatorPanel({
               </div>
             </div>
             <Button variant="ghost" size="sm" onClick={() => setPatientId("")}>
-              Change
+              {t("section.creator.change")}
             </Button>
           </div>
         ) : (
@@ -878,13 +883,13 @@ function CreatorPanel({
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-start">
                 <UserIcon className="h-4 w-4 mr-2" />
-                Select patient
+                {t("section.creator.selectPatient")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
               <div className="p-2 border-b">
                 <Input
-                  placeholder="Search patients..."
+                  placeholder={t("section.creator.searchPatients")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="h-8"
@@ -893,7 +898,7 @@ function CreatorPanel({
               <ScrollArea className="max-h-64">
                 {filteredPatients.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground text-center">
-                    No patients found
+                    {t("section.creator.noPatientsFound")}
                   </div>
                 ) : (
                   filteredPatients.map((p) => (
@@ -932,7 +937,7 @@ function CreatorPanel({
       {/* From previous */}
       {recentMedications.length > 0 && (
         <div className="space-y-1">
-          <Label className="text-xs text-muted-foreground">From previous</Label>
+          <Label className="text-xs text-muted-foreground">{t("section.creator.fromPrevious")}</Label>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {recentMedications.map((m) => (
               <Button
@@ -956,7 +961,9 @@ function CreatorPanel({
         {items.map((item, idx) => (
           <div key={idx} className="border rounded-md p-3 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Medication {idx + 1}</span>
+              <span className="text-sm font-medium">
+                {t("section.creator.medication", { n: idx + 1 })}
+              </span>
               {items.length > 1 && (
                 <Button size="sm" variant="ghost" onClick={() => removeItem(idx)}>
                   <Trash2 className="h-4 w-4 text-destructive" />
@@ -965,33 +972,33 @@ function CreatorPanel({
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Name *</Label>
+                <Label className="text-xs">{t("section.creator.name")}</Label>
                 <Input
                   value={item.medication_name || ""}
                   onChange={(e) => updateItem(idx, "medication_name", e.target.value)}
-                  placeholder="e.g., Amoxicillin"
+                  placeholder={t("section.creator.namePlaceholder")}
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Code</Label>
+                <Label className="text-xs">{t("section.creator.code")}</Label>
                 <Input
                   value={item.medication_code || ""}
                   onChange={(e) => updateItem(idx, "medication_code", e.target.value)}
-                  placeholder="Optional"
+                  placeholder={t("section.creator.codePlaceholder")}
                 />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Dosage *</Label>
+                <Label className="text-xs">{t("section.creator.dosage")}</Label>
                 <Input
                   value={item.dosage || ""}
                   onChange={(e) => updateItem(idx, "dosage", e.target.value)}
-                  placeholder="500mg"
+                  placeholder={t("section.creator.dosagePlaceholder")}
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Frequency *</Label>
+                <Label className="text-xs">{t("section.creator.frequency")}</Label>
                 <Select
                   value={item.frequency || "once_daily"}
                   onValueChange={(v) => updateItem(idx, "frequency", v)}
@@ -1000,9 +1007,9 @@ function CreatorPanel({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {FREQUENCIES.map((f) => (
-                      <SelectItem key={f.value} value={f.value}>
-                        {f.label}
+                    {FREQUENCY_VALUES.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {t(`section.frequencies.${f}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1010,7 +1017,7 @@ function CreatorPanel({
               </div>
               <div className="grid grid-cols-2 gap-1">
                 <div className="space-y-1">
-                  <Label className="text-xs">Qty *</Label>
+                  <Label className="text-xs">{t("section.creator.qty")}</Label>
                   <Input
                     type="number"
                     value={item.quantity ?? ""}
@@ -1020,7 +1027,7 @@ function CreatorPanel({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Unit</Label>
+                  <Label className="text-xs">{t("section.creator.unit")}</Label>
                   <Select
                     value={item.unit || "tablets"}
                     onValueChange={(v) => updateItem(idx, "unit", v)}
@@ -1029,9 +1036,9 @@ function CreatorPanel({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {UNITS.map((u) => (
-                        <SelectItem key={u.value} value={u.value}>
-                          {u.label}
+                      {UNIT_VALUES.map((u) => (
+                        <SelectItem key={u} value={u}>
+                          {t(`section.units.${u}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1040,15 +1047,15 @@ function CreatorPanel({
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Instructions</Label>
+              <Label className="text-xs">{t("section.creator.instructions")}</Label>
               <Input
                 value={item.instructions || ""}
                 onChange={(e) => updateItem(idx, "instructions", e.target.value)}
-                placeholder="Take with food"
+                placeholder={t("section.creator.instructionsPlaceholder")}
               />
             </div>
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Allow substitutions</Label>
+              <Label className="text-xs">{t("section.creator.allowSubstitutions")}</Label>
               <Switch
                 checked={item.substitutions_allowed ?? true}
                 onCheckedChange={(c) => updateItem(idx, "substitutions_allowed", c)}
@@ -1058,14 +1065,14 @@ function CreatorPanel({
         ))}
         <Button variant="outline" onClick={addItem} className="w-full">
           <Plus className="h-4 w-4 mr-2" />
-          Add another medication
+          {t("section.creator.addAnother")}
         </Button>
       </div>
 
       {/* Options */}
       <div className="grid grid-cols-2 gap-3 pt-3 border-t">
         <div className="space-y-1">
-          <Label className="text-xs">Refills</Label>
+          <Label className="text-xs">{t("section.creator.refills")}</Label>
           <Select value={refills.toString()} onValueChange={(v) => setRefills(parseInt(v))}>
             <SelectTrigger>
               <SelectValue />
@@ -1073,7 +1080,7 @@ function CreatorPanel({
             <SelectContent>
               {[0, 1, 2, 3, 4, 5, 6, 11].map((n) => (
                 <SelectItem key={n} value={n.toString()}>
-                  {n} refill{n !== 1 ? "s" : ""}
+                  {t("section.creator.refillsCount", { count: n })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1082,21 +1089,23 @@ function CreatorPanel({
       </div>
 
       <div className="space-y-1">
-        <Label className="text-xs">Notes</Label>
+        <Label className="text-xs">{t("section.creator.notes")}</Label>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Notes for the pharmacist..."
+          placeholder={t("section.creator.notesPlaceholder")}
           rows={3}
         />
       </div>
 
       <div className="flex justify-end pt-3 border-t">
         <Button onClick={handleSubmit} disabled={submitting}>
-          {submitting ? "Creating..." : (
+          {submitting ? (
+            t("section.creator.creating")
+          ) : (
             <>
               <Send className="h-4 w-4 mr-2" />
-              Create prescription
+              {t("section.creator.create")}
             </>
           )}
         </Button>
@@ -1114,13 +1123,16 @@ function DetailPanel({
   onRePrescribe,
   sendToPharmacy,
   refresh,
+  localizedStatus,
 }: {
   rx: Prescription;
   onClose: () => void;
   onRePrescribe: () => void;
   sendToPharmacy: ReturnType<typeof usePrescriptions>["sendToPharmacy"];
   refresh: () => void;
+  localizedStatus: (s: string) => string;
 }) {
+  const { t } = useTranslation("prescriptions");
   const [downloading, setDownloading] = useState(false);
   const [pharmacies, setPharmacies] = useState<any[]>([]);
   const [pharmacyId, setPharmacyId] = useState<string>("");
@@ -1145,7 +1157,7 @@ function DetailPanel({
     try {
       await downloadPrescriptionPdf(rx.id, rx.prescription_number);
     } catch (e: any) {
-      toast.error(e?.message || "Failed to download PDF");
+      toast.error(e?.message || t("section.toasts.pdfFailed"));
     } finally {
       setDownloading(false);
     }
@@ -1153,7 +1165,7 @@ function DetailPanel({
 
   const handleSend = async () => {
     if (!pharmacyId) {
-      toast.error("Please select a pharmacy");
+      toast.error(t("section.toasts.selectPharmacy"));
       return;
     }
     setSending(true);
@@ -1174,10 +1186,10 @@ function DetailPanel({
         .update({ status: "cancelled" })
         .eq("id", rx.id);
       if (error) throw error;
-      toast.success("Prescription cancelled");
+      toast.success(t("section.toasts.prescriptionCancelled"));
       refresh();
     } catch (e: any) {
-      toast.error(e?.message || "Failed to cancel");
+      toast.error(e?.message || t("section.toasts.cancelFailed"));
     } finally {
       setCancelling(false);
     }
@@ -1191,16 +1203,20 @@ function DetailPanel({
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold">{rx.prescription_number || "Prescription"}</h3>
+            <h3 className="font-semibold">{rx.prescription_number || t("section.detail.prescription")}</h3>
             <Badge className={cn("text-[10px] uppercase", statusClass)}>
-              {formatStatus(rx.status)}
+              {localizedStatus(rx.status)}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {rx.patient?.full_name || "Patient"} ·{" "}
+            {rx.patient?.full_name || t("section.detail.patient")} ·{" "}
             {rx.prescribed_at && format(new Date(rx.prescribed_at), "MMM d, yyyy")}
-            {expiresAt && ` · Expires ${format(expiresAt, "MMM d, yyyy")}`}
-            {` · ${rx.refills_remaining}/${rx.refills_total} refills`}
+            {expiresAt &&
+              ` · ${t("section.detail.expiresOn", { date: format(expiresAt, "MMM d, yyyy") })}`}
+            {` · ${t("section.detail.refillsOf", {
+              remaining: rx.refills_remaining,
+              total: rx.refills_total,
+            })}`}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>
@@ -1211,7 +1227,7 @@ function DetailPanel({
       {rx.appointment_id && (
         <Badge variant="outline" className="gap-1">
           <CalendarDays className="h-3 w-3" />
-          Linked appointment
+          {t("section.detail.linkedAppointment")}
         </Badge>
       )}
 
@@ -1224,12 +1240,20 @@ function DetailPanel({
               </p>
               {it.substitutions_allowed && (
                 <Badge variant="secondary" className="text-[10px]">
-                  Substitutions OK
+                  {t("section.detail.substitutionsOk")}
                 </Badge>
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {it.frequency?.replace(/_/g, " ")} · {it.quantity} {it.unit}
+              {it.frequency
+                ? t(`section.frequencies.${it.frequency}`, {
+                    defaultValue: it.frequency.replace(/_/g, " "),
+                  })
+                : ""}{" "}
+              · {it.quantity}{" "}
+              {it.unit
+                ? t(`section.units.${it.unit}`, { defaultValue: it.unit })
+                : ""}
             </p>
             {it.instructions && (
               <p className="text-xs text-muted-foreground">{it.instructions}</p>
@@ -1240,17 +1264,17 @@ function DetailPanel({
 
       {rx.notes && (
         <div className="space-y-1">
-          <Label className="text-xs">Notes</Label>
+          <Label className="text-xs">{t("section.detail.notes")}</Label>
           <p className="text-sm text-muted-foreground">{rx.notes}</p>
         </div>
       )}
 
       {showPharmacyPicker && (
         <div className="space-y-2 border rounded-md p-3">
-          <Label className="text-xs">Select pharmacy</Label>
+          <Label className="text-xs">{t("section.detail.selectPharmacy")}</Label>
           <Select value={pharmacyId} onValueChange={setPharmacyId}>
             <SelectTrigger>
-              <SelectValue placeholder="Choose pharmacy" />
+              <SelectValue placeholder={t("section.detail.choosePharmacy")} />
             </SelectTrigger>
             <SelectContent>
               {pharmacies.map((p) => (
@@ -1263,10 +1287,10 @@ function DetailPanel({
           </Select>
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" size="sm" onClick={() => setShowPharmacyPicker(false)}>
-              Cancel
+              {t("section.detail.cancel")}
             </Button>
             <Button size="sm" disabled={sending} onClick={handleSend}>
-              {sending ? "Sending..." : "Send"}
+              {sending ? t("section.detail.sending") : t("section.detail.send")}
             </Button>
           </div>
         </div>
@@ -1275,17 +1299,17 @@ function DetailPanel({
       <div className="flex flex-wrap gap-2 pt-3 border-t">
         <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading}>
           <Download className="h-4 w-4 mr-2" />
-          {downloading ? "Downloading..." : "Download PDF"}
+          {downloading ? t("section.detail.downloading") : t("section.detail.downloadPdf")}
         </Button>
         {rx.status === "pending" && (
           <Button variant="outline" size="sm" onClick={() => setShowPharmacyPicker(true)}>
             <Send className="h-4 w-4 mr-2" />
-            Send to pharmacy
+            {t("section.detail.sendToPharmacy")}
           </Button>
         )}
         <Button variant="outline" size="sm" onClick={onRePrescribe}>
           <RotateCcw className="h-4 w-4 mr-2" />
-          Re-prescribe
+          {t("section.detail.rePrescribe")}
         </Button>
         {rx.status === "pending" && (
           <Button
@@ -1296,7 +1320,7 @@ function DetailPanel({
             className="text-destructive"
           >
             <X className="h-4 w-4 mr-2" />
-            {cancelling ? "Cancelling..." : "Cancel"}
+            {cancelling ? t("section.detail.cancelling") : t("section.detail.cancelBtn")}
           </Button>
         )}
       </div>
