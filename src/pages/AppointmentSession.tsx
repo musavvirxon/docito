@@ -605,7 +605,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         } as any);
 
         if (error) throw error;
-        toast.success('Diagnosis added');
+        toast.success(t('doctor.session.diagnosis.added', 'Diagnosis added'));
         fetchDiagnoses();
       } catch (err: any) {
         console.error('Error adding diagnosis:', err);
