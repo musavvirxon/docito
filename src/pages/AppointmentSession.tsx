@@ -1795,12 +1795,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base flex items-center gap-2">
                             <Star className="h-4 w-4 text-yellow-500" />
-                            Review for this appointment
+                            {t('doctor.session.reviews.appointment', 'Review for this appointment')}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           {reviewsLoading ? (
-                            <p className="text-sm text-muted-foreground">Loading…</p>
+                            <p className="text-sm text-muted-foreground">{t('doctor.session.reviews.loading', 'Loading…')}</p>
                           ) : thisAppointmentReview ? (
                             <div className="space-y-3">
                               <ReviewsList reviews={[thisAppointmentReview]} />
@@ -1811,7 +1811,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             </div>
                           ) : (
                             <p className="text-sm text-muted-foreground">
-                              The patient hasn't left a review for this appointment yet.
+                              {t('doctor.session.reviews.noReview', "The patient hasn't left a review for this appointment yet.")}
                             </p>
                           )}
                         </CardContent>
@@ -1821,13 +1821,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     {/* Everyone: all reviews this doctor has received */}
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">All reviews for this doctor</CardTitle>
+                        <CardTitle className="text-base">{t('doctor.session.reviews.allReviews', 'All reviews for this doctor')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <ReviewsList
                           reviews={appointmentReviews}
                           loading={reviewsLoading}
-                          emptyHint="No reviews yet."
+                          emptyHint={t('doctor.session.reviews.empty', 'No reviews yet.')}
                         />
                       </CardContent>
                     </Card>
