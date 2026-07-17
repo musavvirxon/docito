@@ -1585,7 +1585,13 @@
       "notesSaveError": "Failed to save notes",
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
-      "dentalProceduresLoadError": "Failed to load dental procedures",
+      "dentalProceduresLoadError": "Stomatologik protseduralarni yuklab bo'lmadi",
+      "diagnosis": {
+        "added": "Tashxis qo'shildi",
+        "addFailed": "Tashxis qo'shib bo'lmadi",
+        "removed": "Tashxis olib tashlandi",
+        "removeFailed": "Tashxisni olib tashlab bo'lmadi"
+      },
       "tabSession": "Session",
       "tabVideo": "Video",
       "tabDiagnoses": "Diagnoses",
