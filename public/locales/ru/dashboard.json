@@ -1449,7 +1449,13 @@
       "notesSaveError": "Failed to save notes",
       "videoRequiresRegistered": "Video calls require a registered patient",
       "videoStartError": "Failed to start video consultation",
-      "dentalProceduresLoadError": "Failed to load dental procedures",
+      "dentalProceduresLoadError": "Не удалось загрузить стоматологические процедуры",
+      "diagnosis": {
+        "added": "Диагноз добавлен",
+        "addFailed": "Не удалось добавить диагноз",
+        "removed": "Диагноз удалён",
+        "removeFailed": "Не удалось удалить диагноз"
+      },
       "tabSession": "Session",
       "tabVideo": "Video",
       "tabDiagnoses": "Diagnoses",

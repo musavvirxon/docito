@@ -1,4 +1,145 @@
 {
+  "section": {
+    "title": "Retseptlar",
+    "subtitle": "Siz yozgan har bir retsept — bitta joyda",
+    "newPrescription": "Yangi retsept",
+    "stats": {
+      "totalRx": "Jami retseptlar",
+      "active": "Faol",
+      "fulfilledMonth": "Shu oyda bajarilgan",
+      "expiringSoon": "Muddati tugayapti"
+    },
+    "filters": {
+      "searchPlaceholder": "Dori yoki Rx raqami bo'yicha qidiruv...",
+      "patient": "Bemor",
+      "allPatients": "Barcha bemorlar",
+      "status": "Holat",
+      "allStatuses": "Barcha holatlar",
+      "pending": "Kutilmoqda",
+      "sentToPharmacy": "Dorixonaga yuborilgan",
+      "fulfilled": "Bajarilgan",
+      "expired": "Muddati tugagan",
+      "cancelled": "Bekor qilingan",
+      "dateRange": "Sana oralig'i",
+      "allTime": "Barcha vaqt",
+      "thisWeek": "Shu hafta",
+      "thisMonth": "Shu oy",
+      "last3Months": "So'nggi 3 oy",
+      "clear": "Tozalash",
+      "clearFilters": "Filtrlarni tozalash",
+      "noMatch": "Filtrlarga mos retsept topilmadi"
+    },
+    "empty": {
+      "title": "Hozircha retseptlar yo'q",
+      "subtitle": "Boshlash uchun birinchi retseptni yarating"
+    },
+    "row": {
+      "patient": "Bemor",
+      "untitled": "Nomsiz",
+      "extraMore": "+ yana {{count}}",
+      "expires": "Muddati {{date}} · {{remaining}}/{{total}} qayta yozish",
+      "fromAppointment": "Qabuldan",
+      "rePrescribe": "Qayta yozish",
+      "view": "Ko'rish"
+    },
+    "history": {
+      "title": "Dorilar tarixi",
+      "collapse": "Yig'ish",
+      "showAll": "Barchasini ko'rsatish ({{count}})",
+      "timesLast": "{{count}}× · oxirgi {{date}}"
+    },
+    "sheet": {
+      "prescriptionDetails": "Retsept tafsilotlari",
+      "newPrescription": "Yangi retsept"
+    },
+    "creator": {
+      "heading": "Yangi retsept",
+      "patient": "Bemor *",
+      "change": "O'zgartirish",
+      "selectPatient": "Bemorni tanlang",
+      "searchPatients": "Bemorlarni qidirish...",
+      "noPatientsFound": "Bemor topilmadi",
+      "fromPrevious": "Oldingilardan",
+      "medication": "Dori {{n}}",
+      "name": "Nomi *",
+      "namePlaceholder": "masalan, Amoksitsillin",
+      "code": "Kod",
+      "codePlaceholder": "Ixtiyoriy",
+      "dosage": "Dozasi *",
+      "dosagePlaceholder": "500mg",
+      "frequency": "Chastota *",
+      "qty": "Miq. *",
+      "unit": "Birlik",
+      "instructions": "Ko'rsatmalar",
+      "instructionsPlaceholder": "Ovqat bilan qabul qiling",
+      "allowSubstitutions": "Almashtirishga ruxsat",
+      "addAnother": "Yana dori qo'shish",
+      "refills": "Qayta yozishlar",
+      "refillsCount_one": "{{count}} qayta yozish",
+      "refillsCount_other": "{{count}} qayta yozish",
+      "notes": "Eslatmalar",
+      "notesPlaceholder": "Farmatsevt uchun eslatmalar...",
+      "creating": "Yaratilmoqda...",
+      "create": "Retsept yaratish"
+    },
+    "detail": {
+      "prescription": "Retsept",
+      "patient": "Bemor",
+      "expiresOn": "Muddati {{date}}",
+      "refillsOf": "{{remaining}}/{{total}} qayta yozish",
+      "linkedAppointment": "Bog'langan qabul",
+      "substitutionsOk": "Almashtirish mumkin",
+      "notes": "Eslatmalar",
+      "selectPharmacy": "Dorixonani tanlang",
+      "choosePharmacy": "Dorixonani tanlang",
+      "cancel": "Bekor qilish",
+      "sending": "Yuborilmoqda...",
+      "send": "Yuborish",
+      "downloading": "Yuklab olinmoqda...",
+      "downloadPdf": "PDF yuklab olish",
+      "sendToPharmacy": "Dorixonaga yuborish",
+      "rePrescribe": "Qayta yozish",
+      "cancelling": "Bekor qilinmoqda...",
+      "cancelBtn": "Bekor qilish"
+    },
+    "toasts": {
+      "selectPatient": "Iltimos, bemorni tanlang",
+      "atLeastOneMed": "Iltimos, kamida bitta dori qo'shing",
+      "selectPharmacy": "Iltimos, dorixonani tanlang",
+      "prescriptionCancelled": "Retsept bekor qilindi",
+      "cancelFailed": "Bekor qilib bo'lmadi",
+      "pdfFailed": "PDF yuklab olib bo'lmadi"
+    },
+    "statuses": {
+      "pending": "Kutilmoqda",
+      "sent_to_pharmacy": "Dorixonaga yuborilgan",
+      "processing": "Jarayonda",
+      "ready": "Tayyor",
+      "fulfilled": "Bajarilgan",
+      "expired": "Muddati tugagan",
+      "cancelled": "Bekor qilingan"
+    },
+    "frequencies": {
+      "once_daily": "Kuniga bir marta",
+      "twice_daily": "Kuniga ikki marta",
+      "three_times_daily": "Kuniga uch marta",
+      "four_times_daily": "Kuniga to'rt marta",
+      "every_6_hours": "Har 6 soatda",
+      "every_8_hours": "Har 8 soatda",
+      "every_12_hours": "Har 12 soatda",
+      "as_needed": "Kerak bo'lganda (PRN)",
+      "weekly": "Haftada bir marta"
+    },
+    "units": {
+      "tablets": "Tabletka",
+      "capsules": "Kapsula",
+      "ml": "ml",
+      "mg": "mg",
+      "drops": "Tomchi",
+      "puffs": "Purkash",
+      "patches": "Plastir"
+    }
+  },
   "list": {
     "title": "Prescriptions",
     "searchPlaceholder": "Search prescriptions...",

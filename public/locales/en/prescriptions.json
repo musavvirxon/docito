@@ -1,4 +1,145 @@
 {
+  "section": {
+    "title": "Prescriptions",
+    "subtitle": "Every prescription you've written, in one place",
+    "newPrescription": "New prescription",
+    "stats": {
+      "totalRx": "Total Rx",
+      "active": "Active",
+      "fulfilledMonth": "Fulfilled this month",
+      "expiringSoon": "Expiring soon"
+    },
+    "filters": {
+      "searchPlaceholder": "Search medication or Rx number...",
+      "patient": "Patient",
+      "allPatients": "All patients",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "pending": "Pending",
+      "sentToPharmacy": "Sent to pharmacy",
+      "fulfilled": "Fulfilled",
+      "expired": "Expired",
+      "cancelled": "Cancelled",
+      "dateRange": "Date range",
+      "allTime": "All time",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "last3Months": "Last 3 months",
+      "clear": "Clear",
+      "clearFilters": "Clear filters",
+      "noMatch": "No prescriptions match your filters"
+    },
+    "empty": {
+      "title": "No prescriptions yet",
+      "subtitle": "Create your first prescription to get started"
+    },
+    "row": {
+      "patient": "Patient",
+      "untitled": "Untitled",
+      "extraMore": "+ {{count}} more",
+      "expires": "Expires {{date}} · {{remaining}}/{{total}} refills",
+      "fromAppointment": "From appointment",
+      "rePrescribe": "Re-prescribe",
+      "view": "View"
+    },
+    "history": {
+      "title": "Medication history",
+      "collapse": "Collapse",
+      "showAll": "Show all ({{count}})",
+      "timesLast": "{{count}}× · last {{date}}"
+    },
+    "sheet": {
+      "prescriptionDetails": "Prescription details",
+      "newPrescription": "New prescription"
+    },
+    "creator": {
+      "heading": "New prescription",
+      "patient": "Patient *",
+      "change": "Change",
+      "selectPatient": "Select patient",
+      "searchPatients": "Search patients...",
+      "noPatientsFound": "No patients found",
+      "fromPrevious": "From previous",
+      "medication": "Medication {{n}}",
+      "name": "Name *",
+      "namePlaceholder": "e.g., Amoxicillin",
+      "code": "Code",
+      "codePlaceholder": "Optional",
+      "dosage": "Dosage *",
+      "dosagePlaceholder": "500mg",
+      "frequency": "Frequency *",
+      "qty": "Qty *",
+      "unit": "Unit",
+      "instructions": "Instructions",
+      "instructionsPlaceholder": "Take with food",
+      "allowSubstitutions": "Allow substitutions",
+      "addAnother": "Add another medication",
+      "refills": "Refills",
+      "refillsCount_one": "{{count}} refill",
+      "refillsCount_other": "{{count}} refills",
+      "notes": "Notes",
+      "notesPlaceholder": "Notes for the pharmacist...",
+      "creating": "Creating...",
+      "create": "Create prescription"
+    },
+    "detail": {
+      "prescription": "Prescription",
+      "patient": "Patient",
+      "expiresOn": "Expires {{date}}",
+      "refillsOf": "{{remaining}}/{{total}} refills",
+      "linkedAppointment": "Linked appointment",
+      "substitutionsOk": "Substitutions OK",
+      "notes": "Notes",
+      "selectPharmacy": "Select pharmacy",
+      "choosePharmacy": "Choose pharmacy",
+      "cancel": "Cancel",
+      "sending": "Sending...",
+      "send": "Send",
+      "downloading": "Downloading...",
+      "downloadPdf": "Download PDF",
+      "sendToPharmacy": "Send to pharmacy",
+      "rePrescribe": "Re-prescribe",
+      "cancelling": "Cancelling...",
+      "cancelBtn": "Cancel"
+    },
+    "toasts": {
+      "selectPatient": "Please select a patient",
+      "atLeastOneMed": "Please add at least one medication",
+      "selectPharmacy": "Please select a pharmacy",
+      "prescriptionCancelled": "Prescription cancelled",
+      "cancelFailed": "Failed to cancel",
+      "pdfFailed": "Failed to download PDF"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "sent_to_pharmacy": "Sent to pharmacy",
+      "processing": "Processing",
+      "ready": "Ready",
+      "fulfilled": "Fulfilled",
+      "expired": "Expired",
+      "cancelled": "Cancelled"
+    },
+    "frequencies": {
+      "once_daily": "Once daily",
+      "twice_daily": "Twice daily",
+      "three_times_daily": "Three times daily",
+      "four_times_daily": "Four times daily",
+      "every_6_hours": "Every 6 hours",
+      "every_8_hours": "Every 8 hours",
+      "every_12_hours": "Every 12 hours",
+      "as_needed": "As needed (PRN)",
+      "weekly": "Once weekly"
+    },
+    "units": {
+      "tablets": "Tablets",
+      "capsules": "Capsules",
+      "ml": "mL",
+      "mg": "mg",
+      "drops": "Drops",
+      "puffs": "Puffs",
+      "patches": "Patches"
+    }
+  },
   "list": {
     "title": "Prescriptions",
     "searchPlaceholder": "Search prescriptions...",

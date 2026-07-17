@@ -605,11 +605,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         } as any);
 
         if (error) throw error;
-        toast.success('Diagnosis added');
+        toast.success(t('doctor.session.diagnosis.added', 'Diagnosis added'));
         fetchDiagnoses();
       } catch (err: any) {
         console.error('Error adding diagnosis:', err);
-        toast.error('Failed to add diagnosis');
+        toast.error(t('doctor.session.diagnosis.addFailed', 'Failed to add diagnosis'));
       }
     },
     [appointmentId, appointment, fetchDiagnoses]
@@ -620,11 +620,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       try {
         const { error } = await supabase.from('appointment_diagnoses').delete().eq('id', id);
         if (error) throw error;
-        toast.success('Diagnosis removed');
+        toast.success(t('doctor.session.diagnosis.removed', 'Diagnosis removed'));
         fetchDiagnoses();
       } catch (err: any) {
         console.error('Error removing diagnosis:', err);
-        toast.error('Failed to remove diagnosis');
+        toast.error(t('doctor.session.diagnosis.removeFailed', 'Failed to remove diagnosis'));
       }
     },
     [fetchDiagnoses]
@@ -1280,16 +1280,18 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       ) : (
                         <Card>
                           <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Video Consultation</CardTitle>
+                            <CardTitle className="text-sm">{t('doctor.session.video.title', 'Video Consultation')}</CardTitle>
                           </CardHeader>
                           <CardContent className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                              Start or join the video call for this appointment.
+                              {t('doctor.session.video.desc', 'Start or join the video call for this appointment.')}
                             </p>
                             {isVideoAppointment && !videoEnded && (
                               <Button onClick={startOrJoinVideo} className="gap-2">
                                 <Video className="h-4 w-4" />
-                                {videoConsultation && canJoinExistingVideo ? 'Join Video' : 'Start Video'}
+                                {videoConsultation && canJoinExistingVideo
+                                  ? t('doctor.session.joinVideo', 'Join Video')
+                                  : t('doctor.session.startVideo', 'Start Video')}
                               </Button>
                             )}
                           </CardContent>
@@ -1659,11 +1661,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             <div className="text-sm text-muted-foreground">
                               {appointmentDentalSummary.summaryParts.length
                                 ? appointmentDentalSummary.summaryParts.join(' • ')
-                                : 'No dental procedures recorded for this appointment yet.'}
+                                : t('doctor.session.dental.empty', 'No dental procedures recorded for this appointment yet.')}
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="h-4 w-4 text-primary" />
-                              <span className="text-muted-foreground">Total:</span>
+                              <span className="text-muted-foreground">{t('doctor.session.dental.total', 'Total:')}</span>
                               <span className="font-semibold">{formatMoney(appointmentDentalSummary.totalCost)}</span>
                             </div>
                           </div>
@@ -1671,7 +1673,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           {loadingDentalProcedures && appointmentDentalProcedures.length === 0 && (
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
                               <Loader2 className="h-4 w-4 animate-spin" />
-                              Loading procedures...
+                              {t('doctor.session.dental.loading', 'Loading procedures...')}
                             </div>
                           )}
 
@@ -1752,7 +1754,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         patientId={patientId}
                         doctorId={appointment.doctor_id}
                         appointmentId={appointmentId}
-                        onSuccess={() => toast.success('Prescription created & PDF downloaded')}
+                        onSuccess={() => toast.success(t('doctor.session.rx.created', 'Prescription created & PDF downloaded'))}
                       />
                     </TabsContent>
                   )}
@@ -1763,7 +1765,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <Textarea
                           value={sessionNotes}
                           onChange={(e) => setSessionNotes(e.target.value)}
-                          placeholder="Add notes for this appointment..."
+                          placeholder={t('doctor.session.notes.placeholder', 'Add notes for this appointment...')}
                           className="min-h-[400px]"
                         />
                       </CardContent>
@@ -1793,12 +1795,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base flex items-center gap-2">
                             <Star className="h-4 w-4 text-yellow-500" />
-                            Review for this appointment
+                            {t('doctor.session.reviews.appointment', 'Review for this appointment')}
                           </CardTitle>
                         </CardHeader>
                         <CardContent>
                           {reviewsLoading ? (
-                            <p className="text-sm text-muted-foreground">Loading…</p>
+                            <p className="text-sm text-muted-foreground">{t('doctor.session.reviews.loading', 'Loading…')}</p>
                           ) : thisAppointmentReview ? (
                             <div className="space-y-3">
                               <ReviewsList reviews={[thisAppointmentReview]} />
@@ -1809,7 +1811,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             </div>
                           ) : (
                             <p className="text-sm text-muted-foreground">
-                              The patient hasn't left a review for this appointment yet.
+                              {t('doctor.session.reviews.noReview', "The patient hasn't left a review for this appointment yet.")}
                             </p>
                           )}
                         </CardContent>
@@ -1819,13 +1821,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     {/* Everyone: all reviews this doctor has received */}
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">All reviews for this doctor</CardTitle>
+                        <CardTitle className="text-base">{t('doctor.session.reviews.allReviews', 'All reviews for this doctor')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <ReviewsList
                           reviews={appointmentReviews}
                           loading={reviewsLoading}
-                          emptyHint="No reviews yet."
+                          emptyHint={t('doctor.session.reviews.empty', 'No reviews yet.')}
                         />
                       </CardContent>
                     </Card>
