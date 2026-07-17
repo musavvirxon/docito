@@ -609,7 +609,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         fetchDiagnoses();
       } catch (err: any) {
         console.error('Error adding diagnosis:', err);
-        toast.error('Failed to add diagnosis');
+        toast.error(t('doctor.session.diagnosis.addFailed', 'Failed to add diagnosis'));
       }
     },
     [appointmentId, appointment, fetchDiagnoses]
