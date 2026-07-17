@@ -620,7 +620,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       try {
         const { error } = await supabase.from('appointment_diagnoses').delete().eq('id', id);
         if (error) throw error;
-        toast.success('Diagnosis removed');
+        toast.success(t('doctor.session.diagnosis.removed', 'Diagnosis removed'));
         fetchDiagnoses();
       } catch (err: any) {
         console.error('Error removing diagnosis:', err);
