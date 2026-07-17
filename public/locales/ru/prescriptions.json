@@ -1,4 +1,147 @@
 {
+  "section": {
+    "title": "Рецепты",
+    "subtitle": "Все выписанные вами рецепты в одном месте",
+    "newPrescription": "Новый рецепт",
+    "stats": {
+      "totalRx": "Всего рецептов",
+      "active": "Активные",
+      "fulfilledMonth": "Выполнено в этом месяце",
+      "expiringSoon": "Скоро истекает"
+    },
+    "filters": {
+      "searchPlaceholder": "Поиск по лекарству или номеру Rx...",
+      "patient": "Пациент",
+      "allPatients": "Все пациенты",
+      "status": "Статус",
+      "allStatuses": "Все статусы",
+      "pending": "Ожидает",
+      "sentToPharmacy": "Отправлено в аптеку",
+      "fulfilled": "Выполнено",
+      "expired": "Истёк срок",
+      "cancelled": "Отменён",
+      "dateRange": "Период",
+      "allTime": "Всё время",
+      "thisWeek": "Эта неделя",
+      "thisMonth": "Этот месяц",
+      "last3Months": "Последние 3 месяца",
+      "clear": "Очистить",
+      "clearFilters": "Очистить фильтры",
+      "noMatch": "Нет рецептов, соответствующих фильтрам"
+    },
+    "empty": {
+      "title": "Рецептов пока нет",
+      "subtitle": "Создайте первый рецепт, чтобы начать"
+    },
+    "row": {
+      "patient": "Пациент",
+      "untitled": "Без названия",
+      "extraMore": "+ ещё {{count}}",
+      "expires": "Истекает {{date}} · {{remaining}}/{{total}} повторов",
+      "fromAppointment": "Из приёма",
+      "rePrescribe": "Повторить",
+      "view": "Открыть"
+    },
+    "history": {
+      "title": "История назначений",
+      "collapse": "Свернуть",
+      "showAll": "Показать все ({{count}})",
+      "timesLast": "{{count}}× · последний {{date}}"
+    },
+    "sheet": {
+      "prescriptionDetails": "Детали рецепта",
+      "newPrescription": "Новый рецепт"
+    },
+    "creator": {
+      "heading": "Новый рецепт",
+      "patient": "Пациент *",
+      "change": "Изменить",
+      "selectPatient": "Выбрать пациента",
+      "searchPatients": "Поиск пациентов...",
+      "noPatientsFound": "Пациенты не найдены",
+      "fromPrevious": "Из предыдущих",
+      "medication": "Лекарство {{n}}",
+      "name": "Название *",
+      "namePlaceholder": "напр., Амоксициллин",
+      "code": "Код",
+      "codePlaceholder": "Необязательно",
+      "dosage": "Дозировка *",
+      "dosagePlaceholder": "500 мг",
+      "frequency": "Частота *",
+      "qty": "Кол-во *",
+      "unit": "Ед.",
+      "instructions": "Инструкции",
+      "instructionsPlaceholder": "Принимать с едой",
+      "allowSubstitutions": "Разрешить замену",
+      "addAnother": "Добавить ещё лекарство",
+      "refills": "Повторы",
+      "refillsCount_one": "{{count}} повтор",
+      "refillsCount_few": "{{count}} повтора",
+      "refillsCount_many": "{{count}} повторов",
+      "refillsCount_other": "{{count}} повторов",
+      "notes": "Заметки",
+      "notesPlaceholder": "Заметки для фармацевта...",
+      "creating": "Создание...",
+      "create": "Создать рецепт"
+    },
+    "detail": {
+      "prescription": "Рецепт",
+      "patient": "Пациент",
+      "expiresOn": "Истекает {{date}}",
+      "refillsOf": "{{remaining}}/{{total}} повторов",
+      "linkedAppointment": "Связанный приём",
+      "substitutionsOk": "Замена разрешена",
+      "notes": "Заметки",
+      "selectPharmacy": "Выберите аптеку",
+      "choosePharmacy": "Выберите аптеку",
+      "cancel": "Отмена",
+      "sending": "Отправка...",
+      "send": "Отправить",
+      "downloading": "Загрузка...",
+      "downloadPdf": "Скачать PDF",
+      "sendToPharmacy": "Отправить в аптеку",
+      "rePrescribe": "Повторить",
+      "cancelling": "Отмена...",
+      "cancelBtn": "Отменить"
+    },
+    "toasts": {
+      "selectPatient": "Выберите пациента",
+      "atLeastOneMed": "Добавьте хотя бы одно лекарство",
+      "selectPharmacy": "Выберите аптеку",
+      "prescriptionCancelled": "Рецепт отменён",
+      "cancelFailed": "Не удалось отменить",
+      "pdfFailed": "Не удалось скачать PDF"
+    },
+    "statuses": {
+      "pending": "Ожидает",
+      "sent_to_pharmacy": "Отправлено в аптеку",
+      "processing": "В обработке",
+      "ready": "Готов",
+      "fulfilled": "Выполнено",
+      "expired": "Истёк срок",
+      "cancelled": "Отменён"
+    },
+    "frequencies": {
+      "once_daily": "Раз в день",
+      "twice_daily": "Два раза в день",
+      "three_times_daily": "Три раза в день",
+      "four_times_daily": "Четыре раза в день",
+      "every_6_hours": "Каждые 6 часов",
+      "every_8_hours": "Каждые 8 часов",
+      "every_12_hours": "Каждые 12 часов",
+      "as_needed": "По необходимости (PRN)",
+      "weekly": "Раз в неделю"
+    },
+    "units": {
+      "tablets": "Таблетки",
+      "capsules": "Капсулы",
+      "ml": "мл",
+      "mg": "мг",
+      "drops": "Капли",
+      "puffs": "Ингаляции",
+      "patches": "Пластыри"
+    }
+  },
   "list": {
     "title": "Prescriptions",
     "searchPlaceholder": "Search prescriptions...",
