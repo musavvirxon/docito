@@ -624,7 +624,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
         fetchDiagnoses();
       } catch (err: any) {
         console.error('Error removing diagnosis:', err);
-        toast.error('Failed to remove diagnosis');
+        toast.error(t('doctor.session.diagnosis.removeFailed', 'Failed to remove diagnosis'));
       }
     },
     [fetchDiagnoses]
