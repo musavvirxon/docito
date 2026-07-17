@@ -1765,7 +1765,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                         <Textarea
                           value={sessionNotes}
                           onChange={(e) => setSessionNotes(e.target.value)}
-                          placeholder="Add notes for this appointment..."
+                          placeholder={t('doctor.session.notes.placeholder', 'Add notes for this appointment...')}
                           className="min-h-[400px]"
                         />
                       </CardContent>
