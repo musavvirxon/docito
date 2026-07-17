@@ -1661,11 +1661,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                             <div className="text-sm text-muted-foreground">
                               {appointmentDentalSummary.summaryParts.length
                                 ? appointmentDentalSummary.summaryParts.join(' • ')
-                                : 'No dental procedures recorded for this appointment yet.'}
+                                : t('doctor.session.dental.empty', 'No dental procedures recorded for this appointment yet.')}
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="h-4 w-4 text-primary" />
-                              <span className="text-muted-foreground">Total:</span>
+                              <span className="text-muted-foreground">{t('doctor.session.dental.total', 'Total:')}</span>
                               <span className="font-semibold">{formatMoney(appointmentDentalSummary.totalCost)}</span>
                             </div>
                           </div>
@@ -1673,7 +1673,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                           {loadingDentalProcedures && appointmentDentalProcedures.length === 0 && (
                             <div className="text-sm text-muted-foreground flex items-center gap-2">
                               <Loader2 className="h-4 w-4 animate-spin" />
-                              Loading procedures...
+                              {t('doctor.session.dental.loading', 'Loading procedures...')}
                             </div>
                           )}
 
