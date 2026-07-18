@@ -1,47 +1,52 @@
-## Scope
 
-Two areas currently contain hardcoded English strings that must be fully wired to i18n and translated into English, Russian, and Uzbek:
+## MCP server for Docito (OAuth-protected)
 
-1. **Doctor → Prescriptions section** — `src/components/doctor/prescriptions/DoctorPrescriptionsSection.tsx` (the page shown in the screenshot: header, stat chips, filters, list, right-side "New prescription" panel, detail panel, send-to-pharmacy dialog, cancel dialog, toasts, frequency/unit dropdowns).
-2. **Appointment Session** — `src/pages/AppointmentSession.tsx` (any remaining hardcoded strings: video consultation card, notes placeholder, "Loading…", reviews card titles, toast messages, totals label, etc.).
+Great — with OAuth 2.1 enabled on your Supabase project, I have everything I need. **No auth endpoints required from you**: `@lovable.dev/mcp-js` discovers them automatically from your Supabase issuer (`https://gswwpjdtgsxzcsnrxutu.supabase.co/auth/v1/.well-known/oauth-authorization-server`).
 
-`PrescriptionList.tsx` and `PrescriptionCreator.tsx` already use `useTranslation('prescriptions')` — we'll only add missing keys used by those components if any are found.
+### On the `/.docito/oauth/consent` path
+The consent-redirect path is **fixed by Supabase Auth** — it always redirects users to `/.lovable/oauth/consent?authorization_id=...` after they sign in during a client authorization. We can't rename that path; renaming it would break the redirect and no MCP client could complete OAuth. What we *can* do:
+- Mount the React route at `/.lovable/oauth/consent` (required by Supabase).
+- Additionally expose `/.docito/oauth/consent` as an alias that renders the same component, so anything we surface in our own UI/docs uses the docito-branded path.
+- Everywhere else (favicon, connector metadata, published URLs) use **docito.app** — the MCP endpoint will be advertised from your Supabase functions host, but all app-facing links (consent screen branding, docs, published site) will use docito.app.
 
-## Approach
+### What I'll build
 
-### 1. Extend translation files (en, ru, uz only, per request)
+1. **Install** `@lovable.dev/mcp-js` and `zod`.
+2. **Vite plugin** — add `mcpPlugin()` to `vite.config.ts` (keeps existing plugins).
+3. **MCP entry** `src/lib/mcp/index.ts` — `defineMcp` with `auth.oauth.issuer({ issuer: https://<ref>.supabase.co/auth/v1, acceptedAudiences: "authenticated" })`, using `import.meta.env.VITE_SUPABASE_PROJECT_ID` (kept import-safe: no top-level env reads or throws).
+4. **Starter tools** under `src/lib/mcp/tools/` — each forwards the caller's token so RLS runs as that user:
+   - `whoami` — returns the signed-in user's id/email.
+   - `list_my_appointments` — the caller's own appointments (as patient or doctor).
+   - `list_my_prescriptions` — the caller's own prescriptions.
+   - `list_my_treatment_plans` — the caller's own treatment plans.
+   All are read-only (`readOnlyHint: true`). Handlers derive `user_id` from `ctx.getUserId()` — never from tool input.
+5. **Consent route** — new `src/pages/OAuthConsent.tsx` mounted at both `/.lovable/oauth/consent` (required by Supabase) and `/.docito/oauth/consent` (docito-branded alias) in `App.tsx`. Uses `supabase.auth.oauth.getAuthorizationDetails / approveAuthorization / denyAuthorization`. Docito-branded copy ("Connect {client} to your Docito account").
+6. **Auth redirect plumbing** — update `src/pages/Auth.tsx` so password sign-in, signup `emailRedirectTo`, and social `signInWithOAuth.redirect_uri` all honor a `next=` param pointing back to the consent URL (validated as a same-origin relative path). Without this, connectors bounce to `/` after Google login.
+7. **Favicon check** — verify `public/favicon.ico` exists (Docito already has branding assets); do not replace user's chosen favicon.
+8. **Manifest + deploy** — run the manifest extractor, then deploy the auto-generated `supabase/functions/mcp` edge function.
 
-**`public/locales/{en,ru,uz}/prescriptions.json`** — add a new `section` namespace with keys for:
-- Header: `title`, `subtitle` ("Every prescription you've written, in one place"), `newPrescription`
-- Stats: `totalRx`, `active`, `fulfilledMonth`, `expiringSoon`
-- Filters: `searchPlaceholder`, `allPatients`, `status`, `allStatuses`, `pending`, `sentToPharmacy`, `fulfilled`, `expired`, `cancelled`, `dateRange`, `allTime`, `thisWeek`, `thisMonth`, `last3Months`
-- Empty state: `noPrescriptionsYet`
-- List item: `patient`, `expires`, `refills`, `rePrescribe`, `view`, `medicationHistory`, `showAll`, `collapse`, `timesLast` (e.g. `"{{count}}× · last {{date}}"`), `untitled`
-- Right panel: `prescriptionDetails`, `newPrescriptionTitle`, `patientLabel`, `selectPatient`, `searchPatients`, `fromPrevious`, `medicationN` (`Medication {{n}}`), `name`, `code`, `codePlaceholder` ("Optional"), `dosage`, `frequency`, `qty`, `unit`, `instructions`, `instructionsPlaceholder` ("Take with food"), `allowSubstitutions`, `addAnotherMedication`, `refillsLabel`, `refillsCount_one/other`, `notes`, `notesPlaceholder` ("Notes for the pharmacist..."), `creating`, `createPrescription`, `choosePharmacy`, `sending`, `send`, `downloading`, `downloadPdf`, `cancelling`, `cancel`
-- Toasts: `selectPatientError`, `atLeastOneMed`, `selectPharmacyError`, `prescriptionCancelled`, `cancelFailed`, `pdfFailed`, `prescriptionCreatedPdf`
-- Frequency labels (`frequencies.*`) and unit labels (`units.*`) — reuse existing keys already present in `creator.frequencies`/`creator.units`.
+### Files touched
 
-**`public/locales/{en,ru,uz}/appointments.json`** — add/extend `session` namespace with keys for the residual hardcoded strings in `AppointmentSession.tsx`:
-- `videoConsultation`, `total`, `loading`, `allReviewsForDoctor`, `notesPlaceholder`
-- Toasts: `diagnosisAdded`, `diagnosisAddFailed`, `diagnosisRemoved`, `diagnosisRemoveFailed`, `prescriptionCreatedPdf`
-- Any other remaining literals surfaced during implementation pass.
+- `package.json` (add deps)
+- `vite.config.ts` (add `mcpPlugin()`)
+- `src/lib/mcp/index.ts` (new)
+- `src/lib/mcp/tools/whoami.ts`, `list-my-appointments.ts`, `list-my-prescriptions.ts`, `list-my-treatment-plans.ts` (new)
+- `src/pages/OAuthConsent.tsx` (new)
+- `src/App.tsx` (two consent routes)
+- `src/pages/Auth.tsx` (honor `next=` on all sign-in paths)
 
-Russian and Uzbek translations will be provided (not English placeholders); other locales (ar/de/es/ja/ko/pt/tr/zh) fall back to English via i18next fallback, matching the user's explicit request for en/ru/uz.
+### Endpoint (advertised to clients)
 
-### 2. Refactor components to consume the keys
+`https://gswwpjdtgsxzcsnrxutu.supabase.co/functions/v1/mcp` — this is the Supabase functions host and cannot be moved to docito.app (Supabase serves it). Users only ever see docito.app in the consent screen, favicon, and app UI.
 
-- `DoctorPrescriptionsSection.tsx`: add `const { t } = useTranslation('prescriptions')`, replace every hardcoded JSX text, `placeholder`, `SelectItem` label, `toast.*` message, and the `FREQUENCIES`/`UNITS` arrays (map value → `t('section.frequencies.<value>')`) with translation lookups.
-- `AppointmentSession.tsx`: reuse the existing `useTranslation('dashboard')` call or add a second `useTranslation('appointments')` for `session.*` keys, and replace remaining hardcoded strings + toast calls.
-- Date formatting stays in `date-fns` `format(...)`; only labels around dates get translated.
+### Supabase redirect allow-list
 
-### 3. Verification
+Please make sure your Supabase Auth "Redirect URLs" list includes:
+- `https://docito.app/.lovable/oauth/consent`
+- `https://docito.app/.docito/oauth/consent`
+- `https://www.docito.app/.lovable/oauth/consent`
+- `https://www.docito.app/.docito/oauth/consent`
 
-- `tsgo` typecheck.
-- Grep the two files for remaining `>[A-Z]` JSX text, `placeholder="[A-Z]`, and `toast\.(error|success)\('[A-Z]` to confirm zero hardcoded user-facing strings remain.
-- Manual visual sanity check via console logs from the preview after switching language to `ru` and `uz`.
+If it doesn't, Google/social login will drop users on `/` after auth and connectors will silently fail. I'll remind you again after implementation.
 
-## Out of scope
-
-- Other locales beyond en/ru/uz (they inherit English via fallback).
-- Any behavioral / data changes — this is a pure i18n pass.
-- `PrescriptionList.tsx` / `PrescriptionCreator.tsx` refactor (already i18n'd; only fill gaps if the new section reuses them).
+Approve and I'll build it.
