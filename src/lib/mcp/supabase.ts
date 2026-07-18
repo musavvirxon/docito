@@ -1,9 +1,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { ToolContext } from "@lovable.dev/mcp-js";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const process: { env: Record<string, string | undefined> };
+
 /**
  * Build a Supabase client that forwards the caller's OAuth access token so
  * PostgREST evaluates RLS as that user. Never uses the service-role key.
+ * Env vars are read inside the function (not at module top level) so the entry
+ * stays import-safe for the build-time manifest extractor.
  */
 export function supabaseForUser(ctx: ToolContext): SupabaseClient {
   const url = process.env.SUPABASE_URL!;
