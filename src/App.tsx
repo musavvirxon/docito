@@ -32,6 +32,7 @@ const DashboardFeedback = lazy(() => import("@/pages/dashboard/Feedback"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
+const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
 
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
@@ -193,6 +194,8 @@ export default function App() {
               <Routes>
                 <Route path="v/:token" element={<GuestVideoJoin />} />
                 <Route path="display/:token" element={<QueueDisplay />} />
+                <Route path=".lovable/oauth/consent" element={<OAuthConsent />} />
+                <Route path=".docito/oauth/consent" element={<OAuthConsent />} />
                 {supportedLangCodes.map((code) => (
                 <Route key={code} path={code} element={<LanguageWrapper />}>
                   <Route element={<PublicLayout />}>
