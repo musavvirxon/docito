@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://gswwpjdtgsxzcsnrxutu.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "docito-mcp",
+      "version": "0.1.0",
+      "title": "Docito"
+    },
+    "tools": [
+      {
+        "name": "whoami",
+        "title": "Who am I",
+        "description": "Return the id and email of the signed-in Docito user. Use to verify the MCP connection is working.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_appointments",
+        "title": "List my appointments",
+        "description": "List the signed-in user's own Docito appointments (as patient or doctor). RLS enforces access.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Max rows to return. Defaults to 20; clamped to [1, 100]."
+            },
+            "status": {
+              "type": "string",
+              "description": "Optional appointment status filter (e.g. 'pending', 'confirmed', 'completed')."
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_prescriptions",
+        "title": "List my prescriptions",
+        "description": "List the signed-in user's own Docito prescriptions. RLS enforces access — patients see their prescriptions; doctors see those they issued.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Max rows to return. Defaults to 20; clamped to [1, 100]."
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_treatment_plans",
+        "title": "List my treatment plans",
+        "description": "List the signed-in user's own Docito treatment plans. RLS enforces access.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Max rows to return. Defaults to 20; clamped to [1, 100]."
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
