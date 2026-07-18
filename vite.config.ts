@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { copyFile, mkdir } from "node:fs/promises";
 import { componentTagger } from "lovable-tagger";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 /**
  * Vite plugin to make CSS non-render-blocking by using media="print" + onload pattern.
@@ -61,6 +62,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    mcpPlugin(),
     mode === 'development' && componentTagger(),
     mode === 'production' && asyncCssPlugin(),
     mode === 'production' && copyCloudflareConfigPlugin(),
