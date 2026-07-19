@@ -228,7 +228,72 @@
       "mg": "mg",
       "drops": "Drops",
       "puffs": "Puffs",
-      "patches": "Patches"
+      "patches": "Plastirlar"
+    }
+  },
+  "creator": {
+    "title": "Retsept yaratish",
+    "description": "Dorilarni qo'shing va bemor uchun yangi retsept yarating",
+    "missingInfo": "Bemor yoki shifokor ma'lumoti yo'q",
+    "atLeastOne": "Kamida bitta dori qo'shing",
+    "medication": "Dori {{n}}",
+    "medicationName": "Dori nomi *",
+    "medicationNamePlaceholder": "masalan, Amoksitsillin",
+    "medicationCode": "Dori kodi",
+    "medicationCodePlaceholder": "Ixtiyoriy NDC/kod",
+    "dosage": "Dozasi *",
+    "dosagePlaceholder": "masalan, 500 mg",
+    "frequency": "Chastota *",
+    "quantity": "Miqdori *",
+    "unit": "Birlik",
+    "instructions": "Ko'rsatmalar",
+    "instructionsPlaceholder": "masalan, Ovqat bilan qabul qiling",
+    "allowSubs": "Almashtirishga ruxsat",
+    "allowSubsHint": "Dorixona generik dori bilan almashtirishi mumkin",
+    "addAnother": "Yana dori qo'shish",
+    "refills": "Qayta yozishlar soni",
+    "refillsCount_one": "{{count}} qayta yozish",
+    "refillsCount_other": "{{count}} qayta yozish",
+    "additionalNotes": "Qo'shimcha eslatmalar",
+    "notesPlaceholder": "Farmatsevt uchun qo'shimcha ko'rsatmalar...",
+    "creating": "Yaratilmoqda...",
+    "createPrescription": "Retsept yaratish",
+    "frequencies": {
+      "once_daily": "Kuniga bir marta",
+      "twice_daily": "Kuniga ikki marta",
+      "three_times_daily": "Kuniga uch marta",
+      "four_times_daily": "Kuniga to'rt marta",
+      "every_6_hours": "Har 6 soatda",
+      "every_8_hours": "Har 8 soatda",
+      "every_12_hours": "Har 12 soatda",
+      "as_needed": "Kerak bo'lganda (PRN)",
+      "weekly": "Haftasiga bir marta"
+    },
+    "units": {
+      "tablets": "Tabletkalar",
+      "capsules": "Kapsulalar",
+      "ml": "ml",
+      "mg": "mg",
+      "drops": "Tomchilar",
+      "puffs": "Ingalyatsiyalar",
+      "patches": "Plastirlar"
+    },
+    "templates": {
+      "label": "Shablondan foydalanish",
+      "placeholder": "Saqlangan shablonni tanlang…",
+      "empty": "Hozircha shablonlar yo'q",
+      "save": "Shablon sifatida saqlash",
+      "saveTitle": "Retsept shablonini saqlash",
+      "saveDescription": "Joriy dorilar, qayta yozishlar va eslatmalarni qayta ishlatiladigan shablon sifatida saqlang.",
+      "name": "Nomi",
+      "description": "Tavsif (ixtiyoriy)",
+      "share": "Klinikam bilan ulashish",
+      "shareHint": "Klinikangizdagi boshqa shifokorlar bu shablondan foydalanishi mumkin.",
+      "applied": "Shablon qo'llanildi",
+      "delete": "Shablonni o'chirish",
+      "deleteConfirm": "Bu shablon o'chirilsinmi?",
+      "saving": "Saqlanmoqda…",
+      "nameRequired": "Nom talab qilinadi"
     }
   }
 }
