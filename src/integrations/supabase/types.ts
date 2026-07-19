@@ -1408,6 +1408,7 @@ export type Database = {
           amount: number
           amount_cents: number | null
           appointment_id: string | null
+          appointment_procedure_id: string | null
           created_at: string
           currency: string
           description: string | null
@@ -1417,6 +1418,7 @@ export type Database = {
           invoice_id: string | null
           location_id: string | null
           metadata: Json | null
+          patient_id: string | null
           payment_hold_id: string | null
           practice_id: string | null
           provider: string | null
@@ -1433,6 +1435,7 @@ export type Database = {
           amount: number
           amount_cents?: number | null
           appointment_id?: string | null
+          appointment_procedure_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -1442,6 +1445,7 @@ export type Database = {
           invoice_id?: string | null
           location_id?: string | null
           metadata?: Json | null
+          patient_id?: string | null
           payment_hold_id?: string | null
           practice_id?: string | null
           provider?: string | null
@@ -1458,6 +1462,7 @@ export type Database = {
           amount?: number
           amount_cents?: number | null
           appointment_id?: string | null
+          appointment_procedure_id?: string | null
           created_at?: string
           currency?: string
           description?: string | null
@@ -1467,6 +1472,7 @@ export type Database = {
           invoice_id?: string | null
           location_id?: string | null
           metadata?: Json | null
+          patient_id?: string | null
           payment_hold_id?: string | null
           practice_id?: string | null
           provider?: string | null
@@ -1492,6 +1498,13 @@ export type Database = {
             columns: ["appointment_id"]
             isOneToOne: false
             referencedRelation: "patient_all_appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_appointment_procedure_id_fkey"
+            columns: ["appointment_procedure_id"]
+            isOneToOne: true
+            referencedRelation: "appointment_procedures"
             referencedColumns: ["id"]
           },
           {
@@ -11169,6 +11182,14 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      patient_outstanding_balance_v: {
+        Row: {
+          currency: string | null
+          outstanding_cents: number | null
+          patient_id: string | null
+        }
+        Relationships: []
       }
       public_practice_locations: {
         Row: {
