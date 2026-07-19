@@ -6,13 +6,19 @@ import {
   generateMedicalCard043uUzbek,
   type MedicalCardData,
 } from '@/utils/generateMedicalCard043u';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface Props {
   data: MedicalCardData;
   practice: any;
   locations: any[];
+  /** When provided, diagnoses recorded in the session are merged into the 043/u form. */
+  appointmentId?: string | null;
+  /** When provided, patient-level diagnoses are also included. */
+  patientId?: string | null;
 }
+
 
 const UZ_KEYWORDS = [
   'uzbekistan', 'uzbekiston', "o'zbekiston", 'ozbekiston', 'uz',
