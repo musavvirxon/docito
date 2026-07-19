@@ -1,51 +1,97 @@
 
-## Move MCP consent redirect URLs to docito.app and remove all `.lovable` links
+## Goal
 
-The redirect allow-list lives in **Supabase Auth → URL Configuration → Redirect URLs**, not in the codebase. This change is a dashboard edit on your side.
+Four connected fixes on the appointment session workspace:
 
-### What to change in Supabase (once, ~1 minute)
+1. Complete EN/RU/UZ i18n across every tab and its backend messages
+2. Auto-generate a bill line item each time a procedure is added, and net it against recorded payments
+3. Surface any unpaid balance on the patient profile
+4. Persist diagnoses (general + per-tooth) and feed them into the 043 clinical form document
 
-Open Supabase dashboard → **Authentication → URL Configuration → Redirect URLs**.
+---
 
-**Remove every entry that contains `.lovable` or `docito.lovable.app`:**
-- `https://docito.lovable.app/.lovable/oauth/consent`
-- `https://docito.lovable.app/.docito/oauth/consent`
-- `https://docito.app/.lovable/oauth/consent` (path contains `.lovable`)
-- `https://www.docito.app/.lovable/oauth/consent` (path contains `.lovable`)
-- any other entry with `.lovable` in host or path
+## 1. i18n — EN / RU / UZ
 
-**Keep only the docito-branded entries:**
-- `https://docito.app/.docito/oauth/consent`
-- `https://www.docito.app/.docito/oauth/consent`
+Sweep every tab in `AppointmentSession` and its side panels for hardcoded strings, replace with `t(...)` keys, and add matching entries to `public/locales/{en,ru,uz}/dashboard.json` (plus `prescriptions.json`, `finance.json`, `diagnosis` block already scaffolded).
 
-### One important caveat about removing the `/.lovable/oauth/consent` path
+Sections to audit (I'll grep for literal strings in each before editing):
 
-Supabase Auth, after the user signs in during an OAuth authorization, **redirects to `/.lovable/oauth/consent?authorization_id=...` by default** — that path is baked into Supabase's OAuth server and cannot be renamed. If your Supabase project version still hard-codes that path:
+- Prescriptions tab — `DoctorPrescriptionCreator` (currently the visible screen: "Create Prescription", "Use a template", "Save as template", "Medication N", field labels, "Add Another Medication", "Number of Refills", "Additional Notes", "Create Prescription", frequency + unit dropdowns).
+- Procedures tab — `AppointmentProceduresPanel`, category headers, "Add Service/Procedure" modal, currency override labels.
+- Diagnosis tab — add/edit modal, empty state, tooth-scoped labels.
+- Files / Notes / Treatment Plan / Video tabs — remaining literals.
+- Finance/Billing panel — line-item labels, "Outstanding", "Prior balance", "Mark fully paid", payment method options, toast strings.
+- Toasts and error strings from hooks: `useAppointmentFinance`, `useRecordPayment`, `useAppointmentProcedures`, `useAppointmentDiagnoses`.
 
-- Removing `/.lovable/oauth/consent` from the allow-list will break MCP sign-in (the browser will land on a "redirect_uri not allowed" error after Google/email login).
-- The safe way to fully drop `.lovable` from user-visible URLs is to keep `/.lovable/oauth/consent` only on the **apex domain** (`https://docito.app/.lovable/oauth/consent`) so Supabase's internal hop still resolves, while every link *we* publish and every branded URL points at `/.docito/oauth/consent`.
+Rule: every user-visible string, including `toast.success/error` and empty-state copy, goes through `t()`. Keys land under `dashboard.appointmentSession.<tab>.*` where they don't already exist, and are mirrored across `en`, `ru`, `uz`. Other locales stay as-is (English fallback) — user only asked for these three.
 
-If your Supabase project exposes a "Consent redirect path" override in the OAuth 2.1 settings, set it to `/.docito/oauth/consent` and then you can safely remove all `.lovable` entries. If it does not, keep exactly this minimum:
+---
 
-**Minimum safe allow-list:**
-- `https://docito.app/.docito/oauth/consent` (branded, user-facing)
-- `https://www.docito.app/.docito/oauth/consent` (branded, user-facing)
-- `https://docito.app/.lovable/oauth/consent` (only if Supabase still forces this path — remove if the override exists)
+## 2. Auto-billing when a procedure is added
 
-### Why no code change is needed
+Current state: `appointment_procedures` insert doesn't write to `billing_transactions`, so the Finance panel shows $0 billed until someone manually enters a charge.
 
-- Both consent routes are already mounted in `src/App.tsx`, so whichever path Supabase redirects to will render correctly.
-- `OAuthConsent.tsx` uses relative paths — no `.lovable.app` host is referenced in code.
-- The MCP endpoint itself stays at `https://gswwpjdtgsxzcsnrxutu.supabase.co/functions/v1/mcp` (Supabase Functions host, not movable), but users only see docito.app in the browser.
+Change: add a Postgres trigger `trg_ap_autobill` on `appointment_procedures` that on `INSERT` (and on `UPDATE` of `price`/`quantity`/`currency`/`discount`) upserts a matching `billing_transactions` row keyed by `appointment_procedure_id`.
 
-### Verification after you save the allow-list
+- Charge amount = `quantity * unit_price - discount`, stored in `amount_cents` and `amount` with the procedure's `currency`.
+- `transaction_type = 'charge'`, `status = 'pending'`, `description` = procedure name, `appointment_id`, `patient_id`, `doctor_id`, `practice_id` copied from the appointment.
+- On `DELETE` of the procedure → delete/void the linked transaction.
+- Add `appointment_procedure_id uuid` column to `billing_transactions` (unique, nullable) as the idempotency key.
 
-1. Start a fresh MCP connection from ChatGPT / Claude / Cursor.
-2. Sign in — confirm the browser lands on `https://docito.app/.docito/oauth/consent?authorization_id=...`.
-3. Approve — the client should receive the token; `whoami` returns your user.
+Payment netting: `useAppointmentFinance` already computes `outstanding = totalBilled − totalDiscounts − totalPaid`. Once charges exist, this becomes correct automatically. Verify the same math in `useRecordPayment` so `paymentStatus` (`paid` vs `partial`) reflects the appointment's remaining balance, not just the single line.
 
-If step 2 errors with "redirect_uri not allowed", Supabase forced `/.lovable/oauth/consent` — add `https://docito.app/.lovable/oauth/consent` back and retry. That single entry is the only `.lovable` string that may need to remain, and only because Supabase's server hard-codes it.
+Realtime: extend the existing `appointment_procedures` subscription in the finance panel to also refetch on `billing_transactions` and `payments` changes for the appointment.
 
-### Nothing to implement in code
+---
 
-Approve this plan and update the allow-list; ping me once saved and I'll run the verification. If sign-in fails, I'll help you locate the Supabase OAuth "consent redirect path" override so we can drop the last `.lovable` entry too.
+## 3. Outstanding balance on patient profile
+
+Add a database view `patient_outstanding_balance_v` (security_invoker):
+
+```
+select patient_id,
+       sum(charges) - sum(discounts) - sum(payments) as outstanding_cents,
+       currency
+from ... group by patient_id, currency
+```
+
+Frontend:
+
+- New hook `usePatientOutstanding(patientId)` reading that view.
+- Patient profile header (in `DoctorPatientProfile` / `PatientOverviewCard`) shows a badge: "Outstanding: {amount} {currency}" when `> 0`, muted "Paid up" when `0`. Uses `useCurrency` for display conversion. Localized via `dashboard.patient.outstanding.*`.
+- Patient list row gets the same badge so front desk can see debtors at a glance.
+
+---
+
+## 4. Diagnosis persistence + 043 form
+
+Current state: `appointment_diagnoses` table exists; the Diagnosis tab writes to it but the 043 export doesn't read from it, and tooth-scoped diagnoses from the dental chart aren't merged in.
+
+Changes:
+
+- Confirm every diagnosis write path (general modal + tooth annotation modal) inserts into `appointment_diagnoses` with `tooth_number` set when applicable, `icd_code`, `description`, `severity`, `notes`, `diagnosed_at`.
+- Wire the Diagnosis tab list to also render tooth diagnoses (join `patient_bone_annotations` / `tooth_records` where they carry a diagnosis) so the doctor sees a single unified list — same source used by the 043 exporter.
+- Update the 043 form generator (in `supabase/functions/generate-043-form` or the client-side builder — I'll read to confirm which) so the "Diagnosis" table (section 12/13 depending on template) is populated from `appointment_diagnoses` for the appointment: columns = date, ICD-10, description, tooth (if any), severity. Empty rows only when there are truly zero diagnoses.
+- Realtime refresh on the Diagnosis tab already exists; verify it fires after tooth-annotation saves too.
+
+---
+
+## Technical notes
+
+- Migrations needed:
+  1. `ALTER TABLE billing_transactions ADD COLUMN appointment_procedure_id uuid UNIQUE REFERENCES appointment_procedures(id) ON DELETE CASCADE;`
+  2. `CREATE FUNCTION public.autobill_appointment_procedure()` + triggers for INSERT/UPDATE/DELETE.
+  3. `CREATE VIEW public.patient_outstanding_balance_v WITH (security_invoker=on) AS ...`; `GRANT SELECT` to `authenticated`.
+- No schema change needed for diagnoses — table already covers it.
+- All new UI strings use existing `useTranslation('dashboard')` / `'finance'` / `'prescriptions'` namespaces to avoid a namespace explosion.
+- No mock data anywhere; empty states must be real i18n keys.
+
+---
+
+## Out of scope (call out if you want them)
+
+- Stripe/actual online payment collection (previous thread) — unchanged here.
+- Locales other than en/ru/uz (they'll continue falling back to English).
+- Redesigning the 043 form layout — only wiring diagnosis data into the existing template.
+
+Confirm and I'll implement in this order: migrations → auto-bill trigger → outstanding view + profile badge → diagnosis→043 wiring → i18n sweep last (so all new strings get keyed in one pass).
