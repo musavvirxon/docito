@@ -1318,6 +1318,8 @@ const AdminDashboard = () => {
                                   <MedicalCardDownloadButton
                                     practice={practice}
                                     locations={locations}
+                                    appointmentId={a.id}
+                                    patientId={a.patient_id || p.id || null}
                                     data={{
                                       patientName: a.patient_name || p.name || '',
                                       gender: p.gender || (a as any).patient_gender || '',
@@ -2991,6 +2993,8 @@ const AdminDashboard = () => {
                                         <MedicalCardDownloadButton
                                           practice={practice}
                                           locations={locations}
+                                          appointmentId={a.id}
+                                          patientId={selectedPatient?.id || null}
                                           data={{
                                             patientName: selectedPatient?.name || '',
                                             gender: selectedPatient?.gender || '',
@@ -3920,6 +3924,8 @@ const AdminDashboard = () => {
                                             <MedicalCardDownloadButton
                                               practice={practice}
                                               locations={locations}
+                                              appointmentId={(tx as any)?.appointment_id || null}
+                                              patientId={p?.id || (tx as any)?.patient_id || null}
                                               data={{
                                                 patientName: pName || p.name || '',
                                                 gender: p.gender || '',

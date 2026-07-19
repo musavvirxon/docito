@@ -6,13 +6,19 @@ import {
   generateMedicalCard043uUzbek,
   type MedicalCardData,
 } from '@/utils/generateMedicalCard043u';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface Props {
   data: MedicalCardData;
   practice: any;
   locations: any[];
+  /** When provided, diagnoses recorded in the session are merged into the 043/u form. */
+  appointmentId?: string | null;
+  /** When provided, patient-level diagnoses are also included. */
+  patientId?: string | null;
 }
+
 
 const UZ_KEYWORDS = [
   'uzbekistan', 'uzbekiston', "o'zbekiston", 'ozbekiston', 'uz',
@@ -36,19 +42,75 @@ function isUzbekistanClinic(practice: any, locations: any[]): boolean {
   return false;
 }
 
-export function MedicalCardDownloadButton({ data, practice, locations }: Props) {
+export function MedicalCardDownloadButton({ data, practice, locations, appointmentId, patientId }: Props) {
   const [loading, setLoading] = useState<'ru' | 'uz' | null>(null);
   const [open, setOpen] = useState(false);
 
   if (!isUzbekistanClinic(practice, locations)) return null;
 
+  const enrichDiagnosis = async (): Promise<string> => {
+    const pieces: string[] = [];
+    if (data.diagnosis) pieces.push(data.diagnosis);
+    try {
+      const queries: Promise<any>[] = [];
+      if (appointmentId) {
+        queries.push(
+          (supabase as any)
+            .from('appointment_diagnoses')
+            .select('diagnosis_title, icd10_code, notes')
+            .eq('appointment_id', appointmentId),
+        );
+      }
+      if (patientId) {
+        queries.push(
+          (supabase as any)
+            .from('appointment_diagnoses')
+            .select('diagnosis_title, icd10_code')
+            .eq('patient_id', patientId)
+            .order('created_at', { ascending: false })
+            .limit(10),
+        );
+        queries.push(
+          (supabase as any)
+            .from('tooth_procedure_history')
+            .select('tooth_number, diagnosis, procedure_name')
+            .eq('patient_id', patientId)
+            .order('created_at', { ascending: false })
+            .limit(20),
+        );
+      }
+      const results = await Promise.all(queries);
+      const seen = new Set(pieces.map((p) => p.toLowerCase()));
+      for (const r of results) {
+        for (const row of (r?.data as any[]) || []) {
+          const label = row.diagnosis_title
+            ? `${row.diagnosis_title}${row.icd10_code ? ` (${row.icd10_code})` : ''}`
+            : row.tooth_number
+              ? `Tish ${row.tooth_number}: ${row.diagnosis || row.procedure_name || ''}`.trim()
+              : '';
+          const key = label.toLowerCase();
+          if (label && !seen.has(key)) {
+            seen.add(key);
+            pieces.push(label);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[043u] diagnosis enrichment skipped', e);
+    }
+    return pieces.filter(Boolean).join('; ');
+  };
+
+
   const download = async (lang: 'ru' | 'uz') => {
     setLoading(lang);
     setOpen(false);
     try {
+      const enrichedDiagnosis = await enrichDiagnosis();
+      const enriched: MedicalCardData = { ...data, diagnosis: enrichedDiagnosis || data.diagnosis };
       const blob = lang === 'ru'
-        ? await generateMedicalCard043uRussian(data)
-        : await generateMedicalCard043uUzbek(data);
+        ? await generateMedicalCard043uRussian(enriched)
+        : await generateMedicalCard043uUzbek(enriched);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
