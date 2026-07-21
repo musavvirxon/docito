@@ -534,7 +534,7 @@ const DoctorDashboardContent = () => {
                       {sidebarItems.map(item => (
                         <SidebarMenuItem key={item.id}>
                           <SidebarMenuButton 
-                            onClick={() => setActiveSection(item.id)} 
+                            onClick={() => handleSelectSection(item.id)} 
                             isActive={activeSection === item.id}
                             className={cn(
                               "mx-2 rounded-lg transition-all",
