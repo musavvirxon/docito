@@ -107,8 +107,12 @@ export function MedicalCardDownloadButton({ data, practice, locations, appointme
     setLoading(lang);
     setOpen(false);
     try {
-      const enrichedDiagnosis = await enrichDiagnosis();
-      const enriched: MedicalCardData = { ...data, diagnosis: enrichedDiagnosis || data.diagnosis };
+      const { text: enrichedDiagnosis, list: examDiagnoses } = await enrichDiagnosis();
+      const enriched: MedicalCardData = {
+        ...data,
+        diagnosis: enrichedDiagnosis || data.diagnosis,
+        examDiagnoses,
+      };
       const blob = lang === 'ru'
         ? await generateMedicalCard043uRussian(enriched)
         : await generateMedicalCard043uUzbek(enriched);
