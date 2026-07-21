@@ -9,8 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Users, Calendar, FileText, Plus, ArrowUpDown, Phone, ChevronRight, UserPlus, FileSpreadsheet } from "lucide-react";
-import { useDoctorPatients } from "@/hooks/useDoctorPatients";
 import { useDoctorPatientsV2, DoctorPatient } from "@/hooks/useDoctorPatientsV2";
+import { useDoctorPatientAppointmentCounts } from "@/hooks/useDoctorPatientAppointmentCounts";
 import { useTranslation } from "react-i18next";
 import ExcelPatientImport from "./ExcelPatientImport";
 import { useDoctorData } from "@/contexts/DoctorDataContext";
@@ -25,8 +25,8 @@ type SortOption = "name-asc" | "name-desc" | "newest" | "oldest";
 
 const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatient }: PatientListSectionProps) => {
   const { t } = useTranslation("patients");
-  const { patients: appointmentPatients, loading: loadingAppointment } = useDoctorPatients();
   const { patients: directPatients, loading: loadingDirect, refreshPatients } = useDoctorPatientsV2();
+  const { counts: apptCounts, loading: loadingCounts } = useDoctorPatientAppointmentCounts();
   const { doctorProfile } = useDoctorData();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -35,44 +35,30 @@ const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatie
   const [activeTab, setActiveTab] = useState<string>("all");
   const [showExcelImport, setShowExcelImport] = useState(false);
 
-  const loading = loadingAppointment || loadingDirect;
+  const loading = loadingDirect || loadingCounts;
 
-  // Combine both patient sources for "all" tab
+  // Single source of truth: doctor_patients rows, classified by real appointment count.
   const allPatients = useMemo(() => {
-    const appointmentMapped = appointmentPatients.map(p => ({
-      id: p.id,
-      name: p.full_name || "Unknown",
-      email: p.email,
-      phone: p.phone,
-      age: p.age,
-      gender: p.gender,
-      avatar: p.avatar_url,
-      status: p.status,
-      lastVisit: p.lastVisit,
-      totalVisits: p.totalVisits,
-      created_at: p.created_at,
-      type: 'appointment' as const,
-      userId: p.user_id,
-    }));
-
-    const directMapped = directPatients.map(p => ({
-      id: p.id,
-      name: p.full_name,
-      email: p.email,
-      phone: p.phone,
-      age: p.age,
-      gender: p.gender,
-      avatar: p.profile_photo_url,
-      status: p.status,
-      lastVisit: null,
-      totalVisits: 0,
-      created_at: p.created_at,
-      type: 'direct' as const,
-      userId: p.id,
-    }));
-
-    return [...appointmentMapped, ...directMapped];
-  }, [appointmentPatients, directPatients]);
+    return directPatients.map((p) => {
+      const totalVisits = apptCounts.get(p.id) || 0;
+      const type: 'appointment' | 'direct' = totalVisits > 0 ? 'appointment' : 'direct';
+      return {
+        id: p.id,
+        name: p.full_name || "Unknown",
+        email: p.email,
+        phone: p.phone,
+        age: p.age,
+        gender: p.gender,
+        avatar: p.profile_photo_url,
+        status: p.status,
+        lastVisit: null as string | null,
+        totalVisits,
+        created_at: p.created_at,
+        type,
+        userId: p.id,
+      };
+    });
+  }, [directPatients, apptCounts]);
 
   const filteredPatients = useMemo(() => {
     let result = activeTab === "direct" 
