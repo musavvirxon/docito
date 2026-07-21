@@ -48,7 +48,7 @@ export function MedicalCardDownloadButton({ data, practice, locations, appointme
 
   if (!isUzbekistanClinic(practice, locations)) return null;
 
-  const enrichDiagnosis = async (): Promise<string> => {
+  const enrichDiagnosis = async (): Promise<{ text: string; list: string[] }> => {
     const pieces: string[] = [];
     if (data.diagnosis) pieces.push(data.diagnosis);
     try {
@@ -98,16 +98,21 @@ export function MedicalCardDownloadButton({ data, practice, locations, appointme
     } catch (e) {
       console.warn('[043u] diagnosis enrichment skipped', e);
     }
-    return pieces.filter(Boolean).join('; ');
+    return { text: pieces.filter(Boolean).join('; '), list: pieces.filter(Boolean) };
   };
+
 
 
   const download = async (lang: 'ru' | 'uz') => {
     setLoading(lang);
     setOpen(false);
     try {
-      const enrichedDiagnosis = await enrichDiagnosis();
-      const enriched: MedicalCardData = { ...data, diagnosis: enrichedDiagnosis || data.diagnosis };
+      const { text: enrichedDiagnosis, list: examDiagnoses } = await enrichDiagnosis();
+      const enriched: MedicalCardData = {
+        ...data,
+        diagnosis: enrichedDiagnosis || data.diagnosis,
+        examDiagnoses,
+      };
       const blob = lang === 'ru'
         ? await generateMedicalCard043uRussian(enriched)
         : await generateMedicalCard043uUzbek(enriched);
