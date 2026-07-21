@@ -263,6 +263,19 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
   text(S.oralExam + ':', { size: 10, bold: true, gap: 1 });
   text(S.legend, { size: 7.5, gap: 2 });
 
+  // Diagnoses recorded in the appointment session — rendered inside the ko'rik section.
+  const examDx = (data.examDiagnoses || []).filter((s) => s && s.trim().length > 0);
+  if (examDx.length > 0) {
+    const bulletLang: 'ru' | 'uz' = S === RU ? 'ru' : 'uz';
+    const heading = bulletLang === 'ru' ? 'Установленные диагнозы:' : "Qo'yilgan tashxislar:";
+    text(heading, { size: 9, bold: true, gap: 1 });
+    for (const d of examDx) {
+      text(`•  ${d}`, { size: 9, gap: 0.5 });
+    }
+    y += 1;
+  }
+
+
   // Tooth chart — 32 teeth with midline, populated with diagnoses
   const lang: 'ru' | 'uz' = S === RU ? 'ru' : 'uz';
   const findings = (data.toothFindings || []).map((f) => ({
