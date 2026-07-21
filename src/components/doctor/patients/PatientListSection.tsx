@@ -111,15 +111,16 @@ const PatientListSection = ({ onSelectPatient, onSelectDirectPatient, onAddPatie
     total: allPatients.length,
     active: allPatients.filter((p) => p.status === "active").length,
     inactive: allPatients.filter((p) => p.status === "inactive").length,
-    fromAppointments: appointmentPatients.length,
-    directlyAdded: directPatients.length,
-  }), [allPatients, appointmentPatients, directPatients]);
+    fromAppointments: allPatients.filter((p) => p.type === 'appointment').length,
+    directlyAdded: allPatients.filter((p) => p.type === 'direct').length,
+  }), [allPatients]);
 
   const handlePatientClick = (patient: typeof filteredPatients[0]) => {
-    if (patient.type === 'direct' && onSelectDirectPatient) {
+    // All rows come from doctor_patients — route to the direct-patient view.
+    if (onSelectDirectPatient) {
       onSelectDirectPatient(patient.id);
     } else {
-      onSelectPatient(patient.userId);
+      onSelectPatient(patient.id);
     }
   };
 
