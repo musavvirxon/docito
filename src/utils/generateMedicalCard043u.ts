@@ -32,6 +32,8 @@ export interface MedicalCardData {
   clinicAddress: string;
   // Optional dental findings (rendered inside the chart cells)
   toothFindings?: ToothFinding[];
+  // Optional list of diagnoses to render under the oral-exam ("ko'rik") section
+  examDiagnoses?: string[];
 }
 
 const FONT_NAME = PDF_FONT_NAME;
