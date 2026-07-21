@@ -59,6 +59,17 @@ const DoctorDashboardContent = () => {
     scheduleSettings
   } = useDoctorData();
   const [activeSection, setActiveSection] = useState("dashboard");
+  // Bumped when the user clicks the sidebar entry for the section they are
+  // already viewing — used as a React key to remount the section so it
+  // resets back to its main view (e.g. patient list instead of a detail).
+  const [sectionResetKey, setSectionResetKey] = useState(0);
+  const handleSelectSection = (id: string) => {
+    if (id === activeSection) {
+      setSectionResetKey((k) => k + 1);
+    } else {
+      setActiveSection(id);
+    }
+  };
   
   // Deep-link support
   useEffect(() => {
@@ -523,7 +534,7 @@ const DoctorDashboardContent = () => {
                       {sidebarItems.map(item => (
                         <SidebarMenuItem key={item.id}>
                           <SidebarMenuButton 
-                            onClick={() => setActiveSection(item.id)} 
+                            onClick={() => handleSelectSection(item.id)} 
                             isActive={activeSection === item.id}
                             className={cn(
                               "mx-2 rounded-lg transition-all",
@@ -565,7 +576,9 @@ const DoctorDashboardContent = () => {
             <main className="flex-1 overflow-auto">
               <div className="container max-w-7xl py-8 px-6">
                 <ErrorBoundary>
-                  {renderContent()}
+                  <div key={`${activeSection}-${sectionResetKey}`}>
+                    {renderContent()}
+                  </div>
                 </ErrorBoundary>
               </div>
             </main>
