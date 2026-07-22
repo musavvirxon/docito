@@ -4,6 +4,8 @@
   "subtitleViewer": "View room and bed availability for your clinic.",
   "refresh": "Refresh",
   "addRoom": "Add Room",
+  "addCabinet": "Add Cabinet",
+  "cabinet": "Cabinet",
   "addBed": "Add Bed",
   "editRoom": "Edit Room",
   "edit": "Edit",
