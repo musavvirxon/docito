@@ -74,7 +74,9 @@
       "locations": "Локации",
       "patients": "Пациенты",
       "billing": "Оплата",
-      "analytics": "Аналитика"
+      "analytics": "Аналитика",
+      "inventory": "Инвентарь",
+      "rooms": "Палаты и койки"
     },
     "overview": {
       "recentAppointments": "Недавние приемы",
@@ -753,7 +755,10 @@
       "logout": "Выйти",
       "diagnoses": "Diagnoses",
       "referrals": "Referrals",
-      "verifyDocuments": "Verify Documents"
+      "verifyDocuments": "Verify Documents",
+      "prescriptions": "Рецепты",
+      "inventory": "Инвентарь",
+      "rooms": "Палаты и койки"
     },
     "messaging": {
       "description": "Communicate with patients and healthcare providers"
@@ -2215,9 +2220,9 @@
         "billing": "Billing & Payments",
         "intake": "Patient Intake",
         "records": "Medical Records",
-        "prescriptions": "Prescriptions",
+        "prescriptions": "Рецепты",
         "dispensing": "Dispensing Queue",
-        "inventory": "Inventory",
+        "inventory": "Инвентарь",
         "orders": "Orders",
         "patientHistory": "Patient History",
         "labOrders": "Lab Orders",
@@ -2229,7 +2234,8 @@
         "imagingOrders": "Imaging Orders",
         "scanQueue": "Scan Queue",
         "resultsUpload": "Results Upload",
-        "reportVerification": "Report Verification"
+        "reportVerification": "Report Verification",
+        "rooms": "Палаты и койки"
       }
     },
     "overview": {
