@@ -29,8 +29,9 @@ interface AddRoomModalProps {
   mode?: 'room' | 'cabinet';
 }
 
-export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: AddRoomModalProps) {
+export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode = 'room' }: AddRoomModalProps) {
   const { t } = useTranslation('rooms');
+  const isCabinet = mode === 'cabinet' || editRoom?.room_type === 'consultation';
   const [saving, setSaving] = useState(false);
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [form, setForm] = useState({
@@ -63,10 +64,12 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
         color: editRoom.color ?? ROOM_COLORS[0], notes: editRoom.notes ?? '',
         primary_doctor_id: editRoom.primary_doctor_id ?? null,
       });
+    } else if (mode === 'cabinet') {
+      setForm({ name: '', room_number: '', floor: '', room_type: 'consultation', status: 'available', capacity: 1, color: '#0ea5e9', notes: '', primary_doctor_id: null });
     } else {
       setForm({ name: '', room_number: '', floor: '', room_type: 'general', status: 'available', capacity: 1, color: ROOM_COLORS[0], notes: '', primary_doctor_id: null });
     }
-  }, [editRoom, open]);
+  }, [editRoom, open, mode]);
 
   const set = (k: string) => (v: string | number | null) => setForm(f => ({ ...f, [k]: v }));
 
