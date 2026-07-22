@@ -4,6 +4,8 @@
   "subtitleViewer": "Klinikangizdagi xonalar va koykalarning mavjudligini ko‘ring.",
   "refresh": "Yangilash",
   "addRoom": "Xona qo‘shish",
+  "addCabinet": "Kabinet qo‘shish",
+  "cabinet": "Kabinet",
   "addBed": "Koyka qo‘shish",
   "editRoom": "Xonani tahrirlash",
   "edit": "Tahrirlash",
@@ -78,6 +80,13 @@
     "primaryDoctorPlaceholder": "Shifokorni tanlang (ixtiyoriy)",
     "noDoctor": "Shifokor tayinlanmagan",
     "primaryDoctorHint": "Bemorlar bu xonada / stoyk'ada ishlaydigan shifokor sifatida ushbu shifokorni ko'radi."
+  },
+  "addCabinetModal": {
+    "title": "Kabinet qo‘shish",
+    "editTitle": "Kabinetni tahrirlash",
+    "doctor": "Shifokor (majburiy)",
+    "doctorPlaceholder": "Ushbu kabinetda ishlaydigan shifokorni tanlang",
+    "doctorHint": "Bu shifokor va kabinet raqami bemorlar navbat ekranida ko‘rinadi."
   },
   "addBedModal": {
     "title": "Koyka qo‘shish",

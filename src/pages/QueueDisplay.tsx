@@ -105,9 +105,14 @@ export default function QueueDisplay() {
             }`}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold">{room.roomName}</h2>
+              <div className="min-w-0">
+                <h2 className="text-2xl font-semibold truncate">{room.roomName}</h2>
+                {room.roomNumber && (
+                  <p className="text-sm text-slate-400 mt-0.5">#{room.roomNumber}</p>
+                )}
+              </div>
               <span
-                className={`text-sm font-medium px-3 py-1 rounded-full ${
+                className={`text-sm font-medium px-3 py-1 rounded-full shrink-0 ${
                   room.busy ? "bg-rose-500/20 text-rose-300" : "bg-emerald-500/20 text-emerald-300"
                 }`}
               >

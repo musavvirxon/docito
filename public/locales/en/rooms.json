@@ -4,6 +4,8 @@
   "subtitleViewer": "View room and bed availability for your clinic.",
   "refresh": "Refresh",
   "addRoom": "Add Room",
+  "addCabinet": "Add Cabinet",
+  "cabinet": "Cabinet",
   "addBed": "Add Bed",
   "editRoom": "Edit Room",
   "edit": "Edit",
@@ -78,6 +80,13 @@
     "primaryDoctorPlaceholder": "Pick a doctor (optional)",
     "noDoctor": "No assigned doctor",
     "primaryDoctorHint": "Patients see this doctor as the one working in this room / counter."
+  },
+  "addCabinetModal": {
+    "title": "Add Cabinet",
+    "editTitle": "Edit Cabinet",
+    "doctor": "Doctor (required)",
+    "doctorPlaceholder": "Select the doctor working in this cabinet",
+    "doctorHint": "This doctor and the cabinet number will appear on the patient queue display."
   },
   "addBedModal": {
     "title": "Add Bed",

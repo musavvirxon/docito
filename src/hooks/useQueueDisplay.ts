@@ -15,6 +15,7 @@ interface QueueEntry {
 interface QueueRoom {
   room_id: string;
   room_name: string;
+  room_number?: string | null;
   primary_doctor_id?: string | null;
   primary_doctor_name?: string | null;
 }
@@ -29,6 +30,7 @@ interface QueueDisplayPayload {
 export interface RoomView {
   roomId: string;
   roomName: string;
+  roomNumber: string | null;
   doctorName: string | null;
   busy: boolean;
   currentPatient: string | null;
@@ -65,8 +67,7 @@ function buildRooms(rooms: QueueRoom[], queue: QueueEntry[]): RoomView[] {
     return {
       roomId: room.room_id,
       roomName: room.room_name,
-      // Prefer the doctor assigned to this room in Room & Bed Management,
-      // then fall back to whoever is actively seeing patients here.
+      roomNumber: room.room_number ?? null,
       doctorName:
         room.primary_doctor_name ||
         inProgress?.doctor_name ||

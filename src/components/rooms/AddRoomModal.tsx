@@ -25,10 +25,13 @@ interface AddRoomModalProps {
   onSave: (data: Omit<ClinicRoom, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   practiceId: string;
   editRoom?: RoomWithBeds | null;
+  /** 'cabinet' preselects consultation type and requires a doctor. */
+  mode?: 'room' | 'cabinet';
 }
 
-export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: AddRoomModalProps) {
+export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode = 'room' }: AddRoomModalProps) {
   const { t } = useTranslation('rooms');
+  const isCabinet = mode === 'cabinet' || editRoom?.room_type === 'consultation';
   const [saving, setSaving] = useState(false);
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [form, setForm] = useState({
@@ -61,15 +64,18 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
         color: editRoom.color ?? ROOM_COLORS[0], notes: editRoom.notes ?? '',
         primary_doctor_id: editRoom.primary_doctor_id ?? null,
       });
+    } else if (mode === 'cabinet') {
+      setForm({ name: '', room_number: '', floor: '', room_type: 'consultation', status: 'available', capacity: 1, color: '#0ea5e9', notes: '', primary_doctor_id: null });
     } else {
       setForm({ name: '', room_number: '', floor: '', room_type: 'general', status: 'available', capacity: 1, color: ROOM_COLORS[0], notes: '', primary_doctor_id: null });
     }
-  }, [editRoom, open]);
+  }, [editRoom, open, mode]);
 
   const set = (k: string) => (v: string | number | null) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
+    if (isCabinet && !form.primary_doctor_id) return;
     setSaving(true);
     await onSave({
       practice_id: practiceId,
@@ -91,7 +97,11 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{editRoom ? t('addRoomModal.editTitle') : t('addRoomModal.title')}</DialogTitle>
+          <DialogTitle>
+            {editRoom
+              ? (isCabinet ? t('addCabinetModal.editTitle', 'Edit Cabinet') : t('addRoomModal.editTitle'))
+              : (isCabinet ? t('addCabinetModal.title', 'Add Cabinet') : t('addRoomModal.title'))}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -113,35 +123,47 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>{t('addRoomModal.roomType')}</Label>
-              <Select value={form.room_type} onValueChange={v => set('room_type')(v)}>
+              <Select value={form.room_type} onValueChange={v => set('room_type')(v)} disabled={isCabinet}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ROOM_TYPES.map(rt => <SelectItem key={rt} value={rt}>{t(`roomType.${rt}`)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label>{t('addRoomModal.capacity')}</Label>
-              <Input type="number" min={1} max={50} value={form.capacity} onChange={e => set('capacity')(Number(e.target.value))} />
-            </div>
+            {!isCabinet && (
+              <div className="space-y-1">
+                <Label>{t('addRoomModal.capacity')}</Label>
+                <Input type="number" min={1} max={50} value={form.capacity} onChange={e => set('capacity')(Number(e.target.value))} />
+              </div>
+            )}
           </div>
 
           <div className="space-y-1">
-            <Label>{t('addRoomModal.primaryDoctor', 'Assigned doctor')}</Label>
+            <Label>
+              {isCabinet
+                ? t('addCabinetModal.doctor', 'Doctor (required)')
+                : t('addRoomModal.primaryDoctor', 'Assigned doctor')}
+            </Label>
             <Select
               value={form.primary_doctor_id ?? UNASSIGNED}
               onValueChange={v => set('primary_doctor_id')(v === UNASSIGNED ? null : v)}
             >
               <SelectTrigger>
-                <SelectValue placeholder={t('addRoomModal.primaryDoctorPlaceholder', 'Pick a doctor (optional)')} />
+                <SelectValue placeholder={isCabinet
+                  ? t('addCabinetModal.doctorPlaceholder', 'Select the doctor working in this cabinet')
+                  : t('addRoomModal.primaryDoctorPlaceholder', 'Pick a doctor (optional)')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={UNASSIGNED}>{t('addRoomModal.noDoctor', 'No assigned doctor')}</SelectItem>
+                {!isCabinet && (
+                  <SelectItem value={UNASSIGNED}>{t('addRoomModal.noDoctor', 'No assigned doctor')}</SelectItem>
+                )}
                 {doctors.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {t('addRoomModal.primaryDoctorHint', 'Patients see this doctor as the one working in this room / counter.')}
+              {isCabinet
+                ? t('addCabinetModal.doctorHint', 'This doctor and the cabinet number will appear on the patient queue display.')
+                : t('addRoomModal.primaryDoctorHint', 'Patients see this doctor as the one working in this room / counter.')}
             </p>
           </div>
 
@@ -167,8 +189,14 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: Ad
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
-          <Button onClick={handleSave} disabled={!form.name.trim() || saving}>
-            {saving ? t('saving') : editRoom ? t('saveChanges') : t('addRoom')}
+          <Button onClick={handleSave} disabled={!form.name.trim() || saving || (isCabinet && !form.primary_doctor_id)}>
+            {saving
+              ? t('saving')
+              : editRoom
+                ? t('saveChanges')
+                : isCabinet
+                  ? t('addCabinet', 'Add Cabinet')
+                  : t('addRoom')}
           </Button>
         </DialogFooter>
       </DialogContent>

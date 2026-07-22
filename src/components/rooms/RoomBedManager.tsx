@@ -121,6 +121,7 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
     useRoomBed({ practiceId, role, doctorId });
 
   const [addRoomOpen, setAddRoomOpen]     = useState(false);
+  const [addMode, setAddMode]             = useState<'room' | 'cabinet'>('room');
   const [editRoom, setEditRoom]           = useState<RoomWithBeds | null>(null);
   const [addBedRoom, setAddBedRoom]       = useState<RoomWithBeds | null>(null);
   const [selectedBed, setSelectedBed]     = useState<ClinicBed | null>(null);
@@ -161,10 +162,16 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
             <span className="ml-1.5 hidden sm:inline">{t('refresh')}</span>
           </Button>
           {isAdmin && (
-            <Button size="sm" onClick={() => setAddRoomOpen(true)}>
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              {t('addRoom')}
-            </Button>
+            <>
+              <Button size="sm" variant="outline" onClick={() => { setAddMode('cabinet'); setAddRoomOpen(true); }}>
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                {t('addCabinet', 'Add Cabinet')}
+              </Button>
+              <Button size="sm" onClick={() => { setAddMode('room'); setAddRoomOpen(true); }}>
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                {t('addRoom')}
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -225,6 +232,7 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
         onSave={handleSaveRoom}
         practiceId={practiceId}
         editRoom={editRoom}
+        mode={addMode}
       />
 
       {addBedRoom && (
