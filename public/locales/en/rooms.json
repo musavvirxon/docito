@@ -141,5 +141,6 @@
     "noRooms": "No rooms are set up for this display yet.",
     "nowCalling": "Now calling",
     "goTo": "{{room}} · Dr. {{doctor}}"
-  }
+  },
+  "primaryDoctorBadge": "Doctor: Dr. {{name}}"
 }

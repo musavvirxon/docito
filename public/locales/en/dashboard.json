@@ -74,7 +74,9 @@
       "locations": "Locations",
       "patients": "Patients",
       "billing": "Billing",
-      "analytics": "Analytics"
+      "analytics": "Analytics",
+      "inventory": "Inventory",
+      "rooms": "Rooms & Beds"
     },
     "overview": {
       "recentAppointments": "Recent Appointments",
@@ -739,7 +741,10 @@
       "logout": "Log Out",
       "diagnoses": "Diagnoses",
       "referrals": "Referrals",
-      "verifyDocuments": "Verify Documents"
+      "verifyDocuments": "Verify Documents",
+      "prescriptions": "Prescriptions",
+      "inventory": "Inventory",
+      "rooms": "Rooms & Beds"
     },
     "messaging": {
       "description": "Communicate with patients and healthcare providers"
@@ -2183,7 +2188,8 @@
         "imagingOrders": "Imaging Orders",
         "scanQueue": "Scan Queue",
         "resultsUpload": "Results Upload",
-        "reportVerification": "Report Verification"
+        "reportVerification": "Report Verification",
+        "rooms": "Rooms & Beds"
       }
     },
     "overview": {

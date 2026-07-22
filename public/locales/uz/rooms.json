@@ -141,5 +141,6 @@
     "noRooms": "Bu ekran uchun hali xonalar sozlanmagan.",
     "nowCalling": "Chaqirilmoqda",
     "goTo": "{{room}} · Dr. {{doctor}}"
-  }
+  },
+  "primaryDoctorBadge": "Shifokor: Dr. {{name}}"
 }

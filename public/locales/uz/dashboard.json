@@ -74,7 +74,9 @@
       "locations": "Manzillar",
       "patients": "Bemorlar",
       "billing": "Hisob-kitob",
-      "analytics": "Tahlil"
+      "analytics": "Tahlil",
+      "inventory": "Inventar",
+      "rooms": "Xonalar va koykalar"
     },
     "overview": {
       "recentAppointments": "So'nggi qabullar",
@@ -803,7 +805,10 @@
       "logout": "Chiqish",
       "diagnoses": "Diagnoses",
       "referrals": "Referrals",
-      "verifyDocuments": "Verify Documents"
+      "verifyDocuments": "Verify Documents",
+      "prescriptions": "Retseptlar",
+      "inventory": "Inventar",
+      "rooms": "Xonalar va koykalar"
     },
     "messaging": {
       "description": "Communicate with patients and healthcare providers"
@@ -2351,9 +2356,9 @@
         "billing": "Billing & Payments",
         "intake": "Patient Intake",
         "records": "Medical Records",
-        "prescriptions": "Prescriptions",
+        "prescriptions": "Retseptlar",
         "dispensing": "Dispensing Queue",
-        "inventory": "Inventory",
+        "inventory": "Inventar",
         "orders": "Orders",
         "patientHistory": "Patient History",
         "labOrders": "Lab Orders",
@@ -2365,7 +2370,8 @@
         "imagingOrders": "Imaging Orders",
         "scanQueue": "Scan Queue",
         "resultsUpload": "Results Upload",
-        "reportVerification": "Report Verification"
+        "reportVerification": "Report Verification",
+        "rooms": "Xonalar va koykalar"
       }
     },
     "overview": {
