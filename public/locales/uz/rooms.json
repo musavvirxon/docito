@@ -81,6 +81,13 @@
     "noDoctor": "Shifokor tayinlanmagan",
     "primaryDoctorHint": "Bemorlar bu xonada / stoyk'ada ishlaydigan shifokor sifatida ushbu shifokorni ko'radi."
   },
+  "addCabinetModal": {
+    "title": "Kabinet qo‘shish",
+    "editTitle": "Kabinetni tahrirlash",
+    "doctor": "Shifokor (majburiy)",
+    "doctorPlaceholder": "Ushbu kabinetda ishlaydigan shifokorni tanlang",
+    "doctorHint": "Bu shifokor va kabinet raqami bemorlar navbat ekranida ko‘rinadi."
+  },
   "addBedModal": {
     "title": "Koyka qo‘shish",
     "titleFor": "Koyka qo‘shish — {{room}}",
