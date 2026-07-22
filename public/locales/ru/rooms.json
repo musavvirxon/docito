@@ -141,5 +141,6 @@
     "noRooms": "Для этого экрана ещё не настроены кабинеты.",
     "nowCalling": "Приглашается",
     "goTo": "{{room}} · Д-р {{doctor}}"
-  }
+  },
+  "primaryDoctorBadge": "Врач: Dr. {{name}}"
 }
