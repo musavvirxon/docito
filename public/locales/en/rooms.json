@@ -81,6 +81,13 @@
     "noDoctor": "No assigned doctor",
     "primaryDoctorHint": "Patients see this doctor as the one working in this room / counter."
   },
+  "addCabinetModal": {
+    "title": "Add Cabinet",
+    "editTitle": "Edit Cabinet",
+    "doctor": "Doctor (required)",
+    "doctorPlaceholder": "Select the doctor working in this cabinet",
+    "doctorHint": "This doctor and the cabinet number will appear on the patient queue display."
+  },
   "addBedModal": {
     "title": "Add Bed",
     "titleFor": "Add Bed — {{room}}",
