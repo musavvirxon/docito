@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { BedDouble, Sparkles, Wrench, Lock, User } from 'lucide-react';
+import { BedDouble, Sparkles, Wrench, Lock, User, Stethoscope } from 'lucide-react';
 import type { RoomWithBeds, ClinicBed, BedStatus, RoomStatus } from '@/hooks/useRoomBed';
 
 export const BED_STATUS: Record<BedStatus, { i18nKey: string; dot: string; bg: string; border: string; icon: any; animate: string }> = {
