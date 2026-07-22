@@ -12010,6 +12010,10 @@ export type Database = {
         Args: { p_pharmacy_id: string; p_prescription_id: string }
         Returns: Json
       }
+      shares_conversation_with: {
+        Args: { _other_user: string }
+        Returns: boolean
+      }
       sign_informed_consent: {
         Args: {
           consent_form_id: string
