@@ -25,6 +25,8 @@ interface AddRoomModalProps {
   onSave: (data: Omit<ClinicRoom, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
   practiceId: string;
   editRoom?: RoomWithBeds | null;
+  /** 'cabinet' preselects consultation type and requires a doctor. */
+  mode?: 'room' | 'cabinet';
 }
 
 export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom }: AddRoomModalProps) {
