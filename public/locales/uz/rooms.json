@@ -4,6 +4,8 @@
   "subtitleViewer": "Klinikangizdagi xonalar va koykalarning mavjudligini ko‘ring.",
   "refresh": "Yangilash",
   "addRoom": "Xona qo‘shish",
+  "addCabinet": "Kabinet qo‘shish",
+  "cabinet": "Kabinet",
   "addBed": "Koyka qo‘shish",
   "editRoom": "Xonani tahrirlash",
   "edit": "Tahrirlash",
