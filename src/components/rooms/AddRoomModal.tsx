@@ -97,7 +97,11 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{editRoom ? t('addRoomModal.editTitle') : t('addRoomModal.title')}</DialogTitle>
+          <DialogTitle>
+            {editRoom
+              ? (isCabinet ? t('addCabinetModal.editTitle', 'Edit Cabinet') : t('addRoomModal.editTitle'))
+              : (isCabinet ? t('addCabinetModal.title', 'Add Cabinet') : t('addRoomModal.title'))}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
