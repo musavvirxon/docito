@@ -75,6 +75,7 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
+    if (isCabinet && !form.primary_doctor_id) return;
     setSaving(true);
     await onSave({
       practice_id: practiceId,
