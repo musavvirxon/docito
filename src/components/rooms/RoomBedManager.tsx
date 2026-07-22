@@ -232,6 +232,7 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
         onSave={handleSaveRoom}
         practiceId={practiceId}
         editRoom={editRoom}
+        mode={addMode}
       />
 
       {addBedRoom && (
