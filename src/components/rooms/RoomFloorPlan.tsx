@@ -170,7 +170,7 @@ function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBe
 
       {canEdit && (onAddBed || onRoomEdit || onRoomDelete) && (
         <div className="flex gap-1.5 pt-1 border-t border-border/50">
-          {onAddBed && (
+          {onAddBed && !isCabinet && (
             <Button size="sm" variant="ghost" className="h-6 text-xs px-2" onClick={() => onAddBed(room)}>
               + {t('addBed')}
             </Button>
