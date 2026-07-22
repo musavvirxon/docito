@@ -15,6 +15,7 @@ interface QueueEntry {
 interface QueueRoom {
   room_id: string;
   room_name: string;
+  room_number?: string | null;
   primary_doctor_id?: string | null;
   primary_doctor_name?: string | null;
 }
@@ -29,6 +30,7 @@ interface QueueDisplayPayload {
 export interface RoomView {
   roomId: string;
   roomName: string;
+  roomNumber: string | null;
   doctorName: string | null;
   busy: boolean;
   currentPatient: string | null;
