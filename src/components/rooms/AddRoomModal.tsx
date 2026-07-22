@@ -189,8 +189,14 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>{t('cancel')}</Button>
-          <Button onClick={handleSave} disabled={!form.name.trim() || saving}>
-            {saving ? t('saving') : editRoom ? t('saveChanges') : t('addRoom')}
+          <Button onClick={handleSave} disabled={!form.name.trim() || saving || (isCabinet && !form.primary_doctor_id)}>
+            {saving
+              ? t('saving')
+              : editRoom
+                ? t('saveChanges')
+                : isCabinet
+                  ? t('addCabinet', 'Add Cabinet')
+                  : t('addRoom')}
           </Button>
         </DialogFooter>
       </DialogContent>
