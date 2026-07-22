@@ -111,6 +111,12 @@ function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBe
               {t(`roomType.${room.room_type}`, { defaultValue: room.room_type })}
             </Badge>
           </div>
+          {room.primary_doctor_name && (
+            <p className="text-xs text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1 pt-0.5">
+              <User className="w-3 h-3" />
+              {t('primaryDoctorBadge', { name: room.primary_doctor_name })}
+            </p>
+          )}
         </div>
 
         <div className="text-right shrink-0">
