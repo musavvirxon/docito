@@ -121,6 +121,7 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
     useRoomBed({ practiceId, role, doctorId });
 
   const [addRoomOpen, setAddRoomOpen]     = useState(false);
+  const [addMode, setAddMode]             = useState<'room' | 'cabinet'>('room');
   const [editRoom, setEditRoom]           = useState<RoomWithBeds | null>(null);
   const [addBedRoom, setAddBedRoom]       = useState<RoomWithBeds | null>(null);
   const [selectedBed, setSelectedBed]     = useState<ClinicBed | null>(null);
