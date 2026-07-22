@@ -162,10 +162,16 @@ export function RoomBedManager({ practiceId, userId, role, doctorId }: RoomBedMa
             <span className="ml-1.5 hidden sm:inline">{t('refresh')}</span>
           </Button>
           {isAdmin && (
-            <Button size="sm" onClick={() => setAddRoomOpen(true)}>
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
-              {t('addRoom')}
-            </Button>
+            <>
+              <Button size="sm" variant="outline" onClick={() => { setAddMode('cabinet'); setAddRoomOpen(true); }}>
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                {t('addCabinet', 'Add Cabinet')}
+              </Button>
+              <Button size="sm" onClick={() => { setAddMode('room'); setAddRoomOpen(true); }}>
+                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                {t('addRoom')}
+              </Button>
+            </>
           )}
         </div>
       </div>
