@@ -85,9 +85,11 @@ interface RoomCardProps {
 
 function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBed }: RoomCardProps) {
   const { t } = useTranslation('rooms');
+  const isCabinet = room.room_type === 'consultation';
   const occupiedCount = room.beds.filter(b => b.status === 'occupied').length;
   const totalBeds = room.beds.length;
   const occupancyPct = totalBeds > 0 ? Math.round((occupiedCount / totalBeds) * 100) : 0;
+  const cabinetBusy = isCabinet && room.status === 'occupied';
 
   return (
     <div
@@ -99,6 +101,12 @@ function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBe
           <div className="flex items-center gap-2">
             <span className={cn('inline-block w-2.5 h-2.5 rounded-full shrink-0', ROOM_STATUS_COLOR[room.status])} />
             <h3 className="font-semibold text-sm leading-tight truncate">{room.name}</h3>
+            {isCabinet && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-sky-400 text-sky-600 dark:text-sky-300">
+                <Stethoscope className="w-2.5 h-2.5 mr-0.5" />
+                {t('cabinet', 'Cabinet')}
+              </Badge>
+            )}
           </div>
           <div className="flex gap-2 flex-wrap">
             {room.room_number && (
@@ -117,15 +125,28 @@ function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBe
               {t('primaryDoctorBadge', { name: room.primary_doctor_name })}
             </p>
           )}
+          {room.notes && (
+            <p className="text-[11px] text-muted-foreground italic pt-0.5 line-clamp-2">{room.notes}</p>
+          )}
         </div>
 
         <div className="text-right shrink-0">
-          <p className="text-xs font-bold text-muted-foreground">{occupiedCount}/{totalBeds}</p>
-          <p className="text-[10px] text-muted-foreground">{t('bedsLabel')}</p>
+          {isCabinet ? (
+            <Badge className={cn('text-[10px] px-2', cabinetBusy
+              ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300'
+              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300')}>
+              {cabinetBusy ? t('display.busy', 'In consultation') : t('display.free', 'Free')}
+            </Badge>
+          ) : (
+            <>
+              <p className="text-xs font-bold text-muted-foreground">{occupiedCount}/{totalBeds}</p>
+              <p className="text-[10px] text-muted-foreground">{t('bedsLabel')}</p>
+            </>
+          )}
         </div>
       </div>
 
-      {totalBeds > 0 && (
+      {!isCabinet && totalBeds > 0 && (
         <div className="w-full h-1 rounded-full bg-muted overflow-hidden">
           <div
             className={cn(
@@ -137,7 +158,7 @@ function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBe
         </div>
       )}
 
-      {room.beds.length > 0 ? (
+      {!isCabinet && (room.beds.length > 0 ? (
         <div className="flex flex-wrap gap-2 pt-1">
           {room.beds.map(bed => (
             <BedCell key={bed.id} bed={bed} canEdit={canEdit} onBedClick={(b) => onBedClick(b, room)} />
@@ -145,7 +166,7 @@ function RoomCard({ room, canEdit, onBedClick, onRoomEdit, onRoomDelete, onAddBe
         </div>
       ) : (
         <p className="text-xs text-muted-foreground italic py-2 text-center">{t('noBeds')}</p>
-      )}
+      ))}
 
       {canEdit && (onAddBed || onRoomEdit || onRoomDelete) && (
         <div className="flex gap-1.5 pt-1 border-t border-border/50">
