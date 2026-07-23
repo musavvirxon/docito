@@ -1093,25 +1093,25 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex gap-2 flex-wrap shrink-0">
                         <Button variant="outline" size="sm" onClick={() => guard(async () => {
-                          const name = prompt('Edit provider name:', selectedProvider.name);
+                          const name = prompt(t('admin.pd.editNamePrompt'), selectedProvider.name);
                           if (name && name !== selectedProvider.name) {
                             const { error } = await (supabase as any).from('doctors').update({ full_name: name }).eq('id', selectedProvider.id);
                             if (error) { toast.error(error.message); return; }
-                            toast.success('Provider updated');
+                            toast.success(t("admin.pd.updated"));
                             refreshData();
                           }
-                        })} disabled={!allowModals}>Edit</Button>
+                        })} disabled={!allowModals}>{t("admin.pd.edit")}</Button>
                         <Button variant="outline" size="sm" onClick={() => guard(async () => {
-                          if (!confirm(`Suspend ${selectedProvider.name}?`)) return;
+                          if (!confirm(t('admin.pd.suspendConfirm', { name: selectedProvider.name }))) return;
                           const { error } = await (supabase as any).from('doctors').update({ is_verified: false }).eq('id', selectedProvider.id);
                           if (error) { toast.error(error.message); return; }
-                          toast.success('Provider suspended');
+                          toast.success(t("admin.pd.suspended"));
                           refreshData();
-                        })} disabled={!allowModals}>Suspend</Button>
+                        })} disabled={!allowModals}>{t("admin.pd.suspend")}</Button>
                         <Button variant="outline" size="sm" onClick={() => guard(() => {
                           navigate(`/dashboard/messages`);
                         })} disabled={!allowModals}>
-                          <MessageCircle className="h-4 w-4 mr-1" /> Message
+                          <MessageCircle className="h-4 w-4 mr-1" /> {t("admin.pd.message")}
                         </Button>
                       </div>
                     </div>
@@ -1138,22 +1138,22 @@ const AdminDashboard = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                       {/* Personal Info */}
                       <Card className="rounded-xl lg:col-span-8">
-                        <CardHeader><CardTitle>Personal Information</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{t("admin.pd.personalInfo")}</CardTitle></CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {[
-                              ['Full Name', selectedProvider.name],
-                              ['Specialty', selectedProvider.specialty],
-                              ['Email', selectedProvider.email],
-                              ['Phone', selectedProvider.phone],
-                              ['License Number', selectedProvider.license_number],
-                              ['Languages', Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
-                              ['Years of Experience', selectedProvider.years_experience ? `${selectedProvider.years_experience} yrs` : '—'],
-                              ['Consultation Fee', selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
-                              ['Consultation Types', Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
-                              ['Accepts New Patients', selectedProvider.accepts_new_patients ? 'Yes' : 'No'],
-                              ['Verified', selectedProvider.verified ? 'Yes' : 'No'],
-                              ['Reviews', selectedProvider.num_reviews ?? 0],
+                              [t('admin.pd.fields.fullName'), selectedProvider.name],
+                              [t('admin.pd.fields.specialty'), selectedProvider.specialty],
+                              [t('admin.pd.fields.email'), selectedProvider.email],
+                              [t('admin.pd.fields.phone'), selectedProvider.phone],
+                              [t('admin.pd.fields.license'), selectedProvider.license_number],
+                              [t('admin.pd.fields.languages'), Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
+                              [t('admin.pd.fields.experience'), selectedProvider.years_experience ? `${selectedProvider.years_experience} ${t('admin.pd.years')}` : '—'],
+                              [t('admin.pd.fields.fee'), selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
+                              [t('admin.pd.fields.consultTypes'), Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
+                              [t('admin.pd.fields.acceptsNew'), selectedProvider.accepts_new_patients ? t('admin.pd.yesNo.yes') : t('admin.pd.yesNo.no')],
+                              [t('admin.pd.fields.verified'), selectedProvider.verified ? t('admin.pd.yesNo.yes') : t('admin.pd.yesNo.no')],
+                              [t('admin.pd.fields.reviews'), selectedProvider.num_reviews ?? 0],
                             ].map(([label, value]) => (
                               <div key={label as string}>
                                 <p className="text-sm text-muted-foreground">{label}</p>
@@ -1163,42 +1163,42 @@ const AdminDashboard = () => {
                           </div>
                           {selectedProvider.bio && (
                             <div className="mt-4">
-                              <p className="text-sm text-muted-foreground">Bio</p>
+                              <p className="text-sm text-muted-foreground">{t("admin.pd.fields.bio")}</p>
                               <p className="text-sm leading-relaxed mt-1">{selectedProvider.bio}</p>
                             </div>
                           )}
                           <Button variant="outline" className="mt-4" onClick={() => guard(async () => {
-                            const bio = prompt('Edit bio:', selectedProvider.bio || '');
+                            const bio = prompt(t('admin.pd.editBioPrompt'), selectedProvider.bio || '');
                             if (bio !== null) {
                               const { error } = await (supabase as any).from('doctors').update({ bio }).eq('id', selectedProvider.id);
                               if (error) { toast.error(error.message); return; }
-                              toast.success('Provider info updated');
+                              toast.success(t("admin.pd.infoUpdated"));
                               refreshData();
                             }
-                          })}>Edit Info</Button>
+                          })}>{t("admin.pd.editInfo")}</Button>
                         </CardContent>
                       </Card>
                       {/* Quick Stats */}
                       <Card className="rounded-xl lg:col-span-4">
-                        <CardHeader><CardTitle>Quick Stats</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>{t("admin.pd.quickStats")}</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Total Appointments</span><span className="font-bold">{total}</span></div>
-                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Patients Seen</span><span className="font-bold">{providerUniquePatients.size}</span></div>
-                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Rating</span><span className="font-bold flex items-center gap-1"><Star className="h-4 w-4 text-yellow-500" />{selectedProvider.rating || '—'}</span></div>
-                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">Member Since</span><span className="font-bold">{selectedProvider.created_at ? format(new Date(selectedProvider.created_at), 'MMM yyyy') : '—'}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">{t("admin.pd.stats.total")}</span><span className="font-bold">{total}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">{t("admin.pd.stats.patients")}</span><span className="font-bold">{providerUniquePatients.size}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">{t("admin.pd.stats.rating")}</span><span className="font-bold flex items-center gap-1"><Star className="h-4 w-4 text-yellow-500" />{selectedProvider.rating || '—'}</span></div>
+                          <div className="flex justify-between"><span className="text-sm text-muted-foreground">{t("admin.pd.stats.member")}</span><span className="font-bold">{selectedProvider.created_at ? format(new Date(selectedProvider.created_at), 'MMM yyyy') : '—'}</span></div>
                         </CardContent>
                       </Card>
                     </div>
                     {/* Activity Summary */}
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Activity Summary</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.pd.activity")}</CardTitle></CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                           {[
-                            { label: 'Pending', count: pending, color: 'text-yellow-600' },
-                            { label: 'Completed', count: completed, color: 'text-green-600' },
-                            { label: 'Cancelled', count: cancelled, color: 'text-red-600' },
-                            { label: 'No-show', count: noShow, color: 'text-orange-600' },
+                            { label: t('admin.pd.status.pending'), count: pending, color: 'text-yellow-600' },
+                            { label: t('admin.pd.status.completed'), count: completed, color: 'text-green-600' },
+                            { label: t('admin.pd.status.cancelled'), count: cancelled, color: 'text-red-600' },
+                            { label: t('admin.pd.status.noshow'), count: noShow, color: 'text-orange-600' },
                           ].map(s => (
                             <div key={s.label} className="text-center p-4 bg-muted/30 rounded-lg border border-border">
                               <p className={`text-2xl font-bold ${s.color}`}>{s.count}</p>
@@ -1214,34 +1214,34 @@ const AdminDashboard = () => {
                 {providerTab === 'calendar' && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Schedule & Availability</h3>
+                      <h3 className="text-lg font-semibold">{t("admin.pd.schedule.title")}</h3>
                       <Button variant="outline" onClick={() => guard(async () => {
-                        const date = prompt('Block date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+                        const date = prompt(t('admin.pd.schedule.blockDatePrompt'), new Date().toISOString().split('T')[0]);
                         if (!date) return;
-                        const startTime = prompt('Start time (HH:MM):', '09:00');
-                        const endTime = prompt('End time (HH:MM):', '17:00');
+                        const startTime = prompt(t('admin.pd.schedule.startTimePrompt'), '09:00');
+                        const endTime = prompt(t('admin.pd.schedule.endTimePrompt'), '17:00');
                         if (!startTime || !endTime) return;
-                        const reason = prompt('Reason (optional):');
+                        const reason = prompt(t('admin.pd.schedule.reasonPrompt'));
                         const { error } = await (supabase as any).from('blocked_times').insert({ doctor_id: selectedProvider.id, blocked_date: date, start_time: startTime, end_time: endTime, reason: reason || null, block_type: 'manual' });
                         if (error) { toast.error(error.message); return; }
-                        toast.success('Time blocked successfully');
+                        toast.success(t('admin.pd.schedule.blocked'));
                       })} disabled={!allowModals}>
-                        <Clock className="h-4 w-4 mr-2" /> Block Time
+                        <Clock className="h-4 w-4 mr-2" /> {t("admin.pd.schedule.block")}
                       </Button>
                     </div>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle className="text-base">Working Hours</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.pd.schedule.workingHours")}</CardTitle></CardHeader>
                       <CardContent>
                         {(() => {
                           const dayKeys = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
                           const dayLabels: Record<string, string> = {
-                            monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
-                            thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday',
+                            monday: t('admin.pd.days.monday'), tuesday: t('admin.pd.days.tuesday'), wednesday: t('admin.pd.days.wednesday'),
+                            thursday: t('admin.pd.days.thursday'), friday: t('admin.pd.days.friday'), saturday: t('admin.pd.days.saturday'), sunday: t('admin.pd.days.sunday'),
                           };
                           const wd = (selectedProvider.schedule?.working_days || {}) as Record<string, any>;
                           const hasAny = dayKeys.some(k => wd[k]);
                           if (!hasAny) {
-                            return <p className="text-sm text-muted-foreground py-4 text-center">No working hours configured</p>;
+                            return <p className="text-sm text-muted-foreground py-4 text-center">{t("admin.pd.schedule.noHours")}</p>;
                           }
                           return (
                             <div className="space-y-2">
@@ -1252,30 +1252,30 @@ const AdminDashboard = () => {
                                 return (
                                   <div key={k} className="flex items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg border border-border flex-wrap">
                                     <span className="text-sm font-medium w-24">{dayLabels[k]}</span>
-                                    <Badge variant={enabled ? 'secondary' : 'outline'}>{enabled ? 'Open' : 'Closed'}</Badge>
+                                    <Badge variant={enabled ? 'secondary' : 'outline'}>{enabled ? t('admin.pd.schedule.open') : t('admin.pd.schedule.closed')}</Badge>
                                     <span className="text-sm text-muted-foreground">
                                       {enabled ? `${row.start_time}–${row.end_time}` : '—'}
                                     </span>
                                     <span className="text-xs text-muted-foreground">
                                       {enabled && breaks.length
-                                        ? breaks.map(b => `${b.name || 'Break'} ${b.start_time}–${b.end_time}`).join(', ')
+                                        ? breaks.map(b => `${b.name || t('admin.pd.schedule.break')} ${b.start_time}–${b.end_time}`).join(', ')
                                         : ''}
                                     </span>
                                   </div>
                                 );
                               })}
                               {selectedProvider.schedule?.buffer_time != null && (
-                                <p className="text-xs text-muted-foreground mt-2">Buffer between appointments: {selectedProvider.schedule.buffer_time} min</p>
+                                <p className="text-xs text-muted-foreground mt-2">{t("admin.pd.schedule.buffer", { n: selectedProvider.schedule.buffer_time })}</p>
                               )}
                             </div>
                           );
                         })()}
-                        <p className="text-xs text-muted-foreground mt-3">Pulled from this doctor's availability. Set rules in "Rules & Limits".</p>
+                        <p className="text-xs text-muted-foreground mt-3">{t("admin.pd.schedule.footer")}</p>
                       </CardContent>
                     </Card>
                     {Array.isArray(selectedProvider.schedule?.holidays) && selectedProvider.schedule.holidays.length > 0 && (
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Holidays</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pd.schedule.holidays")}</CardTitle></CardHeader>
                         <CardContent>
                           <div className="flex flex-wrap gap-2">
                             {selectedProvider.schedule.holidays.map((h: string) => (
@@ -1286,7 +1286,7 @@ const AdminDashboard = () => {
                       </Card>
                     )}
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle className="text-base">Upcoming Appointments</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.pd.upcoming")}</CardTitle></CardHeader>
                       <CardContent>
                         {(() => {
                           const today = new Date().toISOString().split('T')[0];
@@ -1294,7 +1294,7 @@ const AdminDashboard = () => {
                             .filter(a => a.status !== 'cancelled' && a.appointment_date >= today)
                             .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date))
                             .slice(0, 10);
-                          if (upcoming.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">No upcoming appointments</p>;
+                          if (upcoming.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">{t("admin.pd.noUpcoming")}</p>;
                           return (
                             <div className="space-y-2">
                               {upcoming.map(a => {
@@ -1312,7 +1312,7 @@ const AdminDashboard = () => {
                                 return (
                                 <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span>{a.appointment_date} {a.start_time}</span>
-                                  <span className="truncate">{a.patient_name || 'Unknown'}</span>
+                                  <span className="truncate">{a.patient_name || t('admin.pd.unknown')}</span>
                                   <span className="truncate">{a.service_name || '—'}</span>
                                   <Badge variant="outline" className="w-fit">{a.status}</Badge>
                                   <MedicalCardDownloadButton
@@ -1346,7 +1346,7 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle className="text-base">Past Appointments</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.pd.past")}</CardTitle></CardHeader>
                       <CardContent>
                         {(() => {
                           const today = new Date().toISOString().split('T')[0];
@@ -1354,13 +1354,13 @@ const AdminDashboard = () => {
                             .filter(a => a.appointment_date < today)
                             .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date))
                             .slice(0, 25);
-                          if (past.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">No past appointments</p>;
+                          if (past.length === 0) return <p className="text-sm text-muted-foreground py-4 text-center">{t("admin.pd.noPast")}</p>;
                           return (
                             <div className="space-y-2">
                               {past.map(a => (
                                 <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span>{a.appointment_date} {a.start_time || ''}</span>
-                                  <span className="truncate">{a.patient_name || 'Unknown'}</span>
+                                  <span className="truncate">{a.patient_name || t('admin.pd.unknown')}</span>
                                   <span className="truncate">{a.service_name || '—'}</span>
                                   <Badge variant="outline" className="w-fit capitalize">{a.status}</Badge>
                                 </div>
@@ -1380,7 +1380,7 @@ const AdminDashboard = () => {
                     const existing = patientMap.get(pid);
                     if (!existing || a.appointment_date > existing.lastVisit) {
                       patientMap.set(pid, {
-                        name: a.patient_name || 'Unknown',
+                        name: a.patient_name || t('admin.pd.unknown'),
                         lastVisit: a.appointment_date,
                         totalVisits: (existing?.totalVisits || 0) + 1,
                         lastService: a.service_name || '—',
@@ -1401,15 +1401,15 @@ const AdminDashboard = () => {
                           <Badge variant="secondary">{patientList.length}</Badge>
                         </div>
                       </div>
-                      <Input placeholder="Search patients…" value={providerSearch} onChange={e => setProviderSearch(e.target.value)} className="max-w-sm" />
+                      <Input placeholder={t("admin.pd.patients.search")} value={providerSearch} onChange={e => setProviderSearch(e.target.value)} className="max-w-sm" />
                       <Card className="rounded-xl">
                         <CardContent className="pt-6">
                           {filteredPatients.length === 0 ? (
-                            <p className="text-sm text-muted-foreground text-center py-6">No patients found</p>
+                            <p className="text-sm text-muted-foreground text-center py-6">{t("admin.pd.patients.none")}</p>
                           ) : (
                             <div className="space-y-2">
                               <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
-                                <span>Patient Name</span><span>Last Visit</span><span>Total Visits</span><span>Last Service</span><span></span>
+                                <span>{t("admin.pd.patients.name")}</span><span>{t("admin.pd.patients.lastVisit")}</span><span>{t("admin.pd.patients.totalVisits")}</span><span>{t("admin.pd.patients.lastService")}</span><span></span>
                               </div>
                               {filteredPatients.map((p, i) => (
                                 <div key={i} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
@@ -1417,7 +1417,7 @@ const AdminDashboard = () => {
                                   <span>{p.lastVisit}</span>
                                   <span>{p.totalVisits}</span>
                                   <span className="truncate">{p.lastService}</span>
-                                  <Button variant="outline" size="sm" onClick={() => (() => { setSelectedProvider(null); setActiveSection('patients'); })()}>View</Button>
+                                  <Button variant="outline" size="sm" onClick={() => (() => { setSelectedProvider(null); setActiveSection('patients'); })()}>{t("admin.pd.patients.view")}</Button>
                                 </div>
                               ))}
                             </div>
@@ -1444,20 +1444,20 @@ const AdminDashboard = () => {
                   const chartData = Object.entries(monthMap).sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count }));
 
                   const statusBreakdown = [
-                    { label: 'Completed', count: completed2, color: 'bg-green-500', pct: total2 > 0 ? (completed2 / total2 * 100) : 0 },
-                    { label: 'Pending', count: pending, color: 'bg-yellow-500', pct: total2 > 0 ? (pending / total2 * 100) : 0 },
-                    { label: 'Cancelled', count: cancelled2, color: 'bg-red-500', pct: total2 > 0 ? (cancelled2 / total2 * 100) : 0 },
-                    { label: 'No-show', count: noShow, color: 'bg-orange-500', pct: total2 > 0 ? (noShow / total2 * 100) : 0 },
+                    { label: t('admin.pd.status.completed'), count: completed2, color: 'bg-green-500', pct: total2 > 0 ? (completed2 / total2 * 100) : 0 },
+                    { label: t('admin.pd.status.pending'), count: pending, color: 'bg-yellow-500', pct: total2 > 0 ? (pending / total2 * 100) : 0 },
+                    { label: t('admin.pd.status.cancelled'), count: cancelled2, color: 'bg-red-500', pct: total2 > 0 ? (cancelled2 / total2 * 100) : 0 },
+                    { label: t('admin.pd.status.noshow'), count: noShow, color: 'bg-orange-500', pct: total2 > 0 ? (noShow / total2 * 100) : 0 },
                   ];
 
                   return (
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
-                          { label: 'Total Appointments', value: total2 },
-                          { label: 'Unique Patients', value: providerUniquePatients.size },
-                          { label: 'Completion Rate', value: `${completionRate}%` },
-                          { label: 'Cancellation Rate', value: `${cancellationRate}%` },
+                          { label: t('admin.pd.analytics.total'), value: total2 },
+                          { label: t('admin.pd.analytics.unique'), value: providerUniquePatients.size },
+                          { label: t('admin.pd.analytics.completion'), value: `${completionRate}%` },
+                          { label: t('admin.pd.analytics.cancellation'), value: `${cancellationRate}%` },
                         ].map(k => (
                           <Card key={k.label} className="rounded-xl">
                             <CardContent className="pt-6">
@@ -1469,7 +1469,7 @@ const AdminDashboard = () => {
                       </div>
 
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Appointments Over Time</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pd.analytics.overTime")}</CardTitle></CardHeader>
                         <CardContent>
                           {chartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height={220}>
@@ -1482,13 +1482,13 @@ const AdminDashboard = () => {
                               </AreaChart>
                             </ResponsiveContainer>
                           ) : (
-                            <p className="text-sm text-muted-foreground text-center py-6">No appointment data</p>
+                            <p className="text-sm text-muted-foreground text-center py-6">{t("admin.pd.analytics.noData")}</p>
                           )}
                         </CardContent>
                       </Card>
 
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Status Breakdown</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pd.analytics.statusBreakdown")}</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {statusBreakdown.map(s => (
                             <div key={s.label}>
@@ -1505,14 +1505,14 @@ const AdminDashboard = () => {
                       </Card>
 
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Performance Indicators</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pd.analytics.performance")}</CardTitle></CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-2 gap-4">
                             {[
-                              { label: 'Average Rating', value: selectedProvider.rating ? `${selectedProvider.rating} ★` : 'No ratings yet' },
-                              { label: 'Patient Retention', value: providerUniquePatients.size > 0 ? `${Math.min(100, Math.round(providerUniquePatients.size / Math.max(1, total) * 100))}%` : '—' },
-                              { label: 'Utilization Rate', value: total > 0 ? `${Math.round(completed / total * 100)}%` : '—' },
-                              { label: 'On-time Rate', value: total > 0 ? `${Math.max(70, 100 - Math.round(noShow / total * 100))}%` : '—' },
+                              { label: t('admin.pd.analytics.avgRating'), value: selectedProvider.rating ? `${selectedProvider.rating} ★` : t('admin.pd.analytics.noRatings') },
+                              { label: t('admin.pd.analytics.retention'), value: providerUniquePatients.size > 0 ? `${Math.min(100, Math.round(providerUniquePatients.size / Math.max(1, total) * 100))}%` : '—' },
+                              { label: t('admin.pd.analytics.utilization'), value: total > 0 ? `${Math.round(completed / total * 100)}%` : '—' },
+                              { label: t('admin.pd.analytics.onTime'), value: total > 0 ? `${Math.max(70, 100 - Math.round(noShow / total * 100))}%` : '—' },
                             ].map(p => (
                               <div key={p.label} className="p-3 bg-muted/30 rounded-lg border border-border">
                                 <p className="text-sm text-muted-foreground">{p.label}</p>
@@ -1533,8 +1533,8 @@ const AdminDashboard = () => {
                 {providerTab === 'procedures' && (
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-lg font-semibold">Services & Procedures</h3>
-                      <p className="text-sm text-muted-foreground">Services this provider performs. Set individual fees and toggle availability.</p>
+                      <h3 className="text-lg font-semibold">{t("admin.pd.procedures.title")}</h3>
+                      <p className="text-sm text-muted-foreground">{t("admin.pd.procedures.subtitle")}</p>
                     </div>
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
@@ -1542,12 +1542,12 @@ const AdminDashboard = () => {
                           const docProcs: any[] = selectedProvider.procedures || [];
                           const rows = docProcs.length ? docProcs : services;
                           if (rows.length === 0) {
-                            return <p className="text-sm text-muted-foreground text-center py-6">No services configured</p>;
+                            return <p className="text-sm text-muted-foreground text-center py-6">{t("admin.pd.procedures.none")}</p>;
                           }
                           return (
                             <div className="space-y-2">
                               <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
-                                <span>Service Name</span><span>Category</span><span>Price</span><span>Duration</span><span>Status</span>
+                                <span>{t("admin.pd.procedures.colName")}</span><span>{t("admin.pd.procedures.colCategory")}</span><span>{t("admin.pd.procedures.colPrice")}</span><span>{t("admin.pd.procedures.colDuration")}</span><span>{t("admin.pd.procedures.colStatus")}</span>
                               </div>
                               {rows.map((svc: any) => (
                                 <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
@@ -1555,13 +1555,13 @@ const AdminDashboard = () => {
                                   <Badge variant="outline">{svc.category || '—'}</Badge>
                                   <span>{svc.price != null ? `$${svc.price}` : '—'}</span>
                                   <span>{svc.duration ? `${svc.duration} min` : '—'}</span>
-                                  <Badge variant="secondary">{svc.is_active === false ? 'Inactive' : 'Active'}</Badge>
+                                  <Badge variant="secondary">{svc.is_active === false ? t('admin.pd.procedures.inactive') : t('admin.pd.procedures.active')}</Badge>
                                 </div>
                               ))}
                             </div>
                           );
                         })()}
-                        <p className="text-xs text-muted-foreground mt-3">{(selectedProvider.procedures || []).length ? 'Showing this doctor\'s procedures.' : 'No doctor-specific procedures yet — showing clinic services.'}</p>
+                        <p className="text-xs text-muted-foreground mt-3">{(selectedProvider.procedures || []).length ? t('admin.pd.procedures.footerDoc') : t('admin.pd.procedures.footerClinic')}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -1570,14 +1570,14 @@ const AdminDashboard = () => {
                 {providerTab === 'reviews' && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Patient Reviews</h3>
+                      <h3 className="text-lg font-semibold">{t("admin.pd.reviews.title")}</h3>
                       <div className="flex items-center gap-2">
                         <Star className="h-5 w-5 text-yellow-500" />
                         <span className="text-lg font-bold">{selectedProvider.rating || '—'}</span>
                       </div>
                     </div>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle className="text-base">Rating Breakdown</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.pd.reviews.breakdown")}</CardTitle></CardHeader>
                       <CardContent className="space-y-2">
                         {[5, 4, 3, 2, 1].map(stars => (
                           <div key={stars} className="flex items-center gap-3">
@@ -1592,8 +1592,8 @@ const AdminDashboard = () => {
                       <CardContent className="pt-6">
                         <div className="text-center py-8 text-muted-foreground">
                           <Star className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p className="font-medium">No reviews yet for this provider</p>
-                          <p className="text-sm mt-1">Patient reviews will appear here</p>
+                          <p className="font-medium">{t("admin.pd.reviews.none")}</p>
+                          <p className="text-sm mt-1">{t("admin.pd.reviews.willAppear")}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1603,25 +1603,25 @@ const AdminDashboard = () => {
                 {providerTab === 'documents' && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Documents & Credentials</h3>
-                      <Button variant="outline" onClick={() => guard(() => toast.info('File upload requires the attachments storage bucket.'))} disabled={!allowModals}>
-                        <FileText className="h-4 w-4 mr-2" /> Upload Document
+                      <h3 className="text-lg font-semibold">{t("admin.pd.docs.title")}</h3>
+                      <Button variant="outline" onClick={() => guard(() => toast.info(t('admin.pd.docs.uploadNotice')))} disabled={!allowModals}>
+                        <FileText className="h-4 w-4 mr-2" /> {t('admin.pd.docs.upload')}
                       </Button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {['License & Certifications', 'Contracts', 'Other'].map(cat => (
+                      {[t('admin.pd.docs.cat.license'), t('admin.pd.docs.cat.contracts'), t('admin.pd.docs.cat.other')].map(cat => (
                         <Card key={cat} className="rounded-xl">
                           <CardHeader><CardTitle className="text-base">{cat}</CardTitle></CardHeader>
                           <CardContent>
                             <div className="text-center py-6 text-muted-foreground">
                               <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                              <p className="text-sm">No documents yet</p>
+                              <p className="text-sm">{t("admin.pd.docs.none")}</p>
                             </div>
                           </CardContent>
                         </Card>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground">Document upload and management coming in a future update.</p>
+                    <p className="text-xs text-muted-foreground">{t("admin.pd.docs.comingSoon")}</p>
                   </div>
                 )}
 
@@ -1661,19 +1661,19 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{doctors.filter(d => d.status === "active").length}</div>
-                    <p className="text-sm text-muted-foreground">Active</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.pd.dir.active")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{doctors.filter(d => d.status !== "active").length}</div>
-                    <p className="text-sm text-muted-foreground">Pending / Inactive</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.pd.dir.pendingInactive")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{new Set(doctors.map(d => d.specialty).filter(Boolean)).size}</div>
-                    <p className="text-sm text-muted-foreground">Specialties</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.pd.dir.specialties")}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -1681,7 +1681,7 @@ const AdminDashboard = () => {
               {/* Filters row */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mt-6">
                 <Input
-                  placeholder="Search by name, specialty or email…"
+                  placeholder={t("admin.pd.dir.search")}
                   value={providerSearch}
                   onChange={e => setProviderSearch(e.target.value)}
                   className="max-w-xs"
@@ -1694,7 +1694,7 @@ const AdminDashboard = () => {
                       size="sm"
                       onClick={() => setProviderStatusFilter(s)}
                     >
-                      {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                      {s === 'all' ? t('admin.pd.dir.all') : t(`admin.pd.status.${s === 'inactive' ? 'cancelled' : s}`, { defaultValue: s.charAt(0).toUpperCase() + s.slice(1) })}
                     </Button>
                   ))}
                 </div>
@@ -1703,7 +1703,7 @@ const AdminDashboard = () => {
                   value={providerSpecialtyFilter}
                   onChange={e => setProviderSpecialtyFilter(e.target.value)}
                 >
-                  <option value="all">All Specialties</option>
+                  <option value="all">{t("admin.pd.dir.allSpecialties")}</option>
                   {uniqueSpecialties.map(sp => (
                     <option key={sp} value={sp}>{sp}</option>
                   ))}
@@ -1732,7 +1732,7 @@ const AdminDashboard = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold truncate">{doctor.name}</p>
-                            <p className="text-sm text-muted-foreground truncate">{doctor.specialty || 'General'}</p>
+                            <p className="text-sm text-muted-foreground truncate">{doctor.specialty || t('admin.pd.dir.general')}</p>
                             <p className="text-xs text-muted-foreground truncate">{doctor.email}</p>
                           </div>
                         </div>
@@ -1750,7 +1750,7 @@ const AdminDashboard = () => {
                           className="w-full mt-4"
                           onClick={() => { setSelectedProvider(doctor); setProviderTab('overview'); }}
                         >
-                          View Profile
+                          {t("admin.pd.dir.viewProfile")}
                         </Button>
                       </CardContent>
                     </Card>
@@ -1778,10 +1778,10 @@ const AdminDashboard = () => {
 
       case "services": {
         const svcTabs = [
-          { key: 'catalog' as const, label: 'Catalog' },
-          { key: 'pricing' as const, label: 'Pricing Rules' },
-          { key: 'categories' as const, label: 'Categories' },
-          { key: 'analytics' as const, label: 'Analytics' },
+          { key: 'catalog' as const, label: t('admin.sv.tab.catalog') },
+          { key: 'pricing' as const, label: t('admin.sv.tab.pricing') },
+          { key: 'categories' as const, label: t('admin.sv.tab.categories') },
+          { key: 'analytics' as const, label: t('admin.sv.tab.analytics') },
         ];
         const uniqueCategories = Array.from(new Set(services.map(s => s.category).filter(Boolean)));
         const filteredServices = services.filter(s => {
@@ -1809,7 +1809,7 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{services.length}</div>
-                    <p className="text-sm text-muted-foreground">Total Services</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.total")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
@@ -1819,7 +1819,7 @@ const AdminDashboard = () => {
                         ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
                         : "$0"}
                     </div>
-                    <p className="text-sm text-muted-foreground">Avg. Price</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.avg")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
@@ -1827,7 +1827,7 @@ const AdminDashboard = () => {
                     <div className="text-2xl font-bold">
                       {new Set(services.map(s => s.category)).size}
                     </div>
-                    <p className="text-sm text-muted-foreground">Categories</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.categories")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
@@ -1835,7 +1835,7 @@ const AdminDashboard = () => {
                     <div className="text-2xl font-bold">
                       ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
                     </div>
-                    <p className="text-sm text-muted-foreground">Revenue Potential</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.revenue")}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -1862,7 +1862,7 @@ const AdminDashboard = () => {
                   <div className="flex gap-3 flex-wrap mb-4">
                     <input
                       type="text"
-                      placeholder="Search services…"
+                      placeholder={t("admin.sv.search")}
                       value={serviceSearch}
                       onChange={e => setServiceSearch(e.target.value)}
                       className="px-3 py-2 border border-border rounded-lg bg-background text-sm w-64 focus:outline-none focus:ring-2 focus:ring-ring"
@@ -1872,7 +1872,7 @@ const AdminDashboard = () => {
                       onChange={e => setServiceCategoryFilter(e.target.value)}
                       className="px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="all">All Categories</option>
+                      <option value="all">{t("admin.sv.allCategories")}</option>
                       {uniqueCategories.map(c => (
                         <option key={c} value={c}>{c}</option>
                       ))}
@@ -1898,7 +1898,7 @@ const AdminDashboard = () => {
                         ) : filteredServices.length === 0 ? (
                           <div className="text-center py-10 text-muted-foreground">
                             <Filter className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                            <p className="text-sm">No services match your search.</p>
+                            <p className="text-sm">{t("admin.sv.noMatch")}</p>
                           </div>
                         ) : (
                           <div className="space-y-3">
@@ -1909,7 +1909,7 @@ const AdminDashboard = () => {
                               >
                                 <div className="font-medium truncate sm:col-span-1">{service.name}</div>
                                 <div className="sm:col-span-1">
-                                  <Badge variant="secondary" className="text-xs">{service.category || 'Uncategorized'}</Badge>
+                                  <Badge variant="secondary" className="text-xs">{service.category || t('admin.sv.uncategorized')}</Badge>
                                 </div>
                                 <div className="text-sm text-muted-foreground sm:col-span-1">
                                   {service.duration ? `${service.duration} min` : '—'}
@@ -1917,27 +1917,27 @@ const AdminDashboard = () => {
                                 <div className="font-semibold sm:col-span-1">${service.price}</div>
                                 <div className="sm:col-span-1">
                                   {(service as any).is_online !== false ? (
-                                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">Online</Badge>
+                                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">{t("admin.sv.online")}</Badge>
                                   ) : (
-                                    <Badge variant="secondary" className="text-xs">Offline</Badge>
+                                    <Badge variant="secondary" className="text-xs">{t("admin.sv.offline")}</Badge>
                                   )}
                                 </div>
                                 <div className="flex items-center justify-end gap-2 sm:col-span-1">
                                   <Button variant="outline" size="icon" onClick={() => guard(async () => {
-                                    const newPrice = prompt('New price:', String((service as any).price || 0));
+                                    const newPrice = prompt(t('admin.sv.newPricePrompt'), String((service as any).price || 0));
                                     if (newPrice === null) return;
                                     const { error } = await (supabase as any).from('procedures').update({ price: parseFloat(newPrice) || 0 }).eq('id', service.id);
                                     if (error) { toast.error(error.message); return; }
-                                    toast.success('Service updated');
+                                    toast.success(t('admin.sv.updated'));
                                     refreshData();
                                   })} disabled={!allowModals}>
                                     <Settings className="h-4 w-4" />
                                   </Button>
                                   <Button variant="outline" size="icon" onClick={() => guard(async () => {
-                                    if (!confirm('Archive this service?')) return;
+                                    if (!confirm(t('admin.sv.archiveConfirm'))) return;
                                     const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', service.id);
                                     if (error) { toast.error(error.message); return; }
-                                    toast.success('Service archived');
+                                    toast.success(t('admin.sv.archived'));
                                     refreshData();
                                   })} disabled={!allowModals}>
                                     <X className="h-4 w-4" />
@@ -1953,11 +1953,11 @@ const AdminDashboard = () => {
                     {/* Category Breakdown sidebar */}
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
                       <CardHeader>
-                        <CardTitle>Category Breakdown</CardTitle>
+                        <CardTitle>{t("admin.sv.categoryBreakdown")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {services.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No services yet.</p>
+                          <p className="text-sm text-muted-foreground">{t("admin.sv.noServices")}</p>
                         ) : (
                           <div className="space-y-3">
                             {Object.entries(
@@ -1969,7 +1969,7 @@ const AdminDashboard = () => {
                             ).map(([category, count]) => (
                               <div key={category} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                                 <span className="text-sm font-medium">{category}</span>
-                                <Badge variant="secondary">{count as number} service{(count as number) !== 1 ? "s" : ""}</Badge>
+                                <Badge variant="secondary">{count as number} {(count as number) !== 1 ? t("admin.sv.servicesPlural") : t("admin.sv.services")}</Badge>
                               </div>
                             ))}
                           </div>
@@ -1982,30 +1982,30 @@ const AdminDashboard = () => {
                   <div className={sectionInsightGridClass}>
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
                       <CardHeader>
-                        <CardTitle className="text-base">Pricing Overview</CardTitle>
+                        <CardTitle className="text-base">{t("admin.sv.pricing.overview")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Lowest Price</span>
+                            <span className="text-sm font-medium">{t("admin.sv.pricing.lowest")}</span>
                             <span className="text-lg font-bold">
                               {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Highest Price</span>
+                            <span className="text-sm font-medium">{t("admin.sv.pricing.highest")}</span>
                             <span className="text-lg font-bold">
                               {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Average Price</span>
+                            <span className="text-sm font-medium">{t("admin.sv.pricing.average")}</span>
                             <span className="text-lg font-bold">
                               {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Total Revenue Potential</span>
+                            <span className="text-sm font-medium">{t("admin.sv.pricing.totalRevenue")}</span>
                             <span className="text-lg font-bold">
                               ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
                             </span>
@@ -2016,7 +2016,7 @@ const AdminDashboard = () => {
 
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
                       <CardHeader>
-                        <CardTitle className="text-base">Top Categories</CardTitle>
+                        <CardTitle className="text-base">{t("admin.sv.topCategories")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
@@ -2036,7 +2036,7 @@ const AdminDashboard = () => {
                                 <Badge variant="outline">{count as number}</Badge>
                               </div>
                             )) : (
-                              <p className="text-sm text-muted-foreground">No categories yet</p>
+                              <p className="text-sm text-muted-foreground">{t("admin.sv.noCats")}</p>
                             );
                           })()}
                         </div>
@@ -2045,20 +2045,20 @@ const AdminDashboard = () => {
 
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
                       <CardHeader>
-                        <CardTitle className="text-base">Service Summary</CardTitle>
+                        <CardTitle className="text-base">{t("admin.sv.summary.title")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Total Services</span>
+                            <span className="text-sm font-medium">{t("admin.sv.kpi.total")}</span>
                             <span className="text-lg font-bold">{services.length}</span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Categories</span>
+                            <span className="text-sm font-medium">{t("admin.sv.kpi.categories")}</span>
                             <span className="text-lg font-bold">{new Set(services.map(s => s.category)).size}</span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <span className="text-sm font-medium">Avg. per Category</span>
+                            <span className="text-sm font-medium">{t("admin.sv.summary.avgPerCat")}</span>
                             <span className="text-lg font-bold">
                               {(() => {
                                 const catCount = new Set(services.map(s => s.category)).size;
@@ -2068,7 +2068,7 @@ const AdminDashboard = () => {
                           </div>
                           {services.length > 0 && (
                             <div className="pt-2">
-                              <h4 className="text-xs font-medium text-muted-foreground mb-2">Recently Added</h4>
+                              <h4 className="text-xs font-medium text-muted-foreground mb-2">{t("admin.sv.recentlyAdded")}</h4>
                               {services.slice(0, 3).map(s => (
                                 <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
                                   <span className="font-medium">{s.name}</span>
@@ -2088,10 +2088,10 @@ const AdminDashboard = () => {
               {serviceTab === 'pricing' && (
                 <>
                   <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-                    <h3 className="text-lg font-semibold">Pricing Rules</h3>
-                    <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Use the service catalog to set individual prices per service.'))} disabled={!allowModals}>
+                    <h3 className="text-lg font-semibold">{t("admin.sv.rules.title")}</h3>
+                    <Button variant="outline" size="sm" onClick={() => guard(() => toast.info(t('admin.sv.rules.useCatalog')))} disabled={!allowModals}>
                       <DollarSign className="h-4 w-4 mr-2" />
-                      Add Rule
+                      {t('admin.sv.rules.addRule')}
                     </Button>
                   </div>
 
@@ -2103,11 +2103,11 @@ const AdminDashboard = () => {
                             <DollarSign className="h-5 w-5 text-primary" />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-sm">Fixed Price</h4>
+                            <h4 className="font-semibold text-sm">{t("admin.sv.rules.fixed")}</h4>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-3">One set price applies to all providers for this service.</p>
-                        <Badge variant="secondary">{services.length} services</Badge>
+                        <p className="text-xs text-muted-foreground mb-3">{t("admin.sv.rules.fixedDesc")}</p>
+                        <Badge variant="secondary">{services.length} {t("admin.sv.servicesPlural")}</Badge>
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
@@ -2117,13 +2117,13 @@ const AdminDashboard = () => {
                             <Settings className="h-5 w-5 text-orange-600" />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-sm">Provider Pricing</h4>
+                            <h4 className="font-semibold text-sm">{t("admin.sv.rules.provider")}</h4>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-3">Each provider sets their own fee for the service.</p>
+                        <p className="text-xs text-muted-foreground mb-3">{t("admin.sv.rules.providerDesc")}</p>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary">0 services</Badge>
-                          <Button size="sm" variant="outline" onClick={() => toast.info('Provider-specific pricing is set in each provider\'s Procedures tab.')}>Enable</Button>
+                          <Badge variant="secondary">0 {t("admin.sv.servicesPlural")}</Badge>
+                          <Button size="sm" variant="outline" onClick={() => toast.info(t('admin.sv.rules.providerNotice'))}>{t('admin.sv.rules.enable')}</Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -2134,13 +2134,13 @@ const AdminDashboard = () => {
                             <CreditCard className="h-5 w-5 text-purple-600" />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-sm">Deposit Requirements</h4>
+                            <h4 className="font-semibold text-sm">{t("admin.sv.rules.deposit")}</h4>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-3">Require a deposit % or fixed amount upfront for specific services.</p>
+                        <p className="text-xs text-muted-foreground mb-3">{t("admin.sv.rules.depositDesc")}</p>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary">0 rules active</Badge>
-                          <Button size="sm" variant="outline" onClick={() => toast.info('Deposit requirements will be available in a future update.')}>Configure</Button>
+                          <Badge variant="secondary">0 {t("admin.sv.rules.rulesActive")}</Badge>
+                          <Button size="sm" variant="outline" onClick={() => toast.info(t('admin.sv.rules.depositNotice'))}>{t('admin.sv.rules.configure')}</Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -2148,22 +2148,22 @@ const AdminDashboard = () => {
 
                   <Card className="rounded-xl">
                     <CardHeader>
-                      <CardTitle>Service Price List</CardTitle>
+                      <CardTitle>{t("admin.sv.priceList")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {services.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-6">No services yet.</p>
+                        <p className="text-sm text-muted-foreground text-center py-6">{t("admin.sv.noServices")}</p>
                       ) : (
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="border-b border-border text-left">
-                                <th className="pb-2 font-medium text-muted-foreground">Service</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Category</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Duration</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Price</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Type</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Deposit</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.sv.col.service")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.pd.procedures.colCategory")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.pd.procedures.colDuration")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.pd.procedures.colPrice")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.sv.col.type")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.sv.col.deposit")}</th>
                                 <th className="pb-2 font-medium text-muted-foreground"></th>
                               </tr>
                             </thead>
@@ -2171,20 +2171,20 @@ const AdminDashboard = () => {
                               {services.map(s => (
                                 <tr key={s.id} className="border-b border-border/50">
                                   <td className="py-3 font-medium">{s.name}</td>
-                                  <td className="py-3"><Badge variant="secondary" className="text-xs">{s.category || 'Uncategorized'}</Badge></td>
+                                  <td className="py-3"><Badge variant="secondary" className="text-xs">{s.category || t('admin.sv.uncategorized')}</Badge></td>
                                   <td className="py-3 text-muted-foreground">{s.duration ? `${s.duration} min` : '—'}</td>
                                   <td className="py-3 font-semibold">${s.price}</td>
-                                  <td className="py-3"><Badge variant="outline" className="text-xs">Fixed</Badge></td>
-                                  <td className="py-3"><Badge variant="secondary" className="text-xs">None</Badge></td>
+                                  <td className="py-3"><Badge variant="outline" className="text-xs">{t("admin.sv.type.fixed")}</Badge></td>
+                                  <td className="py-3"><Badge variant="secondary" className="text-xs">{t("admin.sv.type.none")}</Badge></td>
                                   <td className="py-3 text-right">
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
-                                    const newPrice = prompt('New price:', String(s.price || 0));
+                                    const newPrice = prompt(t('admin.sv.newPricePrompt'), String(s.price || 0));
                                     if (newPrice === null) return;
                                     const { error } = await (supabase as any).from('procedures').update({ price: parseFloat(newPrice) || 0 }).eq('id', s.id);
                                     if (error) { toast.error(error.message); return; }
-                                    toast.success('Price updated');
+                                    toast.success(t('admin.sv.priceUpdated'));
                                     refreshData();
-                                  })} disabled={!allowModals}>Edit</Button>
+                                  })} disabled={!allowModals}>{t('admin.pd.edit')}</Button>
                                   </td>
                                 </tr>
                               ))}
@@ -2192,7 +2192,7 @@ const AdminDashboard = () => {
                           </table>
                         </div>
                       )}
-                      <p className="text-xs text-muted-foreground mt-4">To set provider-specific fees, go to the Providers section → select a provider → Procedures tab.</p>
+                      <p className="text-xs text-muted-foreground mt-4">{t("admin.sv.priceListFooter")}</p>
                     </CardContent>
                   </Card>
                 </>
@@ -2202,18 +2202,18 @@ const AdminDashboard = () => {
               {serviceTab === 'categories' && (
                 <>
                   <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-                    <h3 className="text-lg font-semibold">Service Categories</h3>
+                    <h3 className="text-lg font-semibold">{t("admin.sv.categories.title")}</h3>
                   </div>
 
                   <Card className="rounded-xl mb-6">
                     <CardHeader>
-                      <CardTitle className="text-base">Create Category</CardTitle>
+                      <CardTitle className="text-base">{t("admin.sv.categories.create")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="flex gap-3 items-center flex-wrap">
                         <input
                           type="text"
-                          placeholder="e.g. Consultation, Diagnostics…"
+                          placeholder={t("admin.sv.categories.placeholder")}
                           className="px-3 py-2 border border-border rounded-lg bg-background text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-ring"
                         />
                         <div className="flex gap-2">
@@ -2224,25 +2224,25 @@ const AdminDashboard = () => {
                         <Button size="sm" onClick={() => guard(async () => {
                           const input = document.querySelector('input[placeholder*="Consultation"]') as HTMLInputElement;
                           const name = input?.value?.trim();
-                          if (!name) { toast.error('Enter a category name'); return; }
+                          if (!name) { toast.error(t('admin.sv.categories.enterName')); return; }
                           const { error } = await (supabase as any).from('finance_categories').insert({ entity_type: 'practice', entity_id: practice?.id, kind: 'service', name, is_active: true });
                           if (error) { toast.error(error.message); return; }
-                          toast.success('Category added');
+                          toast.success(t('admin.sv.categories.added'));
                           if (input) input.value = '';
                           financeCategoriesHook.refresh();
-                        })} disabled={!allowModals}>Add</Button>
+                        })} disabled={!allowModals}>{t('admin.sv.categories.add')}</Button>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-3">Set a consistent naming convention so reports are clean (e.g. "Diagnostics: Blood Work", "Diagnostics: Imaging").</p>
+                      <p className="text-xs text-muted-foreground mt-3">{t("admin.sv.categories.hint")}</p>
                     </CardContent>
                   </Card>
 
                   <Card className="rounded-xl mb-6">
                     <CardHeader>
-                      <CardTitle className="text-base">Your Categories</CardTitle>
+                      <CardTitle className="text-base">{t("admin.sv.categories.your")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {uniqueCategories.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">No categories yet. Add one above.</p>
+                        <p className="text-sm text-muted-foreground text-center py-4">{t("admin.sv.categories.noneAddOne")}</p>
                       ) : (
                         <div className="space-y-2">
                           {uniqueCategories.map((cat, i) => {
@@ -2252,19 +2252,19 @@ const AdminDashboard = () => {
                                 <div className="flex items-center gap-3">
                                   <div className={`h-3 w-3 rounded-full ${catColorsTW[i % catColorsTW.length]}`} />
                                   <span className="text-sm font-medium">{cat}</span>
-                                  <Badge variant="secondary" className="text-xs">{count} service{count !== 1 ? 's' : ''}</Badge>
+                                  <Badge variant="secondary" className="text-xs">{count} {count !== 1 ? t('admin.sv.servicesPlural') : t('admin.sv.services')}</Badge>
                                 </div>
                                 <div className="flex gap-2">
                                   <Button variant="ghost" size="sm" onClick={() => (async () => {
-                                    const newName = prompt('New name:', cat);
+                                    const newName = prompt(t('admin.sv.categories.renamePrompt'), cat);
                                     if (!newName || newName === cat) return;
-                                    toast.success('Category renamed locally');
-                                  })()}>Rename</Button>
+                                    toast.success(t('admin.sv.categories.renamed'));
+                                  })()}>{t('admin.sv.categories.rename')}</Button>
                                   {count === 0 && (
                                     <Button variant="ghost" size="sm" className="text-destructive" onClick={() => (async () => {
-                                      if (!confirm('Delete this category?')) return;
-                                      toast.success('Category removed');
-                                    })()}>Delete</Button>
+                                      if (!confirm(t('admin.sv.categories.deleteConfirm'))) return;
+                                      toast.success(t('admin.sv.categories.removed'));
+                                    })()}>{t('admin.sv.categories.delete')}</Button>
                                   )}
                                 </div>
                               </div>
@@ -2277,18 +2277,18 @@ const AdminDashboard = () => {
 
                   <Card className="rounded-xl">
                     <CardHeader>
-                      <CardTitle className="text-base">Uncategorized Services</CardTitle>
+                      <CardTitle className="text-base">{t("admin.sv.categories.uncat")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {(() => {
                         const uncatCount = services.filter(s => !s.category || s.category === '').length;
                         return uncatCount > 0 ? (
                           <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">{uncatCount} service{uncatCount !== 1 ? 's' : ''} without a category.</p>
-                            <Button variant="outline" size="sm" onClick={() => guard(() => toast.info('Select a category for each service in the catalog tab.'))} disabled={!allowModals}>Assign Category</Button>
+                            <p className="text-sm text-muted-foreground">{t('admin.sv.categories.noCat', { n: uncatCount, s: uncatCount !== 1 ? 's' : '' })}</p>
+                            <Button variant="outline" size="sm" onClick={() => guard(() => toast.info(t('admin.sv.categories.assignNotice')))} disabled={!allowModals}>{t('admin.sv.categories.assign')}</Button>
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">All services are categorized.</p>
+                          <p className="text-sm text-muted-foreground">{t("admin.sv.categories.allSet")}</p>
                         );
                       })()}
                     </CardContent>
@@ -2304,19 +2304,19 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
                         <div className="text-2xl font-bold">{services.length}</div>
-                        <p className="text-sm text-muted-foreground">Total Services</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.total")}</p>
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
                         <div className="text-2xl font-bold">{services.filter(s => (s as any).is_online !== false).length}</div>
-                        <p className="text-sm text-muted-foreground">Active (Online)</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.sv.analytics.activeOnline")}</p>
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
                         <div className="text-2xl font-bold">{new Set(services.map(s => s.category)).size}</div>
-                        <p className="text-sm text-muted-foreground">Categories</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.categories")}</p>
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
@@ -2324,7 +2324,7 @@ const AdminDashboard = () => {
                         <div className="text-2xl font-bold">
                           {services.length > 0 ? `$${Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)}` : '$0'}
                         </div>
-                        <p className="text-sm text-muted-foreground">Avg Price</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.avg")}</p>
                       </CardContent>
                     </Card>
                   </div>
@@ -2333,11 +2333,11 @@ const AdminDashboard = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <Card className="rounded-xl">
                       <CardHeader>
-                        <CardTitle className="text-base">Services by Category</CardTitle>
+                        <CardTitle className="text-base">{t("admin.sv.analytics.byCat")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {services.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-6">No services yet.</p>
+                          <p className="text-sm text-muted-foreground text-center py-6">{t("admin.sv.noServices")}</p>
                         ) : (
                           <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={Object.entries(services.reduce((acc, s) => { acc[s.category || 'Other'] = (acc[s.category || 'Other'] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([name, count]) => ({ name, count }))}>
@@ -2354,11 +2354,11 @@ const AdminDashboard = () => {
 
                     <Card className="rounded-xl">
                       <CardHeader>
-                        <CardTitle className="text-base">Price Distribution</CardTitle>
+                        <CardTitle className="text-base">{t("admin.sv.analytics.priceDist")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {services.length === 0 ? (
-                          <p className="text-sm text-muted-foreground text-center py-6">No services yet.</p>
+                          <p className="text-sm text-muted-foreground text-center py-6">{t("admin.sv.noServices")}</p>
                         ) : (
                           <div className="space-y-4">
                             {[
@@ -2390,7 +2390,7 @@ const AdminDashboard = () => {
                   {/* Most Booked Services */}
                   <Card className="rounded-xl mb-6">
                     <CardHeader>
-                      <CardTitle className="text-base">Most Booked Services (by Appointment Data)</CardTitle>
+                      <CardTitle className="text-base">{t("admin.sv.analytics.mostBooked")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {(() => {
@@ -2405,7 +2405,7 @@ const AdminDashboard = () => {
                           .sort((a, b) => b.bookings - a.bookings)
                           .slice(0, 10);
                         if (ranked.length === 0 || ranked.every(r => r.bookings === 0)) {
-                          return <p className="text-sm text-muted-foreground text-center py-4">No appointment data available yet.</p>;
+                          return <p className="text-sm text-muted-foreground text-center py-4">{t("admin.sv.analytics.noAppts")}</p>;
                         }
                         return (
                           <div className="space-y-2">
@@ -2414,10 +2414,10 @@ const AdminDashboard = () => {
                                 <div className="flex items-center gap-3">
                                   <span className="text-xs font-bold text-muted-foreground w-6">#{i + 1}</span>
                                   <span className="text-sm font-medium">{r.name}</span>
-                                  <Badge variant="secondary" className="text-xs">{r.category || 'Other'}</Badge>
+                                  <Badge variant="secondary" className="text-xs">{r.category || t('admin.sv.analytics.other')}</Badge>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                  <span className="text-sm text-muted-foreground">{r.bookings} bookings</span>
+                                  <span className="text-sm text-muted-foreground">{t('admin.sv.analytics.bookings', { n: r.bookings })}</span>
                                   <span className="text-sm font-semibold">${(r.bookings * (r.price || 0)).toLocaleString()}</span>
                                 </div>
                               </div>
@@ -2431,7 +2431,7 @@ const AdminDashboard = () => {
                   {/* Zero-booking services */}
                   <Card className="rounded-xl">
                     <CardHeader>
-                      <CardTitle className="text-base">Services with No Recent Bookings</CardTitle>
+                      <CardTitle className="text-base">{t("admin.sv.analytics.noRecent")}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       {(() => {
@@ -2443,7 +2443,7 @@ const AdminDashboard = () => {
                         });
                         const zeroBooking = services.filter(s => !bookedNames.has(s.name));
                         if (zeroBooking.length === 0) {
-                          return <p className="text-sm text-muted-foreground text-center py-4">All services have recent bookings. Great!</p>;
+                          return <p className="text-sm text-muted-foreground text-center py-4">{t("admin.sv.analytics.allBooked")}</p>;
                         }
                         return (
                           <>
@@ -2452,22 +2452,22 @@ const AdminDashboard = () => {
                                 <div key={s.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                                   <div className="flex items-center gap-3">
                                     <span className="text-sm font-medium">{s.name}</span>
-                                    <Badge variant="secondary" className="text-xs">{s.category || 'Other'}</Badge>
+                                    <Badge variant="secondary" className="text-xs">{s.category || t('admin.sv.analytics.other')}</Badge>
                                   </div>
                                   <div className="flex items-center gap-3">
                                     <span className="text-sm font-semibold">${s.price}</span>
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
-                                    if (!confirm('Archive this service?')) return;
+                                    if (!confirm(t('admin.sv.archiveConfirm'))) return;
                                     const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', s.id);
                                     if (error) { toast.error(error.message); return; }
-                                    toast.success('Service archived');
+                                    toast.success(t('admin.sv.archived'));
                                     refreshData();
-                                  })} disabled={!allowModals}>Archive</Button>
+                                  })} disabled={!allowModals}>{t('admin.sv.analytics.archive')}</Button>
                                   </div>
                                 </div>
                               ))}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-3">Consider archiving services with no bookings to keep your catalog clean.</p>
+                            <p className="text-xs text-muted-foreground mt-3">{t("admin.sv.analytics.considerArchive")}</p>
                           </>
                         );
                       })()}
