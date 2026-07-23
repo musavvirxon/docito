@@ -159,6 +159,255 @@
       "patientSatisfaction": "Bemorlar qoniqishi",
       "appointmentCompletion": "Qabulni yakunlash foizi",
       "responseTime": "O'rtacha javob vaqti"
+    },
+    "pd": {
+      "edit": "Tahrirlash",
+      "suspend": "To'xtatib qo'yish",
+      "message": "Xabar",
+      "personalInfo": "Shaxsiy ma'lumotlar",
+      "fields": {
+        "fullName": "To'liq ism",
+        "specialty": "Mutaxassislik",
+        "email": "Elektron pochta",
+        "phone": "Telefon",
+        "license": "Litsenziya raqami",
+        "languages": "Tillar",
+        "experience": "Ish tajribasi (yil)",
+        "fee": "Konsultatsiya narxi",
+        "consultTypes": "Konsultatsiya turlari",
+        "acceptsNew": "Yangi bemorlarni qabul qiladi",
+        "verified": "Tasdiqlangan",
+        "reviews": "Sharhlar",
+        "bio": "O'zi haqida"
+      },
+      "yesNo": {
+        "yes": "Ha",
+        "no": "Yo'q"
+      },
+      "years": "yil",
+      "editInfo": "Ma'lumotlarni tahrirlash",
+      "editBioPrompt": "Bio tahrirlash:",
+      "editNamePrompt": "Shifokor ismini tahrirlash:",
+      "suspendConfirm": "{{name}}ni to'xtatib qo'yasizmi?",
+      "updated": "Shifokor yangilandi",
+      "infoUpdated": "Shifokor ma'lumotlari yangilandi",
+      "suspended": "Shifokor to'xtatildi",
+      "quickStats": "Qisqacha statistika",
+      "stats": {
+        "total": "Jami qabullar",
+        "patients": "Qabul qilingan bemorlar",
+        "rating": "Reyting",
+        "member": "Ro'yxatdan o'tgan sana"
+      },
+      "activity": "Faoliyat xulosasi",
+      "status": {
+        "pending": "Kutilmoqda",
+        "completed": "Yakunlangan",
+        "cancelled": "Bekor qilingan",
+        "noshow": "Kelmagan"
+      },
+      "schedule": {
+        "title": "Jadval va bandlik",
+        "block": "Vaqtni bloklash",
+        "blockDatePrompt": "Bloklanadigan sana (YYYY-MM-DD):",
+        "startTimePrompt": "Boshlanishi (HH:MM):",
+        "endTimePrompt": "Tugashi (HH:MM):",
+        "reasonPrompt": "Sabab (ixtiyoriy):",
+        "blocked": "Vaqt muvaffaqiyatli bloklandi",
+        "workingHours": "Ish soatlari",
+        "noHours": "Ish soatlari sozlanmagan",
+        "open": "Ochiq",
+        "closed": "Yopiq",
+        "break": "Tanaffus",
+        "buffer": "Qabullar orasidagi tanaffus: {{n}} daq",
+        "footer": "Shifokor bandligidan olindi. Qoidalarni «Qoidalar va cheklovlar» bo'limida sozlang.",
+        "holidays": "Dam olish kunlari"
+      },
+      "days": {
+        "monday": "Dushanba",
+        "tuesday": "Seshanba",
+        "wednesday": "Chorshanba",
+        "thursday": "Payshanba",
+        "friday": "Juma",
+        "saturday": "Shanba",
+        "sunday": "Yakshanba"
+      },
+      "upcoming": "Kelayotgan qabullar",
+      "noUpcoming": "Kelayotgan qabullar yo'q",
+      "past": "O'tgan qabullar",
+      "noPast": "O'tgan qabullar yo'q",
+      "unknown": "Noma'lum",
+      "patients": {
+        "search": "Bemorlarni qidirish…",
+        "none": "Bemorlar topilmadi",
+        "name": "Bemor ismi",
+        "lastVisit": "So'nggi tashrif",
+        "totalVisits": "Jami tashriflar",
+        "lastService": "So'nggi xizmat",
+        "view": "Ko'rish"
+      },
+      "analytics": {
+        "total": "Jami qabullar",
+        "unique": "Noyob bemorlar",
+        "completion": "Yakunlanish darajasi",
+        "cancellation": "Bekor qilish darajasi",
+        "overTime": "Qabullar vaqt bo'yicha",
+        "noData": "Qabullar bo'yicha ma'lumot yo'q",
+        "statusBreakdown": "Holat bo'yicha taqsimot",
+        "performance": "Samaradorlik ko'rsatkichlari",
+        "avgRating": "O'rtacha reyting",
+        "noRatings": "Hozircha baholar yo'q",
+        "retention": "Bemorlarni saqlab qolish",
+        "utilization": "Bandlik darajasi",
+        "onTime": "O'z vaqtida"
+      },
+      "procedures": {
+        "title": "Xizmatlar va muolajalar",
+        "subtitle": "Bu shifokor bajaradigan xizmatlar. Narxlar va bandlikni sozlang.",
+        "none": "Xizmatlar sozlanmagan",
+        "colName": "Xizmat nomi",
+        "colCategory": "Kategoriya",
+        "colPrice": "Narx",
+        "colDuration": "Davomiyligi",
+        "colStatus": "Holat",
+        "active": "Faol",
+        "inactive": "Faol emas",
+        "footerDoc": "Ushbu shifokorning muolajalari.",
+        "footerClinic": "Shifokorga xos muolajalar yo'q — klinika xizmatlari ko'rsatilmoqda."
+      },
+      "reviews": {
+        "title": "Bemor sharhlari",
+        "breakdown": "Reyting bo'yicha taqsimot",
+        "none": "Bu shifokor uchun hozircha sharhlar yo'q",
+        "willAppear": "Bemor sharhlari shu yerda ko'rinadi"
+      },
+      "docs": {
+        "title": "Hujjatlar va guvohnomalar",
+        "upload": "Hujjat yuklash",
+        "uploadNotice": "Fayl yuklash uchun ilova saqlash bakiti kerak.",
+        "none": "Hozircha hujjatlar yo'q",
+        "comingSoon": "Hujjatlarni yuklash va boshqarish keyingi yangilanishda paydo bo'ladi.",
+        "cat": {
+          "license": "Litsenziya va sertifikatlar",
+          "contracts": "Shartnomalar",
+          "other": "Boshqa"
+        }
+      },
+      "dir": {
+        "active": "Faol",
+        "pendingInactive": "Kutilmoqda / Faol emas",
+        "specialties": "Mutaxassisliklar",
+        "search": "Ism, mutaxassislik yoki email bo'yicha qidirish…",
+        "allSpecialties": "Barcha mutaxassisliklar",
+        "all": "Barchasi",
+        "viewProfile": "Profilni ko'rish",
+        "general": "Umumiy"
+      }
+    },
+    "sv": {
+      "tab": {
+        "catalog": "Katalog",
+        "pricing": "Narx qoidalari",
+        "categories": "Kategoriyalar",
+        "analytics": "Tahlil"
+      },
+      "kpi": {
+        "total": "Jami xizmatlar",
+        "avg": "O'rtacha narx",
+        "categories": "Kategoriyalar",
+        "revenue": "Daromad salohiyati"
+      },
+      "search": "Xizmatlarni qidirish…",
+      "allCategories": "Barcha kategoriyalar",
+      "noMatch": "So'rovingizga mos xizmatlar yo'q.",
+      "uncategorized": "Kategoriyasiz",
+      "online": "Onlayn",
+      "offline": "Oflayn",
+      "newPricePrompt": "Yangi narx:",
+      "archiveConfirm": "Bu xizmatni arxivga o'tkazasizmi?",
+      "updated": "Xizmat yangilandi",
+      "archived": "Xizmat arxivlandi",
+      "categoryBreakdown": "Kategoriya bo'yicha taqsimot",
+      "noServices": "Hozircha xizmatlar yo'q.",
+      "services": "xizmat",
+      "servicesPlural": "xizmat",
+      "pricing": {
+        "overview": "Narx haqida umumiy",
+        "lowest": "Eng past narx",
+        "highest": "Eng yuqori narx",
+        "average": "O'rtacha narx",
+        "totalRevenue": "Umumiy daromad salohiyati"
+      },
+      "topCategories": "Eng yaxshi kategoriyalar",
+      "noCats": "Hozircha kategoriyalar yo'q",
+      "summary": {
+        "title": "Xizmatlar xulosasi",
+        "avgPerCat": "Kategoriyaga o'rtacha"
+      },
+      "recentlyAdded": "Yaqinda qo'shilgan",
+      "rules": {
+        "title": "Narx qoidalari",
+        "addRule": "Qoida qo'shish",
+        "useCatalog": "Har bir xizmat uchun narxni sozlash uchun xizmatlar katalogidan foydalaning.",
+        "fixed": "Belgilangan narx",
+        "fixedDesc": "Bu xizmat uchun barcha shifokorlarga bir xil narx.",
+        "provider": "Shifokor narxlari",
+        "providerDesc": "Har bir shifokor o'z narxini belgilaydi.",
+        "enable": "Yoqish",
+        "providerNotice": "Shifokorga xos narxlar har bir shifokorning «Muolajalar» bo'limida sozlanadi.",
+        "deposit": "Oldindan to'lov talablari",
+        "depositDesc": "Muayyan xizmatlar uchun foiz yoki belgilangan oldindan to'lovni talab qilish.",
+        "configure": "Sozlash",
+        "depositNotice": "Oldindan to'lov talablari keyingi yangilanishda paydo bo'ladi.",
+        "rulesActive": "faol qoida"
+      },
+      "priceList": "Xizmatlar narx ro'yxati",
+      "col": {
+        "service": "Xizmat",
+        "type": "Turi",
+        "deposit": "Oldindan to'lov"
+      },
+      "type": {
+        "fixed": "Belgilangan",
+        "none": "Yo'q"
+      },
+      "priceUpdated": "Narx yangilandi",
+      "priceListFooter": "Shifokorga xos narxlar uchun: «Shifokorlar» → shifokor → «Muolajalar» bo'limi.",
+      "categories": {
+        "title": "Xizmat kategoriyalari",
+        "create": "Kategoriya yaratish",
+        "placeholder": "masalan: Konsultatsiya, Diagnostika…",
+        "add": "Qo'shish",
+        "enterName": "Kategoriya nomini kiriting",
+        "added": "Kategoriya qo'shildi",
+        "hint": "Toza hisobotlar uchun izchil nomlash uslubidan foydalaning (masalan, «Diagnostika: Qon tahlili»).",
+        "your": "Sizning kategoriyalar",
+        "noneAddOne": "Hozircha kategoriyalar yo'q. Yuqoridan qo'shing.",
+        "renamePrompt": "Yangi nom:",
+        "renamed": "Kategoriya lokal qayta nomlandi",
+        "deleteConfirm": "Bu kategoriyani o'chirasizmi?",
+        "removed": "Kategoriya o'chirildi",
+        "rename": "Qayta nomlash",
+        "delete": "O'chirish",
+        "uncat": "Kategoriyasiz xizmatlar",
+        "noCat": "{{n}} ta xizmat kategoriyasiz.",
+        "assign": "Kategoriya belgilash",
+        "assignNotice": "Katalog bo'limida har bir xizmat uchun kategoriyani tanlang.",
+        "allSet": "Barcha xizmatlar kategoriyalangan."
+      },
+      "analytics": {
+        "activeOnline": "Faol (onlayn)",
+        "byCat": "Kategoriyalar bo'yicha xizmatlar",
+        "priceDist": "Narxlar taqsimoti",
+        "mostBooked": "Eng ko'p buyurtma qilingan xizmatlar",
+        "noAppts": "Qabullar bo'yicha ma'lumot hali yo'q.",
+        "bookings": "{{n}} ta buyurtma",
+        "noRecent": "So'nggi buyurtmalarsiz xizmatlar",
+        "allBooked": "Barcha xizmatlarda so'nggi buyurtmalar bor. Ajoyib!",
+        "archive": "Arxivlash",
+        "considerArchive": "Katalogingiz toza bo'lishi uchun buyurtmasiz xizmatlarni arxivlashni o'ylab ko'ring.",
+        "other": "Boshqa"
+      }
     }
   },
   "patient": {

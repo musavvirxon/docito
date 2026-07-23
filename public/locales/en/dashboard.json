@@ -159,6 +159,255 @@
       "patientSatisfaction": "Patient Satisfaction",
       "appointmentCompletion": "Appointment Completion Rate",
       "responseTime": "Average Response Time"
+    },
+    "pd": {
+      "edit": "Edit",
+      "suspend": "Suspend",
+      "message": "Message",
+      "personalInfo": "Personal Information",
+      "fields": {
+        "fullName": "Full Name",
+        "specialty": "Specialty",
+        "email": "Email",
+        "phone": "Phone",
+        "license": "License Number",
+        "languages": "Languages",
+        "experience": "Years of Experience",
+        "fee": "Consultation Fee",
+        "consultTypes": "Consultation Types",
+        "acceptsNew": "Accepts New Patients",
+        "verified": "Verified",
+        "reviews": "Reviews",
+        "bio": "Bio"
+      },
+      "yesNo": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "years": "yrs",
+      "editInfo": "Edit Info",
+      "editBioPrompt": "Edit bio:",
+      "editNamePrompt": "Edit provider name:",
+      "suspendConfirm": "Suspend {{name}}?",
+      "updated": "Provider updated",
+      "infoUpdated": "Provider info updated",
+      "suspended": "Provider suspended",
+      "quickStats": "Quick Stats",
+      "stats": {
+        "total": "Total Appointments",
+        "patients": "Patients Seen",
+        "rating": "Rating",
+        "member": "Member Since"
+      },
+      "activity": "Activity Summary",
+      "status": {
+        "pending": "Pending",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "noshow": "No-show"
+      },
+      "schedule": {
+        "title": "Schedule & Availability",
+        "block": "Block Time",
+        "blockDatePrompt": "Block date (YYYY-MM-DD):",
+        "startTimePrompt": "Start time (HH:MM):",
+        "endTimePrompt": "End time (HH:MM):",
+        "reasonPrompt": "Reason (optional):",
+        "blocked": "Time blocked successfully",
+        "workingHours": "Working Hours",
+        "noHours": "No working hours configured",
+        "open": "Open",
+        "closed": "Closed",
+        "break": "Break",
+        "buffer": "Buffer between appointments: {{n}} min",
+        "footer": "Pulled from this doctor's availability. Set rules in \"Rules & Limits\".",
+        "holidays": "Holidays"
+      },
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      },
+      "upcoming": "Upcoming Appointments",
+      "noUpcoming": "No upcoming appointments",
+      "past": "Past Appointments",
+      "noPast": "No past appointments",
+      "unknown": "Unknown",
+      "patients": {
+        "search": "Search patients…",
+        "none": "No patients found",
+        "name": "Patient Name",
+        "lastVisit": "Last Visit",
+        "totalVisits": "Total Visits",
+        "lastService": "Last Service",
+        "view": "View"
+      },
+      "analytics": {
+        "total": "Total Appointments",
+        "unique": "Unique Patients",
+        "completion": "Completion Rate",
+        "cancellation": "Cancellation Rate",
+        "overTime": "Appointments Over Time",
+        "noData": "No appointment data",
+        "statusBreakdown": "Status Breakdown",
+        "performance": "Performance Indicators",
+        "avgRating": "Average Rating",
+        "noRatings": "No ratings yet",
+        "retention": "Patient Retention",
+        "utilization": "Utilization Rate",
+        "onTime": "On-time Rate"
+      },
+      "procedures": {
+        "title": "Services & Procedures",
+        "subtitle": "Services this provider performs. Set individual fees and toggle availability.",
+        "none": "No services configured",
+        "colName": "Service Name",
+        "colCategory": "Category",
+        "colPrice": "Price",
+        "colDuration": "Duration",
+        "colStatus": "Status",
+        "active": "Active",
+        "inactive": "Inactive",
+        "footerDoc": "Showing this doctor's procedures.",
+        "footerClinic": "No doctor-specific procedures yet — showing clinic services."
+      },
+      "reviews": {
+        "title": "Patient Reviews",
+        "breakdown": "Rating Breakdown",
+        "none": "No reviews yet for this provider",
+        "willAppear": "Patient reviews will appear here"
+      },
+      "docs": {
+        "title": "Documents & Credentials",
+        "upload": "Upload Document",
+        "uploadNotice": "File upload requires the attachments storage bucket.",
+        "none": "No documents yet",
+        "comingSoon": "Document upload and management coming in a future update.",
+        "cat": {
+          "license": "License & Certifications",
+          "contracts": "Contracts",
+          "other": "Other"
+        }
+      },
+      "dir": {
+        "active": "Active",
+        "pendingInactive": "Pending / Inactive",
+        "specialties": "Specialties",
+        "search": "Search by name, specialty or email…",
+        "allSpecialties": "All Specialties",
+        "all": "All",
+        "viewProfile": "View Profile",
+        "general": "General"
+      }
+    },
+    "sv": {
+      "tab": {
+        "catalog": "Catalog",
+        "pricing": "Pricing Rules",
+        "categories": "Categories",
+        "analytics": "Analytics"
+      },
+      "kpi": {
+        "total": "Total Services",
+        "avg": "Avg. Price",
+        "categories": "Categories",
+        "revenue": "Revenue Potential"
+      },
+      "search": "Search services…",
+      "allCategories": "All Categories",
+      "noMatch": "No services match your search.",
+      "uncategorized": "Uncategorized",
+      "online": "Online",
+      "offline": "Offline",
+      "newPricePrompt": "New price:",
+      "archiveConfirm": "Archive this service?",
+      "updated": "Service updated",
+      "archived": "Service archived",
+      "categoryBreakdown": "Category Breakdown",
+      "noServices": "No services yet.",
+      "services": "service",
+      "servicesPlural": "services",
+      "pricing": {
+        "overview": "Pricing Overview",
+        "lowest": "Lowest Price",
+        "highest": "Highest Price",
+        "average": "Average Price",
+        "totalRevenue": "Total Revenue Potential"
+      },
+      "topCategories": "Top Categories",
+      "noCats": "No categories yet",
+      "summary": {
+        "title": "Service Summary",
+        "avgPerCat": "Avg. per Category"
+      },
+      "recentlyAdded": "Recently Added",
+      "rules": {
+        "title": "Pricing Rules",
+        "addRule": "Add Rule",
+        "useCatalog": "Use the service catalog to set individual prices per service.",
+        "fixed": "Fixed Price",
+        "fixedDesc": "One set price applies to all providers for this service.",
+        "provider": "Provider Pricing",
+        "providerDesc": "Each provider sets their own fee for the service.",
+        "enable": "Enable",
+        "providerNotice": "Provider-specific pricing is set in each provider's Procedures tab.",
+        "deposit": "Deposit Requirements",
+        "depositDesc": "Require a deposit % or fixed amount upfront for specific services.",
+        "configure": "Configure",
+        "depositNotice": "Deposit requirements will be available in a future update.",
+        "rulesActive": "rules active"
+      },
+      "priceList": "Service Price List",
+      "col": {
+        "service": "Service",
+        "type": "Type",
+        "deposit": "Deposit"
+      },
+      "type": {
+        "fixed": "Fixed",
+        "none": "None"
+      },
+      "priceUpdated": "Price updated",
+      "priceListFooter": "To set provider-specific fees, go to the Providers section → select a provider → Procedures tab.",
+      "categories": {
+        "title": "Service Categories",
+        "create": "Create Category",
+        "placeholder": "e.g. Consultation, Diagnostics…",
+        "add": "Add",
+        "enterName": "Enter a category name",
+        "added": "Category added",
+        "hint": "Set a consistent naming convention so reports are clean (e.g. \"Diagnostics: Blood Work\", \"Diagnostics: Imaging\").",
+        "your": "Your Categories",
+        "noneAddOne": "No categories yet. Add one above.",
+        "renamePrompt": "New name:",
+        "renamed": "Category renamed locally",
+        "deleteConfirm": "Delete this category?",
+        "removed": "Category removed",
+        "rename": "Rename",
+        "delete": "Delete",
+        "uncat": "Uncategorized Services",
+        "noCat": "{{n}} service{{s}} without a category.",
+        "assign": "Assign Category",
+        "assignNotice": "Select a category for each service in the catalog tab.",
+        "allSet": "All services are categorized."
+      },
+      "analytics": {
+        "activeOnline": "Active (Online)",
+        "byCat": "Services by Category",
+        "priceDist": "Price Distribution",
+        "mostBooked": "Most Booked Services (by Appointment Data)",
+        "noAppts": "No appointment data available yet.",
+        "bookings": "{{n}} bookings",
+        "noRecent": "Services with No Recent Bookings",
+        "allBooked": "All services have recent bookings. Great!",
+        "archive": "Archive",
+        "considerArchive": "Consider archiving services with no bookings to keep your catalog clean.",
+        "other": "Other"
+      }
     }
   },
   "patient": {
