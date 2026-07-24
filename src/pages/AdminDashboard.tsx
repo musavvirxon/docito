@@ -2512,19 +2512,19 @@ const AdminDashboard = () => {
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{locations.length}</div>
-                  <p className="text-sm text-muted-foreground">Total Locations</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.lo.totalLocations")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{locations.filter(l => l.status === "active").length}</div>
-                  <p className="text-sm text-muted-foreground">Active</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.lo.active")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{locations.filter(l => l.status !== "active").length}</div>
-                  <p className="text-sm text-muted-foreground">Inactive</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.lo.inactive")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
@@ -2532,7 +2532,7 @@ const AdminDashboard = () => {
                   <div className="text-2xl font-bold">
                     {locations.length > 0 ? (doctors.length / locations.length).toFixed(1) : "0"}
                   </div>
-                  <p className="text-sm text-muted-foreground">Providers / Location</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.lo.providersPerLoc")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -2575,28 +2575,28 @@ const AdminDashboard = () => {
                               })}
                               disabled={!allowModals}
                             >
-                              <Settings className="h-4 w-4 mr-1" /> Edit
+                              <Settings className="h-4 w-4 mr-1" /> {t("admin.lo.edit")}
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => guard(async () => {
-                                if (!confirm("Are you sure you want to delete this location?")) return;
+                                if (!confirm(t("admin.lo.confirmDelete"))) return;
                                 try {
                                   const { error } = await supabase
                                     .from("practice_locations")
                                     .delete()
                                     .eq("id", location.id);
                                   if (error) throw error;
-                                  toast.success("Location deleted");
+                                  toast.success(t("admin.lo.locationDeleted"));
                                   refreshData();
                                 } catch (err: any) {
-                                  toast.error(err?.message || "Failed to delete location");
+                                  toast.error(err?.message || t("admin.lo.deleteFailed"));
                                 }
                               })}
                               disabled={!allowModals}
                             >
-                              <X className="h-4 w-4 mr-1" /> Delete
+                              <X className="h-4 w-4 mr-1" /> {t("admin.lo.delete")}
                             </Button>
                           </div>
                         </div>
@@ -2608,21 +2608,21 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle>Location Status Overview</CardTitle>
+                  <CardTitle>{t("admin.lo.statusOverview")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Active Locations</span>
+                      <span className="text-sm font-medium">{t("admin.lo.activeLocations")}</span>
                       <Badge variant="secondary">{locations.filter(l => l.status === "active").length}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Inactive Locations</span>
+                      <span className="text-sm font-medium">{t("admin.lo.inactiveLocations")}</span>
                       <Badge variant="secondary">{locations.filter(l => l.status !== "active").length}</Badge>
                     </div>
                     {locations.length > 0 && (
                       <div className="pt-2">
-                        <h4 className="text-sm font-medium mb-2 text-muted-foreground">All Addresses</h4>
+                        <h4 className="text-sm font-medium mb-2 text-muted-foreground">{t("admin.lo.allAddresses")}</h4>
                         <div className="space-y-2">
                           {locations.map(l => (
                             <div key={l.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border">
@@ -2642,22 +2642,22 @@ const AdminDashboard = () => {
             <div className={sectionInsightGridClass}>
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Coverage Summary</CardTitle>
+                  <CardTitle className="text-base">{t("admin.lo.coverageSummary")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Total Branches</span>
+                      <span className="text-sm font-medium">{t("admin.lo.totalBranches")}</span>
                       <span className="text-lg font-bold">{locations.length}</span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Active Rate</span>
+                      <span className="text-sm font-medium">{t("admin.lo.activeRate")}</span>
                       <span className="text-lg font-bold">
                         {locations.length > 0 ? Math.round((locations.filter(l => l.status === "active").length / locations.length) * 100) : 0}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Unique Cities</span>
+                      <span className="text-sm font-medium">{t("admin.lo.uniqueCities")}</span>
                       <span className="text-lg font-bold">
                         {new Set(locations.map(l => {
                           const parts = (l.address || "").split(",");
@@ -2671,11 +2671,11 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Branch Directory</CardTitle>
+                  <CardTitle className="text-base">{t("admin.lo.branchDirectory")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {locations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No branches added yet.</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.lo.noBranches")}</p>
                   ) : (
                     <div className="space-y-3">
                       {locations.map((l, i) => (
@@ -2696,7 +2696,7 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Operational Health</CardTitle>
+                  <CardTitle className="text-base">{t("admin.lo.operationalHealth")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -2715,12 +2715,12 @@ const AdminDashboard = () => {
                           <Badge variant="secondary">{count as number}</Badge>
                         </div>
                       )) : (
-                        <p className="text-sm text-muted-foreground">No location data</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.lo.noLocationData")}</p>
                       );
                     })()}
                     <div className="pt-2 border-t border-border">
                       <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                        <span className="text-sm font-medium">Providers per Location</span>
+                        <span className="text-sm font-medium">{t("admin.lo.providersPerLoc")}</span>
                         <span className="text-lg font-bold">
                           {locations.length > 0 ? (doctors.length / locations.length).toFixed(1) : "0"}
                         </span>
@@ -2766,12 +2766,12 @@ const AdminDashboard = () => {
           const totalPaid = patientPayments.filter((p: any) => p.status === 'completed' || p.status === 'paid').reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
 
           const patientTabs: { key: typeof patientTab; label: string }[] = [
-            { key: 'overview', label: 'Overview' },
-            { key: 'appointments', label: 'Appointments' },
-            { key: 'billing', label: 'Billing' },
-            { key: 'documents', label: 'Documents' },
-            { key: 'notes', label: 'Notes' },
-            { key: 'activity', label: 'Activity' },
+            { key: 'overview', label: t('admin.pt.overview') },
+            { key: 'appointments', label: t('admin.pt.appointments') },
+            { key: 'billing', label: t('admin.pt.billing') },
+            { key: 'documents', label: t('admin.pt.documents') },
+            { key: 'notes', label: t('admin.pt.notes') },
+            { key: 'activity', label: t('admin.pt.activity') },
           ];
 
           return (
@@ -2802,24 +2802,24 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {
-                          const phone = prompt('Edit phone:', selectedPatient.phone || '');
+                          const phone = prompt(t('admin.pt.editPhone'), selectedPatient.phone || '');
                           if (phone !== null && phone !== selectedPatient.phone) {
                             const { error } = await (supabase as any).from('doctor_patients').update({ phone }).eq('id', selectedPatient.id);
                             if (error) { toast.error(error.message); return; }
-                            toast.success('Patient updated');
+                            toast.success(t('admin.pt.patientUpdated'));
                             refreshData();
                           }
-                        })}>Edit</Button>
+                        })}>{t('admin.pt.edit')}</Button>
                         <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => {
                           navigate('/dashboard/appointments');
-                        })}>New Appointment</Button>
+                        })}>{t('admin.pt.newAppointment')}</Button>
                         <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {
-                          if (!confirm('Block this patient from booking?')) return;
+                          if (!confirm(t('admin.pt.confirmBlock'))) return;
                           const { error } = await (supabase as any).from('doctor_patients').update({ status: 'blocked' }).eq('id', selectedPatient.id);
                           if (error) { toast.error(error.message); return; }
-                          toast.success('Patient blocked');
+                          toast.success(t('admin.pt.patientBlocked'));
                           refreshData();
-                        })}>Block</Button>
+                        })}>{t('admin.pt.block')}</Button>
                       </div>
                     </div>
                   </CardContent>
@@ -2841,61 +2841,61 @@ const AdminDashboard = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <div className="lg:col-span-8 space-y-6">
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Personal Information</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pt.personalInfo")}</CardTitle></CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             {[
-                              ['Full Name', selectedPatient.name],
-                              ['Date of Birth', formatPatientDate(selectedPatient.date_of_birth)],
-                              ['Gender', selectedPatient.gender || '—'],
-                              ['Phone', selectedPatient.phone || '—'],
-                              ['Email', selectedPatient.email || '—'],
-                              ['Address', selectedPatient.address || '—'],
-                              ['Emergency Contact', selectedPatient.emergency_contact || '—'],
+                              [t('admin.pt.fullName'), selectedPatient.name],
+                              [t('admin.pt.dob'), formatPatientDate(selectedPatient.date_of_birth)],
+                              [t('admin.pt.gender'), selectedPatient.gender || '—'],
+                              [t('admin.pt.phone'), selectedPatient.phone || '—'],
+                              [t('admin.pt.email'), selectedPatient.email || '—'],
+                              [t('admin.pt.address'), selectedPatient.address || '—'],
+                              [t('admin.pt.emergencyContact'), selectedPatient.emergency_contact || '—'],
                             ].map(([label, val]) => (
                               <div key={label as string}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">{val || '—'}</p></div>
                             ))}
                           </div>
                           <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(async () => {
-                            const email = prompt('Edit email:', selectedPatient.email || '');
+                            const email = prompt(t('admin.pt.editEmail'), selectedPatient.email || '');
                             if (email !== null) {
                               const { error } = await (supabase as any).from('doctor_patients').update({ email }).eq('id', selectedPatient.id);
                               if (error) { toast.error(error.message); return; }
-                              toast.success('Info updated');
+                              toast.success(t('admin.pt.infoUpdated'));
                               refreshData();
                             }
-                          })}>Edit Info</Button>
+                          })}>{t('admin.pt.editInfo')}</Button>
                         </CardContent>
                       </Card>
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Medical Summary</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pt.medicalSummary")}</CardTitle></CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                            {['Blood Type', 'Allergies', 'Chronic Conditions', 'Current Medications'].map(label => (
+                            {[t('admin.pt.bloodType'), t('admin.pt.allergies'), t('admin.pt.chronic'), t('admin.pt.medications')].map(label => (
                               <div key={label}><p className="text-muted-foreground text-xs">{label}</p><p className="font-medium">—</p></div>
                             ))}
                           </div>
                           <Button variant="outline" size="sm" className="mt-4" disabled={!allowModals} onClick={() => guard(async () => {
-                            const allergies = prompt('Allergies:', selectedPatient.allergies || '');
+                            const allergies = prompt(t('admin.pt.allergiesPrompt'), selectedPatient.allergies || '');
                             if (allergies !== null) {
                               const { error } = await (supabase as any).from('doctor_patients').update({ allergies }).eq('id', selectedPatient.id);
                               if (error) { toast.error(error.message); return; }
-                              toast.success('Medical info updated');
+                              toast.success(t('admin.pt.medicalUpdated'));
                               refreshData();
                             }
-                          })}>Edit Medical Info</Button>
+                          })}>{t('admin.pt.editMedical')}</Button>
                         </CardContent>
                       </Card>
                     </div>
                     <div className="lg:col-span-4 space-y-6">
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Quick Stats</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pt.quickStats")}</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
                           {[
-                            ['Total Visits', patientAppts.length.toString()],
-                            ['Last Visit', lastVisitDate],
-                            ['Assigned Provider', selectedPatient.doctor_name || '—'],
-                            ['Member Since', formatPatientDate(selectedPatient.created_at, 'MMM yyyy')],
+                            [t('admin.pt.totalVisits'), patientAppts.length.toString()],
+                            [t('admin.pt.lastVisit'), lastVisitDate],
+                            [t('admin.pt.assignedProvider'), selectedPatient.doctor_name || '—'],
+                            [t('admin.pt.memberSince'), formatPatientDate(selectedPatient.created_at, 'MMM yyyy')],
                           ].map(([label, val]) => (
                             <div key={label as string} className="flex justify-between text-sm p-2 bg-muted/30 rounded-lg border border-border">
                               <span className="text-muted-foreground">{label}</span><span className="font-medium">{val}</span>
@@ -2904,7 +2904,7 @@ const AdminDashboard = () => {
                         </CardContent>
                       </Card>
                       <Card className="rounded-xl">
-                        <CardHeader><CardTitle className="text-base">Insurance</CardTitle></CardHeader>
+                        <CardHeader><CardTitle className="text-base">{t("admin.pt.insurance")}</CardTitle></CardHeader>
                         <CardContent>
                           <div className="space-y-3 text-sm">
                             {(() => {
@@ -2937,7 +2937,7 @@ const AdminDashboard = () => {
                         compact
                         patientName={selectedPatient?.name || ''}
                         payments={payments || []}
-                        onCreateInvoice={() => guard(() => toast.info('Create invoice coming soon'))}
+                        onCreateInvoice={() => guard(() => toast.info(t('admin.pt.createInvoiceSoon')))}
                         disabled={!allowModals}
                       />
                     </div>
@@ -2956,8 +2956,8 @@ const AdminDashboard = () => {
                   return (
                     <div className="space-y-6">
                       <div className="flex items-center justify-between flex-wrap gap-3">
-                        <h3 className="text-base font-semibold">Appointment History</h3>
-                        <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => navigate('/dashboard/appointments'))}>Add Appointment</Button>
+                        <h3 className="text-base font-semibold">{t("admin.pt.appointmentHistory")}</h3>
+                        <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(() => navigate('/dashboard/appointments'))}>{t('admin.pt.addAppointment')}</Button>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {['all', 'upcoming', 'completed', 'cancelled'].map(f => (
@@ -2967,18 +2967,18 @@ const AdminDashboard = () => {
                       {filtered.length === 0 ? (
                         <div className="text-center py-10 text-muted-foreground">
                           <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p className="font-medium">No appointments found</p>
+                          <p className="font-medium">{t("admin.pt.noAppointments")}</p>
                         </div>
                       ) : (
                         <Card className="rounded-xl overflow-hidden">
                           <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                               <thead><tr className="border-b border-border bg-muted/30">
-                                <th className="text-left p-3 font-medium">Date & Time</th>
-                                <th className="text-left p-3 font-medium">Provider</th>
-                                <th className="text-left p-3 font-medium">Service</th>
-                                <th className="text-left p-3 font-medium">Status</th>
-                                <th className="text-left p-3 font-medium">Actions</th>
+                                <th className="text-left p-3 font-medium">{t("admin.pt.dateTime")}</th>
+                                <th className="text-left p-3 font-medium">{t("admin.pt.provider")}</th>
+                                <th className="text-left p-3 font-medium">{t("admin.pt.service")}</th>
+                                <th className="text-left p-3 font-medium">{t("admin.pt.status")}</th>
+                                <th className="text-left p-3 font-medium">{t("admin.pt.actions")}</th>
                               </tr></thead>
                               <tbody>
                                 {filtered.map(a => (
@@ -3021,7 +3021,7 @@ const AdminDashboard = () => {
                         </Card>
                       )}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {[['Total', patientAppts.length], ['Completed', completed], ['Cancelled', cancelled]].map(([label, count]) => (
+                        {[[t('admin.pt.total'), patientAppts.length], [t('admin.pt.completed'), completed], [t('admin.pt.cancelled'), cancelled]].map(([label, count]) => (
                           <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
                             <div className="text-2xl font-bold">{count}</div><p className="text-sm text-muted-foreground">{label}</p>
                           </CardContent></Card>
@@ -3040,13 +3040,13 @@ const AdminDashboard = () => {
                       disabled={!allowModals}
                     />
                     <div className="flex items-center justify-between flex-wrap gap-3">
-                      <h3 className="text-base font-semibold">Billing & Payments</h3>
+                      <h3 className="text-base font-semibold">{t("admin.pt.billingPayments")}</h3>
                       <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {
-                        const amount = prompt('Invoice amount ($):');
+                        const amount = prompt(t('admin.pt.invoiceAmount'));
                         if (!amount) return;
-                        const desc = prompt('Description:', 'Medical services') || 'Medical services';
+                        const desc = prompt(t('admin.pt.invoiceDesc'), t('admin.pt.medicalServices')) || t('admin.pt.medicalServices');
                         const amountCents = Math.round(parseFloat(amount) * 100);
-                        if (isNaN(amountCents) || amountCents <= 0) { toast.error('Invalid amount'); return; }
+                        if (isNaN(amountCents) || amountCents <= 0) { toast.error(t('admin.pt.invalidAmount')); return; }
                         const invNum = `INV-${Date.now().toString().slice(-8)}`;
                         const { data: u } = await supabase.auth.getUser();
                         const { error } = await (supabase as any).from('billing_invoices').insert({
@@ -3060,11 +3060,11 @@ const AdminDashboard = () => {
                           created_by: u?.user?.id ?? null,
                         });
                         if (error) { toast.error(error.message); return; }
-                        toast.success('Invoice created');
-                      })}>Create Invoice</Button>
+                        toast.success(t('admin.pt.invoiceCreated'));
+                      })}>{t('admin.pt.createInvoice')}</Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {[['Total Invoiced', `$${totalInvoiced.toLocaleString()}`], ['Paid', `$${totalPaid.toLocaleString()}`], ['Outstanding', `$${(totalInvoiced - totalPaid).toLocaleString()}`]].map(([label, val]) => (
+                      {[[t('admin.pt.totalInvoiced'), `$${totalInvoiced.toLocaleString()}`], [t('admin.pt.paid'), `$${totalPaid.toLocaleString()}`], [t('admin.pt.outstanding'), `$${(totalInvoiced - totalPaid).toLocaleString()}`]].map(([label, val]) => (
                         <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
                           <div className="text-2xl font-bold">{val}</div><p className="text-sm text-muted-foreground">{label}</p>
                         </CardContent></Card>
@@ -3073,16 +3073,16 @@ const AdminDashboard = () => {
                     {patientPayments.length === 0 ? (
                       <div className="text-center py-10 text-muted-foreground">
                         <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p className="font-medium">No billing records found</p>
+                        <p className="font-medium">{t("admin.pt.noBilling")}</p>
                       </div>
                     ) : (
                       <Card className="rounded-xl overflow-hidden">
                         <div className="overflow-x-auto">
                           <table className="w-full text-sm">
                             <thead><tr className="border-b border-border bg-muted/30">
-                              <th className="text-left p-3 font-medium">Date</th>
-                              <th className="text-left p-3 font-medium">Description</th>
-                              <th className="text-left p-3 font-medium">Amount</th>
+                              <th className="text-left p-3 font-medium">{t("admin.pt.date")}</th>
+                              <th className="text-left p-3 font-medium">{t("admin.pt.description")}</th>
+                              <th className="text-left p-3 font-medium">{t("admin.pt.amount")}</th>
                               <th className="text-left p-3 font-medium">Status</th>
                             </tr></thead>
                             <tbody>
@@ -3105,7 +3105,7 @@ const AdminDashboard = () => {
                 {patientTab === 'documents' && (
                   <div className="space-y-6">
                     <div className="flex items-center justify-between flex-wrap gap-3">
-                      <h3 className="text-base font-semibold">Documents</h3>
+                      <h3 className="text-base font-semibold">{t("admin.pt.documents")}</h3>
                       <Button variant="outline" size="sm" disabled={!allowModals} onClick={() => guard(async () => {
                         const input = document.createElement('input');
                         input.type = 'file';
@@ -3116,53 +3116,53 @@ const AdminDashboard = () => {
                           const path = `patients/${selectedPatient?.id || 'unknown'}/${Date.now()}_${file.name}`;
                           const { error } = await supabase.storage.from('attachments').upload(path, file);
                           if (error) { toast.error(error.message); return; }
-                          toast.success('Document uploaded');
+                          toast.success(t('admin.pt.documentUploaded'));
                         };
                         input.click();
-                      })}>Upload</Button>
+                      })}>{t('admin.pt.upload')}</Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {['Prescriptions', 'Test Results', 'Other'].map(cat => (
+                      {[t('admin.pt.prescriptions'), t('admin.pt.testResults'), t('admin.pt.other')].map(cat => (
                         <Card key={cat} className="rounded-xl"><CardContent className="pt-6 text-center py-10">
                           <FileText className="h-10 w-10 mx-auto mb-2 text-muted-foreground opacity-50" />
                           <p className="text-sm font-medium">{cat}</p>
-                          <p className="text-xs text-muted-foreground mt-1">No documents yet</p>
+                          <p className="text-xs text-muted-foreground mt-1">{t("admin.pt.noDocuments")}</p>
                         </CardContent></Card>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground text-center">Document upload coming in a future update.</p>
+                    <p className="text-xs text-muted-foreground text-center">{t("admin.pt.uploadSoon")}</p>
                   </div>
                 )}
 
                 {patientTab === 'notes' && (
                   <div className="space-y-6">
-                    <h3 className="text-base font-semibold">Internal Notes</h3>
-                    <p className="text-sm text-muted-foreground">Notes are internal only and not visible to the patient.</p>
+                    <h3 className="text-base font-semibold">{t("admin.pt.internalNotes")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("admin.pt.notesPrivate")}</p>
                     <div className="space-y-3">
-                      <textarea className="w-full border border-border rounded-lg p-3 text-sm bg-background resize-none" rows={4} placeholder="Write a note…" />
+                      <textarea className="w-full border border-border rounded-lg p-3 text-sm bg-background resize-none" rows={4} placeholder={t("admin.pt.writeNote")} />
                       <Button size="sm" disabled={!allowModals} onClick={() => guard(() => {
                         const textarea = document.querySelector('textarea[placeholder="Write a note…"]') as HTMLTextAreaElement;
                         const text = textarea?.value?.trim();
-                        if (!text) { toast.error('Write a note first'); return; }
-                        toast.success('Note saved');
+                        if (!text) { toast.error(t('admin.pt.writeNoteFirst')); return; }
+                        toast.success(t('admin.pt.noteSaved'));
                         if (textarea) textarea.value = '';
-                      })}>Add Note</Button>
+                      })}>{t('admin.pt.addNote')}</Button>
                     </div>
                     <div className="text-center py-10 text-muted-foreground">
                       <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">No notes yet</p>
-                      <p className="text-sm mt-1">Notes will appear here once added.</p>
+                      <p className="font-medium">{t("admin.pt.noNotes")}</p>
+                      <p className="text-sm mt-1">{t("admin.pt.notesAppear")}</p>
                     </div>
                   </div>
                 )}
 
                 {patientTab === 'activity' && (
                   <div className="space-y-6">
-                    <h3 className="text-base font-semibold">Activity Timeline</h3>
+                    <h3 className="text-base font-semibold">{t("admin.pt.activityTimeline")}</h3>
                     {sortedAppts.length === 0 ? (
                       <div className="text-center py-10 text-muted-foreground">
                         <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p className="font-medium">No activity recorded yet</p>
+                        <p className="font-medium">{t("admin.pt.noActivity")}</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -3170,7 +3170,7 @@ const AdminDashboard = () => {
                           <div key={a.id} className="flex gap-3 items-start">
                             <div className={`mt-1 h-3 w-3 rounded-full flex-shrink-0 ${a.status === 'completed' ? 'bg-green-500' : a.status === 'cancelled' ? 'bg-red-400' : 'bg-blue-500'}`} />
                             <div className="min-w-0">
-                              <p className="text-sm">Appointment with <span className="font-medium">{a.doctor_name || 'Provider'}</span> — <span className="capitalize">{a.status}</span></p>
+                              <p className="text-sm">{t('admin.pt.appointmentWith')} <span className="font-medium">{a.doctor_name || 'Provider'}</span> — <span className="capitalize">{a.status}</span></p>
                               <p className="text-xs text-muted-foreground">{formatPatientDate(a.date || a.appointment_date)}</p>
                             </div>
                           </div>
@@ -3213,19 +3213,19 @@ const AdminDashboard = () => {
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{patients.length}</div>
-                  <p className="text-sm text-muted-foreground">Total Patients</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.pt.totalPatients")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{patients.filter(p => p.status === "active").length}</div>
-                  <p className="text-sm text-muted-foreground">Active</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.pt.active")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{new Set(patients.map(p => p.doctor_name)).size}</div>
-                  <p className="text-sm text-muted-foreground">Assigned Providers</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.pt.assignedProviders")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
@@ -3233,7 +3233,7 @@ const AdminDashboard = () => {
                   <div className="text-2xl font-bold">
                     {doctors.length > 0 ? (patients.length / doctors.length).toFixed(1) : "0"}
                   </div>
-                  <p className="text-sm text-muted-foreground">Avg. per Provider</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.pt.avgPerProvider")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -3242,7 +3242,7 @@ const AdminDashboard = () => {
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <div className="relative flex-1">
                 <Input
-                  placeholder="Search by name, phone or email…"
+                  placeholder={t("admin.pt.searchPatients")}
                   value={patientSearch}
                   onChange={e => setPatientSearch(e.target.value)}
                   className="pl-9"
@@ -3260,7 +3260,7 @@ const AdminDashboard = () => {
                 value={patientProviderFilter}
                 onChange={e => setPatientProviderFilter(e.target.value)}
               >
-                <option value="all">All Providers</option>
+                <option value="all">{t("admin.pt.allProviders")}</option>
                 {uniqueProviderNames.map(name => <option key={name} value={name}>{name}</option>)}
               </select>
             </div>
@@ -3290,9 +3290,9 @@ const AdminDashboard = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="font-medium truncate">{patient.name}</p>
-                              {patient.source === 'facility' && <Badge variant="outline" className="text-[10px]">In-clinic</Badge>}
-                              {patient.source === 'doctor' && <Badge variant="outline" className="text-[10px]">Doctor patient</Badge>}
-                              {patient.source === 'appointments-only' && <Badge variant="outline" className="text-[10px]">From booking</Badge>}
+                              {patient.source === 'facility' && <Badge variant="outline" className="text-[10px]">{t("admin.pt.inClinic")}</Badge>}
+                              {patient.source === 'doctor' && <Badge variant="outline" className="text-[10px]">{t("admin.pt.doctorPatient")}</Badge>}
+                              {patient.source === 'appointments-only' && <Badge variant="outline" className="text-[10px]">{t("admin.pt.fromBooking")}</Badge>}
                             </div>
                             <p className="text-sm text-muted-foreground truncate">{patient.doctor_name || patient.phone || patient.email || '—'}</p>
                           </div>
@@ -3302,7 +3302,7 @@ const AdminDashboard = () => {
                           <div className="hidden md:flex flex-col items-end text-xs whitespace-nowrap">
                             <span className="text-green-600 font-semibold">{money(patient.total_paid || 0, ((practice as any)?.currency || 'USD').toUpperCase())}</span>
                             {patient.total_outstanding > 0 && (
-                              <span className="text-orange-600">{money(patient.total_outstanding, ((practice as any)?.currency || 'USD').toUpperCase())} due</span>
+                              <span className="text-orange-600">{money(patient.total_outstanding, ((practice as any)?.currency || 'USD').toUpperCase())} {t('admin.pt.due')}</span>
                             )}
                           </div>
                           <Badge className={patient.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-muted text-muted-foreground'}>
@@ -3320,21 +3320,21 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle>Patient Statistics</CardTitle>
+                  <CardTitle>{t("admin.pt.patientStatistics")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Active Patients</span>
+                      <span className="text-sm font-medium">{t("admin.pt.activePatients")}</span>
                       <Badge variant="secondary">{patients.filter(p => p.status === "active").length}</Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                      <span className="text-sm font-medium">Inactive Patients</span>
+                      <span className="text-sm font-medium">{t("admin.pt.inactivePatients")}</span>
                       <Badge variant="secondary">{patients.filter(p => p.status !== "active").length}</Badge>
                     </div>
                     {patients.length > 0 && (
                       <div className="pt-2">
-                        <h4 className="text-sm font-medium mb-2 text-muted-foreground">By Provider</h4>
+                        <h4 className="text-sm font-medium mb-2 text-muted-foreground">{t("admin.pt.byProvider")}</h4>
                         <div className="space-y-2">
                           {Object.entries(
                             patients.reduce((acc, p) => {
@@ -3360,7 +3360,7 @@ const AdminDashboard = () => {
             <div className={sectionInsightGridClass}>
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Provider Assignment</CardTitle>
+                  <CardTitle className="text-base">{t("admin.pt.providerAssignment")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -3377,10 +3377,10 @@ const AdminDashboard = () => {
                             <Stethoscope className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm font-medium">{doc}</span>
                           </div>
-                          <Badge variant="outline">{count as number} patient{(count as number) !== 1 ? "s" : ""}</Badge>
+                          <Badge variant="outline">{count as number} {(count as number) !== 1 ? t("admin.pt.patients") : t("admin.pt.patient")}</Badge>
                         </div>
                       )) : (
-                        <p className="text-sm text-muted-foreground">No patients yet</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.pt.noPatientsYet")}</p>
                       );
                     })()}
                   </div>
@@ -3389,11 +3389,11 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Recent Visits</CardTitle>
+                  <CardTitle className="text-base">{t("admin.pt.recentVisits")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {patients.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No visit data available.</p>
+                    <p className="text-sm text-muted-foreground">{t("admin.pt.noVisitData")}</p>
                   ) : (
                     <div className="space-y-3">
                       {[...patients]
@@ -3417,7 +3417,7 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle className="text-base">Status Segmentation</CardTitle>
+                  <CardTitle className="text-base">{t("admin.pt.statusSegmentation")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -3441,12 +3441,12 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                       )) : (
-                        <p className="text-sm text-muted-foreground">No patient data</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.pt.noPatientData")}</p>
                       );
                     })()}
                     <div className="pt-2 border-t border-border">
                       <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                        <span className="text-sm font-medium">Patients per Provider</span>
+                        <span className="text-sm font-medium">{t("admin.pt.patientsPerProvider")}</span>
                         <span className="text-lg font-bold">
                           {(() => {
                             const provCount = new Set(patients.map(p => p.doctor_name)).size;
@@ -4250,12 +4250,12 @@ const AdminDashboard = () => {
         }).slice(0, 8);
 
         const finTabs = [
-          { key: 'overview' as const, label: 'Overview' },
-          { key: 'ledger' as const, label: 'Ledger' },
-          { key: 'compensation' as const, label: 'Compensation' },
-          { key: 'recurring' as const, label: 'Recurring' },
-          { key: 'categories' as const, label: 'Categories' },
-          { key: 'export' as const, label: 'Export' },
+          { key: 'overview' as const, label: t('admin.fi.overview') },
+          { key: 'ledger' as const, label: t('admin.fi.ledger') },
+          { key: 'compensation' as const, label: t('admin.fi.compensation') },
+          { key: 'recurring' as const, label: t('admin.fi.recurring') },
+          { key: 'categories' as const, label: t('admin.fi.categories') },
+          { key: 'export' as const, label: t('admin.fi.export') },
         ];
 
         const catColors = ['hsl(var(--primary))', 'hsl(142 71% 45%)', 'hsl(38 92% 50%)', 'hsl(280 68% 60%)', 'hsl(0 84% 60%)'];
@@ -4265,12 +4265,12 @@ const AdminDashboard = () => {
             <div className={sectionShellClass}>
               {/* Header */}
               <div className="flex items-center justify-between gap-4 flex-wrap">
-                <h2 className="text-xl font-semibold">Finance</h2>
+                <h2 className="text-xl font-semibold">{t("admin.fi.title")}</h2>
                 <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => (() => {
                         downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
                           financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
                       })())}>
-                  <Download className="h-4 w-4 mr-2" /> Export CSV
+                  <Download className="h-4 w-4 mr-2" /> {t("admin.fi.exportCsv")}
                 </Button>
               </div>
 
@@ -4293,15 +4293,15 @@ const AdminDashboard = () => {
               {financeTab === 'overview' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Income</p><p className="text-2xl font-bold text-foreground">{money(finIncome, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Expenses</p><p className="text-2xl font-bold text-destructive">{money(finExpenses, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Net</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>{money(finNet, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
-                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Entries</p><p className="text-2xl font-bold text-foreground">{financeEntries.length}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("admin.fi.income")}</p><p className="text-2xl font-bold text-foreground">{money(finIncome, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("admin.fi.expenses")}</p><p className="text-2xl font-bold text-destructive">{money(finExpenses, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("admin.fi.net")}</p><p className={`text-2xl font-bold ${finNet >= 0 ? 'text-foreground' : 'text-destructive'}`}>{money(finNet, ((practice as any)?.currency || 'USD').toUpperCase())}</p></CardContent></Card>
+                    <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("admin.fi.entries")}</p><p className="text-2xl font-bold text-foreground">{financeEntries.length}</p></CardContent></Card>
                   </div>
 
                   {/* Chart */}
                   <Card className="mb-6">
-                    <CardHeader><CardTitle>Income vs Expenses</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.fi.incomeVsExpenses")}</CardTitle></CardHeader>
                     <CardContent>
                       {monthlyData.length > 0 ? (
                         <ResponsiveContainer width="100%" height={260}>
@@ -4310,14 +4310,14 @@ const AdminDashboard = () => {
                             <XAxis dataKey="month" />
                             <YAxis />
                             <Tooltip />
-                            <Area type="monotone" dataKey="income" stroke="hsl(142, 71%, 45%)" fill="hsl(142, 71%, 45%)" fillOpacity={0.2} name="Income" />
-                            <Area type="monotone" dataKey="expense" stroke="hsl(0, 84%, 60%)" fill="hsl(0, 84%, 60%)" fillOpacity={0.2} name="Expenses" />
+                            <Area type="monotone" dataKey="income" stroke="hsl(142, 71%, 45%)" fill="hsl(142, 71%, 45%)" fillOpacity={0.2} name={t("admin.fi.income")} />
+                            <Area type="monotone" dataKey="expense" stroke="hsl(0, 84%, 60%)" fill="hsl(0, 84%, 60%)" fillOpacity={0.2} name={t("admin.fi.expenses")} />
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
                         <div className="text-center py-12 text-muted-foreground">
                           <TrendingUp className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                          <p>No entries yet. Add your first entry in the Ledger tab.</p>
+                          <p>{t("admin.fi.noEntriesChart")}</p>
                         </div>
                       )}
                     </CardContent>
@@ -4326,7 +4326,7 @@ const AdminDashboard = () => {
                   {/* Two-column row */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
-                      <CardHeader><CardTitle>Expense Breakdown by Category</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.fi.expenseByCategory")}</CardTitle></CardHeader>
                       <CardContent>
                         {expenseByCategory.length > 0 ? expenseByCategory.map((cat, i) => (
                           <div key={cat.name} className="flex items-center gap-3 mb-3">
@@ -4338,13 +4338,13 @@ const AdminDashboard = () => {
                             </div>
                           </div>
                         )) : (
-                          <p className="text-sm text-muted-foreground text-center py-6">No expense entries yet.</p>
+                          <p className="text-sm text-muted-foreground text-center py-6">{t("admin.fi.noExpenseEntries")}</p>
                         )}
                       </CardContent>
                     </Card>
 
                     <Card>
-                      <CardHeader><CardTitle>Recent Entries</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.fi.recentEntries")}</CardTitle></CardHeader>
                       <CardContent>
                         {recentEntries.length > 0 ? recentEntries.map(e => {
                           let dateStr = '';
@@ -4358,7 +4358,7 @@ const AdminDashboard = () => {
                             </div>
                           );
                         }) : (
-                          <p className="text-sm text-muted-foreground text-center py-6">No entries yet.</p>
+                          <p className="text-sm text-muted-foreground text-center py-6">{t("admin.fi.noEntries")}</p>
                         )}
                       </CardContent>
                     </Card>
@@ -4386,15 +4386,15 @@ const AdminDashboard = () => {
               {financeTab === 'categories' && (
                 <>
                   <Card className="mb-6">
-                    <CardHeader><CardTitle>Create Category</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.fi.createCategory")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-3 items-end mb-3">
                         <div className="flex-1 min-w-[200px]">
-                          <label className="text-xs text-muted-foreground">Name</label>
-                          <Input placeholder="e.g. Utilities: Electricity" value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} />
+                          <label className="text-xs text-muted-foreground">{t("admin.fi.name")}</label>
+                          <Input placeholder={t("admin.fi.categoryPlaceholder")} value={newCategoryName} onChange={e => setNewCategoryName(e.target.value)} />
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground block mb-1">Color</label>
+                          <label className="text-xs text-muted-foreground block mb-1">{t("admin.fi.color")}</label>
                           <div className="flex gap-2">
                             {['blue', 'green', 'orange', 'purple', 'red'].map(c => (
                               <button
@@ -4410,19 +4410,19 @@ const AdminDashboard = () => {
                           if (newCategoryName.trim()) {
                             setFinanceCategories(prev => [...prev, newCategoryName.trim()]);
                             setNewCategoryName('');
-                            toast.success('Category added');
+                            toast.success(t('admin.fi.categoryAdded'));
                           }
-                        })}>Add</Button>
+                        })}>{t('admin.fi.add')}</Button>
                       </div>
-                      <p className="text-xs text-muted-foreground">Tip: Set a consistent naming convention so reports are clean (e.g. "Utilities: Electricity", "Utilities: Water").</p>
+                      <p className="text-xs text-muted-foreground">{t("admin.fi.categoryTip")}</p>
                     </CardContent>
                   </Card>
 
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        <span>Your Categories</span>
-                        <Button size="sm" variant="ghost" onClick={() => toast.info('Refreshed')}>Refresh</Button>
+                        <span>{t("admin.fi.yourCategories")}</span>
+                        <Button size="sm" variant="ghost" onClick={() => toast.info(t('admin.fi.refreshed'))}>{t('admin.fi.refresh')}</Button>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -4432,16 +4432,16 @@ const AdminDashboard = () => {
                           <div key={cat} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                             <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: catColors[i % catColors.length] }} />
                             <span className="flex-1 text-sm font-medium">{cat}</span>
-                            <Badge variant="secondary">{count} entries</Badge>
+                            <Badge variant="secondary">{count} {t("admin.fi.entriesCount")}</Badge>
                             {count === 0 && (
                               <Button size="icon" variant="ghost" disabled={!allowModals} onClick={() => guard(async () => {
-                               if (!confirm('Delete this category?')) return;
+                               if (!confirm(t('admin.fi.confirmDeleteCat'))) return;
                                const catObj = financeCategoriesHook.categories.find((c: any) => c.name === cat);
                                if (catObj) {
                                  const { error } = await (supabase as any).from('finance_categories').delete().eq('id', (catObj as any).id);
                                  if (error) { toast.error(error.message); return; }
                                }
-                               toast.success('Category deleted');
+                               toast.success(t('admin.fi.categoryDeleted'));
                                financeCategoriesHook.refresh();
                              })}>
                                 <Trash2 className="h-3 w-3" />
@@ -4450,7 +4450,7 @@ const AdminDashboard = () => {
                           </div>
                         );
                       }) : (
-                        <p className="text-sm text-muted-foreground text-center py-8">No categories yet. Add one above.</p>
+                        <p className="text-sm text-muted-foreground text-center py-8">{t("admin.fi.noCategoriesYet")}</p>
                       )}
                     </CardContent>
                   </Card>
@@ -4461,7 +4461,7 @@ const AdminDashboard = () => {
               {financeTab === 'export' && (
                 <>
                   <Card className="mb-6">
-                    <CardHeader><CardTitle>Export Finance Entries</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.fi.exportEntries")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                         <Input type="date" />
@@ -4470,7 +4470,7 @@ const AdminDashboard = () => {
                           <option>All</option><option>Income</option><option>Expense</option><option>Payroll</option>
                         </select>
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
-                          <option>All categories</option>
+                          <option>{t("admin.fi.allCategories")}</option>
                           {financeCategories.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
@@ -4480,12 +4480,12 @@ const AdminDashboard = () => {
                       })())}>
                         <Download className="h-4 w-4 mr-2" /> Export CSV
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-3">Export monthly ranges and share with your accountant. Filters help isolate payroll vs supplies vs utilities.</p>
+                      <p className="text-xs text-muted-foreground mt-3">{t("admin.fi.exportTip")}</p>
                     </CardContent>
                   </Card>
 
                   <Card className="mb-6">
-                    <CardHeader><CardTitle>Export Recurring Runs</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.fi.exportRecurring")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-3 mb-4">
                         <Input type="date" className="w-44" />
@@ -4497,7 +4497,7 @@ const AdminDashboard = () => {
                       })())}>
                         <Download className="h-4 w-4 mr-2" /> Export CSV
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-3">Exports rule runs + linked created entries for auditing and analytics.</p>
+                      <p className="text-xs text-muted-foreground mt-3">{t("admin.fi.exportRecurringTip")}</p>
                     </CardContent>
                   </Card>
 
