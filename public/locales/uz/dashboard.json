@@ -538,7 +538,8 @@
       "noPatientData": "Bemor ma’lumotlari yo‘q",
       "patientsPerProvider": "Shifokorga bemorlar",
       "patient": "bemor",
-      "patients": "bemor"
+      "patients": "bemor",
+      "active": "Faol"
     },
     "fi": {
       "title": "Moliya",

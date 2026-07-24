@@ -538,7 +538,8 @@
       "noPatientData": "No patient data",
       "patientsPerProvider": "Patients per Provider",
       "patient": "patient",
-      "patients": "patients"
+      "patients": "patients",
+      "active": "Active"
     },
     "fi": {
       "title": "Finance",

@@ -538,7 +538,8 @@
       "noPatientData": "Нет данных о пациентах",
       "patientsPerProvider": "Пациентов на врача",
       "patient": "пациент",
-      "patients": "пациентов"
+      "patients": "пациентов",
+      "active": "Активные"
     },
     "fi": {
       "title": "Финансы",

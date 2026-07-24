@@ -3219,7 +3219,7 @@ const AdminDashboard = () => {
               <Card className="rounded-xl">
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">{patients.filter(p => p.status === "active").length}</div>
-                  <p className="text-sm text-muted-foreground">{t("admin.pt.overview") /* Active count */}</p>
+                  <p className="text-sm text-muted-foreground">{t("admin.pt.active")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-xl">
