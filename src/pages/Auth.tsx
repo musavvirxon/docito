@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
 import { normalizeRole, type AppRole } from "@/lib/rbac";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 
 type NameFieldCopy = {
   label: string;
@@ -276,6 +277,9 @@ const Auth = () => {
                     )}
                   </Button>
                 </form>
+                <div className="mt-4">
+                  <SocialAuthButtons returnTo={safeReturnTo} />
+                </div>
               </TabsContent>
 
               <TabsContent value="signup">
@@ -372,6 +376,9 @@ const Auth = () => {
                     )}
                   </Button>
                 </form>
+                <div className="mt-4">
+                  <SocialAuthButtons returnTo={safeReturnTo} />
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
