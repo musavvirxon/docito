@@ -3542,7 +3542,8 @@
     "title": "Practice Admin",
     "status": "Verification",
     "verify": "Start Verification",
-    "verified": "Verified"
+    "verified": "Проверено",
+    "verifiedToast": "Вы прошли проверку!"
   },
   "patientProfile": {
     "tabs": {

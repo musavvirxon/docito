@@ -3678,7 +3678,8 @@
     "title": "Practice Admin",
     "status": "Verification",
     "verify": "Start Verification",
-    "verified": "Verified"
+    "verified": "Tasdiqlangan",
+    "verifiedToast": "Siz tasdiqlandingiz!"
   },
   "patientProfile": {
     "tabs": {
