@@ -3472,11 +3472,11 @@ const AdminDashboard = () => {
           moneyCents(Number(cents || 0), (srcCurrency || practiceCurrency).toUpperCase());
 
         const billingTabs: { key: typeof billingTab; label: string }[] = [
-          { key: 'overview', label: t("adminBilling.paymentSummary").split(' ')[0] || 'Overview' },
-          { key: 'invoices', label: 'Invoices' },
-          { key: 'transactions', label: t("adminBilling.recentTransactions").split(' ').slice(-1)[0] || 'Transactions' },
-          { key: 'insurance', label: 'Superbills' },
-          { key: 'settings', label: 'Settings' },
+          { key: 'overview', label: t("admin.bl.overview") },
+          { key: 'invoices', label: t("admin.bl.invoices") },
+          { key: 'transactions', label: t("admin.bl.transactions") },
+          { key: 'insurance', label: t("admin.bl.superbills") },
+          { key: 'settings', label: t("admin.bl.settings") },
         ];
 
         // Filtered invoices
@@ -3588,7 +3588,7 @@ const AdminDashboard = () => {
                     </Card>
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
-                        <p className="text-sm text-muted-foreground">Transactions</p>
+                        <p className="text-sm text-muted-foreground">{t("admin.bl.transactions")}</p>
                         <p className="text-2xl font-bold">{billing.loading ? '…' : (bData?.summary?.transactionCount ?? 0)}</p>
                       </CardContent>
                     </Card>
@@ -3697,17 +3697,17 @@ const AdminDashboard = () => {
                   <div className={sectionInsightGridClass}>
                     {/* By Payment Method */}
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
-                      <CardHeader><CardTitle className="text-base">By Payment Method</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.bl.byPaymentMethod")}</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(byMethod).length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No data available</p>
+                          <p className="text-sm text-muted-foreground">{t("admin.bl.noDataAvailable")}</p>
                         ) : (
                           <div className="space-y-3">
                             {Object.entries(byMethod).map(([method, data]) => (
                               <div key={method} className="flex items-center justify-between">
                                 <span className="text-sm font-medium">{method}</span>
                                 <div className="text-right">
-                                  <span className="text-sm text-muted-foreground">{data.count} tx</span>
+                                  <span className="text-sm text-muted-foreground">{data.count} {t("admin.bl.tx")}</span>
                                   <span className="ml-2 font-semibold text-sm">{fmtCents(data.total)}</span>
                                 </div>
                               </div>
@@ -3719,10 +3719,10 @@ const AdminDashboard = () => {
 
                     {/* By Status */}
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
-                      <CardHeader><CardTitle className="text-base">By Status</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.bl.byStatus")}</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(byStatus).length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No data available</p>
+                          <p className="text-sm text-muted-foreground">{t("admin.bl.noDataAvailable")}</p>
                         ) : (
                           <div className="space-y-3">
                             {Object.entries(byStatus).map(([status, count]) => {
@@ -3749,29 +3749,29 @@ const AdminDashboard = () => {
 
                     {/* Period Summary */}
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
-                      <CardHeader><CardTitle className="text-base">Period Summary</CardTitle></CardHeader>
+                      <CardHeader><CardTitle className="text-base">{t("admin.bl.periodSummary")}</CardTitle></CardHeader>
                       <CardContent>
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Avg Transaction</span>
+                            <span className="text-sm text-muted-foreground">{t("admin.bl.avgTransaction")}</span>
                             <span className="font-semibold text-sm">
                               {bTxs.length > 0 ? fmtCents((bData?.summary?.totalRevenueCents ?? 0) / (bData?.summary?.transactionCount || 1)) : '—'}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Highest Tx</span>
+                            <span className="text-sm text-muted-foreground">{t("admin.bl.highestTx")}</span>
                             <span className="font-semibold text-sm">
                               {bTxs.length > 0 ? fmtCents(Math.max(...bTxs.map((tx: any) => Number(tx.amount_cents || 0)))) : '—'}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Period</span>
+                            <span className="text-sm text-muted-foreground">{t("admin.bl.period")}</span>
                             <span className="text-sm">
                               {(() => { try { return `${format(new Date(bData?.period?.from), 'MMM dd')} → ${format(new Date(bData?.period?.to), 'MMM dd')}`; } catch { return '—'; } })()}
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">Completion Rate</span>
+                            <span className="text-sm text-muted-foreground">{t("admin.bl.completionRate")}</span>
                             <span className="font-semibold text-sm">
                               {(bData?.summary?.transactionCount ?? 0) > 0
                                 ? `${((bData?.summary?.completedCount ?? 0) / (bData?.summary?.transactionCount ?? 1) * 100).toFixed(0)}%`
@@ -3789,15 +3789,15 @@ const AdminDashboard = () => {
               {billingTab === 'invoices' && (
                 <>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Invoices</h3>
+                    <h3 className="text-lg font-semibold">{t("admin.bl.invoices")}</h3>
                     <Button variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
-                      const patientName = prompt('Patient name:');
+                      const patientName = prompt(t("admin.bl.patientNamePrompt"));
                       if (!patientName) return;
-                      const amount = prompt('Amount ($):');
+                      const amount = prompt(t("admin.bl.amountPrompt"));
                       if (!amount) return;
-                      const desc = prompt('Description:', 'Medical services') || 'Medical services';
+                      const desc = prompt(t("admin.bl.descPrompt"), t("admin.bl.medicalServices")) || t("admin.bl.medicalServices");
                       const amountCents = Math.round(parseFloat(amount) * 100);
-                      if (isNaN(amountCents) || amountCents <= 0) { toast.error('Invalid amount'); return; }
+                      if (isNaN(amountCents) || amountCents <= 0) { toast.error(t("admin.bl.invalidAmount")); return; }
                       const matched: any = patients.find((p: any) => (p.name || '').toLowerCase() === patientName.toLowerCase());
                       const invNum = `INV-${Date.now().toString().slice(-8)}`;
                       const { data: u } = await supabase.auth.getUser();
@@ -3812,29 +3812,29 @@ const AdminDashboard = () => {
                         created_by: u?.user?.id ?? null,
                       });
                       if (error) { toast.error(error.message); return; }
-                      toast.success('Invoice created');
+                      toast.success(t("admin.bl.invoiceCreated"));
                       billing.refetch();
                     })}>
-                      <FileText className="h-4 w-4 mr-2" />Create Invoice
+                      <FileText className="h-4 w-4 mr-2" />{t("admin.bl.createInvoice")}
                     </Button>
                   </div>
 
                   {/* Filters */}
                   <div className="flex items-center gap-3 flex-wrap mb-4">
                     <Input
-                      placeholder="Search by patient name…"
+                      placeholder={t("admin.bl.searchByPatient")}
                       value={invoiceSearch}
                       onChange={e => setInvoiceSearch(e.target.value)}
                       className="max-w-xs"
                     />
-                    {['all', 'paid', 'pending', 'overdue', 'refunded'].map(s => (
+                    {(['all', 'paid', 'pending', 'overdue', 'refunded'] as const).map(s => (
                       <Button
                         key={s}
                         variant={invoiceStatusFilter === s ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setInvoiceStatusFilter(s)}
                       >
-                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                        {t(`admin.bl.status.${s}`)}
                       </Button>
                     ))}
                   </div>
@@ -3858,12 +3858,12 @@ const AdminDashboard = () => {
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="border-b border-border text-left">
-                                <th className="pb-2 font-medium text-muted-foreground">Invoice #</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Patient</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Date</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Amount</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Status</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.invoiceNumber")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.patient")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.date")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.amount")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.statusCol")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.actionsCol")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -3888,7 +3888,7 @@ const AdminDashboard = () => {
                                         <Button size="sm" variant="ghost" onClick={() => guard(() => toast.info(`Invoice ${String(tx.id || '').slice(-8)} — ${fmtCents(tx.amount_cents || 0)} — ${tx.status}`))}>
                                           <Eye className="h-3 w-3" />
                                         </Button>
-                                        <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success('Invoice email queued'))}>
+                                        <Button size="sm" variant="ghost" onClick={() => guard(() => toast.success(t("admin.bl.invoiceEmailQueued")))}>
                                           <Mail className="h-3 w-3" />
                                         </Button>
                                         {(() => {
@@ -3959,15 +3959,15 @@ const AdminDashboard = () => {
                   {/* Summary stats */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Total Invoices</p>
+                      <p className="text-sm text-muted-foreground">{t("admin.bl.totalInvoices")}</p>
                       <p className="text-xl font-bold">{filteredInvoices.length}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Total Amount</p>
+                      <p className="text-sm text-muted-foreground">{t("admin.bl.totalAmount")}</p>
                       <p className="text-xl font-bold">{fmtCents(filteredInvoices.reduce((s: number, tx: any) => s + Number(tx.amount_cents || 0), 0))}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Outstanding</p>
+                      <p className="text-sm text-muted-foreground">{t("admin.bl.outstanding")}</p>
                       <p className="text-xl font-bold text-yellow-600">
                         {fmtCents(filteredInvoices.filter((tx: any) => String(tx.status || '').toLowerCase() === 'pending').reduce((s: number, tx: any) => s + Number(tx.amount_cents || 0), 0))}
                       </p>
@@ -3980,27 +3980,27 @@ const AdminDashboard = () => {
               {billingTab === 'transactions' && (
                 <>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">All Transactions</h3>
+                    <h3 className="text-lg font-semibold">{t("admin.bl.allTransactions")}</h3>
                     <Button variant="outline" disabled={!allowModals} onClick={() => guard(() => (() => {
                         downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
                           financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
                       })())}>
-                      Export CSV
+                      {t("admin.bl.exportCsv")}
                     </Button>
                   </div>
 
                   {/* Summary cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Total Income</p>
+                      <p className="text-sm text-muted-foreground">{t("admin.bl.totalIncome")}</p>
                       <p className="text-xl font-bold text-green-600">{fmtCents(completedSum)}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Total Refunds</p>
+                      <p className="text-sm text-muted-foreground">{t("admin.bl.totalRefunds")}</p>
                       <p className="text-xl font-bold text-red-600">{fmtCents(refundedSum)}</p>
                     </CardContent></Card>
                     <Card className="rounded-xl"><CardContent className="pt-6">
-                      <p className="text-sm text-muted-foreground">Net Revenue</p>
+                      <p className="text-sm text-muted-foreground">{t("admin.bl.netRevenue")}</p>
                       <p className="text-xl font-bold">{fmtCents(completedSum - refundedSum)}</p>
                     </CardContent></Card>
                   </div>
@@ -4024,12 +4024,12 @@ const AdminDashboard = () => {
                           <table className="w-full text-sm">
                             <thead>
                               <tr className="border-b border-border text-left">
-                                <th className="pb-2 font-medium text-muted-foreground">Date</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Patient</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Amount</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Method</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Status</th>
-                                <th className="pb-2 font-medium text-muted-foreground">Reference</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.date")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.patient")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.amount")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.method")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.statusCol")}</th>
+                                <th className="pb-2 font-medium text-muted-foreground">{t("admin.bl.reference")}</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -4080,7 +4080,7 @@ const AdminDashboard = () => {
                 return (
                 <>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Billing Documentation</h3>
+                    <h3 className="text-lg font-semibold">{t("admin.bl.billingDocumentation")}</h3>
                   </div>
                   <SuperbillsManager
                     practiceId={practice?.id || null}
@@ -4095,44 +4095,44 @@ const AdminDashboard = () => {
                 <>
                   {/* Billing Settings */}
                   <Card className="rounded-xl mb-6">
-                    <CardHeader><CardTitle className="text-base">Billing Settings</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-base">{t("admin.bl.billingSettings")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between py-2 border-b border-border/50">
-                          <span className="text-sm font-medium">Default Currency</span>
+                          <span className="text-sm font-medium">{t("admin.bl.defaultCurrency")}</span>
                           <Badge variant="outline">USD</Badge>
                         </div>
                         <div className="flex items-center justify-between py-2 border-b border-border/50">
-                          <span className="text-sm font-medium">Tax / VAT</span>
+                          <span className="text-sm font-medium">{t("admin.bl.taxVat")}</span>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">0%</span>
                             <Button size="sm" variant="ghost" onClick={() => guard(async () => {
-                              const rate = prompt('Tax / VAT rate (%):', '0');
+                              const rate = prompt(t("admin.bl.taxRatePrompt"), '0');
                               if (rate !== null) { await saveEntitySettings('billing_prefs', { ...(entitySettings.settings as any)?.payload?.billing_prefs || {}, tax_rate: parseFloat(rate) || 0 }); }
-                            })}>Edit</Button>
+                            })}>{t("admin.bl.edit")}</Button>
                           </div>
                         </div>
                         <div className="flex items-center justify-between py-2 border-b border-border/50">
-                          <span className="text-sm font-medium">Auto-send Receipt</span>
+                          <span className="text-sm font-medium">{t("admin.bl.autoSendReceipt")}</span>
                           <div className="w-10 h-5 rounded-full bg-muted relative cursor-pointer">
                             <div className="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-muted-foreground transition-all" />
                           </div>
                         </div>
                         <div className="flex items-center justify-between py-2 border-b border-border/50">
-                          <span className="text-sm font-medium">Invoice Logo</span>
+                          <span className="text-sm font-medium">{t("admin.bl.invoiceLogo")}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Use clinic logo</span>
-                            <Button size="sm" variant="ghost" onClick={() => guard(() => { setSettingsTab('branding'); setActiveSection('settings'); })}>Change</Button>
+                            <span className="text-sm text-muted-foreground">{t("admin.bl.useClinicLogo")}</span>
+                            <Button size="sm" variant="ghost" onClick={() => guard(() => { setSettingsTab('branding'); setActiveSection('settings'); })}>{t("admin.bl.change")}</Button>
                           </div>
                         </div>
                         <div className="flex items-center justify-between py-2">
-                          <span className="text-sm font-medium">Payment Terms</span>
+                          <span className="text-sm font-medium">{t("admin.bl.paymentTerms")}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Due on receipt</span>
+                            <span className="text-sm text-muted-foreground">{t("admin.bl.dueOnReceipt")}</span>
                             <Button size="sm" variant="ghost" onClick={() => guard(async () => {
-                              const terms = prompt('Payment terms:', 'Due within 30 days');
+                              const terms = prompt(t("admin.bl.paymentTermsPrompt"), t("admin.bl.dueWithin30"));
                               if (terms !== null) { await saveEntitySettings('billing_prefs', { ...(entitySettings.settings as any)?.payload?.billing_prefs || {}, terms }); }
-                            })}>Edit</Button>
+                            })}>{t("admin.bl.edit")}</Button>
                           </div>
                         </div>
                       </div>
@@ -4141,11 +4141,11 @@ const AdminDashboard = () => {
 
                   {/* Invoice Template */}
                   <Card className="rounded-xl mb-6">
-                    <CardHeader><CardTitle className="text-base">Invoice Template</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-base">{t("admin.bl.invoiceTemplate")}</CardTitle></CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">Customize how invoices look when sent to patients.</p>
+                      <p className="text-sm text-muted-foreground mb-4">{t("admin.bl.invoiceTemplateDesc")}</p>
                       <div className="border-2 border-dashed border-border rounded-xl h-[200px] flex items-center justify-center text-muted-foreground">
-                        <p>Invoice preview will show a formatted version of your invoice template.</p>
+                        <p>{t("admin.bl.invoicePreview")}</p>
                       </div>
                       <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
                         const header = prompt(tA('billing.invoices.headerPrompt', 'Invoice header text (clinic name, tagline):'), invoiceTemplate.header);
@@ -4159,28 +4159,28 @@ const AdminDashboard = () => {
                         await persistInvoiceTemplate(next);
                         toast.success(tA('billing.invoices.templateSaved', 'Invoice template saved'));
                       })}>
-                        {tA('billing.invoices.customizeTemplate', 'Customize Template')}
+                        {t("admin.bl.customizeTemplate")}
                       </Button>
                     </CardContent>
                   </Card>
 
                   {/* Accepted Payment Methods */}
                   <Card className="rounded-xl">
-                    <CardHeader><CardTitle className="text-base">Accepted Payment Methods</CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="text-base">{t("admin.bl.acceptedPaymentMethods")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         {[
-                          { name: 'Cash', icon: DollarSign },
-                          { name: 'Credit Card', icon: CreditCard },
-                          { name: 'Debit Card', icon: CreditCard },
-                          { name: 'Insurance', icon: FileText },
-                          { name: 'Bank Transfer', icon: Building2 },
-                          { name: 'Online Payment', icon: CreditCard },
-                        ].map(({ name, icon: Icon }) => (
-                          <div key={name} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                          { key: 'cash', icon: DollarSign },
+                          { key: 'credit', icon: CreditCard },
+                          { key: 'debit', icon: CreditCard },
+                          { key: 'insurance', icon: FileText },
+                          { key: 'bank', icon: Building2 },
+                          { key: 'online', icon: CreditCard },
+                        ].map(({ key, icon: Icon }) => (
+                          <div key={key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
                             <div className="flex items-center gap-2">
                               <Icon className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium">{name}</span>
+                              <span className="text-sm font-medium">{t(`admin.bl.payMethod.${key}`)}</span>
                             </div>
                             <div className="w-10 h-5 rounded-full bg-muted relative cursor-pointer">
                               <div className="absolute left-0.5 top-0.5 w-4 h-4 rounded-full bg-muted-foreground transition-all" />
@@ -4191,7 +4191,7 @@ const AdminDashboard = () => {
                       <Button className="mt-4" variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
                         await saveEntitySettings('billing_prefs', { ...(entitySettings.settings as any)?.payload?.billing_prefs || {}, payment_methods_updated: true });
                       })}>
-                        Save
+                        {t("admin.bl.save")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -4564,13 +4564,13 @@ const AdminDashboard = () => {
 
       case "analytics": {
         const analyticsTabs = [
-          { key: 'overview' as const, label: 'Overview' },
-          { key: 'appointments' as const, label: 'Appointments' },
-          { key: 'providers' as const, label: 'Providers' },
-          { key: 'patients' as const, label: 'Patients' },
-          { key: 'financial' as const, label: 'Financial' },
-          { key: 'services' as const, label: 'Services' },
-          { key: 'reports' as const, label: 'Reports' },
+          { key: 'overview' as const, label: t("admin.an.tabs.overview") },
+          { key: 'appointments' as const, label: t("admin.an.tabs.appointments") },
+          { key: 'providers' as const, label: t("admin.an.tabs.providers") },
+          { key: 'patients' as const, label: t("admin.an.tabs.patients") },
+          { key: 'financial' as const, label: t("admin.an.tabs.financial") },
+          { key: 'services' as const, label: t("admin.an.tabs.services") },
+          { key: 'reports' as const, label: t("admin.an.tabs.reports") },
         ];
 
         const normStatus = (s: any) => {
@@ -4784,7 +4784,7 @@ const AdminDashboard = () => {
                     </Card>
                   </div>
                   <Card className="rounded-xl mt-6">
-                    <CardHeader><CardTitle className="flex items-center justify-between"><span>{t("admin.overview.advancedFinancialMetrics")}</span><Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>{t("adminBilling.refresh")}</Button></CardTitle></CardHeader>
+                    <CardHeader><CardTitle className="flex items-center justify-between"><span>{t("admin.an.advancedFinancialMetrics")}</span><Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>{t("adminBilling.refresh")}</Button></CardTitle></CardHeader>
                     <CardContent><AdvancedFinancialMetrics metrics={advancedMetrics} revenue={0} onUpdateInputs={() => {}} /></CardContent>
                   </Card>
                 </>
@@ -4793,7 +4793,7 @@ const AdminDashboard = () => {
               {analyticsTab === 'appointments' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total', value: appointments.length }, { label: 'Completed', value: completedAppts }, { label: 'Cancelled', value: cancelledAppts }, { label: 'No-show', value: noShowAppts }].map((kpi, i) => (
+                    {[{ label: t("admin.an.total"), value: appointments.length }, { label: t("admin.an.completed"), value: completedAppts }, { label: t("admin.an.cancelled"), value: cancelledAppts }, { label: t("admin.an.noShow"), value: noShowAppts }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold">{kpi.value}</p></CardContent></Card>
                     ))}
                   </div>
@@ -4809,36 +4809,36 @@ const AdminDashboard = () => {
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl lg:col-span-4 min-w-0">
-                      <CardHeader><CardTitle>Appointment Type</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.appointmentType")}</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(bookingSources).length > 0 ? (
                           <div className="space-y-3">{Object.entries(bookingSources).sort(([,a],[,b]) => b - a).map(([src, count]) => (<div key={src}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{src}</span><span className="font-medium">{count}</span></div><Progress value={appointments.length > 0 ? (count / appointments.length) * 100 : 0} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No appointment data.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noAppointmentData")}</p>}
                       </CardContent>
                     </Card>
                   </div>
                   <Card className="rounded-xl mt-4">
-                    <CardHeader><CardTitle>Appointment Status Breakdown</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.statusBreakdown")}</CardTitle></CardHeader>
                     <CardContent>
                       {Object.keys(statusBreakdown).length > 0 ? (
                         <div className="space-y-3">{Object.entries(statusBreakdown).sort(([,a],[,b]) => b - a).map(([status, count]) => (<div key={status}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{status.replace('_', ' ')}</span><span className="font-medium">{count} ({appointments.length > 0 ? Math.round(count / appointments.length * 100) : 0}%)</span></div><div className="h-2 rounded-full bg-secondary overflow-hidden"><div className={`h-full rounded-full ${statusColors[status] || 'bg-primary'}`} style={{ width: `${appointments.length > 0 ? (count / appointments.length) * 100 : 0}%` }} /></div></div>))}</div>
-                      ) : <p className="text-sm text-muted-foreground">No appointment data.</p>}
+                      ) : <p className="text-sm text-muted-foreground">{t("admin.an.noAppointmentData")}</p>}
                     </CardContent>
                   </Card>
                   <Card className="rounded-xl mt-4">
-                    <CardHeader><CardTitle>Busiest Hours</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.busiestHours")}</CardTitle></CardHeader>
                     <CardContent>
                       {hourBuckets.some(v => v > 0) ? (
                         <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2">{hourBuckets.map((count, h) => { const bg = count === 0 ? 'bg-muted/20' : count <= 2 ? 'bg-primary/20' : count <= 5 ? 'bg-primary/40' : 'bg-primary/70'; const label = h === 0 ? '12am' : h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h-12}pm`; return <div key={h} className={`${bg} rounded-md p-2 text-center text-xs`}><div className="font-medium">{label}</div><div>{count}</div></div>; })}</div>
-                      ) : <p className="text-sm text-muted-foreground">No appointment time data available.</p>}
+                      ) : <p className="text-sm text-muted-foreground">{t("admin.an.noHourData")}</p>}
                     </CardContent>
                   </Card>
                   <Card className="rounded-xl mt-4">
-                    <CardHeader><CardTitle>Cancellation & No-show Rate</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.cancelNoShowRate")}</CardTitle></CardHeader>
                     <CardContent>
                       {cancellationRateData.length > 1 ? (
                         <div className="h-52"><ResponsiveContainer width="100%" height="100%"><AreaChart data={cancellationRateData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis unit="%" /><Tooltip /><Area type="monotone" dataKey="rate" stroke="hsl(var(--destructive))" fill="hsl(var(--destructive))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
-                      ) : <p className="text-sm text-muted-foreground">Insufficient data to show cancellation trends.</p>}
+                      ) : <p className="text-sm text-muted-foreground">{t("admin.an.insufficientData")}</p>}
                     </CardContent>
                   </Card>
                 </>
@@ -4847,28 +4847,28 @@ const AdminDashboard = () => {
               {analyticsTab === 'providers' && (
                 <>
                   <Card className="rounded-xl mb-4">
-                    <CardHeader><CardTitle>Provider Performance</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.providerPerformance")}</CardTitle></CardHeader>
                     <CardContent>
                       {providerStats.length > 0 ? (
-                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Specialty</th><th className="pb-2 font-medium">Total</th><th className="pb-2 font-medium">Completed</th><th className="pb-2 font-medium">Patients</th><th className="pb-2 font-medium">Completion</th><th className="pb-2 font-medium">Cancel %</th><th className="pb-2 font-medium">Rating</th></tr></thead><tbody>{providerStats.map((p, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.name}</td><td className="py-2 text-muted-foreground">{p.specialty}</td><td className="py-2">{p.total}</td><td className="py-2">{p.completed}</td><td className="py-2">{p.uniquePatients}</td><td className="py-2"><Badge variant="secondary" className="bg-green-100 text-green-800">{p.completionRate}%</Badge></td><td className="py-2"><Badge variant="secondary" className="bg-red-100 text-red-800">{p.cancellationRate}%</Badge></td><td className="py-2">{p.rating}</td></tr>))}</tbody></table></div>
-                      ) : <div className="text-center py-8 text-muted-foreground"><Stethoscope className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No provider data yet.</p></div>}
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">{t("admin.an.provider")}</th><th className="pb-2 font-medium">{t("admin.an.specialty")}</th><th className="pb-2 font-medium">{t("admin.an.total")}</th><th className="pb-2 font-medium">{t("admin.an.completedCol")}</th><th className="pb-2 font-medium">{t("admin.an.patientsCol")}</th><th className="pb-2 font-medium">{t("admin.an.completion")}</th><th className="pb-2 font-medium">{t("admin.an.cancelPct")}</th><th className="pb-2 font-medium">{t("admin.an.rating")}</th></tr></thead><tbody>{providerStats.map((p, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.name}</td><td className="py-2 text-muted-foreground">{p.specialty}</td><td className="py-2">{p.total}</td><td className="py-2">{p.completed}</td><td className="py-2">{p.uniquePatients}</td><td className="py-2"><Badge variant="secondary" className="bg-green-100 text-green-800">{p.completionRate}%</Badge></td><td className="py-2"><Badge variant="secondary" className="bg-red-100 text-red-800">{p.cancellationRate}%</Badge></td><td className="py-2">{p.rating}</td></tr>))}</tbody></table></div>
+                      ) : <div className="text-center py-8 text-muted-foreground"><Stethoscope className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>{t("admin.an.noProviderData")}</p></div>}
                     </CardContent>
                   </Card>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Provider Utilization</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.utilization")}</CardTitle></CardHeader>
                       <CardContent>
                         {providerStats.length > 0 ? (
                           <div className="space-y-3">{providerStats.map((p, i) => { const util = Math.round((p.total / maxProvAppts) * 100); const barColor = util < 30 ? 'bg-destructive' : util < 70 ? 'bg-yellow-500' : 'bg-green-500'; return (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{p.name}</span><span className="font-medium">{util}%</span></div><div className="h-2 rounded-full bg-secondary overflow-hidden"><div className={`h-full rounded-full ${barColor}`} style={{ width: `${util}%` }} /></div></div>); })}</div>
-                        ) : <p className="text-sm text-muted-foreground">No data.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noData")}</p>}
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Top Providers by Volume</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.topByVolume")}</CardTitle></CardHeader>
                       <CardContent>
                         {providerStats.length > 0 ? (
                           <div className="space-y-3">{providerStats.slice(0, 5).map((p, i) => (<div key={i} className="flex items-center gap-3"><div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{p.name.split(' ').map(n => n[0]).join('').slice(0, 2)}</div><div className="flex-1 min-w-0"><p className="font-medium text-sm truncate">{p.name}</p><p className="text-xs text-muted-foreground">{p.specialty}</p></div><Badge variant="secondary">{p.total}</Badge></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No providers yet.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noProviders")}</p>}
                       </CardContent>
                     </Card>
                   </div>
@@ -4898,21 +4898,21 @@ const AdminDashboard = () => {
                       {(() => {
                         const pa = providerStats.find(p => p.name === compareA);
                         const pb = providerStats.find(p => p.name === compareB);
-                        if (!pa || !pb) return <p className="text-sm text-muted-foreground">Select two providers to compare.</p>;
+                        if (!pa || !pb) return <p className="text-sm text-muted-foreground">{t("admin.an.selectTwo")}</p>;
                         const rows: Array<{ label: string; a: any; b: any }> = [
-                          { label: 'Specialty', a: pa.specialty, b: pb.specialty },
-                          { label: 'Total Appointments', a: pa.total, b: pb.total },
-                          { label: 'Completed', a: pa.completed, b: pb.completed },
-                          { label: 'Cancelled', a: pa.cancelled, b: pb.cancelled },
-                          { label: 'Unique Patients', a: pa.uniquePatients, b: pb.uniquePatients },
-                          { label: 'Completion Rate', a: `${pa.completionRate}%`, b: `${pb.completionRate}%` },
-                          { label: 'Cancellation Rate', a: `${pa.cancellationRate}%`, b: `${pb.cancellationRate}%` },
-                          { label: 'Rating', a: pa.rating, b: pb.rating },
+                          { label: t("admin.an.specialty"), a: pa.specialty, b: pb.specialty },
+                          { label: t("admin.an.totalAppointments"), a: pa.total, b: pb.total },
+                          { label: t("admin.an.completedCol"), a: pa.completed, b: pb.completed },
+                          { label: t("admin.an.cancelled"), a: pa.cancelled, b: pb.cancelled },
+                          { label: t("admin.an.uniquePatients"), a: pa.uniquePatients, b: pb.uniquePatients },
+                          { label: t("admin.an.completion"), a: `${pa.completionRate}%`, b: `${pb.completionRate}%` },
+                          { label: t("admin.an.cancellationRate"), a: `${pa.cancellationRate}%`, b: `${pb.cancellationRate}%` },
+                          { label: t("admin.an.rating"), a: pa.rating, b: pb.rating },
                         ];
                         return (
                           <div className="overflow-x-auto">
                             <table className="w-full text-sm">
-                              <thead><tr className="border-b text-left"><th className="pb-2 font-medium">Metric</th><th className="pb-2 font-medium">{pa.name}</th><th className="pb-2 font-medium">{pb.name}</th></tr></thead>
+                              <thead><tr className="border-b text-left"><th className="pb-2 font-medium">{t("admin.an.metric")}</th><th className="pb-2 font-medium">{pa.name}</th><th className="pb-2 font-medium">{pb.name}</th></tr></thead>
                               <tbody>{rows.map((r, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 text-muted-foreground">{r.label}</td><td className="py-2 font-medium">{r.a}</td><td className="py-2 font-medium">{r.b}</td></tr>))}</tbody>
                             </table>
                           </div>
@@ -4940,36 +4940,36 @@ const AdminDashboard = () => {
                   </Card>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Gender Breakdown</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.genderBreakdown")}</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(genderBreakdown).length > 0 ? (
                           <div className="space-y-3">{Object.entries(genderBreakdown).sort(([,a],[,b]) => b - a).map(([g, count]) => (<div key={g}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{g}</span><span className="font-medium">{count}</span></div><Progress value={patients.length > 0 ? (count / patients.length) * 100 : 0} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No gender data available.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noGender")}</p>}
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Age Distribution</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.ageDistribution")}</CardTitle></CardHeader>
                       <CardContent>
                         {Object.values(ageBuckets).some(v => v > 0) ? (
                           <div className="space-y-3">{Object.entries(ageBuckets).map(([bucket, count]) => (<div key={bucket}><div className="flex justify-between text-sm mb-1"><span>{bucket}</span><span className="font-medium">{count}</span></div><Progress value={patients.length > 0 ? (count / patients.length) * 100 : 0} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No DOB data available.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noDob")}</p>}
                       </CardContent>
                     </Card>
                   </div>
                   <Card className="rounded-xl mb-4">
-                    <CardHeader><CardTitle>Inactive Patients (90+ days)</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.inactivePatients")}</CardTitle></CardHeader>
                     <CardContent>
                       {inactivePatientsList.length > 0 ? (
-                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">Name</th><th className="pb-2 font-medium">Last Visit</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Actions</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => guard(async () => { if (!p.user_id && !p.id) { toast.error('No patient ID'); return; } try { const { error } = await (supabase as any).functions.invoke('send-notification', { body: { user_id: p.user_id || p.id, title: tA('patients.actions.reengageTitle', 'We miss you!'), body: tA('patients.actions.reengageBody', `It's been a while since your last visit. Book your next appointment today.`), type: 'reengagement', channel: 'email' } }); if (error) throw error; toast.success(tA('patients.actions.reengageSent', 'Re-engagement email sent')); } catch (e: any) { toast.error(e?.message || 'Failed to send'); } })}>{tA('patients.actions.reengage', 'Re-engage')}</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
-                      ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>No inactive patients. Great retention!</p></div>}
+                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">{t("admin.an.name")}</th><th className="pb-2 font-medium">{t("admin.an.lastVisit")}</th><th className="pb-2 font-medium">{t("admin.an.provider")}</th><th className="pb-2 font-medium">{t("admin.an.actions")}</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => guard(async () => { if (!p.user_id && !p.id) { toast.error('No patient ID'); return; } try { const { error } = await (supabase as any).functions.invoke('send-notification', { body: { user_id: p.user_id || p.id, title: tA('patients.actions.reengageTitle', 'We miss you!'), body: tA('patients.actions.reengageBody', `It's been a while since your last visit. Book your next appointment today.`), type: 'reengagement', channel: 'email' } }); if (error) throw error; toast.success(tA('patients.actions.reengageSent', 'Re-engagement email sent')); } catch (e: any) { toast.error(e?.message || 'Failed to send'); } })}>{t("admin.an.reengage")}</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
+                      ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>{t("admin.an.greatRetention")}</p></div>}
                     </CardContent>
                   </Card>
                   <Card className="rounded-xl">
-                    <CardHeader><CardTitle>Top Patients by Visits</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.topPatients")}</CardTitle></CardHeader>
                     <CardContent>
                       {topPatients.length > 0 ? (
-                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">Patient</th><th className="pb-2 font-medium">Provider</th><th className="pb-2 font-medium">Visits</th><th className="pb-2 font-medium">Last Visit</th></tr></thead><tbody>{topPatients.map((p, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{p.name}</td><td className="py-2 text-muted-foreground">{p.provider}</td><td className="py-2"><Badge variant="secondary">{p.count}</Badge></td><td className="py-2 text-muted-foreground">{(() => { try { return p.lastVisit ? format(new Date(p.lastVisit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td></tr>))}</tbody></table></div>
-                      ) : <p className="text-sm text-muted-foreground">No appointment data yet.</p>}
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">{t("admin.bl.patient")}</th><th className="pb-2 font-medium">{t("admin.an.provider")}</th><th className="pb-2 font-medium">{t("admin.an.visits")}</th><th className="pb-2 font-medium">{t("admin.an.lastVisit")}</th></tr></thead><tbody>{topPatients.map((p, i) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{p.name}</td><td className="py-2 text-muted-foreground">{p.provider}</td><td className="py-2"><Badge variant="secondary">{p.count}</Badge></td><td className="py-2 text-muted-foreground">{(() => { try { return p.lastVisit ? format(new Date(p.lastVisit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td></tr>))}</tbody></table></div>
+                      ) : <p className="text-sm text-muted-foreground">{t("admin.an.noApptData")}</p>}
                     </CardContent>
                   </Card>
                 </>
@@ -4978,41 +4978,41 @@ const AdminDashboard = () => {
               {analyticsTab === 'financial' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Revenue', value: moneyCents(totalRevCents, ((practice as any)?.currency || 'USD').toUpperCase()) }, { label: 'Pending', value: moneyCents(pendingCents, ((practice as any)?.currency || 'USD').toUpperCase()), color: 'text-yellow-600' }, { label: 'Refunds', value: moneyCents(refundCents, ((practice as any)?.currency || 'USD').toUpperCase()), color: 'text-destructive' }, { label: 'Transactions', value: txCount }].map((kpi, i) => (
+                    {[{ label: t("admin.an.totalRevenue"), value: moneyCents(totalRevCents, ((practice as any)?.currency || 'USD').toUpperCase()) }, { label: t("admin.an.pending"), value: moneyCents(pendingCents, ((practice as any)?.currency || 'USD').toUpperCase()), color: 'text-yellow-600' }, { label: t("admin.an.refunds"), value: moneyCents(refundCents, ((practice as any)?.currency || 'USD').toUpperCase()), color: 'text-destructive' }, { label: t("admin.bl.transactions"), value: txCount }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p>{billing.loading ? <Loader2 className="h-4 w-4 animate-spin mt-1" /> : <p className={`text-2xl font-bold ${(kpi as any).color || ''}`}>{kpi.value}</p>}</CardContent></Card>
                     ))}
                   </div>
                   <Card className="rounded-xl mb-4">
-                    <CardHeader><CardTitle>Revenue Trend</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.revenueTrend")}</CardTitle></CardHeader>
                     <CardContent>
                       {revTrendData.length > 0 ? (
                         <div className="h-60"><ResponsiveContainer width="100%" height="100%"><AreaChart data={revTrendData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="amount" stroke="hsl(142, 76%, 36%)" fill="hsl(142, 76%, 36%)" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
-                      ) : <div className="text-center py-8 text-muted-foreground"><DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No revenue data yet.</p></div>}
+                      ) : <div className="text-center py-8 text-muted-foreground"><DollarSign className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>{t("admin.an.noRevenue")}</p></div>}
                     </CardContent>
                   </Card>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Revenue by Provider</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.revenueByProvider")}</CardTitle></CardHeader>
                       <CardContent>
                         {revByDoctorList.length > 0 ? (
                           <div className="space-y-3">{revByDoctorList.map((d, i) => (<div key={i}><div className="flex justify-between text-sm mb-1"><span>{d.name}</span><span className="font-medium">{money(d.total, ((practice as any)?.currency || 'USD').toUpperCase())} <span className="text-xs text-muted-foreground">· {d.count}</span></span></div><Progress value={(d.total / maxDoctorRev) * 100} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No paid transactions linked to providers yet.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noPaidTx")}</p>}
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Payment Method Breakdown</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.payMethodBreakdown")}</CardTitle></CardHeader>
                       <CardContent>
                         {Object.keys(payMethodBreakdown).length > 0 ? (
                           <div className="space-y-3">{Object.entries(payMethodBreakdown).sort(([,a],[,b]) => b.total - a.total).map(([method, data]) => (<div key={method}><div className="flex justify-between text-sm mb-1"><span className="capitalize">{method}</span><span className="font-medium">{data.count} · {money(data.total, ((practice as any)?.currency || 'USD').toUpperCase())}</span></div><Progress value={txList.length > 0 ? (data.count / txList.length) * 100 : 0} className="h-2" /></div>))}</div>
-                        ) : <p className="text-sm text-muted-foreground">No transaction data.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noTx")}</p>}
                       </CardContent>
                     </Card>
                   </div>
                   <Card className="rounded-xl">
-                    <CardHeader><CardTitle>Average Revenue per Appointment</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.avgRevPerAppt")}</CardTitle></CardHeader>
                     <CardContent>
-                      <div className="text-center py-4"><p className="text-4xl font-bold">{appointments.length > 0 ? moneyCents(totalRevCents / appointments.length, ((practice as any)?.currency || 'USD').toUpperCase()) : moneyCents(0, ((practice as any)?.currency || 'USD').toUpperCase())}</p><p className="text-sm text-muted-foreground mt-1">per appointment</p></div>
-                      {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center">Insufficient data to calculate.</p>}
+                      <div className="text-center py-4"><p className="text-4xl font-bold">{appointments.length > 0 ? moneyCents(totalRevCents / appointments.length, ((practice as any)?.currency || 'USD').toUpperCase()) : moneyCents(0, ((practice as any)?.currency || 'USD').toUpperCase())}</p><p className="text-sm text-muted-foreground mt-1">{t("admin.an.perAppointment")}</p></div>
+                      {appointments.length === 0 && <p className="text-sm text-muted-foreground text-center">{t("admin.an.insufficientCalc")}</p>}
                     </CardContent>
                   </Card>
                 </>
@@ -5021,33 +5021,33 @@ const AdminDashboard = () => {
               {analyticsTab === 'services' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Services', value: services.length }, { label: 'Most Booked', value: mostBooked.length > 0 ? mostBooked[0][0] : '—' }, { label: 'Categories', value: serviceCats.size }, { label: 'Zero Bookings', value: zeroBookingServices.length }].map((kpi, i) => (
+                    {[{ label: t("admin.an.totalServices"), value: services.length }, { label: t("admin.an.mostBooked"), value: mostBooked.length > 0 ? mostBooked[0][0] : '—' }, { label: t("admin.an.categories"), value: serviceCats.size }, { label: t("admin.an.zeroBookings"), value: zeroBookingServices.length }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold truncate">{kpi.value}</p></CardContent></Card>
                     ))}
                   </div>
                   <Card className="rounded-xl mb-4">
-                    <CardHeader><CardTitle>Most Booked Services</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.mostBookedServices")}</CardTitle></CardHeader>
                     <CardContent>
                       {mostBooked.length > 0 ? (
-                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">Service</th><th className="pb-2 font-medium">Category</th><th className="pb-2 font-medium">Bookings</th><th className="pb-2 font-medium">Est. Revenue</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">${((svc as any)?.price || (svc as any)?.cost || 0) * count}</td></tr>); })}</tbody></table></div>
-                      ) : <p className="text-sm text-muted-foreground">No booking data available yet.</p>}
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">{t("admin.an.service")}</th><th className="pb-2 font-medium">{t("admin.an.category")}</th><th className="pb-2 font-medium">{t("admin.an.bookings")}</th><th className="pb-2 font-medium">{t("admin.an.estRevenue")}</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">${((svc as any)?.price || (svc as any)?.cost || 0) * count}</td></tr>); })}</tbody></table></div>
+                      ) : <p className="text-sm text-muted-foreground">{t("admin.an.noBooking")}</p>}
                     </CardContent>
                   </Card>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>Services by Category</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.servicesByCategory")}</CardTitle></CardHeader>
                       <CardContent>
                         {catChartData.length > 0 ? (
                           <div className="h-56"><ResponsiveContainer width="100%" height="100%"><BarChart data={catChartData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="category" /><YAxis /><Tooltip /><Bar dataKey="count" fill="hsl(var(--primary))" radius={[4,4,0,0]} /></BarChart></ResponsiveContainer></div>
-                        ) : <p className="text-sm text-muted-foreground">No services data.</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t("admin.an.noServices")}</p>}
                       </CardContent>
                     </Card>
                     <Card className="rounded-xl">
-                      <CardHeader><CardTitle>No Recent Bookings</CardTitle></CardHeader>
+                      <CardHeader><CardTitle>{t("admin.an.noRecentBookings")}</CardTitle></CardHeader>
                       <CardContent>
                         {zeroBookingServices.length > 0 ? (
-                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">${s.price || s.cost || 0}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>Review</Button></div>))}</div>
-                        ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>All services have bookings!</p></div>}
+                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">${s.price || s.cost || 0}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>{t("admin.an.review")}</Button></div>))}</div>
+                        ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>{t("admin.an.allHaveBookings")}</p></div>}
                       </CardContent>
                     </Card>
                   </div>
@@ -5056,7 +5056,7 @@ const AdminDashboard = () => {
               {analyticsTab === 'reports' && (
                 <>
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold">Custom Reports</h3>
+                    <h3 className="text-lg font-semibold">{t("admin.an.customReports")}</h3>
                     <Button variant="outline" disabled={!allowModals} onClick={() => guard(async () => {
                       const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
                       if (!name) return;
@@ -5068,23 +5068,23 @@ const AdminDashboard = () => {
                       setReportSchedules(next);
                       await persistReportSchedules(next);
                       toast.success(tA('reports.schedule.created', 'Scheduled report saved'));
-                    })}>{tA('reports.schedule.button', 'Schedule Report')}</Button>
+                    })}>{t("admin.an.scheduleReport")}</Button>
                   </div>
 
                   {/* Report Builder */}
                   <Card className="rounded-xl">
                     <CardHeader>
-                      <CardTitle>Build a Report</CardTitle>
-                      <p className="text-sm text-muted-foreground">Select metrics, filters, and a date range to generate a custom report.</p>
+                      <CardTitle>{t("admin.an.buildReport")}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{t("admin.an.buildDesc")}</p>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Step 1: Metrics */}
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium">Metrics to include</p>
+                          <p className="text-sm font-medium">{t("admin.an.metricsInclude")}</p>
                           <div className="flex gap-2">
-                            <Button size="sm" variant="ghost" onClick={() => setReportMetrics(['Total Appointments','Completed Appointments','Cancelled Appointments','No-shows','Unique Patients','New Patients','Total Revenue','Avg Revenue per Appointment','Top Services','Provider Performance','Cancellation Rate','Patient Retention'])}>Select All</Button>
-                            <Button size="sm" variant="ghost" onClick={() => setReportMetrics([])}>Clear</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setReportMetrics(['Total Appointments','Completed Appointments','Cancelled Appointments','No-shows','Unique Patients','New Patients','Total Revenue','Avg Revenue per Appointment','Top Services','Provider Performance','Cancellation Rate','Patient Retention'])}>{t("admin.an.selectAll")}</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setReportMetrics([])}>{t("admin.an.clear")}</Button>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -5103,34 +5103,34 @@ const AdminDashboard = () => {
 
                       {/* Step 2: Filters */}
                       <div className="space-y-3">
-                        <p className="text-sm font-medium">Filters</p>
+                        <p className="text-sm font-medium">{t("admin.an.filters")}</p>
                         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
                           <div>
-                            <label className="text-xs text-muted-foreground">From</label>
+                            <label className="text-xs text-muted-foreground">{t("admin.an.from")}</label>
                             <Input type="date" value={reportFrom} onChange={e => setReportFrom(e.target.value)} />
                           </div>
                           <div>
-                            <label className="text-xs text-muted-foreground">To</label>
+                            <label className="text-xs text-muted-foreground">{t("admin.an.to")}</label>
                             <Input type="date" value={reportTo} onChange={e => setReportTo(e.target.value)} />
                           </div>
                           <div>
-                            <label className="text-xs text-muted-foreground">Provider</label>
+                            <label className="text-xs text-muted-foreground">{t("admin.an.provider")}</label>
                             <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportProvider} onChange={e => setReportProvider(e.target.value)}>
-                              <option value="all">All Providers</option>
+                              <option value="all">{t("admin.an.allProviders")}</option>
                               {doctors.map((d: any) => <option key={d.id} value={d.id}>{d.name || d.full_name}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs text-muted-foreground">Service</label>
+                            <label className="text-xs text-muted-foreground">{t("admin.an.service")}</label>
                             <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportService} onChange={e => setReportService(e.target.value)}>
-                              <option value="all">All Services</option>
+                              <option value="all">{t("admin.an.allServices")}</option>
                               {services.map((s: any) => <option key={s.id} value={s.name}>{s.name}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label className="text-xs text-muted-foreground">Branch</label>
+                            <label className="text-xs text-muted-foreground">{t("admin.an.branch")}</label>
                             <select className="flex h-10 w-full rounded-md border-2 border-border bg-background px-3 py-2 text-sm" value={reportBranch} onChange={e => setReportBranch(e.target.value)}>
-                              <option value="all">All Branches</option>
+                              <option value="all">{t("admin.an.allBranches")}</option>
                               {locations.map((l: any) => <option key={l.id} value={l.name}>{l.name}</option>)}
                             </select>
                           </div>
@@ -5209,7 +5209,7 @@ const AdminDashboard = () => {
                           setReportLoading(false);
                         }, 800);
                       })}>
-                        {reportLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generating…</> : 'Generate Report'}
+                        {reportLoading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t("admin.an.generating")}</> : t("admin.an.generate")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -5220,8 +5220,8 @@ const AdminDashboard = () => {
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <div>
-                            <CardTitle>Report Results</CardTitle>
-                            <p className="text-sm text-muted-foreground mt-1">{reportFrom && reportTo ? `${reportFrom} – ${reportTo}` : 'All time'}</p>
+                            <CardTitle>{t("admin.an.reportResults")}</CardTitle>
+                            <p className="text-sm text-muted-foreground mt-1">{reportFrom && reportTo ? `${reportFrom} – ${reportTo}` : t("admin.an.allTime")}</p>
                           </div>
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline" disabled={!allowModals} onClick={() => guard(() => {
@@ -5233,8 +5233,8 @@ const AdminDashboard = () => {
                                 URL.revokeObjectURL(url);
                                 toast.success('CSV downloaded');
                               } catch { toast.error('Export failed'); }
-                            })}>Export CSV</Button>
-                            <Button size="sm" variant="ghost" onClick={() => setReportGenerated(null)}>Clear</Button>
+                            })}>{t("admin.bl.exportCsv")}</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setReportGenerated(null)}>{t("admin.an.clearBtn")}</Button>
                           </div>
                         </div>
                       </CardHeader>
@@ -5251,7 +5251,7 @@ const AdminDashboard = () => {
                         {/* Results table */}
                         <div className="overflow-x-auto rounded-lg border border-border">
                           <table className="w-full text-sm">
-                            <thead><tr className="bg-muted/50"><th className="text-left p-3 font-medium">Metric</th><th className="text-left p-3 font-medium">Value</th><th className="text-left p-3 font-medium">Unit</th></tr></thead>
+                            <thead><tr className="bg-muted/50"><th className="text-left p-3 font-medium">{t("admin.an.metric")}</th><th className="text-left p-3 font-medium">{t("adminFin.actual")}</th><th className="text-left p-3 font-medium">{t("admin.an.filters")}</th></tr></thead>
                             <tbody>
                               {reportGenerated.map((r, i) => (
                                 <tr key={i} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/10'}>
@@ -5266,9 +5266,9 @@ const AdminDashboard = () => {
 
                         {/* Summary bar */}
                         <div className="flex items-center gap-6 text-xs text-muted-foreground pt-2 border-t border-border">
-                          <span>Total metrics: {reportGenerated.length}</span>
-                          <span>Filters applied: {[reportProvider, reportService, reportBranch].filter(f => f !== 'all').length + (reportFrom ? 1 : 0) + (reportTo ? 1 : 0)}</span>
-                          <span>Generated: {(() => { try { return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return new Date().toISOString(); } })()}</span>
+                          <span>{t("admin.an.totalMetrics")}: {reportGenerated.length}</span>
+                          <span>{t("admin.an.filtersApplied")}: {[reportProvider, reportService, reportBranch].filter(f => f !== 'all').length + (reportFrom ? 1 : 0) + (reportTo ? 1 : 0)}</span>
+                          <span>{t("admin.an.generated")}: {(() => { try { return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return new Date().toISOString(); } })()}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -5277,8 +5277,8 @@ const AdminDashboard = () => {
                   {/* Scheduled Reports */}
                   <Card className="rounded-xl">
                     <CardHeader>
-                      <CardTitle>Scheduled Reports</CardTitle>
-                      <p className="text-sm text-muted-foreground">Automatically email reports on a weekly or monthly cadence.</p>
+                      <CardTitle>{t("admin.an.scheduled")}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{t("admin.an.scheduledDesc")}</p>
                     </CardHeader>
                     <CardContent>
                       {reportSchedules.length === 0 ? (
