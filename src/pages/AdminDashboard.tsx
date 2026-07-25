@@ -6104,7 +6104,7 @@ const AdminDashboard = () => {
                             {t("adminSidebar.verify")}
                           </Button>
                         ) : (
-                          <Button variant="outline" onClick={() => toast.success("You're verified!")} className="w-full">
+                          <Button variant="outline" onClick={() => toast.success(t("adminSidebar.verifiedToast"))} className="w-full">
                             <CheckCircle className="h-4 w-4 mr-2" />
                             {t("adminSidebar.verified")}
                           </Button>
