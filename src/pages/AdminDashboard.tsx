@@ -5461,15 +5461,15 @@ const AdminDashboard = () => {
               {settingsTab === 'booking' && (
                 <div className="space-y-6">
                   <Card>
-                    <CardHeader><CardTitle>Online Booking</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.st.onlineBooking")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Enable Online Booking</span>
+                        <span className="font-medium">{t("admin.st.enableOnline")}</span>
                         <ToggleBtn checked={bookingSettings.onlineBookingEnabled} onChange={() => guard(() => setBookingSettings(p => ({...p, onlineBookingEnabled: !p.onlineBookingEnabled})))} disabled={!allowModals} />
                       </div>
                       {bookingSettings.onlineBookingEnabled
-                        ? <Badge className="bg-primary/10 text-primary">Online booking active</Badge>
-                        : <Badge variant="outline" className="text-amber-600 border-amber-300">Patients cannot book online</Badge>}
+                        ? <Badge className="bg-primary/10 text-primary">{t("admin.st.active")}</Badge>
+                        : <Badge variant="outline" className="text-amber-600 border-amber-300">{t("admin.st.inactive")}</Badge>}
                     </CardContent>
                   </Card>
 
