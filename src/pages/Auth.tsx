@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
 import { normalizeRole, type AppRole } from "@/lib/rbac";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 
 type NameFieldCopy = {
   label: string;
