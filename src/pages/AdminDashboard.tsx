@@ -4873,9 +4873,9 @@ const AdminDashboard = () => {
                     </Card>
                   </div>
                   <Card className="rounded-xl">
-                    <CardHeader><CardTitle>Provider Comparison</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{t("admin.an.comparison")}</CardTitle></CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">Select two providers to compare side-by-side.</p>
+                      <p className="text-sm text-muted-foreground mb-4">{t("admin.an.comparisonDesc")}</p>
                       <div className="flex gap-4 flex-wrap mb-4 items-end">
                         <div>
                           <label className="text-xs text-muted-foreground block mb-1">Provider A</label>
