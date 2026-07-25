@@ -3496,7 +3496,8 @@
     "title": "Practice Admin",
     "status": "Verification",
     "verify": "Start Verification",
-    "verified": "Verified"
+    "verified": "Verified",
+    "verifiedToast": "You're verified!"
   },
   "patientProfile": {
     "tabs": {
