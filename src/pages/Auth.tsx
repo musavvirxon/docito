@@ -376,6 +376,9 @@ const Auth = () => {
                     )}
                   </Button>
                 </form>
+                <div className="mt-4">
+                  <SocialAuthButtons returnTo={safeReturnTo} />
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
