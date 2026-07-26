@@ -1,4 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 import { DEFAULT_PROCEDURE_CATEGORIES, mergeCategories } from "@/lib/procedureCategories";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,11 +44,11 @@ const PROCEDURE_CATEGORY_ALIASES: Record<string, string> = {
 
 const normalizeProcedureCategory = (value: string) => PROCEDURE_CATEGORY_ALIASES[value] || value;
 
-const formSchema = z.object({
-  name: z.string().min(1, "Procedure name is required"),
-  code: z.string().max(32, "Code is too long").optional(),
-  category: z.string().min(1, "Category is required"),
-  default_cost: z.number().min(0, "Cost must be a positive number").optional(),
+const buildFormSchema = (t: (k: string, d?: string) => string) => z.object({
+  name: z.string().min(1, t("validation.nameRequired", "Procedure name is required")),
+  code: z.string().max(32, t("validation.codeTooLong", "Code is too long")).optional(),
+  category: z.string().min(1, t("validation.categoryRequired", "Category is required")),
+  default_cost: z.number().min(0, t("validation.costPositive", "Cost must be a positive number")).optional(),
   notes: z.string().optional(),
   tooth_range: z.array(z.number()).optional(),
 
@@ -57,6 +59,8 @@ const formSchema = z.object({
   requires_consent: z.boolean().default(false),
   consent_text: z.string().optional(),
 });
+
+type ProcedureFormValues = z.infer<ReturnType<typeof buildFormSchema>>;
 
 interface AddProcedureModalProps {
   open: boolean;
@@ -74,6 +78,8 @@ const AddProcedureModal = ({
   onSuccess,
   categories: externalCategories = [],
 }: AddProcedureModalProps) => {
+  const { t } = useTranslation("procedures");
+  const { currency } = useCurrency();
   const [loading, setLoading] = useState(false);
 
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
@@ -99,7 +105,9 @@ const AddProcedureModal = ({
 
   const { items: mergedInventory } = useMergedInventory(practiceId, dentistId);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const formSchema = useMemo(() => buildFormSchema(t as any), [t]);
+
+  const form = useForm<ProcedureFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -142,7 +150,7 @@ const AddProcedureModal = ({
 
       if (doctorError || !doctor?.id) {
         console.error(doctorError);
-        toast.error("Doctor profile not found");
+        toast.error(t("toasts.doctorNotFound", "Doctor profile not found"));
         setDentistId(null);
         setPracticeId(null);
         if (externalCategories.length > 0) {
@@ -205,12 +213,12 @@ const AddProcedureModal = ({
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Please upload a PDF, DOC, DOCX, or TXT file");
+      toast.error(t("toasts.invalidFileType", "Please upload a PDF, DOC, DOCX, or TXT file"));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+      toast.error(t("toasts.fileTooLarge", "File size must be less than 5MB"));
       return;
     }
 
@@ -224,11 +232,11 @@ const AddProcedureModal = ({
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: ProcedureFormValues) => {
     setLoading(true);
     try {
       if (!dentistId) {
-        toast.error("Doctor profile not loaded");
+        toast.error(t("toasts.doctorNotLoaded", "Doctor profile not loaded"));
         return;
       }
 
@@ -240,7 +248,7 @@ const AddProcedureModal = ({
         window.location.hostname.includes("127.0.0.1");
 
       if (!isDev && !authUser) {
-        toast.error("You must be logged in to create procedures");
+        toast.error(t("toasts.mustBeLoggedIn", "You must be logged in to create procedures"));
         return;
       }
 
@@ -248,7 +256,7 @@ const AddProcedureModal = ({
         normalizeProcedureCategory(values.category === "__custom__" ? customCategory.trim() : values.category);
 
       if (!finalCategory) {
-        toast.error("Please choose or enter a category");
+        toast.error(t("toasts.chooseCategory", "Please choose or enter a category"));
         return;
       }
 
@@ -267,7 +275,7 @@ const AddProcedureModal = ({
 
         if (uploadError) {
           console.error("File upload error:", uploadError);
-          toast.error("Failed to upload consent file");
+          toast.error(t("toasts.uploadFailed", "Failed to upload consent file"));
         } else {
           const { data: pub } = supabase.storage
             .from("medical-documents")
@@ -290,6 +298,7 @@ const AddProcedureModal = ({
         category: finalCategory as any,
         type: hasFollowup ? "multi_visit" as any : "single_visit" as any,
         default_cost: values.default_cost || null,
+        currency,
         notes: values.notes || null,
         tooth_range: selectedTeeth.length > 0 ? selectedTeeth : null,
         informed_consent_template: requiresConsent ? consentTemplate : null,
@@ -327,12 +336,12 @@ const AddProcedureModal = ({
             .insert(rows);
           if (reqErr) {
             console.error("inventory linkage failed", reqErr);
-            toast.warning("Procedure created, but failed to attach some inventory items");
+            toast.warning(t("toasts.inventoryAttachFailed", "Procedure created, but failed to attach some inventory items"));
           }
         }
       }
 
-      toast.success("Procedure created successfully");
+      toast.success(t("toasts.created", "Procedure created successfully"));
 
       form.reset();
       setSelectedTeeth([]);
@@ -345,7 +354,7 @@ const AddProcedureModal = ({
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error("Failed to create procedure: " + (error?.message || "Unknown error"));
+      toast.error(`${t("toasts.createFailed", "Failed to create procedure")}: ${error?.message || t("toasts.unknownError", "Unknown error")}`);
     } finally {
       setLoading(false);
       setUploadingFile(false);
@@ -380,7 +389,7 @@ const AddProcedureModal = ({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Procedure</DialogTitle>
+          <DialogTitle>{t("add.title", "Add New Procedure")}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -390,9 +399,9 @@ const AddProcedureModal = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Procedure Name*</FormLabel>
+                  <FormLabel>{t("add.name", "Procedure Name*")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Dental Crown, Blood Test" {...field} />
+                    <Input placeholder={t("add.namePlaceholder", "e.g., Dental Crown, Blood Test")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -405,16 +414,16 @@ const AddProcedureModal = ({
               name="code"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Procedure Code</FormLabel>
+                  <FormLabel>{t("add.code", "Procedure Code")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., D2740, 99213, CPT/CDT/HCPCS code"
+                      placeholder={t("add.codePlaceholder", "e.g., D2740, 99213, CPT/CDT/HCPCS code")}
                       {...field}
                       value={field.value ?? ""}
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">
-                    Optional billing code shown on appointment summaries, treatment plans, invoices, and superbills.
+                    {t("add.codeHint", "Optional billing code shown on appointment summaries, treatment plans, invoices, and superbills.")}
                   </p>
                   <FormMessage />
                 </FormItem>
@@ -427,31 +436,31 @@ const AddProcedureModal = ({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category*</FormLabel>
+                  <FormLabel>{t("add.category", "Category*")}</FormLabel>
 
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select treatment category" />
+                        <SelectValue placeholder={t("add.categoryPlaceholder", "Select treatment category")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {categoryOptions.map((cat) => (
                         <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
+                          {t(`categories.${cat.value}`, cat.label)}
                         </SelectItem>
                       ))}
-                      <SelectItem value="__custom__">Custom…</SelectItem>
+                      <SelectItem value="__custom__">{t("add.custom", "Custom…")}</SelectItem>
                     </SelectContent>
                   </Select>
 
                   {form.watch("category") === "__custom__" && (
                     <div className="space-y-2 mt-2">
-                      <Label>Custom Category</Label>
+                      <Label>{t("add.customCategory", "Custom Category")}</Label>
                       <Input
                         value={customCategory}
                         onChange={(e) => setCustomCategory(e.target.value)}
-                        placeholder="e.g., Specialized Therapy"
+                        placeholder={t("add.customCategoryPlaceholder", "e.g., Specialized Therapy")}
                       />
                     </div>
                   )}
@@ -467,7 +476,7 @@ const AddProcedureModal = ({
               name="default_cost"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Default Cost (USD)</FormLabel>
+                  <FormLabel>{t("add.defaultCost", "Default Cost ({{currency}})", { currency })}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -492,7 +501,7 @@ const AddProcedureModal = ({
                   <div className="flex items-center gap-2">
                     <CalendarPlus className="w-4 h-4 text-blue-600" />
                     <Label htmlFor="followup-toggle" className="font-medium cursor-pointer">
-                      Schedule Follow-up Appointments
+                      {t("add.followupTitle", "Schedule Follow-up Appointments")}
                     </Label>
                   </div>
                   <Switch
@@ -512,7 +521,7 @@ const AddProcedureModal = ({
                       name="followup_count"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Number of Follow-ups</FormLabel>
+                          <FormLabel>{t("add.followupCount", "Number of Follow-ups")}</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -532,7 +541,7 @@ const AddProcedureModal = ({
                       name="followup_interval_days"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Days Between Appointments</FormLabel>
+                          <FormLabel>{t("add.followupInterval", "Days Between Appointments")}</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -551,8 +560,7 @@ const AddProcedureModal = ({
 
                 {hasFollowup && form.watch("followup_count") && form.watch("followup_interval_days") && (
                   <p className="text-sm text-muted-foreground">
-                    {form.watch("followup_count")} follow-up appointment(s) will be suggested,
-                    each {form.watch("followup_interval_days")} day(s) after the previous one.
+                    {t("add.followupSummary", "{{count}} follow-up appointment(s) will be suggested, each {{days}} day(s) after the previous one.", { count: form.watch("followup_count"), days: form.watch("followup_interval_days") })}
                   </p>
                 )}
               </CardContent>
@@ -565,7 +573,7 @@ const AddProcedureModal = ({
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-orange-600" />
                     <Label htmlFor="consent-toggle" className="font-medium cursor-pointer">
-                      Require Patient Consent
+                      {t("add.consentTitle", "Require Patient Consent")}
                     </Label>
                   </div>
                   <Switch
@@ -583,8 +591,7 @@ const AddProcedureModal = ({
                     <div className="flex items-start gap-2 p-3 bg-orange-100/50 dark:bg-orange-900/20 rounded-lg">
                       <AlertCircle className="w-4 h-4 text-orange-600 mt-0.5 shrink-0" />
                       <p className="text-sm text-muted-foreground">
-                        Patient must read and accept this consent before the procedure can be performed.
-                        If declined, you will receive an alert notification.
+                        {t("add.consentNotice", "Patient must read and accept this consent before the procedure can be performed. If declined, you will receive an alert notification.")}
                       </p>
                     </div>
 
@@ -593,10 +600,10 @@ const AddProcedureModal = ({
                       name="consent_text"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Consent Text</FormLabel>
+                          <FormLabel>{t("add.consentText", "Consent Text")}</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Enter the informed consent text..."
+                              placeholder={t("add.consentTextPlaceholder", "Enter the informed consent text...")}
                               className="min-h-[150px]"
                               {...field}
                             />
@@ -607,7 +614,7 @@ const AddProcedureModal = ({
                     />
 
                     <div className="space-y-2">
-                      <Label>Or Upload Consent Document</Label>
+                      <Label>{t("add.uploadConsent", "Or Upload Consent Document")}</Label>
                       <div className="flex items-center gap-2">
                         <input
                           type="file"
@@ -623,10 +630,10 @@ const AddProcedureModal = ({
                           className="flex items-center gap-2"
                         >
                           <Upload className="w-4 h-4" />
-                          Upload File
+                          {t("add.uploadFile", "Upload File")}
                         </Button>
                         <span className="text-xs text-muted-foreground">
-                          PDF, DOC, DOCX, or TXT (max 5MB)
+                          {t("add.uploadHint", "PDF, DOC, DOCX, or TXT (max 5MB)")}
                         </span>
                       </div>
 
@@ -660,10 +667,10 @@ const AddProcedureModal = ({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>{t("add.notes", "Notes")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Optional notes about this procedure..."
+                      placeholder={t("add.notesPlaceholder", "Optional notes about this procedure...")}
                       className="min-h-[80px]"
                       {...field}
                     />
@@ -676,7 +683,7 @@ const AddProcedureModal = ({
             {/* Tooth selector */}
             {showToothSelector ? (
               <div>
-                <FormLabel>Tooth Selection (Optional)</FormLabel>
+                <FormLabel>{t("add.toothSelection", "Tooth Selection (Optional)")}</FormLabel>
                 <div className="mt-2">
                   <ToothSelector
                     selectedTeeth={selectedTeeth}
@@ -692,7 +699,7 @@ const AddProcedureModal = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Package className="w-4 h-4 text-emerald-700" />
-                    <Label className="font-medium">Instruments & Medications</Label>
+                    <Label className="font-medium">{t("add.inventoryTitle", "Instruments & Medications")}</Label>
                   </div>
                   <Button
                     type="button"
@@ -704,21 +711,20 @@ const AddProcedureModal = ({
                       setPickerQty(1);
                     }}
                   >
-                    <Plus className="w-4 h-4 mr-1" /> Add Item
+                    <Plus className="w-4 h-4 mr-1" /> {t("add.addItem", "Add Item")}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Items selected here will be auto-deducted from inventory when this procedure is completed.
-                  Reusable items will increment their use count; you'll be warned if stock is insufficient.
+                  {t("add.inventoryHint", "Items selected here will be auto-deducted from inventory when this procedure is completed. Reusable items will increment their use count; you'll be warned if stock is insufficient.")}
                 </p>
 
                 {pickerOpen && (
                   <div className="grid grid-cols-12 gap-2 items-end p-2 rounded-md border bg-background">
                     <div className="col-span-7">
-                      <Label className="text-xs">Item</Label>
+                      <Label className="text-xs">{t("add.item", "Item")}</Label>
                       <Select value={pickerItemId} onValueChange={setPickerItemId}>
                         <SelectTrigger>
-                          <SelectValue placeholder={mergedInventory.length ? "Select item…" : "No inventory available"} />
+                          <SelectValue placeholder={mergedInventory.length ? t("add.selectItem", "Select item…") : t("add.noInventoryAvailable", "No inventory available")} />
                         </SelectTrigger>
                         <SelectContent>
                           {mergedInventory
@@ -747,7 +753,7 @@ const AddProcedureModal = ({
                       </Select>
                     </div>
                     <div className="col-span-3">
-                      <Label className="text-xs">Qty</Label>
+                      <Label className="text-xs">{t("add.qty", "Qty")}</Label>
                       <Input
                         type="number"
                         min={1}
@@ -773,14 +779,14 @@ const AddProcedureModal = ({
                           setPickerQty(1);
                         }}
                       >
-                        Add
+                        {t("add.add", "Add")}
                       </Button>
                     </div>
                   </div>
                 )}
 
                 {selectedInventory.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No inventory linked yet.</p>
+                  <p className="text-xs text-muted-foreground italic">{t("add.noInventoryLinked", "No inventory linked yet.")}</p>
                 ) : (
                   <div className="space-y-2">
                     {selectedInventory.map((sel, idx) => {
@@ -802,21 +808,21 @@ const AddProcedureModal = ({
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-medium truncate">{inv.name}</div>
                             <div className="text-xs text-muted-foreground">
-                              Stock: {inv.quantity_in_stock} {inv.unit}
+                              {t("add.stock", "Stock")}: {inv.quantity_in_stock} {inv.unit}
                               {inv.is_reusable && inv.max_uses_per_unit
-                                ? ` · uses ${inv.current_use_count}/${inv.max_uses_per_unit}`
+                                ? ` · ${t("add.uses", "uses")} ${inv.current_use_count}/${inv.max_uses_per_unit}`
                                 : ""}
-                              {inv.requires_sterilization ? " · sterilizable" : ""}
+                              {inv.requires_sterilization ? ` · ${t("add.sterilizable", "sterilizable")}` : ""}
                             </div>
                             {(insufficient || stock !== "ok" || useSt !== "ok") && (
                               <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                                 <AlertCircle className="w-3 h-3" />
                                 {insufficient
-                                  ? "Insufficient stock"
+                                  ? t("add.insufficientStock", "Insufficient stock")
                                   : useSt === "needs_sterilization"
-                                  ? "Needs sterilization"
+                                  ? t("add.needsSterilization", "Needs sterilization")
                                   : useSt === "exhausted"
-                                  ? "Max uses reached"
+                                  ? t("add.maxUsesReached", "Max uses reached")
                                   : stock}
                               </div>
                             )}
@@ -856,10 +862,10 @@ const AddProcedureModal = ({
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {t("add.cancel", "Cancel")}
               </Button>
               <Button type="submit" disabled={loading || uploadingFile}>
-                {loading || uploadingFile ? "Creating..." : "Create Procedure"}
+                {loading || uploadingFile ? t("add.creating", "Creating...") : t("add.create", "Create Procedure")}
               </Button>
             </div>
           </form>
