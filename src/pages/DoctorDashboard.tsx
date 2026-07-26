@@ -8,6 +8,8 @@ import ProfileMenu from "@/components/dashboard/ProfileMenu";
 import { DoctorDataProvider, useDoctorData } from "@/contexts/DoctorDataContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
+
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,6 +91,8 @@ const DoctorDashboardContent = () => {
   const [newFlowOpen, setNewFlowOpen] = useState(false);
   
   const { t } = useTranslation("dashboard");
+  const { format: formatMoney } = useCurrency();
+
   const doctorStatus: DoctorStatus = doctorProfile?.practice_id ? "clinic-member" : "independent";
 
   useEffect(() => {
@@ -284,9 +288,10 @@ const DoctorDashboardContent = () => {
                       <UserPlus className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-foreground">Onboard a patient in seconds</h3>
+                      <h3 className="font-semibold text-foreground">{t("doctor.onboardPatient.title", "Onboard a patient in seconds")}</h3>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Add a new patient and book or start their appointment in one flow.
+                        {t("doctor.onboardPatient.desc", "Add a new patient and book or start their appointment in one flow.")}
+
                       </p>
                     </div>
                   </div>
@@ -296,7 +301,7 @@ const DoctorDashboardContent = () => {
                     onClick={() => setNewFlowOpen(true)}
                   >
                     <UserPlus className="mr-2 h-5 w-5" />
-                    <span>New Patient · New Appointment</span>
+                    <span>{t("doctor.onboardPatient.cta", "New Patient · New Appointment")}</span>
                   </Button>
                 </div>
               </CardContent>
@@ -312,7 +317,7 @@ const DoctorDashboardContent = () => {
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">{t("doctor.stats.totalAppointments")}</p>
                       <p className="text-4xl font-bold tracking-tight">{(stats as any)?.totalAppointments || 0}</p>
-                      <p className="text-xs text-muted-foreground">total visits</p>
+                      <p className="text-xs text-muted-foreground">{t("doctor.stats.allTimeBookings", "All time bookings")}</p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
                       <Calendar className="h-7 w-7 text-primary" />
@@ -365,7 +370,7 @@ const DoctorDashboardContent = () => {
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
                       <p className="text-sm font-medium text-muted-foreground">{t("doctor.stats.earnings")}</p>
-                      <p className="text-4xl font-bold tracking-tight">${(stats as any)?.totalRevenue || 0}</p>
+                      <p className="text-4xl font-bold tracking-tight">{formatMoney(Number((stats as any)?.totalRevenue || 0), "USD")}</p>
                       <p className="text-xs text-muted-foreground">{t("doctor.stats.totalEarnings")}</p>
                     </div>
                     <div className="h-14 w-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
