@@ -2599,6 +2599,11 @@
       "updateResubmit": "Update & Resubmit",
       "uploadedDocuments": "Uploaded Documents",
       "viewFullProfile": "View Full Profile"
+    },
+    "onboardPatient": {
+      "title": "Onboard a patient in seconds",
+      "desc": "Add a new patient and book or start their appointment in one flow.",
+      "cta": "New Patient · New Appointment"
     }
   },
   "superAdmin": {

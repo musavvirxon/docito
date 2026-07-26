@@ -1279,8 +1279,8 @@
       "basedOnReviews": "{{count}} ta sharh asosida",
       "revenue": "Daromad",
       "totalEarnings": "Jami daromad",
-      "rating": "Rating",
-      "earnings": "Earnings"
+      "rating": "Reyting",
+      "earnings": "Daromad"
     },
     "appointmentStatus": {
       "confirmed": "Tasdiqlangan",
@@ -2752,6 +2752,11 @@
       "updateResubmit": "Update & Resubmit",
       "uploadedDocuments": "Uploaded Documents",
       "viewFullProfile": "View Full Profile"
+    },
+    "onboardPatient": {
+      "title": "Bemorni bir necha soniyada qoʻshing",
+      "desc": "Yangi bemor qoʻshing va uning qabulini bitta oqimda band qiling yoki boshlang.",
+      "cta": "Yangi bemor · Yangi qabul"
     }
   },
   "superAdmin": {

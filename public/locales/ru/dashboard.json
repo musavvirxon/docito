@@ -1279,8 +1279,8 @@
       "basedOnReviews": "На основе {{count}} отзывов",
       "revenue": "Доход",
       "totalEarnings": "Общий доход",
-      "rating": "Rating",
-      "earnings": "Earnings"
+      "rating": "Рейтинг",
+      "earnings": "Доход"
     },
     "appointmentStatus": {
       "confirmed": "Подтверждено",
@@ -2616,6 +2616,11 @@
       "updateResubmit": "Update & Resubmit",
       "uploadedDocuments": "Uploaded Documents",
       "viewFullProfile": "View Full Profile"
+    },
+    "onboardPatient": {
+      "title": "Оформите пациента за секунды",
+      "desc": "Добавьте нового пациента и запишите или начните приём в одном потоке.",
+      "cta": "Новый пациент · Новый приём"
     }
   },
   "superAdmin": {
