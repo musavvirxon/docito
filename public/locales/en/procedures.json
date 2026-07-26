@@ -14,7 +14,7 @@
     "defaultCost": "Default Cost ({{currency}})",
     "followupTitle": "Schedule Follow-up Appointments",
     "followupCount": "Number of Follow-ups",
-    "followupInterval": "Interval (days)",
+    "followupInterval": "Days Between Appointments",
     "followupSummary": "{{count}} follow-up appointment(s) will be suggested, each {{days}} day(s) after the previous one.",
     "consentTitle": "Require Patient Consent",
     "consentNotice": "Patient must read and accept this consent before the procedure can be performed. If declined, you will receive an alert notification.",
