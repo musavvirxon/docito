@@ -541,7 +541,7 @@ const AddProcedureModal = ({
                       name="followup_interval_days"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Days Between Appointments</FormLabel>
+                          <FormLabel>{t("add.followupInterval", "Days Between Appointments")}</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
