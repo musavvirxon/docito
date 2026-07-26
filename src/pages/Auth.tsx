@@ -380,7 +380,7 @@ const Auth = () => {
                   </Button>
                 </form>
                 <div className="mt-4">
-                  <SocialAuthButtons returnTo={safeReturnTo} />
+                  <SocialAuthButtons returnTo={safeReturnTo} role={signUpRole} />
                 </div>
               </TabsContent>
             </Tabs>
