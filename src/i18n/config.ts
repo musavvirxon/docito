@@ -95,6 +95,8 @@ export const I18N_NAMESPACES = [
   "appointments",
   "inventory",
   "rooms",
+  "procedures",
+
 ] as const;
 
 export const rtlLanguages = ["ar", "he", "fa", "ur"];
