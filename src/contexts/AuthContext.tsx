@@ -342,8 +342,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const uid = nextSession.user.id;
 
+      // Apply a role chosen on the signup form before an OAuth redirect (Google/Discord/Facebook)
+      try {
+        const pendingOAuthRole = localStorage.getItem("pending_oauth_role");
+        if (pendingOAuthRole) {
+          localStorage.removeItem("pending_oauth_role");
+          const desired = (normalizeRole(pendingOAuthRole) || "patient") as AppRole;
+          const currentMetaRole = normalizeRole((nextSession.user as any)?.user_metadata?.role);
+          if (desired !== "patient" && !currentMetaRole) {
+            await supabase.auth.updateUser({ data: { role: desired } });
+            (nextSession.user as any).user_metadata = {
+              ...((nextSession.user as any).user_metadata || {}),
+              role: desired,
+            };
+            await supabase.from("user_roles").upsert(
+              { user_id: uid, role: desired } as any,
+              { onConflict: "user_id,role" },
+            );
+          }
+        }
+      } catch (e) {
+        console.warn("[Auth] pending OAuth role apply failed (ignored):", e);
+      }
+
       // INSTANT: Set role from cache or user_metadata so UI can redirect immediately
       const metaRole = getRoleFromMetadata(nextSession.user);
+
       const cachedData = readCache();
       const hasCacheHit = cachedData?.uid === uid && cachedData.allRoles.length > 0;
 
