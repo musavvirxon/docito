@@ -35,7 +35,14 @@ const providers: { id: Provider; label: string; Icon: React.FC }[] = [
   { id: "facebook", label: "Facebook", Icon: FacebookIcon },
 ];
 
-export const SocialAuthButtons = ({ returnTo }: { returnTo?: string | null }) => {
+export const SocialAuthButtons = ({
+  returnTo,
+  role,
+}: {
+  returnTo?: string | null;
+  /** Account type chosen on the sign-up form; applied after the OAuth redirect */
+  role?: string | null;
+}) => {
   const { t } = useTranslation("auth");
   const { lang } = useParams<{ lang?: string }>();
   const { toast } = useToast();
@@ -44,6 +51,12 @@ export const SocialAuthButtons = ({ returnTo }: { returnTo?: string | null }) =>
   const handleOAuth = async (provider: Provider) => {
     setPending(provider);
     try {
+      if (role) {
+        localStorage.setItem("pending_oauth_role", role);
+      } else {
+        localStorage.removeItem("pending_oauth_role");
+      }
+
       const base = window.location.origin;
       const langPrefix = lang ? `/${lang}` : "";
       const redirectTo =
