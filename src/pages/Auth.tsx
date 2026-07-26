@@ -287,7 +287,10 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="signup-role">{t("auth.signUp.role")}</Label>
                     <Select value={signUpRole} onValueChange={setSignUpRole}>
-                      <SelectTrigger>
+                      <SelectTrigger
+                        id="signup-role"
+                        className="border-primary ring-1 ring-primary/40 shadow-[0_0_0_3px_hsl(var(--primary)/0.12),0_0_16px_hsl(var(--primary)/0.35)] focus:ring-2 focus:ring-primary transition-shadow"
+                      >
                         <SelectValue placeholder={t("auth.signUp.rolePlaceholder")} />
                       </SelectTrigger>
                       <SelectContent>
