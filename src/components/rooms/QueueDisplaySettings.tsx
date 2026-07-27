@@ -47,9 +47,9 @@ export function QueueDisplaySettings({ practiceId, userId }: QueueDisplaySetting
   const [savingDoctorId, setSavingDoctorId] = useState<string | null>(null);
   const [creatingDisplay, setCreatingDisplay] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (silent = false) => {
     if (!practiceId) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     const today = todayISO();
 
     const [{ data: roomRows }, { data: aptRows }, { data: displayRows }] = await Promise.all([
@@ -96,6 +96,21 @@ export function QueueDisplaySettings({ practiceId, userId }: QueueDisplaySetting
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Keep the Online/Offline badges accurate: screens send a heartbeat on every
+  // queue refresh, so re-read their status silently on a short interval.
+  useEffect(() => {
+    const tick = () => load(true);
+    const interval = window.setInterval(tick, 15_000);
+    const onFocus = () => tick();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
   }, [load]);
 
   const assignRoom = async (doctorId: string, roomId: string) => {
@@ -209,7 +224,7 @@ export function QueueDisplaySettings({ practiceId, userId }: QueueDisplaySetting
           )}
           {activeDisplays.map((display) => {
             const isOnline = display.lastSeenAt
-              ? Date.now() - new Date(display.lastSeenAt).getTime() < 60_000
+              ? Date.now() - new Date(display.lastSeenAt).getTime() < 120_000
               : false;
 
             return (
