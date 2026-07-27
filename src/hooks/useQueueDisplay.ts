@@ -53,7 +53,7 @@ interface QueueDisplayState {
   lastCalled: CalledEvent | null;
 }
 
-const POLL_INTERVAL_MS = 4000;
+const POLL_INTERVAL_MS = 2500;
 const FRESH_CALL_WINDOW_MS = 60_000;
 
 function buildRooms(rooms: QueueRoom[], queue: QueueEntry[]): RoomView[] {
@@ -158,15 +158,43 @@ export function useQueueDisplay(token: string | undefined) {
   // a patient, and refetch immediately instead of waiting for the poll.
   useEffect(() => {
     if (!state.practiceId) return;
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const channel = supabase
-      .channel(`display:${state.practiceId}`)
+      .channel(`display:${state.practiceId}:${suffix}`)
       .on("broadcast", { event: "call" }, () => fetchOnce())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "appointments", filter: `practice_id=eq.${state.practiceId}` },
+        () => fetchOnce()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "clinic_rooms", filter: `practice_id=eq.${state.practiceId}` },
+        () => fetchOnce()
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [state.practiceId, fetchOnce]);
+
+  // Catch back up instantly when a sleeping tab/TV wakes or the
+  // network comes back, without waiting for the next poll tick.
+  useEffect(() => {
+    if (!token) return;
+    const onWake = () => {
+      if (document.visibilityState === "visible") fetchOnce();
+    };
+    document.addEventListener("visibilitychange", onWake);
+    window.addEventListener("online", onWake);
+    window.addEventListener("focus", onWake);
+    return () => {
+      document.removeEventListener("visibilitychange", onWake);
+      window.removeEventListener("online", onWake);
+      window.removeEventListener("focus", onWake);
+    };
+  }, [token, fetchOnce]);
 
   return state;
 }
