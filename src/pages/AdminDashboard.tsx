@@ -908,7 +908,7 @@ const AdminDashboard = () => {
                             <p className="text-sm font-medium truncate">{service.name}</p>
                             <p className="text-xs text-muted-foreground truncate">{service.category}</p>
                           </div>
-                          <span className="text-sm font-medium">${service.price}</span>
+                          <span className="text-sm font-medium">{money(Number(service.price || 0), 'USD')}</span>
                         </div>
                       ))}
                     </div>
