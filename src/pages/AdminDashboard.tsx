@@ -1150,7 +1150,7 @@ const AdminDashboard = () => {
                               [t('admin.pd.fields.license'), selectedProvider.license_number],
                               [t('admin.pd.fields.languages'), Array.isArray(selectedProvider.languages) ? selectedProvider.languages.join(', ') : selectedProvider.languages],
                               [t('admin.pd.fields.experience'), selectedProvider.years_experience ? `${selectedProvider.years_experience} ${t('admin.pd.years')}` : '—'],
-                              [t('admin.pd.fields.fee'), selectedProvider.consultation_fee != null ? `$${selectedProvider.consultation_fee}` : '—'],
+                              [t('admin.pd.fields.fee'), selectedProvider.consultation_fee != null ? money(Number(selectedProvider.consultation_fee), 'USD') : '—'],
                               [t('admin.pd.fields.consultTypes'), Array.isArray(selectedProvider.consultation_types) ? selectedProvider.consultation_types.join(', ') : '—'],
                               [t('admin.pd.fields.acceptsNew'), selectedProvider.accepts_new_patients ? t('admin.pd.yesNo.yes') : t('admin.pd.yesNo.no')],
                               [t('admin.pd.fields.verified'), selectedProvider.verified ? t('admin.pd.yesNo.yes') : t('admin.pd.yesNo.no')],
@@ -1554,7 +1554,7 @@ const AdminDashboard = () => {
                                 <div key={svc.id} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
                                   <span className="font-medium truncate">{svc.name}</span>
                                   <Badge variant="outline">{svc.category || '—'}</Badge>
-                                  <span>{svc.price != null ? `$${svc.price}` : '—'}</span>
+                                  <span>{svc.price != null ? money(Number(svc.price), 'USD') : '—'}</span>
                                   <span>{svc.duration ? `${svc.duration} min` : '—'}</span>
                                   <Badge variant="secondary">{svc.is_active === false ? t('admin.pd.procedures.inactive') : t('admin.pd.procedures.active')}</Badge>
                                 </div>
@@ -1817,7 +1817,7 @@ const AdminDashboard = () => {
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">
                       {services.length > 0
-                        ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}`
+                        ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length), 'USD')
                         : "$0"}
                     </div>
                     <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.avg")}</p>
@@ -1834,7 +1834,7 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">
-                      ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                      {money(services.reduce((sum, s) => sum + (s.price || 0), 0), 'USD')}
                     </div>
                     <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.revenue")}</p>
                   </CardContent>
@@ -1990,25 +1990,25 @@ const AdminDashboard = () => {
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">{t("admin.sv.pricing.lowest")}</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.min(...services.map(s => s.price || 0))}` : "$0"}
+                              {money(services.length > 0 ? Math.min(...services.map(s => s.price || 0)) : 0, 'USD')}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">{t("admin.sv.pricing.highest")}</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.max(...services.map(s => s.price || 0))}` : "$0"}
+                              {money(services.length > 0 ? Math.max(...services.map(s => s.price || 0)) : 0, 'USD')}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">{t("admin.sv.pricing.average")}</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? `$${Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length)}` : "$0"}
+                              {services.length > 0 ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length), 'USD') : "$0"}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">{t("admin.sv.pricing.totalRevenue")}</span>
                             <span className="text-lg font-bold">
-                              ${services.reduce((sum, s) => sum + (s.price || 0), 0).toLocaleString()}
+                              {money(services.reduce((sum, s) => sum + (s.price || 0), 0), 'USD')}
                             </span>
                           </div>
                         </div>
@@ -2323,7 +2323,7 @@ const AdminDashboard = () => {
                     <Card className="rounded-xl">
                       <CardContent className="pt-6">
                         <div className="text-2xl font-bold">
-                          {services.length > 0 ? `$${Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length)}` : '$0'}
+                          {money(services.length > 0 ? Math.round(services.reduce((s, v) => s + (v.price || 0), 0) / services.length) : 0, 'USD')}
                         </div>
                         <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.avg")}</p>
                       </CardContent>
@@ -3065,7 +3065,7 @@ const AdminDashboard = () => {
                       })}>{t('admin.pt.createInvoice')}</Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      {[[t('admin.pt.totalInvoiced'), `$${totalInvoiced.toLocaleString()}`], [t('admin.pt.paid'), `$${totalPaid.toLocaleString()}`], [t('admin.pt.outstanding'), `$${(totalInvoiced - totalPaid).toLocaleString()}`]].map(([label, val]) => (
+                      {[[t('admin.pt.totalInvoiced'), money(totalInvoiced, 'USD')], [t('admin.pt.paid'), money(totalPaid, 'USD')], [t('admin.pt.outstanding'), money(totalInvoiced - totalPaid, 'USD')]].map(([label, val]) => (
                         <Card key={label as string} className="rounded-xl"><CardContent className="pt-6 text-center">
                           <div className="text-2xl font-bold">{val}</div><p className="text-sm text-muted-foreground">{label}</p>
                         </CardContent></Card>
