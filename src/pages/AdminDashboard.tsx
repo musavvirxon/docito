@@ -1818,7 +1818,7 @@ const AdminDashboard = () => {
                     <div className="text-2xl font-bold">
                       {services.length > 0
                         ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length), 'USD')
-                        : "$0"}
+                        : money(0, 'USD')}
                     </div>
                     <p className="text-sm text-muted-foreground">{t("admin.sv.kpi.avg")}</p>
                   </CardContent>
@@ -2002,7 +2002,7 @@ const AdminDashboard = () => {
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <span className="text-sm font-medium">{t("admin.sv.pricing.average")}</span>
                             <span className="text-lg font-bold">
-                              {services.length > 0 ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length), 'USD') : "$0"}
+                              {services.length > 0 ? money(Math.round(services.reduce((sum, s) => sum + (s.price || 0), 0) / services.length), 'USD') : money(0, 'USD')}
                             </span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
