@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import ThemeToggle from "@/components/home/ThemeToggle";
+import CurrencySwitcher from "@/components/common/CurrencySwitcher";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import ProfileMenu from "@/components/dashboard/ProfileMenu";
 
