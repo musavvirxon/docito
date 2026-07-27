@@ -6130,6 +6130,7 @@ const AdminDashboard = () => {
 
             <div className="flex items-center gap-4">
               <ThemeToggle />
+              <CurrencySwitcher className="hidden sm:flex" />
               <LanguageSwitcher />
               <ProfileMenu />
             </div>
