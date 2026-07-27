@@ -139,8 +139,6 @@
     "revokeSuccess": "Ekran uzildi",
     "revokeError": "Ekranni uzib bo‘lmadi",
     "loading": "Yuklanmoqda...",
-    "tapToStart": "Ekranni ishga tushirish uchun bosing",
-    "tapToStartHint": "Bu bemorlarni chaqirish e’lonlari uchun ovozni yoqadi",
     "invalidTitle": "Ekran ulanmagan",
     "busy": "Qabulda",
     "free": "Bo‘sh",
@@ -149,7 +147,9 @@
     "next": "Keyingi",
     "noRooms": "Bu ekran uchun hali xonalar sozlanmagan.",
     "nowCalling": "Chaqirilmoqda",
-    "goTo": "{{room}} · Dr. {{doctor}}"
+    "goTo": "{{room}} · Dr. {{doctor}}",
+    "enableSound": "Ovozni yoqish",
+    "noDoctor": "Shifokor tayinlanmagan"
   },
   "primaryDoctorBadge": "Shifokor: Dr. {{name}}"
 }
