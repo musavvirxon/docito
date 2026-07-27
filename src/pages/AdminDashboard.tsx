@@ -1915,7 +1915,7 @@ const AdminDashboard = () => {
                                 <div className="text-sm text-muted-foreground sm:col-span-1">
                                   {service.duration ? `${service.duration} min` : '—'}
                                 </div>
-                                <div className="font-semibold sm:col-span-1">${service.price}</div>
+                                <div className="font-semibold sm:col-span-1">{money(Number(service.price || 0), 'USD')}</div>
                                 <div className="sm:col-span-1">
                                   {(service as any).is_online !== false ? (
                                     <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs">{t("admin.sv.online")}</Badge>
@@ -2073,7 +2073,7 @@ const AdminDashboard = () => {
                               {services.slice(0, 3).map(s => (
                                 <div key={s.id} className="text-sm p-2 bg-muted/20 rounded-md border border-border mb-1">
                                   <span className="font-medium">{s.name}</span>
-                                  <span className="text-muted-foreground ml-2">${s.price}</span>
+                                  <span className="text-muted-foreground ml-2">{money(Number(s.price || 0), 'USD')}</span>
                                 </div>
                               ))}
                             </div>
@@ -2174,7 +2174,7 @@ const AdminDashboard = () => {
                                   <td className="py-3 font-medium">{s.name}</td>
                                   <td className="py-3"><Badge variant="secondary" className="text-xs">{s.category || t('admin.sv.uncategorized')}</Badge></td>
                                   <td className="py-3 text-muted-foreground">{s.duration ? `${s.duration} min` : '—'}</td>
-                                  <td className="py-3 font-semibold">${s.price}</td>
+                                  <td className="py-3 font-semibold">{money(Number(s.price || 0), 'USD')}</td>
                                   <td className="py-3"><Badge variant="outline" className="text-xs">{t("admin.sv.type.fixed")}</Badge></td>
                                   <td className="py-3"><Badge variant="secondary" className="text-xs">{t("admin.sv.type.none")}</Badge></td>
                                   <td className="py-3 text-right">
@@ -2419,7 +2419,7 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="flex items-center gap-4">
                                   <span className="text-sm text-muted-foreground">{t('admin.sv.analytics.bookings', { n: r.bookings })}</span>
-                                  <span className="text-sm font-semibold">${(r.bookings * (r.price || 0)).toLocaleString()}</span>
+                                  <span className="text-sm font-semibold">{money(r.bookings * (r.price || 0), 'USD')}</span>
                                 </div>
                               </div>
                             ))}
@@ -2456,7 +2456,7 @@ const AdminDashboard = () => {
                                     <Badge variant="secondary" className="text-xs">{s.category || t('admin.sv.analytics.other')}</Badge>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <span className="text-sm font-semibold">${s.price}</span>
+                                    <span className="text-sm font-semibold">{money(Number(s.price || 0), 'USD')}</span>
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
                                     if (!confirm(t('admin.sv.archiveConfirm'))) return;
                                     const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', s.id);
@@ -3091,7 +3091,7 @@ const AdminDashboard = () => {
                                 <tr key={p.id} className="border-b border-border last:border-0">
                                   <td className="p-3">{formatPatientDate(p.created_at || p.date)}</td>
                                   <td className="p-3">{p.description || p.service_name || '—'}</td>
-                                  <td className="p-3">${(p.amount || 0).toLocaleString()}</td>
+                                  <td className="p-3">{money(Number(p.amount || 0), 'USD')}</td>
                                   <td className="p-3"><Badge variant="outline" className="capitalize">{p.status}</Badge></td>
                                 </tr>
                               ))}
@@ -5030,7 +5030,7 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>{t("admin.an.mostBookedServices")}</CardTitle></CardHeader>
                     <CardContent>
                       {mostBooked.length > 0 ? (
-                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">{t("admin.an.service")}</th><th className="pb-2 font-medium">{t("admin.an.category")}</th><th className="pb-2 font-medium">{t("admin.an.bookings")}</th><th className="pb-2 font-medium">{t("admin.an.estRevenue")}</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">${((svc as any)?.price || (svc as any)?.cost || 0) * count}</td></tr>); })}</tbody></table></div>
+                        <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">#</th><th className="pb-2 font-medium">{t("admin.an.service")}</th><th className="pb-2 font-medium">{t("admin.an.category")}</th><th className="pb-2 font-medium">{t("admin.an.bookings")}</th><th className="pb-2 font-medium">{t("admin.an.estRevenue")}</th></tr></thead><tbody>{mostBooked.slice(0, 10).map(([name, count], i) => { const svc = services.find((s: any) => s.name === name); return (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{i + 1}</td><td className="py-2">{name}</td><td className="py-2"><Badge variant="secondary">{(svc as any)?.category || '—'}</Badge></td><td className="py-2">{count}</td><td className="py-2">{money((Number((svc as any)?.price || (svc as any)?.cost || 0)) * count, 'USD')}</td></tr>); })}</tbody></table></div>
                       ) : <p className="text-sm text-muted-foreground">{t("admin.an.noBooking")}</p>}
                     </CardContent>
                   </Card>
@@ -5047,7 +5047,7 @@ const AdminDashboard = () => {
                       <CardHeader><CardTitle>{t("admin.an.noRecentBookings")}</CardTitle></CardHeader>
                       <CardContent>
                         {zeroBookingServices.length > 0 ? (
-                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">${s.price || s.cost || 0}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>{t("admin.an.review")}</Button></div>))}</div>
+                          <div className="space-y-3">{zeroBookingServices.map((s: any, i: number) => (<div key={i} className="flex items-center justify-between"><div><p className="text-sm font-medium">{s.name}</p><div className="flex gap-2 mt-1"><Badge variant="secondary">{s.category || '—'}</Badge><span className="text-xs text-muted-foreground">{money(Number(s.price || s.cost || 0), 'USD')}</span></div></div><Button size="sm" variant="outline" onClick={() => (() => { setActiveSection('services'); setServiceTab('catalog'); })()}>{t("admin.an.review")}</Button></div>))}</div>
                         ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>{t("admin.an.allHaveBookings")}</p></div>}
                       </CardContent>
                     </Card>
