@@ -37,7 +37,14 @@ export default function QueueDisplay() {
 
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [banner, setBanner] = useState<CalledEvent | null>(null);
+  const [now, setNow] = useState(() => new Date());
   const lastAnnouncedRef = useRef<string | null>(null);
+
+  // Live clock so the screen never looks frozen.
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     if (!lastCalled || lastCalled.calledAt === lastAnnouncedRef.current) return;
@@ -52,23 +59,6 @@ export default function QueueDisplay() {
     playChime();
     setSoundEnabled(true);
   };
-
-  // Kiosk browsers launched with --autoplay-policy=no-user-gesture-required
-  // never need this screen — soundEnabled can default to true there if you
-  // prefer; it's left as an explicit tap for anything else (cast tabs,
-  // smart-TV browsers) since those still enforce the autoplay restriction.
-  if (!soundEnabled) {
-    return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-6 bg-slate-950 text-white cursor-pointer"
-        onClick={enableSound}
-      >
-        <Volume2 className="h-16 w-16 opacity-70" />
-        <p className="text-2xl font-medium">{t("display.tapToStart", "Tap anywhere to start the display")}</p>
-        <p className="text-slate-400">{t("display.tapToStartHint", "This unlocks sound for patient call announcements")}</p>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -89,11 +79,23 @@ export default function QueueDisplay() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-10 relative overflow-hidden">
-      <div className="flex items-baseline justify-between mb-10">
+      <div className="flex items-baseline justify-between mb-10 gap-6">
         <h1 className="text-3xl font-semibold">{practiceName}</h1>
-        <p className="text-slate-400 text-lg">
-          {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
-        </p>
+        <div className="flex items-center gap-5">
+          <p className="text-slate-400 text-lg">
+            {now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} ·{" "}
+            {now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+          </p>
+          {!soundEnabled && (
+            <button
+              onClick={enableSound}
+              className="flex items-center gap-2 text-sm text-slate-300 border border-slate-700 rounded-full px-4 py-1.5 hover:bg-slate-800 transition-colors"
+            >
+              <Volume2 className="h-4 w-4" />
+              {t("display.enableSound", "Enable sound")}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -104,12 +106,18 @@ export default function QueueDisplay() {
               room.busy ? "border-rose-500/40 bg-rose-500/10" : "border-emerald-500/40 bg-emerald-500/10"
             }`}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-start justify-between gap-4 mb-4">
               <div className="min-w-0">
-                <h2 className="text-2xl font-semibold truncate">{room.roomName}</h2>
-                {room.roomNumber && (
-                  <p className="text-sm text-slate-400 mt-0.5">#{room.roomNumber}</p>
-                )}
+                <h2 className="text-3xl font-semibold truncate flex items-center gap-2">
+                  <Stethoscope className="h-6 w-6 shrink-0 text-slate-300" />
+                  {room.doctorName
+                    ? t("display.withDoctor", "Dr. {{name}}", { name: room.doctorName })
+                    : t("display.noDoctor", "Unassigned")}
+                </h2>
+                <p className="text-base text-slate-400 mt-1 truncate">
+                  {room.roomName}
+                  {room.roomNumber ? ` · #${room.roomNumber}` : ""}
+                </p>
               </div>
               <span
                 className={`text-sm font-medium px-3 py-1 rounded-full shrink-0 ${
@@ -119,13 +127,6 @@ export default function QueueDisplay() {
                 {room.busy ? t("display.busy", "In consultation") : t("display.free", "Free")}
               </span>
             </div>
-
-            {room.doctorName && (
-              <p className="flex items-center gap-2 text-slate-300 mb-4">
-                <Stethoscope className="h-4 w-4" />
-                {t("display.withDoctor", "Dr. {{name}}", { name: room.doctorName })}
-              </p>
-            )}
 
             <div className="space-y-2">
               <div>

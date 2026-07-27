@@ -139,8 +139,6 @@
     "revokeSuccess": "Display disconnected",
     "revokeError": "Couldn't revoke the display",
     "loading": "Loading...",
-    "tapToStart": "Tap anywhere to start the display",
-    "tapToStartHint": "This unlocks sound for patient call announcements",
     "invalidTitle": "Display not connected",
     "busy": "In consultation",
     "free": "Free",
@@ -149,7 +147,9 @@
     "next": "Next",
     "noRooms": "No rooms are set up for this display yet.",
     "nowCalling": "Now calling",
-    "goTo": "{{room}} · Dr. {{doctor}}"
+    "goTo": "{{room}} · Dr. {{doctor}}",
+    "enableSound": "Enable sound",
+    "noDoctor": "Unassigned"
   },
   "primaryDoctorBadge": "Doctor: Dr. {{name}}"
 }
