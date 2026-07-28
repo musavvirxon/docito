@@ -12,6 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCurrency } from "@/hooks/useCurrency";
+import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
+import TreatmentPlanToothChart, { type DentitionType } from "@/components/dental/TreatmentPlanToothChart";
 
 interface TreatmentPlan {
   id: string;
@@ -68,6 +70,8 @@ const PatientTreatmentPlanModal = ({
   const [procedures, setProcedures] = useState<TreatmentPlanProcedure[]>([]);
   const [medications, setMedications] = useState<Medication[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isDental, setIsDental] = useState(false);
+  const [dentitionType, setDentitionType] = useState<DentitionType>("permanent");
 
   useEffect(() => {
     if (open) {
@@ -93,6 +97,21 @@ const PatientTreatmentPlanModal = ({
           .eq("treatment_plan_id", treatmentPlan.id)
           .order("created_at", { ascending: true }),
       ]);
+
+      const [planRes, docRes] = await Promise.all([
+        (supabase as any)
+          .from("treatment_plans")
+          .select("dentition_type")
+          .eq("id", treatmentPlan.id)
+          .maybeSingle(),
+        (supabase as any)
+          .from("doctors")
+          .select("specialty")
+          .eq("id", treatmentPlan.doctor_id)
+          .maybeSingle(),
+      ]);
+      setDentitionType((planRes?.data?.dentition_type === "primary" ? "primary" : "permanent") as DentitionType);
+      setIsDental(isDentalSpecialty(docRes?.data?.specialty));
 
       if (procResult.error) throw procResult.error;
       setProcedures(procResult.data || []);
@@ -200,6 +219,15 @@ const PatientTreatmentPlanModal = ({
               </div>
             </CardContent>
           </Card>
+
+          {isDental && (
+            <TreatmentPlanToothChart
+              planId={treatmentPlan.id}
+              dentitionType={dentitionType}
+              procedures={procedures as any}
+              readOnly
+            />
+          )}
 
           {/* Procedures List */}
           <Card>
