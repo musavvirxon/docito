@@ -2604,6 +2604,41 @@
       "title": "Onboard a patient in seconds",
       "desc": "Add a new patient and book or start their appointment in one flow.",
       "cta": "New Patient · New Appointment"
+    },
+    "toothChart": {
+      "title": "Tooth chart",
+      "fdi": "FDI / ISO-3950",
+      "tooth": "Tooth",
+      "procedure": "Procedure",
+      "noProcedures": "Add a procedure to this plan first.",
+      "empty": "Click a tooth to assign a procedure.",
+      "emptyReadOnly": "No teeth assigned in this plan yet.",
+      "dentition": {
+        "permanent": "Permanent",
+        "primary": "Primary"
+      },
+      "statuses": {
+        "planned": "Planned",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "pending": "Pending",
+        "scheduled": "Scheduled",
+        "cancelled": "Cancelled"
+      },
+      "categories": {
+        "restorative": "Restorative",
+        "extraction": "Extraction / Surgical",
+        "endodontic": "Endodontic",
+        "prosthetic": "Prosthetic",
+        "preventive": "Preventive",
+        "orthodontic": "Orthodontic",
+        "other": "Other"
+      },
+      "table": {
+        "tooth": "Tooth #",
+        "procedures": "Procedure(s)",
+        "status": "Status"
+      }
     }
   },
   "superAdmin": {

@@ -2757,6 +2757,41 @@
       "title": "Bemorni bir necha soniyada qoʻshing",
       "desc": "Yangi bemor qoʻshing va uning qabulini bitta oqimda band qiling yoki boshlang.",
       "cta": "Yangi bemor · Yangi qabul"
+    },
+    "toothChart": {
+      "title": "Tish kartasi",
+      "fdi": "FDI / ISO-3950",
+      "tooth": "Tish",
+      "procedure": "Muolaja",
+      "noProcedures": "Avval rejaga muolaja qo'shing.",
+      "empty": "Muolaja biriktirish uchun tishni bosing.",
+      "emptyReadOnly": "Bu rejada hali tish belgilanmagan.",
+      "dentition": {
+        "permanent": "Doimiy",
+        "primary": "Sut tishlari"
+      },
+      "statuses": {
+        "planned": "Rejalashtirilgan",
+        "in_progress": "Jarayonda",
+        "completed": "Bajarilgan",
+        "pending": "Kutilmoqda",
+        "scheduled": "Belgilangan",
+        "cancelled": "Bekor qilingan"
+      },
+      "categories": {
+        "restorative": "Terapevtik",
+        "extraction": "Olib tashlash / Jarrohlik",
+        "endodontic": "Endodontiya",
+        "prosthetic": "Protezlash",
+        "preventive": "Profilaktika",
+        "orthodontic": "Ortodontiya",
+        "other": "Boshqa"
+      },
+      "table": {
+        "tooth": "Tish №",
+        "procedures": "Muolajalar",
+        "status": "Holat"
+      }
     }
   },
   "superAdmin": {

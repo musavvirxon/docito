@@ -1,0 +1,315 @@
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PERMANENT_TEETH, PRIMARY_TEETH } from "./types";
+
+export type DentitionType = "permanent" | "primary";
+
+export interface ToothChartProcedure {
+  id: string;
+  tooth_numbers?: number[] | null;
+  status: string;
+  procedure?: { name?: string | null; category?: string | null } | null;
+}
+
+interface Props {
+  planId: string;
+  dentitionType: DentitionType;
+  procedures: ToothChartProcedure[];
+  readOnly?: boolean;
+  onChanged?: () => void;
+}
+
+/** 6 chart buckets + fallback, mapped from free-text procedure categories. */
+const CATEGORY_BUCKETS: { key: string; token: string; match: string[] }[] = [
+  { key: "restorative", token: "--dtc-1", match: ["restor", "filling", "composite", "bond"] },
+  { key: "extraction", token: "--dtc-2", match: ["extract", "surg", "implant"] },
+  { key: "endodontic", token: "--dtc-3", match: ["endo", "root", "pulp"] },
+  { key: "prosthetic", token: "--dtc-4", match: ["prosth", "crown", "bridge", "denture", "veneer"] },
+  { key: "preventive", token: "--dtc-5", match: ["prevent", "hygien", "seal", "fluor", "scal", "clean", "perio"] },
+  { key: "orthodontic", token: "--dtc-6", match: ["ortho", "brace", "align"] },
+];
+
+const OTHER_TOKEN = "--dtc-7";
+
+export function bucketForCategory(category?: string | null): { key: string; token: string } {
+  const c = String(category ?? "").toLowerCase();
+  const hit = CATEGORY_BUCKETS.find((b) => b.match.some((m) => c.includes(m)));
+  return hit ? { key: hit.key, token: hit.token } : { key: "other", token: OTHER_TOKEN };
+}
+
+const PROC_STATUSES = ["planned", "in_progress", "completed"];
+
+/** Gentle arch offset (px) for a tooth by its index inside a row. */
+const archOffset = (index: number, total: number) => {
+  const mid = (total - 1) / 2;
+  const norm = Math.abs(index - mid) / mid;
+  return Math.round(norm * norm * 14);
+};
+
+const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, onChanged }: Props) => {
+  const { t } = useTranslation("dashboard");
+  const [busy, setBusy] = useState(false);
+  const [dentition, setDentition] = useState<DentitionType>(dentitionType);
+
+  const set = dentition === "primary" ? PRIMARY_TEETH : PERMANENT_TEETH;
+  const upper = [...set.upperRight, ...set.upperLeft];
+  const lower = [...set.lowerRight, ...set.lowerLeft].sort((a, b) => b - a);
+
+  const byTooth = useMemo(() => {
+    const map = new Map<number, ToothChartProcedure[]>();
+    for (const p of procedures) {
+      for (const n of p.tooth_numbers ?? []) {
+        map.set(n, [...(map.get(n) ?? []), p]);
+      }
+    }
+    return map;
+  }, [procedures]);
+
+  const usedBuckets = useMemo(() => {
+    const keys = new Set<string>();
+    for (const list of byTooth.values()) {
+      for (const p of list) keys.add(bucketForCategory(p.procedure?.category).key);
+    }
+    return keys;
+  }, [byTooth]);
+
+  const changeDentition = async (next: DentitionType) => {
+    setDentition(next);
+    const { error } = await (supabase as any)
+      .from("treatment_plans")
+      .update({ dentition_type: next })
+      .eq("id", planId);
+    if (error) toast.error(error.message);
+    else onChanged?.();
+  };
+
+  const toggleTooth = async (proc: ToothChartProcedure, tooth: number) => {
+    if (readOnly) return;
+    setBusy(true);
+    const current = proc.tooth_numbers ?? [];
+    const next = current.includes(tooth)
+      ? current.filter((n) => n !== tooth)
+      : [...current, tooth].sort((a, b) => a - b);
+    const { error } = await supabase
+      .from("treatment_plan_procedures")
+      .update({ tooth_numbers: next })
+      .eq("id", proc.id);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else onChanged?.();
+  };
+
+  const changeStatus = async (proc: ToothChartProcedure, status: string) => {
+    if (readOnly) return;
+    setBusy(true);
+    const { error } = await supabase
+      .from("treatment_plan_procedures")
+      .update({ status })
+      .eq("id", proc.id);
+    setBusy(false);
+    if (error) toast.error(error.message);
+    else onChanged?.();
+  };
+
+  const renderTooth = (n: number, index: number, total: number, row: "upper" | "lower") => {
+    const assigned = byTooth.get(n) ?? [];
+    const first = assigned[0];
+    const token = first ? bucketForCategory(first.procedure?.category).token : null;
+    const offset = archOffset(index, total) * (row === "upper" ? 1 : -1);
+
+    const chip = (
+      <button
+        type="button"
+        disabled={readOnly && assigned.length === 0}
+        style={{
+          transform: `translateY(${offset}px)`,
+          backgroundColor: token ? `hsl(var(${token}) / 0.18)` : undefined,
+          borderColor: token ? `hsl(var(${token}))` : undefined,
+          color: token ? `hsl(var(${token}))` : undefined,
+        }}
+        className="relative h-9 w-9 shrink-0 rounded-xl border border-border bg-background text-xs font-semibold transition-colors hover:border-primary disabled:cursor-default sm:h-10 sm:w-10"
+        aria-label={`${t("doctor.toothChart.tooth", "Tooth")} ${n}`}
+      >
+        {n}
+        {assigned.length > 1 && (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+            {assigned.length}
+          </span>
+        )}
+      </button>
+    );
+
+    if (readOnly && assigned.length === 0) return <div key={n}>{chip}</div>;
+
+    return (
+      <Popover key={n}>
+        <PopoverTrigger asChild>{chip}</PopoverTrigger>
+        <PopoverContent className="w-72 p-3" align="center">
+          <p className="mb-2 text-sm font-semibold">
+            {t("doctor.toothChart.tooth", "Tooth")} {n}
+          </p>
+          {procedures.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {t("doctor.toothChart.noProcedures", "Add a procedure to this plan first.")}
+            </p>
+          ) : (
+            <div className="max-h-64 space-y-3 overflow-y-auto">
+              {procedures.map((p) => {
+                const checked = (p.tooth_numbers ?? []).includes(n);
+                if (readOnly && !checked) return null;
+                return (
+                  <div key={p.id} className="space-y-1.5 rounded-lg border border-border/60 p-2">
+                    <label className="flex items-start gap-2 text-sm">
+                      <Checkbox
+                        checked={checked}
+                        disabled={readOnly || busy}
+                        onCheckedChange={() => toggleTooth(p, n)}
+                        className="mt-0.5"
+                      />
+                      <span>{p.procedure?.name || t("doctor.toothChart.procedure", "Procedure")}</span>
+                    </label>
+                    {checked && (
+                      <Select
+                        value={PROC_STATUSES.includes(p.status) ? p.status : "planned"}
+                        disabled={readOnly || busy}
+                        onValueChange={(v) => changeStatus(p, v)}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PROC_STATUSES.map((s) => (
+                            <SelectItem key={s} value={s} className="text-xs">
+                              {t(`doctor.toothChart.statuses.${s}`, s)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  const rows = useMemo(() => {
+    const out: { tooth: number; items: ToothChartProcedure[] }[] = [];
+    for (const [tooth, items] of byTooth.entries()) out.push({ tooth, items });
+    return out.sort((a, b) => a.tooth - b.tooth);
+  }, [byTooth]);
+
+  return (
+    <Card className="rounded-2xl">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 pb-3">
+        <CardTitle className="text-base">
+          {t("doctor.toothChart.title", "Tooth chart")}{" "}
+          <span className="text-xs font-normal text-muted-foreground">
+            {t("doctor.toothChart.fdi", "FDI / ISO-3950")}
+          </span>
+        </CardTitle>
+        {!readOnly && (
+          <div className="flex rounded-xl border border-border p-0.5">
+            {(["permanent", "primary"] as DentitionType[]).map((d) => (
+              <Button
+                key={d}
+                type="button"
+                size="sm"
+                variant={dentition === d ? "default" : "ghost"}
+                className="h-7 rounded-lg px-3 text-xs"
+                onClick={() => changeDentition(d)}
+              >
+                {t(`doctor.toothChart.dentition.${d}`, d)}
+              </Button>
+            ))}
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="overflow-x-auto rounded-[2rem] border border-border/60 bg-muted/20 px-3 py-6">
+          <div className="mx-auto w-max space-y-6">
+            <div className="flex items-end gap-1.5">
+              {upper.map((n, i) => (
+                <div key={n} className={i === upper.length / 2 ? "ml-4" : undefined}>
+                  {renderTooth(n, i, upper.length, "upper")}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-start gap-1.5">
+              {lower.map((n, i) => (
+                <div key={n} className={i === lower.length / 2 ? "ml-4" : undefined}>
+                  {renderTooth(n, i, lower.length, "lower")}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="flex flex-wrap gap-3">
+          {[...CATEGORY_BUCKETS, { key: "other", token: OTHER_TOKEN, match: [] }].map((b) => (
+            <span
+              key={b.key}
+              className={`flex items-center gap-1.5 text-xs ${
+                usedBuckets.has(b.key) ? "text-foreground" : "text-muted-foreground/60"
+              }`}
+            >
+              <span
+                className="h-3 w-3 rounded-full border"
+                style={{ backgroundColor: `hsl(var(${b.token}) / 0.25)`, borderColor: `hsl(var(${b.token}))` }}
+              />
+              {t(`doctor.toothChart.categories.${b.key}`, b.key)}
+            </span>
+          ))}
+        </div>
+
+        {rows.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {readOnly
+              ? t("doctor.toothChart.emptyReadOnly", "No teeth assigned in this plan yet.")
+              : t("doctor.toothChart.empty", "Click a tooth to assign a procedure.")}
+          </p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-20">{t("doctor.toothChart.table.tooth", "Tooth #")}</TableHead>
+                <TableHead>{t("doctor.toothChart.table.procedures", "Procedure(s)")}</TableHead>
+                <TableHead className="w-40">{t("doctor.toothChart.table.status", "Status")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((r) => (
+                <TableRow key={r.tooth}>
+                  <TableCell className="font-medium">{r.tooth}</TableCell>
+                  <TableCell className="text-sm">
+                    {r.items.map((i) => i.procedure?.name || "—").join(", ")}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {r.items
+                      .map((i) => t(`doctor.toothChart.statuses.${i.status}`, i.status))
+                      .join(", ")}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default TreatmentPlanToothChart;

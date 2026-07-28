@@ -10366,6 +10366,7 @@ export type Database = {
       treatment_plans: {
         Row: {
           created_at: string | null
+          dentition_type: string
           doctor_id: string | null
           doctor_patient_id: string | null
           estimated_completion_date: string | null
@@ -10387,6 +10388,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          dentition_type?: string
           doctor_id?: string | null
           doctor_patient_id?: string | null
           estimated_completion_date?: string | null
@@ -10408,6 +10410,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          dentition_type?: string
           doctor_id?: string | null
           doctor_patient_id?: string | null
           estimated_completion_date?: string | null

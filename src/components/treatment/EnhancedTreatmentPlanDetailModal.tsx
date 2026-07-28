@@ -38,6 +38,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
+import TreatmentPlanToothChart, { type DentitionType } from "@/components/dental/TreatmentPlanToothChart";
 import { format } from "date-fns";
 import AddProcedureToPlanModal from "./AddProcedureToPlanModal";
 import MedicationManagementModal from "./MedicationManagementModal";
@@ -135,6 +138,9 @@ const EnhancedTreatmentPlanDetailModal = ({
   const [testsEnabled, setTestsEnabled] = useState(false);
   const [tests, setTests] = useState<TestItem[]>([]);
   const [savingSections, setSavingSections] = useState(false);
+  const [dentitionType, setDentitionType] = useState<DentitionType>("permanent");
+  const { profile } = useAuth();
+  const isDentist = isDentalSpecialty((profile as any)?.specialty);
 
   useEffect(() => {
     if (open) {
@@ -149,13 +155,14 @@ const EnhancedTreatmentPlanDetailModal = ({
     try {
       const { data, error } = await (supabase as any)
         .from("treatment_plans")
-        .select("medications, referrals, tests")
+        .select("medications, referrals, tests, dentition_type")
         .eq("id", treatmentPlan.id)
         .maybeSingle();
       if (error) throw error;
       const meds = Array.isArray(data?.medications) ? (data.medications as MedicationItem[]) : [];
       const refs = Array.isArray(data?.referrals) ? (data.referrals as ReferralItem[]) : [];
       const tsts = Array.isArray(data?.tests) ? (data.tests as TestItem[]) : [];
+      setDentitionType((data?.dentition_type === "primary" ? "primary" : "permanent") as DentitionType);
       setPlanMedications(meds);
       setReferrals(refs);
       setTests(tsts);
@@ -680,7 +687,18 @@ const EnhancedTreatmentPlanDetailModal = ({
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
+                  {isDentist && (
+                    <TreatmentPlanToothChart
+                      planId={treatmentPlan.id}
+                      dentitionType={dentitionType}
+                      procedures={procedures as any}
+                      onChanged={() => {
+                        fetchProcedures();
+                        fetchPlanSections();
+                      }}
+                    />
+                  )}
                   {procedures.length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-muted-foreground mb-4">No procedures added yet</p>

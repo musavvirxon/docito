@@ -1,81 +1,50 @@
-## Problem
+## Goal
 
-The Patients list mixes two overlapping data sources, so most patients render 2–4 times:
+Add an FDI tooth chart to the treatment plan view, visible only for dental doctors/clinics. Non-dental specialties see today's UI unchanged.
 
-- `useDoctorPatients` returns appointment-linked profiles **plus** all `doctor_patients` rows.
-- `useDoctorPatientsV2` also returns all `doctor_patients` rows.
-- `PatientListSection` concatenates both and tags one copy as "Appointment" and the other as "Added" — so the same person shows up under both labels.
+## What already exists (verified)
 
-The "Source" badge is also wrong: it's derived from which hook produced the row, not from whether the patient actually has appointments with this doctor. That's why manually created records show as "Appointment" and vice versa.
+- `src/lib/clinicalSpecialties.ts` → `isDentalSpecialty(specialty)`, already used in `EnhancedCreateTreatmentPlanModal`, `AppointmentSession`, `VisitPage`, etc. Reuse it — no new field needed.
+- `treatment_plan_procedures.tooth_numbers` is already `number[] | null` in the database — the line-item field the request asks for already exists.
+- FDI numbering already defined in `src/components/dental/types.ts` (`PERMANENT_TEETH`, `PRIMARY_TEETH`) and matches the tables in the request exactly.
+- `treatment_plans` has **no** `dentition_type` column — this must be added.
+- Doctor view: `src/components/treatment/EnhancedTreatmentPlanDetailModal.tsx` (procedures tab, table of line items). Patient view: `src/components/patient/PatientTreatmentPlanModal.tsx`.
+- Existing status badge colors in the plan use gray / blue / orange / green / yellow / red (`getStatusColor`), so the legend must avoid those hues.
 
-The database itself is mostly clean, but has a real duplicate:
-- Doctor `8fcfe750…`: two `doctor_patients` rows for `fdv / +97160170515` (`c3facf6b…` with 3 appointments, `d2de3019…` with 0). The zero-appointment duplicate should go.
+## Plan
 
-No rows are fully empty today, but the cleanup should also delete any `doctor_patients` row that has no name, phone, email, and DOB (defensive).
+**1. Database (one migration)**
+- Add `dentition_type text` to `public.treatment_plans`, default `'permanent'`, with a validation trigger or `CHECK` limiting values to `permanent` / `primary` (nullable-friendly, back-compatible).
+- No change needed to `tooth_numbers`; keep the existing array field as the per-line-item tooth assignment.
 
-## Fix
+**2. New component `src/components/dental/TreatmentPlanToothChart.tsx`**
+- Rounded/oval framed container; two rows of number-only chips (upper / lower), midline gap splitting quadrants, chips arranged along a gentle arch via a per-chip vertical offset (pure CSS translate, no SVG paths) — degrades to a clean two-row grid on narrow screens.
+- Renders **only** the dentition selected on the plan; never both.
+- Chip states: neutral (unassigned) vs filled with a category color when one or more plan line items include that tooth number. Multi-assignment shows a small count badge.
+- Clicking a chip opens a `Popover` listing that plan's procedure line items with checkboxes to assign/unassign the tooth, plus a status `Select` reusing the existing procedure status values (`planned` / `in_progress` / `completed`, same set used in the plan today).
+- Read-only mode prop for the patient view.
 
-### 1. One source of truth in the UI
+**3. Dentition selector**
+- Segmented control (Permanent / Primary) above the chart, written back to `treatment_plans.dentition_type`.
+- Default derived from patient DOB: under ~6 → primary, 13+ → permanent, in between → whatever is stored or permanent; always manually overridable.
 
-Refactor `src/components/doctor/patients/PatientListSection.tsx` to use **only** `useDoctorPatientsV2` (which reads `doctor_patients` directly). Drop the `useDoctorPatients` import here.
+**4. Legend + synced table**
+- 6 categories mapped from `procedures.category` (restorative / extraction / endodontic / prosthetic / preventive / orthodontic) with a fallback "other".
+- Colors added as new semantic tokens in `src/index.css` (teal, violet, cyan, fuchsia, lime, sky-deep family) so they don't collide with the existing status green/orange/red/blue/gray.
+- Below the chart: a `Tooth # | Procedure(s) | Status` table sorted by tooth number, derived from the same `procedures` state so it updates instantly with the chart.
+- Empty state: all neutral + hint "Click a tooth to assign a procedure."
 
-For each patient, compute `hasAppointments` by counting `appointments` where `doctor_patient_id = dp.id` (or `patient_id = dp.id` for legacy rows). Add a lightweight companion hook `useDoctorPatientAppointmentCounts(doctorId)` that returns a `Map<doctor_patient_id, number>` in one query, so we don't run N queries.
+**5. Wire into the views**
+- In `EnhancedTreatmentPlanDetailModal.tsx`: render the chart block at the top of the Procedures tab, gated by `isDentalSpecialty(profile?.specialty)` (same call pattern as `EnhancedCreateTreatmentPlanModal`). Assignments write `tooth_numbers` / `status` on `treatment_plan_procedures` and refresh local state so the existing cost table (`unit × teeth count`) stays correct.
+- In `PatientTreatmentPlanModal.tsx`: same chart, read-only, gated by the plan's doctor specialty.
 
-Derive the Source badge from that count:
-- `count > 0` → "Appointment" / Registered tab
-- `count === 0` → "Added" / Manually Added tab
+**6. i18n**
+- New keys under the existing `dashboard` namespace (`treatment.toothChart.*`) in `public/locales/en|ru|uz/dashboard.json`: dentition labels, legend category names, popover labels, statuses, empty-state hint, table headers. No hardcoded strings.
 
-Stats + tab counts recompute from the same single list. `handlePatientClick` always routes to the direct-patient view (`onSelectDirectPatient`) since every row is now a `doctor_patients` row.
+**7. PDF**
+- Extend `supabase/functions/treatment-plan-generate-pdf` to render the synced tooth table (Tooth # / Procedure / Status) when the plan is dental and has tooth assignments. Table form, not an image snapshot — reliable and printable. (The separate PDF download fix is not part of this plan.)
 
-`DoctorPatientsSection.tsx` and `useDoctorPatients.ts` are left in place (still used elsewhere, e.g. medical records), only the list screen switches.
+## Notes
 
-### 2. Database cleanup (one migration)
-
-Delete `doctor_patients` rows that are either:
-1. Truly empty — no `full_name`, `phone`, `email`, `date_of_birth`.
-2. Duplicates within the same `doctor_id` grouped by normalized `(phone, lower(full_name))`, keeping the row with the most appointments (tiebreak: oldest `created_at`). All references (`appointments.doctor_patient_id`, `tooth_procedure_history`, billing, etc.) are re-pointed to the kept row before deleting the losers.
-
-### Technical details
-
-```text
-useDoctorPatientsV2 (doctor_patients)
-        │
-        ▼
-useDoctorPatientAppointmentCounts  ──►  Map<id, apptCount>
-        │
-        ▼
-PatientListSection
-  type = apptCount > 0 ? 'appointment' : 'direct'
-```
-
-Migration outline:
-
-```sql
--- 1. Find duplicate groups
-WITH ranked AS (
-  SELECT id, doctor_id,
-    row_number() OVER (
-      PARTITION BY doctor_id, lower(coalesce(full_name,'')), coalesce(regexp_replace(phone,'\D','','g'),'')
-      ORDER BY (SELECT count(*) FROM appointments a WHERE a.doctor_patient_id = dp.id) DESC,
-               created_at ASC
-    ) AS rn
-  FROM doctor_patients dp
-  WHERE merged_into_user_id IS NULL
-    AND (full_name IS NOT NULL OR phone IS NOT NULL)
-)
--- 2. Repoint FKs from loser → winner, then delete losers
--- 3. Delete fully-empty rows
-DELETE FROM doctor_patients
-WHERE merged_into_user_id IS NULL
-  AND coalesce(nullif(trim(full_name),''), '') = ''
-  AND coalesce(nullif(trim(phone),''), '')     = ''
-  AND coalesce(nullif(trim(email),''), '')     = ''
-  AND date_of_birth IS NULL;
-```
-
-Known concrete duplicate to be resolved by the migration: `d2de3019-fc06-495c-828f-c11962b524c2` (fdv, 0 appts) folds into `c3facf6b-5b80-4b4e-b747-913bff7afb32` (fdv, 3 appts).
-
-## Out of scope
-
-- No changes to appointment booking, staff dashboard patient list, or medical-records fetching.
-- No visual redesign of the Patients section beyond fixing the Source badge.
+- Mixed dentition explicitly out of scope.
+- Tooth number sets come from the existing `PERMANENT_TEETH` / `PRIMARY_TEETH` constants, so numbering matches the request tables exactly and stays consistent with the rest of the app.

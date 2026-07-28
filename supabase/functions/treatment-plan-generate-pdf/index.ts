@@ -1606,6 +1606,64 @@ async function generateTreatmentPlanPdf(params: {
     y -= 6;
   }
 
+  // Per-tooth summary (dentists only) — mirrors the on-screen tooth chart table
+  if (params.isDentist) {
+    const perTooth = new Map<number, { names: string[]; statuses: string[] }>();
+    for (const p of params.procedures) {
+      for (const raw of p.toothNumbers || []) {
+        const n = (normalizeToothNumberToFdi(raw) ?? raw) as number;
+        if (n == null) continue;
+        const entry = perTooth.get(n) || { names: [], statuses: [] };
+        entry.names.push(safeText(p.name, "—"));
+        entry.statuses.push(safeText(p.status, "—"));
+        perTooth.set(n, entry);
+      }
+    }
+
+    if (perTooth.size) {
+      y -= 6;
+      drawSection("procedures");
+      const tableX = margin;
+      const totalW = W - margin * 2;
+      const cols = [70, 260, totalW - 70 - 260];
+      const heads = [t(params.locale, "toothNo"), t(params.locale, "procedure"), t(params.locale, "procedureStatus")];
+
+      ensureSpace(30);
+      page.drawRectangle({ x: tableX, y: y - 6, width: totalW, height: 18, color: accentLight });
+      let hx2 = tableX + 8;
+      for (let i = 0; i < heads.length; i++) {
+        page.drawText(formatForLocale(params.locale, heads[i]), { x: hx2, y, size: 8.5, font, color: accentColor });
+        hx2 += cols[i];
+      }
+      y -= 22;
+
+      const sorted = [...perTooth.entries()].sort((a, b) => a[0] - b[0]);
+      for (let i = 0; i < sorted.length; i++) {
+        const [tooth, entry] = sorted[i];
+        ensureSpace(24);
+        if (i % 2 === 1) {
+          page.drawRectangle({ x: tableX, y: y - 6, width: totalW, height: 18, color: rowAlt });
+        }
+        const cells = [String(tooth), entry.names.join(", "), entry.statuses.join(", ")];
+        let rx2 = tableX + 8;
+        for (let ci = 0; ci < cells.length; ci++) {
+          const txt = formatForLocale(params.locale, cells[ci]).slice(0, 110);
+          page.drawText(txt, { x: rx2, y, size: 8.5, font, color: ci === 0 ? accentColor : textDark });
+          rx2 += cols[ci];
+        }
+        y -= 18;
+      }
+
+      page.drawLine({
+        start: { x: margin, y: y + 10 },
+        end: { x: W - margin, y: y + 10 },
+        thickness: 0.8,
+        color: borderLight,
+      });
+      y -= 6;
+    }
+  }
+
   // Medications table
   y -= 6;
   drawSection("medications");
