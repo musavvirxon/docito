@@ -52,6 +52,8 @@ const SUPER_ADMIN_SECTIONS = [
   "dashboard",
   "blogStudio",
   "landingCMS",
+  "showcase",
+
   "feedback",
   "supportInbox",
   "ecosystem",
