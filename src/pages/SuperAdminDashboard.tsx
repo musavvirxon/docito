@@ -331,6 +331,23 @@ const SuperAdminDashboard = () => {
       case "landingCMS":
         return <LandingCMSSection />;
 
+      case "showcase":
+        return (
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h1 className="text-3xl font-bold text-foreground">Demo &amp; Pitch</h1>
+                <p className="text-muted-foreground">
+                  Manage the public /demo and /pitch pages: video, copy and downloadable files.
+                </p>
+              </div>
+              {dashboardToolbar}
+            </div>
+            <ShowcaseManager />
+          </div>
+        );
+
+
       case "feedback":
         return (
           <div className="space-y-6">
