@@ -61,8 +61,12 @@ export function useShowcaseAdmin(): ShowcaseAdminState {
   const savePage = useCallback(
     async (id: string, patch: Partial<ShowcasePage>) => {
       setBusy(true);
-      const { id: _ignored, ...rest } = patch as Record<string, unknown> & { id?: string };
-      const { error } = await supabase.from("showcase_pages").update(rest).eq("id", id);
+      const { id: _ignored, ...rest } = patch;
+      const { error } = await supabase
+        .from("showcase_pages")
+        .update(rest as never)
+        .eq("id", id);
+
       setBusy(false);
       if (error) return false;
       await refetch();
