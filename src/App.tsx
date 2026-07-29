@@ -33,6 +33,8 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
+const ShowcasePage = lazy(() => import("@/pages/ShowcasePage"));
+
 
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
