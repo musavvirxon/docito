@@ -40,6 +40,8 @@ const navItems = [
   { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "blogStudio", label: "Blog Studio", icon: BookOpenText },
   { id: "landingCMS", label: "Landing Page", icon: LayoutGrid },
+  { id: "showcase", label: "Demo & Pitch", icon: PlayCircle },
+
   { id: "feedback", label: "Feedback Inbox", icon: Inbox },
   { id: "supportInbox", label: "Support Inbox", icon: Inbox },
   { id: "ecosystem", label: "Ecosystem", icon: LayoutGrid },
