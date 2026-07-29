@@ -33,6 +33,8 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
+const ShowcasePage = lazy(() => import("@/pages/ShowcasePage"));
+
 
 const DoctorLandingPage = lazy(() => import("@/pages/doctor/DoctorLandingPage"));
 const DoctorPublicProfile = lazy(() => import("@/pages/doctor/DoctorPublicProfile"));
@@ -258,6 +260,9 @@ export default function App() {
                     <Route path="feedback" element={<FeedbackCenter />} />
                     <Route path="blog" element={<BlogIndex />} />
                     <Route path="blog/:slug" element={<BlogPost />} />
+                    <Route path="demo" element={<ShowcasePage slug="demo" />} />
+                    <Route path="pitch" element={<ShowcasePage slug="pitch" />} />
+
                   </Route>
 
                   <Route path="patient-dashboard" element={<PatientDashboard />} />
@@ -373,6 +378,9 @@ export default function App() {
                   <Route path="feedback" element={<FeedbackCenter />} />
                   <Route path="blog" element={<DefaultBlogIndexRedirect />} />
                   <Route path="blog/:slug" element={<DefaultBlogPostRedirect />} />
+                  <Route path="demo" element={<ShowcasePage slug="demo" />} />
+                  <Route path="pitch" element={<ShowcasePage slug="pitch" />} />
+
                 </Route>
 
                 <Route path="patient-dashboard" element={<PatientDashboard />} />
