@@ -47,6 +47,8 @@ import FinanceSourcesMapping from "@/components/super-admin/FinanceSourcesMappin
 import BlogStudioSection from "@/components/super-admin/blog/BlogStudioSection";
 import LandingCMSSection from "@/components/super-admin/LandingCMSSection";
 import SupportInbox from "@/components/super-admin/SupportInbox";
+import ShowcaseManager from "@/components/super-admin/ShowcaseManager";
+
 
 const SUPER_ADMIN_SECTIONS = [
   "dashboard",
