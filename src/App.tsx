@@ -378,6 +378,9 @@ export default function App() {
                   <Route path="feedback" element={<FeedbackCenter />} />
                   <Route path="blog" element={<DefaultBlogIndexRedirect />} />
                   <Route path="blog/:slug" element={<DefaultBlogPostRedirect />} />
+                  <Route path="demo" element={<ShowcasePage slug="demo" />} />
+                  <Route path="pitch" element={<ShowcasePage slug="pitch" />} />
+
                 </Route>
 
                 <Route path="patient-dashboard" element={<PatientDashboard />} />
