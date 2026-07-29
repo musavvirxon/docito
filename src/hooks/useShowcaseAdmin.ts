@@ -151,11 +151,12 @@ export function useShowcaseAdmin(): ShowcaseAdminState {
   const updateAsset = useCallback(
     async (id: string, patch: Partial<ShowcaseAsset>) => {
       setBusy(true);
-      const { id: _ignored, page_id: _pageId, ...rest } = patch as Record<string, unknown> & {
-        id?: string;
-        page_id?: string;
-      };
-      const { error } = await supabase.from("showcase_assets").update(rest).eq("id", id);
+      const { id: _ignored, page_id: _pageId, ...rest } = patch;
+      const { error } = await supabase
+        .from("showcase_assets")
+        .update(rest as never)
+        .eq("id", id);
+
       setBusy(false);
       if (error) return false;
       await refetch();
