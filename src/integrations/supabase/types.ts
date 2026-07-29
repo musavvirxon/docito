@@ -8803,6 +8803,113 @@ export type Database = {
           },
         ]
       }
+      showcase_assets: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_url: string | null
+          file_size: number | null
+          id: string
+          is_visible: boolean
+          kind: string
+          label: string
+          mime_type: string | null
+          page_id: string
+          sort_order: number
+          storage_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_url?: string | null
+          file_size?: number | null
+          id?: string
+          is_visible?: boolean
+          kind?: string
+          label?: string
+          mime_type?: string | null
+          page_id: string
+          sort_order?: number
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_url?: string | null
+          file_size?: number | null
+          id?: string
+          is_visible?: boolean
+          kind?: string
+          label?: string
+          mime_type?: string | null
+          page_id?: string
+          sort_order?: number
+          storage_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showcase_assets_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "showcase_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      showcase_pages: {
+        Row: {
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          description: string | null
+          id: string
+          is_published: boolean
+          poster_url: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          video_kind: string
+          video_storage_path: string | null
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          poster_url?: string | null
+          slug: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          video_kind?: string
+          video_storage_path?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          poster_url?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          video_kind?: string
+          video_storage_path?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       sms_notifications: {
         Row: {
           created_at: string | null
