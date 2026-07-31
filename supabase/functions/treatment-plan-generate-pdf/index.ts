@@ -2215,7 +2215,8 @@ serve(async (req: Request) => {
     proceduresRaw = [];
   }
 
-  // If any procedure row includes tooth numbers, treat this plan as dental context.
+  // Dental context: explicit dentition type on the plan, or any tooth-tagged procedure.
+  if (!doctorIsDentist && asString((plan as any)?.dentition_type)) doctorIsDentist = true;
   if (!doctorIsDentist) {
     try {
       doctorIsDentist = proceduresRaw.some((r) => Array.isArray((r as any)?.tooth_numbers) && ((r as any)?.tooth_numbers?.length || 0) > 0);
