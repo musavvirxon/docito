@@ -1621,8 +1621,76 @@ async function generateTreatmentPlanPdf(params: {
     }
 
     if (perTooth.size) {
+      // ── Visual FDI dental chart ─────────────────────────────────────────
+      const upper = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+      const lower = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+      const cellW = Math.min(26, (W - margin * 2) / 16);
+      const cellH = 26;
+      const chartW = cellW * 16;
+      const chartX = margin + ((W - margin * 2) - chartW) / 2;
+
+      y -= 6;
+      drawSection("dentalChart");
+      ensureSpace(cellH * 2 + 34);
+
+      const drawArch = (teeth: number[], topY: number) => {
+        for (let i = 0; i < teeth.length; i++) {
+          const tn = teeth[i];
+          const marked = perTooth.has(tn);
+          const x = chartX + i * cellW;
+          page.drawRectangle({
+            x,
+            y: topY - cellH,
+            width: cellW,
+            height: cellH,
+            color: marked ? accentLight : rgb(1, 1, 1),
+            borderColor: marked ? accentColor : borderLight,
+            borderWidth: marked ? 1.2 : 0.6,
+          });
+          const label = String(tn);
+          const lw = font.widthOfTextAtSize(label, 8);
+          page.drawText(label, {
+            x: x + (cellW - lw) / 2,
+            y: topY - cellH + 15,
+            size: 8,
+            font,
+            color: marked ? accentColor : textMuted,
+          });
+          if (marked) {
+            const cnt = String((perTooth.get(tn)?.names.length) || 0);
+            const cw = font.widthOfTextAtSize(cnt, 7);
+            page.drawText(cnt, {
+              x: x + (cellW - cw) / 2,
+              y: topY - cellH + 5,
+              size: 7,
+              font,
+              color: accentColor,
+            });
+          }
+        }
+      };
+
+      drawArch(upper, y);
+      // Midline separator between arches
+      page.drawLine({
+        start: { x: chartX, y: y - cellH - 3 },
+        end: { x: chartX + chartW, y: y - cellH - 3 },
+        thickness: 0.8,
+        color: borderLight,
+      });
+      drawArch(lower, y - cellH - 6);
+      y -= (cellH * 2 + 18);
+
+      // Legend
+      page.drawRectangle({ x: margin, y: y - 2, width: 10, height: 10, color: accentLight, borderColor: accentColor, borderWidth: 1 });
+      page.drawText(formatForLocale(params.locale, t(params.locale, "procedures")), {
+        x: margin + 16, y: y + 1, size: 8, font, color: textMuted,
+      });
+      y -= 12;
+
       y -= 6;
       drawSection("procedures");
+
       const tableX = margin;
       const totalW = W - margin * 2;
       const cols = [70, 260, totalW - 70 - 260];
