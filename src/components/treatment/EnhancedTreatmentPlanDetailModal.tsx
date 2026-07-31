@@ -39,7 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
+import { useIsDentist } from "@/hooks/useIsDentist";
 import TreatmentPlanToothChart, { type DentitionType } from "@/components/dental/TreatmentPlanToothChart";
 import { format } from "date-fns";
 import AddProcedureToPlanModal from "./AddProcedureToPlanModal";
@@ -140,7 +140,7 @@ const EnhancedTreatmentPlanDetailModal = ({
   const [savingSections, setSavingSections] = useState(false);
   const [dentitionType, setDentitionType] = useState<DentitionType>("permanent");
   const { profile } = useAuth();
-  const isDentist = isDentalSpecialty((profile as any)?.specialty);
+  const { isDentist } = useIsDentist((treatmentPlan as any)?.doctor_id);
 
   useEffect(() => {
     if (open) {

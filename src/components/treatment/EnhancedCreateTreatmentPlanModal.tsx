@@ -27,7 +27,7 @@ import { useDoctorProfile } from "@/hooks/useDoctorProfile";
 import PatientSelector from "@/components/patient/PatientSelector";
 import ToothSelector from "@/components/procedure/ToothSelector";
 import { EnhancedDentalChart } from "@/components/dental/EnhancedDentalChart";
-import { isDentalSpecialty } from "@/lib/clinicalSpecialties";
+import { useIsDentist } from "@/hooks/useIsDentist";
 import { cn } from "@/lib/utils";
 import {
   MedicationsSection,
@@ -170,7 +170,7 @@ const EnhancedCreateTreatmentPlanModal = ({
 
   const [holidayDates, setHolidayDates] = useState<Date[]>([]);
 
-  const isDentist = isDentalSpecialty(profile?.specialty);
+  const { isDentist } = useIsDentist();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -1031,8 +1031,8 @@ Please review and confirm the treatment plan in your dashboard.
                             cost: unitSafe,
                           }));
 
-                          // Reset tooth selection when switching procedure
-                          setSelectedTeeth([]);
+                          // Keep any teeth already selected — dentists can pick
+                          // teeth first or the procedure first, in any order.
                         }}
                       >
                         <SelectTrigger>
