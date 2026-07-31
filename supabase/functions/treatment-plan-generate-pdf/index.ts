@@ -1620,7 +1620,12 @@ async function generateTreatmentPlanPdf(params: {
       }
     }
 
-    if (perTooth.size) {
+    // Procedures not tied to a specific tooth (general / full-mouth)
+    const generalProcs = params.procedures.filter(
+      (p) => !(p.toothNumbers || []).length
+    );
+
+    if (perTooth.size || generalProcs.length) {
       // ── Visual FDI dental chart ─────────────────────────────────────────
       const upper = [18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
       const lower = [48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
@@ -1706,13 +1711,21 @@ async function generateTreatmentPlanPdf(params: {
       y -= 22;
 
       const sorted = [...perTooth.entries()].sort((a, b) => a[0] - b[0]);
-      for (let i = 0; i < sorted.length; i++) {
-        const [tooth, entry] = sorted[i];
+      const rows: Array<[string, string, string]> = sorted.map(([tooth, entry]) => [
+        String(tooth),
+        entry.names.join(", "),
+        entry.statuses.join(", "),
+      ]);
+      for (const p of generalProcs) {
+        rows.push(["—", safeText(p.name, "—"), safeText(p.status, "—")]);
+      }
+
+      for (let i = 0; i < rows.length; i++) {
         ensureSpace(24);
         if (i % 2 === 1) {
           page.drawRectangle({ x: tableX, y: y - 6, width: totalW, height: 18, color: rowAlt });
         }
-        const cells = [String(tooth), entry.names.join(", "), entry.statuses.join(", ")];
+        const cells = rows[i];
         let rx2 = tableX + 8;
         for (let ci = 0; ci < cells.length; ci++) {
           const txt = formatForLocale(params.locale, cells[ci]).slice(0, 110);
@@ -2202,7 +2215,8 @@ serve(async (req: Request) => {
     proceduresRaw = [];
   }
 
-  // If any procedure row includes tooth numbers, treat this plan as dental context.
+  // Dental context: explicit dentition type on the plan, or any tooth-tagged procedure.
+  if (!doctorIsDentist && asString((plan as any)?.dentition_type)) doctorIsDentist = true;
   if (!doctorIsDentist) {
     try {
       doctorIsDentist = proceduresRaw.some((r) => Array.isArray((r as any)?.tooth_numbers) && ((r as any)?.tooth_numbers?.length || 0) > 0);
