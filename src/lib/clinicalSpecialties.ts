@@ -1,4 +1,5 @@
 const DENTAL_SPECIALTY_KEYWORDS = [
+  // Latin
   "dent",
   "stomatolog",
   "orthodont",
@@ -12,12 +13,23 @@ const DENTAL_SPECIALTY_KEYWORDS = [
   "maxillofacial",
   "omfs",
   "dentoalveolar",
+  // Uzbek
+  "tish",
+  "ortodont",
+  // Cyrillic (ru/uz)
+  "стоматолог",
+  "стоматологи",
+  "ортодонт",
+  "зубн",
+  "зуб",
+  "челюстно",
 ];
 
 export function isDentalSpecialty(specialty: string | null | undefined): boolean {
+  // Keep unicode letters (Cyrillic etc.) — only collapse punctuation/whitespace.
   const normalized = String(specialty ?? "")
     .toLowerCase()
-    .replace(/[^a-z\s/-]/g, " ")
+    .replace(/[_\-/.,()]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
