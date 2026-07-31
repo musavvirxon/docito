@@ -1711,13 +1711,21 @@ async function generateTreatmentPlanPdf(params: {
       y -= 22;
 
       const sorted = [...perTooth.entries()].sort((a, b) => a[0] - b[0]);
-      for (let i = 0; i < sorted.length; i++) {
-        const [tooth, entry] = sorted[i];
+      const rows: Array<[string, string, string]> = sorted.map(([tooth, entry]) => [
+        String(tooth),
+        entry.names.join(", "),
+        entry.statuses.join(", "),
+      ]);
+      for (const p of generalProcs) {
+        rows.push(["—", safeText(p.name, "—"), safeText(p.status, "—")]);
+      }
+
+      for (let i = 0; i < rows.length; i++) {
         ensureSpace(24);
         if (i % 2 === 1) {
           page.drawRectangle({ x: tableX, y: y - 6, width: totalW, height: 18, color: rowAlt });
         }
-        const cells = [String(tooth), entry.names.join(", "), entry.statuses.join(", ")];
+        const cells = rows[i];
         let rx2 = tableX + 8;
         for (let ci = 0; ci < cells.length; ci++) {
           const txt = formatForLocale(params.locale, cells[ci]).slice(0, 110);
