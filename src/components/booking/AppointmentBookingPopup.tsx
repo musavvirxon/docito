@@ -642,6 +642,24 @@ export function AppointmentBookingPopup({
               />
             </div>
 
+            {!canBook && (
+              <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
+                <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{t("requirePhone.title", "Add your phone number")}</p>
+                  <p className="text-muted-foreground">
+                    {t(
+                      "requirePhone.description",
+                      "A phone number is required so the clinic can reach you about this appointment."
+                    )}
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => setPhoneDialogOpen(true)}>
+                    {t("requirePhone.add", "Add phone number")}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2 pt-2">
               <Button
                 variant="outline"
