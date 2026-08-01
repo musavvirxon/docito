@@ -55,7 +55,11 @@ export default function RequirePhoneDialog({ open, onOpenChange, fields, onSaved
 
     setSaving(true);
     try {
-      const payload: Record<string, string | null> = { phone: validation.normalized };
+      const payload: {
+        phone: string;
+        date_of_birth?: string;
+        address?: string;
+      } = { phone: validation.normalized };
       if (dob.trim()) payload.date_of_birth = dob.trim();
       if (address.trim()) payload.address = address.trim();
 
