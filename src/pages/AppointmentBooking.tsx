@@ -791,7 +791,7 @@ export default function AppointmentBooking() {
             {!hasRequiredProfile && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>{t("requirePhone.title", "Add your phone number")}</AlertTitle>
+                <AlertTitle>{t("booking:requirePhone.title", "Add your phone number")}</AlertTitle>
                 <AlertDescription className="space-y-2">
                   <p>
                     {t(
@@ -800,7 +800,7 @@ export default function AppointmentBooking() {
                     )}
                   </p>
                   <Button size="sm" variant="outline" onClick={() => setPhoneDialogOpen(true)}>
-                    {t("requirePhone.add", "Add phone number")}
+                    {t("booking:requirePhone.add", "Add phone number")}
                   </Button>
                 </AlertDescription>
               </Alert>
