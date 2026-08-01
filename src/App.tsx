@@ -57,6 +57,7 @@ const AppointmentBooking = lazy(() => import("@/pages/AppointmentBooking"));
 const BookingConfirmation = lazy(() => import("@/pages/BookingConfirmation"));
 
 const PatientDashboard = lazy(() => import("@/pages/PatientDashboard"));
+const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
 const DoctorDashboard = lazy(() => import("@/pages/DoctorDashboard"));
 const DoctorSignUp = lazy(() => import("@/pages/DoctorSignUp"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
@@ -267,6 +268,7 @@ export default function App() {
 
                   <Route path="patient-dashboard" element={<PatientDashboard />} />
                   <Route path="patient/dashboard" element={<PatientDashboard />} />
+                  <Route path="patient/profile" element={<PatientProfile />} />
                   <Route path="doctor-dashboard" element={<DoctorDashboard />} />
                   <Route path="doctor/dashboard" element={<DoctorDashboard />} />
                   <Route path="doctor/schedule" element={<DoctorScheduleSettings />} />
@@ -385,6 +387,7 @@ export default function App() {
 
                 <Route path="patient-dashboard" element={<PatientDashboard />} />
                 <Route path="patient/dashboard" element={<PatientDashboard />} />
+                <Route path="patient/profile" element={<PatientProfile />} />
                 <Route path="doctor-dashboard" element={<DoctorDashboard />} />
                 <Route path="doctor/dashboard" element={<DoctorDashboard />} />
                 <Route path="doctor/schedule" element={<DoctorScheduleSettings />} />
