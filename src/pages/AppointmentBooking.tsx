@@ -84,7 +84,7 @@ const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
 };
 
 export default function AppointmentBooking() {
-  const { t } = useTranslation(['common', 'dashboard']);
+  const { t } = useTranslation(['common', 'dashboard', 'booking']);
   const { doctorId: doctorSlug } = useParams();
   const navigate = useNavigate();
   const { format: formatCurrency } = useCurrency();
