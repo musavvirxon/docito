@@ -33,6 +33,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useProfileCompleteness } from "@/hooks/useProfileCompleteness";
+import RequirePhoneDialog from "@/components/booking/RequirePhoneDialog";
 
 interface AppointmentBookingPopupProps {
   open: boolean;
@@ -87,6 +89,8 @@ export function AppointmentBookingPopup({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [step, setStep] = useState<"date" | "time" | "confirm" | "success">("date");
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const { fields: profileFields, canBook, refresh: refreshCompleteness } = useProfileCompleteness();
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [workingDays, setWorkingDays] = useState<Record<string, boolean>>({});
 
@@ -281,6 +285,12 @@ export function AppointmentBookingPopup({
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
+
+    // Hard requirement: the patient must have a valid phone number on file.
+    if (!canBook) {
+      setPhoneDialogOpen(true);
+      return;
+    }
 
     // Fallback: embed requested procedure into notes so doctor still sees it
     const composedNotes = [
