@@ -381,7 +381,7 @@ export default function AppointmentBooking() {
     }
 
     // Hard requirement: valid phone number on file before booking.
-    if (!canBook) {
+    if (!hasRequiredProfile) {
       setPhoneDialogOpen(true);
       return;
     }
