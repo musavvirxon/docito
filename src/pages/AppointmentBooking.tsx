@@ -99,6 +99,8 @@ export default function AppointmentBooking() {
   const [loadingDoctor, setLoadingDoctor] = useState(true);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [booking, setBooking] = useState(false);
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const { fields: profileFields, canBook, refresh: refreshCompleteness } = useProfileCompleteness();
 
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
