@@ -33,6 +33,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { resolveDoctorIdFromSlug, isUuid } from "@/lib/doctorSlug";
+import { useProfileCompleteness } from "@/hooks/useProfileCompleteness";
+import RequirePhoneDialog from "@/components/booking/RequirePhoneDialog";
 
 type DoctorInfo = {
   id: string;
@@ -375,6 +377,13 @@ export default function AppointmentBooking() {
       navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorSlug}`)}`);
       return;
     }
+
+    // Hard requirement: valid phone number on file before booking.
+    if (!canBook) {
+      setPhoneDialogOpen(true);
+      return;
+    }
+
 
     setBooking(true);
     try {
