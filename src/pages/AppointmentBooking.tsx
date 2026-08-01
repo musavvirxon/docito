@@ -795,7 +795,7 @@ export default function AppointmentBooking() {
                 <AlertDescription className="space-y-2">
                   <p>
                     {t(
-                      "requirePhone.description",
+                      "booking:requirePhone.description",
                       "A phone number is required so the clinic can reach you about this appointment."
                     )}
                   </p>
