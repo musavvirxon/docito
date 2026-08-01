@@ -788,6 +788,24 @@ export default function AppointmentBooking() {
               placeholder="Optional: describe your symptoms, history, or questions"
             />
 
+            {!hasRequiredProfile && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>{t("requirePhone.title", "Add your phone number")}</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>
+                    {t(
+                      "requirePhone.description",
+                      "A phone number is required so the clinic can reach you about this appointment."
+                    )}
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => setPhoneDialogOpen(true)}>
+                    {t("requirePhone.add", "Add phone number")}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="flex justify-end">
               <Button onClick={handleBook} disabled={!canBook}>
                 {booking ? (
@@ -803,6 +821,14 @@ export default function AppointmentBooking() {
           </CardContent>
         </Card>
       </div>
+
+      <RequirePhoneDialog
+        open={phoneDialogOpen}
+        onOpenChange={setPhoneDialogOpen}
+        fields={profileFields}
+        onSaved={() => refreshCompleteness()}
+      />
     </main>
+
   );
 }
