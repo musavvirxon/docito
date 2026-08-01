@@ -712,6 +712,13 @@ export function AppointmentBookingPopup({
           </div>
         )}
       </DialogContent>
+
+      <RequirePhoneDialog
+        open={phoneDialogOpen}
+        onOpenChange={setPhoneDialogOpen}
+        fields={profileFields}
+        onSaved={() => refreshCompleteness()}
+      />
     </Dialog>
   );
 }
