@@ -33,6 +33,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useProfileCompleteness } from "@/hooks/useProfileCompleteness";
+import RequirePhoneDialog from "@/components/booking/RequirePhoneDialog";
 
 interface AppointmentBookingPopupProps {
   open: boolean;
@@ -87,6 +89,8 @@ export function AppointmentBookingPopup({
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [step, setStep] = useState<"date" | "time" | "confirm" | "success">("date");
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const { fields: profileFields, canBook, refresh: refreshCompleteness } = useProfileCompleteness();
   const [blockedDates, setBlockedDates] = useState<Date[]>([]);
   const [workingDays, setWorkingDays] = useState<Record<string, boolean>>({});
 
@@ -281,6 +285,12 @@ export function AppointmentBookingPopup({
 
   const handleConfirmBooking = async () => {
     if (!selectedSlot) return;
+
+    // Hard requirement: the patient must have a valid phone number on file.
+    if (!canBook) {
+      setPhoneDialogOpen(true);
+      return;
+    }
 
     // Fallback: embed requested procedure into notes so doctor still sees it
     const composedNotes = [
@@ -632,6 +642,24 @@ export function AppointmentBookingPopup({
               />
             </div>
 
+            {!canBook && (
+              <div className="flex items-start gap-3 p-3 rounded-lg border bg-muted/30">
+                <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <div className="space-y-2 text-sm">
+                  <p className="font-medium">{t("requirePhone.title", "Add your phone number")}</p>
+                  <p className="text-muted-foreground">
+                    {t(
+                      "requirePhone.description",
+                      "A phone number is required so the clinic can reach you about this appointment."
+                    )}
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => setPhoneDialogOpen(true)}>
+                    {t("requirePhone.add", "Add phone number")}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2 pt-2">
               <Button
                 variant="outline"
@@ -684,6 +712,13 @@ export function AppointmentBookingPopup({
           </div>
         )}
       </DialogContent>
+
+      <RequirePhoneDialog
+        open={phoneDialogOpen}
+        onOpenChange={setPhoneDialogOpen}
+        fields={profileFields}
+        onSaved={() => refreshCompleteness()}
+      />
     </Dialog>
   );
 }

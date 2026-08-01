@@ -33,6 +33,8 @@ import { useCurrency } from "@/hooks/useCurrency";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { resolveDoctorIdFromSlug, isUuid } from "@/lib/doctorSlug";
+import { useProfileCompleteness } from "@/hooks/useProfileCompleteness";
+import RequirePhoneDialog from "@/components/booking/RequirePhoneDialog";
 
 type DoctorInfo = {
   id: string;
@@ -82,7 +84,7 @@ const isSameMinuteOrPast = (isoLocal: string, nowMs: number) => {
 };
 
 export default function AppointmentBooking() {
-  const { t } = useTranslation(['common', 'dashboard']);
+  const { t } = useTranslation(['common', 'dashboard', 'booking']);
   const { doctorId: doctorSlug } = useParams();
   const navigate = useNavigate();
   const { format: formatCurrency } = useCurrency();
@@ -97,6 +99,8 @@ export default function AppointmentBooking() {
   const [loadingDoctor, setLoadingDoctor] = useState(true);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [booking, setBooking] = useState(false);
+  const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+  const { fields: profileFields, canBook: hasRequiredProfile, refresh: refreshCompleteness } = useProfileCompleteness();
 
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [durationMinutes, setDurationMinutes] = useState<number>(30);
@@ -375,6 +379,13 @@ export default function AppointmentBooking() {
       navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorSlug}`)}`);
       return;
     }
+
+    // Hard requirement: valid phone number on file before booking.
+    if (!hasRequiredProfile) {
+      setPhoneDialogOpen(true);
+      return;
+    }
+
 
     setBooking(true);
     try {
@@ -777,6 +788,24 @@ export default function AppointmentBooking() {
               placeholder="Optional: describe your symptoms, history, or questions"
             />
 
+            {!hasRequiredProfile && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>{t("booking:requirePhone.title", "Add your phone number")}</AlertTitle>
+                <AlertDescription className="space-y-2">
+                  <p>
+                    {t(
+                      "booking:requirePhone.description",
+                      "A phone number is required so the clinic can reach you about this appointment."
+                    )}
+                  </p>
+                  <Button size="sm" variant="outline" onClick={() => setPhoneDialogOpen(true)}>
+                    {t("booking:requirePhone.add", "Add phone number")}
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <div className="flex justify-end">
               <Button onClick={handleBook} disabled={!canBook}>
                 {booking ? (
@@ -792,6 +821,14 @@ export default function AppointmentBooking() {
           </CardContent>
         </Card>
       </div>
+
+      <RequirePhoneDialog
+        open={phoneDialogOpen}
+        onOpenChange={setPhoneDialogOpen}
+        fields={profileFields}
+        onSaved={() => refreshCompleteness()}
+      />
     </main>
+
   );
 }
