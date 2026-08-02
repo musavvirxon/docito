@@ -36,6 +36,8 @@ import {
   MonitorPlay,
   X,
   ExternalLink,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,6 +55,12 @@ interface VideoRoomProps {
 
 const SESSION_MAX_SECONDS = 3600; // 1 hour auto-close
 const WARN_AT_SECONDS = 300; // 5-minute warning
+
+/* Picture-in-picture tile sizing (px, width; height follows 16:9) */
+const DEFAULT_TILE_WIDTH = 208;
+const MIN_TILE_WIDTH = 110;
+const MAX_TILE_WIDTH = 520;
+const TILE_PREFS_KEY = 'docito.videoRoom.tilePrefs';
 
 
 type Status = 'idle' | 'connecting' | 'connected' | 'error' | 'disconnected';
@@ -146,6 +154,31 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [showSessionEndingBanner, setShowSessionEndingBanner] = useState(false);
   const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
   const [iframeBlocked, setIframeBlocked] = useState(false);
+
+  /* ---------- Tile sizing + self-view preferences (persisted) ---------- */
+  const stageRef = useRef<HTMLDivElement>(null);
+  const readTilePrefs = (): { widths?: Record<string, number>; hideSelf?: boolean } => {
+    try {
+      return JSON.parse(localStorage.getItem(TILE_PREFS_KEY) || '{}') || {};
+    } catch {
+      return {};
+    }
+  };
+  const [tileWidths, setTileWidths] = useState<Record<string, number>>(
+    () => readTilePrefs().widths || {},
+  );
+  const [hideSelfView, setHideSelfView] = useState<boolean>(() => Boolean(readTilePrefs().hideSelf));
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        TILE_PREFS_KEY,
+        JSON.stringify({ widths: tileWidths, hideSelf: hideSelfView }),
+      );
+    } catch {
+      /* noop */
+    }
+  }, [tileWidths, hideSelfView]);
 
 
   /* ---------- Slot mapping ---------- */
@@ -1001,7 +1034,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       )}
 
       {/* Stage — all 3 slots are positioned siblings, never re-mounted */}
-      <div className="flex-1 relative bg-black overflow-hidden">
+      <div ref={stageRef} className="flex-1 relative bg-black overflow-hidden">
         {slots.map((s) => renderSlot(s))}
 
         <div ref={audioContainer} className="hidden" />
@@ -1150,6 +1183,25 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
               <MessageSquare className="h-5 w-5" />
             </Button>
           )}
+
+          <Button
+            variant={hideSelfView ? 'secondary' : 'default'}
+            size="lg"
+            onClick={() => setHideSelfView((v) => !v)}
+            className="rounded-full h-12 w-12"
+            aria-label={
+              hideSelfView
+                ? t('videoConsultation.showSelfView', 'Show my camera')
+                : t('videoConsultation.hideSelfView', 'Hide my camera')
+            }
+            title={
+              hideSelfView
+                ? t('videoConsultation.showSelfView', 'Show my camera')
+                : t('videoConsultation.hideSelfView', 'Hide my camera')
+            }
+          >
+            {hideSelfView ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </Button>
 
           <Button
             variant="secondary"
