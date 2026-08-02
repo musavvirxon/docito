@@ -2634,11 +2634,7 @@
         "orthodontic": "Orthodontic",
         "other": "Other"
       },
-      "table": {
-        "tooth": "Tooth #",
-        "procedures": "Procedure(s)",
-        "status": "Status"
-      }
+      "general": "Full-mouth / general procedures"
     }
   },
   "superAdmin": {
@@ -3631,7 +3627,10 @@
       "unmuteMic": "Unmute microphone",
       "turnOffCam": "Turn off camera",
       "turnOnCam": "Turn on camera"
-    }
+    },
+    "resizeTile": "Resize tile",
+    "showSelfView": "Show my camera",
+    "hideSelfView": "Hide my camera"
   },
   "shell": {
     "footer": {

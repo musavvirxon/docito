@@ -2651,11 +2651,7 @@
         "orthodontic": "Ортодонтия",
         "other": "Другое"
       },
-      "table": {
-        "tooth": "Зуб №",
-        "procedures": "Процедуры",
-        "status": "Статус"
-      }
+      "general": "Общие процедуры (вся полость рта)"
     }
   },
   "superAdmin": {
@@ -3677,7 +3673,10 @@
       "unmuteMic": "Unmute microphone",
       "turnOffCam": "Turn off camera",
       "turnOnCam": "Turn on camera"
-    }
+    },
+    "resizeTile": "Изменить размер окна",
+    "showSelfView": "Показать мою камеру",
+    "hideSelfView": "Скрыть мою камеру"
   },
   "shell": {
     "footer": {
