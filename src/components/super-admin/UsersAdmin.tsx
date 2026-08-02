@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { listUsers, setUserRoles, disableUser, enableUser, type UserRow } from "@/lib/superadminApi";
+import { listUsers, setUserRoles, disableUser, enableUser, createUser, type UserRow } from "@/lib/superadminApi";
 
 type RolesMode = "replace" | "add" | "remove";
 
