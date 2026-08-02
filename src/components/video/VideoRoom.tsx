@@ -824,34 +824,86 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
 
   
-  const sideInfos = slots.filter((s) => s.id !== focusedSlot);
+  const localCameraSlot: SlotId = userRole === 'doctor' ? 'doctor-camera' : 'patient-camera';
 
-  // All 3 slots are siblings in ONE container so React never unmounts them
-  // when focus changes — only their CSS classes update. This is what stops
-  // the live stream from being "disturbed" on every UI action.
-  const slotPositionClass = (id: SlotId): string => {
-    const isFocused = id === focusedSlot;
-    if (isFocused) {
-      return 'absolute inset-2 md:right-[12rem] lg:right-[15rem] z-10';
+  // Side tiles: everything not focused, minus the local self-view when hidden.
+  const sideInfos = slots.filter(
+    (s) => s.id !== focusedSlot && !(hideSelfView && s.id === localCameraSlot),
+  );
+
+  const sideWidth = (id: SlotId) => tileWidths[id] ?? DEFAULT_TILE_WIDTH;
+  const sideHeight = (id: SlotId) => Math.round(sideWidth(id) * 0.5625);
+
+  const maxSideWidth = sideInfos.length
+    ? Math.max(...sideInfos.map((s) => sideWidth(s.id)))
+    : 0;
+
+  const sideTop = (id: SlotId) => {
+    let top = 8;
+    for (const s of sideInfos) {
+      if (s.id === id) break;
+      top += sideHeight(s.id) + 8;
     }
-    // Side strip (desktop): stacked top-right
-    const sideIndex = sideInfos.findIndex((s) => s.id === id);
-    return [
-      // Mobile: bottom row
-      `absolute md:hidden bottom-2 ${sideIndex === 0 ? 'left-2' : 'left-[9rem]'} w-32 aspect-video z-20 cursor-pointer`,
-      // Desktop side strip
-      `md:absolute md:bottom-auto md:left-auto md:w-40 lg:w-52 md:aspect-video md:right-2 md:cursor-pointer md:z-10`,
-      sideIndex === 0 ? 'md:top-2' : 'md:top-[calc(2rem+8rem)] lg:top-[calc(2rem+10rem)]',
-    ].join(' ');
+    return top;
   };
 
+  const startResize = (id: SlotId) => (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startW = sideWidth(id);
+    const stageW = stageRef.current?.clientWidth ?? 800;
+    const maxW = Math.max(MIN_TILE_WIDTH, Math.min(MAX_TILE_WIDTH, stageW - 160));
+    const move = (ev: PointerEvent) => {
+      // handle sits on the LEFT edge of the tile → dragging left grows it
+      const next = Math.round(Math.min(maxW, Math.max(MIN_TILE_WIDTH, startW + (startX - ev.clientX))));
+      setTileWidths((prev) => ({ ...prev, [id]: next }));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  // All 3 slots are siblings in ONE container so React never unmounts them
+  // when focus changes — only their CSS/inline styles update. This is what
+  // stops the live stream from being "disturbed" on every UI action.
   const renderSlot = (info: SlotInfo) => {
     const isFocused = info.id === focusedSlot;
+    const isHiddenSelf = hideSelfView && info.id === localCameraSlot && !isFocused;
+
+    const style: React.CSSProperties = isFocused
+      ? {
+          position: 'absolute',
+          top: 8,
+          bottom: 8,
+          left: 8,
+          right: maxSideWidth ? maxSideWidth + 16 : 8,
+          zIndex: 10,
+        }
+      : {
+          position: 'absolute',
+          right: 8,
+          top: sideTop(info.id),
+          width: sideWidth(info.id),
+          height: sideHeight(info.id),
+          zIndex: 20,
+          cursor: 'pointer',
+          visibility: isHiddenSelf ? 'hidden' : 'visible',
+          pointerEvents: isHiddenSelf ? 'none' : 'auto',
+        };
+
     return (
       <div
         key={info.id}
         onClick={() => !isFocused && setFocusedSlot(info.id)}
-        className={`${slotPositionClass(info.id)} bg-muted rounded-md overflow-hidden border border-border transition-all hover:border-primary/60`}
+        onDoubleClick={() =>
+          !isFocused && setTileWidths((prev) => ({ ...prev, [info.id]: DEFAULT_TILE_WIDTH }))
+        }
+        style={style}
+        className="bg-muted rounded-md overflow-hidden border border-border hover:border-primary/60"
       >
         <div
           ref={registerSlotNode(info.id)}
@@ -866,6 +918,18 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
             <span className="text-[10px] md:text-xs text-center">{info.emptyHint}</span>
           </div>
         )}
+        {!isFocused && !isHiddenSelf && (
+          <div
+            role="separator"
+            aria-label={t('videoConsultation.resizeTile', 'Resize tile')}
+            title={t('videoConsultation.resizeTile', 'Resize tile')}
+            onPointerDown={startResize(info.id)}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute left-0 top-0 bottom-0 z-30 w-3 cursor-ew-resize bg-gradient-to-r from-background/70 to-transparent flex items-center justify-center"
+          >
+            <span className="h-8 w-0.5 rounded-full bg-foreground/50" />
+          </div>
+        )}
         <div className="absolute bottom-1 left-1 right-1 flex items-center justify-between text-[10px] uppercase tracking-wide text-foreground/90 bg-background/60 backdrop-blur px-2 py-0.5 rounded">
           <span className="truncate">{info.label}</span>
           {info.id === 'doctor-screen' && info.hasTrack && (
@@ -875,6 +939,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       </div>
     );
   };
+
 
   return (
     <div
