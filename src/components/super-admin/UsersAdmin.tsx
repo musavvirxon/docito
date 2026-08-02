@@ -1,6 +1,6 @@
 // src/components/super-admin/UsersAdmin.tsx
 import { useEffect, useMemo, useState } from "react";
-import { Search, RefreshCw, UserCog, ShieldCheck, ShieldOff, Pencil } from "lucide-react";
+import { Search, RefreshCw, UserCog, ShieldCheck, ShieldOff, Pencil, UserPlus, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
