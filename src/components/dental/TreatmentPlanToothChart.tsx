@@ -248,11 +248,11 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
     );
   };
 
-  const rows = useMemo(() => {
-    const out: { tooth: number; items: ToothChartProcedure[] }[] = [];
-    for (const [tooth, items] of byTooth.entries()) out.push({ tooth, items });
-    return out.sort((a, b) => a.tooth - b.tooth);
-  }, [byTooth]);
+  const generalProcedures = useMemo(
+    () => procedures.filter((p) => !(p.tooth_numbers ?? []).length),
+    [procedures],
+  );
+
 
   return (
     <Card className="rounded-2xl">
