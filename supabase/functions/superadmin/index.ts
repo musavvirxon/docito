@@ -196,6 +196,118 @@ serve(async (req) => {
     }
 
     // =========================================================
+    // create_user (auth user + profile + roles) via service role
+    // =========================================================
+    if (action === "create_user") {
+      if (!serviceClient) return jsonResponse(500, { error: "Missing SUPABASE_SERVICE_ROLE_KEY" });
+
+      const email = String(body?.email || "").trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return jsonResponse(400, { error: "A valid email is required" });
+      }
+
+      const rolesIn = Array.isArray(body?.roles) ? body!.roles! : [];
+      const roles = uniq(rolesIn.map((r) => normalizeRole(r)).filter(Boolean)).slice(0, 10);
+      if (roles.length === 0) return jsonResponse(400, { error: "At least one account type is required" });
+
+      const fullName = String(body?.full_name || "").trim() || null;
+      const phone = String(body?.phone || "").trim() || null;
+
+      const generatedPassword =
+        `Dc${crypto.randomUUID().replace(/-/g, "").slice(0, 14)}!${Math.floor(Math.random() * 90 + 10)}`;
+      const rawPassword = String(body?.password || "").trim();
+      if (rawPassword && rawPassword.length < 8) {
+        return jsonResponse(400, { error: "Password must be at least 8 characters" });
+      }
+      const password = rawPassword || generatedPassword;
+
+      const primaryRole = roles.includes("doctor")
+        ? "doctor"
+        : roles.find((r) => r !== "patient") || roles[0];
+
+      const { data: created, error: createErr } = await serviceClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          user_type: primaryRole,
+          role: primaryRole,
+          created_by_super_admin: true,
+        },
+      });
+
+      if (createErr || !created?.user) {
+        return jsonResponse(400, { error: createErr?.message || "Failed to create user" });
+      }
+
+      const newUserId = created.user.id;
+
+      // Profile (trigger may already have created it)
+      const { error: profileErr } = await serviceClient
+        .from("profiles")
+        .upsert(
+          {
+            user_id: newUserId,
+            email,
+            full_name: fullName,
+            phone,
+          } as any,
+          { onConflict: "user_id" } as any
+        );
+      if (profileErr) {
+        await writeAudit({
+          action_type: "superadmin.create_user.profile_warning",
+          entity_type: "profiles",
+          entity_id: newUserId,
+          details: { message: profileErr.message },
+        });
+      }
+
+      // Roles: replace whatever the signup trigger assigned
+      await serviceClient.from("user_roles").delete().eq("user_id", newUserId);
+      const { error: rolesErr } = await serviceClient
+        .from("user_roles")
+        .insert(roles.map((r) => ({ user_id: newUserId, role: r })) as any);
+
+      if (rolesErr) {
+        await serviceClient.auth.admin.deleteUser(newUserId).catch(() => {});
+        return jsonResponse(400, { error: `Invalid account type: ${rolesErr.message}` });
+      }
+
+      if (roles.includes("doctor")) {
+        await serviceClient.rpc("ensure_doctor_row_for_profile", { p_user_id: newUserId }).catch(() => {});
+      }
+
+      let resetEmailSent = false;
+      if (body?.send_reset_email) {
+        const redirectTo = String(body?.redirect_to || "").trim() || undefined;
+        const { error: linkErr } = await serviceClient.auth.resetPasswordForEmail(email, {
+          redirectTo,
+        } as any);
+        resetEmailSent = !linkErr;
+      }
+
+      await writeAudit({
+        action_type: "superadmin.create_user",
+        entity_type: "auth.users",
+        entity_id: newUserId,
+        details: { email, roles, reset_email_sent: resetEmailSent },
+      });
+
+      return jsonResponse(200, {
+        ok: true,
+        user_id: newUserId,
+        email,
+        roles,
+        temp_password: rawPassword ? null : password,
+        reset_email_sent: resetEmailSent,
+      });
+    }
+
+
+
+    // =========================================================
     // list_users (profiles + user_roles) via service role
     // =========================================================
     if (action === "list_users") {
