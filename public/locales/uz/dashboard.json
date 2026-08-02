@@ -2787,11 +2787,7 @@
         "orthodontic": "Ortodontiya",
         "other": "Boshqa"
       },
-      "table": {
-        "tooth": "Tish №",
-        "procedures": "Muolajalar",
-        "status": "Holat"
-      }
+      "general": "Umumiy (butun og'iz) muolajalar"
     }
   },
   "superAdmin": {
@@ -3813,7 +3809,10 @@
       "unmuteMic": "Unmute microphone",
       "turnOffCam": "Turn off camera",
       "turnOnCam": "Turn on camera"
-    }
+    },
+    "resizeTile": "Oyna o'lchamini o'zgartirish",
+    "showSelfView": "Mening kameramni ko‘rsatish",
+    "hideSelfView": "Mening kameramni yashirish"
   },
   "shell": {
     "footer": {
