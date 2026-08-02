@@ -5,6 +5,7 @@ export type SuperAdminAction =
   | "ping"
   | "whoami"
   | "list_users"
+  | "create_user"
   | "set_user_roles"
   | "disable_user"
   | "enable_user"
@@ -13,6 +14,25 @@ export type SuperAdminAction =
   | "get_doctor_verification"
   | "approve_doctor_verification"
   | "reject_doctor_verification";
+
+export type CreateUserParams = {
+  email: string;
+  roles: string[];
+  full_name?: string | null;
+  phone?: string | null;
+  password?: string | null;
+  send_reset_email?: boolean;
+  redirect_to?: string | null;
+};
+
+export type CreateUserResponse = {
+  ok: boolean;
+  user_id: string;
+  email: string;
+  roles: string[];
+  temp_password: string | null;
+  reset_email_sent: boolean;
+};
 
 export type SuperAdminInvokeBody = Record<string, any> & { action: SuperAdminAction };
 
