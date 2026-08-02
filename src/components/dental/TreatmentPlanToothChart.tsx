@@ -125,12 +125,44 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
     const token = first ? bucketForCategory(first.procedure?.category).token : null;
     const offset = archOffset(index, total) * (row === "upper" ? 1 : -1);
 
-    const chip = (
+    // Procedure labels rendered directly above (upper arch) / below (lower arch)
+    // the tooth instead of a separate table.
+    const labels = (
+      <div
+        className={`flex w-14 flex-col items-center gap-0.5 sm:w-16 ${
+          row === "upper" ? "justify-end" : "justify-start"
+        }`}
+        style={{ minHeight: "2.6rem" }}
+      >
+        {assigned.slice(0, 2).map((p) => {
+          const bt = bucketForCategory(p.procedure?.category).token;
+          return (
+            <span
+              key={p.id}
+              title={`${p.procedure?.name ?? ""} — ${t(`doctor.toothChart.statuses.${p.status}`, p.status)}`}
+              className="w-full truncate rounded-md border px-1 py-[1px] text-center text-[9px] font-medium leading-tight"
+              style={{
+                backgroundColor: `hsl(var(${bt}) / 0.16)`,
+                borderColor: `hsl(var(${bt}))`,
+                color: `hsl(var(${bt}))`,
+                opacity: p.status === "completed" ? 0.65 : 1,
+              }}
+            >
+              {p.procedure?.name || t("doctor.toothChart.procedure", "Procedure")}
+            </span>
+          );
+        })}
+        {assigned.length > 2 && (
+          <span className="text-[9px] font-semibold text-muted-foreground">+{assigned.length - 2}</span>
+        )}
+      </div>
+    );
+
+    const chipButton = (
       <button
         type="button"
         disabled={readOnly && assigned.length === 0}
         style={{
-          transform: `translateY(${offset}px)`,
           backgroundColor: token ? `hsl(var(${token}) / 0.18)` : undefined,
           borderColor: token ? `hsl(var(${token}))` : undefined,
           color: token ? `hsl(var(${token}))` : undefined,
@@ -147,7 +179,19 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
       </button>
     );
 
+    const chip = (
+      <div
+        className="flex flex-col items-center"
+        style={{ transform: `translateY(${offset}px)` }}
+      >
+        {row === "upper" && labels}
+        {chipButton}
+        {row === "lower" && labels}
+      </div>
+    );
+
     if (readOnly && assigned.length === 0) return <div key={n}>{chip}</div>;
+
 
     return (
       <Popover key={n}>
