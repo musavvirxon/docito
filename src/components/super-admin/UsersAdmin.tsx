@@ -258,6 +258,17 @@ export default function UsersAdmin() {
                 <RefreshCw className={loading ? "w-4 h-4 animate-spin" : "w-4 h-4"} />
                 Search
               </Button>
+
+              <Button
+                className="gap-2"
+                onClick={() => {
+                  resetCreateForm();
+                  setCreateOpen(true);
+                }}
+              >
+                <UserPlus className="w-4 h-4" />
+                Add account
+              </Button>
             </div>
           </div>
 
