@@ -132,6 +132,7 @@ function isUnauthorizedEdgePayload(data: unknown) {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bootstrapVersionRef = useRef(0);
+  const bootstrapInFlightRef = useRef(false);
   const pendingRoleOverrideRef = useRef<AppRole | null>(null);
   const profileRef = useRef<Profile | null>(null);
 
@@ -322,6 +323,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const runBootstrap = async (nextSession: Session | null) => {
     const version = ++bootstrapVersionRef.current;
+    bootstrapInFlightRef.current = true;
 
     try {
       if (!nextSession?.user?.id) {
@@ -440,6 +442,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error("[Auth] runBootstrap error:", e);
     } finally {
       if (bootstrapVersionRef.current === version) {
+        bootstrapInFlightRef.current = false;
         setLoading(false);
         setBootstrapped(true);
       }
@@ -563,6 +566,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Global safety timeout
     safetyTimer = setTimeout(() => {
+      if (bootstrapInFlightRef.current) return;
       setLoading((current) => {
         if (current) {
           console.warn("[Auth] Safety timeout: forcing loading to false after 5s");
