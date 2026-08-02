@@ -7,7 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PERMANENT_TEETH, PRIMARY_TEETH } from "./types";
 
 export type DentitionType = "permanent" | "primary";
@@ -347,7 +346,7 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
                   >
                     {p.procedure?.name || t("doctor.toothChart.procedure", "Procedure")}
                     <span className="ml-1 opacity-70">
-                      · {t(`doctor.toothChart.statuses.${p.status}`, p.status)}
+                      · {String(t(`doctor.toothChart.statuses.${p.status}`, p.status))}
                     </span>
                   </span>
                 );
