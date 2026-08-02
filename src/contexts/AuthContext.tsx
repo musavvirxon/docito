@@ -468,8 +468,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let safetyTimer: ReturnType<typeof setTimeout> | null = null;
     let didUnmount = false;
+    let initialHandled = false;
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+    /** Only a genuine auth failure should wipe the local session. Network
+     * hiccups / timeouts must keep it so the client can refresh normally. */
+    const isRealAuthFailure = (err: any) => {
+      const status = Number(err?.status ?? err?.originalError?.status ?? 0);
+      if (status === 401 || status === 403) return true;
+      const msg = String(err?.message || "").toLowerCase();
+      return (
+        msg.includes("invalid jwt") ||
+        msg.includes("jwt expired") ||
+        msg.includes("token is expired") ||
+        msg.includes("invalid claim") ||
+        msg.includes("user not found") ||
+        msg.includes("session from session_id claim in jwt does not exist") ||
+        msg.includes("refresh token not found") ||
+        msg.includes("invalid refresh token")
+      );
+    };
+
+    // NOTE: the callback body must stay synchronous — awaiting Supabase calls
+    // inside onAuthStateChange can deadlock the auth client (stuck spinner on
+    // hard refresh). We defer the real work to a macrotask instead.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (didUnmount) return;
 
       if (event === "TOKEN_REFRESHED") {
@@ -477,22 +499,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(nextSession?.user ?? null);
         // If profile was lost (tab inactive / GC), re-bootstrap
         if (!profileRef.current) {
-          try {
-            await runBootstrap(nextSession);
-          } catch {
-            // ignore
-          }
+          setTimeout(() => {
+            if (!didUnmount) void runBootstrap(nextSession).catch(() => {});
+          }, 0);
         }
         return;
       }
 
-      try {
-        await runBootstrap(nextSession);
-      } catch (e) {
-        console.error("Auth state change bootstrap failed:", e);
-        setLoading(false);
-        setBootstrapped(true);
+      if (event === "INITIAL_SESSION") {
+        if (initialHandled) return;
+        initialHandled = true;
       }
+
+      setTimeout(() => {
+        if (didUnmount) return;
+        void runBootstrap(nextSession).catch((e) => {
+          console.error("Auth state change bootstrap failed:", e);
+          setLoading(false);
+          setBootstrapped(true);
+        });
+      }, 0);
     });
 
     // Initial session bootstrap (critical on hard refresh)
@@ -502,21 +528,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const nextSession = data.session ?? null;
         if (nextSession?.access_token) {
-          const { data: validatedUser, error: validateError } = await supabase.auth.getUser(nextSession.access_token);
+          const { error: validateError } = await supabase.auth.getUser(nextSession.access_token);
 
-          if (validateError || !validatedUser?.user?.id) {
+          if (validateError && isRealAuthFailure(validateError)) {
             console.warn("[Auth] Stored session is no longer valid; clearing local auth state", validateError);
             await supabase.auth.signOut({ scope: "local" });
             if (!didUnmount) {
+              initialHandled = true;
               clearAuthState();
               setLoading(false);
               setBootstrapped(true);
             }
             return;
           }
+
+          if (validateError) {
+            // Transient (offline / timeout) — keep the session and continue.
+            console.warn("[Auth] Session validation failed transiently; keeping session", validateError);
+          }
         }
 
-        if (!didUnmount) await runBootstrap(nextSession);
+        if (didUnmount || initialHandled) return;
+        initialHandled = true;
+        await runBootstrap(nextSession);
       } catch (e) {
         console.error("Initial auth bootstrap failed:", e);
         if (!didUnmount) {
@@ -525,6 +559,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     })();
+
 
     // Global safety timeout
     safetyTimer = setTimeout(() => {
