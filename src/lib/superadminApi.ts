@@ -5,6 +5,7 @@ export type SuperAdminAction =
   | "ping"
   | "whoami"
   | "list_users"
+  | "create_user"
   | "set_user_roles"
   | "disable_user"
   | "enable_user"
@@ -13,6 +14,25 @@ export type SuperAdminAction =
   | "get_doctor_verification"
   | "approve_doctor_verification"
   | "reject_doctor_verification";
+
+export type CreateUserParams = {
+  email: string;
+  roles: string[];
+  full_name?: string | null;
+  phone?: string | null;
+  password?: string | null;
+  send_reset_email?: boolean;
+  redirect_to?: string | null;
+};
+
+export type CreateUserResponse = {
+  ok: boolean;
+  user_id: string;
+  email: string;
+  roles: string[];
+  temp_password: string | null;
+  reset_email_sent: boolean;
+};
 
 export type SuperAdminInvokeBody = Record<string, any> & { action: SuperAdminAction };
 
@@ -100,6 +120,19 @@ export async function superadminPing() {
 export async function superadminWhoami() {
   return invokeSuperadmin<{ ok: boolean; user_id: string; ip_address: string | null; user_agent: string | null }>({
     action: "whoami",
+  });
+}
+
+export async function createUser(params: CreateUserParams): Promise<CreateUserResponse> {
+  return invokeSuperadmin<CreateUserResponse>({
+    action: "create_user",
+    email: params.email,
+    roles: params.roles,
+    full_name: params.full_name ?? null,
+    phone: params.phone ?? null,
+    password: params.password ?? null,
+    send_reset_email: params.send_reset_email ?? false,
+    redirect_to: params.redirect_to ?? null,
   });
 }
 

@@ -1,6 +1,6 @@
 // src/components/super-admin/UsersAdmin.tsx
 import { useEffect, useMemo, useState } from "react";
-import { Search, RefreshCw, UserCog, ShieldCheck, ShieldOff, Pencil } from "lucide-react";
+import { Search, RefreshCw, UserCog, ShieldCheck, ShieldOff, Pencil, UserPlus, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { listUsers, setUserRoles, disableUser, enableUser, type UserRow } from "@/lib/superadminApi";
+import { listUsers, setUserRoles, disableUser, enableUser, createUser, type UserRow } from "@/lib/superadminApi";
 
 type RolesMode = "replace" | "add" | "remove";
 
@@ -60,6 +60,64 @@ export default function UsersAdmin() {
   const [toggleReason, setToggleReason] = useState("");
   const [toggleUser, setToggleUser] = useState<UserRow | null>(null);
   const [toggleAction, setToggleAction] = useState<"disable" | "enable">("disable");
+
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newFullName, setNewFullName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRoles, setNewRoles] = useState<string[]>(["patient"]);
+  const [sendReset, setSendReset] = useState(true);
+  const [createdInfo, setCreatedInfo] = useState<{ email: string; password: string | null } | null>(null);
+
+  const resetCreateForm = () => {
+    setNewEmail("");
+    setNewFullName("");
+    setNewPhone("");
+    setNewPassword("");
+    setNewRoles(["patient"]);
+    setSendReset(true);
+    setCreatedInfo(null);
+  };
+
+  const toggleNewRole = (role: string) => {
+    setNewRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+  };
+
+  const submitCreate = async () => {
+    const email = newEmail.trim().toLowerCase();
+    if (!email) {
+      toast.error("Email is required");
+      return;
+    }
+    if (newRoles.length === 0) {
+      toast.error("Select at least one account type");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const res = await createUser({
+        email,
+        full_name: newFullName.trim() || null,
+        phone: newPhone.trim() || null,
+        password: newPassword.trim() || null,
+        roles: newRoles,
+        send_reset_email: sendReset,
+        redirect_to: `${window.location.origin}/reset-password`,
+      });
+
+      setCreatedInfo({ email: res.email, password: res.temp_password });
+      toast.success(`Account created for ${res.email}`);
+      fetchUsers(0);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to create account");
+    } finally {
+      setCreating(false);
+    }
+  };
+
 
   const fetchUsers = async (nextOffset = 0) => {
     setLoading(true);
@@ -199,6 +257,17 @@ export default function UsersAdmin() {
               <Button variant="outline" className="gap-2" disabled={loading} onClick={() => fetchUsers(0)}>
                 <RefreshCw className={loading ? "w-4 h-4 animate-spin" : "w-4 h-4"} />
                 Search
+              </Button>
+
+              <Button
+                className="gap-2"
+                onClick={() => {
+                  resetCreateForm();
+                  setCreateOpen(true);
+                }}
+              >
+                <UserPlus className="w-4 h-4" />
+                Add account
               </Button>
             </div>
           </div>
@@ -476,6 +545,133 @@ export default function UsersAdmin() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Create Account Dialog */}
+      <Dialog
+        open={createOpen}
+        onOpenChange={(v) => {
+          setCreateOpen(v);
+          if (!v) resetCreateForm();
+        }}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create account</DialogTitle>
+            <DialogDescription>
+              Create any account type (doctor, clinic admin, patient…) on behalf of a user.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Separator />
+
+          {createdInfo ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-border/50 p-4 space-y-2">
+                <div className="text-sm font-medium">Account created</div>
+                <div className="text-sm text-muted-foreground">{createdInfo.email}</div>
+                {createdInfo.password ? (
+                  <div className="space-y-1">
+                    <Label className="text-xs">Temporary password (shown once)</Label>
+                    <div className="flex items-center gap-2">
+                      <Input readOnly value={createdInfo.password} className="font-mono" />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          navigator.clipboard.writeText(createdInfo.password || "");
+                          toast.success("Copied");
+                        }}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    The password you provided is active immediately.
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => resetCreateForm()}>
+                  Create another
+                </Button>
+                <Button onClick={() => setCreateOpen(false)}>Done</Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Email *</Label>
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="user@example.com"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Full name</Label>
+                  <Input
+                    value={newFullName}
+                    onChange={(e) => setNewFullName(e.target.value)}
+                    placeholder="Jane Doe"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+998…" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Password (optional)</Label>
+                  <Input
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Auto-generated if empty"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Account type(s) *</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {ROLE_OPTIONS.map((r) => (
+                    <label
+                      key={r.key}
+                      className="flex items-center gap-2 rounded-lg border border-border/50 px-3 py-2 cursor-pointer"
+                    >
+                      <Checkbox
+                        checked={newRoles.includes(r.key)}
+                        onCheckedChange={() => toggleNewRole(r.key)}
+                      />
+                      <span className="text-sm">{r.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <Checkbox checked={sendReset} onCheckedChange={(v) => setSendReset(Boolean(v))} />
+                <span className="text-sm text-muted-foreground">
+                  Email the user a password-setup link
+                </span>
+              </label>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={submitCreate} disabled={creating}>
+                  {creating ? "Creating…" : "Create account"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
+
   );
 }
