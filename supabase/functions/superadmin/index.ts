@@ -276,7 +276,9 @@ serve(async (req) => {
       }
 
       if (roles.includes("doctor")) {
-        await serviceClient.rpc("ensure_doctor_row_for_profile", { p_user_id: newUserId }).catch(() => {});
+        // Doctor rows are created by DB triggers on profiles; make sure the profile
+        // update fires so the doctor record exists.
+        await serviceClient.from("profiles").update({ email } as any).eq("user_id", newUserId);
       }
 
       let resetEmailSent = false;
