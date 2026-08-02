@@ -123,6 +123,19 @@ export async function superadminWhoami() {
   });
 }
 
+export async function createUser(params: CreateUserParams): Promise<CreateUserResponse> {
+  return invokeSuperadmin<CreateUserResponse>({
+    action: "create_user",
+    email: params.email,
+    roles: params.roles,
+    full_name: params.full_name ?? null,
+    phone: params.phone ?? null,
+    password: params.password ?? null,
+    send_reset_email: params.send_reset_email ?? false,
+    redirect_to: params.redirect_to ?? null,
+  });
+}
+
 export async function listUsers(params: ListUsersParams = {}): Promise<ListUsersResponse> {
   const { limit = 25, offset = 0, query = null, role = null } = params;
   return invokeSuperadmin<ListUsersResponse>({
