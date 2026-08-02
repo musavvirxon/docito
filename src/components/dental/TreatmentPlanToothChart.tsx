@@ -319,38 +319,43 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
           ))}
         </div>
 
-        {rows.length === 0 ? (
+        {byTooth.size === 0 && generalProcedures.length === 0 && (
           <p className="text-sm text-muted-foreground">
             {readOnly
               ? t("doctor.toothChart.emptyReadOnly", "No teeth assigned in this plan yet.")
               : t("doctor.toothChart.empty", "Click a tooth to assign a procedure.")}
           </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-20">{t("doctor.toothChart.table.tooth", "Tooth #")}</TableHead>
-                <TableHead>{t("doctor.toothChart.table.procedures", "Procedure(s)")}</TableHead>
-                <TableHead className="w-40">{t("doctor.toothChart.table.status", "Status")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((r) => (
-                <TableRow key={r.tooth}>
-                  <TableCell className="font-medium">{r.tooth}</TableCell>
-                  <TableCell className="text-sm">
-                    {r.items.map((i) => i.procedure?.name || "—").join(", ")}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {r.items
-                      .map((i) => t(`doctor.toothChart.statuses.${i.status}`, i.status))
-                      .join(", ")}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         )}
+
+        {generalProcedures.length > 0 && (
+          <div className="space-y-1.5 rounded-xl border border-border/60 bg-muted/20 p-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              {t("doctor.toothChart.general", "Full-mouth / general procedures")}
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {generalProcedures.map((p) => {
+                const bt = bucketForCategory(p.procedure?.category).token;
+                return (
+                  <span
+                    key={p.id}
+                    className="rounded-md border px-2 py-0.5 text-[11px] font-medium"
+                    style={{
+                      backgroundColor: `hsl(var(${bt}) / 0.16)`,
+                      borderColor: `hsl(var(${bt}))`,
+                      color: `hsl(var(${bt}))`,
+                    }}
+                  >
+                    {p.procedure?.name || t("doctor.toothChart.procedure", "Procedure")}
+                    <span className="ml-1 opacity-70">
+                      · {t(`doctor.toothChart.statuses.${p.status}`, p.status)}
+                    </span>
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
       </CardContent>
     </Card>
   );
