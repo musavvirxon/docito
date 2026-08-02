@@ -61,6 +61,64 @@ export default function UsersAdmin() {
   const [toggleUser, setToggleUser] = useState<UserRow | null>(null);
   const [toggleAction, setToggleAction] = useState<"disable" | "enable">("disable");
 
+  const [createOpen, setCreateOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newFullName, setNewFullName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [newRoles, setNewRoles] = useState<string[]>(["patient"]);
+  const [sendReset, setSendReset] = useState(true);
+  const [createdInfo, setCreatedInfo] = useState<{ email: string; password: string | null } | null>(null);
+
+  const resetCreateForm = () => {
+    setNewEmail("");
+    setNewFullName("");
+    setNewPhone("");
+    setNewPassword("");
+    setNewRoles(["patient"]);
+    setSendReset(true);
+    setCreatedInfo(null);
+  };
+
+  const toggleNewRole = (role: string) => {
+    setNewRoles((prev) => (prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]));
+  };
+
+  const submitCreate = async () => {
+    const email = newEmail.trim().toLowerCase();
+    if (!email) {
+      toast.error("Email is required");
+      return;
+    }
+    if (newRoles.length === 0) {
+      toast.error("Select at least one account type");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const res = await createUser({
+        email,
+        full_name: newFullName.trim() || null,
+        phone: newPhone.trim() || null,
+        password: newPassword.trim() || null,
+        roles: newRoles,
+        send_reset_email: sendReset,
+        redirect_to: `${window.location.origin}/reset-password`,
+      });
+
+      setCreatedInfo({ email: res.email, password: res.temp_password });
+      toast.success(`Account created for ${res.email}`);
+      fetchUsers(0);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to create account");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+
   const fetchUsers = async (nextOffset = 0) => {
     setLoading(true);
     try {
