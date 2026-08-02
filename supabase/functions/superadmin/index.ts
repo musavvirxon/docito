@@ -160,6 +160,14 @@ serve(async (req) => {
           // verifications
           status?: string | null;
           id?: string | null;
+
+          // create_user
+          email?: string;
+          password?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          send_reset_email?: boolean;
+          redirect_to?: string | null;
         };
 
     const action = body?.action;
