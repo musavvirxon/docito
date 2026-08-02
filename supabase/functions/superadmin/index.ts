@@ -21,7 +21,8 @@ type Action =
   | "list_doctor_verifications"
   | "get_doctor_verification"
   | "approve_doctor_verification"
-  | "reject_doctor_verification";
+  | "reject_doctor_verification"
+  | "create_user";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
