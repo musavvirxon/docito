@@ -82,21 +82,45 @@ async function fetchFacilityCountry(service: any, facilityType: FacilityType, fa
 }
 
 async function lockFacilityTimezoneOnApprove(service: any, facilityType: FacilityType, facilityId: string, actorId: string) {
-  const entityType = facilityType; // matches entity_settings.entity_type values for facilities
-  const country = await fetchFacilityCountry(service, facilityType, facilityId);
+  // Best-effort: never block an approval because of timezone bookkeeping.
+  try {
+    const country = await fetchFacilityCountry(service, facilityType, facilityId);
 
-  // This RPC:
-  // - sets entity_settings.timezone based on country default timezone
-  // - sets timezone_locked = true
-  // - stores lock metadata (locked_by, locked_at, reason)
-  const { error } = await service.rpc("docito_sync_entity_timezone_on_verification", {
-    p_entity_type: entityType,
-    p_entity_id: facilityId,
-    p_country: country,
-    p_actor: actorId,
-  });
+    // Preferred path: DB helper (may not exist in every environment)
+    const { error: rpcErr } = await service.rpc("docito_sync_entity_timezone_on_verification", {
+      p_entity_type: facilityType,
+      p_entity_id: facilityId,
+      p_country: country,
+      p_actor: actorId,
+    });
 
-  if (error) throw error;
+    if (!rpcErr) return;
+
+    // Fallback: persist verification metadata in entity_settings.payload
+    const { data: existing } = await service
+      .from("entity_settings")
+      .select("id,payload")
+      .eq("entity_type", facilityType)
+      .eq("entity_id", facilityId)
+      .maybeSingle();
+
+    const payload = {
+      ...((existing as any)?.payload ?? {}),
+      verified_country: country,
+      timezone_source: "verification",
+      timezone_locked: true,
+      timezone_locked_by: actorId,
+      timezone_locked_at: new Date().toISOString(),
+    };
+
+    if ((existing as any)?.id) {
+      await service.from("entity_settings").update({ payload }).eq("id", (existing as any).id);
+    } else {
+      await service.from("entity_settings").insert({ entity_type: facilityType, entity_id: facilityId, payload });
+    }
+  } catch (e) {
+    console.error("lockFacilityTimezoneOnApprove (non-fatal):", (e as any)?.message ?? e);
+  }
 }
 
 serve(async (req) => {
@@ -293,19 +317,23 @@ serve(async (req) => {
         }
       }
 
-      // Audit log
-      await service.from("entity_audit_logs").insert({
-        entity_type: facilityType,
-        entity_id: facilityId,
-        action: `facility_verification_${status}`,
-        actor_id: user.id,
-        new_values: { request_status: status },
-        metadata: {
-          request_id: requestId,
-          comment: comment ?? null,
-          rejection_reason: rejectionReason ?? null,
-        },
-      });
+      // Audit log (best-effort)
+      try {
+        await service.from("entity_audit_logs").insert({
+          entity_type: facilityType,
+          entity_id: facilityId,
+          action: `facility_verification_${status}`,
+          actor_id: user.id,
+          new_values: { request_status: status },
+          metadata: {
+            request_id: requestId,
+            comment: comment ?? null,
+            rejection_reason: rejectionReason ?? null,
+          },
+        });
+      } catch (e) {
+        console.error("audit log insert failed (non-fatal):", (e as any)?.message ?? e);
+      }
 
       return json({ ok: true, request: updatedReq });
     }
