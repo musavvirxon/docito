@@ -1637,6 +1637,22 @@
         "title": "No data selling",
         "description": "We never sell your information"
       }
+    },
+    "page": {
+      "loading": "Loading profile...",
+      "notFoundTitle": "Doctor not found",
+      "notFoundDescription": "This profile may be private/unlisted or does not exist.",
+      "goBack": "Go Back",
+      "back": "Back",
+      "pendingTitle": "Pending verification.",
+      "pendingDescription": "This doctor's credentials are still being reviewed by Docito. You can view their profile, but booking may be limited until verification is complete.",
+      "loadError": "Failed to load doctor profile",
+      "error": "Error",
+      "signInRequired": "Sign in required",
+      "signInDescription": "Please sign in to continue.",
+      "linkCopied": "Link copied to clipboard",
+      "sectionLoading": "Loading...",
+      "seoDescription": "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees."
     }
   },
   "actions": {

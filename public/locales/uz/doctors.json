@@ -1681,6 +1681,22 @@
         "title": "No data selling",
         "description": "We never sell your information"
       }
+    },
+    "page": {
+      "loading": "Profil yuklanmoqda...",
+      "notFoundTitle": "Shifokor topilmadi",
+      "notFoundDescription": "Bu profil yopiq bo'lishi yoki mavjud bo'lmasligi mumkin.",
+      "goBack": "Orqaga",
+      "back": "Orqaga",
+      "pendingTitle": "Tasdiqlash kutilmoqda.",
+      "pendingDescription": "Ushbu shifokor hujjatlari Docito tomonidan tekshirilmoqda. Profilni ko'rishingiz mumkin, lekin tasdiqlanmaguncha navbat olish cheklangan bo'lishi mumkin.",
+      "loadError": "Shifokor profilini yuklab bo'lmadi",
+      "error": "Xatolik",
+      "signInRequired": "Tizimga kirish talab etiladi",
+      "signInDescription": "Davom etish uchun tizimga kiring.",
+      "linkCopied": "Havola nusxalandi",
+      "sectionLoading": "Yuklanmoqda...",
+      "seoDescription": "{{name}}, {{specialty}} qabuliga Docito orqali yoziling. Bo'sh vaqtlar, sharhlar va narxlarni ko'ring."
     }
   },
   "actions": {
