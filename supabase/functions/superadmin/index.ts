@@ -530,7 +530,6 @@ serve(async (req) => {
           id,
           doctor_id,
           status,
-          verification_status,
           rejection_reason,
           created_at,
           updated_at,
@@ -568,7 +567,6 @@ serve(async (req) => {
           id,
           doctor_id,
           status,
-          verification_status,
           rejection_reason,
           created_at,
           updated_at,
@@ -620,7 +618,6 @@ serve(async (req) => {
         .from("doctor_verification" as any)
         .update({
           status: "verified",
-          verification_status: "verified",
           rejection_reason: null,
           updated_at: new Date().toISOString(),
         } as any)
@@ -659,7 +656,6 @@ serve(async (req) => {
         .from("doctor_verification" as any)
         .update({
           status: "declined",
-          verification_status: "declined",
           rejection_reason: reason,
           updated_at: new Date().toISOString(),
         } as any)
