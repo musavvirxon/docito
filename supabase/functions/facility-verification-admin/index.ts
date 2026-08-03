@@ -317,19 +317,23 @@ serve(async (req) => {
         }
       }
 
-      // Audit log
-      await service.from("entity_audit_logs").insert({
-        entity_type: facilityType,
-        entity_id: facilityId,
-        action: `facility_verification_${status}`,
-        actor_id: user.id,
-        new_values: { request_status: status },
-        metadata: {
-          request_id: requestId,
-          comment: comment ?? null,
-          rejection_reason: rejectionReason ?? null,
-        },
-      });
+      // Audit log (best-effort)
+      try {
+        await service.from("entity_audit_logs").insert({
+          entity_type: facilityType,
+          entity_id: facilityId,
+          action: `facility_verification_${status}`,
+          actor_id: user.id,
+          new_values: { request_status: status },
+          metadata: {
+            request_id: requestId,
+            comment: comment ?? null,
+            rejection_reason: rejectionReason ?? null,
+          },
+        });
+      } catch (e) {
+        console.error("audit log insert failed (non-fatal):", (e as any)?.message ?? e);
+      }
 
       return json({ ok: true, request: updatedReq });
     }
