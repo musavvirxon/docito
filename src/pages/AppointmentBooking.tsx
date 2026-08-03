@@ -223,7 +223,7 @@ export default function AppointmentBooking() {
         });
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to load doctor");
+        toast.error(e?.message ?? t("booking:page.errors.loadDoctor", "Failed to load doctor"));
         setDoctor(null);
       } finally {
         setLoadingDoctor(false);
@@ -329,7 +329,7 @@ export default function AppointmentBooking() {
         if (selectedSlotStart && !stillAvailable) setSelectedSlotStart("");
       } catch (e: any) {
         console.error(e);
-        toast.error(e?.message ?? "Failed to load availability");
+        toast.error(e?.message ?? t("booking:page.errors.loadAvailability", "Failed to load availability"));
         setSlots([]);
         setSelectedSlotStart("");
       } finally {
@@ -360,13 +360,13 @@ export default function AppointmentBooking() {
     if (!doctorId) return;
 
     if (!selectedSlotStart) {
-      toast.error("Please select a time slot");
+      toast.error(t("booking:page.errors.selectSlot", "Please select a time slot"));
       return;
     }
 
     const nowMs = Date.now() + 60_000;
     if (isSameMinuteOrPast(selectedSlotStart, nowMs)) {
-      toast.error("You can't book an appointment in the past.");
+      toast.error(t("booking:page.errors.pastSlot", "You can't book an appointment in the past."));
       setSelectedSlotStart("");
       return;
     }
@@ -375,7 +375,7 @@ export default function AppointmentBooking() {
     const user = auth?.user;
 
     if (!user) {
-      toast.error("Please sign in to book an appointment");
+      toast.error(t("booking:page.errors.signIn", "Please sign in to book an appointment"));
       navigate(`/auth?returnTo=${encodeURIComponent(`/book-appointment/${doctorSlug}`)}`);
       return;
     }
@@ -411,17 +411,17 @@ export default function AppointmentBooking() {
       });
 
       if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || "Failed to book appointment");
+      if (!data?.ok) throw new Error(data?.error || t("booking:page.errors.bookFailed", "Failed to book appointment"));
 
       if (data?.hold_id) {
-        toast.success("Slot held. Please confirm your appointment.");
+        toast.success(t("booking:page.success.held", "Slot held. Please confirm your appointment."));
         navigate(`/booking-confirmation/${data.hold_id}?mode=pending`);
         return;
       }
 
       const appointmentId = data?.appointment_id || data?.id;
       if (appointmentId) {
-        toast.success("Appointment booked!");
+        toast.success(t("booking:page.success.booked", "Appointment booked!"));
         navigate(`/booking-confirmation/${appointmentId}`);
         return;
       }
@@ -429,7 +429,7 @@ export default function AppointmentBooking() {
       throw new Error("Booking succeeded but no hold_id/appointment_id returned");
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message ?? "Failed to book appointment");
+      toast.error(e?.message ?? t("booking:page.errors.bookFailed", "Failed to book appointment"));
     } finally {
       setBooking(false);
     }
@@ -441,7 +441,7 @@ export default function AppointmentBooking() {
         <div className="flex items-center justify-center">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading doctor...
+            {t("booking:page.loadingDoctor", "Loading doctor...")}
           </div>
         </div>
       </div>
@@ -453,33 +453,32 @@ export default function AppointmentBooking() {
       <div className="container max-w-5xl mx-auto px-4 py-12">
         <Alert className="max-w-lg mx-auto">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Doctor not found.</AlertDescription>
+          <AlertDescription>{t("booking:page.doctorNotFound", "Doctor not found.")}</AlertDescription>
         </Alert>
       </div>
     );
   }
 
-  const doctorName = doctor.profile_full_name?.trim() || "Doctor";
+  const doctorName = doctor.profile_full_name?.trim() || t("booking:page.doctorFallbackName", "Doctor");
 
   return (
     <main className="container max-w-5xl mx-auto px-4 py-8">
       <div className="space-y-6">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold">Book an appointment</h1>
+          <h1 className="text-3xl font-bold">{t("booking:page.title", "Book an appointment")}</h1>
           <p className="text-muted-foreground">
-            Choose a date, time, and appointment type. Your profile details will be shared with the doctor automatically.
+            {t("booking:page.subtitle", "Choose a date, time, and appointment type. Your profile details will be shared with the doctor automatically.")}
           </p>
         </div>
 
         {!doctor.practice_id && (
           <Alert variant="destructive" className="border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertTitle className="text-amber-700 dark:text-amber-400">Independent Practitioner</AlertTitle>
+            <AlertTitle className="text-amber-700 dark:text-amber-400">{t("booking:page.independentTitle", "Independent Practitioner")}</AlertTitle>
             <AlertDescription className="text-amber-600 dark:text-amber-300">
-              This doctor has not yet confirmed a clinic or practice location. Only <strong>video call</strong> and{" "}
-              <strong>messaging</strong> appointments are available.
+              {t("booking:page.independentDescription", "This doctor has not yet confirmed a clinic or practice location. Only video call and messaging appointments are available.")}
               <span className="block mt-2 font-medium">
-                ⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice affiliation.
+                {t("booking:page.independentWarning", "⚠️ Do not visit any physical location the doctor may suggest until they have verified their practice affiliation.")}
               </span>
             </AlertDescription>
           </Alert>
@@ -487,7 +486,7 @@ export default function AppointmentBooking() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Doctor</CardTitle>
+            <CardTitle>{t("booking:page.doctorCard", "Doctor")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -503,15 +502,15 @@ export default function AppointmentBooking() {
                   <div className="text-xl font-semibold">{doctorName}</div>
                   <div className="text-sm text-muted-foreground">{doctor.specialty}</div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                    <Badge variant="secondary">Estimated fee</Badge>
-                    <span>{doctor.consultation_fee != null ? formatCurrency(doctor.consultation_fee) : "Not set"}</span>
+                    <Badge variant="secondary">{t("booking:page.estimatedFee", "Estimated fee")}</Badge>
+                    <span>{doctor.consultation_fee != null ? formatCurrency(doctor.consultation_fee) : t("booking:page.feeNotSet", "Not set")}</span>
                   </div>
                   <Button
                     variant="link"
                     className="p-0 h-auto text-sm"
                     onClick={() => navigate(`/doctor/${doctor.id}`)}
                   >
-                    View full profile →
+                    {t("booking:page.viewFullProfile", "View full profile →")}
                   </Button>
                 </div>
               </div>
@@ -531,7 +530,7 @@ export default function AppointmentBooking() {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">No verified clinic location yet.</div>
+                  <div className="text-sm text-muted-foreground">{t("booking:page.noClinicLocation", "No verified clinic location yet.")}</div>
                 )}
               </div>
             </div>
@@ -540,7 +539,7 @@ export default function AppointmentBooking() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Appointment type</CardTitle>
+            <CardTitle>{t("booking:page.appointmentType", "Appointment type")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <RadioGroup
@@ -552,8 +551,8 @@ export default function AppointmentBooking() {
                 <RadioGroupItem value="video" id="video" />
                 <Video className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div className="font-medium">Video</div>
-                  <div className="text-xs text-muted-foreground">Real-time consultation</div>
+                  <div className="font-medium">{t("booking:page.typeVideo", "Video")}</div>
+                  <div className="text-xs text-muted-foreground">{t("booking:page.typeVideoHint", "Real-time consultation")}</div>
                 </div>
               </label>
 
@@ -561,8 +560,8 @@ export default function AppointmentBooking() {
                 <RadioGroupItem value="messaging" id="messaging" />
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <div className="font-medium">Messaging</div>
-                  <div className="text-xs text-muted-foreground">Chat-based visit</div>
+                  <div className="font-medium">{t("booking:page.typeMessaging", "Messaging")}</div>
+                  <div className="text-xs text-muted-foreground">{t("booking:page.typeMessagingHint", "Chat-based visit")}</div>
                 </div>
               </label>
 
@@ -571,16 +570,16 @@ export default function AppointmentBooking() {
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <div className="font-medium flex items-center gap-2">
-                    In-person {!doctor.practice_id && <Lock className="h-3.5 w-3.5" />}
+                    {t("booking:page.typeInPerson", "In-person")} {!doctor.practice_id && <Lock className="h-3.5 w-3.5" />}
                   </div>
-                  <div className="text-xs text-muted-foreground">Clinic visit</div>
+                  <div className="text-xs text-muted-foreground">{t("booking:page.typeInPersonHint", "Clinic visit")}</div>
                 </div>
               </label>
             </RadioGroup>
 
             {!doctor.practice_id && appointmentType === "in-person" && (
               <div className="text-sm text-amber-600 dark:text-amber-400">
-                In-person appointments require a verified practice location. This doctor hasn't confirmed one yet — please choose Video or Messaging.
+                {t("booking:page.inPersonLocked", "In-person appointments require a verified practice location. This doctor hasn't confirmed one yet — please choose Video or Messaging.")}
               </div>
             )}
           </CardContent>
@@ -590,16 +589,16 @@ export default function AppointmentBooking() {
         {/* Available procedures (optional) */}
         <Card>
           <CardHeader>
-            <CardTitle>Available procedures (optional)</CardTitle>
+            <CardTitle>{t("booking:page.proceduresTitle", "Available procedures (optional)")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {loadingProcedures ? (
               <div className="text-sm text-muted-foreground flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Loading procedures...
+                {t("booking:page.loadingProcedures", "Loading procedures...")}
               </div>
             ) : procedures.length === 0 ? (
-              <div className="text-sm text-muted-foreground">This doctor has no bookable procedures configured yet.</div>
+              <div className="text-sm text-muted-foreground">{t("booking:page.noProcedures", "This doctor has no bookable procedures configured yet.")}</div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* "No specific procedure" card */}
@@ -610,9 +609,9 @@ export default function AppointmentBooking() {
                     selectedProcedureId === "none" ? "border-primary ring-2 ring-primary/30 bg-primary/5" : ""
                   }`}
                 >
-                  <div className="font-medium text-sm">No specific procedure</div>
+                  <div className="font-medium text-sm">{t("booking:page.noSpecificProcedure", "No specific procedure")}</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    General consultation — discuss during the visit
+                    {t("booking:page.noSpecificProcedureHint", "General consultation — discuss during the visit")}
                   </div>
                 </button>
 
@@ -654,7 +653,7 @@ export default function AppointmentBooking() {
                         {typeof p.duration_minutes === "number" && (
                           <span className="inline-flex items-center gap-1 text-muted-foreground">
                             <Clock className="h-3.5 w-3.5" />
-                            {p.duration_minutes} min
+                            {t("booking:page.minutesShort", { n: p.duration_minutes, defaultValue: "{{n}} min" })}
                           </span>
                         )}
                       </div>
@@ -668,13 +667,13 @@ export default function AppointmentBooking() {
               <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-3 pt-1">
                 <span className="inline-flex items-center gap-1">
                   <Stethoscope className="h-3.5 w-3.5" />
-                  Selected: <span className="font-medium text-foreground">{selectedProcedure.name}</span>
+                  {t("booking:page.selectedLabel", "Selected:")} <span className="font-medium text-foreground">{selectedProcedure.name}</span>
                 </span>
                 {typeof selectedProcedure.duration_minutes === "number" &&
                   DURATION_OPTIONS_MINUTES.includes(selectedProcedure.duration_minutes) && (
                     <span className="inline-flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" />
-                      Duration auto-applied
+                      {t("booking:page.durationAutoApplied", "Duration auto-applied")}
                     </span>
                   )}
               </div>
@@ -685,7 +684,7 @@ export default function AppointmentBooking() {
 
             <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md p-3">
               <Info className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
-              <span>Payment will only be charged after appointment completion and doctor confirmation.</span>
+              <span>{t("booking:page.paymentNote", "Payment will only be charged after appointment completion and doctor confirmation.")}</span>
             </div>
           </CardContent>
         </Card>
@@ -695,7 +694,7 @@ export default function AppointmentBooking() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
-                Pick a date
+                {t("booking:page.pickDate", "Pick a date")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -713,12 +712,12 @@ export default function AppointmentBooking() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Choose time & duration
+                {t("booking:page.chooseTime", "Choose time & duration")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Duration</Label>
+                <Label>{t("booking:page.duration", "Duration")}</Label>
                 <Select
                   value={String(durationMinutes)}
                   onValueChange={(v) => {
@@ -727,7 +726,7 @@ export default function AppointmentBooking() {
                   }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
+                    <SelectValue placeholder={t("booking:page.selectDuration", "Select duration")} />
                   </SelectTrigger>
                   <SelectContent>
                     {DURATION_OPTIONS_MINUTES.map((m) => (
@@ -741,11 +740,11 @@ export default function AppointmentBooking() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <Label>Available times</Label>
+                  <Label>{t("booking:page.availableTimes", "Available times")}</Label>
                   {loadingSlots && (
                     <div className="text-xs text-muted-foreground flex items-center gap-2">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Loading...
+                      {t("booking:page.loading", "Loading...")}
                     </div>
                   )}
                 </div>
@@ -753,7 +752,7 @@ export default function AppointmentBooking() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {availableSlots.length === 0 && !loadingSlots ? (
                     <div className="col-span-2 sm:col-span-3 text-sm text-muted-foreground">
-                      No available slots for this date.
+                      {t("booking:page.noSlots", "No available slots for this date.")}
                     </div>
                   ) : (
                     availableSlots.map((s) => {
@@ -778,14 +777,14 @@ export default function AppointmentBooking() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Notes for your doctor</CardTitle>
+            <CardTitle>{t("booking:page.notesTitle", "Notes for your doctor")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional: describe your symptoms, history, or questions"
+              placeholder={t("booking:page.notesPlaceholder", "Optional: describe your symptoms, history, or questions")}
             />
 
             {!hasRequiredProfile && (
@@ -811,10 +810,10 @@ export default function AppointmentBooking() {
                 {booking ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Booking...
+                    {t("booking:page.bookingInProgress", "Booking...")}
                   </>
                 ) : (
-                  "Book appointment"
+                  t("booking:page.bookCta", "Book appointment")
                 )}
               </Button>
             </div>
