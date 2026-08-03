@@ -1980,6 +1980,22 @@
         "title": "No data selling",
         "description": "We never sell your information"
       }
+    },
+    "page": {
+      "loading": "Загрузка профиля...",
+      "notFoundTitle": "Врач не найден",
+      "notFoundDescription": "Этот профиль может быть скрытым или не существует.",
+      "goBack": "Назад",
+      "back": "Назад",
+      "pendingTitle": "Ожидает верификации.",
+      "pendingDescription": "Документы этого врача ещё проверяются Docito. Вы можете просмотреть профиль, но запись может быть ограничена до завершения проверки.",
+      "loadError": "Не удалось загрузить профиль врача",
+      "error": "Ошибка",
+      "signInRequired": "Требуется вход",
+      "signInDescription": "Пожалуйста, войдите, чтобы продолжить.",
+      "linkCopied": "Ссылка скопирована",
+      "sectionLoading": "Загрузка...",
+      "seoDescription": "Запишитесь к {{name}}, {{specialty}}, на Docito. Смотрите доступность, отзывы и стоимость консультации."
     }
   },
   "actions": {
