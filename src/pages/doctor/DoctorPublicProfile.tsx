@@ -58,7 +58,7 @@ interface Procedure {
 }
 
 export default function DoctorPublicProfile() {
-  const { t } = useTranslation('doctorPage');
+  const { t } = useTranslation(['doctors', 'common']);
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -158,8 +158,8 @@ export default function DoctorPublicProfile() {
       } catch (e: any) {
         console.error("Error loading doctor public profile:", e);
         toast({
-          title: "Error",
-          description: e?.message || "Failed to load doctor profile",
+          title: t("publicProfile.page.error", "Error"),
+          description: e?.message || t("publicProfile.page.loadError", "Failed to load doctor profile"),
           variant: "destructive",
         });
       } finally {
@@ -168,6 +168,7 @@ export default function DoctorPublicProfile() {
     };
 
     void run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, toast]);
 
   if (loading) {
@@ -175,7 +176,7 @@ export default function DoctorPublicProfile() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Loading profile...</span>
+          <span>{t("publicProfile.page.loading", "Loading profile...")}</span>
         </div>
       </div>
     );
@@ -186,13 +187,13 @@ export default function DoctorPublicProfile() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-8 text-center">
-            <h1 className="text-xl font-semibold mb-2">Doctor not found</h1>
+            <h1 className="text-xl font-semibold mb-2">{t("publicProfile.page.notFoundTitle", "Doctor not found")}</h1>
             <p className="text-sm text-muted-foreground mb-6">
-              This profile may be private/unlisted or does not exist.
+              {t("publicProfile.page.notFoundDescription", "This profile may be private/unlisted or does not exist.")}
             </p>
             <Button onClick={() => navigate(-1)} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
-              Go Back
+              {t("publicProfile.page.goBack", "Go Back")}
             </Button>
           </CardContent>
         </Card>
@@ -218,7 +219,10 @@ export default function DoctorPublicProfile() {
   const requireAuth = async (cb: () => void) => {
     const { data } = await supabase.auth.getUser();
     if (!data?.user) {
-      toast({ title: "Sign in required", description: "Please sign in to continue." });
+      toast({
+        title: t("publicProfile.page.signInRequired", "Sign in required"),
+        description: t("publicProfile.page.signInDescription", "Please sign in to continue."),
+      });
       const returnTo = window.location.pathname + window.location.search;
       navigate(`/auth?returnTo=${encodeURIComponent(returnTo)}`);
       return;
@@ -234,7 +238,7 @@ export default function DoctorPublicProfile() {
         navigator.share({ title: doctor.full_name, url: window.location.href });
       } else {
         navigator.clipboard.writeText(window.location.href);
-        toast({ title: "Link copied to clipboard" });
+        toast({ title: t("publicProfile.page.linkCopied", "Link copied to clipboard") });
       }
     });
   const handleToggleSave = () => requireAuth(() => setIsSaved(!isSaved));
@@ -267,17 +271,17 @@ export default function DoctorPublicProfile() {
     <div className="min-h-screen bg-background">
       <SEOHead
         title={`${doctor.full_name} — ${doctor.specialty} | Docito`.slice(0, 60)}
-        description={(doctor.bio || `Book ${doctor.full_name}, ${doctor.specialty}${doctor.practice_city ? ` in ${doctor.practice_city}` : ''}, on Docito. View availability, reviews and consultation fees.`).slice(0, 160)}
+        description={(doctor.bio || t("publicProfile.page.seoDescription", { name: doctor.full_name, specialty: doctor.specialty, defaultValue: "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees." })).slice(0, 160)}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 gap-2">
           <ArrowLeft className="h-4 w-4" />
-          {t("common:actions.back", "Back")}
+          {t("publicProfile.page.back", "Back")}
         </Button>
         {!doctor.verified && (
           <div className="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-            <strong className="font-semibold">Pending verification.</strong>{' '}
-            This doctor's credentials are still being reviewed by Docito. You can view their profile, but booking may be limited until verification is complete.
+            <strong className="font-semibold">{t("publicProfile.page.pendingTitle", "Pending verification.")}</strong>{' '}
+            {t("publicProfile.page.pendingDescription", "This doctor's credentials are still being reviewed by Docito. You can view their profile, but booking may be limited until verification is complete.")}
           </div>
         )}
       </div>
@@ -295,11 +299,11 @@ export default function DoctorPublicProfile() {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 space-y-6">
-        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <Suspense fallback={<div className="text-muted-foreground">{t("publicProfile.page.sectionLoading", "Loading...")}</div>}>
           <AvailabilityPreview doctorId={doctor.id} onOpenBooking={handleBookClick} />
         </Suspense>
 
-        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <Suspense fallback={<div className="text-muted-foreground">{t("publicProfile.page.sectionLoading", "Loading...")}</div>}>
           <AboutSection 
             bio={doctor.bio || ''} 
             yearsExperience={doctor.years_experience}
@@ -308,19 +312,19 @@ export default function DoctorPublicProfile() {
           />
         </Suspense>
 
-        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <Suspense fallback={<div className="text-muted-foreground">{t("publicProfile.page.sectionLoading", "Loading...")}</div>}>
           <ProceduresSection procedures={procedures} />
         </Suspense>
 
-        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <Suspense fallback={<div className="text-muted-foreground">{t("publicProfile.page.sectionLoading", "Loading...")}</div>}>
           <ClinicAffiliationsSection practice={practice} />
         </Suspense>
 
-        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <Suspense fallback={<div className="text-muted-foreground">{t("publicProfile.page.sectionLoading", "Loading...")}</div>}>
           <ReviewsSection averageRating={doctor.average_rating} numReviews={doctor.num_reviews} doctorId={doctor.id} />
         </Suspense>
 
-        <Suspense fallback={<div className="text-muted-foreground">Loading...</div>}>
+        <Suspense fallback={<div className="text-muted-foreground">{t("publicProfile.page.sectionLoading", "Loading...")}</div>}>
           <TrustSection />
         </Suspense>
       </div>
