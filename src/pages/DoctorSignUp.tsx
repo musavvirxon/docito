@@ -651,6 +651,7 @@ const DoctorSignUp = () => {
                       <SelectContent>
                         <SelectItem value="male">{t('doctorSignup.gender.male')}</SelectItem>
                         <SelectItem value="female">{t('doctorSignup.gender.female')}</SelectItem>
+                        <SelectItem value="other">{t('doctorSignup.gender.other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
