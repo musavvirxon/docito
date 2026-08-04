@@ -272,8 +272,8 @@ export default function DoctorPublicProfile() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`${doctor.full_name} — ${doctor.specialty} | Docito`.slice(0, 60)}
-        description={(doctor.bio || t("publicProfile.page.seoDescription", { name: doctor.full_name, specialty: doctor.specialty, defaultValue: "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees." })).slice(0, 160)}
+        title={`${displayName} — ${doctor.specialty} | Docito`.slice(0, 60)}
+        description={(doctor.bio || t("publicProfile.page.seoDescription", { name: displayName, specialty: doctor.specialty, defaultValue: "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees." })).slice(0, 160)}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 gap-2">
