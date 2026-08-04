@@ -215,7 +215,10 @@ export default function DoctorPublicProfile() {
     verified: doctor.practice_verified,
   } : null;
 
-  // Auth gate — actions require sign-in
+  const displayName =
+    (doctor.full_name || "").trim() || t("publicProfile.page.unnamedDoctor", { defaultValue: "Doctor" });
+
+  // Viewing is fully public. Only booking and messaging require an account.
   const requireAuth = async (cb: () => void) => {
     const { data } = await supabase.auth.getUser();
     if (!data?.user) {
@@ -232,16 +235,15 @@ export default function DoctorPublicProfile() {
 
   const handleBookClick = () => requireAuth(() => navigate(`/book/${doctor.id}`));
   const handleMessageClick = () => requireAuth(() => navigate(`/messages?doctor=${doctor.id}`));
-  const handleShare = () =>
-    requireAuth(() => {
-      if (navigator.share) {
-        navigator.share({ title: doctor.full_name, url: window.location.href });
-      } else {
-        navigator.clipboard.writeText(window.location.href);
-        toast({ title: t("publicProfile.page.linkCopied", "Link copied to clipboard") });
-      }
-    });
-  const handleToggleSave = () => requireAuth(() => setIsSaved(!isSaved));
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: displayName, url: window.location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({ title: t("publicProfile.page.linkCopied", "Link copied to clipboard") });
+    }
+  };
+  const handleToggleSave = () => setIsSaved(!isSaved);
 
 
   // Map doctor to the format PremiumHeroSection expects
@@ -270,8 +272,8 @@ export default function DoctorPublicProfile() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`${doctor.full_name} — ${doctor.specialty} | Docito`.slice(0, 60)}
-        description={(doctor.bio || t("publicProfile.page.seoDescription", { name: doctor.full_name, specialty: doctor.specialty, defaultValue: "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees." })).slice(0, 160)}
+        title={`${displayName} — ${doctor.specialty} | Docito`.slice(0, 60)}
+        description={(doctor.bio || t("publicProfile.page.seoDescription", { name: displayName, specialty: doctor.specialty, defaultValue: "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees." })).slice(0, 160)}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 gap-2">

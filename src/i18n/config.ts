@@ -54,7 +54,7 @@ export const BLOG_I18N_NAMESPACE = "blog";
 export const I18N_NAMESPACES = [
   "common",
   "home",
-  BLOG_I18N_NAMESPACE,
+  
   "profileMenu",
   "dashboard",
   "premium",
