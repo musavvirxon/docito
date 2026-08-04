@@ -71,12 +71,17 @@ export default function PremiumHeroSection({
   const { format: formatFee } = useCurrency();
   const isRTL = i18n.language === "ar";
 
-  const doctorName = doctor.profiles.full_name;
-  const initials = doctorName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2);
+  const doctorName =
+    (doctor.profiles?.full_name || "").trim() ||
+    t("publicProfile.page.unnamedDoctor", { defaultValue: "Doctor" });
+  const initials =
+    doctorName
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "DR";
 
   return (
     <section className={cn("pt-2 pb-6 lg:py-8", isRTL && "rtl")}>
