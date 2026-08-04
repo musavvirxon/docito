@@ -57,7 +57,7 @@ export default function RoleSelector({ onSelect }: Props) {
         className="mb-14 flex flex-col items-center gap-3"
       >
         <img
-          src="/logos/800x240 horizontal logo+name.png"
+          src="/logos/horizontal/docito-horizontal-800x240.png"
           alt="Docito"
           className="h-9 object-contain"
           onError={(e) => {
