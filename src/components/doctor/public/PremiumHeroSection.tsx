@@ -34,7 +34,7 @@ interface DoctorProfileData {
   consultation_types: string[] | null;
   accepts_new_patients: boolean | null;
   profiles: {
-    full_name: string;
+    full_name: string | null;
     avatar_url: string | null;
     city?: string;
     country?: string;
