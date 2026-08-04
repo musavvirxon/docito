@@ -215,7 +215,10 @@ export default function DoctorPublicProfile() {
     verified: doctor.practice_verified,
   } : null;
 
-  // Auth gate — actions require sign-in
+  const displayName =
+    (doctor.full_name || "").trim() || t("publicProfile.page.unnamedDoctor", { defaultValue: "Doctor" });
+
+  // Viewing is fully public. Only booking and messaging require an account.
   const requireAuth = async (cb: () => void) => {
     const { data } = await supabase.auth.getUser();
     if (!data?.user) {
@@ -232,16 +235,15 @@ export default function DoctorPublicProfile() {
 
   const handleBookClick = () => requireAuth(() => navigate(`/book/${doctor.id}`));
   const handleMessageClick = () => requireAuth(() => navigate(`/messages?doctor=${doctor.id}`));
-  const handleShare = () =>
-    requireAuth(() => {
-      if (navigator.share) {
-        navigator.share({ title: doctor.full_name, url: window.location.href });
-      } else {
-        navigator.clipboard.writeText(window.location.href);
-        toast({ title: t("publicProfile.page.linkCopied", "Link copied to clipboard") });
-      }
-    });
-  const handleToggleSave = () => requireAuth(() => setIsSaved(!isSaved));
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({ title: displayName, url: window.location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({ title: t("publicProfile.page.linkCopied", "Link copied to clipboard") });
+    }
+  };
+  const handleToggleSave = () => setIsSaved(!isSaved);
 
 
   // Map doctor to the format PremiumHeroSection expects
