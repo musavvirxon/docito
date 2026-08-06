@@ -11425,6 +11425,14 @@ export type Database = {
         Returns: boolean
       }
       can_access_practice: { Args: { p_practice_id: string }; Returns: boolean }
+      can_manage_patient_billing: {
+        Args: {
+          _appointment_id: string
+          _patient_id: string
+          _practice_id: string
+        }
+        Returns: boolean
+      }
       can_send_message: { Args: { conv_id: string }; Returns: boolean }
       cancel_or_update_appointment: {
         Args: {
