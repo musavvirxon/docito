@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateProfilePatientPDF } from "./PatientSummaryPDF";
 import { toast } from "sonner";
+import { PatientFinancialTab } from "@/components/patient/PatientFinancialTab";
 
 interface PatientDetailSectionProps {
   patientId: string;
@@ -66,6 +67,7 @@ interface TreatmentPlan {
 }
 
 const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) => {
+  const { t } = useTranslation(['finance']);
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [patient, setPatient] = useState<PatientData | null>(null);
@@ -354,7 +356,7 @@ const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) 
           <TabsTrigger value="visits">Visits</TabsTrigger>
           <TabsTrigger value="records">Medical Records</TabsTrigger>
           <TabsTrigger value="treatment">Treatment Plans</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
+          <TabsTrigger value="billing">{t('finance:ledger.financial', 'Financial')}</TabsTrigger>
         </TabsList>
 
         {/* Visits Tab */}
@@ -565,21 +567,9 @@ const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) 
           )}
         </TabsContent>
 
-        {/* Billing Tab */}
+        {/* Financial Tab */}
         <TabsContent value="billing" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Billing & Invoices</h3>
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Invoice
-            </Button>
-          </div>
-          <Card>
-            <CardContent className="py-12 text-center">
-              <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-muted-foreground">No billing records found</p>
-            </CardContent>
-          </Card>
+          <PatientFinancialTab patientId={patientId} />
         </TabsContent>
       </Tabs>
     </div>

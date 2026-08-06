@@ -3006,6 +3006,9 @@ export type Database = {
           medical_history: string | null
           merged_into_user_id: string | null
           notes: string | null
+          opening_balance_amount: number | null
+          opening_balance_currency: string | null
+          opening_balance_date: string | null
           phone: string
           profession: string | null
           profile_photo_url: string | null
@@ -3030,6 +3033,9 @@ export type Database = {
           medical_history?: string | null
           merged_into_user_id?: string | null
           notes?: string | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone: string
           profession?: string | null
           profile_photo_url?: string | null
@@ -3054,6 +3060,9 @@ export type Database = {
           medical_history?: string | null
           merged_into_user_id?: string | null
           notes?: string | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone?: string
           profession?: string | null
           profile_photo_url?: string | null
@@ -7944,6 +7953,9 @@ export type Database = {
           is_verified: boolean | null
           language: string | null
           notification_settings: Json | null
+          opening_balance_amount: number | null
+          opening_balance_currency: string | null
+          opening_balance_date: string | null
           phone: string | null
           preferred_currency: string
           privacy_settings: Json | null
@@ -7970,6 +7982,9 @@ export type Database = {
           is_verified?: boolean | null
           language?: string | null
           notification_settings?: Json | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone?: string | null
           preferred_currency?: string
           privacy_settings?: Json | null
@@ -7996,6 +8011,9 @@ export type Database = {
           is_verified?: boolean | null
           language?: string | null
           notification_settings?: Json | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone?: string | null
           preferred_currency?: string
           privacy_settings?: Json | null
@@ -11293,6 +11311,22 @@ export type Database = {
           },
         ]
       }
+      patient_ledger_v: {
+        Row: {
+          appointment_id: string | null
+          charge_cents: number | null
+          currency: string | null
+          description: string | null
+          entry_date: string | null
+          entry_id: string | null
+          kind: string | null
+          method: string | null
+          patient_id: string | null
+          payment_cents: number | null
+          practice_id: string | null
+        }
+        Relationships: []
+      }
       patient_outstanding_balance_v: {
         Row: {
           currency: string | null
@@ -11400,6 +11434,14 @@ export type Database = {
         Returns: boolean
       }
       can_access_practice: { Args: { p_practice_id: string }; Returns: boolean }
+      can_manage_patient_billing: {
+        Args: {
+          _appointment_id: string
+          _patient_id: string
+          _practice_id: string
+        }
+        Returns: boolean
+      }
       can_send_message: { Args: { conv_id: string }; Returns: boolean }
       cancel_or_update_appointment: {
         Args: {

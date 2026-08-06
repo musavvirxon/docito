@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { PERMANENT_TEETH, PRIMARY_TEETH } from "./types";
+import { CreateChargeFromProcedureDialog } from "@/components/patient/CreateChargeFromProcedureDialog";
 
 export type DentitionType = "permanent" | "primary";
 
@@ -15,7 +16,13 @@ export interface ToothChartProcedure {
   id: string;
   tooth_numbers?: number[] | null;
   status: string;
-  procedure?: { name?: string | null; category?: string | null } | null;
+  cost?: number | null;
+  procedure?: {
+    name?: string | null;
+    category?: string | null;
+    default_cost?: number | null;
+    price?: number | null;
+  } | null;
 }
 
 interface Props {
@@ -57,6 +64,7 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
   const { t } = useTranslation("dashboard");
   const [busy, setBusy] = useState(false);
   const [dentition, setDentition] = useState<DentitionType>(dentitionType);
+  const [chargeProc, setChargeProc] = useState<ToothChartProcedure | null>(null);
 
   const set = dentition === "primary" ? PRIMARY_TEETH : PERMANENT_TEETH;
   const upper = [...set.upperRight, ...set.upperLeft];
@@ -114,8 +122,12 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
       .update({ status })
       .eq("id", proc.id);
     setBusy(false);
-    if (error) toast.error(error.message);
-    else onChanged?.();
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    onChanged?.();
+    if (status === "completed") setChargeProc(proc);
   };
 
   const renderTooth = (n: number, index: number, total: number, row: "upper" | "lower") => {
@@ -356,6 +368,22 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
         )}
 
       </CardContent>
+      <CreateChargeFromProcedureDialog
+        open={!!chargeProc}
+        onOpenChange={(o) => !o && setChargeProc(null)}
+        planId={planId}
+        planProcedureId={chargeProc?.id}
+        procedureName={chargeProc?.procedure?.name}
+        toothNumbers={chargeProc?.tooth_numbers ?? undefined}
+        suggestedAmount={
+          Number(
+            chargeProc?.cost ??
+              chargeProc?.procedure?.price ??
+              chargeProc?.procedure?.default_cost ??
+              0,
+          ) || null
+        }
+      />
     </Card>
   );
 };

@@ -46,20 +46,28 @@ export function AppointmentFinancePanel({
   procedures = [],
 }: Props) {
   const { t } = useTranslation('appointments');
+  const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
   const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
   const finance = useAppointmentFinance(appointmentId, patientId || undefined);
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
+  const visitCharges = finance.billing.filter(
+    (b) => (b.transaction_type ?? 'charge') === 'charge',
+  );
 
 
   const [payOpen, setPayOpen] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
+  const [chargeOpen, setChargeOpen] = useState(false);
+  const [chargeDesc, setChargeDesc] = useState('');
+  const [chargeAmt, setChargeAmt] = useState('');
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
   const [discountAmt, setDiscountAmt] = useState('');
   const [discountReason, setDiscountReason] = useState('');
+
 
   const status =
     finance.outstanding <= 0 && finance.totalBilled > 0
@@ -100,7 +108,28 @@ export function AppointmentFinancePanel({
     }
   };
 
+  const handleAddCharge = async () => {
+    const n = Number(chargeAmt);
+    if (!chargeDesc.trim() || !Number.isFinite(n) || n <= 0) {
+      toast.error(t('finance.errors.enterValidAmount'));
+      return;
+    }
+    try {
+      await finance.addCharge({
+        description: chargeDesc.trim(),
+        amount: n,
+        currency: displayCurrency,
+      });
+      setChargeOpen(false);
+      setChargeDesc('');
+      setChargeAmt('');
+    } catch (e: any) {
+      toast.error(e?.message || t('finance.errors.recordFailed'));
+    }
+  };
+
   const handleMarkPaid = async () => {
+
     try {
       await finance.markFullyPaid('cash');
     } catch (e: any) {
@@ -181,6 +210,9 @@ export function AppointmentFinancePanel({
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
             <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setChargeOpen(true)} className="gap-1">
+            <Plus className="h-4 w-4" /> {tf('ledger.addCharge', 'Add charge')}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setDiscOpen(true)}>
             {t('finance.applyDiscount')}
           </Button>
@@ -196,6 +228,36 @@ export function AppointmentFinancePanel({
             <FileText className="h-4 w-4" /> {t('finance.invoicePdf')}
           </Button>
         </div>
+
+        {/* Charges recorded during this visit */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground">
+              {tf('ledger.visitCharges', 'Charges this visit')}
+            </p>
+            <p className="text-xs font-semibold tabular-nums">
+              {tf('subtotal')}: {fmt(finance.totalBilled, finance.currency)}
+            </p>
+          </div>
+          {visitCharges.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
+            </p>
+          ) : (
+            visitCharges.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-xs"
+              >
+                <span className="truncate">{c.description || tf('ledger.charge', 'Charge')}</span>
+                <span className="shrink-0 font-medium tabular-nums">
+                  {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+
 
         {finance.payments.length > 0 && (
           <div className="space-y-1">
@@ -268,6 +330,42 @@ export function AppointmentFinancePanel({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add Charge Dialog */}
+      <Dialog open={chargeOpen} onOpenChange={setChargeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tf('ledger.addCharge', 'Add charge')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{tf('description')}</Label>
+              <Input
+                value={chargeDesc}
+                onChange={(e) => setChargeDesc(e.target.value)}
+                placeholder={tf('enterDescription')}
+              />
+            </div>
+            <div>
+              <Label>{tf('amount')}</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={chargeAmt}
+                onChange={(e) => setChargeAmt(e.target.value)}
+                placeholder={tf('enterAmount')}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setChargeOpen(false)}>
+              {tf('cancel')}
+            </Button>
+            <Button onClick={handleAddCharge}>{tf('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Discount Dialog */}
       <Dialog open={discOpen} onOpenChange={setDiscOpen}>
