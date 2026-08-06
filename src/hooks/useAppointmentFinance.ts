@@ -23,6 +23,7 @@ interface BillingRow {
   description: string | null;
   transaction_type: string | null;
   appointment_id: string | null;
+  metadata?: Record<string, unknown> | null;
   created_at: string;
 }
 
