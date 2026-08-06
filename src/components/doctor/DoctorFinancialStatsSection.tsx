@@ -17,9 +17,12 @@ import { subDays } from "date-fns";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
+import { useDoctorBillingAggregate } from "@/hooks/useDoctorBillingAggregate";
 
 export const DoctorFinancialStatsSection = () => {
   const { t } = useTranslation("dashboard");
+  const { t: tf } = useTranslation("finance");
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: subDays(new Date(), 30),
     to: new Date()
@@ -41,6 +44,8 @@ export const DoctorFinancialStatsSection = () => {
     doctorId,
   } = useFinancialStats(dateRange.from, dateRange.to);
   
+  const doctorBilling = useDoctorBillingAggregate(doctorId, dateRange.from, dateRange.to);
+
   const { metrics: advancedMetrics, refreshData: refreshAdvancedMetrics } = useAdvancedFinancialMetrics(stats.earningsThisMonth, 'doctor');
 
   const handleDatePresetChange = (preset: '7days' | '30days' | '90days') => {
@@ -161,6 +166,16 @@ export const DoctorFinancialStatsSection = () => {
 
       {/* Overview Cards */}
       <FinancialOverview stats={stats} />
+
+      {/* Billing bar (same component as the appointment session, fed aggregate doctor data) */}
+      <AppointmentFinancePanel
+        appointmentId=""
+        patientName=""
+        showActions={false}
+        overrideData={doctorBilling}
+        chargesLabel={tf("transactions")}
+        emptyChargesLabel={tf("noTransactions")}
+      />
 
       {/* Tabs */}
       <Tabs defaultValue="chart" className="space-y-6">
