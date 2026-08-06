@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
+import { useCurrency } from "@/hooks/useCurrency";
 
 // ✅ Only phone is required. Other fields are optional.
 // The DB table currently requires full_name + date_of_birth, so we safely auto-fill defaults
@@ -30,6 +32,8 @@ const formSchema = z.object({
   phone: z.string().min(5, "Phone is required"),
   email: z.string().optional(),
   date_of_birth: z.string().optional(),
+  opening_balance_amount: z.string().optional(),
+  opening_balance_date: z.string().optional(),
 });
 
 export interface DoctorPatientRow {
@@ -53,6 +57,8 @@ const CreatePatientModal = ({
   onSuccess,
 }: CreatePatientModalProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation("finance");
+  const { currency } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [doctorId, setDoctorId] = useState<string | null>(null);
 
@@ -63,6 +69,8 @@ const CreatePatientModal = ({
       phone: "",
       email: "",
       date_of_birth: "",
+      opening_balance_amount: "",
+      opening_balance_date: "",
     },
   });
 
@@ -111,6 +119,12 @@ const CreatePatientModal = ({
           email: values.email?.trim() || null,
           date_of_birth: dob,
           status: "active",
+          opening_balance_amount:
+            values.opening_balance_amount && Number(values.opening_balance_amount) !== 0
+              ? Number(values.opening_balance_amount)
+              : null,
+          opening_balance_currency: (currency || "uzs").toLowerCase(),
+          opening_balance_date: values.opening_balance_date?.trim() || null,
         })
         .select("id, full_name, phone, email, date_of_birth, created_at")
         .single();
@@ -198,6 +212,35 @@ const CreatePatientModal = ({
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="opening_balance_amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("ledger.openingBalance", "Opening balance")}</FormLabel>
+                    <FormControl>
+                      <Input type="number" inputMode="decimal" placeholder="0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="opening_balance_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("ledger.openingBalanceDate", "Opening balance as of")}</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={loading}>
