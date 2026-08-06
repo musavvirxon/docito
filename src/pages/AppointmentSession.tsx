@@ -23,6 +23,7 @@ import {
   MapPin,
   Home,
   MessageSquare,
+  Wallet,
   Star,
 } from 'lucide-react';
 import { format } from 'date-fns';
