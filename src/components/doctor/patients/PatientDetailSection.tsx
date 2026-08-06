@@ -67,6 +67,7 @@ interface TreatmentPlan {
 }
 
 const PatientDetailSection = ({ patientId, onBack }: PatientDetailSectionProps) => {
+  const { t } = useTranslation(['finance']);
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [patient, setPatient] = useState<PatientData | null>(null);

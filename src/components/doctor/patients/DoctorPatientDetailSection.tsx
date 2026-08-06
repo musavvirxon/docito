@@ -27,6 +27,7 @@ interface DoctorPatientDetailSectionProps {
 }
 
 const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSectionProps) => {
+  const { t } = useTranslation(['finance']);
   const { user } = useAuth();
   const { getPatientById, deletePatient } = useDoctorPatientsV2();
   const [loading, setLoading] = useState(true);
