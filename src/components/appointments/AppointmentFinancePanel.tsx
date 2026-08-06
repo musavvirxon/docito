@@ -331,6 +331,42 @@ export function AppointmentFinancePanel({
         </DialogContent>
       </Dialog>
 
+      {/* Add Charge Dialog */}
+      <Dialog open={chargeOpen} onOpenChange={setChargeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tf('ledger.addCharge', 'Add charge')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>{tf('description')}</Label>
+              <Input
+                value={chargeDesc}
+                onChange={(e) => setChargeDesc(e.target.value)}
+                placeholder={tf('enterDescription')}
+              />
+            </div>
+            <div>
+              <Label>{tf('amount')}</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={chargeAmt}
+                onChange={(e) => setChargeAmt(e.target.value)}
+                placeholder={tf('enterAmount')}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setChargeOpen(false)}>
+              {tf('cancel')}
+            </Button>
+            <Button onClick={handleAddCharge}>{tf('save')}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       {/* Discount Dialog */}
       <Dialog open={discOpen} onOpenChange={setDiscOpen}>
         <DialogContent>
