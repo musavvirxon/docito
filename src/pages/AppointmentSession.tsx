@@ -1582,6 +1582,20 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </Card>
                   </TabsContent>
 
+                  <TabsContent value="billing" className="mt-0 space-y-4">
+                    {appointment && (
+                      <AppointmentFinancePanel
+                        appointmentId={appointment.id}
+                        patientId={appointment.patient_id}
+                        patientName={appointment.patient_name || ''}
+                        appointmentDate={appointment.appointment_date}
+                        procedures={unifiedProcedures}
+                      />
+                    )}
+                  </TabsContent>
+
+
+
                   <TabsContent value="diagnoses" className="mt-0 space-y-4">
                     {isDentist && patientId && (
                       <ToothDiagnosisPicker patientId={patientId} />
