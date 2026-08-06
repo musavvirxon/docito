@@ -160,6 +160,45 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     [appointmentId, currency, refresh],
   );
 
+  const addCharge = useCallback(
+    async ({
+      description,
+      amount,
+      currency: chargeCurrency,
+      metadata,
+    }: {
+      description: string;
+      amount: number;
+      currency?: string;
+      metadata?: Record<string, unknown>;
+    }) => {
+      if (!appointmentId) return;
+      const { data: appt } = await supabase
+        .from("appointments")
+        .select("practice_id, patient_id")
+        .eq("id", appointmentId)
+        .maybeSingle();
+      const resolvedPatient = patientId || (appt as any)?.patient_id || null;
+      const { error } = await supabase.from("billing_transactions").insert({
+        appointment_id: appointmentId,
+        patient_id: resolvedPatient,
+        user_id: resolvedPatient,
+        practice_id: (appt as any)?.practice_id || null,
+        amount: Math.round(amount),
+        amount_cents: Math.round(amount * 100),
+        currency: (chargeCurrency || currency || "uzs").toLowerCase(),
+        transaction_type: "charge",
+        status: "pending",
+        description,
+        metadata: { source: "manual", ...(metadata || {}) },
+      } as any);
+      if (error) throw error;
+      toast.success("Charge added");
+      await refresh();
+    },
+    [appointmentId, patientId, currency, refresh],
+  );
+
   const markFullyPaid = useCallback(
     async (method: PaymentMethod) => {
       if (outstanding <= 0) {
@@ -185,6 +224,9 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     refresh,
     recordPayment,
     applyDiscount,
+    addCharge,
     markFullyPaid,
+  };
+
   };
 }
