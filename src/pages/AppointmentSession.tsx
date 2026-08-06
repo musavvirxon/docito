@@ -125,9 +125,10 @@ interface AppointmentDentalProcedureRow {
   doctor?: { full_name: string | null } | null;
 }
 
-type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'treatmentPlan' | 'prescriptions' | 'notes';
+type SessionTab = 'session' | 'video' | 'diagnoses' | 'dental' | 'treatmentPlan' | 'prescriptions' | 'billing' | 'notes' | 'reviews';
 
-const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'treatmentPlan', 'prescriptions', 'notes'];
+
+const VALID_TABS: SessionTab[] = ['session', 'video', 'diagnoses', 'dental', 'treatmentPlan', 'prescriptions', 'billing', 'notes', 'reviews'];
 
 const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: AppointmentSessionPageProps) => {
   const { appointmentId: paramAppointmentId } = useParams();
