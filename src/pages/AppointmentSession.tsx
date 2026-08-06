@@ -1553,16 +1553,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
-                    {/* Patient Finance (real, persisted) */}
-                    {appointment && (
-                      <AppointmentFinancePanel
-                        appointmentId={appointment.id}
-                        patientId={appointment.patient_id}
-                        patientName={appointment.patient_name || ''}
-                        appointmentDate={appointment.appointment_date}
-                        procedures={unifiedProcedures}
-                      />
-                    )}
+
+
 
                     {/* Session Notes */}
                     <Card>
