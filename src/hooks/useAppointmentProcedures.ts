@@ -171,33 +171,9 @@ export function useAppointmentProcedures({
           createdRowId = (inserted as any)?.id || null;
         }
 
-        // Auto-create billing transaction so finance reflects the charge
-        if (totalCost != null && totalCost > 0) {
-          const description = `${input.name}${teeth.length ? ` (Teeth ${teeth.slice().sort((a, b) => a - b).join(',')})` : ''}`;
-          const { error: billErr } = await supabase.from('billing_transactions').insert({
-            user_id: patientId || doctorPatientId || authUser?.user?.id || doctorId,
-            appointment_id: appointmentId,
-            entity_type: 'doctor',
-            entity_id: doctorId,
-            transaction_type: 'charge',
-            status: 'pending',
-            amount: Math.round(totalCost),
-            amount_cents: Math.round(totalCost * 100),
-            currency: (input.currency || 'USD').toLowerCase(),
-            description,
-            metadata: {
-              source: 'appointment_procedure',
-              source_table: teeth.length > 0 ? 'tooth_procedure_history' : 'appointment_procedures',
-              source_id: createdRowId,
-              unit_cost: unitCost,
-              tooth_count: Math.max(teeth.length, 1),
-              teeth,
-            },
-          } as any);
-          if (billErr) {
-            console.warn('Billing transaction insert failed', billErr);
-          }
-        }
+        // Billing charge is created automatically by database triggers
+        // (autobill_tooth_procedure / autobill_appointment_procedure).
+
 
         toast.success('Procedure added');
         await refresh();
