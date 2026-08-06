@@ -244,18 +244,40 @@ export function AppointmentFinancePanel({
               {tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
             </p>
           ) : (
-            visitCharges.map((c) => (
-              <div
-                key={c.id}
-                className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-xs"
-              >
-                <span className="truncate">{c.description || tf('ledger.charge', 'Charge')}</span>
-                <span className="shrink-0 font-medium tabular-nums">
-                  {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
-                </span>
-              </div>
-            ))
+            visitCharges.map((c) => {
+              const meta = (c.metadata ?? {}) as Record<string, any>;
+              const teeth: number[] = Array.isArray(meta.teeth) ? meta.teeth : [];
+              const when = meta.performed_at || c.created_at;
+              return (
+                <div
+                  key={c.id}
+                  className="flex items-start justify-between gap-2 rounded border px-2 py-1.5 text-xs"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="truncate">{c.description || tf('ledger.charge', 'Charge')}</span>
+                      {teeth.length > 0 && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {t('finance.teethLabel', {
+                            list: teeth.slice().sort((a, b) => a - b).join(', '),
+                          })}
+                        </Badge>
+                      )}
+                    </div>
+                    {when && (
+                      <div className="mt-0.5 text-[10px] text-muted-foreground">
+                        {new Date(when).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                  <span className="shrink-0 font-medium tabular-nums">
+                    {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                  </span>
+                </div>
+              );
+            })
           )}
+
         </div>
 
 
