@@ -228,5 +228,4 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     markFullyPaid,
   };
 
-  };
 }
