@@ -34,6 +34,14 @@ interface Props {
   appointmentDate?: string;
   doctorName?: string;
   procedures?: Array<{ name: string; code?: string | null; cost: number | null; toothNumbers?: number[] }>;
+  /** When provided, the panel renders this data instead of loading a single visit's finance. */
+  overrideData?: Partial<AppointmentFinanceData>;
+  /** Hide single-visit actions (record payment, add charge, discount, invoice). Default true. */
+  showActions?: boolean;
+  /** Optional label override for the charges list heading. */
+  chargesLabel?: string;
+  /** Optional label override for the empty charges state. */
+  emptyChargesLabel?: string;
 }
 
 
@@ -44,17 +52,25 @@ export function AppointmentFinancePanel({
   appointmentDate,
   doctorName,
   procedures = [],
+  overrideData,
+  showActions = true,
+  chargesLabel,
+  emptyChargesLabel,
 }: Props) {
   const { t } = useTranslation('appointments');
   const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
   const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
-  const finance = useAppointmentFinance(appointmentId, patientId || undefined);
+  const liveFinance = useAppointmentFinance(overrideData ? undefined : appointmentId, patientId || undefined);
+  const finance: AppointmentFinanceData = overrideData
+    ? ({ ...liveFinance, ...overrideData } as AppointmentFinanceData)
+    : liveFinance;
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
   const visitCharges = finance.billing.filter(
     (b) => (b.transaction_type ?? 'charge') === 'charge',
   );
+
 
 
   const [payOpen, setPayOpen] = useState(false);
