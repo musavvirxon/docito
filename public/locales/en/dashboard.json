@@ -2323,6 +2323,7 @@
         "dental": "Dental",
         "treatmentPlan": "Treatment Plan",
         "rx": "Rx",
+        "billing": "Billing",
         "notes": "Notes",
         "reviews": "Reviews"
       },
