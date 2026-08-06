@@ -3006,6 +3006,9 @@ export type Database = {
           medical_history: string | null
           merged_into_user_id: string | null
           notes: string | null
+          opening_balance_amount: number | null
+          opening_balance_currency: string | null
+          opening_balance_date: string | null
           phone: string
           profession: string | null
           profile_photo_url: string | null
@@ -3030,6 +3033,9 @@ export type Database = {
           medical_history?: string | null
           merged_into_user_id?: string | null
           notes?: string | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone: string
           profession?: string | null
           profile_photo_url?: string | null
@@ -3054,6 +3060,9 @@ export type Database = {
           medical_history?: string | null
           merged_into_user_id?: string | null
           notes?: string | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone?: string
           profession?: string | null
           profile_photo_url?: string | null
