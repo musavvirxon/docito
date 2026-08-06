@@ -23,6 +23,7 @@ import {
   MapPin,
   Home,
   MessageSquare,
+  Wallet,
   Star,
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -1255,6 +1256,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsTrigger>
                   )}
 
+                  <TabsTrigger value="billing" className="gap-2">
+                    <Wallet className="h-4 w-4" />
+                    {t('doctor.session.tabs.billing')}
+                  </TabsTrigger>
+
                   <TabsTrigger value="notes" className="gap-2">
                     <FileText className="h-4 w-4" />
                     {t('doctor.session.tabs.notes')}
@@ -1552,16 +1558,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
 
-                    {/* Patient Finance (real, persisted) */}
-                    {appointment && (
-                      <AppointmentFinancePanel
-                        appointmentId={appointment.id}
-                        patientId={appointment.patient_id}
-                        patientName={appointment.patient_name || ''}
-                        appointmentDate={appointment.appointment_date}
-                        procedures={unifiedProcedures}
-                      />
-                    )}
+
+
 
                     {/* Session Notes */}
                     <Card>
@@ -1583,6 +1581,20 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       </CardContent>
                     </Card>
                   </TabsContent>
+
+                  <TabsContent value="billing" className="mt-0 space-y-4">
+                    {appointment && (
+                      <AppointmentFinancePanel
+                        appointmentId={appointment.id}
+                        patientId={appointment.patient_id}
+                        patientName={appointment.patient_name || ''}
+                        appointmentDate={appointment.appointment_date}
+                        procedures={unifiedProcedures}
+                      />
+                    )}
+                  </TabsContent>
+
+
 
                   <TabsContent value="diagnoses" className="mt-0 space-y-4">
                     {isDentist && patientId && (
