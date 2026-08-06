@@ -48,6 +48,13 @@ export interface AppointmentFinanceData {
   refresh: () => Promise<void>;
   recordPayment: (input: { amount: number; method: PaymentMethod; notes?: string }) => Promise<void>;
   applyDiscount: (input: { amount: number; reason?: string }) => Promise<void>;
+  addCharge: (input: {
+    description: string;
+    amount: number;
+    currency?: string;
+    metadata?: Record<string, unknown>;
+  }) => Promise<void>;
+
   markFullyPaid: (method: PaymentMethod) => Promise<void>;
 }
 
