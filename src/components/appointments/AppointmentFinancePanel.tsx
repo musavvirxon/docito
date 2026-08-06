@@ -46,20 +46,28 @@ export function AppointmentFinancePanel({
   procedures = [],
 }: Props) {
   const { t } = useTranslation('appointments');
+  const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
   const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
   const finance = useAppointmentFinance(appointmentId, patientId || undefined);
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
+  const visitCharges = finance.billing.filter(
+    (b) => (b.transaction_type ?? 'charge') === 'charge',
+  );
 
 
   const [payOpen, setPayOpen] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
+  const [chargeOpen, setChargeOpen] = useState(false);
+  const [chargeDesc, setChargeDesc] = useState('');
+  const [chargeAmt, setChargeAmt] = useState('');
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
   const [discountAmt, setDiscountAmt] = useState('');
   const [discountReason, setDiscountReason] = useState('');
+
 
   const status =
     finance.outstanding <= 0 && finance.totalBilled > 0
