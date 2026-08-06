@@ -21,7 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAppointmentFinance, type PaymentMethod } from '@/hooks/useAppointmentFinance';
+import {
+  useAppointmentFinance,
+  type PaymentMethod,
+  type AppointmentFinanceData,
+} from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -222,6 +226,7 @@ export function AppointmentFinancePanel({
           </div>
         )}
 
+        {showActions && (
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
             <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
@@ -244,12 +249,13 @@ export function AppointmentFinancePanel({
             <FileText className="h-4 w-4" /> {t('finance.invoicePdf')}
           </Button>
         </div>
+        )}
 
         {/* Charges recorded during this visit */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-muted-foreground">
-              {tf('ledger.visitCharges', 'Charges this visit')}
+              {chargesLabel ?? tf('ledger.visitCharges', 'Charges this visit')}
             </p>
             <p className="text-xs font-semibold tabular-nums">
               {tf('subtotal')}: {fmt(finance.totalBilled, finance.currency)}
@@ -257,7 +263,7 @@ export function AppointmentFinancePanel({
           </div>
           {visitCharges.length === 0 ? (
             <p className="text-xs text-muted-foreground">
-              {tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
+              {emptyChargesLabel ?? tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
             </p>
           ) : (
             visitCharges.map((c) => {
