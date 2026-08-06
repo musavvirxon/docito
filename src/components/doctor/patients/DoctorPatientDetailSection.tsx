@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { generateDoctorPatientPDF } from "./PatientSummaryPDF";
 import { PatientPaymentsList } from "@/components/PatientPaymentsList";
+import { PatientFinancialTab } from "@/components/patient/PatientFinancialTab";
 import { AdHocAddProcedureButton } from "./AdHocAddProcedureButton";
 import { toast } from "sonner";
 
@@ -261,7 +262,7 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
           <TabsTrigger value="medical">Medical Info</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
+          <TabsTrigger value="billing">{t('finance:ledger.financial', 'Financial')}</TabsTrigger>
         </TabsList>
 
         {/* Medical Info Tab */}
@@ -354,12 +355,7 @@ const DoctorPatientDetailSection = ({ patientId, onBack }: DoctorPatientDetailSe
 
         {/* Billing Tab */}
         <TabsContent value="billing" className="space-y-4">
-          <PatientPaymentsList
-            doctorId={doctorId}
-            appointmentIds={appointmentIds}
-            title="Payments for this patient"
-            emptyText="No payments recorded for this patient yet."
-          />
+          <PatientFinancialTab patientId={patientId} />
         </TabsContent>
       </Tabs>
     </div>
