@@ -368,6 +368,22 @@ const TreatmentPlanToothChart = ({ planId, dentitionType, procedures, readOnly, 
         )}
 
       </CardContent>
+      <CreateChargeFromProcedureDialog
+        open={!!chargeProc}
+        onOpenChange={(o) => !o && setChargeProc(null)}
+        planId={planId}
+        planProcedureId={chargeProc?.id}
+        procedureName={chargeProc?.procedure?.name}
+        toothNumbers={chargeProc?.tooth_numbers ?? undefined}
+        suggestedAmount={
+          Number(
+            chargeProc?.cost ??
+              chargeProc?.procedure?.price ??
+              chargeProc?.procedure?.default_cost ??
+              0,
+          ) || null
+        }
+      />
     </Card>
   );
 };
