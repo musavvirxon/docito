@@ -108,7 +108,28 @@ export function AppointmentFinancePanel({
     }
   };
 
+  const handleAddCharge = async () => {
+    const n = Number(chargeAmt);
+    if (!chargeDesc.trim() || !Number.isFinite(n) || n <= 0) {
+      toast.error(t('finance.errors.enterValidAmount'));
+      return;
+    }
+    try {
+      await finance.addCharge({
+        description: chargeDesc.trim(),
+        amount: n,
+        currency: displayCurrency,
+      });
+      setChargeOpen(false);
+      setChargeDesc('');
+      setChargeAmt('');
+    } catch (e: any) {
+      toast.error(e?.message || t('finance.errors.recordFailed'));
+    }
+  };
+
   const handleMarkPaid = async () => {
+
     try {
       await finance.markFullyPaid('cash');
     } catch (e: any) {
