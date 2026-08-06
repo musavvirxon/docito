@@ -21,7 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAppointmentFinance, type PaymentMethod } from '@/hooks/useAppointmentFinance';
+import {
+  useAppointmentFinance,
+  type PaymentMethod,
+  type AppointmentFinanceData,
+} from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -34,6 +38,14 @@ interface Props {
   appointmentDate?: string;
   doctorName?: string;
   procedures?: Array<{ name: string; code?: string | null; cost: number | null; toothNumbers?: number[] }>;
+  /** When provided, the panel renders this data instead of loading a single visit's finance. */
+  overrideData?: Partial<AppointmentFinanceData>;
+  /** Hide single-visit actions (record payment, add charge, discount, invoice). Default true. */
+  showActions?: boolean;
+  /** Optional label override for the charges list heading. */
+  chargesLabel?: string;
+  /** Optional label override for the empty charges state. */
+  emptyChargesLabel?: string;
 }
 
 
@@ -44,17 +56,25 @@ export function AppointmentFinancePanel({
   appointmentDate,
   doctorName,
   procedures = [],
+  overrideData,
+  showActions = true,
+  chargesLabel,
+  emptyChargesLabel,
 }: Props) {
   const { t } = useTranslation('appointments');
   const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
   const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
-  const finance = useAppointmentFinance(appointmentId, patientId || undefined);
+  const liveFinance = useAppointmentFinance(overrideData ? undefined : appointmentId, patientId || undefined);
+  const finance: AppointmentFinanceData = overrideData
+    ? ({ ...liveFinance, ...overrideData } as AppointmentFinanceData)
+    : liveFinance;
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
   const visitCharges = finance.billing.filter(
     (b) => (b.transaction_type ?? 'charge') === 'charge',
   );
+
 
 
   const [payOpen, setPayOpen] = useState(false);
@@ -206,6 +226,7 @@ export function AppointmentFinancePanel({
           </div>
         )}
 
+        {showActions && (
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
             <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
@@ -228,12 +249,13 @@ export function AppointmentFinancePanel({
             <FileText className="h-4 w-4" /> {t('finance.invoicePdf')}
           </Button>
         </div>
+        )}
 
         {/* Charges recorded during this visit */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <p className="text-xs font-medium text-muted-foreground">
-              {tf('ledger.visitCharges', 'Charges this visit')}
+              {chargesLabel ?? tf('ledger.visitCharges', 'Charges this visit')}
             </p>
             <p className="text-xs font-semibold tabular-nums">
               {tf('subtotal')}: {fmt(finance.totalBilled, finance.currency)}
@@ -241,7 +263,7 @@ export function AppointmentFinancePanel({
           </div>
           {visitCharges.length === 0 ? (
             <p className="text-xs text-muted-foreground">
-              {tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
+              {emptyChargesLabel ?? tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
             </p>
           ) : (
             visitCharges.map((c) => {

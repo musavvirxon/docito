@@ -1412,6 +1412,7 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          doctor_id: string | null
           entity_id: string | null
           entity_type: string | null
           id: string
@@ -1439,6 +1440,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          doctor_id?: string | null
           entity_id?: string | null
           entity_type?: string | null
           id?: string
@@ -1466,6 +1468,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          doctor_id?: string | null
           entity_id?: string | null
           entity_type?: string | null
           id?: string
@@ -1505,6 +1508,27 @@ export type Database = {
             columns: ["appointment_procedure_id"]
             isOneToOne: true
             referencedRelation: "appointment_procedures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctor_public_profile_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_transactions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
           {
