@@ -7944,6 +7944,9 @@ export type Database = {
           is_verified: boolean | null
           language: string | null
           notification_settings: Json | null
+          opening_balance_amount: number | null
+          opening_balance_currency: string | null
+          opening_balance_date: string | null
           phone: string | null
           preferred_currency: string
           privacy_settings: Json | null
@@ -7970,6 +7973,9 @@ export type Database = {
           is_verified?: boolean | null
           language?: string | null
           notification_settings?: Json | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone?: string | null
           preferred_currency?: string
           privacy_settings?: Json | null
@@ -7996,6 +8002,9 @@ export type Database = {
           is_verified?: boolean | null
           language?: string | null
           notification_settings?: Json | null
+          opening_balance_amount?: number | null
+          opening_balance_currency?: string | null
+          opening_balance_date?: string | null
           phone?: string | null
           preferred_currency?: string
           privacy_settings?: Json | null
@@ -11292,6 +11301,22 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      patient_ledger_v: {
+        Row: {
+          appointment_id: string | null
+          charge_cents: number | null
+          currency: string | null
+          description: string | null
+          entry_date: string | null
+          entry_id: string | null
+          kind: string | null
+          method: string | null
+          patient_id: string | null
+          payment_cents: number | null
+          practice_id: string | null
+        }
+        Relationships: []
       }
       patient_outstanding_balance_v: {
         Row: {
