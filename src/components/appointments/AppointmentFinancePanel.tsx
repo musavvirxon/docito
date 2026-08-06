@@ -181,6 +181,9 @@ export function AppointmentFinancePanel({
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
             <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setChargeOpen(true)} className="gap-1">
+            <Plus className="h-4 w-4" /> {tf('ledger.addCharge', 'Add charge')}
+          </Button>
           <Button size="sm" variant="outline" onClick={() => setDiscOpen(true)}>
             {t('finance.applyDiscount')}
           </Button>
@@ -196,6 +199,36 @@ export function AppointmentFinancePanel({
             <FileText className="h-4 w-4" /> {t('finance.invoicePdf')}
           </Button>
         </div>
+
+        {/* Charges recorded during this visit */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-medium text-muted-foreground">
+              {tf('ledger.visitCharges', 'Charges this visit')}
+            </p>
+            <p className="text-xs font-semibold tabular-nums">
+              {tf('subtotal')}: {fmt(finance.totalBilled, finance.currency)}
+            </p>
+          </div>
+          {visitCharges.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              {tf('ledger.noVisitCharges', 'No charges recorded for this visit yet.')}
+            </p>
+          ) : (
+            visitCharges.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between gap-2 rounded border px-2 py-1 text-xs"
+              >
+                <span className="truncate">{c.description || tf('ledger.charge', 'Charge')}</span>
+                <span className="shrink-0 font-medium tabular-nums">
+                  {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                </span>
+              </div>
+            ))
+          )}
+        </div>
+
 
         {finance.payments.length > 0 && (
           <div className="space-y-1">
