@@ -1256,6 +1256,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     </TabsTrigger>
                   )}
 
+                  <TabsTrigger value="billing" className="gap-2">
+                    <Wallet className="h-4 w-4" />
+                    {t('doctor.session.tabs.billing')}
+                  </TabsTrigger>
+
                   <TabsTrigger value="notes" className="gap-2">
                     <FileText className="h-4 w-4" />
                     {t('doctor.session.tabs.notes')}
