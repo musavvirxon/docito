@@ -175,10 +175,12 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
         if (error) throw error;
       } else {
         // Store as a ledger payment entry so manual patients still get full history.
+        const authUid = (await supabase.auth.getUser()).data.user?.id ?? null;
         const { error } = await supabase.from("billing_transactions").insert({
           appointment_id: appointmentId,
           patient_id: resolvedPatient,
-          user_id: resolvedPatient,
+          user_id: resolvedPatient || authUid,
+
           doctor_id: (appt as any)?.doctor_id || null,
           practice_id: (appt as any)?.practice_id || null,
           amount: Math.round(amount),
