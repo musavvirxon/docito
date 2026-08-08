@@ -238,10 +238,12 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
         .eq("id", appointmentId)
         .maybeSingle();
       const resolvedPatient = patientId || (appt as any)?.patient_id || null;
+      const authUid = (await supabase.auth.getUser()).data.user?.id ?? null;
       const { error } = await supabase.from("billing_transactions").insert({
         appointment_id: appointmentId,
         patient_id: resolvedPatient,
-        user_id: resolvedPatient,
+        user_id: resolvedPatient || authUid,
+
         practice_id: (appt as any)?.practice_id || null,
         amount: Math.round(amount),
         amount_cents: Math.round(amount * 100),
