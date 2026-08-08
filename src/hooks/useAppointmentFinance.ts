@@ -271,7 +271,8 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
 
   return {
     loading,
-    payments,
+    payments: paymentHistory,
+
     billing,
     insurance,
     totalBilled,
