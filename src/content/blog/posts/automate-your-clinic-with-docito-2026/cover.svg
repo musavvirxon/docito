@@ -1,0 +1,39 @@
+<svg width="100%" viewBox="0 0 740 520" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Cover image for "Automate Your Clinic With Docito" blog post</title>
+  <desc>An abstract editorial illustration showing connected nodes for clinic, lab, pharmacy, and patient linked by flowing automated paths, on a deep teal background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="740" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f2f2c"/>
+      <stop offset="1" stop-color="#0a2321"/>
+    </linearGradient>
+    <linearGradient id="node" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2dd4bf"/>
+      <stop offset="1" stop-color="#0891b2"/>
+    </linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5eead4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="740" height="520" fill="url(#bg)"/>
+  <g fill="none" stroke="#5eead4" stroke-width="2" opacity="0.55">
+    <path d="M180 150 C 260 120, 340 120, 400 170" marker-end="url(#arr)"/>
+    <path d="M420 190 C 480 220, 500 280, 470 330" marker-end="url(#arr)"/>
+    <path d="M440 350 C 380 390, 300 390, 250 350" marker-end="url(#arr)"/>
+    <path d="M220 320 C 170 280, 150 220, 175 170" marker-end="url(#arr)"/>
+    <path d="M400 170 C 400 230, 400 280, 400 330" stroke-dasharray="3 6" marker-end="url(#arr)"/>
+  </g>
+  <g>
+    <circle cx="160" cy="150" r="34" fill="url(#node)"/>
+    <text x="160" y="156" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#062a27" font-weight="700">Clinic</text>
+    <circle cx="420" cy="170" r="34" fill="url(#node)"/>
+    <text x="420" y="176" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#062a27" font-weight="700">Lab</text>
+    <circle cx="480" cy="340" r="34" fill="url(#node)"/>
+    <text x="480" y="346" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#062a27" font-weight="700">Pharmacy</text>
+    <circle cx="210" cy="340" r="34" fill="url(#node)"/>
+    <text x="210" y="346" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#062a27" font-weight="700">Patient</text>
+    <circle cx="400" cy="255" r="26" fill="#0a2321" stroke="#5eead4" stroke-width="2"/>
+    <text x="400" y="260" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#5eead4" font-weight="700">Docito</text>
+  </g>
+  <text x="60" y="450" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#eafffb">Automate Your Clinic</text>
+  <text x="60" y="480" font-family="Arial, sans-serif" font-size="16" fill="#9adfd4">Every Docito feature, end to end</text>
+</svg>
