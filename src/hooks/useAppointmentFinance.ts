@@ -105,42 +105,100 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     refresh();
   }, [refresh]);
 
-  const billingCharges = billing.filter((b) => (b.transaction_type ?? "charge") !== "discount" && (b.transaction_type ?? "charge") !== "refund");
+  const billingCharges = billing.filter((b) => {
+    const t = b.transaction_type ?? "charge";
+    return t !== "discount" && t !== "refund" && t !== "payment";
+  });
   const billingDiscounts = billing.filter((b) => b.transaction_type === "discount");
+  const billingPayments = billing.filter((b) => b.transaction_type === "payment");
 
   const totalBilled = billingCharges.reduce((s, b) => s + moneyFromBilling(b), 0);
   const totalDiscounts = billingDiscounts.reduce((s, b) => s + Math.abs(moneyFromBilling(b)), 0);
-  const totalPaid = payments
-    .filter((p) => (p.status || "").toLowerCase() !== "refunded" && (p.status || "").toLowerCase() !== "failed")
-    .reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  const totalPaid =
+    payments
+      .filter((p) => (p.status || "").toLowerCase() !== "refunded" && (p.status || "").toLowerCase() !== "failed")
+      .reduce((s, p) => s + (Number(p.amount) || 0), 0) +
+    billingPayments.reduce((s, b) => s + Math.abs(moneyFromBilling(b)), 0);
   const outstanding = Math.max(0, totalBilled - totalDiscounts - totalPaid);
   const priorBalance = priorBilling.reduce((s, b) => s + moneyFromBilling(b), 0);
   const currency = billing[0]?.currency?.toUpperCase() || "USD";
 
+  // Unified payment history (real `payments` rows + ledger-only payment rows for manual patients)
+  const paymentHistory: PaymentRow[] = [
+    ...payments,
+    ...billingPayments.map((b) => ({
+      id: b.id,
+      amount: Math.abs(moneyFromBilling(b)),
+      status: "completed",
+      payment_method: ((b.metadata as any)?.payment_method as string) || null,
+      notes: b.description ?? null,
+      paid_at: ((b.metadata as any)?.paid_at as string) || b.created_at,
+      created_at: b.created_at,
+    })),
+  ].sort((a, b) => new Date(b.paid_at || b.created_at).getTime() - new Date(a.paid_at || a.created_at).getTime());
+
   const recordPayment = useCallback(
     async ({ amount, method, notes }: { amount: number; method: PaymentMethod; notes?: string }) => {
-      if (!appointmentId || !patientId) return;
+      if (!appointmentId) return;
       const { data: appt } = await supabase
         .from("appointments")
-        .select("practice_id")
+        .select("practice_id, doctor_id, patient_id")
         .eq("id", appointmentId)
         .maybeSingle();
-      const { error } = await supabase.from("payments").insert({
-        appointment_id: appointmentId,
-        patient_id: patientId,
-        practice_id: (appt as any)?.practice_id || null,
-        amount,
-        payment_method: method,
-        status: "completed",
-        notes: notes || null,
-        paid_at: new Date().toISOString(),
-      } as any);
-      if (error) throw error;
+
+      const resolvedPatient = patientId || (appt as any)?.patient_id || null;
+      const nowIso = new Date().toISOString();
+
+      // `payments.patient_id` is a real profile FK — manual/walk-in patients have none.
+      let profilePatientId: string | null = null;
+      if (resolvedPatient) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("user_id", resolvedPatient)
+          .maybeSingle();
+        profilePatientId = (prof as any)?.user_id ?? null;
+      }
+
+      if (profilePatientId) {
+        const { error } = await supabase.from("payments").insert({
+          appointment_id: appointmentId,
+          patient_id: profilePatientId,
+          doctor_id: (appt as any)?.doctor_id || null,
+          practice_id: (appt as any)?.practice_id || null,
+          amount,
+          payment_method: method,
+          status: "completed",
+          notes: notes || null,
+          paid_at: nowIso,
+        } as any);
+        if (error) throw error;
+      } else {
+        // Store as a ledger payment entry so manual patients still get full history.
+        const authUid = (await supabase.auth.getUser()).data.user?.id ?? null;
+        const { error } = await supabase.from("billing_transactions").insert({
+          appointment_id: appointmentId,
+          patient_id: resolvedPatient,
+          user_id: resolvedPatient || authUid,
+
+          doctor_id: (appt as any)?.doctor_id || null,
+          practice_id: (appt as any)?.practice_id || null,
+          amount: Math.round(amount),
+          amount_cents: Math.round(amount * 100),
+          currency: (currency || "usd").toLowerCase(),
+          transaction_type: "payment",
+          status: "completed",
+          description: notes || "Payment received",
+          metadata: { source: "manual", payment_method: method, paid_at: nowIso },
+        } as any);
+        if (error) throw error;
+      }
       toast.success("Payment recorded");
       await refresh();
     },
-    [appointmentId, patientId, refresh],
+    [appointmentId, patientId, currency, refresh],
   );
+
 
   const applyDiscount = useCallback(
     async ({ amount, reason }: { amount: number; reason?: string }) => {
@@ -180,10 +238,12 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
         .eq("id", appointmentId)
         .maybeSingle();
       const resolvedPatient = patientId || (appt as any)?.patient_id || null;
+      const authUid = (await supabase.auth.getUser()).data.user?.id ?? null;
       const { error } = await supabase.from("billing_transactions").insert({
         appointment_id: appointmentId,
         patient_id: resolvedPatient,
-        user_id: resolvedPatient,
+        user_id: resolvedPatient || authUid,
+
         practice_id: (appt as any)?.practice_id || null,
         amount: Math.round(amount),
         amount_cents: Math.round(amount * 100),
@@ -213,7 +273,8 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
 
   return {
     loading,
-    payments,
+    payments: paymentHistory,
+
     billing,
     insurance,
     totalBilled,
