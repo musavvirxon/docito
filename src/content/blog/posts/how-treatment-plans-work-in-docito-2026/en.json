@@ -1,0 +1,121 @@
+{
+  "groupId": "how-treatment-plans-work-in-docito-2026",
+  "lang": "en",
+  "slug": "how-treatment-plans-work-in-docito-2026",
+  "status": "published",
+  "featured": false,
+  "coverImage": "/blog/how-treatment-plans-work-in-docito-2026/cover.svg",
+  "tags": ["treatment plan workflow", "dental charting", "clinical documentation", "medical billing", "care plan templates", "patient portal", "Docito features"],
+  "createdAt": "2026-08-08T00:00:00.000Z",
+  "updatedAt": "2026-08-08T00:00:00.000Z",
+  "publishedAt": "2026-08-08T00:00:00.000Z",
+  "title": "How a Treatment Plan Actually Moves Through Docito: A Step-by-Step Walkthrough",
+  "excerpt": "Not another buyer's guide — a mechanics-first walkthrough of what happens when a doctor builds a treatment plan in Docito: templates, per-procedure cost and status tracking, the interactive dental tooth chart, one-click billing charges, and exactly what the patient sees.",
+  "seo": {
+    "metaTitle": "How Treatment Plans Work in Docito: Step-by-Step Walkthrough | Docito",
+    "metaDescription": "A mechanics-first walkthrough of Docito's treatment plan workflow — templates, procedure-level cost and status tracking, the interactive FDI dental tooth chart, one-click billing charges, medication tracking, and the patient-facing progress view.",
+    "keywords": ["treatment plan workflow", "dental tooth chart software", "treatment plan templates", "procedure to billing charge", "dental treatment planning software", "clinical care plan tracking", "patient treatment plan portal", "Docito treatment plan workflow", "FDI tooth numbering software", "treatment plan status tracking"],
+    "ogImage": "/blog/how-treatment-plans-work-in-docito-2026/cover.svg"
+  },
+  "doc": {
+    "type": "doc",
+    "content": [
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Most articles about treatment plan software talk about why treatment plans matter, or what to look for when comparing vendors. This one skips that and just shows the mechanics — what actually happens, screen by screen, when a doctor opens Docito and takes a patient from a diagnosis to a tracked, billable, patient-visible plan of care." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 1: Starting from a template, not a blank page" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Creating a plan starts with a choice: build one from scratch, or open the template library and start from something that already matches the case in front of you. The template modal is searchable and filterable by category, and every template can be marked public or kept private — so a clinic can build a shared library of its own standard protocols (a six-visit ortho plan, a standard hygiene recall, a chronic-care checklist) instead of every doctor re-typing the same plan structure from memory." }
+      ]},
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Once a plan is created, it's tied to one patient, given a title, and starts life as a " },
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Draft" },
+        { "type": "text", "text": " — editable, not yet visible to the patient." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 2: Adding procedures, not a paragraph of notes" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "A treatment plan in Docito isn't a text field — it's a list of discrete procedures, each with its own name, category, cost, and status. Add a procedure and it immediately rolls up into the plan's total cost, so \u201cwhat will this cost the patient\u201d is never a separate calculation someone does later in a spreadsheet." }
+      ]},
+      { "type": "bulletList", "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Procedure name and category (restorative, extraction, endodontic, prosthetic, preventive, orthodontic, or a custom category)" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Cost — pulled from a procedure price list or entered manually" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Status, tracked per procedure: planned, in progress, or completed" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Optional notes specific to that procedure" }] }] }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 3: For dental cases, a real chart instead of a description" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "This is the part most treatment plan tools skip entirely. For dental practices, Docito includes an interactive tooth chart built on the FDI numbering system, with a toggle between permanent and primary dentition for pediatric cases. Click a tooth, and a popover lets you attach procedures directly to it — so \u201ccrown on tooth 16\u201d is a data point tied to a specific tooth, not a sentence in a notes field." }
+      ]},
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Every tooth carries its own clinical status, each with distinct color coding on the chart:" }
+      ]},
+      { "type": "bulletList", "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Healthy, Watch, and Caries — for monitoring and diagnosis" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Filled, Crown, Root Canal, and Sealant — for completed restorative work" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Implant, Missing, and Extracted — for surgical history" }] }] }
+      ]},
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Procedures attached to teeth are also grouped automatically into six color-coded categories — restorative, extraction, endodontic, prosthetic, preventive, and orthodontic — so a doctor can glance at the chart and read the whole treatment history of the mouth at once, not just the most recent visit." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 4: A completed procedure can become a charge in one click" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "The gap between \u201cclinical work happened\u201d and \u201cbilling knows about it\u201d is where a lot of revenue quietly leaks in a manual practice. In Docito, a procedure inside a treatment plan can generate a billing charge directly — no re-typing the procedure, cost, or patient into a separate billing screen. The clinical record and the financial record are the same record." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 5: Publishing the plan and tracking it across visits" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Once the plan is ready, publishing it moves it out of Draft and makes it visible to the patient. From there, a plan carries a status the whole team can see at a glance:" }
+      ]},
+      { "type": "orderedList", "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Draft" }, { "type": "text", "text": " — being built, not yet visible to the patient" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Published" }, { "type": "text", "text": " — shared with the patient, work hasn't started" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "In Progress" }, { "type": "text", "text": " — procedures are actively being completed" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Completed" }, { "type": "text", "text": " — every procedure in the plan is done" }] }] }
+      ]},
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "The doctor's treatment planning dashboard lists every plan with searchable, filterable views by status and by patient — so \u201cwhich patients still have open procedures\u201d is a filter, not a mental note. And because plans surface inside the appointment view itself, a doctor walking into a follow-up visit sees the active plan for that patient without switching screens." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 6: Medications live inside the plan, not off to the side" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Every treatment plan has a dedicated \u201cManage Medications\u201d action, so prescriptions tied to a course of treatment — antibiotics after an extraction, pain management during ortho adjustment, a chronic-care medication list — stay attached to the plan they belong to, instead of living in a disconnected prescriptions tab." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 7: What the patient actually sees" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Patients don't see the doctor's dashboard — they see a simpler, read-only view built for them:" }
+      ]},
+      { "type": "bulletList", "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "A progress indicator showing how far along the plan is" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "The full procedure list, each with its category and cost" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "A status badge per procedure — Pending, In Progress, Completed, or Cancelled" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "A one-click \u201cDownload PDF\u201d so the plan can be shared with an insurer, employer, or family member" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [{ "type": "text", "text": "Any notes the doctor has added for context" }] }] }
+      ]},
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Before a doctor creates the first plan, the patient's portal shows a plain empty state — \u201cyour treatment plans will appear here after your doctor creates them\u201d — so there's no confusion about whether something is broken versus simply not started yet." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Step 8: Saving it forward" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "Any completed plan can be saved back into the template library — public for the whole clinic to reuse, or private for one doctor's own workflow. That's what turns step one of this walkthrough into a shrinking task over time: the tenth ortho case takes less setup than the first, because the ninth one is already sitting in the template list." }
+      ]},
+
+      { "type": "heading", "attrs": { "level": 2, "textAlign": "left" }, "content": [{ "type": "text", "text": "Why the mechanics matter more than the feature name" }] },
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "\u201cTreatment plan management\u201d is a line item on a lot of feature pages. What actually determines whether it saves a clinic time is exactly what's described above: whether a procedure automatically becomes a cost and eventually a charge, whether a dental team gets a real chart instead of a paragraph, whether the patient can see progress without calling to ask, and whether next month's version of the same case is a two-click template instead of a blank page again. That's the difference between a feature that exists and a workflow that actually removes work." }
+      ]},
+      { "type": "paragraph", "attrs": { "textAlign": "left" }, "content": [
+        { "type": "text", "text": "If you're still comparing platforms and want the buyer's-guide version of this — what to look for, what red flags to watch for in a demo, and how treatment plans should connect to chronic care management — " },
+        { "type": "text", "marks": [{ "type": "link", "attrs": { "href": "https://docito.app/blog/digital-treatment-plans-for-doctors-2026", "target": "_blank", "rel": "noopener noreferrer" } }], "text": "see our full breakdown" },
+        { "type": "text", "text": " of what good treatment plan software actually does. To see this workflow first-hand, " },
+        { "type": "text", "marks": [{ "type": "link", "attrs": { "href": "https://docito.app", "target": "_blank", "rel": "noopener noreferrer" } }], "text": "start a free trial of Docito" },
+        { "type": "text", "text": "." }
+      ]}
+    ]
+  }
+}
