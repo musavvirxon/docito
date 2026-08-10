@@ -654,7 +654,19 @@
       "medicalServices": "Medical services",
       "taxRatePrompt": "Tax / VAT rate (%):",
       "paymentTermsPrompt": "Payment terms:",
-      "dueWithin30": "Due within 30 days"
+      "dueWithin30": "Due within 30 days",
+      "patientBalances": "Patient balances",
+      "allDoctors": "All doctors",
+      "sortRecent": "Most recent",
+      "sortOwedDesc": "Owed: high to low",
+      "sortOwedAsc": "Owed: low to high",
+      "sortPaidDesc": "Paid: high to low",
+      "sortPaidAsc": "Paid: low to high",
+      "onlyWithBalance": "Only with balance",
+      "lastActivity": "Last activity",
+      "unknownPatient": "Unknown patient",
+      "walkIn": "Walk-in",
+      "noTransactions": "No transactions in this period"
     },
     "an": {
       "tabs": {

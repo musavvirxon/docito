@@ -654,7 +654,19 @@
       "medicalServices": "Tibbiy xizmatlar",
       "taxRatePrompt": "Soliq/QQS stavkasi (%):",
       "paymentTermsPrompt": "To'lov shartlari:",
-      "dueWithin30": "30 kun ichida"
+      "dueWithin30": "30 kun ichida",
+      "patientBalances": "Bemorlar balansi",
+      "allDoctors": "Barcha shifokorlar",
+      "sortRecent": "Eng yangi",
+      "sortOwedDesc": "Qarz: kamayish bo'yicha",
+      "sortOwedAsc": "Qarz: o'sish bo'yicha",
+      "sortPaidDesc": "To'langan: kamayish bo'yicha",
+      "sortPaidAsc": "To'langan: o'sish bo'yicha",
+      "onlyWithBalance": "Faqat qarzi borlar",
+      "lastActivity": "Oxirgi harakat",
+      "unknownPatient": "Noma'lum bemor",
+      "walkIn": "Navbatsiz",
+      "noTransactions": "Bu davrda tranzaksiya yo'q"
     },
     "an": {
       "tabs": {

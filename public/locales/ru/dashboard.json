@@ -654,7 +654,19 @@
       "medicalServices": "Медицинские услуги",
       "taxRatePrompt": "Ставка налога/НДС (%):",
       "paymentTermsPrompt": "Условия оплаты:",
-      "dueWithin30": "В течение 30 дней"
+      "dueWithin30": "В течение 30 дней",
+      "patientBalances": "Балансы пациентов",
+      "allDoctors": "Все врачи",
+      "sortRecent": "Сначала новые",
+      "sortOwedDesc": "Долг: по убыванию",
+      "sortOwedAsc": "Долг: по возрастанию",
+      "sortPaidDesc": "Оплачено: по убыванию",
+      "sortPaidAsc": "Оплачено: по возрастанию",
+      "onlyWithBalance": "Только с задолженностью",
+      "lastActivity": "Последняя активность",
+      "unknownPatient": "Пациент неизвестен",
+      "walkIn": "Без записи",
+      "noTransactions": "Нет транзакций за период"
     },
     "an": {
       "tabs": {

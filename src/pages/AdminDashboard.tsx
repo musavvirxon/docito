@@ -58,6 +58,9 @@ import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMe
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
+import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
+import { PracticePatientBalances } from "@/components/billing/PracticePatientBalances";
+import { usePracticeBillingAggregate } from "@/hooks/usePracticeBillingAggregate";
 import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
 import CompensationProfilesPanel from "@/components/financial/CompensationProfilesPanel";
 import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
@@ -506,6 +509,13 @@ const AdminDashboard = () => {
       toast.error(e?.message || 'Failed to save settings');
     }
   };
+
+  const billingRangeDays = billingRange === "7d" ? 7 : billingRange === "30d" ? 30 : 90;
+  const practiceBilling = usePracticeBillingAggregate(
+    practice?.id || null,
+    useMemo(() => new Date(Date.now() - billingRangeDays * 86400000), [billingRangeDays]),
+    undefined,
+  );
 
   const billing = usePracticeInsights({
     action: "billing",
@@ -3567,6 +3577,24 @@ const AdminDashboard = () => {
               {/* ========== TAB: OVERVIEW ========== */}
               {billingTab === 'overview' && (
                 <>
+                  {/* Practice-wide billing bar (same as doctor dashboard) */}
+                  <div className="mb-6">
+                    <AppointmentFinancePanel
+                      appointmentId=""
+                      patientName=""
+                      showActions={false}
+                      overrideData={practiceBilling.financeData}
+                      chargesLabel={t("admin.bl.transactions")}
+                      emptyChargesLabel={t("admin.bl.noTransactions")}
+                    />
+                  </div>
+
+                  <PracticePatientBalances
+                    rows={practiceBilling.rows}
+                    doctors={practiceBilling.doctors}
+                    loading={practiceBilling.loading}
+                  />
+
                   {/* KPI cards row */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <Card className="rounded-xl">
