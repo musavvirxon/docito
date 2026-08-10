@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -161,9 +161,8 @@ export function PracticePatientBalances({ rows, doctors, loading }: Props) {
                 </TableRow>
               ) : (
                 visible.map((r) => (
-                  <>
+                  <Fragment key={r.key}>
                     <TableRow
-                      key={r.key}
                       className="cursor-pointer"
                       onClick={() => setExpanded(expanded === r.key ? null : r.key)}
                     >
@@ -199,7 +198,7 @@ export function PracticePatientBalances({ rows, doctors, loading }: Props) {
                       </TableCell>
                     </TableRow>
                     {expanded === r.key && (
-                      <TableRow key={`${r.key}-detail`}>
+                      <TableRow>
                         <TableCell colSpan={7} className="bg-muted/30">
                           <div className="grid gap-6 md:grid-cols-2 py-2">
                             <div>
@@ -257,7 +256,7 @@ export function PracticePatientBalances({ rows, doctors, loading }: Props) {
                                       className="flex justify-between gap-4 text-sm"
                                     >
                                       <span className="truncate">
-                                        {p.payment_method || p.provider || tf("payment" as any) || ""}
+                                        {p.payment_method || p.provider || tf("ledger.payment")}
                                         <span className="ml-2 text-xs text-muted-foreground">
                                           {dt(p.paid_at || p.created_at)}
                                         </span>
@@ -274,7 +273,7 @@ export function PracticePatientBalances({ rows, doctors, loading }: Props) {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 ))
               )}
             </TableBody>
