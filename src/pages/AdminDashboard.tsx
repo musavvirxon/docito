@@ -3567,6 +3567,24 @@ const AdminDashboard = () => {
               {/* ========== TAB: OVERVIEW ========== */}
               {billingTab === 'overview' && (
                 <>
+                  {/* Practice-wide billing bar (same as doctor dashboard) */}
+                  <div className="mb-6">
+                    <AppointmentFinancePanel
+                      appointmentId=""
+                      patientName=""
+                      showActions={false}
+                      overrideData={practiceBilling.financeData}
+                      chargesLabel={t("admin.bl.transactions")}
+                      emptyChargesLabel={t("admin.bl.noTransactions")}
+                    />
+                  </div>
+
+                  <PracticePatientBalances
+                    rows={practiceBilling.rows}
+                    doctors={practiceBilling.doctors}
+                    loading={practiceBilling.loading}
+                  />
+
                   {/* KPI cards row */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <Card className="rounded-xl">
