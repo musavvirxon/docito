@@ -68,13 +68,35 @@ export function useDoctorBillingAggregate(
         ),
       ) as string[];
       if (ids.length) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id, full_name")
-          .in("id", ids);
+        const patientIds = Array.from(new Set([...bills, ...pays].map((r: any) => r.patient_id).filter(Boolean))) as string[];
+        const appointmentIds = Array.from(new Set([...bills, ...pays].map((r: any) => r.appointment_id).filter(Boolean))) as string[];
+        const [{ data: patientProfiles }, { data: doctor }, { data: appointments }] = await Promise.all([
+          patientIds.length
+            ? supabase.from("profiles").select("id, user_id, full_name").in("user_id", patientIds)
+            : Promise.resolve({ data: [] as any[] }),
+          supabase.from("doctors").select("id, user_id").eq("id", doctorId).maybeSingle(),
+          appointmentIds.length
+            ? supabase.from("appointments").select("id, doctor_patient_id").in("id", appointmentIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+        const doctorUserId = (doctor as any)?.user_id as string | undefined;
+        const manualPatientIds = (appointments || []).map((a: any) => a.doctor_patient_id).filter(Boolean) as string[];
+        const [{ data: doctorProfiles }, { data: manualPatients }] = await Promise.all([
+          doctorUserId
+            ? supabase.from("profiles").select("user_id, full_name").eq("user_id", doctorUserId)
+            : Promise.resolve({ data: [] as any[] }),
+          manualPatientIds.length
+            ? supabase.from("doctor_patients").select("id, full_name").in("id", manualPatientIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
         const map: Record<string, string> = {};
-        (profs || []).forEach((p: any) => {
-          if (p?.id) map[p.id] = p.full_name || "";
+        (patientProfiles || []).forEach((p: any) => {
+          if (p?.user_id) map[p.user_id] = p.full_name || "";
+        });
+        if (doctorId) map[doctorId] = (doctorProfiles || [])[0]?.full_name || "";
+        (appointments || []).forEach((a: any) => {
+          const manualPatient = (manualPatients || []).find((p: any) => p.id === a.doctor_patient_id);
+          if (a?.id && manualPatient?.full_name) map[`appointment:${a.id}`] = manualPatient.full_name;
         });
         setNameMap(map);
       } else {

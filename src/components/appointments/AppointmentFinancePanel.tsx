@@ -277,6 +277,7 @@ export function AppointmentFinancePanel({
               const when = meta.performed_at || c.created_at;
               const rowPatient =
                 (row.patient_id && nameMap?.[row.patient_id]) ||
+                 (row.appointment_id && nameMap?.[`appointment:${row.appointment_id}`]) ||
                 meta.patient_name ||
                 meta.customer_name ||
                 patientName ||

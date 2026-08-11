@@ -83,13 +83,43 @@ export function usePracticeBillingAggregate(
       ) as string[];
 
       if (ids.length) {
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id, full_name")
-          .in("id", ids);
+        // Ledger patient_id values are auth user ids, while doctor_id values are
+        // public.doctors ids. Resolve both instead of assuming they are profile ids.
+        const doctorIds = Array.from(new Set([...bills, ...pays].map((r: any) => r.doctor_id).filter(Boolean))) as string[];
+        const patientIds = Array.from(new Set([...bills, ...pays].map((r: any) => r.patient_id).filter(Boolean))) as string[];
+        const appointmentIds = Array.from(new Set([...bills, ...pays].map((r: any) => r.appointment_id).filter(Boolean))) as string[];
+        const [{ data: doctors }, { data: patientProfiles }, { data: appointments }] = await Promise.all([
+          doctorIds.length
+            ? supabase.from("doctors").select("id, user_id").in("id", doctorIds)
+            : Promise.resolve({ data: [] as any[] }),
+          patientIds.length
+            ? supabase.from("profiles").select("id, user_id, full_name").in("user_id", patientIds)
+            : Promise.resolve({ data: [] as any[] }),
+          appointmentIds.length
+            ? supabase.from("appointments").select("id, doctor_patient_id").in("id", appointmentIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+        const doctorUserIds = (doctors || []).map((d: any) => d.user_id).filter(Boolean) as string[];
+        const manualPatientIds = (appointments || []).map((a: any) => a.doctor_patient_id).filter(Boolean) as string[];
+        const [{ data: doctorProfiles }, { data: manualPatients }] = await Promise.all([
+          doctorUserIds.length
+            ? supabase.from("profiles").select("id, user_id, full_name").in("user_id", doctorUserIds)
+            : Promise.resolve({ data: [] as any[] }),
+          manualPatientIds.length
+            ? supabase.from("doctor_patients").select("id, full_name").in("id", manualPatientIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
         const map: Record<string, string> = {};
-        (profs || []).forEach((p: any) => {
-          if (p?.id) map[p.id] = p.full_name || "";
+        (patientProfiles || []).forEach((p: any) => {
+          if (p?.user_id) map[p.user_id] = p.full_name || "";
+        });
+        (doctors || []).forEach((d: any) => {
+          const profile = (doctorProfiles || []).find((p: any) => p.user_id === d.user_id);
+          if (d?.id) map[d.id] = profile?.full_name || "";
+        });
+        (appointments || []).forEach((a: any) => {
+          const manualPatient = (manualPatients || []).find((p: any) => p.id === a.doctor_patient_id);
+          if (a?.id && manualPatient?.full_name) map[`appointment:${a.id}`] = manualPatient.full_name;
         });
         setNames(map);
       } else {
@@ -128,6 +158,7 @@ export function usePracticeBillingAggregate(
     const meta = row?.metadata || row?.provider_data || {};
     return (
       (row.patient_id && names[row.patient_id]) ||
+      (row.appointment_id && names[`appointment:${row.appointment_id}`]) ||
       meta.patient_name ||
       meta.customer_name ||
       ""
