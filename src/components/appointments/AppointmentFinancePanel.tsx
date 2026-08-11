@@ -271,17 +271,19 @@ export function AppointmentFinancePanel({
             </p>
           ) : (
             visitCharges.map((c) => {
+              const row = c as any;
               const meta = (c.metadata ?? {}) as Record<string, any>;
               const teeth: number[] = Array.isArray(meta.teeth) ? meta.teeth : [];
               const when = meta.performed_at || c.created_at;
               const rowPatient =
-                (c.patient_id && nameMap?.[c.patient_id]) ||
+                (row.patient_id && nameMap?.[row.patient_id]) ||
                 meta.patient_name ||
                 meta.customer_name ||
                 patientName ||
                 '';
               const rowDoctor =
-                (c.doctor_id && nameMap?.[c.doctor_id]) || meta.doctor_name || doctorName || '';
+                (row.doctor_id && nameMap?.[row.doctor_id]) || meta.doctor_name || doctorName || '';
+
               return (
                 <div
                   key={c.id}
