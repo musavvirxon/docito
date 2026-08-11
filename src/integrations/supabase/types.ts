@@ -11881,6 +11881,14 @@ export type Database = {
           status: string
         }[]
       }
+      get_practice_billing_names: {
+        Args: { p_practice_id: string }
+        Returns: {
+          appointment_id: string
+          doctor_name: string
+          patient_name: string
+        }[]
+      }
       get_practice_locations: {
         Args: { p_practice_id: string }
         Returns: {

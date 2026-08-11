@@ -68,9 +68,14 @@ export function usePracticeBillingAggregate(
         payQ = payQ.lte("created_at", toIso);
       }
 
-      const [billRes, payRes] = await Promise.all([billQ, payQ]);
+      const [billRes, payRes, billingNamesRes] = await Promise.all([
+        billQ,
+        payQ,
+        supabase.rpc("get_practice_billing_names", { p_practice_id: practiceId }),
+      ]);
       const bills = (billRes.data as any[]) || [];
       const pays = (payRes.data as any[]) || [];
+      const protectedBillingNames = (billingNamesRes.data as any[]) || [];
       setBilling(bills);
       setPayments(pays);
 
@@ -110,6 +115,14 @@ export function usePracticeBillingAggregate(
             : Promise.resolve({ data: [] as any[] }),
         ]);
         const map: Record<string, string> = {};
+        protectedBillingNames.forEach((entry: any) => {
+          if (entry?.appointment_id && entry?.patient_name) {
+            map[`appointment:${entry.appointment_id}`] = entry.patient_name;
+          }
+          if (entry?.appointment_id && entry?.doctor_name) {
+            map[`appointment-doctor:${entry.appointment_id}`] = entry.doctor_name;
+          }
+        });
         (patientProfiles || []).forEach((p: any) => {
           if (p?.user_id) map[p.user_id] = p.full_name || "";
         });
@@ -178,7 +191,10 @@ export function usePracticeBillingAggregate(
           patientId: row.patient_id || null,
           patientName: name,
           doctorId: row.doctor_id || null,
-          doctorName: (row.doctor_id && names[row.doctor_id]) || "",
+          doctorName:
+            (row.doctor_id && names[row.doctor_id]) ||
+            (row.appointment_id && names[`appointment-doctor:${row.appointment_id}`]) ||
+            "",
           billed: 0,
           discounts: 0,
           paid: 0,
@@ -191,7 +207,10 @@ export function usePracticeBillingAggregate(
       }
       if (!entry.doctorId && row.doctor_id) {
         entry.doctorId = row.doctor_id;
-        entry.doctorName = names[row.doctor_id] || "";
+        entry.doctorName =
+          names[row.doctor_id] ||
+          (row.appointment_id && names[`appointment-doctor:${row.appointment_id}`]) ||
+          "";
       }
       const at = row.paid_at || row.created_at || null;
       if (at && (!entry.lastActivity || at > entry.lastActivity)) entry.lastActivity = at;

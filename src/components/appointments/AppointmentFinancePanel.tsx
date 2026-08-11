@@ -283,7 +283,11 @@ export function AppointmentFinancePanel({
                 patientName ||
                 '';
               const rowDoctor =
-                (row.doctor_id && nameMap?.[row.doctor_id]) || meta.doctor_name || doctorName || '';
+                 (row.doctor_id && nameMap?.[row.doctor_id]) ||
+                 (row.appointment_id && nameMap?.[`appointment-doctor:${row.appointment_id}`]) ||
+                 meta.doctor_name ||
+                 doctorName ||
+                 '';
 
               return (
                 <div
