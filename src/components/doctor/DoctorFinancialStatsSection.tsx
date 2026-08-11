@@ -175,6 +175,8 @@ export const DoctorFinancialStatsSection = () => {
         overrideData={doctorBilling}
         chargesLabel={tf("transactions")}
         emptyChargesLabel={tf("noTransactions")}
+        nameMap={doctorBilling.nameMap}
+
       />
 
       {/* Tabs */}
