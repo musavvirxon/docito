@@ -3586,6 +3586,8 @@ const AdminDashboard = () => {
                       overrideData={practiceBilling.financeData}
                       chargesLabel={t("admin.bl.transactions")}
                       emptyChargesLabel={t("admin.bl.noTransactions")}
+                      nameMap={practiceBilling.nameMap}
+
                     />
                   </div>
 

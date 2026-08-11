@@ -46,6 +46,8 @@ interface Props {
   chargesLabel?: string;
   /** Optional label override for the empty charges state. */
   emptyChargesLabel?: string;
+  /** Optional id → full name map used to label charge rows with patient / doctor. */
+  nameMap?: Record<string, string>;
 }
 
 
@@ -60,7 +62,9 @@ export function AppointmentFinancePanel({
   showActions = true,
   chargesLabel,
   emptyChargesLabel,
+  nameMap,
 }: Props) {
+
   const { t } = useTranslation('appointments');
   const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
@@ -267,9 +271,19 @@ export function AppointmentFinancePanel({
             </p>
           ) : (
             visitCharges.map((c) => {
+              const row = c as any;
               const meta = (c.metadata ?? {}) as Record<string, any>;
               const teeth: number[] = Array.isArray(meta.teeth) ? meta.teeth : [];
               const when = meta.performed_at || c.created_at;
+              const rowPatient =
+                (row.patient_id && nameMap?.[row.patient_id]) ||
+                meta.patient_name ||
+                meta.customer_name ||
+                patientName ||
+                '';
+              const rowDoctor =
+                (row.doctor_id && nameMap?.[row.doctor_id]) || meta.doctor_name || doctorName || '';
+
               return (
                 <div
                   key={c.id}
@@ -286,12 +300,24 @@ export function AppointmentFinancePanel({
                         </Badge>
                       )}
                     </div>
+                    {(rowPatient || rowDoctor) && (
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                        {rowPatient && <span className="truncate">{rowPatient}</span>}
+                        {rowPatient && rowDoctor && <span>·</span>}
+                        {rowDoctor && (
+                          <span className="truncate">
+                            {t('clinicalHistory.drPrefix', { name: rowDoctor })}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {when && (
                       <div className="mt-0.5 text-[10px] text-muted-foreground">
                         {new Date(when).toLocaleString()}
                       </div>
                     )}
                   </div>
+
                   <span className="shrink-0 font-medium tabular-nums">
                     {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
                   </span>

@@ -14,10 +14,12 @@ export function useDoctorBillingAggregate(
   doctorId?: string | null,
   from?: Date,
   to?: Date,
-): Partial<AppointmentFinanceData> & { refresh: () => Promise<void> } {
+): Partial<AppointmentFinanceData> & { refresh: () => Promise<void>; nameMap: Record<string, string> } {
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [nameMap, setNameMap] = useState<Record<string, string>>({});
+
 
   const fromIso = from?.toISOString();
   const toIso = to?.toISOString();
@@ -53,9 +55,33 @@ export function useDoctorBillingAggregate(
       }
 
       const [billRes, payRes] = await Promise.all([billQ, payQ]);
-      setBilling((billRes.data as any[]) || []);
-      setPayments((payRes.data as any[]) || []);
+      const bills = (billRes.data as any[]) || [];
+      const pays = (payRes.data as any[]) || [];
+      setBilling(bills);
+      setPayments(pays);
+
+      const ids = Array.from(
+        new Set(
+          [...bills, ...pays]
+            .flatMap((r: any) => [r.patient_id, r.doctor_id])
+            .filter(Boolean),
+        ),
+      ) as string[];
+      if (ids.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", ids);
+        const map: Record<string, string> = {};
+        (profs || []).forEach((p: any) => {
+          if (p?.id) map[p.id] = p.full_name || "";
+        });
+        setNameMap(map);
+      } else {
+        setNameMap({});
+      }
     } catch (e) {
+
       console.error("doctor billing aggregate failed", e);
     } finally {
       setLoading(false);
@@ -89,5 +115,7 @@ export function useDoctorBillingAggregate(
     priorBalance: 0,
     currency: (billing[0]?.currency as string) || "uzs",
     refresh,
+    nameMap,
   };
+
 }
