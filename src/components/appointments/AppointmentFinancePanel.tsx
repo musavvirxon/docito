@@ -46,6 +46,8 @@ interface Props {
   chargesLabel?: string;
   /** Optional label override for the empty charges state. */
   emptyChargesLabel?: string;
+  /** Optional id → full name map used to label charge rows with patient / doctor. */
+  nameMap?: Record<string, string>;
 }
 
 
@@ -60,7 +62,9 @@ export function AppointmentFinancePanel({
   showActions = true,
   chargesLabel,
   emptyChargesLabel,
+  nameMap,
 }: Props) {
+
   const { t } = useTranslation('appointments');
   const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
