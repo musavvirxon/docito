@@ -894,4 +894,21 @@
     <changefreq>daily</changefreq>
     <priority>0.2</priority>
   </url>
+  <url>
+    <loc>https://docito.app/landing</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://docito.app/landing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://docito.app/ru/landing" />
+    <xhtml:link rel="alternate" hreflang="uz" href="https://docito.app/uz/landing" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://docito.app/ar/landing" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://docito.app/tr/landing" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://docito.app/es/landing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://docito.app/de/landing" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://docito.app/zh/landing" />
+    <xhtml:link rel="alternate" hreflang="pt" href="https://docito.app/pt/landing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://docito.app/ja/landing" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://docito.app/ko/landing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://docito.app/landing" />
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
 </urlset>
