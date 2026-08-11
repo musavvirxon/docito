@@ -14,10 +14,12 @@ export function useDoctorBillingAggregate(
   doctorId?: string | null,
   from?: Date,
   to?: Date,
-): Partial<AppointmentFinanceData> & { refresh: () => Promise<void> } {
+): Partial<AppointmentFinanceData> & { refresh: () => Promise<void>; nameMap: Record<string, string> } {
   const [loading, setLoading] = useState(false);
   const [billing, setBilling] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [nameMap, setNameMap] = useState<Record<string, string>>({});
+
 
   const fromIso = from?.toISOString();
   const toIso = to?.toISOString();
