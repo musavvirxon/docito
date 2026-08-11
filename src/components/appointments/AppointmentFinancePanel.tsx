@@ -274,6 +274,14 @@ export function AppointmentFinancePanel({
               const meta = (c.metadata ?? {}) as Record<string, any>;
               const teeth: number[] = Array.isArray(meta.teeth) ? meta.teeth : [];
               const when = meta.performed_at || c.created_at;
+              const rowPatient =
+                (c.patient_id && nameMap?.[c.patient_id]) ||
+                meta.patient_name ||
+                meta.customer_name ||
+                patientName ||
+                '';
+              const rowDoctor =
+                (c.doctor_id && nameMap?.[c.doctor_id]) || meta.doctor_name || doctorName || '';
               return (
                 <div
                   key={c.id}
@@ -290,12 +298,24 @@ export function AppointmentFinancePanel({
                         </Badge>
                       )}
                     </div>
+                    {(rowPatient || rowDoctor) && (
+                      <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                        {rowPatient && <span className="truncate">{rowPatient}</span>}
+                        {rowPatient && rowDoctor && <span>·</span>}
+                        {rowDoctor && (
+                          <span className="truncate">
+                            {t('clinicalHistory.drPrefix', { name: rowDoctor })}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {when && (
                       <div className="mt-0.5 text-[10px] text-muted-foreground">
                         {new Date(when).toLocaleString()}
                       </div>
                     )}
                   </div>
+
                   <span className="shrink-0 font-medium tabular-nums">
                     {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
                   </span>
