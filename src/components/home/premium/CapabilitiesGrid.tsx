@@ -114,7 +114,7 @@ export default function CapabilitiesGrid() {
                       className="px-0 h-auto text-primary hover:text-primary/90 hover:bg-transparent"
                       onClick={() => goToFeature(cap.featureId)}
                     >
-                      {t("capabilities.learnMore", "Learn more")}
+                      {t("capabilities.learnMore", "Explore platform capabilities")}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>

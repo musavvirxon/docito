@@ -49,7 +49,7 @@ export default function VerifyDocument() {
       <header className="border-b border-border/50 bg-background/80 backdrop-blur sticky top-0 z-30">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <img src="/logos/logo-full-light.png" alt="Docito" className="h-7 w-auto" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <img src="/logos/logo-full-light.png" alt="Docito healthcare platform logo" className="h-7 w-auto" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
             <span className="font-bold text-lg tracking-tight hidden sm:block">Docito</span>
           </Link>
           {!user && (
