@@ -16,6 +16,6 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://www.docito.app/sitemap-index.xml
-Sitemap: https://www.docito.app/sitemap.xml
+Sitemap: https://docito.app/sitemap-index.xml
+Sitemap: https://docito.app/sitemap.xml
 Sitemap: https://gswwpjdtgsxzcsnrxutu.supabase.co/functions/v1/blog-sitemap
