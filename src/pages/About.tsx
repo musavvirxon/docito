@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Target, Eye, Heart, Shield } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
