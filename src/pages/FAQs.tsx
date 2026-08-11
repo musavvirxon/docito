@@ -5,6 +5,7 @@ import ModernFooter from '@/components/home/ModernFooter';
 import { Search, ChevronDown, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FAQsIllustration } from '@/components/Visuals/illustrations';
+import { SEOHead, generateFAQSchema } from '@/components/SEOHead';
 
 export default function FAQs() {
   const navigate = useNavigate();
@@ -114,6 +115,8 @@ export default function FAQs() {
     }
   ];
 
+  const faqSchema = generateFAQSchema(faqs.map(({ question, answer }) => ({ question, answer })));
+
   const filteredFAQs = faqs.filter(faq => {
     const matchesCategory = activeCategory === 'all' || faq.category === activeCategory;
     const matchesSearch = searchQuery === '' || 
@@ -124,6 +127,16 @@ export default function FAQs() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={t('faqs:seo.title', 'Docito FAQs — Booking, Billing & Privacy Answers')}
+        description={t(
+          'faqs:seo.description',
+          'Answers to common Docito questions about creating an account, booking and rescheduling appointments, payments and insurance, video visits and data privacy.'
+        )}
+        canonicalPath="/faqs"
+        type="website"
+        structuredData={faqSchema}
+      />
       <ModernNavbar />
 
       <div className="bg-gradient-to-br from-primary/90 to-primary py-16 pt-32">
@@ -230,7 +243,7 @@ function FAQAccordion({ faq, categoryLabel }: { faq: { category: string; questio
           <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full whitespace-nowrap">
             {categoryLabel}
           </span>
-          <span className="font-semibold text-foreground text-lg">{faq.question}</span>
+          <h3 className="font-semibold text-foreground text-lg">{faq.question}</h3>
         </div>
         <ChevronDown className={`w-6 h-6 text-muted-foreground transition-transform flex-shrink-0 ml-4 ${isOpen ? 'rotate-180' : ''}`} />
       </button>

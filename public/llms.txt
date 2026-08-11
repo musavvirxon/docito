@@ -146,12 +146,24 @@ unified healthcare platform, healthcare ecosystem software, patient lifecycle ma
 
 ---
 
-## Important Pages
+## Pages
 
-/index.md  
-/blog/  
-/features/  
-/pricing/  
+- [Home](/): Unified healthcare platform for patients, clinics, labs and pharmacies.
+- [Doctors](/doctors): Search and book verified doctors by specialty and location.
+- [Clinics](/practices): Browse clinics and medical practices with public profiles.
+- [Labs](/lab): Find laboratories and book diagnostic tests.
+- [Imaging centers](/imaging): Find imaging centers and radiology services.
+- [Pharmacies](/pharmacy): Browse pharmacies and prescription fulfillment.
+- [Features](/features): What Docito does across the care lifecycle.
+- [Pricing](/pricing): Plans for clinics, doctors and facilities.
+- [About](/about): Our mission, values and technology.
+- [FAQs](/faqs): Answers about booking, billing, video visits and privacy.
+- [Contact](/contact): How to reach the Docito team.
+- [Blog](/en/blog): Articles on healthcare operations and patient care.
+
+## Optional
+
+- [Legal](/legal): Terms, privacy and data-protection policies.
 
 ---
 

@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import ModernNavbar from '@/components/home/ModernNavbar';
 import ModernFooter from '@/components/home/ModernFooter';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Target, Eye, Heart, Shield } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useContentTranslation } from '@/hooks/useContentTranslation';
 import { ImprovedAboutIllustration } from '@/components/Visuals/illustrations';
+import { SEOHead } from '@/components/SEOHead';
 
 interface AboutSection {
   id: string;
@@ -55,6 +56,15 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <SEOHead
+        title={t('about:seo.title', 'About Docito — Connected Healthcare Platform')}
+        description={t(
+          'about:seo.description',
+          'Learn about Docito: our mission, values and the secure technology connecting patients, doctors, clinics, labs and pharmacies in one platform.'
+        )}
+        canonicalPath="/about"
+        type="website"
+      />
       <ModernNavbar />
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-primary to-accent text-primary-foreground py-20 pt-32">
@@ -105,7 +115,9 @@ export default function About() {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
-                      <CardTitle className="text-2xl">{getTranslatedField(section, 'title')}</CardTitle>
+                      <h2 className="text-2xl font-semibold leading-none tracking-tight">
+                        {getTranslatedField(section, 'title')}
+                      </h2>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -122,10 +134,10 @@ export default function About() {
         {/* Technology Section */}
         <Card className="mt-12 border-accent/20 bg-gradient-to-br from-accent/5 to-primary/5">
           <CardHeader>
-            <CardTitle className="text-2xl flex items-center gap-2">
+            <h2 className="text-2xl font-semibold leading-none tracking-tight flex items-center gap-2">
               <Shield className="h-6 w-6 text-accent" />
               {t('about:technology.title')}
-            </CardTitle>
+            </h2>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground leading-relaxed">
@@ -133,19 +145,19 @@ export default function About() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="p-4 rounded-lg bg-background/50">
-                <h4 className="font-semibold mb-2">{t('about:technology.features.encrypted.title')}</h4>
+                <h3 className="font-semibold mb-2">{t('about:technology.features.encrypted.title')}</h3>
                 <p className="text-sm text-muted-foreground">
                   {t('about:technology.features.encrypted.description')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-background/50">
-                <h4 className="font-semibold mb-2">{t('about:technology.features.realtime.title')}</h4>
+                <h3 className="font-semibold mb-2">{t('about:technology.features.realtime.title')}</h3>
                 <p className="text-sm text-muted-foreground">
                   {t('about:technology.features.realtime.description')}
                 </p>
               </div>
               <div className="p-4 rounded-lg bg-background/50">
-                <h4 className="font-semibold mb-2">{t('about:technology.features.access.title')}</h4>
+                <h3 className="font-semibold mb-2">{t('about:technology.features.access.title')}</h3>
                 <p className="text-sm text-muted-foreground">
                   {t('about:technology.features.access.description')}
                 </p>
@@ -156,7 +168,7 @@ export default function About() {
 
         {/* Contact Section */}
         <div className="mt-12 text-center">
-          <h3 className="text-2xl font-semibold mb-4">{t('about:contact.title')}</h3>
+          <h2 className="text-2xl font-semibold mb-4">{t('about:contact.title')}</h2>
           <p className="text-muted-foreground mb-6">
             {t('about:contact.subtitle')}
           </p>

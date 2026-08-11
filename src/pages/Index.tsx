@@ -72,7 +72,7 @@ const Index = () => {
         name: t("home:seo.title", "Docito® — Unified Healthcare Management & Booking Platform"),
         description: t(
           "home:seo.description",
-          "Docito® is a unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, hospitals, and insurance—secure scheduling, referrals, records, prescriptions, messaging, and analytics."
+          "Book doctors, clinics, labs and pharmacies in one place. Docito unifies scheduling, records, prescriptions and payments for connected care."
         ),
         isPartOf: { "@id": "https://docito.app/#website" },
         about: { "@id": "https://docito.app/#organization" },
@@ -90,7 +90,7 @@ const Index = () => {
         title={t("home:seo.title", "Docito® — Unified Healthcare Management & Booking Platform")}
         description={t(
           "home:seo.description",
-          "Docito® is a unified healthcare management and booking platform connecting patients, doctors, clinics, labs, pharmacies, imaging centers, hospitals, and insurance—secure scheduling, referrals, records, prescriptions, messaging, and analytics."
+          "Book doctors, clinics, labs and pharmacies in one place. Docito unifies scheduling, records, prescriptions and payments for connected care."
         )}
         keywords={t(
           "home:seo.keywords",
