@@ -115,9 +115,9 @@ export default function About() {
                       <div className="p-2 rounded-lg bg-primary/10">
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
-                      <CardTitle asChild className="text-2xl">
-                        <h2>{getTranslatedField(section, 'title')}</h2>
-                      </CardTitle>
+                      <h2 className="text-2xl font-semibold leading-none tracking-tight">
+                        {getTranslatedField(section, 'title')}
+                      </h2>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -134,12 +134,10 @@ export default function About() {
         {/* Technology Section */}
         <Card className="mt-12 border-accent/20 bg-gradient-to-br from-accent/5 to-primary/5">
           <CardHeader>
-            <CardTitle asChild className="text-2xl">
-              <h2 className="flex items-center gap-2">
-                <Shield className="h-6 w-6 text-accent" />
-                {t('about:technology.title')}
-              </h2>
-            </CardTitle>
+            <h2 className="text-2xl font-semibold leading-none tracking-tight flex items-center gap-2">
+              <Shield className="h-6 w-6 text-accent" />
+              {t('about:technology.title')}
+            </h2>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground leading-relaxed">
