@@ -115,5 +115,7 @@ export function useDoctorBillingAggregate(
     priorBalance: 0,
     currency: (billing[0]?.currency as string) || "uzs",
     refresh,
+    nameMap,
   };
+
 }
