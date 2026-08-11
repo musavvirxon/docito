@@ -219,5 +219,5 @@ export function usePracticeBillingAggregate(
     refresh,
   };
 
-  return { loading, rows, doctors, financeData, refresh };
+  return { loading, rows, doctors, financeData, refresh, nameMap: names };
 }
