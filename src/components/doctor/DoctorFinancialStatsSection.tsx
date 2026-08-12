@@ -172,10 +172,14 @@ export const DoctorFinancialStatsSection = () => {
         appointmentId=""
         patientName=""
         showActions={false}
+        allowPayments
+        onPaymentRecorded={refreshData}
         overrideData={doctorBilling}
         chargesLabel={tf("transactions")}
         emptyChargesLabel={tf("noTransactions")}
         nameMap={doctorBilling.nameMap}
+
+
 
       />
 
