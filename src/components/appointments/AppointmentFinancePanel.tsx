@@ -406,9 +406,35 @@ export function AppointmentFinancePanel({
                     )}
                   </div>
 
-                  <span className="shrink-0 font-medium tabular-nums">
-                    {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
-                  </span>
+                  <div className="shrink-0 text-right">
+                    <div className="font-medium tabular-nums">
+                      {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                    </div>
+                    {chargePaid(row) > 0 && chargeRemaining(row) > 0 && (
+                      <div className="text-[10px] text-muted-foreground tabular-nums">
+                        {tf('ledger.paidOf', {
+                          paid: fmt(chargePaid(row), finance.currency),
+                          defaultValue: '{{paid}} paid',
+                        })}
+                      </div>
+                    )}
+                    {paymentsEnabled &&
+                      (chargeRemaining(row) > 0 ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-1 h-6 px-2 text-[10px]"
+                          onClick={() => setPayingCharge(row)}
+                        >
+                          {tf('ledger.pay', 'Pay')}
+                        </Button>
+                      ) : (
+                        <Badge variant="secondary" className="mt-1 text-[10px]">
+                          {t('finance.status.paid')}
+                        </Badge>
+                      ))}
+                  </div>
+
                 </div>
               );
             })
