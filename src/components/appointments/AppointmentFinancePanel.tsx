@@ -313,6 +313,19 @@ export function AppointmentFinancePanel({
           </div>
         )}
 
+        {!showActions && paymentsEnabled && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              onClick={() => setPayOpen(true)}
+              className="gap-1"
+              disabled={finance.outstanding <= 0}
+            >
+              <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
+            </Button>
+          </div>
+        )}
+
         {showActions && (
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
@@ -337,6 +350,7 @@ export function AppointmentFinancePanel({
           </Button>
         </div>
         )}
+
 
         {/* Charges recorded during this visit */}
         <div className="space-y-1">
