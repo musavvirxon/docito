@@ -3583,10 +3583,14 @@ const AdminDashboard = () => {
                       appointmentId=""
                       patientName=""
                       showActions={false}
+                      allowPayments
+                      onPaymentRecorded={() => { void practiceBilling.refresh(); }}
                       overrideData={practiceBilling.financeData}
                       chargesLabel={t("admin.bl.transactions")}
                       emptyChargesLabel={t("admin.bl.noTransactions")}
                       nameMap={practiceBilling.nameMap}
+
+
 
                     />
                   </div>
