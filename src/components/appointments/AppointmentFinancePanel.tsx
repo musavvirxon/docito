@@ -106,21 +106,95 @@ export function AppointmentFinancePanel({
         ? { label: t('finance.status.outstanding'), variant: 'outline' as const }
         : { label: t('finance.status.noCharges'), variant: 'secondary' as const };
 
-  const handleRecordPayment = async () => {
-    const n = Number(amount);
+  const unpaidCharges = visitCharges
+    .filter((c) => chargeRemaining(c) > 0)
+    .slice()
+    .sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+
+  const refreshAfterPayment = async () => {
+    await finance.refresh?.();
+    onPaymentRecorded?.();
+  };
+
+  /** General payment: FIFO across the oldest unpaid charges. */
+  const handleRecordPayment = async ({
+    amount: n,
+    method,
+    notes,
+  }: {
+    amount: number;
+    method: PaymentMethod;
+    notes?: string;
+  }) => {
     if (!Number.isFinite(n) || n <= 0) {
       toast.error(t('finance.errors.enterValidAmount'));
       return;
     }
+    setPaySubmitting(true);
     try {
-      await finance.recordPayment({ amount: n, method, notes: notes || undefined });
+      if (appointmentId) {
+        // Server-side FIFO allocation within this visit.
+        await finance.recordPayment({ amount: n, method, notes });
+        onPaymentRecorded?.();
+      } else {
+        let left = n;
+        for (const charge of unpaidCharges) {
+          if (left <= 0) break;
+          const apply = Math.min(left, chargeRemaining(charge));
+          if (apply <= 0) continue;
+          await recordBillingPayment({ amount: apply, method, notes, chargeId: charge.id });
+          left -= apply;
+        }
+        if (left >= n) {
+          toast.error(t('finance.errors.recordFailed'));
+          return;
+        }
+        toast.success(t('finance.paymentRecorded', 'Payment recorded'));
+        await refreshAfterPayment();
+      }
       setPayOpen(false);
-      setAmount('');
-      setNotes('');
     } catch (e: any) {
       toast.error(e?.message || t('finance.errors.recordFailed'));
+    } finally {
+      setPaySubmitting(false);
     }
   };
+
+  /** Payment applied to one specific charge/procedure. */
+  const handleRecordChargePayment = async ({
+    amount: n,
+    method,
+    notes,
+  }: {
+    amount: number;
+    method: PaymentMethod;
+    notes?: string;
+  }) => {
+    if (!payingCharge) return;
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error(t('finance.errors.enterValidAmount'));
+      return;
+    }
+    setPaySubmitting(true);
+    try {
+      await recordBillingPayment({
+        amount: Math.min(n, chargeRemaining(payingCharge)),
+        method,
+        notes,
+        chargeId: payingCharge.id,
+      });
+      toast.success(t('finance.paymentRecorded', 'Payment recorded'));
+      setPayingCharge(null);
+      await refreshAfterPayment();
+    } catch (e: any) {
+      toast.error(e?.message || t('finance.errors.recordFailed'));
+    } finally {
+      setPaySubmitting(false);
+    }
+  };
+
 
   const handleApplyDiscount = async () => {
     const n = Number(discountAmt);
