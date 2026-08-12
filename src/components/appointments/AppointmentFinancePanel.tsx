@@ -440,51 +440,26 @@ export function AppointmentFinancePanel({
         )}
       </CardContent>
 
-      {/* Record Payment Dialog */}
-      <Dialog open={payOpen} onOpenChange={setPayOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('finance.dialog.recordTitle')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label>{t('finance.dialog.amount')}</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-            <div>
-              <Label>{t('finance.dialog.method')}</Label>
-              <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">{t('finance.dialog.methods.cash')}</SelectItem>
-                  <SelectItem value="card">{t('finance.dialog.methods.card')}</SelectItem>
-                  <SelectItem value="insurance">{t('finance.dialog.methods.insurance')}</SelectItem>
-                  <SelectItem value="bank_transfer">{t('finance.dialog.methods.bank_transfer')}</SelectItem>
-                  <SelectItem value="other">{t('finance.dialog.methods.other')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t('finance.dialog.notes')}</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setPayOpen(false)}>
-              {t('finance.dialog.cancel')}
-            </Button>
-            <Button onClick={handleRecordPayment}>{t('finance.dialog.record')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Record Payment Dialog (general, FIFO across oldest unpaid charges) */}
+      <RecordPaymentDialog
+        open={payOpen}
+        onOpenChange={setPayOpen}
+        defaultAmount={finance.outstanding}
+        subtitle={tf('ledger.fifoHint', 'Applied to the oldest unpaid procedure first.')}
+        submitting={paySubmitting}
+        onSubmit={handleRecordPayment}
+      />
+
+      {/* Record Payment Dialog (single procedure) */}
+      <RecordPaymentDialog
+        open={!!payingCharge}
+        onOpenChange={(o) => !o && setPayingCharge(null)}
+        defaultAmount={payingCharge ? chargeRemaining(payingCharge) : 0}
+        subtitle={payingCharge?.description || undefined}
+        submitting={paySubmitting}
+        onSubmit={handleRecordChargePayment}
+      />
+
 
       {/* Add Charge Dialog */}
       <Dialog open={chargeOpen} onOpenChange={setChargeOpen}>
