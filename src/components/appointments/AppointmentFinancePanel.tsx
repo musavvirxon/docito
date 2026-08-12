@@ -42,6 +42,10 @@ interface Props {
   overrideData?: Partial<AppointmentFinanceData>;
   /** Hide single-visit actions (record payment, add charge, discount, invoice). Default true. */
   showActions?: boolean;
+  /** Allow recording payments (general + per charge) even when showActions is false. */
+  allowPayments?: boolean;
+  /** Called after a payment has been recorded, so parent stats can refresh. */
+  onPaymentRecorded?: () => void;
   /** Optional label override for the charges list heading. */
   chargesLabel?: string;
   /** Optional label override for the empty charges state. */
@@ -49,6 +53,7 @@ interface Props {
   /** Optional id → full name map used to label charge rows with patient / doctor. */
   nameMap?: Record<string, string>;
 }
+
 
 
 export function AppointmentFinancePanel({
@@ -60,6 +65,8 @@ export function AppointmentFinancePanel({
   procedures = [],
   overrideData,
   showActions = true,
+  allowPayments,
+  onPaymentRecorded,
   chargesLabel,
   emptyChargesLabel,
   nameMap,
@@ -78,19 +85,18 @@ export function AppointmentFinancePanel({
   const visitCharges = finance.billing.filter(
     (b) => (b.transaction_type ?? 'charge') === 'charge',
   );
-
-
+  const paymentsEnabled = allowPayments ?? showActions;
 
   const [payOpen, setPayOpen] = useState(false);
+  const [payingCharge, setPayingCharge] = useState<any | null>(null);
+  const [paySubmitting, setPaySubmitting] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
   const [chargeOpen, setChargeOpen] = useState(false);
   const [chargeDesc, setChargeDesc] = useState('');
   const [chargeAmt, setChargeAmt] = useState('');
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState<PaymentMethod>('cash');
-  const [notes, setNotes] = useState('');
   const [discountAmt, setDiscountAmt] = useState('');
   const [discountReason, setDiscountReason] = useState('');
+
 
 
   const status =

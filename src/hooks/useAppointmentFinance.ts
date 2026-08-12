@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { recordBillingPayment } from "@/lib/billing/recordBillingPayment";
+
 
 export type PaymentMethod = "cash" | "card" | "insurance" | "bank_transfer" | "other";
 
@@ -18,6 +20,7 @@ interface BillingRow {
   id: string;
   amount: number;
   amount_cents: number | null;
+  paid_cents?: number | null;
   currency: string | null;
   status: string | null;
   description: string | null;
@@ -26,6 +29,7 @@ interface BillingRow {
   metadata?: Record<string, unknown> | null;
   created_at: string;
 }
+
 
 interface InsuranceRow {
   id: string;
@@ -48,6 +52,13 @@ export interface AppointmentFinanceData {
   currency: string;
   refresh: () => Promise<void>;
   recordPayment: (input: { amount: number; method: PaymentMethod; notes?: string }) => Promise<void>;
+  recordPaymentForCharge?: (input: {
+    chargeId: string;
+    amount: number;
+    method: PaymentMethod;
+    notes?: string;
+  }) => Promise<void>;
+
   applyDiscount: (input: { amount: number; reason?: string }) => Promise<void>;
   addCharge: (input: {
     description: string;
@@ -140,64 +151,49 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
   const recordPayment = useCallback(
     async ({ amount, method, notes }: { amount: number; method: PaymentMethod; notes?: string }) => {
       if (!appointmentId) return;
-      const { data: appt } = await supabase
-        .from("appointments")
-        .select("practice_id, doctor_id, patient_id")
-        .eq("id", appointmentId)
-        .maybeSingle();
-
-      const resolvedPatient = patientId || (appt as any)?.patient_id || null;
-      const nowIso = new Date().toISOString();
-
-      // `payments.patient_id` is a real profile FK — manual/walk-in patients have none.
-      let profilePatientId: string | null = null;
-      if (resolvedPatient) {
-        const { data: prof } = await supabase
-          .from("profiles")
-          .select("user_id")
-          .eq("user_id", resolvedPatient)
-          .maybeSingle();
-        profilePatientId = (prof as any)?.user_id ?? null;
-      }
-
-      if (profilePatientId) {
-        const { error } = await supabase.from("payments").insert({
-          appointment_id: appointmentId,
-          patient_id: profilePatientId,
-          doctor_id: (appt as any)?.doctor_id || null,
-          practice_id: (appt as any)?.practice_id || null,
-          amount,
-          payment_method: method,
-          status: "completed",
-          notes: notes || null,
-          paid_at: nowIso,
-        } as any);
-        if (error) throw error;
+      const res = await recordBillingPayment({
+        amount,
+        method,
+        notes,
+        appointmentId,
+        patientId: patientId ?? null,
+      });
+      if (res.unallocatedCents > 0) {
+        toast.success("Payment recorded (unallocated credit kept on account)");
       } else {
-        // Store as a ledger payment entry so manual patients still get full history.
-        const authUid = (await supabase.auth.getUser()).data.user?.id ?? null;
-        const { error } = await supabase.from("billing_transactions").insert({
-          appointment_id: appointmentId,
-          patient_id: resolvedPatient,
-          user_id: resolvedPatient || authUid,
-
-          doctor_id: (appt as any)?.doctor_id || null,
-          practice_id: (appt as any)?.practice_id || null,
-          amount: Math.round(amount),
-          amount_cents: Math.round(amount * 100),
-          currency: (currency || "usd").toLowerCase(),
-          transaction_type: "payment",
-          status: "completed",
-          description: notes || "Payment received",
-          metadata: { source: "manual", payment_method: method, paid_at: nowIso },
-        } as any);
-        if (error) throw error;
+        toast.success("Payment recorded");
       }
+      await refresh();
+    },
+    [appointmentId, patientId, refresh],
+  );
+
+  const recordPaymentForCharge = useCallback(
+    async ({
+      chargeId,
+      amount,
+      method,
+      notes,
+    }: {
+      chargeId: string;
+      amount: number;
+      method: PaymentMethod;
+      notes?: string;
+    }) => {
+      await recordBillingPayment({
+        amount,
+        method,
+        notes,
+        chargeId,
+        appointmentId: appointmentId ?? null,
+        patientId: patientId ?? null,
+      });
       toast.success("Payment recorded");
       await refresh();
     },
-    [appointmentId, patientId, currency, refresh],
+    [appointmentId, patientId, refresh],
   );
+
 
 
   const applyDiscount = useCallback(
@@ -285,6 +281,8 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     currency,
     refresh,
     recordPayment,
+    recordPaymentForCharge,
+
     applyDiscount,
     addCharge,
     markFullyPaid,

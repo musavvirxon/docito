@@ -1419,6 +1419,7 @@ export type Database = {
           invoice_id: string | null
           location_id: string | null
           metadata: Json | null
+          paid_cents: number
           patient_id: string | null
           payment_hold_id: string | null
           practice_id: string | null
@@ -1447,6 +1448,7 @@ export type Database = {
           invoice_id?: string | null
           location_id?: string | null
           metadata?: Json | null
+          paid_cents?: number
           patient_id?: string | null
           payment_hold_id?: string | null
           practice_id?: string | null
@@ -1475,6 +1477,7 @@ export type Database = {
           invoice_id?: string | null
           location_id?: string | null
           metadata?: Json | null
+          paid_cents?: number
           patient_id?: string | null
           payment_hold_id?: string | null
           practice_id?: string | null
@@ -12133,6 +12136,19 @@ export type Database = {
       recompute_doctor_review_stats: {
         Args: { _doctor_id: string }
         Returns: undefined
+      }
+      record_billing_payment: {
+        Args: {
+          p_amount_cents: number
+          p_appointment_id?: string
+          p_charge_id?: string
+          p_doctor_id?: string
+          p_method?: string
+          p_notes?: string
+          p_patient_id?: string
+          p_practice_id?: string
+        }
+        Returns: Json
       }
       refresh_all_ratings: { Args: never; Returns: undefined }
       release_payment_hold: {
