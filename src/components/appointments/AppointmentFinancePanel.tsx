@@ -27,9 +27,12 @@ import {
   type AppointmentFinanceData,
 } from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
+import { RecordPaymentDialog } from '@/components/billing/RecordPaymentDialog';
+import { recordBillingPayment, chargeRemaining, chargePaid } from '@/lib/billing/recordBillingPayment';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
 import i18n from '@/i18n/config';
+
 
 interface Props {
   appointmentId: string;
