@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.record_billing_payment(integer, text, text, uuid, uuid, uuid, uuid, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.record_billing_payment(integer, text, text, uuid, uuid, uuid, uuid, uuid) TO authenticated;

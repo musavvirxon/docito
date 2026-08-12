@@ -27,9 +27,12 @@ import {
   type AppointmentFinanceData,
 } from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
+import { RecordPaymentDialog } from '@/components/billing/RecordPaymentDialog';
+import { recordBillingPayment, chargeRemaining, chargePaid } from '@/lib/billing/recordBillingPayment';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
 import i18n from '@/i18n/config';
+
 
 interface Props {
   appointmentId: string;
@@ -42,6 +45,10 @@ interface Props {
   overrideData?: Partial<AppointmentFinanceData>;
   /** Hide single-visit actions (record payment, add charge, discount, invoice). Default true. */
   showActions?: boolean;
+  /** Allow recording payments (general + per charge) even when showActions is false. */
+  allowPayments?: boolean;
+  /** Called after a payment has been recorded, so parent stats can refresh. */
+  onPaymentRecorded?: () => void;
   /** Optional label override for the charges list heading. */
   chargesLabel?: string;
   /** Optional label override for the empty charges state. */
@@ -49,6 +56,7 @@ interface Props {
   /** Optional id → full name map used to label charge rows with patient / doctor. */
   nameMap?: Record<string, string>;
 }
+
 
 
 export function AppointmentFinancePanel({
@@ -60,6 +68,8 @@ export function AppointmentFinancePanel({
   procedures = [],
   overrideData,
   showActions = true,
+  allowPayments,
+  onPaymentRecorded,
   chargesLabel,
   emptyChargesLabel,
   nameMap,
@@ -78,19 +88,18 @@ export function AppointmentFinancePanel({
   const visitCharges = finance.billing.filter(
     (b) => (b.transaction_type ?? 'charge') === 'charge',
   );
-
-
+  const paymentsEnabled = allowPayments ?? showActions;
 
   const [payOpen, setPayOpen] = useState(false);
+  const [payingCharge, setPayingCharge] = useState<any | null>(null);
+  const [paySubmitting, setPaySubmitting] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
   const [chargeOpen, setChargeOpen] = useState(false);
   const [chargeDesc, setChargeDesc] = useState('');
   const [chargeAmt, setChargeAmt] = useState('');
-  const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState<PaymentMethod>('cash');
-  const [notes, setNotes] = useState('');
   const [discountAmt, setDiscountAmt] = useState('');
   const [discountReason, setDiscountReason] = useState('');
+
 
 
   const status =
@@ -100,21 +109,95 @@ export function AppointmentFinancePanel({
         ? { label: t('finance.status.outstanding'), variant: 'outline' as const }
         : { label: t('finance.status.noCharges'), variant: 'secondary' as const };
 
-  const handleRecordPayment = async () => {
-    const n = Number(amount);
+  const unpaidCharges = visitCharges
+    .filter((c) => chargeRemaining(c) > 0)
+    .slice()
+    .sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
+
+  const refreshAfterPayment = async () => {
+    await finance.refresh?.();
+    onPaymentRecorded?.();
+  };
+
+  /** General payment: FIFO across the oldest unpaid charges. */
+  const handleRecordPayment = async ({
+    amount: n,
+    method,
+    notes,
+  }: {
+    amount: number;
+    method: PaymentMethod;
+    notes?: string;
+  }) => {
     if (!Number.isFinite(n) || n <= 0) {
       toast.error(t('finance.errors.enterValidAmount'));
       return;
     }
+    setPaySubmitting(true);
     try {
-      await finance.recordPayment({ amount: n, method, notes: notes || undefined });
+      if (appointmentId) {
+        // Server-side FIFO allocation within this visit.
+        await finance.recordPayment({ amount: n, method, notes });
+        onPaymentRecorded?.();
+      } else {
+        let left = n;
+        for (const charge of unpaidCharges) {
+          if (left <= 0) break;
+          const apply = Math.min(left, chargeRemaining(charge));
+          if (apply <= 0) continue;
+          await recordBillingPayment({ amount: apply, method, notes, chargeId: charge.id });
+          left -= apply;
+        }
+        if (left >= n) {
+          toast.error(t('finance.errors.recordFailed'));
+          return;
+        }
+        toast.success(t('finance.paymentRecorded', 'Payment recorded'));
+        await refreshAfterPayment();
+      }
       setPayOpen(false);
-      setAmount('');
-      setNotes('');
     } catch (e: any) {
       toast.error(e?.message || t('finance.errors.recordFailed'));
+    } finally {
+      setPaySubmitting(false);
     }
   };
+
+  /** Payment applied to one specific charge/procedure. */
+  const handleRecordChargePayment = async ({
+    amount: n,
+    method,
+    notes,
+  }: {
+    amount: number;
+    method: PaymentMethod;
+    notes?: string;
+  }) => {
+    if (!payingCharge) return;
+    if (!Number.isFinite(n) || n <= 0) {
+      toast.error(t('finance.errors.enterValidAmount'));
+      return;
+    }
+    setPaySubmitting(true);
+    try {
+      await recordBillingPayment({
+        amount: Math.min(n, chargeRemaining(payingCharge)),
+        method,
+        notes,
+        chargeId: payingCharge.id,
+      });
+      toast.success(t('finance.paymentRecorded', 'Payment recorded'));
+      setPayingCharge(null);
+      await refreshAfterPayment();
+    } catch (e: any) {
+      toast.error(e?.message || t('finance.errors.recordFailed'));
+    } finally {
+      setPaySubmitting(false);
+    }
+  };
+
 
   const handleApplyDiscount = async () => {
     const n = Number(discountAmt);
@@ -230,6 +313,19 @@ export function AppointmentFinancePanel({
           </div>
         )}
 
+        {!showActions && paymentsEnabled && (
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              onClick={() => setPayOpen(true)}
+              className="gap-1"
+              disabled={finance.outstanding <= 0}
+            >
+              <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
+            </Button>
+          </div>
+        )}
+
         {showActions && (
         <div className="flex flex-wrap gap-2">
           <Button size="sm" onClick={() => setPayOpen(true)} className="gap-1">
@@ -254,6 +350,7 @@ export function AppointmentFinancePanel({
           </Button>
         </div>
         )}
+
 
         {/* Charges recorded during this visit */}
         <div className="space-y-1">
@@ -323,9 +420,35 @@ export function AppointmentFinancePanel({
                     )}
                   </div>
 
-                  <span className="shrink-0 font-medium tabular-nums">
-                    {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
-                  </span>
+                  <div className="shrink-0 text-right">
+                    <div className="font-medium tabular-nums">
+                      {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                    </div>
+                    {chargePaid(row) > 0 && chargeRemaining(row) > 0 && (
+                      <div className="text-[10px] text-muted-foreground tabular-nums">
+                        {tf('ledger.paidOf', {
+                          paid: fmt(chargePaid(row), finance.currency),
+                          defaultValue: '{{paid}} paid',
+                        })}
+                      </div>
+                    )}
+                    {paymentsEnabled &&
+                      (chargeRemaining(row) > 0 ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-1 h-6 px-2 text-[10px]"
+                          onClick={() => setPayingCharge(row)}
+                        >
+                          {tf('ledger.pay', 'Pay')}
+                        </Button>
+                      ) : (
+                        <Badge variant="secondary" className="mt-1 text-[10px]">
+                          {t('finance.status.paid')}
+                        </Badge>
+                      ))}
+                  </div>
+
                 </div>
               );
             })
@@ -360,51 +483,26 @@ export function AppointmentFinancePanel({
         )}
       </CardContent>
 
-      {/* Record Payment Dialog */}
-      <Dialog open={payOpen} onOpenChange={setPayOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('finance.dialog.recordTitle')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label>{t('finance.dialog.amount')}</Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-              />
-            </div>
-            <div>
-              <Label>{t('finance.dialog.method')}</Label>
-              <Select value={method} onValueChange={(v) => setMethod(v as PaymentMethod)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">{t('finance.dialog.methods.cash')}</SelectItem>
-                  <SelectItem value="card">{t('finance.dialog.methods.card')}</SelectItem>
-                  <SelectItem value="insurance">{t('finance.dialog.methods.insurance')}</SelectItem>
-                  <SelectItem value="bank_transfer">{t('finance.dialog.methods.bank_transfer')}</SelectItem>
-                  <SelectItem value="other">{t('finance.dialog.methods.other')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t('finance.dialog.notes')}</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setPayOpen(false)}>
-              {t('finance.dialog.cancel')}
-            </Button>
-            <Button onClick={handleRecordPayment}>{t('finance.dialog.record')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Record Payment Dialog (general, FIFO across oldest unpaid charges) */}
+      <RecordPaymentDialog
+        open={payOpen}
+        onOpenChange={setPayOpen}
+        defaultAmount={finance.outstanding}
+        subtitle={tf('ledger.fifoHint', 'Applied to the oldest unpaid procedure first.')}
+        submitting={paySubmitting}
+        onSubmit={handleRecordPayment}
+      />
+
+      {/* Record Payment Dialog (single procedure) */}
+      <RecordPaymentDialog
+        open={!!payingCharge}
+        onOpenChange={(o) => !o && setPayingCharge(null)}
+        defaultAmount={payingCharge ? chargeRemaining(payingCharge) : 0}
+        subtitle={payingCharge?.description || undefined}
+        submitting={paySubmitting}
+        onSubmit={handleRecordChargePayment}
+      />
+
 
       {/* Add Charge Dialog */}
       <Dialog open={chargeOpen} onOpenChange={setChargeOpen}>
