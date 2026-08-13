@@ -12137,19 +12137,34 @@ export type Database = {
         Args: { _doctor_id: string }
         Returns: undefined
       }
-      record_billing_payment: {
-        Args: {
-          p_amount_cents: number
-          p_appointment_id?: string
-          p_charge_id?: string
-          p_doctor_id?: string
-          p_method?: string
-          p_notes?: string
-          p_patient_id?: string
-          p_practice_id?: string
-        }
-        Returns: Json
-      }
+      record_billing_payment:
+        | {
+            Args: {
+              p_amount_cents: number
+              p_appointment_id?: string
+              p_charge_id?: string
+              p_doctor_id?: string
+              p_method?: string
+              p_notes?: string
+              p_patient_id?: string
+              p_practice_id?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_amount_cents: number
+              p_appointment_id?: string
+              p_charge_id?: string
+              p_discount_cents?: number
+              p_doctor_id?: string
+              p_method?: string
+              p_notes?: string
+              p_patient_id?: string
+              p_practice_id?: string
+            }
+            Returns: Json
+          }
       refresh_all_ratings: { Args: never; Returns: undefined }
       release_payment_hold: {
         Args: { p_hold_id: string; p_reason?: string }
