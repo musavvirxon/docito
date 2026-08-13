@@ -526,9 +526,11 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
 
       return {
         stats: {
-          totalEarnings,
-          earningsThisMonth,
-          earningsThisWeek,
+          // Prefer money actually collected; fall back to the appointment-price
+          // estimate when nothing has been recorded yet.
+          totalEarnings: Math.max(totalEarnings, collectedTotal),
+          earningsThisMonth: Math.max(earningsThisMonth, collectedThisMonth),
+          earningsThisWeek: Math.max(earningsThisWeek, collectedThisWeek),
           unpaidEarnings,
           payoutsProcessed: payoutRecords.filter(p => p.status === 'completed').length,
           nextPayoutDate: format(new Date(new Date().setDate(new Date().getDate() + 15)), 'MMM dd, yyyy'),
