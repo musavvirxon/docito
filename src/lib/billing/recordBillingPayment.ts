@@ -13,6 +13,8 @@ export interface RecordBillingPaymentInput {
   practiceId?: string | null;
   /** When set, the payment is applied to this charge only. Otherwise FIFO across unpaid charges. */
   chargeId?: string | null;
+  /** Optional discount (major units) written off together with the payment. */
+  discount?: number | null;
 }
 
 export interface BillingPaymentAllocation {
