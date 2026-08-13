@@ -150,15 +150,37 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       // (including partial payments) from pending balances.
       const { data: paidRows } = await supabase
         .from('payments')
-        .select('appointment_id, amount, status')
+        .select('appointment_id, amount, status, paid_at, created_at')
         .eq('doctor_id', doctorId)
         .in('status', ['paid', 'completed', 'succeeded', 'partial']);
+
+      // Ledger-side payments (manual / unregistered patients) count as collected money too.
+      const { data: ledgerPaidRows } = await supabase
+        .from('billing_transactions')
+        .select('appointment_id, amount, amount_cents, created_at, transaction_type, status')
+        .eq('doctor_id', doctorId)
+        .eq('transaction_type', 'payment');
+
+      const collectedRows: Array<{ appointment_id: string | null; amount: number; at: string }> = [
+        ...(paidRows || []).map((r: any) => ({
+          appointment_id: r.appointment_id ?? null,
+          amount: Number(r.amount) || 0,
+          at: r.paid_at || r.created_at,
+        })),
+        ...(ledgerPaidRows || [])
+          .filter((r: any) => !['refunded', 'failed', 'voided'].includes(String(r.status || '').toLowerCase()))
+          .map((r: any) => ({
+            appointment_id: r.appointment_id ?? null,
+            amount: r.amount_cents != null ? Number(r.amount_cents) / 100 : Number(r.amount) || 0,
+            at: r.created_at,
+          })),
+      ].filter((r) => r.amount > 0 && r.at);
       const paidByAppointment = new Map<string, number>();
-      (paidRows || []).forEach((r: any) => {
+      collectedRows.forEach((r) => {
         if (!r.appointment_id) return;
         paidByAppointment.set(
           r.appointment_id,
-          (paidByAppointment.get(r.appointment_id) || 0) + Number(r.amount || 0),
+          (paidByAppointment.get(r.appointment_id) || 0) + r.amount,
         );
       });
       const paidAppointmentIds = new Set<string>();
@@ -259,6 +281,27 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           return sum + procPrice;
         }, 0);
 
+      // Money actually collected (recorded payments), which is what the earnings
+      // figures and the chart below report.
+      const collectedInRange = collectedRows
+        .filter((r) => {
+          const d = new Date(r.at);
+          return d >= defaultFrom && d <= defaultTo;
+        })
+        .reduce((sum, r) => sum + r.amount, 0);
+      const collectedTotal = collectedRows.reduce((sum, r) => sum + r.amount, 0);
+      const collectedThisMonth = collectedRows
+        .filter((r) => {
+          const d = new Date(r.at);
+          return d >= thisMonthStart && d <= thisMonthEnd;
+        })
+        .reduce((sum, r) => sum + r.amount, 0);
+      const collectedThisWeek = collectedRows
+        .filter((r) => new Date(r.at) >= weekAgo)
+        .reduce((sum, r) => sum + r.amount, 0);
+      void earningsInRange;
+      void collectedInRange;
+
       const platformCommission = totalEarnings * platformCommissionRate;
       const netEarnings = totalEarnings - platformCommission;
 
@@ -281,6 +324,16 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         if (earningsHistoryMap[date]) {
           earningsHistoryMap[date].earnings += procPrice;
           earningsHistoryMap[date].appointments++;
+        }
+      });
+
+      // Recorded payments land on the day they were collected.
+      collectedRows.forEach((r) => {
+        const d = new Date(r.at);
+        if (d < defaultFrom || d > defaultTo) return;
+        const date = format(d, 'MMM dd');
+        if (earningsHistoryMap[date]) {
+          earningsHistoryMap[date].earnings += r.amount;
         }
       });
 
