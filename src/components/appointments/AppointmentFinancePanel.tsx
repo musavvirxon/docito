@@ -109,12 +109,13 @@ export function AppointmentFinancePanel({
         ? { label: t('finance.status.outstanding'), variant: 'outline' as const }
         : { label: t('finance.status.noCharges'), variant: 'secondary' as const };
 
+  const chargeDate = (c: any) =>
+    new Date((c?.metadata as any)?.performed_at || c?.created_at || 0).getTime();
+
   const unpaidCharges = visitCharges
     .filter((c) => chargeRemaining(c) > 0)
     .slice()
-    .sort(
-      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-    );
+    .sort((a, b) => chargeDate(a) - chargeDate(b));
 
   const refreshAfterPayment = async () => {
     await finance.refresh?.();
@@ -126,12 +127,15 @@ export function AppointmentFinancePanel({
     amount: n,
     method,
     notes,
+    discount = 0,
   }: {
     amount: number;
     method: PaymentMethod;
     notes?: string;
+    discount?: number;
   }) => {
-    if (!Number.isFinite(n) || n <= 0) {
+    const disc = Math.max(0, Number(discount) || 0);
+    if ((!Number.isFinite(n) || n <= 0) && disc <= 0) {
       toast.error(t('finance.errors.enterValidAmount'));
       return;
     }
@@ -139,18 +143,40 @@ export function AppointmentFinancePanel({
     try {
       if (appointmentId) {
         // Server-side FIFO allocation within this visit.
-        await finance.recordPayment({ amount: n, method, notes });
-        onPaymentRecorded?.();
+        await recordBillingPayment({
+          amount: n,
+          method,
+          notes,
+          discount: disc,
+          appointmentId,
+          patientId: patientId || undefined,
+        });
+        toast.success(t('finance.paymentRecorded', 'Payment recorded'));
+        await refreshAfterPayment();
       } else {
-        let left = n;
+        // Aggregate view: apply oldest-first across the visible unpaid charges.
+        let left = Number(n) || 0;
+        let discLeft = disc;
+        let applied = 0;
         for (const charge of unpaidCharges) {
-          if (left <= 0) break;
-          const apply = Math.min(left, chargeRemaining(charge));
-          if (apply <= 0) continue;
-          await recordBillingPayment({ amount: apply, method, notes, chargeId: charge.id });
-          left -= apply;
+          if (left <= 0 && discLeft <= 0) break;
+          const remaining = chargeRemaining(charge);
+          if (remaining <= 0) continue;
+          const applyDisc = Math.min(discLeft, remaining);
+          const applyCash = Math.min(left, remaining - applyDisc);
+          if (applyCash <= 0 && applyDisc <= 0) continue;
+          await recordBillingPayment({
+            amount: applyCash,
+            method,
+            notes,
+            discount: applyDisc,
+            chargeId: charge.id,
+          });
+          left -= applyCash;
+          discLeft -= applyDisc;
+          applied += applyCash + applyDisc;
         }
-        if (left >= n) {
+        if (applied <= 0) {
           toast.error(t('finance.errors.recordFailed'));
           return;
         }
@@ -170,22 +196,28 @@ export function AppointmentFinancePanel({
     amount: n,
     method,
     notes,
+    discount = 0,
   }: {
     amount: number;
     method: PaymentMethod;
     notes?: string;
+    discount?: number;
   }) => {
     if (!payingCharge) return;
-    if (!Number.isFinite(n) || n <= 0) {
+    const remaining = chargeRemaining(payingCharge);
+    const disc = Math.min(Math.max(0, Number(discount) || 0), remaining);
+    const cash = Math.min(Math.max(0, Number(n) || 0), Math.max(0, remaining - disc));
+    if (cash <= 0 && disc <= 0) {
       toast.error(t('finance.errors.enterValidAmount'));
       return;
     }
     setPaySubmitting(true);
     try {
       await recordBillingPayment({
-        amount: Math.min(n, chargeRemaining(payingCharge)),
+        amount: cash,
         method,
         notes,
+        discount: disc,
         chargeId: payingCharge.id,
       });
       toast.success(t('finance.paymentRecorded', 'Payment recorded'));
@@ -424,14 +456,40 @@ export function AppointmentFinancePanel({
                     <div className="font-medium tabular-nums">
                       {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
                     </div>
-                    {chargePaid(row) > 0 && chargeRemaining(row) > 0 && (
+                    {chargePaid(row) > 0 && (
                       <div className="text-[10px] text-muted-foreground tabular-nums">
-                        {tf('ledger.paidOf', {
+                        {tf('ledger.paidAmount', {
                           paid: fmt(chargePaid(row), finance.currency),
                           defaultValue: '{{paid}} paid',
                         })}
                       </div>
                     )}
+                    {chargeRemaining(row) > 0 && (
+                      <div className="text-[10px] font-medium text-amber-600 tabular-nums">
+                        {tf('ledger.remaining', {
+                          amount: fmt(chargeRemaining(row), finance.currency),
+                          defaultValue: '{{amount}} left',
+                        })}
+                      </div>
+                    )}
+                    <div className="mt-0.5">
+                      <Badge
+                        variant={
+                          chargeRemaining(row) <= 0
+                            ? 'secondary'
+                            : chargePaid(row) > 0
+                              ? 'outline'
+                              : 'destructive'
+                        }
+                        className="text-[10px]"
+                      >
+                        {chargeRemaining(row) <= 0
+                          ? t('finance.status.paid')
+                          : chargePaid(row) > 0
+                            ? tf('ledger.partiallyPaid', 'Partially paid')
+                            : tf('ledger.unpaid', 'Unpaid')}
+                      </Badge>
+                    </div>
                     {paymentsEnabled &&
                       (chargeRemaining(row) > 0 ? (
                         <Button
@@ -442,11 +500,7 @@ export function AppointmentFinancePanel({
                         >
                           {tf('ledger.pay', 'Pay')}
                         </Button>
-                      ) : (
-                        <Badge variant="secondary" className="mt-1 text-[10px]">
-                          {t('finance.status.paid')}
-                        </Badge>
-                      ))}
+                      ) : null)}
                   </div>
 
                 </div>
