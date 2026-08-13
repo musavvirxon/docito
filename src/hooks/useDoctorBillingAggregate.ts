@@ -115,15 +115,21 @@ export function useDoctorBillingAggregate(
   }, [refresh]);
 
   const charges = billing.filter(
-    (b) => (b.transaction_type ?? "charge") !== "discount" && (b.transaction_type ?? "charge") !== "refund",
+    (b) =>
+      (b.transaction_type ?? "charge") !== "discount" &&
+      (b.transaction_type ?? "charge") !== "refund" &&
+      (b.transaction_type ?? "charge") !== "payment",
   );
   const discounts = billing.filter((b) => b.transaction_type === "discount");
+  const ledgerPayments = billing.filter((b) => b.transaction_type === "payment");
 
   const totalBilled = charges.reduce((s, b) => s + money(b), 0);
   const totalDiscounts = discounts.reduce((s, b) => s + Math.abs(money(b)), 0);
-  const totalPaid = payments
-    .filter((p) => !["refunded", "failed"].includes(String(p.status || "").toLowerCase()))
-    .reduce((s, p) => s + (Number(p.amount) || 0), 0);
+  const totalPaid =
+    payments
+      .filter((p) => !["refunded", "failed"].includes(String(p.status || "").toLowerCase()))
+      .reduce((s, p) => s + (Number(p.amount) || 0), 0) +
+    ledgerPayments.reduce((s, b) => s + Math.abs(money(b)), 0);
 
   return {
     loading,

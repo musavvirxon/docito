@@ -13,6 +13,8 @@ export interface RecordBillingPaymentInput {
   practiceId?: string | null;
   /** When set, the payment is applied to this charge only. Otherwise FIFO across unpaid charges. */
   chargeId?: string | null;
+  /** Optional discount (major units) written off together with the payment. */
+  discount?: number | null;
 }
 
 export interface BillingPaymentAllocation {
@@ -37,7 +39,11 @@ export async function recordBillingPayment(
   input: RecordBillingPaymentInput,
 ): Promise<RecordBillingPaymentResult> {
   const cents = Math.round(Number(input.amount) * 100);
-  if (!Number.isFinite(cents) || cents <= 0) {
+  const discountCents = Math.max(0, Math.round(Number(input.discount || 0) * 100));
+  if (!Number.isFinite(cents) || cents < 0) {
+    throw new Error('Amount must be greater than zero');
+  }
+  if (cents === 0 && discountCents === 0) {
     throw new Error('Amount must be greater than zero');
   }
 
@@ -50,6 +56,7 @@ export async function recordBillingPayment(
     p_doctor_id: input.doctorId ?? null,
     p_practice_id: input.practiceId ?? null,
     p_charge_id: input.chargeId ?? null,
+    p_discount_cents: discountCents,
   });
 
   if (error) throw error;

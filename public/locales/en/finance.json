@@ -98,7 +98,13 @@
     "visitCharges": "Charges this visit",
     "noVisitCharges": "No charges recorded for this visit yet.",
     "chargeFromProcedure": "This procedure was marked completed. Confirm the amount to record a charge.",
-    "skipCharge": "Not now"
+    "skipCharge": "Not now",
+    "pay": "Pay",
+    "paidAmount": "{{paid}} paid",
+    "remaining": "{{amount}} left",
+    "partiallyPaid": "Partially paid",
+    "unpaid": "Unpaid",
+    "fifoHint": "Applied to the oldest unpaid procedure first."
   },
   "categories": "Categories",
   "attendance": "Attendance",

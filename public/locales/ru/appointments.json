@@ -70,7 +70,9 @@
         "insurance": "Insurance",
         "bank_transfer": "Bank Transfer",
         "other": "Other"
-      }
+      },
+      "discount": "Скидка (необязательно)",
+      "discountHint": "Списывается с баланса и не учитывается как полученные деньги."
     }
   },
   "procedures": {

@@ -29,7 +29,7 @@ interface Props {
   /** Optional context line, e.g. the procedure being paid. */
   subtitle?: string;
   submitting?: boolean;
-  onSubmit: (input: { amount: number; method: BillingPaymentMethod; notes?: string }) => Promise<void> | void;
+  onSubmit: (input: { amount: number; method: BillingPaymentMethod; notes?: string; discount?: number }) => Promise<void> | void;
 }
 
 export function RecordPaymentDialog({
@@ -44,17 +44,24 @@ export function RecordPaymentDialog({
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState<BillingPaymentMethod>('cash');
   const [notes, setNotes] = useState('');
+  const [discount, setDiscount] = useState('');
 
   useEffect(() => {
     if (open) {
       setAmount(defaultAmount && defaultAmount > 0 ? String(Number(defaultAmount.toFixed(2))) : '');
       setMethod('cash');
       setNotes('');
+      setDiscount('');
     }
   }, [open, defaultAmount]);
 
   const handleSubmit = async () => {
-    await onSubmit({ amount: Number(amount), method, notes: notes || undefined });
+    await onSubmit({
+      amount: Number(amount) || 0,
+      method,
+      notes: notes || undefined,
+      discount: Number(discount) || 0,
+    });
   };
 
   return (
@@ -89,6 +96,19 @@ export function RecordPaymentDialog({
                 <SelectItem value="other">{t('finance.dialog.methods.other')}</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label>{t('finance.dialog.discount', 'Discount (optional)')}</Label>
+            <Input
+              type="number"
+              inputMode="decimal"
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+              placeholder="0.00"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              {t('finance.dialog.discountHint', 'Written off from the balance, not counted as collected money.')}
+            </p>
           </div>
           <div>
             <Label>{t('finance.dialog.notes')}</Label>
