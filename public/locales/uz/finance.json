@@ -98,7 +98,13 @@
     "visitCharges": "Ushbu qabul hisoblari",
     "noVisitCharges": "Bu qabul uchun hisob yo'q.",
     "chargeFromProcedure": "Muolaja bajarildi deb belgilandi. Hisob yaratish uchun summani tasdiqlang.",
-    "skipCharge": "Hozir emas"
+    "skipCharge": "Hozir emas",
+    "pay": "To’lash",
+    "paidAmount": "{{paid}} to’langan",
+    "remaining": "{{amount}} qoldi",
+    "partiallyPaid": "Qisman to’langan",
+    "unpaid": "To’lanmagan",
+    "fifoHint": "Avvalo eng eski to’lanmagan muolajaga hisoblanadi."
   },
   "categories": "Kategoriyalar",
   "attendance": "Davomat",

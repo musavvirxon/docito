@@ -70,7 +70,9 @@
         "insurance": "Sug'urta",
         "bank_transfer": "Bank o'tkazmasi",
         "other": "Boshqa"
-      }
+      },
+      "discount": "Chegirma (ixtiyoriy)",
+      "discountHint": "Balansdan hisobdan chiqariladi, olingan pul sifatida hisoblanmaydi."
     }
   },
   "procedures": {

@@ -72,7 +72,9 @@
         "insurance": "Insurance",
         "bank_transfer": "Bank Transfer",
         "other": "Other"
-      }
+      },
+      "discount": "Discount (optional)",
+      "discountHint": "Written off from the balance, not counted as collected money."
     }
   },
   "procedures": {
