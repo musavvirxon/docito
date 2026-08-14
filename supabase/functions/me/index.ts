@@ -1,6 +1,5 @@
 // File: supabase/functions/me/index.ts
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -19,15 +18,14 @@ function json(data: unknown, status = 200) {
 
 function requireEnv() {
   const url = Deno.env.get("SUPABASE_URL");
-  const anon = Deno.env.get("SUPABASE_ANON_KEY");
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) {
+  if (!url || !service) {
     return {
       ok: false as const,
-      error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY",
+      error: "Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY",
     };
   }
-  return { ok: true as const, url, anon, service };
+  return { ok: true as const, url, service };
 }
 
 function safeNameFromEmail(email: string | null | undefined) {
@@ -47,7 +45,7 @@ function mapProfileRole(metaRole: string | null | undefined): "patient" | "docto
   return "patient";
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
@@ -72,7 +70,7 @@ serve(async (req) => {
   if (!token) return json({ ok: false, error: "Unauthorized" }, 401);
   const admin = createClient(env.url, env.service, {
     auth: { persistSession: false },
-    global: { "X-Client-Info": "me" } as any,
+    global: { headers: { "X-Client-Info": "me" } },
   });
 
   // Validate JWT with service-role auth client (reliable in edge runtime)
