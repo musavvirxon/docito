@@ -1,6 +1,5 @@
 // File: supabase/functions/me/index.ts
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -47,7 +46,7 @@ function mapProfileRole(metaRole: string | null | undefined): "patient" | "docto
   return "patient";
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ ok: false, error: "Method not allowed" }, 405);
 
@@ -72,7 +71,7 @@ serve(async (req) => {
   if (!token) return json({ ok: false, error: "Unauthorized" }, 401);
   const admin = createClient(env.url, env.service, {
     auth: { persistSession: false },
-    global: { "X-Client-Info": "me" } as any,
+    global: { headers: { "X-Client-Info": "me" } },
   });
 
   // Validate JWT with service-role auth client (reliable in edge runtime)
