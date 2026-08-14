@@ -145,11 +145,17 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
               <SelectValue placeholder={t('toothDiagnosis.chooseFromLibrary')} />
             </SelectTrigger>
             <SelectContent>
-              {libraryDiagnoses.length === 0 && (
+              {libraryLoading && (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  {t('toothDiagnosis.libraryLoading', 'Loading your diagnoses…')}
+                </div>
+              )}
+              {!libraryLoading && libraryDiagnoses.length === 0 && (
                 <div className="px-2 py-1.5 text-xs text-muted-foreground">
                   {t('toothDiagnosis.libraryEmpty')}
                 </div>
               )}
+
               {libraryDiagnoses.map((d: any) => (
                 <SelectItem key={d.id} value={d.id}>
                   {d.title}
