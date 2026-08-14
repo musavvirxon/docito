@@ -182,25 +182,26 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
           </div>
         )}
 
+        <Button
+          onClick={handleSubmit}
+          disabled={
+            submitting ||
+            teeth.length === 0 ||
+            (!selectedDiagnosisId) ||
+            (isAddingNew && !newDiagnosisTitle.trim())
+          }
+          className="gap-2 w-full"
+        >
+          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {t('toothDiagnosis.save')}
+        </Button>
+
         <PatientCurrentStateChart patientId={patientId} />
 
         <div className="flex items-center justify-between border-t pt-3 gap-3 flex-wrap">
           <div className="text-sm text-muted-foreground">
             {t('toothDiagnosis.selected', { count: teeth.length })}
           </div>
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              submitting ||
-              teeth.length === 0 ||
-              (!selectedDiagnosisId) ||
-              (isAddingNew && !newDiagnosisTitle.trim())
-            }
-            className="gap-2"
-          >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            {t('toothDiagnosis.save')}
-          </Button>
         </div>
       </CardContent>
     </Card>
