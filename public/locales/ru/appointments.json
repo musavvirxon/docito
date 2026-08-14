@@ -169,7 +169,8 @@
       "selectTooth": "Select at least one tooth"
     },
     "savedFor_one": "Diagnosis saved for {{count}} tooth",
-    "savedFor_other": "Diagnosis saved for {{count}} teeth"
+    "savedFor_other": "Diagnosis saved for {{count}} teeth",
+    "libraryLoading": "Загрузка ваших диагнозов…"
   },
   "profile": {
     "back": "Back",
@@ -202,5 +203,19 @@
       "rescheduleFailed": "Failed to reschedule appointment"
     },
     "rescheduledPrefix": "[Rescheduled: {{date}}] "
+  },
+  "toothSelector": {
+    "permanent": "Постоянные (взрослые)",
+    "primary": "Молочные (детские)",
+    "selectAll": "Выбрать все",
+    "clear": "Очистить",
+    "hint": "Нажмите на зуб, чтобы выбрать, или проведите мышью для выбора нескольких.",
+    "upper": "Верхние",
+    "lower": "Нижние",
+    "selectedCount_one": "Выбран {{count}}",
+    "selectedCount_few": "Выбрано {{count}}",
+    "selectedCount_many": "Выбрано {{count}}",
+    "selectedCount_other": "Выбрано {{count}}",
+    "removeTooth": "Убрать зуб {{tooth}}"
   }
 }

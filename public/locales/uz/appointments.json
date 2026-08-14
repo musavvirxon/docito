@@ -169,7 +169,8 @@
       "selectTooth": "Kamida bitta tishni tanlang"
     },
     "savedFor_one": "Tashxis {{count}} tish uchun saqlandi",
-    "savedFor_other": "Tashxis {{count}} tish uchun saqlandi"
+    "savedFor_other": "Tashxis {{count}} tish uchun saqlandi",
+    "libraryLoading": "Tashxislaringiz yuklanmoqda…"
   },
   "profile": {
     "back": "Orqaga",
@@ -202,5 +203,17 @@
       "rescheduleFailed": "Uchrashuvni qayta rejalashtirishda xato"
     },
     "rescheduledPrefix": "[Qayta rejalashtirildi: {{date}}] "
+  },
+  "toothSelector": {
+    "permanent": "Doimiy (kattalar)",
+    "primary": "Sut tishlari (bolalar)",
+    "selectAll": "Hammasini tanlash",
+    "clear": "Tozalash",
+    "hint": "Tishni tanlash uchun bosing yoki bir nechtasini tanlash uchun sudrab o'ting.",
+    "upper": "Yuqori",
+    "lower": "Pastki",
+    "selectedCount_one": "{{count}} ta tanlandi",
+    "selectedCount_other": "{{count}} ta tanlandi",
+    "removeTooth": "{{tooth}}-tishni olib tashlash"
   }
 }
