@@ -18,15 +18,14 @@ function json(data: unknown, status = 200) {
 
 function requireEnv() {
   const url = Deno.env.get("SUPABASE_URL");
-  const anon = Deno.env.get("SUPABASE_ANON_KEY");
   const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !anon || !service) {
+  if (!url || !service) {
     return {
       ok: false as const,
-      error: "Missing SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY",
+      error: "Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY",
     };
   }
-  return { ok: true as const, url, anon, service };
+  return { ok: true as const, url, service };
 }
 
 function safeNameFromEmail(email: string | null | undefined) {
