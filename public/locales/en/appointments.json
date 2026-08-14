@@ -171,7 +171,8 @@
       "selectTooth": "Select at least one tooth"
     },
     "savedFor_one": "Diagnosis saved for {{count}} tooth",
-    "savedFor_other": "Diagnosis saved for {{count}} teeth"
+    "savedFor_other": "Diagnosis saved for {{count}} teeth",
+    "libraryLoading": "Loading your diagnoses…"
   },
   "profile": {
     "back": "Back",
@@ -204,5 +205,17 @@
       "rescheduleFailed": "Failed to reschedule appointment"
     },
     "rescheduledPrefix": "[Rescheduled: {{date}}] "
+  },
+  "toothSelector": {
+    "permanent": "Permanent (adult)",
+    "primary": "Primary (child)",
+    "selectAll": "Select all",
+    "clear": "Clear",
+    "hint": "Click a tooth to toggle, or click and drag to select several.",
+    "upper": "Upper",
+    "lower": "Lower",
+    "selectedCount_one": "{{count}} selected",
+    "selectedCount_other": "{{count}} selected",
+    "removeTooth": "Remove tooth {{tooth}}"
   }
 }

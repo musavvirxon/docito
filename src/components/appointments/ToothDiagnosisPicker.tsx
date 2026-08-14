@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { ToothSelector } from '@/components/dental/ToothSelector';
 import { useDentalChart } from '@/hooks/useDentalChart';
-import { useDoctorData } from '@/contexts/DoctorDataContext';
+import { useDiagnosisLibrary } from '@/hooks/useDiagnosisLibrary';
 import { PRIMARY_TEETH } from '@/components/dental/types';
 import { PatientCurrentStateChart } from './PatientCurrentStateChart';
 import { toast } from 'sonner';
@@ -37,15 +37,12 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
   const { t } = useTranslation('appointments');
   const { upsertToothRecord, isVerifiedDentist } = useDentalChart(patientId);
 
-  let libraryDiagnoses: any[] = [];
-  let addLibraryDiagnosis: ((d: any) => Promise<{ success?: boolean; error?: string }>) | null = null;
-  try {
-    const ctx = useDoctorData();
-    libraryDiagnoses = ctx.diagnoses || [];
-    addLibraryDiagnosis = ctx.addDiagnosis;
-  } catch {
-    libraryDiagnoses = [];
-  }
+  const {
+    diagnoses: libraryDiagnoses,
+    loading: libraryLoading,
+    addDiagnosis: addLibraryDiagnosis,
+  } = useDiagnosisLibrary();
+
 
   const [teeth, setTeeth] = useState<string[]>([]);
   const [selectedDiagnosisId, setSelectedDiagnosisId] = useState<string>('');
@@ -148,11 +145,17 @@ export function ToothDiagnosisPicker({ patientId, onSaved }: Props) {
               <SelectValue placeholder={t('toothDiagnosis.chooseFromLibrary')} />
             </SelectTrigger>
             <SelectContent>
-              {libraryDiagnoses.length === 0 && (
+              {libraryLoading && (
+                <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                  {t('toothDiagnosis.libraryLoading', 'Loading your diagnoses…')}
+                </div>
+              )}
+              {!libraryLoading && libraryDiagnoses.length === 0 && (
                 <div className="px-2 py-1.5 text-xs text-muted-foreground">
                   {t('toothDiagnosis.libraryEmpty')}
                 </div>
               )}
+
               {libraryDiagnoses.map((d: any) => (
                 <SelectItem key={d.id} value={d.id}>
                   {d.title}
