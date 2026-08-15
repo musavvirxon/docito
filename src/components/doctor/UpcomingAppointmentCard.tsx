@@ -15,6 +15,9 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useMessageAction } from "@/hooks/useMessageAction";
+
 
 interface Appointment {
   id: string;
@@ -100,6 +103,9 @@ interface DiagnosisTemplate {
 export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appointment[] }) => {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { startConversation } = useMessageAction();
+
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showPatientModal, setShowPatientModal] = useState(false);
@@ -304,19 +310,21 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   };
 
   const handleMessagePatient = async (patientId: string) => {
-    // Navigate to messaging with patient
-    window.location.href = `/doctor/messages?patient=${patientId}`;
+    setShowAppointmentModal(false);
+    await startConversation(patientId);
   };
 
-  const handleScheduleAppointment = async (patientId: string) => {
-    // Navigate to schedule appointment
-    window.location.href = `/doctor/calendar?schedule=${patientId}`;
+  const handleScheduleAppointment = async (_patientId: string) => {
+    setShowAppointmentModal(false);
+    navigate("/doctor/dashboard?section=calendar");
   };
 
-  const handleVideoCall = async (patientId: string) => {
-    // Navigate to video call
-    window.location.href = `/doctor/video-call?patient=${patientId}&appointment=${selectedAppointment?.id}`;
+  const handleVideoCall = async (_patientId: string) => {
+    if (!selectedAppointment) return;
+    setShowAppointmentModal(false);
+    navigate(`/appointment-session/${selectedAppointment.id}?tab=video`);
   };
+
 
   if (!appointments || appointments.length === 0) {
     return (
@@ -388,7 +396,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
             {/* Appointment Count */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{t("doctor.currentAppointment.upcomingCount", { count: appointments.length })}</span>
-              <Button variant="ghost" size="sm" onClick={() => window.location.href = "/doctor/calendar"}>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/doctor/dashboard?section=calendar")}>
                 {t("doctor.currentAppointment.viewAll", "View All")}
               </Button>
             </div>
