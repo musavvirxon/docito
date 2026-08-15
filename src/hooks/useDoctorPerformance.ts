@@ -217,14 +217,13 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
       const allUniquePatients = new Set(allAppointments.map((a: any) => a.patient_id));
       const consultationFee = doctor?.consultation_fee || 150;
 
-      // Calculate revenue
-      const totalRevenue = appointments.reduce((sum: number, apt: any) => {
-        if (isCompleted(apt)) {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }
-        return sum;
-      }, 0);
+      // Revenue = money actually collected in the selected range (shared ledger source).
+      const collections = await fetchDoctorCollections(doctorId);
+      const rangeStart = startOfDay(defaultFrom);
+      const rangeEnd = endOfDay(defaultTo);
+      const totalRevenue = collectedInRange(collections, rangeStart, rangeEnd);
+      const ledgerServices = collectedByService(collections, rangeStart, rangeEnd);
+
 
       const completionRate = appointments.length > 0 
         ? (completedAppointments.length / appointments.length) * 100 
