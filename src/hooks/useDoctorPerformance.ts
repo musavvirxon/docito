@@ -286,25 +286,26 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
 
       const dailyTrendsArray = Object.values(dailyTrends) as DailyTrend[];
 
-      // Calculate service performance
+      // Service performance — revenue is collected money from the billing ledger.
       const servicePerformance = procedures.map((proc: any) => {
         const procAppointments = appointments.filter((a: any) => a.procedure_id === proc.id);
         const completed = procAppointments.filter(isCompleted);
-        const revenue = completed.reduce((sum: number, apt: any) => {
-          return sum + (proc.price || proc.default_cost || consultationFee);
-        }, 0);
-        
+        const ledger = ledgerServices.get(serviceKey(proc.name));
+
         return {
           id: proc.id,
           name: proc.name,
-          bookings: procAppointments.length,
+          bookings: procAppointments.length || ledger?.charges || 0,
           completed: completed.length,
-          revenue,
+          revenue: ledger?.collected || 0,
+          billed: ledger?.billed || 0,
+          outstanding: ledger?.outstanding || 0,
           avgDuration: proc.duration_minutes || 45,
           category: proc.category,
           conversionRate: procAppointments.length > 0 ? (completed.length / procAppointments.length) * 100 : 0
         };
-      }).sort((a, b) => b.bookings - a.bookings);
+      }).sort((a, b) => b.revenue - a.revenue || b.bookings - a.bookings);
+
 
       // Calculate time slot popularity
       const timeSlotPopularity: Record<string, number> = {};
