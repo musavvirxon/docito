@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { endOfDay, endOfMonth, format, startOfDay, startOfMonth, subDays } from 'date-fns';
 
 interface FinancialStats {
   totalEarnings: number;
@@ -65,6 +65,8 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
   
   const defaultFrom = dateFrom || subDays(new Date(), 30);
   const defaultTo = dateTo || new Date();
+  const rangeStart = startOfDay(defaultFrom);
+  const rangeEnd = endOfDay(defaultTo);
 
   useEffect(() => {
     if (doctorIdOverride) {
@@ -150,33 +152,47 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       // (including partial payments) from pending balances.
       const { data: paidRows } = await supabase
         .from('payments')
-        .select('appointment_id, amount, status, paid_at, created_at')
+        .select('id, appointment_id, patient_id, amount, status, paid_at, created_at')
         .eq('doctor_id', doctorId)
         .in('status', ['paid', 'completed', 'succeeded', 'partial']);
 
-      // Ledger-side payments (manual / unregistered patients) count as collected money too.
-      const { data: ledgerPaidRows } = await supabase
+      // The billing ledger is also the source of manual-patient payments and outstanding charges.
+      const { data: billingLedgerRows } = await supabase
         .from('billing_transactions')
-        .select('appointment_id, amount, amount_cents, created_at, transaction_type, status')
-        .eq('doctor_id', doctorId)
-        .eq('transaction_type', 'payment');
+        .select('id, appointment_id, patient_id, amount, amount_cents, paid_cents, created_at, transaction_type, status')
+        .eq('doctor_id', doctorId);
 
-      const collectedRows: Array<{ appointment_id: string | null; amount: number; at: string }> = [
+      const collectedRows: Array<{
+        key: string;
+        appointment_id: string | null;
+        patient_id: string | null;
+        amount: number;
+        at: string;
+      }> = [
         ...(paidRows || []).map((r: any) => ({
+          key: `payment:${r.id}`,
           appointment_id: r.appointment_id ?? null,
+          patient_id: r.patient_id ?? null,
           amount: Number(r.amount) || 0,
           at: r.paid_at || r.created_at,
         })),
-        ...(ledgerPaidRows || [])
+        ...(billingLedgerRows || [])
+          .filter((r: any) => r.transaction_type === 'payment')
           .filter((r: any) => !['refunded', 'failed', 'voided'].includes(String(r.status || '').toLowerCase()))
           .map((r: any) => ({
+            key: `ledger:${r.id}`,
             appointment_id: r.appointment_id ?? null,
+            patient_id: r.patient_id ?? null,
             amount: r.amount_cents != null ? Number(r.amount_cents) / 100 : Number(r.amount) || 0,
             at: r.created_at,
           })),
       ].filter((r) => r.amount > 0 && r.at);
+
+      const uniqueCollectedRows = Array.from(
+        new Map(collectedRows.map((row) => [row.key, row])).values(),
+      );
       const paidByAppointment = new Map<string, number>();
-      collectedRows.forEach((r) => {
+      uniqueCollectedRows.forEach((r) => {
         if (!r.appointment_id) return;
         paidByAppointment.set(
           r.appointment_id,
@@ -241,18 +257,6 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         (a: any) => !isCompleted(a) && (a.status === 'pending' || a.status === 'confirmed'),
       );
       
-      const totalEarnings = allAppointments
-        .filter(isCompleted)
-        .reduce((sum: number, apt: any) => {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }, 0);
-
-      const earningsInRange = completedAppointments.reduce((sum: number, apt: any) => {
-        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-        return sum + procPrice;
-      }, 0);
-
       const unpaidEarnings = pendingAppointments.reduce((sum: number, apt: any) => {
         const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
         return sum + procPrice;
@@ -260,78 +264,62 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
 
       const thisMonthStart = startOfMonth(new Date());
       const thisMonthEnd = endOfMonth(new Date());
-      const earningsThisMonth = allAppointments
-        .filter((a: any) => {
-          const date = new Date(a.appointment_date);
-          return isCompleted(a) && date >= thisMonthStart && date <= thisMonthEnd;
-        })
-        .reduce((sum: number, apt: any) => {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }, 0);
-
       const weekAgo = subDays(new Date(), 7);
-      const earningsThisWeek = allAppointments
-        .filter((a: any) => {
-          const date = new Date(a.appointment_date);
-          return isCompleted(a) && date >= weekAgo;
-        })
-        .reduce((sum: number, apt: any) => {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }, 0);
 
       // Money actually collected (recorded payments), which is what the earnings
       // figures and the chart below report.
-      const collectedInRange = collectedRows
+      const collectedInRange = uniqueCollectedRows
         .filter((r) => {
           const d = new Date(r.at);
-          return d >= defaultFrom && d <= defaultTo;
+          return d >= rangeStart && d <= rangeEnd;
         })
         .reduce((sum, r) => sum + r.amount, 0);
-      const collectedTotal = collectedRows.reduce((sum, r) => sum + r.amount, 0);
-      const collectedThisMonth = collectedRows
+      const collectedTotal = uniqueCollectedRows.reduce((sum, r) => sum + r.amount, 0);
+      const collectedThisMonth = uniqueCollectedRows
         .filter((r) => {
           const d = new Date(r.at);
           return d >= thisMonthStart && d <= thisMonthEnd;
         })
         .reduce((sum, r) => sum + r.amount, 0);
-      const collectedThisWeek = collectedRows
+      const collectedThisWeek = uniqueCollectedRows
         .filter((r) => new Date(r.at) >= weekAgo)
         .reduce((sum, r) => sum + r.amount, 0);
-      void earningsInRange;
-      void collectedInRange;
+      const ledgerOutstanding = (billingLedgerRows || [])
+        .filter((row: any) => !['payment', 'discount', 'refund'].includes(String(row.transaction_type || 'charge')))
+        .reduce((sum: number, row: any) => {
+          const totalCents = row.amount_cents != null
+            ? Number(row.amount_cents)
+            : Math.round((Number(row.amount) || 0) * 100);
+          return sum + Math.max(0, totalCents - (Number(row.paid_cents) || 0));
+        }, 0) / 100;
 
-      const platformCommission = totalEarnings * platformCommissionRate;
-      const netEarnings = totalEarnings - platformCommission;
+      const platformCommission = collectedTotal * platformCommissionRate;
+      const netEarnings = collectedTotal - platformCommission;
 
       // Earnings history by date - ensure we have entries for all dates in range
       const earningsHistoryMap: Record<string, { earnings: number; appointments: number }> = {};
       
       // Initialize all dates in range with 0
-      let currentDate = new Date(defaultFrom);
-      while (currentDate <= defaultTo) {
-        const dateKey = format(currentDate, 'MMM dd');
+      let currentDate = new Date(rangeStart);
+      while (currentDate <= rangeEnd) {
+        const dateKey = format(currentDate, 'yyyy-MM-dd');
         earningsHistoryMap[dateKey] = { earnings: 0, appointments: 0 };
-        currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+        currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1);
       }
-      
-      // Fill in actual data
+
+      // Appointment counts remain useful context, but appointment prices are not revenue.
       completedAppointments.forEach((apt: any) => {
-        const date = format(new Date(apt.appointment_date), 'MMM dd');
-        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-        
+        const date = format(new Date(apt.appointment_date), 'yyyy-MM-dd');
         if (earningsHistoryMap[date]) {
-          earningsHistoryMap[date].earnings += procPrice;
           earningsHistoryMap[date].appointments++;
         }
       });
 
       // Recorded payments land on the day they were collected.
-      collectedRows.forEach((r) => {
+      uniqueCollectedRows.forEach((r) => {
         const d = new Date(r.at);
-        if (d < defaultFrom || d > defaultTo) return;
-        const date = format(d, 'MMM dd');
+        if (d < rangeStart || d > rangeEnd) return;
+        const date = format(d, 'yyyy-MM-dd');
         if (earningsHistoryMap[date]) {
           earningsHistoryMap[date].earnings += r.amount;
         }
@@ -339,16 +327,10 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
 
       const earningsHistory: EarningsHistory[] = Object.entries(earningsHistoryMap)
         .map(([date, data]) => ({
-          date,
+          date: format(new Date(`${date}T12:00:00`), 'MMM dd'),
           earnings: data.earnings,
           appointments: data.appointments
-        }))
-        .sort((a, b) => {
-          // Sort by date chronologically
-          const dateA = new Date(a.date + ' ' + new Date().getFullYear());
-          const dateB = new Date(b.date + ' ' + new Date().getFullYear());
-          return dateA.getTime() - dateB.getTime();
-        });
+        }));
 
       // Service earnings
       const serviceEarningsMap: Record<string, any> = {};
@@ -379,31 +361,33 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         .sort((a, b) => b.totalRevenue - a.totalRevenue);
 
       // Patient earnings
+      const appointmentById = new Map(allAppointments.map((apt: any) => [apt.id, apt]));
       const patientEarningsMap: Record<string, any> = {};
-      completedAppointments.forEach((apt: any) => {
-        const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
+      uniqueCollectedRows.forEach((payment) => {
+        const apt: any = payment.appointment_id ? appointmentById.get(payment.appointment_id) : null;
+        const patientId = payment.patient_id || apt?.patient_id || `payment:${payment.key}`;
+        const patientProfile = profiles.find((p: any) => p.user_id === patientId);
         const patientName = patientProfile?.full_name || 'Unknown Patient';
-        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-        
-        if (!patientEarningsMap[apt.patient_id]) {
-          patientEarningsMap[apt.patient_id] = {
-            patientId: apt.patient_id,
+        if (!patientEarningsMap[patientId]) {
+          patientEarningsMap[patientId] = {
+            patientId,
             patientName,
             totalPaid: 0,
             appointmentCount: 0,
-            lastVisit: apt.appointment_date
+            lastVisit: payment.at,
+            appointmentIds: new Set<string>(),
           };
         }
-        
-        patientEarningsMap[apt.patient_id].totalPaid += procPrice;
-        patientEarningsMap[apt.patient_id].appointmentCount++;
-        
-        if (new Date(apt.appointment_date) > new Date(patientEarningsMap[apt.patient_id].lastVisit)) {
-          patientEarningsMap[apt.patient_id].lastVisit = apt.appointment_date;
+        patientEarningsMap[patientId].totalPaid += payment.amount;
+        if (payment.appointment_id) patientEarningsMap[patientId].appointmentIds.add(payment.appointment_id);
+        patientEarningsMap[patientId].appointmentCount = patientEarningsMap[patientId].appointmentIds.size;
+        if (new Date(payment.at) > new Date(patientEarningsMap[patientId].lastVisit)) {
+          patientEarningsMap[patientId].lastVisit = payment.at;
         }
       });
 
       const patientEarnings: PatientEarnings[] = Object.values(patientEarningsMap)
+        .map(({ appointmentIds: _appointmentIds, ...patient }: any) => patient)
         .sort((a: any, b: any) => b.totalPaid - a.totalPaid);
 
       // Pending payments — appointment-level.
@@ -515,23 +499,21 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const refundRate = appointments.length > 0 ? (cancelledAppointments.length / appointments.length) * 100 : 0;
       
       const mostProfitableService = serviceEarnings[0] || null;
-      const busiestDays = earningsHistory
+      const busiestDays = [...earningsHistory]
         .sort((a, b) => b.earnings - a.earnings)
         .slice(0, 3);
 
       const totalHours = completedAppointments.reduce((sum: number, apt: any) => {
         return sum + (apt.procedures?.duration_minutes || 30) / 60;
       }, 0);
-      const revenuePerHour = totalHours > 0 ? earningsInRange / totalHours : 0;
+      const revenuePerHour = totalHours > 0 ? collectedInRange / totalHours : 0;
 
       return {
         stats: {
-          // Prefer money actually collected; fall back to the appointment-price
-          // estimate when nothing has been recorded yet.
-          totalEarnings: Math.max(totalEarnings, collectedTotal),
-          earningsThisMonth: Math.max(earningsThisMonth, collectedThisMonth),
-          earningsThisWeek: Math.max(earningsThisWeek, collectedThisWeek),
-          unpaidEarnings,
+          totalEarnings: collectedTotal,
+          earningsThisMonth: collectedThisMonth,
+          earningsThisWeek: collectedThisWeek,
+          unpaidEarnings: ledgerOutstanding || unpaidEarnings,
           payoutsProcessed: payoutRecords.filter(p => p.status === 'completed').length,
           nextPayoutDate: format(new Date(new Date().setDate(new Date().getDate() + 15)), 'MMM dd, yyyy'),
           platformCommission,
