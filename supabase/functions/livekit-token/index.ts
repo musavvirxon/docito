@@ -284,9 +284,57 @@ Deno.serve(async (req) => {
         .maybeSingle();
       participantName = profile?.full_name || user.email || user.id;
     } else if (roomId) {
-      // Free-room flow (non-appointment) — treat caller as doctor.
-      role = 'doctor';
+      // Room-only flow: resolve the caller's real role from the consultation
+      // row so a patient never receives a 'doctor' identity/slot.
+      const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+      const { data: vc } = await adminClient
+        .from("video_consultations")
+        .select("id, doctor_id, patient_id, appointment_id")
+        .eq("room_id", roomId)
+        .maybeSingle();
+
+      let isDoctor = false;
+      let isPatient = false;
+
+      if (vc) {
+        if (vc.doctor_id) {
+          if (vc.doctor_id === user.id) isDoctor = true;
+          else {
+            const { data: doctorRow } = await adminClient
+              .from("doctors").select("user_id").eq("id", vc.doctor_id).maybeSingle();
+            if (doctorRow?.user_id === user.id) isDoctor = true;
+          }
+        }
+        if (!isDoctor && vc.patient_id) {
+          if (vc.patient_id === user.id) isPatient = true;
+          else {
+            const { data: patientRow } = await adminClient
+              .from("profiles").select("user_id").eq("id", vc.patient_id).maybeSingle();
+            if (patientRow?.user_id === user.id) isPatient = true;
+          }
+        }
+
+        if (!isDoctor && !isPatient) {
+          return new Response(
+            JSON.stringify({ error: "Only the doctor and patient may join this consultation" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+        role = isDoctor ? 'doctor' : 'patient';
+      } else {
+        // No consultation row (true ad-hoc room) — caller hosts it.
+        role = 'doctor';
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      participantName = profile?.full_name || user.email || user.id;
     }
+
 
     // Enforce capacity + role uniqueness via LiveKit RoomService.
     const existing = await livekitListParticipants(livekitUrl, apiKey, apiSecret, resolvedRoomId!);
