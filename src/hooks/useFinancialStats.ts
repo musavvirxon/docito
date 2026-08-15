@@ -148,69 +148,22 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           .eq('doctor_id', doctorId),
       ]);
 
-      // Fetch payments already recorded for this doctor so we can subtract paid amounts
-      // (including partial payments) from pending balances.
-      const { data: paidRows } = await supabase
-        .from('payments')
-        .select('id, appointment_id, patient_id, amount, status, paid_at, created_at')
-        .eq('doctor_id', doctorId)
-        .in('status', ['paid', 'completed', 'succeeded', 'partial']);
-
-      // The billing ledger is also the source of manual-patient payments and outstanding charges.
-      const { data: billingLedgerRows } = await supabase
-        .from('billing_transactions')
-        .select('id, appointment_id, patient_id, amount, amount_cents, paid_cents, created_at, transaction_type, status')
-        .eq('doctor_id', doctorId);
-
-      const collectedRows: Array<{
-        key: string;
-        appointment_id: string | null;
-        patient_id: string | null;
-        amount: number;
-        at: string;
-      }> = [
-        ...(paidRows || []).map((r: any) => ({
-          key: `payment:${r.id}`,
-          appointment_id: r.appointment_id ?? null,
-          patient_id: r.patient_id ?? null,
-          amount: Number(r.amount) || 0,
-          at: r.paid_at || r.created_at,
-        })),
-        ...(billingLedgerRows || [])
-          .filter((r: any) => r.transaction_type === 'payment')
-          .filter((r: any) => !['refunded', 'failed', 'voided'].includes(String(r.status || '').toLowerCase()))
-          .map((r: any) => ({
-            key: `ledger:${r.id}`,
-            appointment_id: r.appointment_id ?? null,
-            patient_id: r.patient_id ?? null,
-            amount: r.amount_cents != null ? Number(r.amount_cents) / 100 : Number(r.amount) || 0,
-            at: r.created_at,
-          })),
-      ].filter((r) => r.amount > 0 && r.at);
-
-      const uniqueCollectedRows = Array.from(
-        new Map(collectedRows.map((row) => [row.key, row])).values(),
-      );
-      const paidByAppointment = new Map<string, number>();
-      uniqueCollectedRows.forEach((r) => {
-        if (!r.appointment_id) return;
-        paidByAppointment.set(
-          r.appointment_id,
-          (paidByAppointment.get(r.appointment_id) || 0) + r.amount,
-        );
-      });
-      const paidAppointmentIds = new Set<string>();
-      paidByAppointment.forEach((paid, id) => {
-        // mark only fully paid (any positive remaining still keeps it pending)
-        // We can't know the due here without context, so we leave the filter to the per-row logic below.
-        // Kept for backward compatibility with consultation-only flow:
-        if (paid > 0) paidAppointmentIds.add(id);
-      });
+      // Single shared source of truth for collected money + ledger charges.
+      const collections = await fetchDoctorCollections(doctorId);
+      const uniqueCollectedRows = collections.payments.map((p) => ({
+        key: p.key,
+        appointment_id: p.appointmentId,
+        patient_id: p.patientId,
+        amount: p.amount,
+        at: p.at,
+      }));
+      const paidByAppointment = collections.paidByAppointment;
       const remainingFor = (apptId: string | null | undefined, full: number) => {
         if (!apptId) return full;
         const paid = paidByAppointment.get(apptId) || 0;
         return Math.max(full - paid, 0);
       };
+
 
       const appointments = appointmentsData.data || [];
       const allAppointments = allAppointmentsData.data || [];
