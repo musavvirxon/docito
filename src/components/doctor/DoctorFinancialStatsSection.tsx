@@ -89,9 +89,13 @@ export const DoctorFinancialStatsSection = () => {
     }
   };
 
-  const handleRefresh = () => {
-    refreshData();
+  const handleRefresh = async () => {
+    await Promise.all([refreshData(), doctorBilling.refresh()]);
     toast.success(t("doctor.financialStats.dataRefreshed"));
+  };
+
+  const handlePaymentRecorded = async () => {
+    await Promise.all([refreshData(), doctorBilling.refresh()]);
   };
 
   if (loading) {
@@ -173,7 +177,7 @@ export const DoctorFinancialStatsSection = () => {
         patientName=""
         showActions={false}
         allowPayments
-        onPaymentRecorded={refreshData}
+        onPaymentRecorded={handlePaymentRecorded}
         overrideData={doctorBilling}
         chargesLabel={tf("transactions")}
         emptyChargesLabel={tf("noTransactions")}
