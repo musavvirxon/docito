@@ -237,14 +237,8 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const collectedThisWeek = uniqueCollectedRows
         .filter((r) => new Date(r.at) >= weekAgo)
         .reduce((sum, r) => sum + r.amount, 0);
-      const ledgerOutstanding = (billingLedgerRows || [])
-        .filter((row: any) => !['payment', 'discount', 'refund'].includes(String(row.transaction_type || 'charge')))
-        .reduce((sum: number, row: any) => {
-          const totalCents = row.amount_cents != null
-            ? Number(row.amount_cents)
-            : Math.round((Number(row.amount) || 0) * 100);
-          return sum + Math.max(0, totalCents - (Number(row.paid_cents) || 0));
-        }, 0) / 100;
+      const ledgerOutstanding = collections.totalOutstanding;
+
 
       const platformCommission = collectedTotal * platformCommissionRate;
       const netEarnings = collectedTotal - platformCommission;
