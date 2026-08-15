@@ -83,6 +83,19 @@ const parseRole = (identity: string): 'doctor' | 'patient' | 'staff' | 'guest' =
   return 'guest';
 };
 
+/** Prefer the role carried in the token metadata; fall back to the identity prefix. */
+const participantRole = (p: { identity: string; metadata?: string }):
+  'doctor' | 'patient' | 'staff' | 'guest' => {
+  try {
+    if (p.metadata) {
+      const m = JSON.parse(p.metadata);
+      if (m?.role === 'doctor' || m?.role === 'patient' || m?.role === 'staff') return m.role;
+    }
+  } catch { /* fall through */ }
+  return parseRole(p.identity);
+};
+
+
 const VideoRoom: React.FC<VideoRoomProps> = ({
   consultation,
   userRole,
