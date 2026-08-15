@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { fetchDoctorCollections } from '@/lib/finance/doctorCollections';
 
 export type SuperbillStatus = 'draft' | 'issued' | 'submitted' | 'paid' | 'denied';
 
@@ -52,9 +53,18 @@ interface UseSuperbillsOptions {
   autoLoad?: boolean;
 }
 
+export interface SuperbillWithCollections extends Superbill {
+  /** Money actually collected against this superbill's appointment (cents). */
+  collected_cents: number;
+  /** Remaining to reconcile (cents). */
+  outstanding_cents: number;
+  reconciled: boolean;
+}
+
 export function useSuperbills(opts: UseSuperbillsOptions = {}) {
   const { practiceId, doctorId, patientId, autoLoad = true } = opts;
   const [superbills, setSuperbills] = useState<Superbill[]>([]);
+  const [paidByAppointment, setPaidByAppointment] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
@@ -67,9 +77,19 @@ export function useSuperbills(opts: UseSuperbillsOptions = {}) {
       const { data, error } = await q;
       if (error) throw error;
       setSuperbills((data as any) || []);
+
+      // Reconcile against real collected payments (same ledger every other
+      // finance surface uses) so superbills reflect what was actually paid.
+      if (doctorId) {
+        const collections = await fetchDoctorCollections(doctorId);
+        setPaidByAppointment(collections.paidByAppointment);
+      } else {
+        setPaidByAppointment(new Map());
+      }
     } catch (e: any) {
       console.error('load superbills error', e);
       setSuperbills([]);
+      setPaidByAppointment(new Map());
     } finally {
       setLoading(false);
     }
@@ -88,18 +108,37 @@ export function useSuperbills(opts: UseSuperbillsOptions = {}) {
     return () => { supabase.removeChannel(channel); };
   }, [practiceId, doctorId, patientId, load]);
 
-  const stats = useMemo(() => {
-    const total = superbills.length;
-    const issued = superbills.filter(s => s.status === 'issued').length;
-    const submitted = superbills.filter(s => s.status === 'submitted').length;
-    const paid = superbills.filter(s => s.status === 'paid').length;
-    const denied = superbills.filter(s => s.status === 'denied').length;
-    const totalCents = superbills.reduce((s, b) => s + (b.total_amount_cents || 0), 0);
-    return { total, issued, submitted, paid, denied, totalCents };
-  }, [superbills]);
+  const reconciled: SuperbillWithCollections[] = useMemo(() => {
+    return superbills.map((b) => {
+      const collected = Math.round(
+        ((b.appointment_id ? paidByAppointment.get(b.appointment_id) : 0) || 0) * 100,
+      );
+      const total = b.total_amount_cents || 0;
+      const applied = Math.min(collected, total);
+      return {
+        ...b,
+        collected_cents: applied,
+        outstanding_cents: Math.max(total - applied, 0),
+        reconciled: total > 0 && applied >= total,
+      };
+    });
+  }, [superbills, paidByAppointment]);
 
-  return { superbills, loading, reload: load, stats };
+  const stats = useMemo(() => {
+    const total = reconciled.length;
+    const issued = reconciled.filter(s => s.status === 'issued').length;
+    const submitted = reconciled.filter(s => s.status === 'submitted').length;
+    const paid = reconciled.filter(s => s.status === 'paid').length;
+    const denied = reconciled.filter(s => s.status === 'denied').length;
+    const totalCents = reconciled.reduce((s, b) => s + (b.total_amount_cents || 0), 0);
+    const collectedCents = reconciled.reduce((s, b) => s + b.collected_cents, 0);
+    const outstandingCents = reconciled.reduce((s, b) => s + b.outstanding_cents, 0);
+    return { total, issued, submitted, paid, denied, totalCents, collectedCents, outstandingCents };
+  }, [reconciled]);
+
+  return { superbills: reconciled, loading, reload: load, stats };
 }
+
 
 export interface CreateSuperbillInput {
   doctorId: string | null;

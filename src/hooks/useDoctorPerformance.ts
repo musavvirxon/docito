@@ -2,7 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { addDays, subDays, format, startOfMonth, endOfMonth } from 'date-fns';
+import { addDays, subDays, format, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
+import {
+  collectedByService,
+  collectedInRange,
+  fetchDoctorCollections,
+  serviceKey,
+} from '@/lib/finance/doctorCollections';
+
 
 interface PerformanceStats {
   totalAppointments: number;
@@ -217,14 +224,13 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
       const allUniquePatients = new Set(allAppointments.map((a: any) => a.patient_id));
       const consultationFee = doctor?.consultation_fee || 150;
 
-      // Calculate revenue
-      const totalRevenue = appointments.reduce((sum: number, apt: any) => {
-        if (isCompleted(apt)) {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }
-        return sum;
-      }, 0);
+      // Revenue = money actually collected in the selected range (shared ledger source).
+      const collections = await fetchDoctorCollections(doctorId);
+      const rangeStart = startOfDay(defaultFrom);
+      const rangeEnd = endOfDay(defaultTo);
+      const totalRevenue = collectedInRange(collections, rangeStart, rangeEnd);
+      const ledgerServices = collectedByService(collections, rangeStart, rangeEnd);
+
 
       const completionRate = appointments.length > 0 
         ? (completedAppointments.length / appointments.length) * 100 
@@ -280,25 +286,26 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
 
       const dailyTrendsArray = Object.values(dailyTrends) as DailyTrend[];
 
-      // Calculate service performance
+      // Service performance — revenue is collected money from the billing ledger.
       const servicePerformance = procedures.map((proc: any) => {
         const procAppointments = appointments.filter((a: any) => a.procedure_id === proc.id);
         const completed = procAppointments.filter(isCompleted);
-        const revenue = completed.reduce((sum: number, apt: any) => {
-          return sum + (proc.price || proc.default_cost || consultationFee);
-        }, 0);
-        
+        const ledger = ledgerServices.get(serviceKey(proc.name));
+
         return {
           id: proc.id,
           name: proc.name,
-          bookings: procAppointments.length,
+          bookings: procAppointments.length || ledger?.charges || 0,
           completed: completed.length,
-          revenue,
+          revenue: ledger?.collected || 0,
+          billed: ledger?.billed || 0,
+          outstanding: ledger?.outstanding || 0,
           avgDuration: proc.duration_minutes || 45,
           category: proc.category,
           conversionRate: procAppointments.length > 0 ? (completed.length / procAppointments.length) * 100 : 0
         };
-      }).sort((a, b) => b.bookings - a.bookings);
+      }).sort((a, b) => b.revenue - a.revenue || b.bookings - a.bookings);
+
 
       // Calculate time slot popularity
       const timeSlotPopularity: Record<string, number> = {};
@@ -352,12 +359,23 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
           returningPatients,
           newPatients
         },
-        monthlyData: trends.map((t: any) => ({
-          month: t.month_name,
-          appointments: t.appointments_count,
-          revenue: t.revenue,
-          newPatients: t.new_patients
-        })),
+        monthlyData: trends.map((t: any) => {
+          // Prefer collected money for the month; fall back to the RPC estimate.
+          const label = String(t.month_name || '');
+          const collectedForMonth = collections.payments
+            .filter((p) => {
+              const d = new Date(p.at);
+              return format(d, 'MMM') === label.slice(0, 3) || format(d, 'MMMM') === label;
+            })
+            .reduce((sum, p) => sum + p.amount, 0);
+          return {
+            month: t.month_name,
+            appointments: t.appointments_count,
+            revenue: collectedForMonth || 0,
+            newPatients: t.new_patients
+          };
+        }),
+
         dailyTrends: dailyTrendsArray,
         servicePerformance,
         popularTimeSlots,
