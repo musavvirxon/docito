@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,6 +29,7 @@ export const DoctorFinancialStatsSection = () => {
     to: new Date()
   });
 
+  const queryClient = useQueryClient();
   const [datePreset, setDatePreset] = useState<'7days' | '30days' | '90days' | 'custom'>('30days');
 
   const { 
