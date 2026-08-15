@@ -257,11 +257,6 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         (a: any) => !isCompleted(a) && (a.status === 'pending' || a.status === 'confirmed'),
       );
       
-      const earningsInRange = completedAppointments.reduce((sum: number, apt: any) => {
-        const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-        return sum + procPrice;
-      }, 0);
-
       const unpaidEarnings = pendingAppointments.reduce((sum: number, apt: any) => {
         const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
         return sum + procPrice;
