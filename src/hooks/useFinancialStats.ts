@@ -532,8 +532,13 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           mostProfitableService,
           busiestDays,
           revenuePerHour,
-          totalHours
+          totalHours,
+          collectedInRange,
+          billedTotal,
+          outstandingTotal: ledgerOutstanding,
+          collectionRate
         }
+
       };
     },
     enabled: !!doctorId,
