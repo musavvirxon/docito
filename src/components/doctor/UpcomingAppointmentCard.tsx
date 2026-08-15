@@ -396,7 +396,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
             {/* Appointment Count */}
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{t("doctor.currentAppointment.upcomingCount", { count: appointments.length })}</span>
-              <Button variant="ghost" size="sm" onClick={() => window.location.href = "/doctor/calendar"}>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/doctor/dashboard?section=calendar")}>
                 {t("doctor.currentAppointment.viewAll", "View All")}
               </Button>
             </div>
