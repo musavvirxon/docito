@@ -566,8 +566,13 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       mostProfitableService: null,
       busiestDays: [],
       revenuePerHour: 0,
-      totalHours: 0
+      totalHours: 0,
+      collectedInRange: 0,
+      billedTotal: 0,
+      outstandingTotal: 0,
+      collectionRate: 0
     },
+
     loading: isLoading,
     error: error?.message || null,
     refreshData: refetch,
