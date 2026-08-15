@@ -282,14 +282,15 @@ export default function DoctorProfileSection() {
             variant="outline"
             size="sm"
             onClick={() => {
-              if (publicSlug && doctorProfile.verified) navigate(`/doctor/${publicSlug}`);
+              if (publicSlug) window.open(`/doctor/${publicSlug}`, "_blank", "noopener,noreferrer");
             }}
-            disabled={!publicSlug || !doctorProfile.verified}
-            title={!doctorProfile.verified ? "Your public profile becomes visible after verification" : undefined}
+            disabled={!publicSlug}
+            title={!doctorProfile.verified ? "Preview only — your public profile becomes fully visible after verification" : undefined}
           >
             <ExternalLink className="h-4 w-4 mr-2" />
             Preview
           </Button>
+
           <Button size="sm" onClick={handleSave} disabled={saving}>
             {saving ? (
               <>
