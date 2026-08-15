@@ -365,47 +365,50 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         .map(({ appointmentIds: _appointmentIds, ...patient }: any) => patient)
         .sort((a: any, b: any) => b.totalPaid - a.totalPaid);
 
-      // Pending payments — appointment-level.
-      // Only include the consultation fee when the appointment has no linked procedure
-      // (a pure consultation). Appointments with a procedure are billed via the
-      // procedure rows below, so we don't double-charge a consultation fee on them.
-      const pendingPayments: PendingPayment[] = pendingAppointments
-        .filter((apt: any) => !apt.procedure_id && !apt.procedures)
-        .map((apt: any) => {
-          const remaining = remainingFor(apt.id, consultationFee);
-          if (remaining <= 0) return null;
-          const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
-          const paid = paidByAppointment.get(apt.id) || 0;
+      // Pending payments — the billing ledger is authoritative: remaining =
+      // amount_cents - paid_cents. Fully paid charges drop out, partly paid ones
+      // show only what is still owed.
+      const nameForPatient = (patientId?: string | null) =>
+        profiles.find((p: any) => p.user_id === patientId)?.full_name || 'Unknown Patient';
+
+      const pendingPayments: PendingPayment[] = collections.charges
+        .filter((charge: LedgerCharge) => charge.remainingCents > 0)
+        .map((charge: LedgerCharge) => {
+          const apt: any = charge.appointmentId ? appointmentById.get(charge.appointmentId) : null;
+          const patientId = charge.patientId || apt?.patient_id || null;
           return {
-            appointmentId: apt.id,
-            patientName: patientProfile?.full_name || 'Unknown Patient',
-            patientId: apt.patient_id,
-            serviceName: 'Consultation',
-            amount: remaining,
-            date: apt.appointment_date,
-            status: paid > 0 ? 'partial' : apt.status,
+            appointmentId: charge.appointmentId || `charge-${charge.id}`,
+            chargeId: charge.id,
+            patientName: nameForPatient(patientId),
+            patientId,
+            serviceName: charge.serviceName || charge.description || 'Procedure',
+            amount: charge.remainingCents / 100,
+            date: apt?.appointment_date || charge.createdAt,
+            status: charge.status === 'partial' ? 'partial' : 'unpaid',
             doctorId,
             practiceId,
           } as PendingPayment;
-        })
-        .filter(Boolean) as PendingPayment[];
+        });
 
-      // Pending payments — procedures performed during appointments (dental work, injections, etc.)
+      // Items that never produced a ledger charge still need to be visible.
       const toothHistory = (toothHistoryData as any)?.data || [];
       const apptProcedures = (apptProceduresData as any)?.data || [];
 
       toothHistory
         .filter((row: any) => row.status === 'completed' && Number(row.cost) > 0)
+        .filter((row: any) => !collections.chargeBySource.has(`tooth_procedure_history:${row.id}`))
         .forEach((row: any) => {
-          const patientProfile = profiles.find((p: any) => p.user_id === row.patient_id);
+          const remaining = remainingFor(row.appointment_id, Number(row.cost) || 0);
+          if (remaining <= 0) return;
+          const paid = row.appointment_id ? paidByAppointment.get(row.appointment_id) || 0 : 0;
           pendingPayments.push({
-            appointmentId: `tph-${row.id}`,
-            patientName: patientProfile?.full_name || 'Unknown Patient',
+            appointmentId: row.appointment_id || `tph-${row.id}`,
+            patientName: nameForPatient(row.patient_id),
             patientId: row.patient_id,
             serviceName: row.procedure_name || 'Procedure',
-            amount: Number(row.cost) || 0,
+            amount: remaining,
             date: row.performed_at || row.created_at,
-            status: 'unpaid',
+            status: paid > 0 ? 'partial' : 'unpaid',
             doctorId,
             practiceId,
           });
@@ -413,17 +416,21 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
 
       apptProcedures
         .filter((row: any) => Number(row.estimated_cost) > 0 && row.status !== 'cancelled')
+        .filter(
+          (row: any) =>
+            !collections.chargeByAppointmentProcedure.has(row.id) &&
+            !collections.chargeBySource.has(`appointment_procedures:${row.id}`),
+        )
         .forEach((row: any) => {
           const apt = row.appointments;
           if (!apt) return;
           const full = Number(row.estimated_cost) || 0;
           const remaining = remainingFor(row.appointment_id, full);
           if (remaining <= 0) return;
-          const patientProfile = profiles.find((p: any) => p.user_id === apt.patient_id);
           const paid = paidByAppointment.get(row.appointment_id) || 0;
           pendingPayments.push({
-            appointmentId: `ap-${row.id}`,
-            patientName: patientProfile?.full_name || 'Unknown Patient',
+            appointmentId: row.appointment_id || `ap-${row.id}`,
+            patientName: nameForPatient(apt.patient_id),
             patientId: apt.patient_id,
             serviceName: row.procedures?.name || 'Procedure',
             amount: remaining,
@@ -434,26 +441,40 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           });
         });
 
-      // Calculate payout records from completed appointments
-      // Group payouts by month
-      const payoutMap: Record<string, { amount: number; appointments: string[] }> = {};
-      
-      allAppointments
-        .filter(isCompleted)
+      // Consultation-only appointments (no procedure attached, no ledger charge).
+      pendingAppointments
+        .filter((apt: any) => !apt.procedure_id && !apt.procedures)
+        .filter((apt: any) => !collections.charges.some((c) => c.appointmentId === apt.id))
         .forEach((apt: any) => {
-          const monthKey = format(new Date(apt.appointment_date), 'yyyy-MM');
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          const netAmount = procPrice * (1 - platformCommissionRate);
-          
-          if (!payoutMap[monthKey]) {
-            payoutMap[monthKey] = { amount: 0, appointments: [] };
-          }
-          payoutMap[monthKey].amount += netAmount;
-          payoutMap[monthKey].appointments.push(apt.id);
+          const remaining = remainingFor(apt.id, consultationFee);
+          if (remaining <= 0) return;
+          const paid = paidByAppointment.get(apt.id) || 0;
+          pendingPayments.push({
+            appointmentId: apt.id,
+            patientName: nameForPatient(apt.patient_id),
+            patientId: apt.patient_id,
+            serviceName: 'Consultation',
+            amount: remaining,
+            date: apt.appointment_date,
+            status: paid > 0 ? 'partial' : apt.status,
+            doctorId,
+            practiceId,
+          });
         });
 
+      pendingPayments.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Payouts are derived from money actually collected, grouped by the month it
+      // was collected in, net of the platform commission.
+      const payoutMap: Record<string, { amount: number }> = {};
+      uniqueCollectedRows.forEach((payment) => {
+        const monthKey = format(new Date(payment.at), 'yyyy-MM');
+        if (!payoutMap[monthKey]) payoutMap[monthKey] = { amount: 0 };
+        payoutMap[monthKey].amount += payment.amount * (1 - platformCommissionRate);
+      });
+
       const payoutRecords: PayoutRecord[] = Object.entries(payoutMap)
-        .map(([monthKey, data], index) => {
+        .map(([monthKey, data]) => {
           const monthDate = new Date(monthKey + '-01');
           const isPastMonth = monthDate < startOfMonth(new Date());
           
@@ -468,6 +489,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         })
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .slice(0, 12); // Last 12 months
+
 
       // Financial insights
       const cancelledAppointments = appointments.filter((a: any) => a.status === 'cancelled');
