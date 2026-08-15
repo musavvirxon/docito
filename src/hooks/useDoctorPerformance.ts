@@ -2,7 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { addDays, subDays, format, startOfMonth, endOfMonth } from 'date-fns';
+import { addDays, subDays, format, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns';
+import {
+  collectedByService,
+  collectedInRange,
+  fetchDoctorCollections,
+  serviceKey,
+} from '@/lib/finance/doctorCollections';
+
 
 interface PerformanceStats {
   totalAppointments: number;
