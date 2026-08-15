@@ -359,12 +359,23 @@ export const useDoctorPerformance = (dateFrom?: Date, dateTo?: Date) => {
           returningPatients,
           newPatients
         },
-        monthlyData: trends.map((t: any) => ({
-          month: t.month_name,
-          appointments: t.appointments_count,
-          revenue: t.revenue,
-          newPatients: t.new_patients
-        })),
+        monthlyData: trends.map((t: any) => {
+          // Prefer collected money for the month; fall back to the RPC estimate.
+          const label = String(t.month_name || '');
+          const collectedForMonth = collections.payments
+            .filter((p) => {
+              const d = new Date(p.at);
+              return format(d, 'MMM') === label.slice(0, 3) || format(d, 'MMMM') === label;
+            })
+            .reduce((sum, p) => sum + p.amount, 0);
+          return {
+            month: t.month_name,
+            appointments: t.appointments_count,
+            revenue: collectedForMonth || 0,
+            newPatients: t.new_patients
+          };
+        }),
+
         dailyTrends: dailyTrendsArray,
         servicePerformance,
         popularTimeSlots,
