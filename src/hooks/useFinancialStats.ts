@@ -286,24 +286,41 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           appointments: data.appointments
         }));
 
-      // Service earnings
+      // Service earnings — driven by the billing ledger, so revenue is money actually
+      // collected, with billed / outstanding shown alongside it.
+      const ledgerServices = collectedByService(collections, rangeStart, rangeEnd);
       const serviceEarningsMap: Record<string, any> = {};
+      const knownServiceKeys = new Set<string>();
+
       procedures.forEach((proc: any) => {
+        const key = serviceKey(proc.name);
+        knownServiceKeys.add(key);
+        const ledger = ledgerServices.get(key);
         serviceEarningsMap[proc.id] = {
           serviceId: proc.id,
           serviceName: proc.name,
-          bookings: 0,
-          totalRevenue: 0,
-          avgDuration: proc.duration_minutes || 30
+          bookings: ledger?.charges || 0,
+          totalRevenue: ledger?.collected || 0,
+          billedRevenue: ledger?.billed || 0,
+          outstandingRevenue: ledger?.outstanding || 0,
+          avgDuration: proc.duration_minutes || 30,
         };
       });
 
-      completedAppointments.forEach((apt: any) => {
-        if (apt.procedure_id && serviceEarningsMap[apt.procedure_id]) {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          serviceEarningsMap[apt.procedure_id].bookings++;
-          serviceEarningsMap[apt.procedure_id].totalRevenue += procPrice;
-        }
+      // Charges whose service is not in the doctor's active procedure list (manual
+      // charges, retired services) still belong in the breakdown.
+      ledgerServices.forEach((ledger, key) => {
+        if (knownServiceKeys.has(key)) return;
+        const sample = collections.charges.find((c) => serviceKey(c.serviceName) === key);
+        serviceEarningsMap[`ledger:${key}`] = {
+          serviceId: `ledger:${key}`,
+          serviceName: sample?.serviceName || key,
+          bookings: ledger.charges,
+          totalRevenue: ledger.collected,
+          billedRevenue: ledger.billed,
+          outstandingRevenue: ledger.outstanding,
+          avgDuration: 30,
+        };
       });
 
       const serviceEarnings: ServiceEarnings[] = Object.values(serviceEarningsMap)
@@ -311,8 +328,9 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
           ...service,
           avgRevenue: service.bookings > 0 ? service.totalRevenue / service.bookings : 0
         }))
-        .filter((service: any) => service.bookings > 0)
-        .sort((a, b) => b.totalRevenue - a.totalRevenue);
+        .filter((service: any) => service.bookings > 0 || service.billedRevenue > 0)
+        .sort((a, b) => b.totalRevenue - a.totalRevenue || b.billedRevenue - a.billedRevenue);
+
 
       // Patient earnings
       const appointmentById = new Map(allAppointments.map((apt: any) => [apt.id, apt]));
