@@ -195,6 +195,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
 
   /* ---------- Slot mapping ---------- */
+  /** Role to use for a remote participant. If a stale token reports the same
+   * role as the local user, treat the remote as the counterpart so its camera
+   * never overwrites the local slot. */
+  const remoteRoleFor = useCallback(
+    (p: { identity: string; metadata?: string }): 'doctor' | 'patient' | 'staff' | 'guest' => {
+      const role = participantRole(p);
+      if (role === userRole && (role === 'doctor' || role === 'patient')) {
+        return role === 'doctor' ? 'patient' : 'doctor';
+      }
+      return role;
+    },
+    [userRole],
+  );
+
   const sourceToSlot = useCallback(
     (
       source: Track.Source,
@@ -214,6 +228,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     },
     [userRole],
   );
+
 
   /* ---------- attach helpers ---------- */
   const attachToSlot = (slot: SlotId, track: Track, isLocal: boolean) => {
