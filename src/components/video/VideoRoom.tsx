@@ -331,7 +331,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         }
         return;
       }
-      const role = parseRole(p.identity);
+      const role = remoteRoleFor(p);
       const slot = sourceToSlot(track.source, false, role);
       if (slot) attachToSlot(slot, track, false);
     },
@@ -340,7 +340,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const handleRemoteTrackGone = useCallback(
     (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
-      const role = parseRole(p.identity);
+      const role = remoteRoleFor(p);
       const slot = sourceToSlot(track.source, false, role);
       if (slot && slotTrackRefs.current[slot] === track) clearSlot(slot);
     },
@@ -382,7 +382,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   }, [sourceToSlot]);
 
   const handleParticipantGone = useCallback((p: Participant) => {
-    const role = parseRole(p.identity);
+    const role = remoteRoleFor(p);
     [Track.Source.Camera, Track.Source.ScreenShare].forEach((src) => {
       const slot = sourceToSlot(src, false, role);
       if (slot) {
