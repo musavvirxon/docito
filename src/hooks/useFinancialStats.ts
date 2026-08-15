@@ -492,11 +492,11 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         .slice(0, 12); // Last 12 months
 
 
-      // Financial insights
-      const cancelledAppointments = appointments.filter((a: any) => a.status === 'cancelled');
-      const refundRate = appointments.length > 0 ? (cancelledAppointments.length / appointments.length) * 100 : 0;
-      
-      const mostProfitableService = serviceEarnings[0] || null;
+      // Financial insights — all money figures come from collected payments.
+      const refundBase = collectedTotal + collections.totalRefunded;
+      const refundRate = refundBase > 0 ? (collections.totalRefunded / refundBase) * 100 : 0;
+
+      const mostProfitableService = serviceEarnings.find((s: any) => s.totalRevenue > 0) || serviceEarnings[0] || null;
       const busiestDays = [...earningsHistory]
         .sort((a, b) => b.earnings - a.earnings)
         .slice(0, 3);
@@ -505,6 +505,11 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         return sum + (apt.procedures?.duration_minutes || 30) / 60;
       }, 0);
       const revenuePerHour = totalHours > 0 ? collectedInRange / totalHours : 0;
+      const billedTotal = collections.charges.reduce((sum, c) => sum + c.totalCents, 0) / 100;
+      const collectionRate = billedTotal > 0
+        ? (collections.charges.reduce((sum, c) => sum + c.paidCents, 0) / 100 / billedTotal) * 100
+        : 0;
+
 
       return {
         stats: {
