@@ -33,9 +33,12 @@ interface ServiceEarnings {
   serviceName: string;
   bookings: number;
   totalRevenue: number;
+  billedRevenue: number;
+  outstandingRevenue: number;
   avgRevenue: number;
   avgDuration: number;
 }
+
 
 interface PayoutRecord {
   id: string;
