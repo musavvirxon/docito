@@ -3,6 +3,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { endOfDay, endOfMonth, format, startOfDay, startOfMonth, subDays } from 'date-fns';
+import {
+  collectedByService,
+  fetchDoctorCollections,
+  serviceKey,
+  type LedgerCharge,
+} from '@/lib/finance/doctorCollections';
+
 
 interface FinancialStats {
   totalEarnings: number;
