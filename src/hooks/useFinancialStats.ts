@@ -51,6 +51,7 @@ interface PayoutRecord {
 
 interface PendingPayment {
   appointmentId: string;
+  chargeId?: string | null;
   patientName: string;
   patientId?: string | null;
   serviceName: string;
