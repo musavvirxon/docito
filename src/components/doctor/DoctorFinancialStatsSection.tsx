@@ -95,8 +95,12 @@ export const DoctorFinancialStatsSection = () => {
   };
 
   const handlePaymentRecorded = async () => {
-    await Promise.all([refreshData(), doctorBilling.refresh()]);
+    // Every finance/performance surface reads the same ledger, so refresh them all.
+    await Promise.all([refreshData(), doctorBilling.refresh(), refreshAdvancedMetrics()]);
+    await queryClient.invalidateQueries({ queryKey: ['doctor-performance'] });
+    await queryClient.invalidateQueries({ queryKey: ['advanced-financial-metrics'] });
   };
+
 
   if (loading) {
     return (
