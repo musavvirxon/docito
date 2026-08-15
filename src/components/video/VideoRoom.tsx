@@ -83,6 +83,19 @@ const parseRole = (identity: string): 'doctor' | 'patient' | 'staff' | 'guest' =
   return 'guest';
 };
 
+/** Prefer the role carried in the token metadata; fall back to the identity prefix. */
+const participantRole = (p: { identity: string; metadata?: string }):
+  'doctor' | 'patient' | 'staff' | 'guest' => {
+  try {
+    if (p.metadata) {
+      const m = JSON.parse(p.metadata);
+      if (m?.role === 'doctor' || m?.role === 'patient' || m?.role === 'staff') return m.role;
+    }
+  } catch { /* fall through */ }
+  return parseRole(p.identity);
+};
+
+
 const VideoRoom: React.FC<VideoRoomProps> = ({
   consultation,
   userRole,
@@ -182,6 +195,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
 
   /* ---------- Slot mapping ---------- */
+  /** Role to use for a remote participant. If a stale token reports the same
+   * role as the local user, treat the remote as the counterpart so its camera
+   * never overwrites the local slot. */
+  const remoteRoleFor = useCallback(
+    (p: { identity: string; metadata?: string }): 'doctor' | 'patient' | 'staff' | 'guest' => {
+      const role = participantRole(p);
+      if (role === userRole && (role === 'doctor' || role === 'patient')) {
+        return role === 'doctor' ? 'patient' : 'doctor';
+      }
+      return role;
+    },
+    [userRole],
+  );
+
   const sourceToSlot = useCallback(
     (
       source: Track.Source,
@@ -201,6 +228,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     },
     [userRole],
   );
+
 
   /* ---------- attach helpers ---------- */
   const attachToSlot = (slot: SlotId, track: Track, isLocal: boolean) => {
@@ -303,20 +331,20 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         }
         return;
       }
-      const role = parseRole(p.identity);
+      const role = remoteRoleFor(p);
       const slot = sourceToSlot(track.source, false, role);
       if (slot) attachToSlot(slot, track, false);
     },
-    [sourceToSlot],
+    [sourceToSlot, remoteRoleFor],
   );
 
   const handleRemoteTrackGone = useCallback(
     (track: RemoteTrack, _pub: RemoteTrackPublication, p: RemoteParticipant) => {
-      const role = parseRole(p.identity);
+      const role = remoteRoleFor(p);
       const slot = sourceToSlot(track.source, false, role);
       if (slot && slotTrackRefs.current[slot] === track) clearSlot(slot);
     },
-    [sourceToSlot],
+    [sourceToSlot, remoteRoleFor],
   );
 
   const handleLocalPublished = useCallback((pub: LocalTrackPublication) => {
@@ -354,7 +382,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   }, [sourceToSlot]);
 
   const handleParticipantGone = useCallback((p: Participant) => {
-    const role = parseRole(p.identity);
+    const role = remoteRoleFor(p);
     [Track.Source.Camera, Track.Source.ScreenShare].forEach((src) => {
       const slot = sourceToSlot(src, false, role);
       if (slot) {
@@ -369,7 +397,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       }
     });
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
-  }, [sourceToSlot]);
+  }, [sourceToSlot, remoteRoleFor]);
 
   const updateParticipantCount = useCallback(() => {
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
