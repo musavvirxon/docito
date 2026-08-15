@@ -100,6 +100,9 @@ interface DiagnosisTemplate {
 export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appointment[] }) => {
   const { t } = useTranslation("dashboard");
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const { startConversation } = useMessageAction();
+
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showPatientModal, setShowPatientModal] = useState(false);
