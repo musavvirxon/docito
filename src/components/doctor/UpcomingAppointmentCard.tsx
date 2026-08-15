@@ -15,6 +15,9 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useMessageAction } from "@/hooks/useMessageAction";
+
 
 interface Appointment {
   id: string;
