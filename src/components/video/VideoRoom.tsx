@@ -335,7 +335,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       const slot = sourceToSlot(track.source, false, role);
       if (slot) attachToSlot(slot, track, false);
     },
-    [sourceToSlot],
+    [sourceToSlot, remoteRoleFor],
   );
 
   const handleRemoteTrackGone = useCallback(
@@ -344,7 +344,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       const slot = sourceToSlot(track.source, false, role);
       if (slot && slotTrackRefs.current[slot] === track) clearSlot(slot);
     },
-    [sourceToSlot],
+    [sourceToSlot, remoteRoleFor],
   );
 
   const handleLocalPublished = useCallback((pub: LocalTrackPublication) => {
@@ -397,7 +397,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       }
     });
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
-  }, [sourceToSlot]);
+  }, [sourceToSlot, remoteRoleFor]);
 
   const updateParticipantCount = useCallback(() => {
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
