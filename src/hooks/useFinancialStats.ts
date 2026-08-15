@@ -257,13 +257,6 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
         (a: any) => !isCompleted(a) && (a.status === 'pending' || a.status === 'confirmed'),
       );
       
-      const totalEarnings = allAppointments
-        .filter(isCompleted)
-        .reduce((sum: number, apt: any) => {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }, 0);
-
       const earningsInRange = completedAppointments.reduce((sum: number, apt: any) => {
         const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
         return sum + procPrice;
@@ -276,26 +269,7 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
 
       const thisMonthStart = startOfMonth(new Date());
       const thisMonthEnd = endOfMonth(new Date());
-      const earningsThisMonth = allAppointments
-        .filter((a: any) => {
-          const date = new Date(a.appointment_date);
-          return isCompleted(a) && date >= thisMonthStart && date <= thisMonthEnd;
-        })
-        .reduce((sum: number, apt: any) => {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }, 0);
-
       const weekAgo = subDays(new Date(), 7);
-      const earningsThisWeek = allAppointments
-        .filter((a: any) => {
-          const date = new Date(a.appointment_date);
-          return isCompleted(a) && date >= weekAgo;
-        })
-        .reduce((sum: number, apt: any) => {
-          const procPrice = apt.procedures?.price || apt.procedures?.default_cost || consultationFee;
-          return sum + procPrice;
-        }, 0);
 
       // Money actually collected (recorded payments), which is what the earnings
       // figures and the chart below report.
@@ -315,7 +289,6 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const collectedThisWeek = uniqueCollectedRows
         .filter((r) => new Date(r.at) >= weekAgo)
         .reduce((sum, r) => sum + r.amount, 0);
-      void earningsInRange;
       const ledgerOutstanding = (billingLedgerRows || [])
         .filter((row: any) => !['payment', 'discount', 'refund'].includes(String(row.transaction_type || 'charge')))
         .reduce((sum: number, row: any) => {
@@ -531,14 +504,14 @@ export const useFinancialStats = (dateFrom?: Date, dateTo?: Date, doctorIdOverri
       const refundRate = appointments.length > 0 ? (cancelledAppointments.length / appointments.length) * 100 : 0;
       
       const mostProfitableService = serviceEarnings[0] || null;
-      const busiestDays = earningsHistory
+      const busiestDays = [...earningsHistory]
         .sort((a, b) => b.earnings - a.earnings)
         .slice(0, 3);
 
       const totalHours = completedAppointments.reduce((sum: number, apt: any) => {
         return sum + (apt.procedures?.duration_minutes || 30) / 60;
       }, 0);
-      const revenuePerHour = totalHours > 0 ? earningsInRange / totalHours : 0;
+      const revenuePerHour = totalHours > 0 ? collectedInRange / totalHours : 0;
 
       return {
         stats: {
