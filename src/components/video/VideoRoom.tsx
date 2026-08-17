@@ -48,7 +48,8 @@ interface VideoRoomProps {
   consultation: VideoConsultation;
   userName: string;
   userRole: 'doctor' | 'patient' | 'guest';
-  onEnd: (notes?: string) => void;
+  /** Omit for participants (e.g. patients) who may only leave, not end, the call. */
+  onEnd?: (notes?: string) => void;
   onLeave: () => void;
   guestToken?: string;
 }
