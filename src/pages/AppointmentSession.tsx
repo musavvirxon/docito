@@ -715,7 +715,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       console.error('Error starting video consultation:', error);
       toast.error(t('doctor.session.videoStartError', 'Failed to start video consultation'));
     }
-  }, [appointment, canJoinExistingVideo, createConsultation, handleTabChange, joinAsDoctor, t, videoConsultation]);
+  }, [appointment, canJoinExistingVideo, createConsultation, handleTabChange, isPatientViewer, joinAsDoctor, joinAsPatient, t, videoConsultation]);
 
   const finalizeVideoIfNeeded = useCallback(
     async (notes?: string) => {
