@@ -3643,7 +3643,9 @@
     },
     "resizeTile": "Resize tile",
     "showSelfView": "Show my camera",
-    "hideSelfView": "Hide my camera"
+    "hideSelfView": "Hide my camera",
+    "micRequired": "A microphone is required to join the consultation. Allow microphone access and try again.",
+    "joinedWithoutCamera": "Joined without a camera. You can turn it on later."
   },
   "shell": {
     "footer": {
