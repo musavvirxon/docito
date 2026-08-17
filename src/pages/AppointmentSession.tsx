@@ -675,13 +675,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     try {
       // Prefer re-joining an existing consultation
       if (videoConsultation && canJoinExistingVideo) {
-        const updated = await joinAsDoctor(videoConsultation.id);
+        const updated = isPatientViewer
+          ? await joinAsPatient(videoConsultation.id)
+          : await joinAsDoctor(videoConsultation.id);
         const next = (updated || videoConsultation) as VideoConsultation;
         setVideoConsultation(next);
         setShowVideoRoom(true);
         setVideoEnded(false);
         videoEndOnceRef.current = false;
         handleTabChange('video');
+        return;
+      }
+
+      // Patients cannot open a consultation — the doctor starts it.
+      if (isPatientViewer) {
+        toast.error(t('doctor.session.videoWaitForDoctor', 'The doctor has not started the video consultation yet.'));
         return;
       }
 
