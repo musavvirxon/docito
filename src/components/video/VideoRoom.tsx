@@ -637,51 +637,63 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     setStartingMedia(true);
     setIframeBlocked(false);
 
-    // Probe getUserMedia synchronously in the click handler so gesture
-    // provenance is preserved. Keep the stream and use it as an immediate
-    // local self-view so the user sees themselves even if LiveKit publish
-    // is still in flight or ultimately fails.
-    let probe: MediaStream | null = null;
+    // Microphone is mandatory: probe it first and abort the join if it fails.
+    let micStream: MediaStream | null = null;
     try {
-      probe = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err: any) {
-      explainMediaError(err, 'Failed to access camera and microphone.');
+      explainMediaError(err, t('videoConsultation.micRequired', 'A microphone is required to join the consultation. Allow microphone access and try again.'));
       setStartingMedia(false);
       return;
     }
+    // The probe stream is only used to confirm/prompt permission; LiveKit
+    // publishes its own track below.
+    try { micStream.getTracks().forEach((tr) => tr.stop()); } catch { /* noop */ }
 
-    // Attach preview to local camera slot right away.
+    // Camera is optional: a missing or denied camera must not block the call.
+    let camStream: MediaStream | null = null;
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    } catch {
+      camStream = null;
+    }
+
     const localCamSlot: SlotId = userRole === 'patient' ? 'patient-camera' : 'doctor-camera';
-    previewStreamRef.current = probe;
-    try { attachPreviewStream(localCamSlot, probe); } catch { /* noop */ }
+    if (camStream) {
+      // Attach preview to local camera slot right away so the user sees
+      // themselves even if the LiveKit publish is still in flight.
+      previewStreamRef.current = camStream;
+      try { attachPreviewStream(localCamSlot, camStream); } catch { /* noop */ }
+    }
     setMediaStarted(true);
 
     let micOk = false;
-    let camOk = false;
     try {
       await room.localParticipant.setMicrophoneEnabled(true);
       micOk = true;
       setIsAudioOn(true);
     } catch (err: any) {
-      explainMediaError(err, 'Failed to start microphone.');
+      explainMediaError(err, t('videoConsultation.micRequired', 'A microphone is required to join the consultation. Allow microphone access and try again.'));
     }
-    try {
-      await room.localParticipant.setCameraEnabled(true);
-      camOk = true;
-      setIsVideoOn(true);
-    } catch (err: any) {
-      explainMediaError(err, 'Failed to start camera.');
+
+    if (camStream) {
+      try {
+        await room.localParticipant.setCameraEnabled(true);
+        setIsVideoOn(true);
+      } catch {
+        // Keep the raw preview visible; audio-only participation continues.
+        setIsVideoOn(false);
+        toast.message(t('videoConsultation.joinedWithoutCamera', 'Joined without a camera. You can turn it on later.'));
+      }
+    } else {
+      setIsVideoOn(false);
+      toast.message(t('videoConsultation.joinedWithoutCamera', 'Joined without a camera. You can turn it on later.'));
     }
-    // If LiveKit failed to publish the camera, keep the raw preview visible
-    // so the user still sees their own image. Otherwise handleLocalPublished
-    // has already swapped it out and stopped the preview stream.
-    if (!camOk && previewStreamRef.current) {
-      // leave the preview attached
-    }
-    if (micOk || camOk) setMediaStarted(true);
+
+    if (!micOk) setIsAudioOn(false);
     setStartingMedia(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userRole]);
+  }, [userRole, t]);
 
 
   const toggleAudio = useCallback(async () => {
