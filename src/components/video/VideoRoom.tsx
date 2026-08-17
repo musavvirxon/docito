@@ -798,8 +798,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
 
   const handleEndCall = useCallback(() => {
     try { roomRef.current?.disconnect(true); } catch { /* noop */ }
-    onEnd(notes);
-  }, [notes, onEnd]);
+    if (onEnd) onEnd(notes);
+    else onLeave();
+  }, [notes, onEnd, onLeave]);
 
   const handleLeave = useCallback(() => {
     try { roomRef.current?.disconnect(true); } catch { /* noop */ }
