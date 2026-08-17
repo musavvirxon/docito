@@ -2410,7 +2410,8 @@
         "canLeave": "You'll be able to leave a review once this appointment is completed.",
         "allReviews": "All reviews for this doctor",
         "empty": "No reviews yet."
-      }
+      },
+      "videoWaitForDoctor": "The doctor has not started the video consultation yet."
     },
     "procedureLibrary": {
       "title": "My Procedure Library",

@@ -2563,7 +2563,8 @@
         "canLeave": "Qabul yakunlangach sharh qoldirishingiz mumkin.",
         "allReviews": "Doktor haqidagi barcha sharhlar",
         "empty": "Sharhlar yo'q."
-      }
+      },
+      "videoWaitForDoctor": "Shifokor hali videokonsultatsiyani boshlamagan."
     },
     "procedureLibrary": {
       "title": "Mening muolajalar kutubxonam",
