@@ -2410,7 +2410,8 @@
         "canLeave": "You'll be able to leave a review once this appointment is completed.",
         "allReviews": "All reviews for this doctor",
         "empty": "No reviews yet."
-      }
+      },
+      "videoWaitForDoctor": "The doctor has not started the video consultation yet."
     },
     "procedureLibrary": {
       "title": "My Procedure Library",
@@ -3643,7 +3644,9 @@
     },
     "resizeTile": "Resize tile",
     "showSelfView": "Show my camera",
-    "hideSelfView": "Hide my camera"
+    "hideSelfView": "Hide my camera",
+    "micRequired": "A microphone is required to join the consultation. Allow microphone access and try again.",
+    "joinedWithoutCamera": "Joined without a camera. You can turn it on later."
   },
   "shell": {
     "footer": {

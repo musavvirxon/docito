@@ -190,7 +190,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const isPatientViewer = !!appointment && !!user && appointment.patient_id === user.id;
   const isDoctorViewer = !!appointment && !!user && !isPatientViewer;
 
-  const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
+  const { createConsultation, joinAsDoctor, joinAsPatient, endConsultation } = useVideoConsultation();
 
   const uiPersistKey = useMemo(() => {
     if (!appointmentId) return null;
@@ -675,13 +675,21 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
     try {
       // Prefer re-joining an existing consultation
       if (videoConsultation && canJoinExistingVideo) {
-        const updated = await joinAsDoctor(videoConsultation.id);
+        const updated = isPatientViewer
+          ? await joinAsPatient(videoConsultation.id)
+          : await joinAsDoctor(videoConsultation.id);
         const next = (updated || videoConsultation) as VideoConsultation;
         setVideoConsultation(next);
         setShowVideoRoom(true);
         setVideoEnded(false);
         videoEndOnceRef.current = false;
         handleTabChange('video');
+        return;
+      }
+
+      // Patients cannot open a consultation — the doctor starts it.
+      if (isPatientViewer) {
+        toast.error(t('doctor.session.videoWaitForDoctor', 'The doctor has not started the video consultation yet.'));
         return;
       }
 
@@ -707,7 +715,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
       console.error('Error starting video consultation:', error);
       toast.error(t('doctor.session.videoStartError', 'Failed to start video consultation'));
     }
-  }, [appointment, canJoinExistingVideo, createConsultation, handleTabChange, joinAsDoctor, t, videoConsultation]);
+  }, [appointment, canJoinExistingVideo, createConsultation, handleTabChange, isPatientViewer, joinAsDoctor, joinAsPatient, t, videoConsultation]);
 
   const finalizeVideoIfNeeded = useCallback(
     async (notes?: string) => {
@@ -1279,9 +1287,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       {showVideoRoom && videoConsultation ? (
                         <VideoRoom
                           consultation={videoConsultation}
-                          userName="Doctor"
-                          userRole="doctor"
-                          onEnd={handleVideoEnd}
+                          userName={
+                            isPatientViewer
+                              ? appointment?.patient_name || 'Patient'
+                              : doctorName || 'Doctor'
+                          }
+                          userRole={isPatientViewer ? 'patient' : 'doctor'}
+                          onEnd={isPatientViewer ? undefined : handleVideoEnd}
                           onLeave={() => setShowVideoRoom(false)}
                         />
                       ) : (

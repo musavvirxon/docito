@@ -2563,7 +2563,8 @@
         "canLeave": "Qabul yakunlangach sharh qoldirishingiz mumkin.",
         "allReviews": "Doktor haqidagi barcha sharhlar",
         "empty": "Sharhlar yo'q."
-      }
+      },
+      "videoWaitForDoctor": "Shifokor hali videokonsultatsiyani boshlamagan."
     },
     "procedureLibrary": {
       "title": "Mening muolajalar kutubxonam",
@@ -3825,7 +3826,9 @@
     },
     "resizeTile": "Oyna o'lchamini o'zgartirish",
     "showSelfView": "Mening kameramni ko‘rsatish",
-    "hideSelfView": "Mening kameramni yashirish"
+    "hideSelfView": "Mening kameramni yashirish",
+    "micRequired": "Konsultatsiyaga qoʻshilish uchun mikrofon talab qilinadi. Mikrofonga ruxsat bering va qayta urinib koʻring.",
+    "joinedWithoutCamera": "Kamerasiz qoʻshildingiz. Uni keyinroq yoqishingiz mumkin."
   },
   "shell": {
     "footer": {
