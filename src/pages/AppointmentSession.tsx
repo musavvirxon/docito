@@ -190,7 +190,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const isPatientViewer = !!appointment && !!user && appointment.patient_id === user.id;
   const isDoctorViewer = !!appointment && !!user && !isPatientViewer;
 
-  const { createConsultation, joinAsDoctor, endConsultation } = useVideoConsultation();
+  const { createConsultation, joinAsDoctor, joinAsPatient, endConsultation } = useVideoConsultation();
 
   const uiPersistKey = useMemo(() => {
     if (!appointmentId) return null;
