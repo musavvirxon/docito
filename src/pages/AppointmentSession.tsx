@@ -1279,9 +1279,13 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       {showVideoRoom && videoConsultation ? (
                         <VideoRoom
                           consultation={videoConsultation}
-                          userName="Doctor"
-                          userRole="doctor"
-                          onEnd={handleVideoEnd}
+                          userName={
+                            isPatientViewer
+                              ? appointment?.patient_name || 'Patient'
+                              : doctorName || 'Doctor'
+                          }
+                          userRole={isPatientViewer ? 'patient' : 'doctor'}
+                          onEnd={isPatientViewer ? undefined : handleVideoEnd}
                           onLeave={() => setShowVideoRoom(false)}
                         />
                       ) : (
