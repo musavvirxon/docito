@@ -1948,7 +1948,13 @@
     "selectDateFirst": "Сначала выберите дату",
     "appointmentSummary": "Сводка Приема",
     "at": "в",
-    "confirmAppointment": "Подтвердить Прием"
+    "confirmAppointment": "Подтвердить Прием",
+    "consultationTypeLabels": {
+      "video": "Видео",
+      "in_person": "Очный приём",
+      "messaging": "Переписка",
+      "home_visit": "Визит на дом"
+    }
   },
   "publicProfile": {
     "about": {
@@ -1995,7 +2001,8 @@
       "signInDescription": "Пожалуйста, войдите, чтобы продолжить.",
       "linkCopied": "Ссылка скопирована",
       "sectionLoading": "Загрузка...",
-      "seoDescription": "Запишитесь к {{name}}, {{specialty}}, на Docito. Смотрите доступность, отзывы и стоимость консультации."
+      "seoDescription": "Запишитесь к {{name}}, {{specialty}}, на Docito. Смотрите доступность, отзывы и стоимость консультации.",
+      "unnamedDoctor": "Врач"
     }
   },
   "actions": {

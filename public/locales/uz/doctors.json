@@ -1649,7 +1649,13 @@
     "patientReviews": "Patient reviews",
     "noReviewsYet": "No reviews yet",
     "basedOn": "Based on {{count}} reviews",
-    "clinicAffiliation": "Clinic affiliation"
+    "clinicAffiliation": "Clinic affiliation",
+    "consultationTypeLabels": {
+      "video": "Video",
+      "in_person": "Yuzma-yuz",
+      "messaging": "Yozishma",
+      "home_visit": "Uyga chaqiruv"
+    }
   },
   "publicProfile": {
     "about": {
@@ -1696,7 +1702,8 @@
       "signInDescription": "Davom etish uchun tizimga kiring.",
       "linkCopied": "Havola nusxalandi",
       "sectionLoading": "Yuklanmoqda...",
-      "seoDescription": "{{name}}, {{specialty}} qabuliga Docito orqali yoziling. Bo'sh vaqtlar, sharhlar va narxlarni ko'ring."
+      "seoDescription": "{{name}}, {{specialty}} qabuliga Docito orqali yoziling. Bo'sh vaqtlar, sharhlar va narxlarni ko'ring.",
+      "unnamedDoctor": "Shifokor"
     }
   },
   "actions": {
