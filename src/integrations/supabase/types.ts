@@ -11988,6 +11988,33 @@ export type Database = {
         }[]
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
+      get_public_doctor_profile: {
+        Args: { slug_or_id: string }
+        Returns: {
+          accepts_new_patients: boolean
+          avatar_url: string
+          average_rating: number
+          bio: string
+          consultation_fee: number
+          consultation_types: string[]
+          custom_profile_link: string
+          full_name: string
+          gender: string
+          id: string
+          languages: string[]
+          num_reviews: number
+          practice_city: string
+          practice_country: string
+          practice_id: string
+          practice_name: string
+          practice_verified: boolean
+          specialty: string
+          user_id: string
+          username: string
+          verified: boolean
+          years_experience: number
+        }[]
+      }
       get_public_doctor_profiles: {
         Args: never
         Returns: {
@@ -12090,6 +12117,32 @@ export type Database = {
         Returns: boolean
       }
       is_verified_dentist: { Args: { p_user_id: string }; Returns: boolean }
+      list_public_doctor_profiles: {
+        Args: never
+        Returns: {
+          accepts_new_patients: boolean
+          avatar_url: string
+          average_rating: number
+          bio: string
+          consultation_fee: number
+          consultation_types: string[]
+          custom_profile_link: string
+          full_name: string
+          id: string
+          languages: string[]
+          num_reviews: number
+          practice_city: string
+          practice_country: string
+          practice_id: string
+          practice_name: string
+          practice_verified: boolean
+          specialty: string
+          user_id: string
+          username: string
+          verified: boolean
+          years_experience: number
+        }[]
+      }
       log_account_activity: {
         Args: {
           p_activity_type: string

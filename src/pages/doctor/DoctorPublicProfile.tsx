@@ -91,29 +91,40 @@ export default function DoctorPublicProfile() {
 
       setLoading(true);
       try {
-        // Public view is anon-safe and already filters to verified + public profiles.
-        // Use .ilike() for case-insensitive exact match so shared links work
-        // regardless of slug casing (e.g. "dr.john.doe1" vs "dr.John.Doe1").
+        // Public, anon-safe lookup. The RPC is SECURITY DEFINER and only
+        // returns verified doctors whose profile visibility is not private,
+        // so names/photos are visible without an account.
         const normalized = decodeURIComponent(slug).trim();
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized);
-        const lookups: Array<{ column: string; value: string; op: "eq" | "ilike" }> = [
-          { column: "custom_profile_link", value: normalized, op: "ilike" },
-          { column: "username", value: normalized, op: "ilike" },
-        ];
-        if (isUuid) lookups.push({ column: "id", value: normalized, op: "eq" });
 
         let doc: any = null;
-        const sources = ["doctor_public_profile_view", "doctor_profiles_view"];
-        for (const source of sources) {
+        const { data: rpcData, error: rpcError } = await (supabase as any).rpc(
+          "get_public_doctor_profile",
+          { slug_or_id: normalized },
+        );
+        if (rpcError) {
+          console.warn("[DoctorPublicProfile] get_public_doctor_profile error", rpcError);
+        } else if (Array.isArray(rpcData) && rpcData.length > 0) {
+          doc = rpcData[0];
+        } else if (rpcData && !Array.isArray(rpcData)) {
+          doc = rpcData;
+        }
+
+        // Fallback for the owner / staff viewing an unlisted or unverified profile.
+        if (!doc) {
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(normalized);
+          const lookups: Array<{ column: string; value: string; op: "eq" | "ilike" }> = [
+            { column: "custom_profile_link", value: normalized, op: "ilike" },
+            { column: "username", value: normalized, op: "ilike" },
+          ];
+          if (isUuid) lookups.push({ column: "id", value: normalized, op: "eq" });
+
           for (const { column, value, op } of lookups) {
-            const query = (supabase as any).from(source).select("*");
+            const query = (supabase as any).from("doctor_profiles_view").select("*");
             const { data, error } = await (op === "ilike" ? query.ilike(column, value) : query.eq(column, value))
               .limit(1)
               .maybeSingle();
             if (error) {
-              // Don't fail the page if the fallback view is RLS-restricted —
-              // just continue to the next lookup.
-              console.warn(`[DoctorPublicProfile] ${source}.${column} lookup error`, error);
+              console.warn(`[DoctorPublicProfile] doctor_profiles_view.${column} lookup error`, error);
               continue;
             }
             if (data) {
@@ -121,13 +132,13 @@ export default function DoctorPublicProfile() {
               break;
             }
           }
-          if (doc) break;
         }
 
         if (!doc) {
           setDoctor(null);
           return;
         }
+
 
 
         setDoctor(doc as PublicDoctorProfile);

@@ -24,20 +24,20 @@ export async function resolveDoctorIdFromSlug(
   // Already a UUID — nothing to resolve.
   if (isUuid(s)) return s;
 
+  // Public, anon-safe resolution (verified + public profiles).
+  const { data: rpcData } = await (supabase as any).rpc(
+    "get_public_doctor_profile",
+    { slug_or_id: s },
+  );
+  const rpcRow = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+  if (rpcRow?.id) return String(rpcRow.id);
+
   const lookups: Array<{ column: string; value: string }> = [
     { column: "custom_profile_link", value: s },
     { column: "username", value: s },
   ];
 
-  for (const { column, value } of lookups) {
-    const { data, error } = await (supabase as any)
-      .from("doctor_public_profile_view")
-      .select("id")
-      .ilike(column, value)
-      .limit(1)
-      .maybeSingle();
-    if (!error && data?.id) return String(data.id);
-  }
+
 
   // Fallback to doctor_profiles_view for authenticated/unlisted profiles
   for (const { column, value } of lookups) {

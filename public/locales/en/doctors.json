@@ -1605,7 +1605,13 @@
     "patientReviews": "Patient reviews",
     "noReviewsYet": "No reviews yet",
     "basedOn": "Based on {{count}} reviews",
-    "clinicAffiliation": "Clinic affiliation"
+    "clinicAffiliation": "Clinic affiliation",
+    "consultationTypeLabels": {
+      "video": "Video",
+      "in_person": "In-person",
+      "messaging": "Messaging",
+      "home_visit": "Home visit"
+    }
   },
   "publicProfile": {
     "about": {
@@ -1652,7 +1658,8 @@
       "signInDescription": "Please sign in to continue.",
       "linkCopied": "Link copied to clipboard",
       "sectionLoading": "Loading...",
-      "seoDescription": "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees."
+      "seoDescription": "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees.",
+      "unnamedDoctor": "Doctor"
     }
   },
   "actions": {

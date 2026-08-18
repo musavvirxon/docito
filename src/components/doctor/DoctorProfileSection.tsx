@@ -141,16 +141,18 @@ export default function DoctorProfileSection() {
     setUploadingPhoto(true);
     try {
       const ext = file.name.split(".").pop() || "jpg";
-      const filePath = `avatars/${doctorProfile.user_id}/${Date.now()}.${ext}`;
+      // Public bucket — profile photos must be readable by anonymous visitors.
+      const filePath = `${doctorProfile.user_id}/${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("attachments")
-        .upload(filePath, file, { upsert: true });
+        .from("avatars")
+        .upload(filePath, file, { upsert: true, contentType: file.type });
 
       if (uploadError) throw uploadError;
 
-      const { data: urlData } = supabase.storage.from("attachments").getPublicUrl(filePath);
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
       const newUrl = urlData?.publicUrl || "";
+
 
       const { error: profErr } = await supabase
         .from("profiles")
