@@ -7,10 +7,14 @@ import { TrustIndicators } from "@/components/pricing/TrustIndicators";
 import { CallToAction } from "@/components/pricing/CallToAction";
 import { PricingIllustration } from "@/components/Visuals/illustrations";
 import { PricingMatrix } from "@/components/pricing/PricingMatrix";
+import { UzbekistanPricing } from "@/components/pricing/UzbekistanPricing";
+import { useGeoCountry } from "@/hooks/useGeoCountry";
 
 const Pricing = () => {
   const { t, i18n } = useTranslation("pricing");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
+  const { isUzbekistan } = useGeoCountry();
+
 
   const checkNamespaces = () =>
     i18n.hasLoadedNamespace("pricing") && i18n.hasLoadedNamespace("pricing_matrix");
