@@ -219,5 +219,35 @@
     "billedYearlyAsMonthly": "~${{amount}}/oy, yillik to‘lov",
     "cancelAnytime": "Istalgan vaqtda bekor qiling",
     "placeholderNote": "Narxlar — vaqtinchalik. Keyin har rol va tarif uchun Stripe mahsulotlari/narxlarini ulashingiz mumkin."
+  },
+  "uz": {
+    "badge": "O‘zbekiston uchun narxlar",
+    "title": "O‘zbekiston uchun sodda narxlar.",
+    "subtitle": "Docito’dan foydalanishning ikki yo‘li: har oylik foydalanuvchi obunasi yoki bir martalik xarid.",
+    "note": "Narxlar O‘zbekistondagi mijozlar uchun amal qiladi. Hisob-faktura, joriy etish va to‘lov bo‘yicha biz bilan bog‘laning.",
+    "subscription": {
+      "name": "Obuna",
+      "tagline": "Oyma-oy to‘lang, jamoangiz bilan o‘sing.",
+      "suffix": "/ foydalanuvchi / oy",
+      "cta": "Boshlash",
+      "features": [
+        "Har bir foydalanuvchi uchun oyiga 100 000 so‘m",
+        "Barcha rollar: shifokor, klinika, laboratoriya, dorixona",
+        "Cheksiz yangilanish va qo‘llab-quvvatlash",
+        "Istalgan vaqtda bekor qilish"
+      ]
+    },
+    "oneTime": {
+      "name": "Bir martalik xarid",
+      "tagline": "Bir marta to‘lang.",
+      "suffix": "bir martalik",
+      "cta": "Savdo bo‘limi bilan bog‘lanish",
+      "features": [
+        "Bir martalik to‘lov, oylik to‘lovsiz",
+        "Tashkilotingiz uchun to‘liq platforma",
+        "Joriy etish va sozlashda yordam",
+        "Ustuvor qo‘llab-quvvatlash"
+      ]
+    }
   }
 }
