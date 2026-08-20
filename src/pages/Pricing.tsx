@@ -67,8 +67,12 @@ const Pricing = () => {
               </div>
             </div>
 
-            {/* Apple-style plans (3) on top, roles on left + monthly/yearly toggle */}
-            <PricingMatrix period={billingPeriod} onChangePeriod={setBillingPeriod} />
+            {isUzbekistan ? (
+              <UzbekistanPricing />
+            ) : (
+              <PricingMatrix period={billingPeriod} onChangePeriod={setBillingPeriod} />
+            )}
+
 
             {/* Premium sections */}
             <TrustIndicators />
