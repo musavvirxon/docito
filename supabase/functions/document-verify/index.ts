@@ -130,7 +130,7 @@ function allowed(ctx: Ctx, type: string, rec: any): boolean {
 
   if (t === "prescription") {
     if (ctx.isDoc && ctx.doctorId && rec?.doctor_id === ctx.doctorId) return true;
-    if (ctx.phIds.length > 0) return true; // any pharmacy staff can verify prescriptions
+    if (rec?.pharmacy_id && ctx.phIds.includes(rec.pharmacy_id)) return true; // only the assigned pharmacy
     return false;
   }
 
