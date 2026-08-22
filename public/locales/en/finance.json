@@ -104,7 +104,12 @@
     "remaining": "{{amount}} left",
     "partiallyPaid": "Partially paid",
     "unpaid": "Unpaid",
-    "fifoHint": "Applied to the oldest unpaid procedure first."
+    "fifoHint": "Applied to the oldest unpaid procedure first.",
+    "patient": "Patient",
+    "selectPatient": "Select a patient",
+    "procedureOptional": "Procedure (optional)",
+    "allOldestFirst": "All (oldest first)",
+    "unknownPatient": "Unknown patient"
   },
   "categories": "Categories",
   "attendance": "Attendance",

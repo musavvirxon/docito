@@ -122,21 +122,69 @@ export function AppointmentFinancePanel({
     onPaymentRecorded?.();
   };
 
+  /** Aggregate mode: the panel shows charges of many patients. */
+  const aggregateMode = !appointmentId;
+
+  const chargePatientKey = (row: any): string =>
+    row?.patient_id || (row?.appointment_id ? `appointment:${row.appointment_id}` : 'unknown');
+
+  const chargePatientLabel = (row: any): string => {
+    const meta = (row?.metadata ?? {}) as Record<string, any>;
+    return (
+      (row?.patient_id && nameMap?.[row.patient_id]) ||
+      (row?.appointment_id && nameMap?.[`appointment:${row.appointment_id}`]) ||
+      meta.patient_name ||
+      meta.customer_name ||
+      patientName ||
+      tf('ledger.unknownPatient', 'Unknown patient')
+    );
+  };
+
+  const patientOptions = aggregateMode
+    ? Object.values(
+        unpaidCharges.reduce((acc: Record<string, { key: string; label: string; outstanding: number }>, c: any) => {
+          const key = chargePatientKey(c);
+          if (!acc[key]) acc[key] = { key, label: chargePatientLabel(c), outstanding: 0 };
+          acc[key].outstanding += chargeRemaining(c);
+          return acc;
+        }, {}),
+      ).sort((a, b) => a.label.localeCompare(b.label))
+    : [];
+
+  const chargeOptions = aggregateMode
+    ? unpaidCharges.map((c: any) => ({
+        id: c.id,
+        patientKey: chargePatientKey(c),
+        description: `${c.description || tf('ledger.charge', 'Charge')} · ${new Date(
+          chargeDate(c),
+        ).toLocaleDateString()}`,
+        remaining: chargeRemaining(c),
+      }))
+    : [];
+
   /** General payment: FIFO across the oldest unpaid charges. */
   const handleRecordPayment = async ({
     amount: n,
     method,
     notes,
     discount = 0,
+    patientKey,
+    chargeId,
   }: {
     amount: number;
     method: PaymentMethod;
     notes?: string;
     discount?: number;
+    patientKey?: string;
+    chargeId?: string;
   }) => {
     const disc = Math.max(0, Number(discount) || 0);
     if ((!Number.isFinite(n) || n <= 0) && disc <= 0) {
       toast.error(t('finance.errors.enterValidAmount'));
+      return;
+    }
+    if (aggregateMode && !patientKey) {
+      toast.error(tf('ledger.selectPatient', 'Select a patient'));
       return;
     }
     setPaySubmitting(true);
@@ -154,11 +202,14 @@ export function AppointmentFinancePanel({
         toast.success(t('finance.paymentRecorded', 'Payment recorded'));
         await refreshAfterPayment();
       } else {
-        // Aggregate view: apply oldest-first across the visible unpaid charges.
+        // Aggregate view: apply to the chosen charge, or oldest-first for that patient.
+        const target = chargeId
+          ? unpaidCharges.filter((c: any) => c.id === chargeId)
+          : unpaidCharges.filter((c: any) => chargePatientKey(c) === patientKey);
         let left = Number(n) || 0;
         let discLeft = disc;
         let applied = 0;
-        for (const charge of unpaidCharges) {
+        for (const charge of target) {
           if (left <= 0 && discLeft <= 0) break;
           const remaining = chargeRemaining(charge);
           if (remaining <= 0) continue;
@@ -541,9 +592,13 @@ export function AppointmentFinancePanel({
       <RecordPaymentDialog
         open={payOpen}
         onOpenChange={setPayOpen}
-        defaultAmount={finance.outstanding}
+        defaultAmount={aggregateMode ? 0 : finance.outstanding}
         subtitle={tf('ledger.fifoHint', 'Applied to the oldest unpaid procedure first.')}
         submitting={paySubmitting}
+        requirePatient={aggregateMode}
+        patients={patientOptions}
+        charges={chargeOptions}
+        formatAmount={(v) => fmt(v)}
         onSubmit={handleRecordPayment}
       />
 
