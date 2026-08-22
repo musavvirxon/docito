@@ -12,7 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isSameDay, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { CalendarPlus, User, CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -321,7 +321,7 @@ const ManualBookAppointmentModal = ({
                       setSelectedDate(d);
                       setSelectedTime("");
                     }}
-                    disabled={(date) => date < startOfDay(new Date())}
+                    
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
@@ -343,24 +343,18 @@ const ManualBookAppointmentModal = ({
                         slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
                       }
                     }
-                    const now = new Date();
-                    const isToday = isSameDay(selectedDate, now);
                     return slots.map((s) => {
-                      const [hh, mm] = s.split(":").map(Number);
-                      const past = isToday && (hh < now.getHours() || (hh === now.getHours() && mm <= now.getMinutes()));
                       const active = selectedTime === s;
                       return (
                         <button
                           key={s}
                           type="button"
-                          disabled={past}
                           onClick={() => setSelectedTime(s)}
                           className={cn(
                             "rounded-md border px-2 py-1.5 text-xs font-medium transition-all",
                             active
                               ? "border-primary bg-primary text-primary-foreground shadow-sm"
                               : "border-border bg-background hover:border-primary/40 hover:bg-accent",
-                            past && "opacity-40 cursor-not-allowed hover:bg-background hover:border-border",
                           )}
                         >
                           {s}
