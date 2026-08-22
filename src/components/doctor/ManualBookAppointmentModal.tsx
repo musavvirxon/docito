@@ -321,7 +321,7 @@ const ManualBookAppointmentModal = ({
                       setSelectedDate(d);
                       setSelectedTime("");
                     }}
-                    disabled={(date) => date < startOfDay(new Date())}
+                    
                     initialFocus
                     className={cn("p-3 pointer-events-auto")}
                   />
