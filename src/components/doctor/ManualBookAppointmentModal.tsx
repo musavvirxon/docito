@@ -12,7 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { format, isSameDay, startOfDay } from "date-fns";
+import { format } from "date-fns";
 import { CalendarPlus, User, CalendarIcon, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
