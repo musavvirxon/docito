@@ -131,8 +131,8 @@ async function verifyPayPalSignature(
     const paypalSecret = Deno.env.get("PAYPAL_SECRET");
 
     if (!paypalClientId || !paypalSecret) {
-      console.warn("PayPal credentials not configured, skipping full verification");
-      return { valid: true }; // Allow if not configured (log warning)
+      console.error("PayPal credentials not configured; rejecting webhook");
+      return { valid: false, error: "PayPal verification unavailable" };
     }
 
     // Get access token
