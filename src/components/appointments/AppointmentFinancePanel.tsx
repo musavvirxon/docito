@@ -592,9 +592,13 @@ export function AppointmentFinancePanel({
       <RecordPaymentDialog
         open={payOpen}
         onOpenChange={setPayOpen}
-        defaultAmount={finance.outstanding}
+        defaultAmount={aggregateMode ? 0 : finance.outstanding}
         subtitle={tf('ledger.fifoHint', 'Applied to the oldest unpaid procedure first.')}
         submitting={paySubmitting}
+        requirePatient={aggregateMode}
+        patients={patientOptions}
+        charges={chargeOptions}
+        formatAmount={(v) => fmt(v)}
         onSubmit={handleRecordPayment}
       />
 
