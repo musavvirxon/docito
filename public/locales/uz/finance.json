@@ -104,7 +104,12 @@
     "remaining": "{{amount}} qoldi",
     "partiallyPaid": "Qisman to’langan",
     "unpaid": "To’lanmagan",
-    "fifoHint": "Avvalo eng eski to’lanmagan muolajaga hisoblanadi."
+    "fifoHint": "Avvalo eng eski to’lanmagan muolajaga hisoblanadi.",
+    "patient": "Bemor",
+    "selectPatient": "Bemorni tanlang",
+    "procedureOptional": "Muolaja (ixtiyoriy)",
+    "allOldestFirst": "Barchasi (avval eskilari)",
+    "unknownPatient": "Noma'lum bemor"
   },
   "categories": "Kategoriyalar",
   "attendance": "Davomat",
