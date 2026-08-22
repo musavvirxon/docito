@@ -343,24 +343,18 @@ const ManualBookAppointmentModal = ({
                         slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
                       }
                     }
-                    const now = new Date();
-                    const isToday = isSameDay(selectedDate, now);
                     return slots.map((s) => {
-                      const [hh, mm] = s.split(":").map(Number);
-                      const past = isToday && (hh < now.getHours() || (hh === now.getHours() && mm <= now.getMinutes()));
                       const active = selectedTime === s;
                       return (
                         <button
                           key={s}
                           type="button"
-                          disabled={past}
                           onClick={() => setSelectedTime(s)}
                           className={cn(
                             "rounded-md border px-2 py-1.5 text-xs font-medium transition-all",
                             active
                               ? "border-primary bg-primary text-primary-foreground shadow-sm"
                               : "border-border bg-background hover:border-primary/40 hover:bg-accent",
-                            past && "opacity-40 cursor-not-allowed hover:bg-background hover:border-border",
                           )}
                         >
                           {s}
