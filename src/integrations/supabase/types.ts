@@ -11456,6 +11456,7 @@ export type Database = {
         Args: { p_doctor_id: string }
         Returns: number
       }
+      can_access_any_entity: { Args: { p_entity_id: string }; Returns: boolean }
       can_access_entity: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: boolean
