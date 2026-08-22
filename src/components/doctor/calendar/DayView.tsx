@@ -376,16 +376,12 @@ const DayView = memo(({
                 )}
 
                 {!isOccupied && slot.isWorking && (
-                  (() => {
-                    return (
-                      <div
-                        className="group h-full rounded-lg hover:bg-primary/5 transition-colors cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100"
-                        onClick={() => onSlotClick(slot.time)}
-                      >
-                        <Plus className="h-4 w-4 text-primary" />
-                      </div>
-                    );
-                  })()
+                  <div
+                    className="group h-full rounded-lg hover:bg-primary/5 transition-colors cursor-pointer flex items-center justify-center opacity-0 hover:opacity-100"
+                    onClick={() => onSlotClick(slot.time)}
+                  >
+                    <Plus className="h-4 w-4 text-primary" />
+                  </div>
                 )}
               </div>
             </motion.div>
