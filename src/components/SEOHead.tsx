@@ -317,7 +317,9 @@ export const SEOHead = ({
       {description ? <meta property="og:description" content={description} /> : null}
       {resolvedCanonicalUrl ? <meta property="og:url" content={resolvedCanonicalUrl} /> : null}
       {resolvedImageUrl ? <meta property="og:image" content={resolvedImageUrl} /> : null}
+      {title ? <meta property="og:image:alt" content={title} /> : null}
       <meta name="twitter:card" content="summary_large_image" />
+      {resolvedCanonicalUrl ? <meta name="twitter:url" content={resolvedCanonicalUrl} /> : null}
       {title ? <meta name="twitter:title" content={title} /> : null}
       {description ? <meta name="twitter:description" content={description} /> : null}
       {resolvedImageUrl ? <meta name="twitter:image" content={resolvedImageUrl} /> : null}
