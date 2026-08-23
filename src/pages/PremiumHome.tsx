@@ -62,10 +62,10 @@ export default function PremiumHome() {
   return (
     <ThemeProvider>
       <SEOHead
-        title={t("home:seo.title", "Docito - Professional Healthcare Platform")}
+        title={t("home:seo.title", "Docito — Less Admin, More Care for Clinics & Patients")}
         description={t(
           "home:seo.description",
-          "The complete healthcare operating system. Automates all healthcare facilities in one place. Find doctors, clinics, labs, pharmacies, and imaging centers.",
+          "Docito runs your clinic end to end: online booking, records, prescriptions and payments in one place. Patients find and book trusted doctors in seconds.",
         )}
         keywords={t(
           "home:seo.keywords",

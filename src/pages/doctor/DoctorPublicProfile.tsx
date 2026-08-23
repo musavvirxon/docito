@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import PremiumHeroSection from "@/components/doctor/public/PremiumHeroSection";
-import { SEOHead } from "@/components/SEOHead";
+import { SEOHead, generateDoctorSchema } from "@/components/SEOHead";
 import { useTranslation } from "react-i18next";
 
 const AboutSection = lazy(() => import("@/components/doctor/public/AboutSection"));
@@ -74,16 +74,7 @@ export default function DoctorPublicProfile() {
     return `https://docito.app/doctor/${safe}`;
   }, [slug]);
 
-  useEffect(() => {
-    // Basic canonical tag
-    const link = document.createElement("link");
-    link.rel = "canonical";
-    link.href = canonicalUrl;
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, [canonicalUrl]);
+
 
   useEffect(() => {
     const run = async () => {
@@ -285,7 +276,18 @@ export default function DoctorPublicProfile() {
       <SEOHead
         title={`${displayName} — ${doctor.specialty} | Docito`.slice(0, 60)}
         description={(doctor.bio || t("publicProfile.page.seoDescription", { name: displayName, specialty: doctor.specialty, defaultValue: "Book {{name}}, {{specialty}}, on Docito. View availability, reviews and consultation fees." })).slice(0, 160)}
+        canonicalUrl={canonicalUrl}
+        image={doctor.avatar_url || undefined}
+        structuredData={generateDoctorSchema({
+          name: displayName,
+          specialty: doctor.specialty,
+          image: doctor.avatar_url || undefined,
+          rating: doctor.average_rating ?? undefined,
+          reviewCount: doctor.num_reviews ?? undefined,
+          address: [doctor.practice_city, doctor.practice_country].filter(Boolean).join(", ") || undefined,
+        })}
       />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-2 gap-2">
           <ArrowLeft className="h-4 w-4" />

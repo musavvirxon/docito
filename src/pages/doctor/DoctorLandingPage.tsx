@@ -513,8 +513,8 @@ export default function DoctorLandingPage() {
             "@context": "https://schema.org", "@type": "WebPage",
             name: "Docito for Doctors",
             description: "Healthcare practice automation platform for doctors",
-            url: "https://docito.lovable.app/doctor",
-            publisher: { "@type": "Organization", name: "Docito", url: "https://docito.lovable.app" },
+            url: "https://docito.app/doctor",
+            publisher: { "@type": "Organization", name: "Docito", url: "https://docito.app" },
           })}
         </script>
       </Helmet>
