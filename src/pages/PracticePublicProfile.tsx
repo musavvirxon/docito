@@ -1,5 +1,5 @@
 // src/pages/PracticePublicProfile.tsx
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2, Settings } from 'lucide-react';
