@@ -74,16 +74,7 @@ export default function DoctorPublicProfile() {
     return `https://docito.app/doctor/${safe}`;
   }, [slug]);
 
-  useEffect(() => {
-    // Basic canonical tag
-    const link = document.createElement("link");
-    link.rel = "canonical";
-    link.href = canonicalUrl;
-    document.head.appendChild(link);
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, [canonicalUrl]);
+
 
   useEffect(() => {
     const run = async () => {
