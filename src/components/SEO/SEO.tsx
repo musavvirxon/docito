@@ -10,7 +10,8 @@ type SEOProps = {
 };
 
 const siteName = "Docito";
-const defaultImage = "/logos/horizontal/docito-horizontal-sm.png";
+const siteUrl = "https://docito.app";
+const defaultImage = `${siteUrl}/logos/social/docito-og-image.png`;
 
 export default function SEO({
   title,
@@ -21,7 +22,9 @@ export default function SEO({
   jsonLd,
 }: SEOProps) {
   const fullTitle = `${title} | ${siteName}`;
-  const img = image || defaultImage;
+  const img = image
+    ? (/^https?:\/\//i.test(image) ? image : `${siteUrl}${image.startsWith("/") ? "" : "/"}${image}`)
+    : defaultImage;
 
   return (
     <Helmet>
@@ -37,6 +40,7 @@ export default function SEO({
       <meta property="og:description" content={description} />
       <meta property="og:type" content="website" />
       {canonical ? <meta property="og:url" content={canonical} /> : null}
+      {canonical ? <meta name="twitter:url" content={canonical} /> : null}
       <meta property="og:image" content={img} />
 
       {/* Twitter */}
