@@ -1,5 +1,5 @@
 // src/pages/PracticePublicProfile.tsx
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Loader2, Settings } from 'lucide-react';
@@ -119,6 +119,69 @@ export default function PracticePublicProfile() {
     specialties: practice.specialties?.slice(0, 3).join(', ') ?? localDesc.slice(0, 60),
   }).slice(0, 160);
 
+  // Convert stored operating hours into Schema.org openingHours format
+  const openingHours = useMemo(() => {
+    if (!practice.operating_hours) return undefined;
+
+    const dayOrder = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    const abbr: Record<string, string> = {
+      Monday: 'Mo',
+      Tuesday: 'Tu',
+      Wednesday: 'We',
+      Thursday: 'Th',
+      Friday: 'Fr',
+      Saturday: 'Sa',
+      Sunday: 'Su',
+    };
+
+    const hours: string[] = [];
+    let groupStart: string | null = null;
+    let groupEnd: string | null = null;
+    let groupSlot: string | null = null;
+
+    const flushGroup = () => {
+      if (!groupStart || !groupSlot) return;
+      const startAbbr = abbr[groupStart];
+      const endAbbr = abbr[groupEnd || groupStart];
+      if (groupStart === groupEnd) {
+        hours.push(`${startAbbr} ${groupSlot}`);
+      } else {
+        hours.push(`${startAbbr}-${endAbbr} ${groupSlot}`);
+      }
+      groupStart = null;
+      groupEnd = null;
+      groupSlot = null;
+    };
+
+    dayOrder.forEach((day) => {
+      const entry = practice.operating_hours![day];
+      if (!entry || entry.closed || !entry.open || !entry.close) {
+        flushGroup();
+        return;
+      }
+      const slot = `${entry.open}-${entry.close}`;
+      if (groupSlot === slot) {
+        groupEnd = day;
+      } else {
+        flushGroup();
+        groupStart = day;
+        groupEnd = day;
+        groupSlot = slot;
+      }
+    });
+    flushGroup();
+
+    return hours.length ? hours : undefined;
+  }, [practice.operating_hours]);
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'MedicalClinic',
@@ -139,6 +202,7 @@ export default function PracticePublicProfile() {
           postalCode: practice.zip_code || undefined,
         }
       : undefined,
+    openingHours: openingHours,
     aggregateRating:
       practice.average_rating && practice.num_reviews
         ? {
