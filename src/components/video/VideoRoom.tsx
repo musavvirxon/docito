@@ -449,17 +449,72 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
   }, []);
 
+  /** React to the locally measured connection quality. */
+  const onLocalQuality = useCallback((q: ConnectionQuality) => {
+    if (q === ConnectionQuality.Poor) {
+      setNetQuality('poor');
+      if (!lowBandwidthRef.current) {
+        lowBandwidthRef.current = true;
+        setLowBandwidth(true);
+        void applyVideoProfile(true);
+        toast.message(
+          t('videoConsultation.lowBandwidth', 'Weak connection — video quality reduced to keep audio clear.'),
+        );
+      }
+      if (poorSinceRef.current == null) {
+        poorSinceRef.current = Date.now();
+      } else if (Date.now() - poorSinceRef.current > 15000 && isVideoOnRef.current) {
+        poorSinceRef.current = Date.now();
+        const room = roomRef.current;
+        if (room) {
+          room.localParticipant.setCameraEnabled(false).catch(() => { /* noop */ });
+          isVideoOnRef.current = false;
+          setIsVideoOn(false);
+          toast.message(
+            t('videoConsultation.switchedAudioOnly', 'Switched to audio-only to keep the call stable. You can turn the camera back on anytime.'),
+          );
+        }
+      }
+    } else if (q === ConnectionQuality.Excellent || q === ConnectionQuality.Good) {
+      setNetQuality(q === ConnectionQuality.Excellent ? 'excellent' : 'good');
+      poorSinceRef.current = null;
+      if (lowBandwidthRef.current) {
+        lowBandwidthRef.current = false;
+        setLowBandwidth(false);
+        void applyVideoProfile(false);
+      }
+    }
+  }, [applyVideoProfile, t]);
+
   /* ---------- Connect lifecycle ---------- */
   useEffect(() => {
     cancelledRef.current = false;
     const room = new Room({
       adaptiveStream: true,
       dynacast: true,
-      publishDefaults: { simulcast: true },
+      // Bandwidth-friendly capture defaults — 360p is plenty for a
+      // consultation and keeps the uplink usable on slow connections.
+      videoCaptureDefaults: {
+        resolution: { ...VideoPresets.h360.resolution, frameRate: 24 },
+      },
+      publishDefaults: {
+        simulcast: true,
+        videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
+        videoEncoding: { maxBitrate: 500_000, maxFramerate: 24 },
+        screenShareEncoding: ScreenSharePresets.h1080fps15.encoding,
+        // Opus mono with DTX (silence costs nothing) and RED (loss recovery).
+        audioPreset: { maxBitrate: 24_000 },
+        dtx: true,
+        red: true,
+        stopMicTrackOnMute: false,
+        degradationPreference: 'maintain-framerate',
+      },
       reconnectPolicy: {
+        // Fast first retries so a brief drop recovers in well under a second.
         nextRetryDelayInMs: (ctx: { retryCount: number }) =>
-          Math.min(10000, 500 * Math.pow(1.5, ctx.retryCount)),
+          Math.min(8000, 200 * Math.pow(2, ctx.retryCount)),
         maxRetries: 50,
+
       } as any,
     });
     roomRef.current = room;
