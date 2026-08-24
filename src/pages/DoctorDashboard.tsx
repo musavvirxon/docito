@@ -502,7 +502,7 @@ const DoctorDashboardContent = () => {
                 <DashboardBranding />
                 <div className="flex items-center gap-3 mt-4">
                   <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                    <AvatarImage src={profile?.avatar_url || ""} />
+                    <AvatarImage src={profile?.avatar_url || (doctorProfile as any)?.profiles?.avatar_url || ""} alt={profile?.full_name || "Doctor"} />
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                       {profile?.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || "D"}
                     </AvatarFallback>
