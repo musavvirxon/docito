@@ -177,6 +177,43 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
   const [iframeBlocked, setIframeBlocked] = useState(false);
 
+  /* ---------- Network adaptation ---------- */
+  const [netQuality, setNetQuality] = useState<'unknown' | 'excellent' | 'good' | 'poor'>('unknown');
+  const [lowBandwidth, setLowBandwidth] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const lowBandwidthRef = useRef(false);
+  const poorSinceRef = useRef<number | null>(null);
+
+  /** True when the browser reports a slow link or data-saver mode. */
+  const prefersLowData = useCallback((): boolean => {
+    try {
+      const c = (navigator as any).connection;
+      if (!c) return false;
+      if (c.saveData) return true;
+      return ['slow-2g', '2g', '3g'].includes(c.effectiveType);
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /** Swap the local camera capture profile between normal and low bandwidth. */
+  const applyVideoProfile = useCallback(async (low: boolean) => {
+    const room = roomRef.current;
+    if (!room) return;
+    const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
+    const track = pub?.track as LocalVideoTrack | undefined;
+    if (!track || typeof (track as any).restartTrack !== 'function') return;
+    try {
+      await track.restartTrack({
+        resolution: low ? VideoPresets.h180.resolution : VideoPresets.h360.resolution,
+      });
+    } catch (e) {
+      console.warn('camera profile switch failed', e);
+    }
+  }, []);
+
+
+
   /* ---------- Tile sizing + self-view preferences (persisted) ---------- */
   const stageRef = useRef<HTMLDivElement>(null);
   const readTilePrefs = (): { widths?: Record<string, number>; hideSelf?: boolean } => {
