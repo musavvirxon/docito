@@ -791,11 +791,18 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       try {
         await room.localParticipant.setCameraEnabled(true);
         setIsVideoOn(true);
+        // Start in the low profile on data-saver / 2g-3g links.
+        if (prefersLowData()) {
+          lowBandwidthRef.current = true;
+          setLowBandwidth(true);
+          void applyVideoProfile(true);
+        }
       } catch {
         // Keep the raw preview visible; audio-only participation continues.
         setIsVideoOn(false);
         toast.message(t('videoConsultation.joinedWithoutCamera', 'Joined without a camera. You can turn it on later.'));
       }
+
     } else {
       setIsVideoOn(false);
       toast.message(t('videoConsultation.joinedWithoutCamera', 'Joined without a camera. You can turn it on later.'));
