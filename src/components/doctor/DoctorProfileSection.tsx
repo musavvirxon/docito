@@ -27,7 +27,7 @@ export default function DoctorProfileSection() {
   const { t } = useTranslation("dashboard");
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const { doctorProfile, refreshAllData } = useDoctorData();
 
   const [saving, setSaving] = useState(false);
@@ -163,7 +163,7 @@ export default function DoctorProfileSection() {
 
       setAvatarUrl(newUrl);
       toast({ title: "Photo updated", description: "Your profile photo has been updated." });
-      await refreshAllData();
+      await Promise.all([refreshAllData(), refreshProfile()]);
     } catch (err: any) {
       console.error("Photo upload error:", err);
       toast({ title: "Upload failed", description: err?.message || "Failed to upload photo", variant: "destructive" });
