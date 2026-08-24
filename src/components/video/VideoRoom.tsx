@@ -43,6 +43,9 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  SignalHigh,
+  SignalMedium,
+  SignalLow,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
