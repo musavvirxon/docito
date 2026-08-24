@@ -5,6 +5,11 @@ import {
   RoomEvent,
   Track,
   ConnectionState,
+  ConnectionQuality,
+  VideoQuality,
+  VideoPresets,
+  ScreenSharePresets,
+  type LocalVideoTrack,
   type RemoteTrack,
   type RemoteTrackPublication,
   type LocalTrackPublication,
@@ -38,6 +43,9 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  SignalHigh,
+  SignalMedium,
+  SignalLow,
 } from 'lucide-react';
 import { VideoConsultation } from '@/hooks/useVideoConsultation';
 import { supabase } from '@/integrations/supabase/client';
@@ -168,6 +176,43 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   const [showSessionEndingBanner, setShowSessionEndingBanner] = useState(false);
   const [sessionEndingDismissed, setSessionEndingDismissed] = useState(false);
   const [iframeBlocked, setIframeBlocked] = useState(false);
+
+  /* ---------- Network adaptation ---------- */
+  const [netQuality, setNetQuality] = useState<'unknown' | 'excellent' | 'good' | 'poor'>('unknown');
+  const [lowBandwidth, setLowBandwidth] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const lowBandwidthRef = useRef(false);
+  const poorSinceRef = useRef<number | null>(null);
+
+  /** True when the browser reports a slow link or data-saver mode. */
+  const prefersLowData = useCallback((): boolean => {
+    try {
+      const c = (navigator as any).connection;
+      if (!c) return false;
+      if (c.saveData) return true;
+      return ['slow-2g', '2g', '3g'].includes(c.effectiveType);
+    } catch {
+      return false;
+    }
+  }, []);
+
+  /** Swap the local camera capture profile between normal and low bandwidth. */
+  const applyVideoProfile = useCallback(async (low: boolean) => {
+    const room = roomRef.current;
+    if (!room) return;
+    const pub = room.localParticipant.getTrackPublication(Track.Source.Camera);
+    const track = pub?.track as LocalVideoTrack | undefined;
+    if (!track || typeof (track as any).restartTrack !== 'function') return;
+    try {
+      await track.restartTrack({
+        resolution: low ? VideoPresets.h180.resolution : VideoPresets.h360.resolution,
+      });
+    } catch (e) {
+      console.warn('camera profile switch failed', e);
+    }
+  }, []);
+
+
 
   /* ---------- Tile sizing + self-view preferences (persisted) ---------- */
   const stageRef = useRef<HTMLDivElement>(null);
@@ -404,17 +449,72 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     if (roomRef.current) setParticipantCount(roomRef.current.numParticipants + 1);
   }, []);
 
+  /** React to the locally measured connection quality. */
+  const onLocalQuality = useCallback((q: ConnectionQuality) => {
+    if (q === ConnectionQuality.Poor) {
+      setNetQuality('poor');
+      if (!lowBandwidthRef.current) {
+        lowBandwidthRef.current = true;
+        setLowBandwidth(true);
+        void applyVideoProfile(true);
+        toast.message(
+          t('videoConsultation.lowBandwidth', 'Weak connection — video quality reduced to keep audio clear.'),
+        );
+      }
+      if (poorSinceRef.current == null) {
+        poorSinceRef.current = Date.now();
+      } else if (Date.now() - poorSinceRef.current > 15000 && isVideoOnRef.current) {
+        poorSinceRef.current = Date.now();
+        const room = roomRef.current;
+        if (room) {
+          room.localParticipant.setCameraEnabled(false).catch(() => { /* noop */ });
+          isVideoOnRef.current = false;
+          setIsVideoOn(false);
+          toast.message(
+            t('videoConsultation.switchedAudioOnly', 'Switched to audio-only to keep the call stable. You can turn the camera back on anytime.'),
+          );
+        }
+      }
+    } else if (q === ConnectionQuality.Excellent || q === ConnectionQuality.Good) {
+      setNetQuality(q === ConnectionQuality.Excellent ? 'excellent' : 'good');
+      poorSinceRef.current = null;
+      if (lowBandwidthRef.current) {
+        lowBandwidthRef.current = false;
+        setLowBandwidth(false);
+        void applyVideoProfile(false);
+      }
+    }
+  }, [applyVideoProfile, t]);
+
   /* ---------- Connect lifecycle ---------- */
   useEffect(() => {
     cancelledRef.current = false;
     const room = new Room({
       adaptiveStream: true,
       dynacast: true,
-      publishDefaults: { simulcast: true },
+      // Bandwidth-friendly capture defaults — 360p is plenty for a
+      // consultation and keeps the uplink usable on slow connections.
+      videoCaptureDefaults: {
+        resolution: { ...VideoPresets.h360.resolution, frameRate: 24 },
+      },
+      publishDefaults: {
+        simulcast: true,
+        videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
+        videoEncoding: { maxBitrate: 500_000, maxFramerate: 24 },
+        screenShareEncoding: ScreenSharePresets.h1080fps15.encoding,
+        // Opus mono with DTX (silence costs nothing) and RED (loss recovery).
+        audioPreset: { maxBitrate: 24_000 },
+        dtx: true,
+        red: true,
+        stopMicTrackOnMute: false,
+        degradationPreference: 'maintain-framerate',
+      },
       reconnectPolicy: {
+        // Fast first retries so a brief drop recovers in well under a second.
         nextRetryDelayInMs: (ctx: { retryCount: number }) =>
-          Math.min(10000, 500 * Math.pow(1.5, ctx.retryCount)),
+          Math.min(8000, 200 * Math.pow(2, ctx.retryCount)),
         maxRetries: 50,
+
       } as any,
     });
     roomRef.current = room;
@@ -460,9 +560,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         else if (state === ConnectionState.Disconnected) setStatus('disconnected');
       } catch (e) { console.warn(e); }
     });
+    room.on(RoomEvent.ConnectionQualityChanged, (q: ConnectionQuality, participant?: Participant) => {
+      if (cancelledRef.current) return;
+      if (participant && participant.identity !== room.localParticipant.identity) return;
+      try { onLocalQuality(q); } catch (e) { console.warn(e); }
+    });
     room.on(RoomEvent.Reconnected, () => {
       if (cancelledRef.current) return;
       setStatus('connected');
+      setIsReconnecting(false);
       (async () => {
         try {
           reattachAll();
@@ -474,7 +580,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     room.on(RoomEvent.Reconnecting, () => {
       if (cancelledRef.current) return;
       setStatus('connecting');
+      setIsReconnecting(true);
     });
+
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
       try {
         mediaErrorRetryRef.current += 1;
@@ -545,7 +653,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           return;
         }
 
+        // Warm up DNS/TLS/ICE before the actual connect so joining is instant.
+        try { await room.prepareConnection(resp.data.url, resp.data.token); } catch { /* noop */ }
         await room.connect(resp.data.url, resp.data.token);
+
         if (cancelledRef.current) {
           await room.disconnect(true).catch(() => {});
           return;
@@ -680,11 +791,18 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
       try {
         await room.localParticipant.setCameraEnabled(true);
         setIsVideoOn(true);
+        // Start in the low profile on data-saver / 2g-3g links.
+        if (prefersLowData()) {
+          lowBandwidthRef.current = true;
+          setLowBandwidth(true);
+          void applyVideoProfile(true);
+        }
       } catch {
         // Keep the raw preview visible; audio-only participation continues.
         setIsVideoOn(false);
         toast.message(t('videoConsultation.joinedWithoutCamera', 'Joined without a camera. You can turn it on later.'));
       }
+
     } else {
       setIsVideoOn(false);
       toast.message(t('videoConsultation.joinedWithoutCamera', 'Joined without a camera. You can turn it on later.'));
@@ -778,9 +896,42 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   }, []);
 
 
+  /* ---------- Receive-side bandwidth control ---------- */
+  /** Subscribe the focused tile in high quality and thumbnails in low quality. */
   useEffect(() => {
+    const room = roomRef.current;
+    if (!room) return;
+    room.remoteParticipants.forEach((p) => {
+      p.trackPublications.forEach((pub: any) => {
+        if (pub?.kind !== Track.Kind.Video || typeof pub.setVideoQuality !== 'function') return;
+        const slot = sourceToSlot(pub.source, false, remoteRoleFor(p));
+        if (!slot) return;
+        try {
+          pub.setVideoQuality(slot === focusedSlot ? VideoQuality.HIGH : VideoQuality.LOW);
+        } catch { /* noop */ }
+      });
+    });
+  }, [focusedSlot, slotHasTrack, participantCount, sourceToSlot, remoteRoleFor]);
+
+  useEffect(() => {
+    /** Pause remote *video* while the tab is hidden; audio always keeps flowing. */
+    const setRemoteVideoEnabled = (enabled: boolean) => {
+      const room = roomRef.current;
+      if (!room) return;
+      room.remoteParticipants.forEach((p) => {
+        p.trackPublications.forEach((pub: any) => {
+          if (pub?.kind !== Track.Kind.Video || typeof pub.setEnabled !== 'function') return;
+          try { pub.setEnabled(enabled); } catch { /* noop */ }
+        });
+      });
+    };
+
     const onVisibility = async () => {
-      if (document.visibilityState !== 'visible') return;
+      if (document.visibilityState !== 'visible') {
+        setRemoteVideoEnabled(false);
+        return;
+      }
+      setRemoteVideoEnabled(true);
       const room = roomRef.current;
       if (!room || room.state !== ConnectionState.Connected) return;
       try {
@@ -797,6 +948,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
+
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -1041,6 +1193,32 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {status === 'connected' && netQuality !== 'unknown' && (
+            <Badge
+              variant={netQuality === 'poor' ? 'destructive' : 'outline'}
+              className="gap-1"
+              title={
+                netQuality === 'poor'
+                  ? t('videoConsultation.qualityPoor', 'Weak connection')
+                  : t('videoConsultation.qualityGood', 'Good connection')
+              }
+            >
+              {netQuality === 'poor' ? (
+                <SignalLow className="h-3 w-3" />
+              ) : netQuality === 'good' ? (
+                <SignalMedium className="h-3 w-3" />
+              ) : (
+                <SignalHigh className="h-3 w-3" />
+              )}
+              <span className="text-[11px]">
+                {!isVideoOn && mediaStarted
+                  ? t('videoConsultation.modeAudioOnly', 'Audio only')
+                  : lowBandwidth
+                    ? t('videoConsultation.modeLowBandwidth', 'Low bandwidth')
+                    : t('videoConsultation.modeHd', 'HD')}
+              </span>
+            </Badge>
+          )}
           {remainingSeconds != null && status === 'connected' && (
             <Badge
               variant={remainingSeconds <= WARN_AT_SECONDS ? 'destructive' : 'outline'}
@@ -1055,6 +1233,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </Badge>
         </div>
       </div>
+
+      {/* Reconnecting banner — the call is not lost, the link is recovering */}
+      {isReconnecting && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border-b border-amber-500/30 text-sm text-amber-600 dark:text-amber-400">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {t('videoConsultation.reconnecting', 'Connection lost — reconnecting…')}
+        </div>
+      )}
+
 
       {/* 5-minute warning banner */}
       {showSessionEndingBanner && !sessionEndingDismissed && status === 'connected' && (

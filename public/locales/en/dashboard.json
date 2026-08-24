@@ -3646,7 +3646,15 @@
     "showSelfView": "Show my camera",
     "hideSelfView": "Hide my camera",
     "micRequired": "A microphone is required to join the consultation. Allow microphone access and try again.",
-    "joinedWithoutCamera": "Joined without a camera. You can turn it on later."
+    "joinedWithoutCamera": "Joined without a camera. You can turn it on later.",
+    "lowBandwidth": "Weak connection — video quality reduced to keep audio clear.",
+    "switchedAudioOnly": "Switched to audio-only to keep the call stable. You can turn the camera back on anytime.",
+    "reconnecting": "Connection lost — reconnecting…",
+    "qualityPoor": "Weak connection",
+    "qualityGood": "Good connection",
+    "modeHd": "HD",
+    "modeLowBandwidth": "Low bandwidth",
+    "modeAudioOnly": "Audio only"
   },
   "shell": {
     "footer": {

@@ -3828,7 +3828,15 @@
     "showSelfView": "Mening kameramni ko‘rsatish",
     "hideSelfView": "Mening kameramni yashirish",
     "micRequired": "Konsultatsiyaga qoʻshilish uchun mikrofon talab qilinadi. Mikrofonga ruxsat bering va qayta urinib koʻring.",
-    "joinedWithoutCamera": "Kamerasiz qoʻshildingiz. Uni keyinroq yoqishingiz mumkin."
+    "joinedWithoutCamera": "Kamerasiz qoʻshildingiz. Uni keyinroq yoqishingiz mumkin.",
+    "lowBandwidth": "Aloqa sust — ovoz tiniq qolishi uchun video sifati pasaytirildi.",
+    "switchedAudioOnly": "Qoʻngʻiroq barqaror boʻlishi uchun faqat ovozga oʻtildi. Kamerani istalgan vaqtda yoqishingiz mumkin.",
+    "reconnecting": "Aloqa uzildi — qayta ulanmoqda…",
+    "qualityPoor": "Sust aloqa",
+    "qualityGood": "Yaxshi aloqa",
+    "modeHd": "HD",
+    "modeLowBandwidth": "Past tezlik",
+    "modeAudioOnly": "Faqat ovoz"
   },
   "shell": {
     "footer": {
