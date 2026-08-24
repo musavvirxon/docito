@@ -653,7 +653,10 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           return;
         }
 
+        // Warm up DNS/TLS/ICE before the actual connect so joining is instant.
+        try { await room.prepareConnection(resp.data.url, resp.data.token); } catch { /* noop */ }
         await room.connect(resp.data.url, resp.data.token);
+
         if (cancelledRef.current) {
           await room.disconnect(true).catch(() => {});
           return;
