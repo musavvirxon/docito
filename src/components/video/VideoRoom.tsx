@@ -1193,6 +1193,32 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
+          {status === 'connected' && netQuality !== 'unknown' && (
+            <Badge
+              variant={netQuality === 'poor' ? 'destructive' : 'outline'}
+              className="gap-1"
+              title={
+                netQuality === 'poor'
+                  ? t('videoConsultation.qualityPoor', 'Weak connection')
+                  : t('videoConsultation.qualityGood', 'Good connection')
+              }
+            >
+              {netQuality === 'poor' ? (
+                <SignalLow className="h-3 w-3" />
+              ) : netQuality === 'good' ? (
+                <SignalMedium className="h-3 w-3" />
+              ) : (
+                <SignalHigh className="h-3 w-3" />
+              )}
+              <span className="text-[11px]">
+                {!isVideoOn && mediaStarted
+                  ? t('videoConsultation.modeAudioOnly', 'Audio only')
+                  : lowBandwidth
+                    ? t('videoConsultation.modeLowBandwidth', 'Low bandwidth')
+                    : t('videoConsultation.modeHd', 'HD')}
+              </span>
+            </Badge>
+          )}
           {remainingSeconds != null && status === 'connected' && (
             <Badge
               variant={remainingSeconds <= WARN_AT_SECONDS ? 'destructive' : 'outline'}
@@ -1207,6 +1233,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
           </Badge>
         </div>
       </div>
+
+      {/* Reconnecting banner — the call is not lost, the link is recovering */}
+      {isReconnecting && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border-b border-amber-500/30 text-sm text-amber-600 dark:text-amber-400">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {t('videoConsultation.reconnecting', 'Connection lost — reconnecting…')}
+        </div>
+      )}
+
 
       {/* 5-minute warning banner */}
       {showSessionEndingBanner && !sessionEndingDismissed && status === 'connected' && (
