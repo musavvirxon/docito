@@ -560,9 +560,15 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
         else if (state === ConnectionState.Disconnected) setStatus('disconnected');
       } catch (e) { console.warn(e); }
     });
+    room.on(RoomEvent.ConnectionQualityChanged, (q: ConnectionQuality, participant?: Participant) => {
+      if (cancelledRef.current) return;
+      if (participant && participant.identity !== room.localParticipant.identity) return;
+      try { onLocalQuality(q); } catch (e) { console.warn(e); }
+    });
     room.on(RoomEvent.Reconnected, () => {
       if (cancelledRef.current) return;
       setStatus('connected');
+      setIsReconnecting(false);
       (async () => {
         try {
           reattachAll();
@@ -574,7 +580,9 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     room.on(RoomEvent.Reconnecting, () => {
       if (cancelledRef.current) return;
       setStatus('connecting');
+      setIsReconnecting(true);
     });
+
     room.on(RoomEvent.MediaDevicesError, (err: Error) => {
       try {
         mediaErrorRetryRef.current += 1;
