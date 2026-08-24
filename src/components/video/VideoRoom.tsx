@@ -896,9 +896,42 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
   }, []);
 
 
+  /* ---------- Receive-side bandwidth control ---------- */
+  /** Subscribe the focused tile in high quality and thumbnails in low quality. */
   useEffect(() => {
+    const room = roomRef.current;
+    if (!room) return;
+    room.remoteParticipants.forEach((p) => {
+      p.trackPublications.forEach((pub: any) => {
+        if (pub?.kind !== Track.Kind.Video || typeof pub.setVideoQuality !== 'function') return;
+        const slot = sourceToSlot(pub.source, false, remoteRoleFor(p));
+        if (!slot) return;
+        try {
+          pub.setVideoQuality(slot === focusedSlot ? VideoQuality.HIGH : VideoQuality.LOW);
+        } catch { /* noop */ }
+      });
+    });
+  }, [focusedSlot, slotHasTrack, participantCount, sourceToSlot, remoteRoleFor]);
+
+  useEffect(() => {
+    /** Pause remote *video* while the tab is hidden; audio always keeps flowing. */
+    const setRemoteVideoEnabled = (enabled: boolean) => {
+      const room = roomRef.current;
+      if (!room) return;
+      room.remoteParticipants.forEach((p) => {
+        p.trackPublications.forEach((pub: any) => {
+          if (pub?.kind !== Track.Kind.Video || typeof pub.setEnabled !== 'function') return;
+          try { pub.setEnabled(enabled); } catch { /* noop */ }
+        });
+      });
+    };
+
     const onVisibility = async () => {
-      if (document.visibilityState !== 'visible') return;
+      if (document.visibilityState !== 'visible') {
+        setRemoteVideoEnabled(false);
+        return;
+      }
+      setRemoteVideoEnabled(true);
       const room = roomRef.current;
       if (!room || room.state !== ConnectionState.Connected) return;
       try {
@@ -915,6 +948,7 @@ const VideoRoom: React.FC<VideoRoomProps> = ({
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
+
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
