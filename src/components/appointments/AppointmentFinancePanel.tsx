@@ -81,11 +81,16 @@ export function AppointmentFinancePanel({
   const { t } = useTranslation('appointments');
   const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
-  const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
-  const liveFinance = useAppointmentFinance(overrideData ? undefined : appointmentId, patientId || undefined);
+  const liveFinance = useAppointmentFinance(
+    overrideData ? undefined : appointmentId,
+    patientId || undefined,
+    doctorPatientId,
+  );
   const finance: AppointmentFinanceData = overrideData
     ? ({ ...liveFinance, ...overrideData } as AppointmentFinanceData)
     : liveFinance;
+  // Always convert from the amount's own stored currency into the display currency.
+  const fmt = (n: number, src?: string) => ctxFmtMajor(Number(n || 0), src || finance.currency);
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
   const visitCharges = finance.billing.filter(
