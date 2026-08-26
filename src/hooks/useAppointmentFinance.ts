@@ -138,7 +138,7 @@ export function useAppointmentFinance(
     } finally {
       setLoading(false);
     }
-  }, [appointmentId, patientId]);
+  }, [appointmentId, patientId, doctorPatientId]);
 
   useEffect(() => {
     refresh();
@@ -159,7 +159,11 @@ export function useAppointmentFinance(
       .reduce((s, p) => s + (Number(p.amount) || 0), 0) +
     billingPayments.reduce((s, b) => s + Math.abs(moneyFromBilling(b)), 0);
   const outstanding = Math.max(0, totalBilled - totalDiscounts - totalPaid);
-  const priorBalance = priorBilling.reduce((s, b) => s + moneyFromBilling(b), 0);
+  // Sum only the *remaining* balance of prior charge rows (partially paid charges count
+  // for what is left, and payment/discount ledger rows are excluded).
+  const priorBalance = priorBilling
+    .filter((b) => (b.transaction_type ?? "charge") === "charge")
+    .reduce((s, b) => s + chargeRemaining(b), 0);
   const currency = billing[0]?.currency?.toUpperCase() || "USD";
 
   // Unified payment history (real `payments` rows + ledger-only payment rows for manual patients)
