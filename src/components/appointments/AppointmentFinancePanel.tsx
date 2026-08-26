@@ -392,9 +392,9 @@ export function AppointmentFinancePanel({
           />
           <Kpi
             label={t('finance.kpi.outstanding')}
-            value={fmt(finance.outstanding, finance.currency)}
+            value={fmt(finance.outstanding + finance.priorBalance, finance.currency)}
             icon={AlertCircle}
-            tone={finance.outstanding > 0 ? 'warn' : 'success'}
+            tone={finance.outstanding + finance.priorBalance > 0 ? 'warn' : 'success'}
           />
         </div>
 
