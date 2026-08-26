@@ -37,6 +37,8 @@ import i18n from '@/i18n/config';
 interface Props {
   appointmentId: string;
   patientId?: string | null;
+  /** Manual-patient link (appointments.doctor_patient_id) used to scope prior balances. */
+  doctorPatientId?: string | null;
   patientName: string;
   appointmentDate?: string;
   doctorName?: string;
@@ -62,6 +64,7 @@ interface Props {
 export function AppointmentFinancePanel({
   appointmentId,
   patientId,
+  doctorPatientId,
   patientName,
   appointmentDate,
   doctorName,
@@ -78,11 +81,16 @@ export function AppointmentFinancePanel({
   const { t } = useTranslation('appointments');
   const { t: tf } = useTranslation('finance');
   const { format: ctxFmtMajor, currency: displayCurrency } = useCurrency();
-  const fmt = (n: number, _currency?: string) => ctxFmtMajor(Number(n || 0));
-  const liveFinance = useAppointmentFinance(overrideData ? undefined : appointmentId, patientId || undefined);
+  const liveFinance = useAppointmentFinance(
+    overrideData ? undefined : appointmentId,
+    patientId || undefined,
+    doctorPatientId,
+  );
   const finance: AppointmentFinanceData = overrideData
     ? ({ ...liveFinance, ...overrideData } as AppointmentFinanceData)
     : liveFinance;
+  // Always convert from the amount's own stored currency into the display currency.
+  const fmt = (n: number, src?: string) => ctxFmtMajor(Number(n || 0), src || finance.currency);
   const procedureTotal = procedures.reduce((sum, p) => sum + (Number(p.cost) || 0), 0);
   const amountToBill = Math.max(finance.totalBilled, procedureTotal);
   const visitCharges = finance.billing.filter(
@@ -384,9 +392,9 @@ export function AppointmentFinancePanel({
           />
           <Kpi
             label={t('finance.kpi.outstanding')}
-            value={fmt(finance.outstanding, finance.currency)}
+            value={fmt(finance.outstanding + finance.priorBalance, finance.currency)}
             icon={AlertCircle}
-            tone={finance.outstanding > 0 ? 'warn' : 'success'}
+            tone={finance.outstanding + finance.priorBalance > 0 ? 'warn' : 'success'}
           />
         </div>
 
@@ -505,12 +513,12 @@ export function AppointmentFinancePanel({
 
                   <div className="shrink-0 text-right">
                     <div className="font-medium tabular-nums">
-                      {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                      {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, c.currency || finance.currency)}
                     </div>
                     {chargePaid(row) > 0 && (
                       <div className="text-[10px] text-muted-foreground tabular-nums">
                         {tf('ledger.paidAmount', {
-                          paid: fmt(chargePaid(row), finance.currency),
+                          paid: fmt(chargePaid(row), c.currency || finance.currency),
                           defaultValue: '{{paid}} paid',
                         })}
                       </div>
@@ -518,7 +526,7 @@ export function AppointmentFinancePanel({
                     {chargeRemaining(row) > 0 && (
                       <div className="text-[10px] font-medium text-amber-600 tabular-nums">
                         {tf('ledger.remaining', {
-                          amount: fmt(chargeRemaining(row), finance.currency),
+                          amount: fmt(chargeRemaining(row), c.currency || finance.currency),
                           defaultValue: '{{amount}} left',
                         })}
                       </div>

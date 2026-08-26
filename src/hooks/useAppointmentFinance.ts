@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { recordBillingPayment } from "@/lib/billing/recordBillingPayment";
+import { recordBillingPayment, chargeRemaining } from "@/lib/billing/recordBillingPayment";
 
 
 export type PaymentMethod = "cash" | "card" | "insurance" | "bank_transfer" | "other";
@@ -75,7 +75,11 @@ const moneyFromBilling = (b: BillingRow): number => {
   return Number(b.amount) || 0;
 };
 
-export function useAppointmentFinance(appointmentId?: string, patientId?: string): AppointmentFinanceData {
+export function useAppointmentFinance(
+  appointmentId?: string,
+  patientId?: string,
+  doctorPatientId?: string | null,
+): AppointmentFinanceData {
   const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [billing, setBilling] = useState<BillingRow[]>([]);
@@ -86,20 +90,44 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     if (!appointmentId) return;
     setLoading(true);
     try {
+      // Resolve the patient's prior appointment ids for manual patients (patient_id is null,
+      // the link is appointments.doctor_patient_id).
+      let priorApptIds: string[] = [];
+      if (!patientId && doctorPatientId) {
+        const { data: appts } = await supabase
+          .from("appointments")
+          .select("id")
+          .eq("doctor_patient_id", doctorPatientId)
+          .neq("id", appointmentId)
+          .limit(200);
+        priorApptIds = ((appts as any[]) || []).map((a) => a.id);
+      }
+
+      const canHavePrior = !!patientId || priorApptIds.length > 0;
+      const priorQuery = !canHavePrior
+        ? Promise.resolve({ data: [] } as any)
+        : patientId
+          ? supabase
+              .from("billing_transactions")
+              .select("*")
+              .eq("patient_id", patientId)
+              .neq("appointment_id", appointmentId)
+              .in("status", ["pending", "unpaid", "outstanding"])
+              .limit(200)
+          : supabase
+              .from("billing_transactions")
+              .select("*")
+              .in("appointment_id", priorApptIds)
+              .in("status", ["pending", "unpaid", "outstanding"])
+              .limit(200);
+
       const [payRes, billRes, insRes, priorRes] = await Promise.all([
         supabase.from("payments").select("*").eq("appointment_id", appointmentId).order("created_at", { ascending: false }),
         supabase.from("billing_transactions").select("*").eq("appointment_id", appointmentId).order("created_at", { ascending: false }),
         patientId
           ? supabase.from("patient_insurance").select("id, member_id, co_pay, is_primary, status").eq("patient_id", patientId).eq("is_primary", true).maybeSingle()
           : Promise.resolve({ data: null } as any),
-        patientId
-          ? supabase
-              .from("billing_transactions")
-              .select("*")
-              .neq("appointment_id", appointmentId)
-              .in("status", ["pending", "unpaid", "outstanding"])
-              .limit(200)
-          : Promise.resolve({ data: [] } as any),
+        priorQuery,
       ]);
       setPayments((payRes.data as PaymentRow[]) || []);
       setBilling((billRes.data as BillingRow[]) || []);
@@ -110,7 +138,7 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
     } finally {
       setLoading(false);
     }
-  }, [appointmentId, patientId]);
+  }, [appointmentId, patientId, doctorPatientId]);
 
   useEffect(() => {
     refresh();
@@ -131,7 +159,11 @@ export function useAppointmentFinance(appointmentId?: string, patientId?: string
       .reduce((s, p) => s + (Number(p.amount) || 0), 0) +
     billingPayments.reduce((s, b) => s + Math.abs(moneyFromBilling(b)), 0);
   const outstanding = Math.max(0, totalBilled - totalDiscounts - totalPaid);
-  const priorBalance = priorBilling.reduce((s, b) => s + moneyFromBilling(b), 0);
+  // Sum only the *remaining* balance of prior charge rows (partially paid charges count
+  // for what is left, and payment/discount ledger rows are excluded).
+  const priorBalance = priorBilling
+    .filter((b) => (b.transaction_type ?? "charge") === "charge")
+    .reduce((s, b) => s + chargeRemaining(b), 0);
   const currency = billing[0]?.currency?.toUpperCase() || "USD";
 
   // Unified payment history (real `payments` rows + ledger-only payment rows for manual patients)

@@ -1600,6 +1600,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       <AppointmentFinancePanel
                         appointmentId={appointment.id}
                         patientId={appointment.patient_id}
+                        doctorPatientId={appointment.doctor_patient_id || null}
                         patientName={appointment.patient_name || ''}
                         appointmentDate={appointment.appointment_date}
                         procedures={unifiedProcedures}
