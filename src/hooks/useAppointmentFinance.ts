@@ -90,20 +90,44 @@ export function useAppointmentFinance(
     if (!appointmentId) return;
     setLoading(true);
     try {
+      // Resolve the patient's prior appointment ids for manual patients (patient_id is null,
+      // the link is appointments.doctor_patient_id).
+      let priorApptIds: string[] = [];
+      if (!patientId && doctorPatientId) {
+        const { data: appts } = await supabase
+          .from("appointments")
+          .select("id")
+          .eq("doctor_patient_id", doctorPatientId)
+          .neq("id", appointmentId)
+          .limit(200);
+        priorApptIds = ((appts as any[]) || []).map((a) => a.id);
+      }
+
+      const canHavePrior = !!patientId || priorApptIds.length > 0;
+      const priorQuery = !canHavePrior
+        ? Promise.resolve({ data: [] } as any)
+        : patientId
+          ? supabase
+              .from("billing_transactions")
+              .select("*")
+              .eq("patient_id", patientId)
+              .neq("appointment_id", appointmentId)
+              .in("status", ["pending", "unpaid", "outstanding"])
+              .limit(200)
+          : supabase
+              .from("billing_transactions")
+              .select("*")
+              .in("appointment_id", priorApptIds)
+              .in("status", ["pending", "unpaid", "outstanding"])
+              .limit(200);
+
       const [payRes, billRes, insRes, priorRes] = await Promise.all([
         supabase.from("payments").select("*").eq("appointment_id", appointmentId).order("created_at", { ascending: false }),
         supabase.from("billing_transactions").select("*").eq("appointment_id", appointmentId).order("created_at", { ascending: false }),
         patientId
           ? supabase.from("patient_insurance").select("id, member_id, co_pay, is_primary, status").eq("patient_id", patientId).eq("is_primary", true).maybeSingle()
           : Promise.resolve({ data: null } as any),
-        patientId
-          ? supabase
-              .from("billing_transactions")
-              .select("*")
-              .neq("appointment_id", appointmentId)
-              .in("status", ["pending", "unpaid", "outstanding"])
-              .limit(200)
-          : Promise.resolve({ data: [] } as any),
+        priorQuery,
       ]);
       setPayments((payRes.data as PaymentRow[]) || []);
       setBilling((billRes.data as BillingRow[]) || []);
