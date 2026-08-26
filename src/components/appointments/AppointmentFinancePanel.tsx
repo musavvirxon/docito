@@ -513,12 +513,12 @@ export function AppointmentFinancePanel({
 
                   <div className="shrink-0 text-right">
                     <div className="font-medium tabular-nums">
-                      {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, finance.currency)}
+                      {fmt((c.amount_cents ?? Number(c.amount) * 100) / 100, c.currency || finance.currency)}
                     </div>
                     {chargePaid(row) > 0 && (
                       <div className="text-[10px] text-muted-foreground tabular-nums">
                         {tf('ledger.paidAmount', {
-                          paid: fmt(chargePaid(row), finance.currency),
+                          paid: fmt(chargePaid(row), c.currency || finance.currency),
                           defaultValue: '{{paid}} paid',
                         })}
                       </div>
@@ -526,7 +526,7 @@ export function AppointmentFinancePanel({
                     {chargeRemaining(row) > 0 && (
                       <div className="text-[10px] font-medium text-amber-600 tabular-nums">
                         {tf('ledger.remaining', {
-                          amount: fmt(chargeRemaining(row), finance.currency),
+                          amount: fmt(chargeRemaining(row), c.currency || finance.currency),
                           defaultValue: '{{amount}} left',
                         })}
                       </div>
