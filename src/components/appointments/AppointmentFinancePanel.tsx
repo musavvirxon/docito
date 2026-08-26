@@ -37,6 +37,8 @@ import i18n from '@/i18n/config';
 interface Props {
   appointmentId: string;
   patientId?: string | null;
+  /** Manual-patient link (appointments.doctor_patient_id) used to scope prior balances. */
+  doctorPatientId?: string | null;
   patientName: string;
   appointmentDate?: string;
   doctorName?: string;
@@ -62,6 +64,7 @@ interface Props {
 export function AppointmentFinancePanel({
   appointmentId,
   patientId,
+  doctorPatientId,
   patientName,
   appointmentDate,
   doctorName,
