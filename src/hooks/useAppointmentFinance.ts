@@ -75,7 +75,11 @@ const moneyFromBilling = (b: BillingRow): number => {
   return Number(b.amount) || 0;
 };
 
-export function useAppointmentFinance(appointmentId?: string, patientId?: string): AppointmentFinanceData {
+export function useAppointmentFinance(
+  appointmentId?: string,
+  patientId?: string,
+  doctorPatientId?: string | null,
+): AppointmentFinanceData {
   const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [billing, setBilling] = useState<BillingRow[]>([]);
