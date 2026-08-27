@@ -14,7 +14,7 @@ import { EmptyState } from "@/components/dashboard/EmptyState";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3, ArrowUpRight, Repeat } from "lucide-react";
+import { Loader2, RefreshCw, Landmark, ListOrdered, Wallet, Package, Users, BarChart3, ArrowUpRight, Repeat, Handshake } from "lucide-react";
 
 import FinanceLedgerPanel from "@/components/financial/FinanceLedgerPanel";
 import IncomeEntriesPanel from "@/components/financial/IncomeEntriesPanel";
@@ -24,6 +24,7 @@ import FinanceAnalyticsPanel from "@/components/financial/FinanceAnalyticsPanel"
 import BudgetsPanel from "@/components/financial/BudgetsPanel";
 import SuppliesPanel from "@/components/financial/SuppliesPanel";
 import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
+import DoctorSettlementsPanel from "@/components/financial/DoctorSettlementsPanel";
 import { useTranslation } from "react-i18next";
 
 type FinanceTab =
@@ -35,7 +36,9 @@ type FinanceTab =
   | "supplies"
   | "recurring"
   | "payroll"
+  | "doctor-payments"
   | "analytics";
+
 
 const TYPE_KEY = "docito.activeEntity.financeType";
 
@@ -103,7 +106,7 @@ export default function FinanceDashboard() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = String(params.get("tab") || "").toLowerCase();
-    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "recurring", "payroll", "analytics"];
+    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "recurring", "payroll", "doctor-payments", "analytics"];
     if (ok.includes(tab as any)) setActiveTab(tab as FinanceTab);
   }, [location.search]);
 
@@ -117,9 +120,11 @@ export default function FinanceDashboard() {
       { id: "supplies", label: "Supplies", icon: <Package className="h-5 w-5" /> },
       { id: "recurring", label: "Recurring", icon: <Repeat className="h-5 w-5" /> },
       { id: "payroll", label: "Payroll", icon: <Users className="h-5 w-5" /> },
+      { id: "doctor-payments", label: t("doctorSettlements.tab"), icon: <Handshake className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
     ],
-    [],
+    [t],
+
   );
 
   const isLoading = authLoading || scopeLoading || loading;
@@ -446,6 +451,19 @@ export default function FinanceDashboard() {
                   <CardTitle className="text-base">Payroll</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">Select an organization to manage payroll.</CardContent>
+              </Card>
+            )
+          ) : null}
+
+          {activeTab === "doctor-payments" ? (
+            entityId ? (
+              <DoctorSettlementsPanel entityType={entityType as any} entityId={entityId} />
+            ) : (
+              <Card className="border-muted">
+                <CardHeader>
+                  <CardTitle className="text-base">{t("doctorSettlements.tab")}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">{t("doctorSettlements.selectOrg")}</CardContent>
               </Card>
             )
           ) : null}
