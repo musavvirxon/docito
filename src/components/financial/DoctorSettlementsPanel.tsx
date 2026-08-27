@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Loader2, Handshake, Plus, DoorOpen, Percent } from "lucide-react";
+import { Loader2, Handshake, Plus, DoorOpen, Percent, Wallet, Check, X } from "lucide-react";
 
 import { supabase as supabaseClient } from "@/integrations/supabase/client";
 const supabase = supabaseClient as any;
@@ -25,6 +25,7 @@ import type { FinanceEntityType } from "@/components/financial/FinanceHub";
 import CompensationManager from "@/components/financial/CompensationManager";
 import { useCompensationProfiles } from "@/hooks/useCompensationProfiles";
 import { useDoctorRentProfiles, type DoctorRentProfileRow } from "@/hooks/useDoctorRentProfiles";
+import { useDoctorPaymentSubmissions, type PaymentSubmissionRow } from "@/hooks/useDoctorPaymentSubmissions";
 import { useCurrency } from "@/hooks/useCurrency";
 import { fetchDoctorCollections, collectedInRange } from "@/lib/finance/doctorCollections";
 
@@ -109,6 +110,20 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
   const [formActive, setFormActive] = useState(true);
   const [formNotes, setFormNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // ---- doctor-submitted payment log ------------------------------------
+  const { rows: submissions, loading: subsLoading, review } = useDoctorPaymentSubmissions({
+    mode: "entity",
+    entityType,
+    entityId,
+  });
+  const pendingSubmissions = useMemo(
+    () => submissions.filter((s) => s.status === "pending"),
+    [submissions],
+  );
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<PaymentSubmissionRow | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const doctorNameByUser = useMemo(() => {
     const m = new Map<string, string>();
@@ -351,10 +366,106 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
     else await refreshRent();
   };
 
+  const approveSubmission = async (row: PaymentSubmissionRow) => {
+    setReviewingId(row.id);
+    try {
+      await review(row.id, "approved");
+      toast.success(t("doctorSettlements.approvedToast"));
+    } catch (e: any) {
+      toast.error(e?.message || t("doctorSettlements.saveFailed"));
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const confirmReject = async () => {
+    if (!rejectTarget) return;
+    if (!rejectReason.trim()) {
+      toast.error(t("doctorSettlements.rejectReasonRequired"));
+      return;
+    }
+    setReviewingId(rejectTarget.id);
+    try {
+      await review(rejectTarget.id, "rejected", rejectReason.trim());
+      toast.success(t("doctorSettlements.rejectedToast"));
+      setRejectTarget(null);
+      setRejectReason("");
+    } catch (e: any) {
+      toast.error(e?.message || t("doctorSettlements.saveFailed"));
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const submissionTypeLabel = (v: string) =>
+    v === "rent_payment" ? t("doctorSettlements.typeRent") : t("doctorSettlements.typeCommission");
+
   const loading = compLoading || rentLoading || computing;
 
   return (
     <div className="space-y-6">
+      {/* Pending approvals */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Wallet className="h-5 w-5" />
+            {t("doctorSettlements.pendingApprovals")}
+            {pendingSubmissions.length > 0 && (
+              <Badge variant="secondary" className="ml-1">{pendingSubmissions.length}</Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {subsLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{t("doctorSettlements.loading")}</span>
+            </div>
+          ) : pendingSubmissions.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">
+              {t("doctorSettlements.noPendingApprovals")}
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {pendingSubmissions.map((s) => (
+                <div key={s.id} className="p-3 rounded-xl border border-border bg-muted/40 flex items-start justify-between gap-3 flex-wrap">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">
+                      {doctorNameByUser.get(s.user_id) || t("doctorSettlements.unknownDoctor")}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-sm font-semibold">{formatCents(Number(s.amount_cents) || 0)}</span>
+                      <Badge variant="outline" className="text-xs">{submissionTypeLabel(s.payment_type)}</Badge>
+                      {s.period_start && (
+                        <span className="text-xs text-muted-foreground">{s.period_start} — {s.period_end}</span>
+                      )}
+                    </div>
+                    {s.note && <p className="text-xs text-muted-foreground mt-1">{s.note}</p>}
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      {t("doctorSettlements.submittedOn")}: {new Date(s.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" disabled={reviewingId === s.id} onClick={() => approveSubmission(s)}>
+                      {reviewingId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4 mr-1" />{t("doctorSettlements.approve")}</>}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={reviewingId === s.id}
+                      onClick={() => { setRejectTarget(s); setRejectReason(""); }}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      {t("doctorSettlements.reject")}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Settlements */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3 flex-wrap">
@@ -578,6 +689,24 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => { if (!o) setRejectTarget(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("doctorSettlements.rejectSubmission")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Label htmlFor="reject-reason">{t("doctorSettlements.rejectReason")}</Label>
+            <Textarea id="reject-reason" rows={3} value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)}>{t("doctorSettlements.cancel")}</Button>
+            <Button variant="destructive" onClick={confirmReject} disabled={!!reviewingId}>
+              {reviewingId ? <Loader2 className="h-4 w-4 animate-spin" /> : t("doctorSettlements.reject")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

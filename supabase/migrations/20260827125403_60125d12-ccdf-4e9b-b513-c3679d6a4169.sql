@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.doctor_payment_submissions_guard() FROM PUBLIC, anon, authenticated;

@@ -1,6 +1,6 @@
 // File: src/pages/DoctorDashboard.tsx
 import { useState, useEffect } from "react";
-import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus, Package, BedDouble } from "lucide-react";
+import { Settings, User, Calendar, BarChart3, Search, Briefcase, MessageSquare, Users, Building2, LogOut, Home, Clock, FileText, AlertCircle, Loader2, Sparkles, TrendingUp, Star, Activity, ArrowRightLeft, ShieldCheck, Pill, UserPlus, Package, BedDouble, Wallet } from "lucide-react";
 import { ClinicInventoryManager } from "@/components/inventory/ClinicInventoryManager";
 import { RoomBedManager } from "@/components/rooms/RoomBedManager";
 
@@ -29,6 +29,7 @@ import TreatmentPlanningSection from "@/components/doctor/TreatmentPlanningSecti
 import DoctorScheduleSettingsSection from "@/components/doctor/DoctorScheduleSettingsSection";
 import DoctorProcedureLibrarySection from "@/components/doctor/DoctorProcedureLibrarySection";
 import { DoctorFinancialStatsSection } from "@/components/doctor/DoctorFinancialStatsSection";
+import MyPaymentsSection from "@/components/doctor/MyPaymentsSection";
 import { DoctorReferralsSection } from "@/components/doctor/DoctorReferralsSection";
 import { DocumentVerifySection } from "@/components/verify/DocumentVerifySection";
 import DoctorPrescriptionsSection from "@/components/doctor/prescriptions/DoctorPrescriptionsSection";
@@ -170,6 +171,7 @@ const DoctorDashboardContent = () => {
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
+    { id: "my-payments", label: t("doctor.navigation.myPayments", "My Payments"), icon: Wallet },
     { id: "clinic-finder", label: t("doctor.navigation.clinicFinder"), icon: Search },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
   ] : [
@@ -190,6 +192,7 @@ const DoctorDashboardContent = () => {
     { id: "performance", label: t("doctor.navigation.performance"), icon: BarChart3 },
     { id: "verify-documents", label: t("doctor.navigation.verifyDocuments", "Verify Documents"), icon: ShieldCheck },
     { id: "financial-stats", label: t("doctor.navigation.financialStats"), icon: BarChart3 },
+    { id: "my-payments", label: t("doctor.navigation.myPayments", "My Payments"), icon: Wallet },
     { id: "settings", label: t("doctor.navigation.settings"), icon: Settings }
   ];
 
@@ -220,6 +223,8 @@ const DoctorDashboardContent = () => {
         );
       case "financial-stats":
         return <DoctorFinancialStatsSection />;
+      case "my-payments":
+        return <MyPaymentsSection />;
       case "clinic-finder":
         return <ClinicFinderSection />;
       case "settings":
