@@ -3121,6 +3121,57 @@ export type Database = {
           },
         ]
       }
+      doctor_payment_submissions: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          note: string | null
+          payment_type: string
+          period_end: string | null
+          period_start: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          note?: string | null
+          payment_type: string
+          period_end?: string | null
+          period_start?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          note?: string | null
+          payment_type?: string
+          period_end?: string | null
+          period_start?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       doctor_restrictions: {
         Row: {
           created_at: string
