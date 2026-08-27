@@ -105,7 +105,7 @@ export default function FinanceDashboard() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = String(params.get("tab") || "").toLowerCase();
-    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "recurring", "payroll", "analytics"];
+    const ok: FinanceTab[] = ["overview", "ledger", "income", "budgets", "expenses", "supplies", "recurring", "payroll", "doctor-payments", "analytics"];
     if (ok.includes(tab as any)) setActiveTab(tab as FinanceTab);
   }, [location.search]);
 
@@ -119,9 +119,11 @@ export default function FinanceDashboard() {
       { id: "supplies", label: "Supplies", icon: <Package className="h-5 w-5" /> },
       { id: "recurring", label: "Recurring", icon: <Repeat className="h-5 w-5" /> },
       { id: "payroll", label: "Payroll", icon: <Users className="h-5 w-5" /> },
+      { id: "doctor-payments", label: t("doctorSettlements.tab"), icon: <Handshake className="h-5 w-5" /> },
       { id: "analytics", label: "Analytics", icon: <BarChart3 className="h-5 w-5" /> },
     ],
-    [],
+    [t],
+
   );
 
   const isLoading = authLoading || scopeLoading || loading;
