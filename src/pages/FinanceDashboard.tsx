@@ -35,7 +35,9 @@ type FinanceTab =
   | "supplies"
   | "recurring"
   | "payroll"
+  | "doctor-payments"
   | "analytics";
+
 
 const TYPE_KEY = "docito.activeEntity.financeType";
 
