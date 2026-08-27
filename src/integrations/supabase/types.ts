@@ -3166,6 +3166,116 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_room_rent_profiles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          effective_from: string
+          entity_id: string
+          entity_type: string
+          id: string
+          is_active: boolean
+          notes: string | null
+          rent_amount_cents: number
+          rent_frequency: string
+          room_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          rent_amount_cents?: number
+          rent_frequency?: string
+          room_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          effective_from?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          rent_amount_cents?: number
+          rent_frequency?: string
+          room_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_room_rent_profiles_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      doctor_settlement_records: {
+        Row: {
+          commission_owed_cents: number
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          net_cents: number
+          notes: string | null
+          period_end: string
+          period_start: string
+          rent_owed_cents: number
+          settled_at: string
+          settled_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commission_owed_cents?: number
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          period_end: string
+          period_start: string
+          rent_owed_cents?: number
+          settled_at?: string
+          settled_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commission_owed_cents?: number
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          net_cents?: number
+          notes?: string | null
+          period_end?: string
+          period_start?: string
+          rent_owed_cents?: number
+          settled_at?: string
+          settled_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       doctor_verification: {
         Row: {
           created_at: string
