@@ -110,14 +110,9 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showPatientModal, setShowPatientModal] = useState(false);
-  const [patientDetails, setPatientDetails] = useState<PatientDetails | null>(null);
-  const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
-  const [currentTreatments, setCurrentTreatments] = useState<Treatment[]>([]);
-  const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isManualPatient, setIsManualPatient] = useState(false);
-  const [partialDetails, setPartialDetails] = useState(false);
+  const [profilePatient, setProfilePatient] = useState<{ id: string; type: 'registered' | 'direct' } | null>(null);
   const [appointmentAmountToBill, setAppointmentAmountToBill] = useState<number>(0);
+
 
   // Diagnoses
   const [dxLoading, setDxLoading] = useState(false);
