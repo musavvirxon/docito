@@ -319,12 +319,92 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     setAppointmentAmountToBill(total);
   };
 
-  const handlePatientClick = async () => {
-    if (selectedAppointment?.patient_id) {
-      await fetchPatientDetails(selectedAppointment.patient_id);
-      setShowPatientModal(true);
+  const fetchManualPatientDetails = async (doctorPatientId: string, appointment?: Appointment | null) => {
+    setLoading(true);
+    setIsManualPatient(true);
+    setPartialDetails(false);
+    setMedicalRecords([]);
+    setCurrentTreatments([]);
+    setAppointmentHistory([]);
+    try {
+      const { data, error } = await (supabase as any)
+        .from('doctor_patients')
+        .select('*')
+        .eq('id', doctorPatientId)
+        .maybeSingle();
+
+      if (error) console.error('Error fetching manual patient:', error);
+
+      if (data) {
+        setPatientDetails({
+          id: data.id,
+          user_id: data.id,
+          full_name: data.full_name || appointment?.patient_name || 'Patient',
+          email: data.email || appointment?.patient_email || '',
+          phone: data.phone || appointment?.patient_phone,
+          address: data.address || appointment?.patient_address,
+          date_of_birth: data.date_of_birth,
+          gender: data.gender,
+          blood_type: data.blood_type,
+          emergency_contact: data.emergency_contact_name
+            ? `${data.emergency_contact_name}${data.emergency_contact_phone ? ` — ${data.emergency_contact_phone}` : ''}`
+            : undefined,
+          medical_history: data.medical_history || undefined,
+          allergies: typeof data.allergies === 'string'
+            ? data.allergies.split(',').map((a: string) => a.trim()).filter(Boolean)
+            : (data.allergies || undefined),
+          current_medications: typeof data.current_medications === 'string'
+            ? data.current_medications.split(',').map((m: string) => m.trim()).filter(Boolean)
+            : (data.current_medications || undefined),
+        } as PatientDetails);
+      } else {
+        setPartialDetails(true);
+        setPatientDetails({
+          id: doctorPatientId,
+          user_id: doctorPatientId,
+          full_name: appointment?.patient_name || 'Patient',
+          email: appointment?.patient_email || '',
+          phone: appointment?.patient_phone,
+          address: appointment?.patient_address,
+        } as PatientDetails);
+      }
+    } catch (err) {
+      console.error('Error fetching manual patient details:', err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handlePatientClick = async () => {
+    const appt = selectedAppointment;
+    if (!appt) return;
+
+    if (appt.patient_id) {
+      setShowAppointmentModal(false);
+      setShowPatientModal(true);
+      await fetchPatientDetails(appt.patient_id, appt);
+      return;
+    }
+
+    if (appt.doctor_patient_id) {
+      setShowAppointmentModal(false);
+      setShowPatientModal(true);
+      await fetchManualPatientDetails(appt.doctor_patient_id, appt);
+      return;
+    }
+
+    toast.error(
+      t("doctor.patientDetails.noLinkedPatient", "No patient record is linked to this appointment.")
+    );
+  };
+
+  const handlePatientModalChange = (open: boolean) => {
+    setShowPatientModal(open);
+    if (!open && selectedAppointment) {
+      setShowAppointmentModal(true);
+    }
+  };
+
 
   const handleMessagePatient = async (patientId: string) => {
     setShowAppointmentModal(false);
