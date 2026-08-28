@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity, MessageSquare, Video, CalendarPlus, Trash2, DollarSign } from "lucide-react";
 import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
+import { PatientProfileView } from "@/components/appointments/PatientProfileView";
+
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -110,14 +112,9 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showPatientModal, setShowPatientModal] = useState(false);
-  const [patientDetails, setPatientDetails] = useState<PatientDetails | null>(null);
-  const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
-  const [currentTreatments, setCurrentTreatments] = useState<Treatment[]>([]);
-  const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isManualPatient, setIsManualPatient] = useState(false);
-  const [partialDetails, setPartialDetails] = useState(false);
+  const [profilePatient, setProfilePatient] = useState<{ id: string; type: 'registered' | 'direct' } | null>(null);
   const [appointmentAmountToBill, setAppointmentAmountToBill] = useState<number>(0);
+
 
   // Diagnoses
   const [dxLoading, setDxLoading] = useState(false);
@@ -139,87 +136,6 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     return age;
   };
 
-  const fetchPatientDetails = async (patientId: string, appointment?: Appointment | null) => {
-    setLoading(true);
-    setIsManualPatient(false);
-    setPartialDetails(false);
-    try {
-      const { data: patient, error: patientError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', patientId)
-        .maybeSingle();
-
-      if (patientError) console.error('Error fetching patient profile:', patientError);
-
-      if (patient) {
-        setPatientDetails(patient as PatientDetails);
-      } else {
-        setPartialDetails(true);
-        setPatientDetails({
-          id: patientId,
-          user_id: patientId,
-          full_name: appointment?.patient_name || 'Patient',
-          email: appointment?.patient_email || '',
-          phone: appointment?.patient_phone,
-          address: appointment?.patient_address,
-          avatar_url: appointment?.patient_avatar,
-        } as PatientDetails);
-      }
-
-      // Fetch medical records
-      const { data: records, error: recordsError } = await (supabase as any)
-        .from('medical_records')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('record_date', { ascending: false });
-
-      if (recordsError) console.error('Error fetching medical records:', recordsError);
-      // Map records to expected format
-      const mappedRecords = (records || []).map((r: any) => ({
-        ...r,
-        date: r.record_date || r.created_at
-      }));
-      setMedicalRecords(mappedRecords);
-
-      // Fetch current treatments
-      const { data: treatments, error: treatmentsError } = await (supabase as any)
-        .from('treatment_plans')
-        .select('*')
-        .eq('patient_id', patientId)
-        .in('status', ['active', 'pending'])
-        .order('created_at', { ascending: false });
-
-      if (treatmentsError) console.error('Error fetching treatments:', treatmentsError);
-      // Map to expected treatment format
-      const mappedTreatments = (treatments || []).map((t: any) => ({
-        id: t.id,
-        treatment_type: t.title || 'Treatment',
-        name: t.title || 'Treatment Plan',
-        description: t.description || '',
-        start_date: t.start_date || t.created_at,
-        end_date: t.end_date,
-        status: t.status,
-        notes: t.notes
-      }));
-      setCurrentTreatments(mappedTreatments);
-
-      // Fetch appointment history
-      const { data: history, error: historyError } = await supabase
-        .from('appointments')
-        .select('id, appointment_date, start_time, status, notes')
-        .eq('patient_id', patientId)
-        .order('appointment_date', { ascending: false })
-        .limit(10);
-
-      if (historyError) console.error('Error fetching appointment history:', historyError);
-      setAppointmentHistory(history || []);
-    } catch (error: any) {
-      console.error('Error fetching patient details:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadDiagnosisData = async (appointment: Appointment) => {
     setDxLoading(true);
@@ -320,77 +236,22 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     setAppointmentAmountToBill(total);
   };
 
-  const fetchManualPatientDetails = async (doctorPatientId: string, appointment?: Appointment | null) => {
-    setLoading(true);
-    setIsManualPatient(true);
-    setPartialDetails(false);
-    setMedicalRecords([]);
-    setCurrentTreatments([]);
-    setAppointmentHistory([]);
-    try {
-      const { data, error } = await (supabase as any)
-        .from('doctor_patients')
-        .select('*')
-        .eq('id', doctorPatientId)
-        .maybeSingle();
 
-      if (error) console.error('Error fetching manual patient:', error);
-
-      if (data) {
-        setPatientDetails({
-          id: data.id,
-          user_id: data.id,
-          full_name: data.full_name || appointment?.patient_name || 'Patient',
-          email: data.email || appointment?.patient_email || '',
-          phone: data.phone || appointment?.patient_phone,
-          address: data.address || appointment?.patient_address,
-          date_of_birth: data.date_of_birth,
-          gender: data.gender,
-          blood_type: data.blood_type,
-          emergency_contact: data.emergency_contact_name
-            ? `${data.emergency_contact_name}${data.emergency_contact_phone ? ` — ${data.emergency_contact_phone}` : ''}`
-            : undefined,
-          medical_history: data.medical_history || undefined,
-          allergies: typeof data.allergies === 'string'
-            ? data.allergies.split(',').map((a: string) => a.trim()).filter(Boolean)
-            : (data.allergies || undefined),
-          current_medications: typeof data.current_medications === 'string'
-            ? data.current_medications.split(',').map((m: string) => m.trim()).filter(Boolean)
-            : (data.current_medications || undefined),
-        } as PatientDetails);
-      } else {
-        setPartialDetails(true);
-        setPatientDetails({
-          id: doctorPatientId,
-          user_id: doctorPatientId,
-          full_name: appointment?.patient_name || 'Patient',
-          email: appointment?.patient_email || '',
-          phone: appointment?.patient_phone,
-          address: appointment?.patient_address,
-        } as PatientDetails);
-      }
-    } catch (err) {
-      console.error('Error fetching manual patient details:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePatientClick = async () => {
+  const handlePatientClick = () => {
     const appt = selectedAppointment;
     if (!appt) return;
 
     if (appt.patient_id) {
+      setProfilePatient({ id: appt.patient_id, type: 'registered' });
       setShowAppointmentModal(false);
       setShowPatientModal(true);
-      await fetchPatientDetails(appt.patient_id, appt);
       return;
     }
 
     if (appt.doctor_patient_id) {
+      setProfilePatient({ id: appt.doctor_patient_id, type: 'direct' });
       setShowAppointmentModal(false);
       setShowPatientModal(true);
-      await fetchManualPatientDetails(appt.doctor_patient_id, appt);
       return;
     }
 
@@ -405,6 +266,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       setShowAppointmentModal(true);
     }
   };
+
 
 
   const handleMessagePatient = async (patientId: string) => {
@@ -759,315 +621,24 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
         </DialogContent>
       </Dialog>
 
-      {/* Patient Details Modal */}
+      {/* Patient Details Modal — full patient profile */}
       <Dialog open={showPatientModal} onOpenChange={handlePatientModalChange}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={patientDetails?.avatar_url} />
-                <AvatarFallback>
-                  {patientDetails?.full_name?.split(' ').map(n => n[0]).join('') || 'P'}
-                </AvatarFallback>
-              </Avatar>
-              {patientDetails?.full_name || 'Patient'}
-            </DialogTitle>
+            <DialogTitle>{t("doctor.patientDetails.title", "Patient Details")}</DialogTitle>
           </DialogHeader>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className={`grid w-full ${isManualPatient ? "grid-cols-2" : "grid-cols-5"}`}>
-                <TabsTrigger value="overview">{t("doctor.patientDetails.overview", "Overview")}</TabsTrigger>
-                {!isManualPatient && (
-                  <TabsTrigger value="medical">{t("doctor.patientDetails.medical", "Medical Records")}</TabsTrigger>
-                )}
-                <TabsTrigger value="medications">{t("doctor.patientDetails.medications", "Medications")}</TabsTrigger>
-                {!isManualPatient && (
-                  <>
-                    <TabsTrigger value="treatments">{t("doctor.patientDetails.treatments", "Treatments")}</TabsTrigger>
-                    <TabsTrigger value="history">{t("doctor.patientDetails.history", "History")}</TabsTrigger>
-                  </>
-                )}
-              </TabsList>
-
-              {partialDetails && (
-                <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-                  {t("doctor.patientDetails.limitedDetails", "Only limited details are available for this patient.")}
-                </div>
-              )}
-
-
-              <TabsContent value="overview" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Basic Info */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <User className="w-4 h-4" />
-                        {t("doctor.patientDetails.basicInfo", "Basic Information")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-muted-foreground" />
-                          <span className="text-sm">{patientDetails?.email}</span>
-                        </div>
-                        {patientDetails?.phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">{patientDetails.phone}</span>
-                          </div>
-                        )}
-                        {patientDetails?.address && (
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">{patientDetails.address}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="pt-3 border-t space-y-2">
-                        {patientDetails?.date_of_birth && (
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">{t("doctor.patientDetails.age", "Age")}</span>
-                            <span className="text-sm font-medium">{calculateAge(patientDetails.date_of_birth)} years</span>
-                          </div>
-                        )}
-                        {patientDetails?.gender && (
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">{t("doctor.patientDetails.gender", "Gender")}</span>
-                            <span className="text-sm font-medium">{patientDetails.gender}</span>
-                          </div>
-                        )}
-                        {patientDetails?.blood_type && (
-                          <div className="flex justify-between">
-                            <span className="text-sm text-muted-foreground">{t("doctor.patientDetails.bloodType", "Blood Type")}</span>
-                            <Badge variant="outline">{patientDetails.blood_type}</Badge>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Health Metrics */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Activity className="w-4 h-4" />
-                        {t("doctor.patientDetails.healthMetrics", "Health Metrics")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {patientDetails?.height && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">{t("doctor.patientDetails.height", "Height")}</span>
-                          <span className="text-sm font-medium">{patientDetails.height} cm</span>
-                        </div>
-                      )}
-                      {patientDetails?.weight && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">{t("doctor.patientDetails.weight", "Weight")}</span>
-                          <span className="text-sm font-medium">{patientDetails.weight} kg</span>
-                        </div>
-                      )}
-                      
-                      {/* BMI Calculation */}
-                      {patientDetails?.height && patientDetails?.weight && (
-                        <div className="pt-3 border-t">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">{t("doctor.patientDetails.bmi", "BMI")}</span>
-                            <span className="text-sm font-medium">
-                              {((patientDetails.weight / ((patientDetails.height / 100) ** 2))).toFixed(1)}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {patientDetails?.emergency_contact && (
-                        <div className="pt-3 border-t">
-                          <p className="text-sm text-muted-foreground mb-1">{t("doctor.patientDetails.emergencyContact", "Emergency Contact")}</p>
-                          <p className="text-sm font-medium">{patientDetails.emergency_contact}</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Allergies */}
-                {patientDetails?.allergies && patientDetails.allergies.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 text-red-500" />
-                        {t("doctor.patientDetails.allergies", "Allergies")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-wrap gap-2">
-                        {patientDetails.allergies.map((allergy, index) => (
-                          <Badge key={index} variant="destructive" className="bg-red-100 text-red-700">
-                            {allergy}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Medical History */}
-                {patientDetails?.medical_history && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <FileText className="w-4 h-4" />
-                        {t("doctor.patientDetails.medicalHistory", "Medical History")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm whitespace-pre-wrap">{JSON.stringify(patientDetails.medical_history, null, 2)}</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </TabsContent>
-
-              <TabsContent value="medical" className="space-y-4">
-                {medicalRecords.length > 0 ? (
-                  <div className="space-y-3">
-                    {medicalRecords.map((record) => (
-                      <Card key={record.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold">{record.title}</h4>
-                              <p className="text-sm text-muted-foreground">{record.record_type}</p>
-                              <p className="text-sm mt-2">{record.description}</p>
-                              {record.doctor_name && (
-                                <p className="text-xs text-muted-foreground mt-2">
-                                  {t("doctor.patientDetails.doctor", "Doctor")}: {record.doctor_name}
-                                </p>
-                              )}
-                            </div>
-                            <Badge variant="outline">
-                              {format(new Date(record.date), "MMM dd, yyyy")}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noMedicalRecords", "No medical records found")}</p>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="medications" className="space-y-4">
-                {patientDetails?.current_medications && patientDetails.current_medications.length > 0 ? (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Pill className="w-4 h-4" />
-                        {t("doctor.patientDetails.currentMedications", "Current Medications")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        {patientDetails.current_medications.map((medication, index) => (
-                          <div key={index} className="p-3 border rounded-lg">
-                            <p className="font-medium">{medication}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <div className="text-center py-8">
-                    <Pill className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noMedications", "No current medications listed")}</p>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="treatments" className="space-y-4">
-                {currentTreatments.length > 0 ? (
-                  <div className="space-y-3">
-                    {currentTreatments.map((treatment) => (
-                      <Card key={treatment.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-semibold">{treatment.name}</h4>
-                              <p className="text-sm text-muted-foreground">{treatment.treatment_type}</p>
-                              <p className="text-sm mt-2">{treatment.description}</p>
-                              {treatment.notes && (
-                                <p className="text-sm text-muted-foreground mt-2">{treatment.notes}</p>
-                              )}
-                            </div>
-                            <div className="text-right space-y-1">
-                              <Badge variant={treatment.status === 'active' ? 'default' : 'secondary'}>
-                                {treatment.status}
-                              </Badge>
-                              <p className="text-xs text-muted-foreground">
-                                {format(new Date(treatment.start_date), "MMM dd, yyyy")}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Heart className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noTreatments", "No active treatments found")}</p>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="history" className="space-y-4">
-                {appointmentHistory.length > 0 ? (
-                  <div className="space-y-3">
-                    {appointmentHistory.map((appointment) => (
-                      <Card key={appointment.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium">
-                                {format(new Date(appointment.appointment_date), "MMMM dd, yyyy")}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {appointment.start_time} - {appointment.status}
-                              </p>
-                              {appointment.notes && (
-                                <p className="text-sm mt-1">{appointment.notes}</p>
-                              )}
-                            </div>
-                            <Badge variant="outline">
-                              {t(`doctor.appointmentStatus.${appointment.status}`, appointment.status)}
-                            </Badge>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">{t("doctor.patientDetails.noHistory", "No appointment history found")}</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+          {profilePatient && (
+            <PatientProfileView
+              patientId={profilePatient.id}
+              patientType={profilePatient.type}
+              compact
+              onBack={() => handlePatientModalChange(false)}
+            />
           )}
         </DialogContent>
       </Dialog>
+
     </>
   );
 };
