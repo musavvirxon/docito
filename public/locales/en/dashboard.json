@@ -1360,7 +1360,9 @@
       "height": "Height",
       "medicalHistory": "Medical History",
       "noMedicalRecords": "No medical records found",
-      "weight": "Weight"
+      "weight": "Weight",
+      "noLinkedPatient": "No patient record is linked to this appointment.",
+      "limitedDetails": "Only limited details are available for this patient."
     },
     "quickActions": {
       "title": "Quick Actions",

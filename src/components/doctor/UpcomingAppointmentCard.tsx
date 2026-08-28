@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useMessageAction } from "@/hooks/useMessageAction";
+import { toast } from "sonner";
 
 
 interface Appointment {
@@ -114,6 +115,8 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const [currentTreatments, setCurrentTreatments] = useState<Treatment[]>([]);
   const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isManualPatient, setIsManualPatient] = useState(false);
+  const [partialDetails, setPartialDetails] = useState(false);
   const [appointmentAmountToBill, setAppointmentAmountToBill] = useState<number>(0);
 
   // Diagnoses
@@ -136,18 +139,33 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     return age;
   };
 
-  const fetchPatientDetails = async (patientId: string) => {
+  const fetchPatientDetails = async (patientId: string, appointment?: Appointment | null) => {
     setLoading(true);
+    setIsManualPatient(false);
+    setPartialDetails(false);
     try {
       const { data: patient, error: patientError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', patientId)
-        .single();
+        .maybeSingle();
 
-      if (patientError) throw patientError;
+      if (patientError) console.error('Error fetching patient profile:', patientError);
 
-      setPatientDetails(patient as PatientDetails);
+      if (patient) {
+        setPatientDetails(patient as PatientDetails);
+      } else {
+        setPartialDetails(true);
+        setPatientDetails({
+          id: patientId,
+          user_id: patientId,
+          full_name: appointment?.patient_name || 'Patient',
+          email: appointment?.patient_email || '',
+          phone: appointment?.patient_phone,
+          address: appointment?.patient_address,
+          avatar_url: appointment?.patient_avatar,
+        } as PatientDetails);
+      }
 
       // Fetch medical records
       const { data: records, error: recordsError } = await (supabase as any)
@@ -302,12 +320,92 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     setAppointmentAmountToBill(total);
   };
 
-  const handlePatientClick = async () => {
-    if (selectedAppointment?.patient_id) {
-      await fetchPatientDetails(selectedAppointment.patient_id);
-      setShowPatientModal(true);
+  const fetchManualPatientDetails = async (doctorPatientId: string, appointment?: Appointment | null) => {
+    setLoading(true);
+    setIsManualPatient(true);
+    setPartialDetails(false);
+    setMedicalRecords([]);
+    setCurrentTreatments([]);
+    setAppointmentHistory([]);
+    try {
+      const { data, error } = await (supabase as any)
+        .from('doctor_patients')
+        .select('*')
+        .eq('id', doctorPatientId)
+        .maybeSingle();
+
+      if (error) console.error('Error fetching manual patient:', error);
+
+      if (data) {
+        setPatientDetails({
+          id: data.id,
+          user_id: data.id,
+          full_name: data.full_name || appointment?.patient_name || 'Patient',
+          email: data.email || appointment?.patient_email || '',
+          phone: data.phone || appointment?.patient_phone,
+          address: data.address || appointment?.patient_address,
+          date_of_birth: data.date_of_birth,
+          gender: data.gender,
+          blood_type: data.blood_type,
+          emergency_contact: data.emergency_contact_name
+            ? `${data.emergency_contact_name}${data.emergency_contact_phone ? ` — ${data.emergency_contact_phone}` : ''}`
+            : undefined,
+          medical_history: data.medical_history || undefined,
+          allergies: typeof data.allergies === 'string'
+            ? data.allergies.split(',').map((a: string) => a.trim()).filter(Boolean)
+            : (data.allergies || undefined),
+          current_medications: typeof data.current_medications === 'string'
+            ? data.current_medications.split(',').map((m: string) => m.trim()).filter(Boolean)
+            : (data.current_medications || undefined),
+        } as PatientDetails);
+      } else {
+        setPartialDetails(true);
+        setPatientDetails({
+          id: doctorPatientId,
+          user_id: doctorPatientId,
+          full_name: appointment?.patient_name || 'Patient',
+          email: appointment?.patient_email || '',
+          phone: appointment?.patient_phone,
+          address: appointment?.patient_address,
+        } as PatientDetails);
+      }
+    } catch (err) {
+      console.error('Error fetching manual patient details:', err);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handlePatientClick = async () => {
+    const appt = selectedAppointment;
+    if (!appt) return;
+
+    if (appt.patient_id) {
+      setShowAppointmentModal(false);
+      setShowPatientModal(true);
+      await fetchPatientDetails(appt.patient_id, appt);
+      return;
+    }
+
+    if (appt.doctor_patient_id) {
+      setShowAppointmentModal(false);
+      setShowPatientModal(true);
+      await fetchManualPatientDetails(appt.doctor_patient_id, appt);
+      return;
+    }
+
+    toast.error(
+      t("doctor.patientDetails.noLinkedPatient", "No patient record is linked to this appointment.")
+    );
+  };
+
+  const handlePatientModalChange = (open: boolean) => {
+    setShowPatientModal(open);
+    if (!open && selectedAppointment) {
+      setShowAppointmentModal(true);
+    }
+  };
+
 
   const handleMessagePatient = async (patientId: string) => {
     setShowAppointmentModal(false);
@@ -662,7 +760,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       </Dialog>
 
       {/* Patient Details Modal */}
-      <Dialog open={showPatientModal} onOpenChange={setShowPatientModal}>
+      <Dialog open={showPatientModal} onOpenChange={handlePatientModalChange}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
@@ -682,13 +780,26 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
             </div>
           ) : (
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className={`grid w-full ${isManualPatient ? "grid-cols-2" : "grid-cols-5"}`}>
                 <TabsTrigger value="overview">{t("doctor.patientDetails.overview", "Overview")}</TabsTrigger>
-                <TabsTrigger value="medical">{t("doctor.patientDetails.medical", "Medical Records")}</TabsTrigger>
+                {!isManualPatient && (
+                  <TabsTrigger value="medical">{t("doctor.patientDetails.medical", "Medical Records")}</TabsTrigger>
+                )}
                 <TabsTrigger value="medications">{t("doctor.patientDetails.medications", "Medications")}</TabsTrigger>
-                <TabsTrigger value="treatments">{t("doctor.patientDetails.treatments", "Treatments")}</TabsTrigger>
-                <TabsTrigger value="history">{t("doctor.patientDetails.history", "History")}</TabsTrigger>
+                {!isManualPatient && (
+                  <>
+                    <TabsTrigger value="treatments">{t("doctor.patientDetails.treatments", "Treatments")}</TabsTrigger>
+                    <TabsTrigger value="history">{t("doctor.patientDetails.history", "History")}</TabsTrigger>
+                  </>
+                )}
               </TabsList>
+
+              {partialDetails && (
+                <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                  {t("doctor.patientDetails.limitedDetails", "Only limited details are available for this patient.")}
+                </div>
+              )}
+
 
               <TabsContent value="overview" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

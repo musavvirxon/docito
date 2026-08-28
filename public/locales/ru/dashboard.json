@@ -1374,7 +1374,9 @@
       "height": "Height",
       "medicalHistory": "Medical History",
       "noMedicalRecords": "No medical records found",
-      "weight": "Weight"
+      "weight": "Weight",
+      "noLinkedPatient": "К этой записи не привязана карта пациента.",
+      "limitedDetails": "Для этого пациента доступны только ограниченные данные."
     },
     "quickActions": {
       "title": "Быстрые действия",
