@@ -780,13 +780,26 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
             </div>
           ) : (
             <Tabs defaultValue="overview" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className={`grid w-full ${isManualPatient ? "grid-cols-2" : "grid-cols-5"}`}>
                 <TabsTrigger value="overview">{t("doctor.patientDetails.overview", "Overview")}</TabsTrigger>
-                <TabsTrigger value="medical">{t("doctor.patientDetails.medical", "Medical Records")}</TabsTrigger>
+                {!isManualPatient && (
+                  <TabsTrigger value="medical">{t("doctor.patientDetails.medical", "Medical Records")}</TabsTrigger>
+                )}
                 <TabsTrigger value="medications">{t("doctor.patientDetails.medications", "Medications")}</TabsTrigger>
-                <TabsTrigger value="treatments">{t("doctor.patientDetails.treatments", "Treatments")}</TabsTrigger>
-                <TabsTrigger value="history">{t("doctor.patientDetails.history", "History")}</TabsTrigger>
+                {!isManualPatient && (
+                  <>
+                    <TabsTrigger value="treatments">{t("doctor.patientDetails.treatments", "Treatments")}</TabsTrigger>
+                    <TabsTrigger value="history">{t("doctor.patientDetails.history", "History")}</TabsTrigger>
+                  </>
+                )}
               </TabsList>
+
+              {partialDetails && (
+                <div className="p-3 rounded-lg bg-muted/50 text-sm text-muted-foreground">
+                  {t("doctor.patientDetails.limitedDetails", "Only limited details are available for this patient.")}
+                </div>
+              )}
+
 
               <TabsContent value="overview" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
