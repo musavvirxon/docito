@@ -114,6 +114,8 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
   const [currentTreatments, setCurrentTreatments] = useState<Treatment[]>([]);
   const [appointmentHistory, setAppointmentHistory] = useState<AppointmentHistory[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isManualPatient, setIsManualPatient] = useState(false);
+  const [partialDetails, setPartialDetails] = useState(false);
   const [appointmentAmountToBill, setAppointmentAmountToBill] = useState<number>(0);
 
   // Diagnoses
