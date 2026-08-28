@@ -138,18 +138,33 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     return age;
   };
 
-  const fetchPatientDetails = async (patientId: string) => {
+  const fetchPatientDetails = async (patientId: string, appointment?: Appointment | null) => {
     setLoading(true);
+    setIsManualPatient(false);
+    setPartialDetails(false);
     try {
       const { data: patient, error: patientError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', patientId)
-        .single();
+        .maybeSingle();
 
-      if (patientError) throw patientError;
+      if (patientError) console.error('Error fetching patient profile:', patientError);
 
-      setPatientDetails(patient as PatientDetails);
+      if (patient) {
+        setPatientDetails(patient as PatientDetails);
+      } else {
+        setPartialDetails(true);
+        setPatientDetails({
+          id: patientId,
+          user_id: patientId,
+          full_name: appointment?.patient_name || 'Patient',
+          email: appointment?.patient_email || '',
+          phone: appointment?.patient_phone,
+          address: appointment?.patient_address,
+          avatar_url: appointment?.patient_avatar,
+        } as PatientDetails);
+      }
 
       // Fetch medical records
       const { data: records, error: recordsError } = await (supabase as any)
