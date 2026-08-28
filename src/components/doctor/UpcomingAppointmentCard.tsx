@@ -760,7 +760,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       </Dialog>
 
       {/* Patient Details Modal */}
-      <Dialog open={showPatientModal} onOpenChange={setShowPatientModal}>
+      <Dialog open={showPatientModal} onOpenChange={handlePatientModalChange}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
