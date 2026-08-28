@@ -1375,7 +1375,9 @@
       "height": "Height",
       "medicalHistory": "Medical History",
       "noMedicalRecords": "No medical records found",
-      "weight": "Weight"
+      "weight": "Weight",
+      "noLinkedPatient": "Bu qabulga bemor yozuvi bog'lanmagan.",
+      "limitedDetails": "Bu bemor uchun faqat cheklangan ma'lumotlar mavjud."
     },
     "quickActions": {
       "title": "Tezkor amallar",
