@@ -376,21 +376,21 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
     }
   };
 
-  const handlePatientClick = async () => {
+  const handlePatientClick = () => {
     const appt = selectedAppointment;
     if (!appt) return;
 
     if (appt.patient_id) {
+      setProfilePatient({ id: appt.patient_id, type: 'registered' });
       setShowAppointmentModal(false);
       setShowPatientModal(true);
-      await fetchPatientDetails(appt.patient_id, appt);
       return;
     }
 
     if (appt.doctor_patient_id) {
+      setProfilePatient({ id: appt.doctor_patient_id, type: 'direct' });
       setShowAppointmentModal(false);
       setShowPatientModal(true);
-      await fetchManualPatientDetails(appt.doctor_patient_id, appt);
       return;
     }
 
@@ -405,6 +405,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
       setShowAppointmentModal(true);
     }
   };
+
 
 
   const handleMessagePatient = async (patientId: string) => {
