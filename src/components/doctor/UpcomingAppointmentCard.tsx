@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Calendar, Clock, User, Phone, Mail, MapPin, FileText, Pill, Heart, Stethoscope, AlertCircle, ChevronRight, Activity, MessageSquare, Video, CalendarPlus, Trash2, DollarSign } from "lucide-react";
 import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
+import { PatientProfileView } from "@/components/appointments/PatientProfileView";
+
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
