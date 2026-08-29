@@ -186,5 +186,16 @@
   "pctTotalCosts": "{{pct}}% umumiy xarajatlar",
   "noExpenseEntriesRange": "Ushbu davr uchun xarajat/maosh yozuvlari yoʻq.",
   "costs": "Xarajatlar",
-  "expenses": "Xarajatlar"
+  "expenses": "Xarajatlar",
+  "history": {
+    "title": "To'liq moliyaviy tarix",
+    "button": "To'liq moliyaviy tarix",
+    "recordPayment": "To'lovni qayd etish",
+    "visits": "Tashriflar va muolajalar",
+    "visit": "Tashrif",
+    "otherCharges": "Boshqa hisoblar",
+    "billed": "Jami hisoblangan",
+    "remaining": "Qoldiq",
+    "noHistory": "Bu bemor uchun hali hisoblar yo'q."
+  }
 }

@@ -280,7 +280,7 @@ export function PatientFinancialHistoryDialog({
 
           {/* Chronological ledger */}
           <section className="space-y-2">
-            <h3 className="text-sm font-medium">{t('ledger')}</h3>
+            <h3 className="text-sm font-medium">{t('ledger.title', 'Ledger')}</h3>
             <PatientFinancialTab patientId={patientId || doctorPatientId} />
           </section>
         </DialogContent>
