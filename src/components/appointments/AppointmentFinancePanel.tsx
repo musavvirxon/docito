@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CreditCard, DollarSign, CheckCircle, AlertCircle, Plus, Receipt, FileText } from 'lucide-react';
+import { CreditCard, DollarSign, CheckCircle, AlertCircle, Plus, Receipt, FileText, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,7 @@ import {
 } from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
 import { RecordPaymentDialog } from '@/components/billing/RecordPaymentDialog';
+import { PatientFinancialHistoryDialog } from '@/components/patient/PatientFinancialHistoryDialog';
 import { recordBillingPayment, chargeRemaining, chargePaid } from '@/lib/billing/recordBillingPayment';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -99,6 +100,7 @@ export function AppointmentFinancePanel({
   const paymentsEnabled = allowPayments ?? showActions;
 
   const [payOpen, setPayOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [payingCharge, setPayingCharge] = useState<any | null>(null);
   const [paySubmitting, setPaySubmitting] = useState(false);
   const [discOpen, setDiscOpen] = useState(false);
