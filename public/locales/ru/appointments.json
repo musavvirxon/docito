@@ -32,7 +32,8 @@
       "amountToBill": "Amount to bill",
       "paid": "Paid",
       "discounts": "Discounts",
-      "outstanding": "Outstanding"
+      "outstanding": "Outstanding",
+      "credit": "Кредитный баланс"
     },
     "priorBalance": "Prior unpaid balance:",
     "recordPayment": "Record Payment",

@@ -2652,6 +2652,9 @@
         "other": "Other"
       },
       "general": "Full-mouth / general procedures"
+    },
+    "patient": {
+      "unnamed": "Unnamed patient"
     }
   },
   "superAdmin": {
