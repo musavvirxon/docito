@@ -186,5 +186,16 @@
   "pctTotalCosts": "{{pct}}% total costs",
   "noExpenseEntriesRange": "No expense/payroll entries yet for this range.",
   "costs": "Costs",
-  "expenses": "Expenses"
+  "expenses": "Expenses",
+  "history": {
+    "title": "Full financial history",
+    "button": "Full financial history",
+    "recordPayment": "Record payment",
+    "visits": "Visits & procedures",
+    "visit": "Visit",
+    "otherCharges": "Other charges",
+    "billed": "Total billed",
+    "remaining": "Remaining",
+    "noHistory": "No charges recorded for this patient yet."
+  }
 }
