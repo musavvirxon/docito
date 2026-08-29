@@ -81,13 +81,19 @@ export function PatientFinancialTab({ patientId, className }: Props) {
       <Card
         className={cn(
           "border",
-          settled ? "border-border" : "border-destructive/40 bg-destructive/5",
+          credit > 0
+            ? "border-emerald-500/40 bg-emerald-500/5"
+            : settled
+              ? "border-border"
+              : "border-destructive/40 bg-destructive/5",
         )}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Wallet className="h-4 w-4" />
-            {t("ledger.outstandingBalance", "Outstanding balance")}
+            {credit > 0
+              ? t("ledger.creditBalance", "Credit balance")
+              : t("ledger.outstandingBalance", "Outstanding balance")}
           </CardTitle>
           <Button variant="ghost" size="icon" onClick={refresh} aria-label={t("refresh")}>
             <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
@@ -101,12 +107,21 @@ export function PatientFinancialTab({ patientId, className }: Props) {
               <span
                 className={cn(
                   "text-3xl font-bold tabular-nums",
-                  settled ? "text-muted-foreground" : "text-destructive",
+                  credit > 0
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : settled
+                      ? "text-muted-foreground"
+                      : "text-destructive",
                 )}
               >
-                {fmt(Math.max(outstanding, 0))}
+                {fmt(credit > 0 ? credit : Math.max(outstanding, 0))}
               </span>
-              {settled ? (
+              {credit > 0 ? (
+                <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
+                  <CheckCircle2 className="h-3 w-3" />
+                  {t("ledger.credit", "Credit")}
+                </Badge>
+              ) : settled ? (
                 <Badge variant="secondary" className="gap-1">
                   <CheckCircle2 className="h-3 w-3" />
                   {t("ledger.settled", "Settled")}
@@ -117,7 +132,13 @@ export function PatientFinancialTab({ patientId, className }: Props) {
                   {t("outstanding")}
                 </Badge>
               )}
+              {credit > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {t("ledger.creditHint", "Overpayment available for future charges")}
+                </span>
+              )}
             </div>
+
           )}
         </CardContent>
       </Card>
