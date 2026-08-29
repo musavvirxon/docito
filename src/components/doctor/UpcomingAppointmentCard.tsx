@@ -326,7 +326,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold text-lg">{nextAppointment.patient_name || 'Patient'}</h3>
+                  <h3 className="font-semibold text-lg">{nextAppointment.patient_name || t('doctor.patient.unnamed', 'Unnamed patient')}</h3>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
@@ -470,7 +470,7 @@ export const UpcomingAppointmentCard = ({ appointments }: { appointments: Appoin
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="font-semibold">{selectedAppointment.patient_name || 'Patient'}</h4>
+                        <h4 className="font-semibold">{selectedAppointment.patient_name || t('doctor.patient.unnamed', 'Unnamed patient')}</h4>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           {selectedAppointment.patient_email && (
                             <span className="flex items-center gap-1">
