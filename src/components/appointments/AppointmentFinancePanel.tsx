@@ -391,8 +391,12 @@ export function AppointmentFinancePanel({
             icon={Receipt}
           />
           <Kpi
-            label={t('finance.kpi.outstanding')}
-            value={fmt(finance.outstanding + finance.priorBalance, finance.currency)}
+            label={
+              finance.outstanding + finance.priorBalance < 0
+                ? t('finance.kpi.credit', { defaultValue: 'Credit balance' })
+                : t('finance.kpi.outstanding')
+            }
+            value={fmt(Math.abs(finance.outstanding + finance.priorBalance), finance.currency)}
             icon={AlertCircle}
             tone={finance.outstanding + finance.priorBalance > 0 ? 'warn' : 'success'}
           />

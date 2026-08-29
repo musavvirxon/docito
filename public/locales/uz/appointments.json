@@ -32,7 +32,8 @@
       "amountToBill": "Hisoblanadigan miqdor",
       "paid": "To'langan",
       "discounts": "Chegirmalar",
-      "outstanding": "Qoldiq"
+      "outstanding": "Qoldiq",
+      "credit": "Kredit balans"
     },
     "priorBalance": "Oldingi to'lanmagan qoldiq:",
     "recordPayment": "To'lovni qayd etish",

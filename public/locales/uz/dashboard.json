@@ -2805,6 +2805,9 @@
         "other": "Boshqa"
       },
       "general": "Umumiy (butun og'iz) muolajalar"
+    },
+    "patient": {
+      "unnamed": "Nomsiz bemor"
     }
   },
   "superAdmin": {

@@ -109,7 +109,10 @@
     "selectPatient": "Select a patient",
     "procedureOptional": "Procedure (optional)",
     "allOldestFirst": "All (oldest first)",
-    "unknownPatient": "Unknown patient"
+    "unknownPatient": "Unknown patient",
+    "creditBalance": "Credit balance",
+    "credit": "Credit",
+    "creditHint": "Overpayment available for future charges"
   },
   "categories": "Categories",
   "attendance": "Attendance",

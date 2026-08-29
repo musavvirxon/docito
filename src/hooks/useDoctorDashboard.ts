@@ -248,22 +248,45 @@ export const useDoctorDashboard = () => {
         console.error('Error fetching recent appointments:', recentError);
       }
 
+      // Hydrate manually added patients (doctor_patients) — the profiles join
+      // returns nothing for them, so their name/contact would be blank.
+      const manualIds = Array.from(
+        new Set(
+          [...(upcomingData || []), ...(recentData || [])]
+            .map((a: any) => a.doctor_patient_id)
+            .filter(Boolean),
+        ),
+      ) as string[];
+
+      const manualMap = new Map<string, any>();
+      if (manualIds.length > 0) {
+        const { data: manualPatients } = await supabase
+          .from('doctor_patients')
+          .select('id, full_name, email, phone')
+          .in('id', manualIds);
+        (manualPatients || []).forEach((p: any) => manualMap.set(p.id, p));
+      }
+
       const formatAppointments = (appointments: any[]) =>
-        (appointments || []).map((apt) => ({
-          id: apt.id,
-          appointment_date: apt.appointment_date,
-          start_time: apt.start_time,
-          end_time: apt.end_time,
-          status: apt.status,
-          notes: apt.notes,
-          appointment_type: apt.appointment_type ?? null,
-          patient_id: apt.patient_id ?? null,
-          doctor_patient_id: apt.doctor_patient_id ?? null,
-          patient_name: (apt.profiles as any)?.full_name || 'Unknown Patient',
-          patient_email: (apt.profiles as any)?.email || undefined,
-          patient_phone: (apt.profiles as any)?.phone || undefined,
-          patient_avatar: (apt.profiles as any)?.avatar_url || undefined,
-        }));
+        (appointments || []).map((apt) => {
+          const prof = (apt.profiles as any) || null;
+          const manual = apt.doctor_patient_id ? manualMap.get(apt.doctor_patient_id) : null;
+          return {
+            id: apt.id,
+            appointment_date: apt.appointment_date,
+            start_time: apt.start_time,
+            end_time: apt.end_time,
+            status: apt.status,
+            notes: apt.notes,
+            appointment_type: apt.appointment_type ?? null,
+            patient_id: apt.patient_id ?? null,
+            doctor_patient_id: apt.doctor_patient_id ?? null,
+            patient_name: prof?.full_name || manual?.full_name || '',
+            patient_email: prof?.email || manual?.email || undefined,
+            patient_phone: prof?.phone || manual?.phone || undefined,
+            patient_avatar: prof?.avatar_url || undefined,
+          };
+        });
 
       setUpcomingAppointments(formatAppointments(upcomingData || []));
       setRecentAppointments(formatAppointments(recentData || []));
@@ -273,6 +296,7 @@ export const useDoctorDashboard = () => {
         apt.appointment_date === today
       );
       setTodaysAppointments(todaysApts);
+
 
     } catch (err: any) {
       console.error('Error fetching appointments:', err);
