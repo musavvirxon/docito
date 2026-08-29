@@ -109,7 +109,10 @@
     "selectPatient": "Bemorni tanlang",
     "procedureOptional": "Muolaja (ixtiyoriy)",
     "allOldestFirst": "Barchasi (avval eskilari)",
-    "unknownPatient": "Noma'lum bemor"
+    "unknownPatient": "Noma'lum bemor",
+    "creditBalance": "Kredit balans",
+    "credit": "Kredit",
+    "creditHint": "Ortiqcha to'lov keyingi hisoblar uchun mavjud"
   },
   "categories": "Kategoriyalar",
   "attendance": "Davomat",

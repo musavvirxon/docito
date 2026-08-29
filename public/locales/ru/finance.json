@@ -109,7 +109,10 @@
     "selectPatient": "Выберите пациента",
     "procedureOptional": "Процедура (необязательно)",
     "allOldestFirst": "Все (сначала старые)",
-    "unknownPatient": "Неизвестный пациент"
+    "unknownPatient": "Неизвестный пациент",
+    "creditBalance": "Кредитный баланс",
+    "credit": "Кредит",
+    "creditHint": "Переплата доступна для будущих начислений"
   },
   "categories": "Категории",
   "attendance": "Учёт времени",
