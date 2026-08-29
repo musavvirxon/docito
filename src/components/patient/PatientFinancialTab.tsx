@@ -60,7 +60,9 @@ export function PatientFinancialTab({ patientId, className }: Props) {
     return [...filtered].reverse(); // newest first
   }, [chronological, from, to]);
 
+  const credit = outstanding < -0.005 ? -outstanding : 0;
   const settled = outstanding <= 0.005;
+
 
   const label = (r: DisplayRow) => {
     if (r.kind === "opening") return t("ledger.openingBalance", "Opening balance");
