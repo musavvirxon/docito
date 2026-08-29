@@ -418,6 +418,11 @@ export function AppointmentFinancePanel({
             >
               <Plus className="h-4 w-4" /> {t('finance.recordPayment')}
             </Button>
+            {(patientId || doctorPatientId) && (
+              <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="gap-1">
+                <Wallet className="h-4 w-4" /> {tf('history.button', 'Full financial history')}
+              </Button>
+            )}
           </div>
         )}
 
@@ -443,8 +448,26 @@ export function AppointmentFinancePanel({
           <Button size="sm" variant="outline" onClick={handleInvoicePdf} className="gap-1">
             <FileText className="h-4 w-4" /> {t('finance.invoicePdf')}
           </Button>
+          {(patientId || doctorPatientId) && (
+            <Button size="sm" variant="outline" onClick={() => setHistoryOpen(true)} className="gap-1">
+              <Wallet className="h-4 w-4" /> {tf('history.button', 'Full financial history')}
+            </Button>
+          )}
         </div>
         )}
+
+        {(patientId || doctorPatientId) && (
+          <PatientFinancialHistoryDialog
+            open={historyOpen}
+            onOpenChange={setHistoryOpen}
+            patientId={patientId}
+            doctorPatientId={doctorPatientId}
+            patientName={patientName}
+            allowPayments={paymentsEnabled}
+            onPaymentRecorded={refreshAfterPayment}
+          />
+        )}
+
 
 
         {/* Charges recorded during this visit */}
