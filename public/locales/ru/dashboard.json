@@ -4060,7 +4060,19 @@
     "rejectedToast": "Платёж отклонён",
     "submittedOn": "Отправлено",
     "typeRent": "Оплачена аренда",
-    "typeCommission": "Получена комиссия"
+    "typeCommission": "Получена комиссия",
+    "accruedTotal": "Начислено",
+    "paidOutTotal": "Выплачено",
+    "recordPayout": "Записать выплату",
+    "viewAccruals": "Показать начисления",
+    "hideAccruals": "Скрыть начисления",
+    "noAccruals": "Начислений комиссии пока нет",
+    "payout": "Выплата",
+    "balanceOwed": "Остаток к выплате",
+    "amount": "Сумма",
+    "confirm": "Подтвердить",
+    "invalidPayoutAmount": "Введите сумму не больше текущего остатка",
+    "payoutRecorded": "Выплата записана"
   },
   "myPayments": {
     "loading": "Загрузка…",
@@ -4096,6 +4108,13 @@
     "statusPending": "На рассмотрении",
     "statusApproved": "Подтверждён",
     "statusRejected": "Отклонён",
-    "rejectionReason": "Причина"
+    "rejectionReason": "Причина",
+    "commissionLedger": "Журнал комиссий",
+    "accruedTotal": "Всего начислено",
+    "paidOutTotal": "Выплачено",
+    "balanceOwed": "Остаток к выплате вам",
+    "noAccruals": "Начислений комиссии пока нет",
+    "gross": "Платёж",
+    "payoutHistory": "История выплат"
   }
 }

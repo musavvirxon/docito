@@ -4314,7 +4314,19 @@
     "rejectedToast": "To'lov rad etildi",
     "submittedOn": "Yuborilgan",
     "typeRent": "Ijara to'landi",
-    "typeCommission": "Komissiya olindi"
+    "typeCommission": "Komissiya olindi",
+    "accruedTotal": "Hisoblangan",
+    "paidOutTotal": "To‘langan",
+    "recordPayout": "To‘lovni qayd etish",
+    "viewAccruals": "Hisoblanmalarni ko‘rish",
+    "hideAccruals": "Hisoblanmalarni yashirish",
+    "noAccruals": "Hozircha komissiya hisoblanmalari yo‘q",
+    "payout": "To‘lov",
+    "balanceOwed": "To‘lanishi kerak",
+    "amount": "Miqdor",
+    "confirm": "Tasdiqlash",
+    "invalidPayoutAmount": "Joriy qoldiqdan oshmagan summa kiriting",
+    "payoutRecorded": "To‘lov qayd etildi"
   },
   "myPayments": {
     "loading": "Yuklanmoqda…",
@@ -4350,6 +4362,13 @@
     "statusPending": "Kutilmoqda",
     "statusApproved": "Tasdiqlangan",
     "statusRejected": "Rad etilgan",
-    "rejectionReason": "Sabab"
+    "rejectionReason": "Sabab",
+    "commissionLedger": "Komissiya jurnali",
+    "accruedTotal": "Jami hisoblangan",
+    "paidOutTotal": "To‘langan",
+    "balanceOwed": "Sizga to‘lanishi kerak",
+    "noAccruals": "Hozircha komissiya hisoblanmalari yo‘q",
+    "gross": "To‘lov",
+    "payoutHistory": "To‘lovlar tarixi"
   }
 }

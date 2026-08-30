@@ -28,6 +28,7 @@ import { useDoctorRentProfiles, type DoctorRentProfileRow } from "@/hooks/useDoc
 import { useDoctorPaymentSubmissions, type PaymentSubmissionRow } from "@/hooks/useDoctorPaymentSubmissions";
 import { useCurrency } from "@/hooks/useCurrency";
 import { fetchDoctorCollections, collectedInRange } from "@/lib/finance/doctorCollections";
+import { useDoctorCommissionLedger } from "@/hooks/useDoctorCommissionLedger";
 
 type Props = {
   entityType: FinanceEntityType;
@@ -56,6 +57,8 @@ type SettlementRow = {
   percentageRate: number | null;
   percentageOf: string | null;
   commissionCents: number;
+  accruedCents: number;
+  paidOutCents: number;
   rentCents: number;
   roomLabel: string | null;
   netCents: number;
@@ -91,6 +94,19 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
 
   const { rows: compProfiles, loading: compLoading } = useCompensationProfiles({ entityType, entityId });
   const { rows: rentProfiles, loading: rentLoading, refresh: refreshRent } = useDoctorRentProfiles({ entityType, entityId });
+  const {
+    totalsByUser: commissionTotalsByUser,
+    accrualsByUser,
+    payouts: commissionPayouts,
+    loading: ledgerLoading,
+    recordPayout,
+  } = useDoctorCommissionLedger({ mode: "entity", entityType, entityId });
+
+  const [payoutTarget, setPayoutTarget] = useState<{ userId: string; name: string; balanceCents: number } | null>(null);
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutNotes, setPayoutNotes] = useState("");
+  const [payoutSaving, setPayoutSaving] = useState(false);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
 
   const [doctors, setDoctors] = useState<DoctorRow[]>([]);
   const [rooms, setRooms] = useState<RoomRow[]>([]);
@@ -194,8 +210,9 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
     const set = new Set<string>();
     compProfiles.filter((p) => p.is_active && p.compensation_type === "percentage").forEach((p) => set.add(p.user_id));
     rentProfiles.filter((p) => p.is_active).forEach((p) => set.add(p.user_id));
+    commissionTotalsByUser.forEach((_v, k) => set.add(k));
     return Array.from(set);
-  }, [compProfiles, rentProfiles]);
+  }, [compProfiles, rentProfiles, commissionTotalsByUser]);
 
   useEffect(() => {
     let cancelled = false;
@@ -247,7 +264,12 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
 
         const collectedCents = collectedByUser[userId] ?? 0;
         const rate = comp?.percentage_rate ?? null;
-        const commissionCents = rate ? Math.round((collectedCents * Number(rate)) / 100) : 0;
+        const ledger = commissionTotalsByUser.get(userId);
+        const accruedCents = ledger?.accruedCents ?? 0;
+        const paidOutCents = ledger?.paidCents ?? 0;
+        // Commission owed now comes from the accrual ledger balance, not a
+        // recomputed "revenue x current rate" figure.
+        const commissionCents = ledger?.balanceCents ?? 0;
         const rentCents = rent ? rentForPeriod(Number(rent.rent_amount_cents || 0), rent.rent_frequency, periodStart, periodEnd) : 0;
 
         return {
@@ -258,15 +280,49 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
           percentageRate: rate,
           percentageOf: comp?.percentage_of ?? null,
           commissionCents,
+          accruedCents,
+          paidOutCents,
           rentCents,
           roomLabel: rent ? roomLabel(rent.room_id) : null,
           netCents: commissionCents - rentCents,
           settled: records.some((r) => r.user_id === userId && r.status === "settled"),
         };
       })
-      .filter((r) => r.commissionCents !== 0 || r.rentCents !== 0 || r.percentageRate != null)
+      .filter((r) => r.commissionCents !== 0 || r.accruedCents !== 0 || r.rentCents !== 0 || r.percentageRate != null)
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [relevantUserIds, compProfiles, rentProfiles, collectedByUser, doctorIdByUser, doctorNameByUser, records, periodStart, periodEnd, roomLabel, t]);
+  }, [relevantUserIds, compProfiles, rentProfiles, collectedByUser, commissionTotalsByUser, doctorIdByUser, doctorNameByUser, records, periodStart, periodEnd, roomLabel, t]);
+
+  const openPayout = (row: SettlementRow) => {
+    const balance = commissionTotalsByUser.get(row.userId)?.balanceCents ?? 0;
+    setPayoutTarget({ userId: row.userId, name: row.name, balanceCents: balance });
+    setPayoutAmount((Math.max(0, balance) / 100).toString());
+    setPayoutNotes("");
+  };
+
+  const confirmPayout = async () => {
+    if (!payoutTarget) return;
+    const amountCents = Math.round((Number(payoutAmount) || 0) * 100);
+    if (amountCents <= 0 || amountCents > payoutTarget.balanceCents) {
+      toast.error(t("doctorSettlements.invalidPayoutAmount"));
+      return;
+    }
+    setPayoutSaving(true);
+    try {
+      await recordPayout({
+        entityType,
+        entityId,
+        doctorUserId: payoutTarget.userId,
+        amountCents,
+        notes: payoutNotes || null,
+      });
+      toast.success(t("doctorSettlements.payoutRecorded"));
+      setPayoutTarget(null);
+    } catch (e: any) {
+      toast.error(e?.message || t("doctorSettlements.saveFailed"));
+    } finally {
+      setPayoutSaving(false);
+    }
+  };
 
   const markSettled = async (row: SettlementRow) => {
     setSavingUser(row.userId);
@@ -397,10 +453,9 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
     }
   };
 
-  const submissionTypeLabel = (v: string) =>
-    v === "rent_payment" ? t("doctorSettlements.typeRent") : t("doctorSettlements.typeCommission");
+  const submissionTypeLabel = (_v: string) => t("doctorSettlements.typeRent");
 
-  const loading = compLoading || rentLoading || computing;
+  const loading = compLoading || rentLoading || computing || ledgerLoading;
 
   return (
     <div className="space-y-6">
@@ -544,6 +599,14 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
                       <p className="font-medium text-foreground">{formatCents(row.commissionCents)}</p>
                     </div>
                     <div>
+                      <p>{t("doctorSettlements.accruedTotal")}</p>
+                      <p className="font-medium text-foreground">{formatCents(row.accruedCents)}</p>
+                    </div>
+                    <div>
+                      <p>{t("doctorSettlements.paidOutTotal")}</p>
+                      <p className="font-medium text-foreground">{formatCents(row.paidOutCents)}</p>
+                    </div>
+                    <div>
                       <p>{t("doctorSettlements.rentOwed")}</p>
                       <p className="font-medium text-foreground">{formatCents(row.rentCents)}</p>
                     </div>
@@ -552,6 +615,55 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
                       <p className="font-medium text-foreground">{formatCents(row.netCents)}</p>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-2 mt-3 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={(row.accruedCents - row.paidOutCents) <= 0}
+                      onClick={() => openPayout(row)}
+                    >
+                      <Wallet className="h-4 w-4 mr-1" />
+                      {t("doctorSettlements.recordPayout")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setExpandedUser(expandedUser === row.userId ? null : row.userId)}
+                    >
+                      {expandedUser === row.userId
+                        ? t("doctorSettlements.hideAccruals")
+                        : t("doctorSettlements.viewAccruals")}
+                    </Button>
+                  </div>
+
+                  {expandedUser === row.userId && (
+                    <div className="mt-3 space-y-2">
+                      {accrualsByUser(row.userId).length === 0 ? (
+                        <p className="text-xs text-muted-foreground">{t("doctorSettlements.noAccruals")}</p>
+                      ) : (
+                        accrualsByUser(row.userId).slice(0, 100).map((a) => (
+                          <div key={a.id} className="flex items-center justify-between gap-3 text-xs p-2 rounded-lg border border-border">
+                            <span className="text-muted-foreground">
+                              {new Date(a.accrued_at).toLocaleDateString()} · {formatCents(Number(a.gross_amount_cents) || 0)} · {a.percentage_rate}%
+                            </span>
+                            <span className="font-medium text-foreground">
+                              {formatCents(Number(a.commission_amount_cents) || 0)}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                      {commissionPayouts.filter((p) => p.doctor_user_id === row.userId).map((p) => (
+                        <div key={p.id} className="flex items-center justify-between gap-3 text-xs p-2 rounded-lg border border-dashed border-border">
+                          <span className="text-muted-foreground">
+                            {t("doctorSettlements.payout")} · {new Date(p.paid_at).toLocaleDateString()}
+                            {p.notes ? ` · ${p.notes}` : ""}
+                          </span>
+                          <span className="font-medium text-destructive">-{formatCents(Number(p.amount_cents) || 0)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -702,6 +814,40 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
             <Button variant="outline" onClick={() => setRejectTarget(null)}>{t("doctorSettlements.cancel")}</Button>
             <Button variant="destructive" onClick={confirmReject} disabled={!!reviewingId}>
               {reviewingId ? <Loader2 className="h-4 w-4 animate-spin" /> : t("doctorSettlements.reject")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!payoutTarget} onOpenChange={(o) => !o && setPayoutTarget(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("doctorSettlements.recordPayout")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {payoutTarget?.name} · {t("doctorSettlements.balanceOwed")}: {formatCents(payoutTarget?.balanceCents || 0)}
+            </p>
+            <div>
+              <Label htmlFor="payout-amount">{t("doctorSettlements.amount")}</Label>
+              <Input
+                id="payout-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={payoutAmount}
+                onChange={(e) => setPayoutAmount(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="payout-notes">{t("doctorSettlements.notes")}</Label>
+              <Textarea id="payout-notes" rows={3} value={payoutNotes} onChange={(e) => setPayoutNotes(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPayoutTarget(null)}>{t("doctorSettlements.cancel")}</Button>
+            <Button onClick={confirmPayout} disabled={payoutSaving}>
+              {payoutSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : t("doctorSettlements.confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
