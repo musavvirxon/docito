@@ -2936,6 +2936,93 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_commission_accruals: {
+        Row: {
+          accrued_at: string
+          appointment_id: string | null
+          commission_amount_cents: number
+          compensation_profile_id: string | null
+          created_at: string
+          doctor_user_id: string
+          entity_id: string
+          entity_type: string
+          gross_amount_cents: number
+          id: string
+          patient_id: string | null
+          percentage_rate: number
+          source_payment_key: string
+          status: string
+        }
+        Insert: {
+          accrued_at?: string
+          appointment_id?: string | null
+          commission_amount_cents?: number
+          compensation_profile_id?: string | null
+          created_at?: string
+          doctor_user_id: string
+          entity_id: string
+          entity_type: string
+          gross_amount_cents?: number
+          id?: string
+          patient_id?: string | null
+          percentage_rate?: number
+          source_payment_key: string
+          status?: string
+        }
+        Update: {
+          accrued_at?: string
+          appointment_id?: string | null
+          commission_amount_cents?: number
+          compensation_profile_id?: string | null
+          created_at?: string
+          doctor_user_id?: string
+          entity_id?: string
+          entity_type?: string
+          gross_amount_cents?: number
+          id?: string
+          patient_id?: string | null
+          percentage_rate?: number
+          source_payment_key?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      doctor_commission_payouts: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          doctor_user_id: string
+          entity_id: string
+          entity_type: string
+          id: string
+          notes: string | null
+          paid_at: string
+          paid_by: string | null
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          doctor_user_id: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          notes?: string | null
+          paid_at?: string
+          paid_by?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          doctor_user_id?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string
+          paid_by?: string | null
+        }
+        Relationships: []
+      }
       doctor_insurance: {
         Row: {
           clinic_id: string | null
@@ -11574,6 +11661,18 @@ export type Database = {
       account_analytics: {
         Args: { p_days?: number; p_user_id: string }
         Returns: Json
+      }
+      accrue_doctor_commission: {
+        Args: {
+          p_appointment_id: string
+          p_at: string
+          p_collected: boolean
+          p_doctor_id: string
+          p_gross_cents: number
+          p_patient_id: string
+          p_source_key: string
+        }
+        Returns: undefined
       }
       add_medication_to_treatment_plan: {
         Args: {

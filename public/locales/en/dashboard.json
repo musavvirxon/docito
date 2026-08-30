@@ -4014,7 +4014,19 @@
     "rejectedToast": "Payment rejected",
     "submittedOn": "Submitted",
     "typeRent": "Rent paid",
-    "typeCommission": "Commission received"
+    "typeCommission": "Commission received",
+    "accruedTotal": "Accrued",
+    "paidOutTotal": "Paid out",
+    "recordPayout": "Record payout",
+    "viewAccruals": "View accruals",
+    "hideAccruals": "Hide accruals",
+    "noAccruals": "No commission accruals yet",
+    "payout": "Payout",
+    "balanceOwed": "Balance owed",
+    "amount": "Amount",
+    "confirm": "Confirm",
+    "invalidPayoutAmount": "Enter an amount up to the current balance",
+    "payoutRecorded": "Payout recorded"
   },
   "myPayments": {
     "loading": "Loading…",
@@ -4050,6 +4062,13 @@
     "statusPending": "Pending",
     "statusApproved": "Approved",
     "statusRejected": "Rejected",
-    "rejectionReason": "Reason"
+    "rejectionReason": "Reason",
+    "commissionLedger": "Commission ledger",
+    "accruedTotal": "Accrued total",
+    "paidOutTotal": "Paid out",
+    "balanceOwed": "Balance owed to you",
+    "noAccruals": "No commission accruals yet",
+    "gross": "Payment",
+    "payoutHistory": "Payout history"
   }
 }

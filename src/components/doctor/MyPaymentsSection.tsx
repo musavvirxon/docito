@@ -16,12 +16,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useMyDoctorFinance } from "@/hooks/useMyDoctorFinance";
 import { useDoctorPaymentSubmissions } from "@/hooks/useDoctorPaymentSubmissions";
+import { useDoctorCommissionLedger } from "@/hooks/useDoctorCommissionLedger";
 
 const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 const isoDate = (d: Date) =>
@@ -55,8 +55,16 @@ export default function MyPaymentsSection() {
     submit,
   } = useDoctorPaymentSubmissions({ mode: "user", userId: user?.id });
 
+  const {
+    activeAccruals,
+    payouts,
+    totals: commissionTotals,
+    loading: ledgerLoading,
+  } = useDoctorCommissionLedger({ mode: "user", userId: user?.id });
+
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState<"rent_payment" | "commission_received">("rent_payment");
+  const [type] = useState<"rent_payment">("rent_payment");
+
   const [amount, setAmount] = useState("");
   const [month, setMonth] = useState<string>(() => monthKey(new Date()));
   const [note, setNote] = useState("");
@@ -68,7 +76,6 @@ export default function MyPaymentsSection() {
   );
 
   const resetForm = () => {
-    setType("rent_payment");
     setAmount("");
     setMonth(monthKey(new Date()));
     setNote("");
@@ -198,6 +205,83 @@ export default function MyPaymentsSection() {
         </Card>
       </div>
 
+      {/* Commission ledger */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Percent className="h-5 w-5" />
+            {t("myPayments.commissionLedger")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 sm:grid-cols-3 mb-4">
+            <div className="p-3 rounded-xl border border-border bg-muted/40">
+              <p className="text-xs text-muted-foreground">{t("myPayments.accruedTotal")}</p>
+              <p className="text-lg font-semibold">{formatCents(commissionTotals.accruedCents)}</p>
+            </div>
+            <div className="p-3 rounded-xl border border-border bg-muted/40">
+              <p className="text-xs text-muted-foreground">{t("myPayments.paidOutTotal")}</p>
+              <p className="text-lg font-semibold">{formatCents(commissionTotals.paidCents)}</p>
+            </div>
+            <div className="p-3 rounded-xl border border-border bg-muted/40">
+              <p className="text-xs text-muted-foreground">{t("myPayments.balanceOwed")}</p>
+              <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                {formatCents(commissionTotals.balanceCents)}
+              </p>
+            </div>
+          </div>
+
+          {ledgerLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>{t("myPayments.loading")}</span>
+            </div>
+          ) : activeAccruals.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">{t("myPayments.noAccruals")}</p>
+          ) : (
+            <div className="space-y-2">
+              {activeAccruals.slice(0, 50).map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between gap-3 p-2 rounded-lg border border-border text-sm"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(a.accrued_at).toLocaleDateString()}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("myPayments.gross")}: {formatCents(Number(a.gross_amount_cents) || 0)} · {a.percentage_rate}%
+                    </p>
+                  </div>
+                  <span className="font-medium">{formatCents(Number(a.commission_amount_cents) || 0)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {payouts.length > 0 && (
+            <div className="mt-4">
+              <p className="text-xs text-muted-foreground mb-2">{t("myPayments.payoutHistory")}</p>
+              <div className="space-y-2">
+                {payouts.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between gap-3 p-2 rounded-lg border border-border text-sm"
+                  >
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(p.paid_at).toLocaleDateString()}
+                      {p.notes ? ` · ${p.notes}` : ""}
+                    </span>
+                    <span className="font-medium">{formatCents(Number(p.amount_cents) || 0)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
       {/* Settlement history */}
       <Card>
         <CardHeader>
@@ -312,14 +396,9 @@ export default function MyPaymentsSection() {
           <div className="space-y-4">
             <div>
               <Label>{t("myPayments.paymentType")}</Label>
-              <Select value={type} onValueChange={(v) => setType(v as any)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rent_payment">{t("myPayments.typeRent")}</SelectItem>
-                  <SelectItem value="commission_received">{t("myPayments.typeCommission")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input value={t("myPayments.typeRent")} readOnly disabled />
             </div>
+
             <div>
               <Label htmlFor="mp-amount">{t("myPayments.amount")}</Label>
               <Input
