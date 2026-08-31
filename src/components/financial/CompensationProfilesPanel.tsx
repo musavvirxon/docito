@@ -225,6 +225,8 @@ export default function CompensationProfilesPanel({ entityType, entityId }: Prop
         }}
         initialRow={editing}
         currencyDefault={currency}
+        entityType={entityType}
+        entityId={entityId}
         onSave={handleSave}
       />
     </div>

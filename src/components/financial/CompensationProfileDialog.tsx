@@ -280,6 +280,9 @@ export default function CompensationProfileDialog({
                     <SelectValue placeholder={loadingPeople ? "Loading…" : "Select a person"} />
                   </SelectTrigger>
                   <SelectContent className="max-h-72">
+                    {userId && !people.some((p) => p.userId === userId) ? (
+                      <SelectItem value={userId}>{userId.slice(0, 8)}…</SelectItem>
+                    ) : null}
                     {people.map((p) => (
                       <SelectItem key={p.userId} value={p.userId}>
                         {p.name} · {p.kind === "doctor" ? "Doctor" : "Staff"}
