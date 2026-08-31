@@ -11,6 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
+
+type PersonOption = { userId: string; name: string; kind: "doctor" | "staff" };
 
 export type CompensationProfileRow = {
   id: string;
@@ -69,6 +73,8 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   initialRow: CompensationProfileRow | null;
   currencyDefault: string;
+  entityType?: string;
+  entityId?: string;
   onSave: (draft: CompensationProfileDraft) => Promise<void>;
 }
 
@@ -77,10 +83,15 @@ export default function CompensationProfileDialog({
   onOpenChange,
   initialRow,
   currencyDefault,
+  entityType,
+  entityId,
   onSave,
 }: Props) {
   const isEdit = !!initialRow?.id;
   const [saving, setSaving] = useState(false);
+  const [people, setPeople] = useState<PersonOption[]>([]);
+  const [loadingPeople, setLoadingPeople] = useState(false);
+
 
   const [userId, setUserId] = useState("");
   const [compType, setCompType] = useState<"salary" | "hourly" | "percentage">("hourly");
@@ -124,6 +135,72 @@ export default function CompensationProfileDialog({
     setIsActive(true);
     setNotes("");
   }, [open, initialRow]);
+
+  // Load real doctors + staff of this entity
+  useEffect(() => {
+    if (!open || !entityId) return;
+    let cancelled = false;
+
+    (async () => {
+      setLoadingPeople(true);
+      try {
+        const [docRes, clinicStaffRes, practiceStaffRes] = await Promise.all([
+          supabase.from("doctors").select("user_id").eq("practice_id", entityId).limit(500),
+          supabase.from("clinic_staff").select("user_id, status").eq("practice_id", entityId).limit(500),
+          supabase.from("practice_staff").select("user_id, full_name, role, status").eq("practice_id", entityId).limit(500),
+        ]);
+
+        const doctorIds = ((docRes.data || []) as any[]).map((d) => d.user_id).filter(Boolean);
+        const staffIds = [
+          ...((clinicStaffRes.data || []) as any[])
+            .filter((s) => !s.status || s.status === "active")
+            .map((s) => s.user_id),
+          ...((practiceStaffRes.data || []) as any[])
+            .filter((s) => !s.status || s.status === "active")
+            .map((s) => s.user_id),
+        ].filter(Boolean);
+
+        const allIds = Array.from(new Set([...doctorIds, ...staffIds]));
+        const nameByUser = new Map<string, string>();
+
+        ((practiceStaffRes.data || []) as any[]).forEach((s) => {
+          if (s.user_id && s.full_name) nameByUser.set(s.user_id, s.full_name);
+        });
+
+        if (allIds.length) {
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, email")
+            .in("user_id", allIds);
+
+          ((profs || []) as any[]).forEach((p) => {
+            const label = p.full_name || p.email;
+            if (p.user_id && label) nameByUser.set(p.user_id, label);
+          });
+        }
+
+        const doctorSet = new Set(doctorIds);
+        const options: PersonOption[] = allIds.map((uid) => ({
+          userId: uid,
+          name: nameByUser.get(uid) || uid.slice(0, 8),
+          kind: doctorSet.has(uid) ? "doctor" : "staff",
+        }));
+
+        options.sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === "doctor" ? -1 : 1));
+        if (!cancelled) setPeople(options);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setPeople([]);
+      } finally {
+        if (!cancelled) setLoadingPeople(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, entityId, entityType]);
+
 
   const rateLabel = useMemo(() => {
     return compType === "salary" ? "Salary amount" : "Hourly rate";
@@ -189,24 +266,43 @@ export default function CompensationProfileDialog({
             </Badge>
           </div>
           <div className="text-sm text-muted-foreground">
-            Used by payroll generation. For now, enter the staff user UUID (we’ll add staff picker later).
+            Used by payroll generation. Select a doctor or staff member of this clinic.
           </div>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2 sm:col-span-2">
-              <Label>User ID (UUID)</Label>
-              <Input
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                disabled={saving || isEdit}
-                placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-              />
+              <Label>Doctor / staff member</Label>
+              {people.length > 0 || loadingPeople ? (
+                <Select value={userId} onValueChange={setUserId} disabled={saving || isEdit || loadingPeople}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingPeople ? "Loading…" : "Select a person"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {userId && !people.some((p) => p.userId === userId) ? (
+                      <SelectItem value={userId}>{userId.slice(0, 8)}…</SelectItem>
+                    ) : null}
+                    {people.map((p) => (
+                      <SelectItem key={p.userId} value={p.userId}>
+                        {p.name} · {p.kind === "doctor" ? "Doctor" : "Staff"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  disabled={saving || isEdit}
+                  placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                />
+              )}
               <div className="text-xs text-muted-foreground">
                 Currency is assumed as <span className="font-medium">{currencyDefault}</span> in payroll preview.
               </div>
             </div>
+
 
             <div className="space-y-2">
               <Label>Type</Label>
