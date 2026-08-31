@@ -11,6 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { supabase as supabaseClient } from "@/integrations/supabase/client";
+const supabase = supabaseClient as any;
+
+type PersonOption = { userId: string; name: string; kind: "doctor" | "staff" };
 
 export type CompensationProfileRow = {
   id: string;
