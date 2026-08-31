@@ -266,24 +266,40 @@ export default function CompensationProfileDialog({
             </Badge>
           </div>
           <div className="text-sm text-muted-foreground">
-            Used by payroll generation. For now, enter the staff user UUID (we’ll add staff picker later).
+            Used by payroll generation. Select a doctor or staff member of this clinic.
           </div>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2 sm:col-span-2">
-              <Label>User ID (UUID)</Label>
-              <Input
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                disabled={saving || isEdit}
-                placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6"
-              />
+              <Label>Doctor / staff member</Label>
+              {people.length > 0 || loadingPeople ? (
+                <Select value={userId} onValueChange={setUserId} disabled={saving || isEdit || loadingPeople}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingPeople ? "Loading…" : "Select a person"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {people.map((p) => (
+                      <SelectItem key={p.userId} value={p.userId}>
+                        {p.name} · {p.kind === "doctor" ? "Doctor" : "Staff"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  disabled={saving || isEdit}
+                  placeholder="e.g. 3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                />
+              )}
               <div className="text-xs text-muted-foreground">
                 Currency is assumed as <span className="font-medium">{currencyDefault}</span> in payroll preview.
               </div>
             </div>
+
 
             <div className="space-y-2">
               <Label>Type</Label>
