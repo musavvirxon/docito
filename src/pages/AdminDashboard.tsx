@@ -255,7 +255,7 @@ const AdminDashboard = () => {
   const [patientApptFilter, setPatientApptFilter] = useState('all');
 
   // Billing section state
-  const [billingTab, setBillingTab] = useState<'overview' | 'invoices' | 'transactions' | 'insurance' | 'settings'>('overview');
+  const [billingTab, setBillingTab] = useState<'overview' | 'invoices' | 'transactions' | 'insurance' | 'doctorPayments' | 'settings'>('overview');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState('all');
   const [insurers, setInsurers] = useState<string[]>([]);
@@ -3487,6 +3487,7 @@ const AdminDashboard = () => {
           { key: 'invoices', label: t("admin.bl.invoices") },
           { key: 'transactions', label: t("admin.bl.transactions") },
           { key: 'insurance', label: t("admin.bl.superbills") },
+          { key: 'doctorPayments', label: t("admin.bl.doctorPayments") },
           { key: 'settings', label: t("admin.bl.settings") },
         ];
 
@@ -4124,6 +4125,11 @@ const AdminDashboard = () => {
                 </>
                 );
               })()}
+
+              {/* ========== TAB: DOCTOR PAYMENTS ========== */}
+              {billingTab === 'doctorPayments' && practice?.id && (
+                <DoctorSettlementsPanel entityType={'practice' as any} entityId={practice.id} />
+              )}
 
               {/* ========== TAB: SETTINGS ========== */}
               {billingTab === 'settings' && (

@@ -666,7 +666,8 @@
       "lastActivity": "Last activity",
       "unknownPatient": "Unknown patient",
       "walkIn": "Walk-in",
-      "noTransactions": "No transactions in this period"
+      "noTransactions": "No transactions in this period",
+      "doctorPayments": "Doctor Payments"
     },
     "an": {
       "tabs": {
