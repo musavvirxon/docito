@@ -58,6 +58,7 @@ import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMe
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
+import DoctorSettlementsPanel from "@/components/financial/DoctorSettlementsPanel";
 import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
 import { PracticePatientBalances } from "@/components/billing/PracticePatientBalances";
 import { usePracticeBillingAggregate } from "@/hooks/usePracticeBillingAggregate";
