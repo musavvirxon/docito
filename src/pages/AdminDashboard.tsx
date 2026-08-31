@@ -58,6 +58,7 @@ import AdvancedFinancialMetrics from "@/components/financial/AdvancedFinancialMe
 import EntitySettingsPage from "@/components/settings/EntitySettingsPage";
 import FinanceManagementSection from "@/components/financial/FinanceManagementSection";
 import { SuperbillsManager } from "@/components/billing/SuperbillsManager";
+import DoctorSettlementsPanel from "@/components/financial/DoctorSettlementsPanel";
 import { AppointmentFinancePanel } from "@/components/appointments/AppointmentFinancePanel";
 import { PracticePatientBalances } from "@/components/billing/PracticePatientBalances";
 import { usePracticeBillingAggregate } from "@/hooks/usePracticeBillingAggregate";
@@ -255,7 +256,7 @@ const AdminDashboard = () => {
   const [patientApptFilter, setPatientApptFilter] = useState('all');
 
   // Billing section state
-  const [billingTab, setBillingTab] = useState<'overview' | 'invoices' | 'transactions' | 'insurance' | 'settings'>('overview');
+  const [billingTab, setBillingTab] = useState<'overview' | 'invoices' | 'transactions' | 'insurance' | 'doctorPayments' | 'settings'>('overview');
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [invoiceStatusFilter, setInvoiceStatusFilter] = useState('all');
   const [insurers, setInsurers] = useState<string[]>([]);
@@ -3487,6 +3488,7 @@ const AdminDashboard = () => {
           { key: 'invoices', label: t("admin.bl.invoices") },
           { key: 'transactions', label: t("admin.bl.transactions") },
           { key: 'insurance', label: t("admin.bl.superbills") },
+          { key: 'doctorPayments', label: t("admin.bl.doctorPayments") },
           { key: 'settings', label: t("admin.bl.settings") },
         ];
 
@@ -4124,6 +4126,11 @@ const AdminDashboard = () => {
                 </>
                 );
               })()}
+
+              {/* ========== TAB: DOCTOR PAYMENTS ========== */}
+              {billingTab === 'doctorPayments' && practice?.id && (
+                <DoctorSettlementsPanel entityType={'practice' as any} entityId={practice.id} />
+              )}
 
               {/* ========== TAB: SETTINGS ========== */}
               {billingTab === 'settings' && (

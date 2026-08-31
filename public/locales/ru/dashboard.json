@@ -666,7 +666,8 @@
       "lastActivity": "Последняя активность",
       "unknownPatient": "Пациент неизвестен",
       "walkIn": "Без записи",
-      "noTransactions": "Нет транзакций за период"
+      "noTransactions": "Нет транзакций за период",
+      "doctorPayments": "Выплаты врачам"
     },
     "an": {
       "tabs": {

@@ -666,7 +666,8 @@
       "lastActivity": "Oxirgi harakat",
       "unknownPatient": "Noma'lum bemor",
       "walkIn": "Navbatsiz",
-      "noTransactions": "Bu davrda tranzaksiya yo'q"
+      "noTransactions": "Bu davrda tranzaksiya yo'q",
+      "doctorPayments": "Shifokor to'lovlari"
     },
     "an": {
       "tabs": {
