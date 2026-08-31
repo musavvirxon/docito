@@ -174,13 +174,27 @@ export default function DoctorSettlementsPanel({ entityType, entityId }: Props) 
       ]);
       const docs = (docData || []) as Array<{ id: string; user_id: string }>;
       const userIds = docs.map((d) => d.user_id).filter(Boolean);
-      let nameByUser = new Map<string, string>();
+      const nameByUser = new Map<string, string>();
       if (userIds.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", userIds);
-        (profs || []).forEach((p: any) => nameByUser.set(p.id, p.full_name || ""));
+        // profiles are keyed by `user_id` (auth uid); `id` is the profile's own pk
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, user_id, full_name, email")
+          .in("user_id", userIds);
+        (profs || []).forEach((p: any) => {
+          const label = p.full_name || p.email || "";
+          if (p.user_id) nameByUser.set(p.user_id, label);
+          if (p.id) nameByUser.set(p.id, label);
+        });
       }
       if (cancelled) return;
-      setDoctors(docs.map((d) => ({ id: d.id, user_id: d.user_id, name: nameByUser.get(d.user_id) || t("doctorSettlements.unknownDoctor") })));
+      setDoctors(
+        docs.map((d) => ({
+          id: d.id,
+          user_id: d.user_id,
+          name: nameByUser.get(d.user_id) || t("doctorSettlements.unknownDoctor"),
+        })),
+      );
       setRooms((roomData || []) as RoomRow[]);
     })();
     return () => {
