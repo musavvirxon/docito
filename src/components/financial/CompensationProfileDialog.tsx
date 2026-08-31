@@ -136,6 +136,72 @@ export default function CompensationProfileDialog({
     setNotes("");
   }, [open, initialRow]);
 
+  // Load real doctors + staff of this entity
+  useEffect(() => {
+    if (!open || !entityId) return;
+    let cancelled = false;
+
+    (async () => {
+      setLoadingPeople(true);
+      try {
+        const [docRes, clinicStaffRes, practiceStaffRes] = await Promise.all([
+          supabase.from("doctors").select("user_id").eq("practice_id", entityId).limit(500),
+          supabase.from("clinic_staff").select("user_id, status").eq("practice_id", entityId).limit(500),
+          supabase.from("practice_staff").select("user_id, full_name, role, status").eq("practice_id", entityId).limit(500),
+        ]);
+
+        const doctorIds = ((docRes.data || []) as any[]).map((d) => d.user_id).filter(Boolean);
+        const staffIds = [
+          ...((clinicStaffRes.data || []) as any[])
+            .filter((s) => !s.status || s.status === "active")
+            .map((s) => s.user_id),
+          ...((practiceStaffRes.data || []) as any[])
+            .filter((s) => !s.status || s.status === "active")
+            .map((s) => s.user_id),
+        ].filter(Boolean);
+
+        const allIds = Array.from(new Set([...doctorIds, ...staffIds]));
+        const nameByUser = new Map<string, string>();
+
+        ((practiceStaffRes.data || []) as any[]).forEach((s) => {
+          if (s.user_id && s.full_name) nameByUser.set(s.user_id, s.full_name);
+        });
+
+        if (allIds.length) {
+          const { data: profs } = await supabase
+            .from("profiles")
+            .select("user_id, full_name, email")
+            .in("user_id", allIds);
+
+          ((profs || []) as any[]).forEach((p) => {
+            const label = p.full_name || p.email;
+            if (p.user_id && label) nameByUser.set(p.user_id, label);
+          });
+        }
+
+        const doctorSet = new Set(doctorIds);
+        const options: PersonOption[] = allIds.map((uid) => ({
+          userId: uid,
+          name: nameByUser.get(uid) || uid.slice(0, 8),
+          kind: doctorSet.has(uid) ? "doctor" : "staff",
+        }));
+
+        options.sort((a, b) => (a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === "doctor" ? -1 : 1));
+        if (!cancelled) setPeople(options);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setPeople([]);
+      } finally {
+        if (!cancelled) setLoadingPeople(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, entityId, entityType]);
+
+
   const rateLabel = useMemo(() => {
     return compType === "salary" ? "Salary amount" : "Hourly rate";
   }, [compType]);
