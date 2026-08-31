@@ -73,6 +73,8 @@ interface Props {
   onOpenChange: (v: boolean) => void;
   initialRow: CompensationProfileRow | null;
   currencyDefault: string;
+  entityType?: string;
+  entityId?: string;
   onSave: (draft: CompensationProfileDraft) => Promise<void>;
 }
 
@@ -81,10 +83,15 @@ export default function CompensationProfileDialog({
   onOpenChange,
   initialRow,
   currencyDefault,
+  entityType,
+  entityId,
   onSave,
 }: Props) {
   const isEdit = !!initialRow?.id;
   const [saving, setSaving] = useState(false);
+  const [people, setPeople] = useState<PersonOption[]>([]);
+  const [loadingPeople, setLoadingPeople] = useState(false);
+
 
   const [userId, setUserId] = useState("");
   const [compType, setCompType] = useState<"salary" | "hourly" | "percentage">("hourly");
