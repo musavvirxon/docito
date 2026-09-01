@@ -35,7 +35,9 @@ export type CommissionPayoutRow = {
   paid_at: string;
   paid_by: string | null;
   notes: string | null;
+  finance_entry_id?: string | null;
   created_at: string;
+
 };
 
 export type CommissionTotals = {
