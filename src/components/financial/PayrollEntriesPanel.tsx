@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 import { Loader2, RefreshCw, Plus, Pencil, Briefcase, RotateCcw } from "lucide-react";
+import PayrollCommissionSummary from "@/components/financial/PayrollCommissionSummary";
+
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
@@ -381,8 +383,17 @@ export default function PayrollEntriesPanel(props: { entityType: FinanceEntityTy
         <div className="rounded-md border p-3">
           <div className="text-xs text-muted-foreground">Total payroll (filtered range)</div>
           <div className="text-sm font-medium">{formatMoney(currencyHint, totals)}</div>
-          <div className="text-xs text-muted-foreground mt-1">Corrections/reversals appear as negative payroll.</div>
+          <div className="text-xs text-muted-foreground mt-1">Corrections/reversals appear as negative payroll. Commission payouts recorded below are included as payroll entries.</div>
         </div>
+
+        {/* Commission-based compensation */}
+        <PayrollCommissionSummary
+          entityType={entityType}
+          entityId={entityId}
+          currency={currencyHint}
+          onPayrollPosted={() => void loadPayroll()}
+        />
+
 
         {/* List */}
         <div className="rounded-md border overflow-hidden">

@@ -35,7 +35,9 @@ export type CommissionPayoutRow = {
   paid_at: string;
   paid_by: string | null;
   notes: string | null;
+  finance_entry_id?: string | null;
   created_at: string;
+
 };
 
 export type CommissionTotals = {
@@ -136,22 +138,50 @@ export function useDoctorCommissionLedger(args: Args) {
       doctorUserId: string;
       amountCents: number;
       notes?: string | null;
+      /** Also post the payout as a payroll cost entry in Finance. */
+      postToPayroll?: boolean;
+      payrollCurrency?: string;
+      payrollCategoryName?: string;
+      doctorName?: string | null;
     }) => {
       const { data: authData } = await supabase.auth.getUser();
+      const paidAt = new Date().toISOString();
+
+      let financeEntryId: string | null = null;
+      if (payload.postToPayroll) {
+        const { data: entryData, error: entryError } = await supabase.rpc("finance_entry_upsert_manual", {
+          p_entity_type: payload.entityType,
+          p_entity_id: payload.entityId,
+          p_entry_id: null,
+          p_entry_type: "payroll",
+          p_amount_cents: payload.amountCents,
+          p_currency: (payload.payrollCurrency || "USD").toUpperCase(),
+          p_occurred_at: paidAt,
+          p_category_id: null,
+          p_category_name: payload.payrollCategoryName || "Doctor commission",
+          p_description: payload.doctorName ? `Commission payout — ${payload.doctorName}` : "Commission payout",
+          p_reference: `commission_payout_${payload.doctorUserId}_${paidAt}`,
+        });
+        if (entryError) throw entryError;
+        financeEntryId = Array.isArray(entryData) ? entryData[0]?.entry_id ?? null : (entryData as any)?.entry_id ?? null;
+      }
+
       const { error } = await supabase.from("doctor_commission_payouts").insert({
         entity_type: payload.entityType,
         entity_id: payload.entityId,
         doctor_user_id: payload.doctorUserId,
         amount_cents: payload.amountCents,
-        paid_at: new Date().toISOString(),
+        paid_at: paidAt,
         paid_by: authData?.user?.id ?? null,
         notes: payload.notes || null,
+        finance_entry_id: financeEntryId,
       });
       if (error) throw error;
       await load();
     },
     [load],
   );
+
 
   return {
     accruals,
