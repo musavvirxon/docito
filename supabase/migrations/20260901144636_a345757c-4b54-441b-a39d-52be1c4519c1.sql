@@ -1,0 +1,1 @@
+ALTER TABLE public.doctor_commission_payouts ADD COLUMN IF NOT EXISTS finance_entry_id uuid;

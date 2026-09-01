@@ -2994,6 +2994,7 @@ export type Database = {
           doctor_user_id: string
           entity_id: string
           entity_type: string
+          finance_entry_id: string | null
           id: string
           notes: string | null
           paid_at: string
@@ -3005,6 +3006,7 @@ export type Database = {
           doctor_user_id: string
           entity_id: string
           entity_type: string
+          finance_entry_id?: string | null
           id?: string
           notes?: string | null
           paid_at?: string
@@ -3016,6 +3018,7 @@ export type Database = {
           doctor_user_id?: string
           entity_id?: string
           entity_type?: string
+          finance_entry_id?: string | null
           id?: string
           notes?: string | null
           paid_at?: string
