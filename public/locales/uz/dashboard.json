@@ -4371,5 +4371,19 @@
     "noAccruals": "Hozircha komissiya hisoblanmalari yo‘q",
     "gross": "To‘lov",
     "payoutHistory": "To‘lovlar tarixi"
+  },
+  "payrollCommission": {
+    "title": "Komissiya asosidagi ish haqi",
+    "hint": "Yig'ilgan tushumdan foiz oladigan shifokorlar. Bu yerdagi to'lovlar ish haqi xarajati sifatida yoziladi.",
+    "accruedNotPaid": "To'lanishi kerak",
+    "postedToPayroll": "To'langan (ish haqi)",
+    "empty": "Hozircha komissiya asosida ishlaydigan shifokorlar yo'q.",
+    "categoryName": "Shifokor komissiyasi",
+    "payoutPosted": "To'lov yozildi va ish haqiga kiritildi",
+    "postsPayrollNote": "Bu to'lov Moliyada ish haqi xarajati sifatida ham yoziladi.",
+    "date": "Sana",
+    "gross": "Yig'ilgan",
+    "rate": "Stavka",
+    "commission": "Komissiya"
   }
 }

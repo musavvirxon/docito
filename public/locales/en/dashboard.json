@@ -4071,5 +4071,19 @@
     "noAccruals": "No commission accruals yet",
     "gross": "Payment",
     "payoutHistory": "Payout history"
+  },
+  "payrollCommission": {
+    "title": "Commission-based compensation",
+    "hint": "Doctors paid a percentage of collected revenue. Payouts recorded here are posted as payroll cost.",
+    "accruedNotPaid": "Owed (not yet paid)",
+    "postedToPayroll": "Paid out (payroll)",
+    "empty": "No doctors on commission-based compensation yet.",
+    "categoryName": "Doctor commission",
+    "payoutPosted": "Payout recorded and posted to payroll",
+    "postsPayrollNote": "This payout will also be recorded as a payroll expense in Finance.",
+    "date": "Date",
+    "gross": "Collected",
+    "rate": "Rate",
+    "commission": "Commission"
   }
 }
