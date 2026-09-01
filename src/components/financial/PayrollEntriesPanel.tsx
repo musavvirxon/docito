@@ -16,6 +16,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 import { Loader2, RefreshCw, Plus, Pencil, Briefcase, RotateCcw } from "lucide-react";
+import PayrollCommissionSummary from "@/components/financial/PayrollCommissionSummary";
+
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
