@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import type { ClinicRoom, RoomType, RoomStatus, RoomWithBeds } from '@/hooks/useRoomBed';
 
@@ -39,6 +40,7 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
     room_type: 'general' as RoomType, status: 'available' as RoomStatus,
     capacity: 1, color: ROOM_COLORS[0], notes: '',
     primary_doctor_id: null as string | null,
+    show_on_display: false,
   });
 
   // Fetch doctors of this practice for the "primary doctor" picker.
@@ -63,15 +65,16 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
         room_type: editRoom.room_type, status: editRoom.status, capacity: editRoom.capacity,
         color: editRoom.color ?? ROOM_COLORS[0], notes: editRoom.notes ?? '',
         primary_doctor_id: editRoom.primary_doctor_id ?? null,
+        show_on_display: editRoom.show_on_display ?? false,
       });
     } else if (mode === 'cabinet') {
-      setForm({ name: '', room_number: '', floor: '', room_type: 'consultation', status: 'available', capacity: 1, color: '#0ea5e9', notes: '', primary_doctor_id: null });
+      setForm({ name: '', room_number: '', floor: '', room_type: 'consultation', status: 'available', capacity: 1, color: '#0ea5e9', notes: '', primary_doctor_id: null, show_on_display: false });
     } else {
-      setForm({ name: '', room_number: '', floor: '', room_type: 'general', status: 'available', capacity: 1, color: ROOM_COLORS[0], notes: '', primary_doctor_id: null });
+      setForm({ name: '', room_number: '', floor: '', room_type: 'general', status: 'available', capacity: 1, color: ROOM_COLORS[0], notes: '', primary_doctor_id: null, show_on_display: false });
     }
   }, [editRoom, open, mode]);
 
-  const set = (k: string) => (v: string | number | null) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k: string) => (v: string | number | boolean | null) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
@@ -88,6 +91,7 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
       color: form.color,
       notes: form.notes || null,
       primary_doctor_id: form.primary_doctor_id,
+      show_on_display: form.show_on_display,
     });
     setSaving(false);
     onClose();
@@ -165,6 +169,20 @@ export function AddRoomModal({ open, onClose, onSave, practiceId, editRoom, mode
                 ? t('addCabinetModal.doctorHint', 'This doctor and the cabinet number will appear on the patient queue display.')
                 : t('addRoomModal.primaryDoctorHint', 'Patients see this doctor as the one working in this room / counter.')}
             </p>
+          </div>
+
+          <div className="flex items-start justify-between gap-4 rounded-lg border p-3">
+            <div className="space-y-1">
+              <Label htmlFor="room-show-on-display">{t('addRoomModal.showOnDisplay', 'Show on queue display')}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t('addRoomModal.showOnDisplayHint', 'Off by default. Turn on to show this room on the public waiting room display.')}
+              </p>
+            </div>
+            <Switch
+              id="room-show-on-display"
+              checked={form.show_on_display}
+              onCheckedChange={v => set('show_on_display')(v)}
+            />
           </div>
 
           <div className="space-y-1">
