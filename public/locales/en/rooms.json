@@ -79,7 +79,9 @@
     "primaryDoctor": "Assigned doctor",
     "primaryDoctorPlaceholder": "Pick a doctor (optional)",
     "noDoctor": "No assigned doctor",
-    "primaryDoctorHint": "Patients see this doctor as the one working in this room / counter."
+    "primaryDoctorHint": "Patients see this doctor as the one working in this room / counter.",
+    "showOnDisplay": "Show on queue display",
+    "showOnDisplayHint": "Off by default. Turn on to show this room on the public waiting room display."
   },
   "addCabinetModal": {
     "title": "Add Cabinet",
