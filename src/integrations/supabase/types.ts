@@ -2472,6 +2472,7 @@ export type Database = {
           primary_doctor_id: string | null
           room_number: string | null
           room_type: string
+          show_on_display: boolean
           status: string
           updated_at: string
         }
@@ -2487,6 +2488,7 @@ export type Database = {
           primary_doctor_id?: string | null
           room_number?: string | null
           room_type?: string
+          show_on_display?: boolean
           status?: string
           updated_at?: string
         }
@@ -2502,6 +2504,7 @@ export type Database = {
           primary_doctor_id?: string | null
           room_number?: string | null
           room_type?: string
+          show_on_display?: boolean
           status?: string
           updated_at?: string
         }
