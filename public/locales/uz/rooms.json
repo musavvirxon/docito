@@ -79,7 +79,9 @@
     "primaryDoctor": "Tayinlangan shifokor",
     "primaryDoctorPlaceholder": "Shifokorni tanlang (ixtiyoriy)",
     "noDoctor": "Shifokor tayinlanmagan",
-    "primaryDoctorHint": "Bemorlar bu xonada / stoyk'ada ishlaydigan shifokor sifatida ushbu shifokorni ko'radi."
+    "primaryDoctorHint": "Bemorlar bu xonada / stoyk'ada ishlaydigan shifokor sifatida ushbu shifokorni ko'radi.",
+    "showOnDisplay": "Navbat ekranida ko‘rsatish",
+    "showOnDisplayHint": "Sukut bo‘yicha o‘chirilgan. Ushbu xonani kutish zali ekranida ko‘rsatish uchun yoqing."
   },
   "addCabinetModal": {
     "title": "Kabinet qo‘shish",
