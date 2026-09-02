@@ -23,6 +23,8 @@ export interface ClinicRoom {
   notes: string | null;
   primary_doctor_id: string | null;
   primary_doctor_name?: string | null;
+  show_on_display?: boolean;
+
   created_at: string;
   updated_at: string;
 }
