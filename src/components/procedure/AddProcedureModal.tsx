@@ -931,7 +931,10 @@ const AddProcedureModal = ({
                     })}
                   </div>
                 )}
+                  </div>
+                )}
               </CardContent>
+
             </Card>
 
 
