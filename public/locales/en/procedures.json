@@ -43,7 +43,16 @@
     "maxUsesReached": "Max uses reached",
     "cancel": "Cancel",
     "create": "Create Procedure",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "useInventoryToggle": "Uses instruments / materials",
+    "useInventoryToggleHint": "Turn on to link the tools, instruments or medications consumed by this procedure.",
+    "singleUse": "Single-use",
+    "reusable": "Reusable",
+    "outOfStock": "Out of stock",
+    "inSterilization": "In sterilization",
+    "inSterilizationHint": "This item must be sterilized before it can be used again.",
+    "maxUsesReachedHint": "This item reached its maximum number of uses.",
+    "insufficientStockHint": "Only {{count}} left in stock — quantity adjusted."
   },
   "validation": {
     "nameRequired": "Procedure name is required",
