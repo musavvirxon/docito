@@ -699,24 +699,48 @@ const AddProcedureModal = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Package className="w-4 h-4 text-emerald-700" />
-                    <Label className="font-medium">{t("add.inventoryTitle", "Instruments & Medications")}</Label>
+                    <Label htmlFor="inventory-toggle" className="font-medium cursor-pointer">
+                      {t("add.useInventoryToggle", "Uses instruments / materials")}
+                    </Label>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setPickerOpen((v) => !v);
-                      setPickerItemId("");
-                      setPickerQty(1);
+                  <Switch
+                    id="inventory-toggle"
+                    checked={usesInventory}
+                    onCheckedChange={(checked) => {
+                      setUsesInventory(checked);
+                      if (!checked) {
+                        setSelectedInventory([]);
+                        setPickerOpen(false);
+                        setPickerItemId("");
+                        setPickerQty(1);
+                      }
                     }}
-                  >
-                    <Plus className="w-4 h-4 mr-1" /> {t("add.addItem", "Add Item")}
-                  </Button>
+                  />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("add.inventoryHint", "Items selected here will be auto-deducted from inventory when this procedure is completed. Reusable items will increment their use count; you'll be warned if stock is insufficient.")}
+                  {t("add.useInventoryToggleHint", "Turn on to link the tools, instruments or medications consumed by this procedure.")}
                 </p>
+
+                {usesInventory && (
+                  <div className="space-y-3 pt-1">
+                    <div className="flex items-center justify-between">
+                      <Label className="font-medium">{t("add.inventoryTitle", "Instruments & Medications")}</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPickerOpen((v) => !v);
+                          setPickerItemId("");
+                          setPickerQty(1);
+                        }}
+                      >
+                        <Plus className="w-4 h-4 mr-1" /> {t("add.addItem", "Add Item")}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t("add.inventoryHint", "Items selected here will be auto-deducted from inventory when this procedure is completed. Reusable items will increment their use count; you'll be warned if stock is insufficient.")}
+                    </p>
 
                 {pickerOpen && (
                   <div className="grid grid-cols-12 gap-2 items-end p-2 rounded-md border bg-background">
@@ -731,8 +755,11 @@ const AddProcedureModal = ({
                             .filter((m) => !selectedInventory.find((s) => s.inventoryId === m.id))
                             .map((m) => {
                               const stock = getStockStatus(m);
+                              const useSt = getUseStatus(m);
+                              const disabled =
+                                useSt === "exhausted" || (!m.is_reusable && m.quantity_in_stock <= 0);
                               return (
-                                <SelectItem key={m.id} value={m.id}>
+                                <SelectItem key={m.id} value={m.id} disabled={disabled}>
                                   <span className="inline-flex items-center gap-2">
                                     {m.source === "clinic" ? (
                                       <Building2 className="w-3 h-3" />
@@ -740,7 +767,31 @@ const AddProcedureModal = ({
                                       <UserIcon className="w-3 h-3" />
                                     )}
                                     {m.name} · {m.quantity_in_stock} {m.unit}
-                                    {stock !== "ok" && (
+                                    <Badge variant="secondary" className="ml-1 text-[10px]">
+                                      {m.is_reusable
+                                        ? `${t("add.reusable", "Reusable")}${
+                                            m.max_uses_per_unit
+                                              ? ` ${m.current_use_count}/${m.max_uses_per_unit}`
+                                              : ""
+                                          }`
+                                        : t("add.singleUse", "Single-use")}
+                                    </Badge>
+                                    {useSt === "needs_sterilization" && (
+                                      <Badge variant="outline" className="ml-1 text-[10px]">
+                                        {t("add.inSterilization", "In sterilization")}
+                                      </Badge>
+                                    )}
+                                    {useSt === "exhausted" && (
+                                      <Badge variant="outline" className="ml-1 text-[10px]">
+                                        {t("add.maxUsesReached", "Max uses reached")}
+                                      </Badge>
+                                    )}
+                                    {!m.is_reusable && m.quantity_in_stock <= 0 && (
+                                      <Badge variant="outline" className="ml-1 text-[10px]">
+                                        {t("add.outOfStock", "Out of stock")}
+                                      </Badge>
+                                    )}
+                                    {stock !== "ok" && m.quantity_in_stock > 0 && (
                                       <Badge variant="outline" className="ml-1 text-[10px]">
                                         {stock}
                                       </Badge>
@@ -770,9 +821,32 @@ const AddProcedureModal = ({
                         onClick={() => {
                           const inv = mergedInventory.find((m) => m.id === pickerItemId);
                           if (!inv) return;
+                          const useSt = getUseStatus(inv);
+                          if (useSt === "exhausted") {
+                            toast.error(t("add.maxUsesReachedHint", "This item reached its maximum number of uses."));
+                            return;
+                          }
+                          if (!inv.is_reusable && inv.quantity_in_stock <= 0) {
+                            toast.error(t("add.outOfStock", "Out of stock"));
+                            return;
+                          }
+                          let qty = pickerQty;
+                          if (!inv.is_reusable && qty > inv.quantity_in_stock) {
+                            qty = inv.quantity_in_stock;
+                            toast.warning(
+                              t("add.insufficientStockHint", "Only {{count}} left in stock — quantity adjusted.", {
+                                count: inv.quantity_in_stock,
+                              }),
+                            );
+                          }
+                          if (useSt === "needs_sterilization") {
+                            toast.warning(
+                              t("add.inSterilizationHint", "This item must be sterilized before it can be used again."),
+                            );
+                          }
                           setSelectedInventory((prev) => [
                             ...prev,
-                            { inventoryId: inv.id, quantity: pickerQty, entityScope: inv.source },
+                            { inventoryId: inv.id, quantity: qty, entityScope: inv.source },
                           ]);
                           setPickerOpen(false);
                           setPickerItemId("");
@@ -788,6 +862,7 @@ const AddProcedureModal = ({
                 {selectedInventory.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic">{t("add.noInventoryLinked", "No inventory linked yet.")}</p>
                 ) : (
+
                   <div className="space-y-2">
                     {selectedInventory.map((sel, idx) => {
                       const inv = mergedInventory.find((m) => m.id === sel.inventoryId);
