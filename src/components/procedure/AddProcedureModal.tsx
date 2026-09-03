@@ -96,9 +96,11 @@ const AddProcedureModal = ({
   const [customCategory, setCustomCategory] = useState("");
 
   // Inventory linkage state
+  const [usesInventory, setUsesInventory] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState<
     { inventoryId: string; quantity: number; entityScope: string }[]
   >([]);
+
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerItemId, setPickerItemId] = useState("");
   const [pickerQty, setPickerQty] = useState(1);
