@@ -318,7 +318,7 @@ const AddProcedureModal = ({
       if (error) throw error;
 
       // Persist inventory requirements
-      if (selectedInventory.length > 0 && createdProc?.id) {
+      if (usesInventory && selectedInventory.length > 0 && createdProc?.id) {
         const rows = selectedInventory
           .map((sel) => {
             const inv = mergedInventory.find((m) => m.id === sel.inventoryId);
@@ -352,6 +352,7 @@ const AddProcedureModal = ({
       setConsentFile(null);
       setCustomCategory("");
       setSelectedInventory([]);
+      setUsesInventory(false);
 
       onSuccess();
       onOpenChange(false);
@@ -371,6 +372,7 @@ const AddProcedureModal = ({
     setConsentFile(null);
     setCustomCategory("");
     setSelectedInventory([]);
+    setUsesInventory(false);
     onOpenChange(false);
   };
 
