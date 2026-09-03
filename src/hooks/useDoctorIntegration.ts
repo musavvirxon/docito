@@ -401,13 +401,23 @@ export const useDoctorIntegration = () => {
     const dp = profileArg ?? doctorProfile;
     if (!dp) return;
     try {
-      const { data: patients } = await supabase
-        .from("appointments")
-        .select("patient_id")
-        .eq("doctor_id", dp.id)
-        .neq("status", "canceled");
+      const [{ data: patients }, { data: manualPatients }] = await Promise.all([
+        supabase
+          .from("appointments")
+          .select("patient_id")
+          .eq("doctor_id", dp.id)
+          .neq("status", "canceled"),
+        supabase
+          .from("doctor_patients")
+          .select("id")
+          .eq("doctor_id", dp.id)
+          .is("merged_into_user_id", null),
+      ]);
 
-      const uniquePatients = new Set((patients || []).map((p: any) => p.patient_id).filter(Boolean));
+      const uniquePatients = new Set<string>();
+      (patients || []).forEach((p: any) => p.patient_id && uniquePatients.add(`u:${p.patient_id}`));
+      (manualPatients || []).forEach((p: any) => p.id && uniquePatients.add(`m:${p.id}`));
+
 
       const { data: completed } = await supabase
         .from("appointments")
