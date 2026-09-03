@@ -43,7 +43,16 @@
     "maxUsesReached": "Maksimal foydalanishga yetdi",
     "cancel": "Bekor qilish",
     "create": "Muolaja yaratish",
-    "creating": "Yaratilmoqda..."
+    "creating": "Yaratilmoqda...",
+    "useInventoryToggle": "Asbob / materiallar ishlatiladi",
+    "useInventoryToggleHint": "Ushbu muolajada ishlatiladigan asboblar yoki dorilarni bog'lash uchun yoqing.",
+    "singleUse": "Bir martalik",
+    "reusable": "Qayta ishlatiladigan",
+    "outOfStock": "Zaxirada yo'q",
+    "inSterilization": "Sterilizatsiyada",
+    "inSterilizationHint": "Bu element qayta ishlatilishidan oldin sterilizatsiya qilinishi kerak.",
+    "maxUsesReachedHint": "Bu element maksimal foydalanish soniga yetdi.",
+    "insufficientStockHint": "Zaxirada faqat {{count}} qoldi — miqdor moslashtirildi."
   },
   "validation": {
     "nameRequired": "Muolaja nomi kiritilishi shart",
