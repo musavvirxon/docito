@@ -404,7 +404,7 @@ export const useDoctorIntegration = () => {
       const [{ data: patients }, { data: manualPatients }] = await Promise.all([
         supabase
           .from("appointments")
-          .select("patient_id")
+          .select("patient_id, doctor_patient_id")
           .eq("doctor_id", dp.id)
           .neq("status", "canceled"),
         supabase
@@ -415,7 +415,10 @@ export const useDoctorIntegration = () => {
       ]);
 
       const uniquePatients = new Set<string>();
-      (patients || []).forEach((p: any) => p.patient_id && uniquePatients.add(`u:${p.patient_id}`));
+      (patients || []).forEach((p: any) => {
+        if (p.patient_id) uniquePatients.add(`u:${p.patient_id}`);
+        if (p.doctor_patient_id) uniquePatients.add(`m:${p.doctor_patient_id}`);
+      });
       (manualPatients || []).forEach((p: any) => p.id && uniquePatients.add(`m:${p.id}`));
 
 
