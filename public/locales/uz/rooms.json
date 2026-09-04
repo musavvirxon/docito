@@ -151,7 +151,8 @@
     "nowCalling": "Chaqirilmoqda",
     "goTo": "{{room}} · Dr. {{doctor}}",
     "enableSound": "Ovozni yoqish",
-    "noDoctor": "Shifokor tayinlanmagan"
+    "noDoctor": "Shifokor tayinlanmagan",
+    "reconnecting": "Qayta ulanmoqda…"
   },
   "primaryDoctorBadge": "Shifokor: Dr. {{name}}"
 }

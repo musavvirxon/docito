@@ -151,7 +151,8 @@
     "nowCalling": "Приглашается",
     "goTo": "{{room}} · Д-р {{doctor}}",
     "enableSound": "Включить звук",
-    "noDoctor": "Врач не назначен"
+    "noDoctor": "Врач не назначен",
+    "reconnecting": "Переподключение…"
   },
   "primaryDoctorBadge": "Врач: Dr. {{name}}"
 }
