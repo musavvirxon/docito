@@ -47,6 +47,7 @@ export interface CalledEvent {
 interface QueueDisplayState {
   loading: boolean;
   error: string | null;
+  offline: boolean;
   practiceId: string | null;
   practiceName: string | null;
   rooms: RoomView[];
@@ -55,6 +56,11 @@ interface QueueDisplayState {
 
 const POLL_INTERVAL_MS = 2500;
 const FRESH_CALL_WINDOW_MS = 60_000;
+// If nothing has succeeded for this long the runtime is likely wedged
+// (throttled timers after sleep, dead socket) — reload the whole page.
+const HARD_RELOAD_AFTER_MS = 4 * 60_000;
+const WATCHDOG_INTERVAL_MS = 10_000;
+
 
 function buildRooms(rooms: QueueRoom[], queue: QueueEntry[]): RoomView[] {
   return rooms.map((room) => {
