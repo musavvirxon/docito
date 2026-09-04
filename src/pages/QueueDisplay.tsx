@@ -107,10 +107,16 @@ export default function QueueDisplay() {
       <div className="flex items-baseline justify-between mb-10 gap-6">
         <h1 className="text-3xl font-semibold">{practiceName}</h1>
         <div className="flex items-center gap-5">
+          {offline && (
+            <span className="text-sm text-amber-300 border border-amber-500/40 bg-amber-500/10 rounded-full px-4 py-1.5">
+              {t("display.reconnecting", "Reconnecting…")}
+            </span>
+          )}
           <p className="text-slate-400 text-lg">
             {now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} ·{" "}
             {now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
           </p>
+
           {!soundEnabled && (
             <button
               onClick={enableSound}
