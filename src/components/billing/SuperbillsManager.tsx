@@ -20,6 +20,12 @@ import {
   type SuperbillStatus,
 } from '@/hooks/useSuperbills';
 import { downloadSuperbillPdf } from '@/lib/api/superbill-api';
+import {
+  useRecordedPayments,
+  buildSuperbillFromPayments,
+  type RecordedPayment,
+  type SuperbillPrefill,
+} from '@/hooks/useRecordedPayments';
 
 export interface PatientOption { id: string; name: string }
 
@@ -49,6 +55,15 @@ export function SuperbillsManager({
   const { create, submitting } = useCreateSuperbill();
   const { formatCents: money } = useCurrency();
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<'payments' | 'manual'>('payments');
+  const [selectedPaymentIds, setSelectedPaymentIds] = useState<string[]>([]);
+  const [prefill, setPrefill] = useState<SuperbillPrefill | null>(null);
+  const [prefilling, setPrefilling] = useState(false);
+  const { payments: recordedPayments, loading: paymentsLoading } = useRecordedPayments({
+    practiceId,
+    doctorId: defaultDoctorId || doctorId,
+    patientId,
+  });
   const [form, setForm] = useState({
     patient: '',
     serviceDate: format(new Date(), 'yyyy-MM-dd'),
@@ -62,6 +77,48 @@ export function SuperbillsManager({
   });
 
   const totalCharged = useMemo(() => money(stats.totalCents), [stats.totalCents, money]);
+
+  const patientLabel = (p: RecordedPayment) =>
+    p.patient_name || patients.find(x => x.id === p.patient_id)?.name || 'Patient';
+
+  const togglePayment = async (id: string) => {
+    const next = selectedPaymentIds.includes(id)
+      ? selectedPaymentIds.filter(x => x !== id)
+      : [...selectedPaymentIds, id];
+    setSelectedPaymentIds(next);
+    const rows = recordedPayments.filter(p => next.includes(p.id));
+    if (!rows.length) { setPrefill(null); return; }
+    setPrefilling(true);
+    try {
+      setPrefill(await buildSuperbillFromPayments(rows));
+    } finally {
+      setPrefilling(false);
+    }
+  };
+
+  const resetDialog = () => {
+    setSelectedPaymentIds([]);
+    setPrefill(null);
+    setForm({ patient: '', serviceDate: format(new Date(), 'yyyy-MM-dd'), dxCode: '', dxDesc: '', cptCode: '', cptDesc: '', cptUnits: '1', cptFee: '', notes: '' });
+  };
+
+  const handleCreateFromPayments = async () => {
+    if (!prefill) { toast.error('Select at least one recorded payment'); return; }
+    const firstPayment = recordedPayments.find(p => p.id === selectedPaymentIds[0]);
+    const res = await create({
+      doctorId: firstPayment?.doctor_id || defaultDoctorId || doctorId || null,
+      practiceId: practiceId ?? firstPayment?.practice_id ?? null,
+      patientId: prefill.patientId,
+      appointmentId: prefill.appointmentId,
+      serviceDate: prefill.serviceDate,
+      diagnosisCodes: prefill.diagnoses,
+      lineItems: prefill.lineItems,
+      notes: prefill.notes,
+      currency: prefill.currency,
+      status: 'issued',
+    });
+    if (res.success) { setOpen(false); resetDialog(); void reload(); }
+  };
 
   const handleCreate = async () => {
     const selectedPatient = patients.find(p => p.name === form.patient || p.id === form.patient);
@@ -85,7 +142,7 @@ export function SuperbillsManager({
     });
     if (res.success) {
       setOpen(false);
-      setForm({ patient: '', serviceDate: format(new Date(), 'yyyy-MM-dd'), dxCode: '', dxDesc: '', cptCode: '', cptDesc: '', cptUnits: '1', cptFee: '', notes: '' });
+      resetDialog();
       void reload();
     }
   };
@@ -180,6 +237,72 @@ export function SuperbillsManager({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>New Superbill</DialogTitle></DialogHeader>
+
+          <div className="flex gap-2">
+            <Button size="sm" variant={mode === 'payments' ? 'default' : 'outline'} onClick={() => setMode('payments')}>
+              From recorded payment
+            </Button>
+            <Button size="sm" variant={mode === 'manual' ? 'default' : 'outline'} onClick={() => setMode('manual')}>
+              Enter manually
+            </Button>
+          </div>
+
+          {mode === 'payments' ? (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Pick one or more recorded payments — patient, date, procedures and diagnoses are pulled in automatically.
+              </p>
+              <div className="max-h-64 overflow-y-auto rounded-md border divide-y">
+                {paymentsLoading ? (
+                  <div className="py-8 text-center"><Loader2 className="h-5 w-5 mx-auto animate-spin" /></div>
+                ) : recordedPayments.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-muted-foreground">No recorded payments found.</div>
+                ) : recordedPayments.map(p => {
+                  const checked = selectedPaymentIds.includes(p.id);
+                  return (
+                    <label key={p.id} className={`flex items-center gap-3 px-3 py-2 cursor-pointer ${checked ? 'bg-muted/50' : 'hover:bg-muted/30'}`}>
+                      <input type="checkbox" checked={checked} onChange={() => void togglePayment(p.id)} className="h-4 w-4" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium truncate">{patientLabel(p)}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {new Date(p.paid_at || p.created_at).toLocaleDateString()}
+                          {p.payment_method ? ` · ${p.payment_method}` : ''}
+                          {p.appointment_id ? ' · linked visit' : ' · no visit linked'}
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold shrink-0">{money(Math.round(Number(p.amount || 0) * 100))}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {prefilling ? (
+                <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Pulling visit details…</div>
+              ) : prefill ? (
+                <div className="rounded-md border p-3 space-y-2">
+                  <p className="text-sm font-medium">Superbill preview</p>
+                  <p className="text-xs text-muted-foreground">Service date: {prefill.serviceDate}</p>
+                  {prefill.diagnoses.length > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Diagnoses: {prefill.diagnoses.map(d => [d.code, d.description].filter(Boolean).join(' — ')).join('; ')}
+                    </p>
+                  )}
+                  <div className="space-y-1">
+                    {prefill.lineItems.map((li, i) => (
+                      <div key={i} className="flex items-center justify-between text-sm">
+                        <span className="truncate">{li.code} · {li.description}</span>
+                        <span className="font-medium shrink-0">{money(li.fee_cents * (li.units || 1))}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
+                    <span>Total</span>
+                    <span>{money(prefill.lineItems.reduce((s, li) => s + li.fee_cents * (li.units || 1), 0))}</span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {!patientId && (
               <div className="md:col-span-2">
@@ -221,9 +344,13 @@ export function SuperbillsManager({
               <Textarea rows={2} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
             </div>
           </div>
+          )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting}>
+            <Button
+              onClick={mode === 'payments' ? handleCreateFromPayments : handleCreate}
+              disabled={submitting || (mode === 'payments' && !prefill)}
+            >
               {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />} Generate
             </Button>
           </DialogFooter>
