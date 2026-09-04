@@ -33,7 +33,7 @@ function playChime() {
 export default function QueueDisplay() {
   const { token } = useParams<{ token: string }>();
   const { t } = useTranslation("rooms");
-  const { loading, error, practiceName, rooms, lastCalled } = useQueueDisplay(token);
+  const { loading, error, offline, practiceName, rooms, lastCalled } = useQueueDisplay(token);
 
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [banner, setBanner] = useState<CalledEvent | null>(null);
@@ -44,6 +44,30 @@ export default function QueueDisplay() {
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
+  }, []);
+
+  // Keep the waiting-room screen awake, and re-acquire the lock after
+  // the device wakes from standby (the lock is released on sleep).
+  useEffect(() => {
+    let lock: any = null;
+    let cancelled = false;
+    const request = async () => {
+      try {
+        const wl = (navigator as any).wakeLock;
+        if (!wl || document.visibilityState !== "visible") return;
+        lock = await wl.request("screen");
+      } catch { /* not supported / denied — harmless */ }
+    };
+    const onVisible = () => {
+      if (!cancelled && document.visibilityState === "visible") request();
+    };
+    request();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+      try { lock?.release?.(); } catch { /* noop */ }
+    };
   }, []);
 
   useEffect(() => {
@@ -59,6 +83,7 @@ export default function QueueDisplay() {
     playChime();
     setSoundEnabled(true);
   };
+
 
   if (loading) {
     return (
@@ -82,10 +107,16 @@ export default function QueueDisplay() {
       <div className="flex items-baseline justify-between mb-10 gap-6">
         <h1 className="text-3xl font-semibold">{practiceName}</h1>
         <div className="flex items-center gap-5">
+          {offline && (
+            <span className="text-sm text-amber-300 border border-amber-500/40 bg-amber-500/10 rounded-full px-4 py-1.5">
+              {t("display.reconnecting", "Reconnecting…")}
+            </span>
+          )}
           <p className="text-slate-400 text-lg">
             {now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })} ·{" "}
             {now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
           </p>
+
           {!soundEnabled && (
             <button
               onClick={enableSound}

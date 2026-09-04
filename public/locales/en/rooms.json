@@ -151,7 +151,8 @@
     "nowCalling": "Now calling",
     "goTo": "{{room}} · Dr. {{doctor}}",
     "enableSound": "Enable sound",
-    "noDoctor": "Unassigned"
+    "noDoctor": "Unassigned",
+    "reconnecting": "Reconnecting…"
   },
   "primaryDoctorBadge": "Doctor: Dr. {{name}}"
 }
