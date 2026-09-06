@@ -106,7 +106,11 @@ const AddProcedureModal = ({
   const [pickerItemId, setPickerItemId] = useState("");
   const [pickerQty, setPickerQty] = useState(1);
 
-  const { items: mergedInventory } = useMergedInventory(practiceId, dentistId);
+  const { scopes: inventoryScopes, loading: scopesLoading } = useInventoryScopes(open);
+  const { items: mergedInventory, loading: inventoryLoading } = useScopedInventory(inventoryScopes, {
+    enabled: open,
+    realtime: true,
+  });
 
   const formSchema = useMemo(() => buildFormSchema(t as any), [t]);
 
