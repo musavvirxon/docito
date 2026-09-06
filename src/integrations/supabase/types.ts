@@ -12379,6 +12379,7 @@ export type Database = {
         Args: { _doctor_id: string; _user_id: string }
         Returns: boolean
       }
+      is_my_doctor_entity: { Args: { p_entity_id: string }; Returns: boolean }
       is_practice_staff: {
         Args: { p_practice_id: string; p_user_id: string }
         Returns: boolean

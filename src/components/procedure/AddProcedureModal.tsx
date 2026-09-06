@@ -35,7 +35,8 @@ import { toast } from "sonner";
 
 import ToothSelector from "./ToothSelector";
 import { CalendarPlus, FileText, Upload, X, AlertCircle, Package, Plus, Trash2, Building2, User as UserIcon } from "lucide-react";
-import { useMergedInventory, getStockStatus, getUseStatus } from "@/hooks/useClinicInventory";
+import { useScopedInventory, getEffectiveAvailability } from "@/hooks/useClinicInventory";
+import { useInventoryScopes } from "@/hooks/useInventoryScopes";
 
 const PROCEDURE_CATEGORY_ALIASES: Record<string, string> = {
   surgical: "oral_surgery",
@@ -105,7 +106,11 @@ const AddProcedureModal = ({
   const [pickerItemId, setPickerItemId] = useState("");
   const [pickerQty, setPickerQty] = useState(1);
 
-  const { items: mergedInventory } = useMergedInventory(practiceId, dentistId);
+  const { scopes: inventoryScopes, loading: scopesLoading } = useInventoryScopes(open);
+  const { items: mergedInventory, loading: inventoryLoading } = useScopedInventory(inventoryScopes, {
+    enabled: open,
+    realtime: true,
+  });
 
   const formSchema = useMemo(() => buildFormSchema(t as any), [t]);
 
@@ -746,31 +751,49 @@ const AddProcedureModal = ({
                       {t("add.inventoryHint", "Items selected here will be auto-deducted from inventory when this procedure is completed. Reusable items will increment their use count; you'll be warned if stock is insufficient.")}
                     </p>
 
+                {inventoryScopes.length === 0 && !scopesLoading ? (
+                  <p className="text-xs text-muted-foreground">
+                    {t("add.noInventoryScope", "No stock location found for your account yet.")}
+                  </p>
+                ) : mergedInventory.length === 0 && !inventoryLoading ? (
+                  <p className="text-xs text-muted-foreground">
+                    {t("add.noInventoryItems", "No items in stock yet. Add them in the Inventory section.")}
+                  </p>
+                ) : null}
+
                 {pickerOpen && (
                   <div className="grid grid-cols-12 gap-2 items-end p-2 rounded-md border bg-background">
                     <div className="col-span-7">
                       <Label className="text-xs">{t("add.item", "Item")}</Label>
                       <Select value={pickerItemId} onValueChange={setPickerItemId}>
                         <SelectTrigger>
-                          <SelectValue placeholder={mergedInventory.length ? t("add.selectItem", "Select item…") : t("add.noInventoryAvailable", "No inventory available")} />
+                          <SelectValue
+                            placeholder={
+                              mergedInventory.length
+                                ? t("add.selectItem", "Select item…")
+                                : t("add.noInventoryAvailable", "No inventory available")
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {mergedInventory
                             .filter((m) => !selectedInventory.find((s) => s.inventoryId === m.id))
                             .map((m) => {
-                              const stock = getStockStatus(m);
-                              const useSt = getUseStatus(m);
-                              const disabled =
-                                useSt === "exhausted" || (!m.is_reusable && m.quantity_in_stock <= 0);
+                              const av = getEffectiveAvailability(m, 0);
                               return (
-                                <SelectItem key={m.id} value={m.id} disabled={disabled}>
-                                  <span className="inline-flex items-center gap-2">
+                                <SelectItem key={m.id} value={m.id} disabled={!!av.blockReason}>
+                                  <span className="inline-flex items-center gap-2 flex-wrap">
                                     {m.source === "clinic" ? (
                                       <Building2 className="w-3 h-3" />
                                     ) : (
                                       <UserIcon className="w-3 h-3" />
                                     )}
-                                    {m.name} · {m.quantity_in_stock} {m.unit}
+                                    {m.name} · {av.remaining} {m.unit}
+                                    {m.scope_name ? (
+                                      <span className="text-[10px] text-muted-foreground">
+                                        {m.scope_name}
+                                      </span>
+                                    ) : null}
                                     <Badge variant="secondary" className="ml-1 text-[10px]">
                                       {m.is_reusable
                                         ? `${t("add.reusable", "Reusable")}${
@@ -780,24 +803,34 @@ const AddProcedureModal = ({
                                           }`
                                         : t("add.singleUse", "Single-use")}
                                     </Badge>
-                                    {useSt === "needs_sterilization" && (
+                                    {av.blockReason === "expired" && (
                                       <Badge variant="outline" className="ml-1 text-[10px]">
-                                        {t("add.inSterilization", "In sterilization")}
+                                        {t("add.expired", "Expired")}
                                       </Badge>
                                     )}
-                                    {useSt === "exhausted" && (
+                                    {av.blockReason === "max_uses" && (
                                       <Badge variant="outline" className="ml-1 text-[10px]">
                                         {t("add.maxUsesReached", "Max uses reached")}
                                       </Badge>
                                     )}
-                                    {!m.is_reusable && m.quantity_in_stock <= 0 && (
+                                    {av.blockReason === "out_of_stock" && (
                                       <Badge variant="outline" className="ml-1 text-[10px]">
                                         {t("add.outOfStock", "Out of stock")}
                                       </Badge>
                                     )}
-                                    {stock !== "ok" && m.quantity_in_stock > 0 && (
+                                    {av.warnReason === "needs_sterilization" && (
                                       <Badge variant="outline" className="ml-1 text-[10px]">
-                                        {stock}
+                                        {t("add.inSterilization", "In sterilization")}
+                                      </Badge>
+                                    )}
+                                    {av.warnReason === "expiring_soon" && (
+                                      <Badge variant="outline" className="ml-1 text-[10px]">
+                                        {t("add.expiringSoon", "Expiring soon")}
+                                      </Badge>
+                                    )}
+                                    {av.warnReason === "low_stock" && (
+                                      <Badge variant="outline" className="ml-1 text-[10px]">
+                                        {av.stockStatus}
                                       </Badge>
                                     )}
                                   </span>
@@ -825,25 +858,29 @@ const AddProcedureModal = ({
                         onClick={() => {
                           const inv = mergedInventory.find((m) => m.id === pickerItemId);
                           if (!inv) return;
-                          const useSt = getUseStatus(inv);
-                          if (useSt === "exhausted") {
+                          const av = getEffectiveAvailability(inv, 0);
+                          if (av.blockReason === "max_uses") {
                             toast.error(t("add.maxUsesReachedHint", "This item reached its maximum number of uses."));
                             return;
                           }
-                          if (!inv.is_reusable && inv.quantity_in_stock <= 0) {
+                          if (av.blockReason === "expired") {
+                            toast.error(t("add.expired", "Expired"));
+                            return;
+                          }
+                          if (av.blockReason === "out_of_stock") {
                             toast.error(t("add.outOfStock", "Out of stock"));
                             return;
                           }
                           let qty = pickerQty;
-                          if (!inv.is_reusable && qty > inv.quantity_in_stock) {
-                            qty = inv.quantity_in_stock;
+                          if (!inv.is_reusable && qty > av.remaining) {
+                            qty = Math.max(1, av.remaining);
                             toast.warning(
                               t("add.insufficientStockHint", "Only {{count}} left in stock — quantity adjusted.", {
-                                count: inv.quantity_in_stock,
+                                count: av.remaining,
                               }),
                             );
                           }
-                          if (useSt === "needs_sterilization") {
+                          if (av.warnReason === "needs_sterilization") {
                             toast.warning(
                               t("add.inSterilizationHint", "This item must be sterilized before it can be used again."),
                             );
@@ -871,9 +908,11 @@ const AddProcedureModal = ({
                     {selectedInventory.map((sel, idx) => {
                       const inv = mergedInventory.find((m) => m.id === sel.inventoryId);
                       if (!inv) return null;
-                      const stock = getStockStatus(inv);
-                      const useSt = getUseStatus(inv);
-                      const insufficient = !inv.is_reusable && inv.quantity_in_stock < sel.quantity;
+                      const av = getEffectiveAvailability(inv, 0);
+                      const insufficient = !inv.is_reusable && av.onHand < sel.quantity;
+                      const afterUse = inv.is_reusable
+                        ? av.onHand
+                        : Math.max(0, av.onHand - sel.quantity);
                       return (
                         <div
                           key={sel.inventoryId}
@@ -885,24 +924,40 @@ const AddProcedureModal = ({
                             <UserIcon className="w-4 h-4 text-muted-foreground" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{inv.name}</div>
+                            <div className="text-sm font-medium truncate">
+                              {inv.name}
+                              {inv.scope_name ? (
+                                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                  {inv.scope_name}
+                                </span>
+                              ) : null}
+                            </div>
                             <div className="text-xs text-muted-foreground">
-                              {t("add.stock", "Stock")}: {inv.quantity_in_stock} {inv.unit}
+                              {t("add.stock", "Stock")}: {av.onHand} {inv.unit}
                               {inv.is_reusable && inv.max_uses_per_unit
                                 ? ` · ${t("add.uses", "uses")} ${inv.current_use_count}/${inv.max_uses_per_unit}`
                                 : ""}
                               {inv.requires_sterilization ? ` · ${t("add.sterilizable", "sterilizable")}` : ""}
+                              {!inv.is_reusable
+                                ? ` · ${t("add.afterUse", "after use")}: ${afterUse} ${inv.unit}`
+                                : ""}
                             </div>
-                            {(insufficient || stock !== "ok" || useSt !== "ok") && (
+                            {(insufficient || av.blockReason || av.warnReason) && (
                               <div className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                                 <AlertCircle className="w-3 h-3" />
                                 {insufficient
                                   ? t("add.insufficientStock", "Insufficient stock")
-                                  : useSt === "needs_sterilization"
-                                  ? t("add.needsSterilization", "Needs sterilization")
-                                  : useSt === "exhausted"
+                                  : av.blockReason === "expired"
+                                  ? t("add.expired", "Expired")
+                                  : av.blockReason === "max_uses"
                                   ? t("add.maxUsesReached", "Max uses reached")
-                                  : stock}
+                                  : av.blockReason === "out_of_stock"
+                                  ? t("add.outOfStock", "Out of stock")
+                                  : av.warnReason === "needs_sterilization"
+                                  ? t("add.needsSterilization", "Needs sterilization")
+                                  : av.warnReason === "expiring_soon"
+                                  ? t("add.expiringSoon", "Expiring soon")
+                                  : av.stockStatus}
                               </div>
                             )}
                           </div>
@@ -910,13 +965,20 @@ const AddProcedureModal = ({
                             type="number"
                             min={1}
                             value={sel.quantity}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              const raw = Math.max(1, parseInt(e.target.value) || 1);
+                              const capped = inv.is_reusable ? raw : Math.min(raw, Math.max(1, av.onHand));
+                              if (capped < raw) {
+                                toast.warning(
+                                  t("add.insufficientStockHint", "Only {{count}} left in stock — quantity adjusted.", {
+                                    count: av.onHand,
+                                  }),
+                                );
+                              }
                               setSelectedInventory((prev) =>
-                                prev.map((p, i) =>
-                                  i === idx ? { ...p, quantity: Math.max(1, parseInt(e.target.value) || 1) } : p,
-                                ),
-                              )
-                            }
+                                prev.map((p, i) => (i === idx ? { ...p, quantity: capped } : p)),
+                              );
+                            }}
                             className="w-20 h-8"
                           />
                           <Button
@@ -933,6 +995,11 @@ const AddProcedureModal = ({
                         </div>
                       );
                     })}
+                    <p className="text-xs text-muted-foreground">
+                      {t("add.willConsume", "This procedure will consume {{count}} unit(s) on completion.", {
+                        count: selectedInventory.reduce((s, x) => s + (x.quantity || 0), 0),
+                      })}
+                    </p>
                   </div>
                 )}
                   </div>

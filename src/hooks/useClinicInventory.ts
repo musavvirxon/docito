@@ -637,3 +637,179 @@ export function useProcedureInventoryRequirements(
 
   return { requirements, loading, refresh, addRequirement, removeRequirement };
 }
+
+// ── Live availability helpers ─────────────────────────────────────────────
+
+export interface EffectiveAvailability {
+  /** units physically on hand */
+  onHand: number;
+  /** on hand minus what is already reserved in the current form */
+  remaining: number;
+  stockStatus: StockStatus;
+  useStatus: UseStatus;
+  expired: boolean;
+  expiringSoon: boolean;
+  /** null when the item can be used */
+  blockReason: 'out_of_stock' | 'max_uses' | 'expired' | null;
+  /** non-blocking warning */
+  warnReason: 'needs_sterilization' | 'low_stock' | 'expiring_soon' | null;
+  /** maximum quantity that may still be picked (Infinity-safe number) */
+  maxSelectable: number;
+}
+
+export function getEffectiveAvailability(
+  item: ClinicInventoryItem,
+  pendingQty = 0,
+): EffectiveAvailability {
+  const onHand = Number(item.quantity_in_stock ?? 0);
+  const remaining = Math.max(0, onHand - Math.max(0, pendingQty));
+  const stockStatus = getStockStatus({ ...item, quantity_in_stock: remaining });
+  const useStatus = getUseStatus(item);
+
+  let expired = false;
+  let expiringSoon = false;
+  if (item.expiry_date) {
+    const diffDays = Math.floor(
+      (new Date(item.expiry_date).getTime() - Date.now()) / 86_400_000,
+    );
+    expired = diffDays < 0;
+    expiringSoon = !expired && diffDays <= 30;
+  }
+
+  const exhausted =
+    item.is_reusable &&
+    !!item.max_uses_per_unit &&
+    item.current_use_count >= item.max_uses_per_unit &&
+    !item.requires_sterilization;
+
+  let blockReason: EffectiveAvailability['blockReason'] = null;
+  if (expired) blockReason = 'expired';
+  else if (exhausted || useStatus === 'exhausted') blockReason = 'max_uses';
+  else if (remaining <= 0) blockReason = 'out_of_stock';
+
+  let warnReason: EffectiveAvailability['warnReason'] = null;
+  if (!blockReason) {
+    if (useStatus === 'needs_sterilization') warnReason = 'needs_sterilization';
+    else if (expiringSoon) warnReason = 'expiring_soon';
+    else if (stockStatus === 'low' || stockStatus === 'critical') warnReason = 'low_stock';
+  }
+
+  return {
+    onHand,
+    remaining,
+    stockStatus,
+    useStatus,
+    expired,
+    expiringSoon,
+    blockReason,
+    warnReason,
+    maxSelectable: blockReason ? 0 : Math.max(1, remaining),
+  };
+}
+
+// ── Scoped, realtime inventory across multiple entities ───────────────────
+
+export interface InventoryScopeRef {
+  id: string;
+  name?: string;
+  kind?: 'clinic' | 'doctor';
+}
+
+export type ScopedInventoryItem = MergedInventoryItem & { scope_name: string };
+
+export function useScopedInventory(
+  scopes: InventoryScopeRef[],
+  opts: { realtime?: boolean; enabled?: boolean } = {},
+) {
+  const { realtime = true, enabled = true } = opts;
+  const [items, setItems] = useState<ScopedInventoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const scopeKey = useMemo(
+    () => scopes.map((s) => `${s.id}:${s.kind || 'clinic'}`).sort().join('|'),
+    [scopes],
+  );
+
+  const scopeMap = useMemo(() => {
+    const m = new Map<string, InventoryScopeRef>();
+    scopes.forEach((s) => m.set(s.id, s));
+    return m;
+  }, [scopeKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const refresh = useCallback(async () => {
+    const ids = Array.from(scopeMap.keys());
+    if (!enabled || ids.length === 0) {
+      setItems([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('clinic_inventory')
+        .select('*')
+        .in('entity_id', ids)
+        .eq('is_active', true)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      const rows = ((data || []) as ClinicInventoryItem[]).map((i) => {
+        const scope = scopeMap.get(i.entity_id);
+        return {
+          ...i,
+          source: (scope?.kind || 'clinic') as 'clinic' | 'doctor',
+          scope_name: scope?.name || '',
+        };
+      });
+      setItems(rows);
+    } catch (e) {
+      console.error('useScopedInventory failed', e);
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [scopeMap, enabled]);
+
+  useEffect(() => { refresh(); }, [refresh]);
+
+  // Live updates: any stock or stock-log change in scope refreshes the list.
+  useEffect(() => {
+    const ids = Array.from(scopeMap.keys());
+    if (!enabled || !realtime || ids.length === 0) return;
+
+    const channelName = `inv-${ids[0]}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'clinic_inventory' },
+        (payload: any) => {
+          const entity = payload?.new?.entity_id ?? payload?.old?.entity_id;
+          if (!entity || scopeMap.has(entity)) refresh();
+        },
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'clinic_inventory_logs' },
+        (payload: any) => {
+          const entity = payload?.new?.entity_id ?? payload?.old?.entity_id;
+          if (!entity || scopeMap.has(entity)) refresh();
+        },
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [scopeMap, enabled, realtime, refresh]);
+
+  // Refresh when the tab/dialog regains focus
+  useEffect(() => {
+    if (!enabled) return;
+    const onFocus = () => { if (document.visibilityState === 'visible') refresh(); };
+    document.addEventListener('visibilitychange', onFocus);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onFocus);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [enabled, refresh]);
+
+  return { items, loading, refresh };
+}
