@@ -35,7 +35,8 @@ import { toast } from "sonner";
 
 import ToothSelector from "./ToothSelector";
 import { CalendarPlus, FileText, Upload, X, AlertCircle, Package, Plus, Trash2, Building2, User as UserIcon } from "lucide-react";
-import { useMergedInventory, getStockStatus, getUseStatus } from "@/hooks/useClinicInventory";
+import { useScopedInventory, getEffectiveAvailability } from "@/hooks/useClinicInventory";
+import { useInventoryScopes } from "@/hooks/useInventoryScopes";
 
 const PROCEDURE_CATEGORY_ALIASES: Record<string, string> = {
   surgical: "oral_surgery",
