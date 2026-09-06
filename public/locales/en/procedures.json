@@ -52,7 +52,16 @@
     "inSterilization": "In sterilization",
     "inSterilizationHint": "This item must be sterilized before it can be used again.",
     "maxUsesReachedHint": "This item reached its maximum number of uses.",
-    "insufficientStockHint": "Only {{count}} left in stock — quantity adjusted."
+    "insufficientStockHint": "Only {{count}} left in stock — quantity adjusted.",
+    "noInventoryScope": "No stock location found for your account yet.",
+    "noInventoryItems": "No items in stock yet. Add them in the Inventory section.",
+    "openInventory": "Open Inventory",
+    "remaining": "remaining",
+    "afterUse": "after use",
+    "expiringSoon": "Expiring soon",
+    "expired": "Expired",
+    "willConsume": "This procedure will consume {{count}} unit(s) on completion.",
+    "source": "Source"
   },
   "validation": {
     "nameRequired": "Procedure name is required",

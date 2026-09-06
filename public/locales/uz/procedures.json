@@ -52,7 +52,16 @@
     "inSterilization": "Sterilizatsiyada",
     "inSterilizationHint": "Bu element qayta ishlatilishidan oldin sterilizatsiya qilinishi kerak.",
     "maxUsesReachedHint": "Bu element maksimal foydalanish soniga yetdi.",
-    "insufficientStockHint": "Zaxirada faqat {{count}} qoldi — miqdor moslashtirildi."
+    "insufficientStockHint": "Zaxirada faqat {{count}} qoldi — miqdor moslashtirildi.",
+    "noInventoryScope": "Hisobingiz uchun ombor topilmadi.",
+    "noInventoryItems": "Omborda hali element yo'q. Ularni Ombor bo'limida qo'shing.",
+    "openInventory": "Omborni ochish",
+    "remaining": "qoldiq",
+    "afterUse": "foydalanishdan keyin",
+    "expiringSoon": "Muddati tugayapti",
+    "expired": "Muddati tugagan",
+    "willConsume": "Ushbu muolaja yakunlanganda {{count}} birlik hisobdan chiqariladi.",
+    "source": "Manba"
   },
   "validation": {
     "nameRequired": "Muolaja nomi kiritilishi shart",
