@@ -121,12 +121,6 @@ export default function PremiumHero() {
               </span>
             </h1>
 
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl font-light leading-relaxed">
-              {t(
-                "hero.docitoNetworkSubtitle",
-                "One connected healthcare network for patients, doctors, clinics, labs, imaging centers, and pharmacies—built to unify scheduling, records, referrals, diagnostics, prescriptions, billing, and communication.",
-              )}
-            </p>
 
             {/* Audience Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
