@@ -890,8 +890,10 @@
         "yellow": "Sariq"
       },
       "bookingPage": "Bemor yozilish sahifasi",
-      "saveUrl": "URL saqlash",
-      "preview": "Ko'rib chiqish",
+      "publicProfileDesc": "Bu klinikangizning ochiq profili havolasi. Uni bemorlar bilan bo'lashing yoki quyidan nusxalashing mumkin.",
+      "copyUrl": "Havolani nusxalash",
+      "copied": "Nusxalandi!",
+      "previewPublicProfile": "Ochiq profinni ko'rish",
       "emailCustomization": "Email sozlamalari",
       "emailHeader": "Email sarlavhasi",
       "footerText": "Pastki matn",
