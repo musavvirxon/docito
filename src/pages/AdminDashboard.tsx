@@ -5704,15 +5704,19 @@ const AdminDashboard = () => {
                   <Card>
                     <CardHeader><CardTitle>{t("admin.st.bookingPage")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex items-center gap-1">
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">docito.com/</span>
-                        <Input defaultValue={practice?.slug || practice?.id?.slice(0, 8) || ''} disabled={!allowModals} />
-                      </div>
+                      <p className="text-sm text-muted-foreground">{t("admin.st.publicProfileDesc")}</p>
+                      <Input readOnly value={practice?.id ? `https://docito.app/practice/${practice.id}` : ''} disabled={!practice?.id} onFocus={(e) => e.currentTarget.select()} />
                       <div className="flex gap-2">
-                        <Button size="sm" onClick={() => guard(async () => {
-                            await saveEntitySettings('branding', { colorIndex: selectedBrandColor, custom_url: true });
-                          })} disabled={!allowModals}>{t("admin.st.saveUrl")}</Button>
-                        <Button size="sm" variant="outline" onClick={() => window.open(`/doctors`, '_blank')}>{t("admin.st.preview")}</Button>
+                        <Button size="sm" onClick={async () => {
+                            if (!practice?.id) return;
+                            const url = `${window.location.origin}/practice/${practice.id}`;
+                            try { await navigator.clipboard.writeText(url); } catch {
+                              const ta = document.createElement('textarea'); ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+                            }
+                            setProfileUrlCopied(true);
+                            window.setTimeout(() => setProfileUrlCopied(false), 2000);
+                          }} disabled={!practice?.id}>{profileUrlCopied ? t("admin.st.copied") : t("admin.st.copyUrl")}</Button>
+                        <Button size="sm" variant="outline" onClick={() => { if (practice?.id) window.open(`/practice/${practice.id}`, '_blank'); }} disabled={!practice?.id}>{t("admin.st.previewPublicProfile")}</Button>
                       </div>
                     </CardContent>
                   </Card>
