@@ -454,7 +454,7 @@ const DoctorProcedureLibrarySection = () => {
             <CardTitle className="text-sm font-medium">{t("doctor.procedureLibrary.averageFee", "Average Fee")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${averageFee.toFixed(0)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(averageFee)}</div>
             <p className="text-xs text-muted-foreground">{t("doctor.procedureLibrary.perProcedure", "Per procedure")}</p>
           </CardContent>
         </Card>
