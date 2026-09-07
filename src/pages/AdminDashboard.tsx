@@ -340,6 +340,7 @@ const AdminDashboard = () => {
     maxPerDay: 0, bufferMinutes: 10,
   });
   const [selectedBrandColor, setSelectedBrandColor] = useState(0);
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const [patientNoteText, setPatientNoteText] = useState('');
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [editingServicePrice, setEditingServicePrice] = useState('');
@@ -378,6 +379,9 @@ const AdminDashboard = () => {
       }
       if (payload.branding?.colorIndex !== undefined) {
         setSelectedBrandColor(payload.branding.colorIndex);
+      }
+      if (typeof payload.branding?.logo_url === 'string' || payload.branding?.logo_url === null) {
+        setBrandLogoUrl(payload.branding.logo_url || null);
       }
       const integrations = s.integrations || payload.integrations || {};
       if (Array.isArray(integrations.api_keys)) setApiKeys(integrations.api_keys);
@@ -3125,8 +3129,10 @@ const AdminDashboard = () => {
                         input.onchange = async (ev: any) => {
                           const file = ev.target.files?.[0];
                           if (!file) return;
-                          const path = `patients/${selectedPatient?.id || 'unknown'}/${Date.now()}_${file.name}`;
-                          const { error } = await supabase.storage.from('attachments').upload(path, file);
+                           if (!user?.id) return;
+                           const safeName = file.name.replace(/[^\w.\-]+/g, '_');
+                           const path = `${user.id}/patients/${selectedPatient?.id || 'unknown'}/${Date.now()}_${safeName}`;
+                           const { error } = await supabase.storage.from('attachments').upload(path, file);
                           if (error) { toast.error(error.message); return; }
                           toast.success(t('admin.pt.documentUploaded'));
                         };
@@ -5633,23 +5639,47 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>{t("admin.st.clinicLogo")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center"><Building2 className="h-8 w-8 text-muted-foreground" /></div>
-                        <div><p className="text-sm text-muted-foreground">{t("admin.st.noLogo")}</p><Button size="sm" variant="outline" className="mt-2" onClick={() => guard(async () => {
+                        <div className="w-20 h-20 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
+                          {brandLogoUrl ? (
+                            <img src={brandLogoUrl} alt={t("admin.st.clinicLogo")} className="w-full h-full object-contain" />
+                          ) : (
+                            <Building2 className="h-8 w-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div>
+                          {!brandLogoUrl && <p className="text-sm text-muted-foreground">{t("admin.st.noLogo")}</p>}
+                          <div className="flex items-center gap-2 mt-2">
+                            <Button size="sm" variant="outline" onClick={() => guard(async () => {
+                          if (!practice?.id) { toast.error(t("admin.st.noPracticeSelected")); return; }
+                          if (!user?.id) return;
                           const input = document.createElement('input');
                           input.type = 'file';
                           input.accept = 'image/*';
                           input.onchange = async (ev: any) => {
                             const file = ev.target.files?.[0];
                             if (!file) return;
-                            const path = `logos/${practice?.id}/${Date.now()}_${file.name}`;
-                            const { error } = await supabase.storage.from('attachments').upload(path, file);
+                            if (!file.type.startsWith('image/')) { toast.error(t("admin.st.logoInvalidType")); return; }
+                            if (file.size > 5 * 1024 * 1024) { toast.error(t("admin.st.logoTooLarge")); return; }
+                            const safeName = file.name.replace(/[^\w.\-]+/g, '_');
+                            const path = `${user.id}/${practice.id}/${Date.now()}_${safeName}`;
+                            const { error } = await supabase.storage.from('practice-logos').upload(path, file, { upsert: true, contentType: file.type });
                             if (error) { toast.error(error.message); return; }
-                            const { data: urlData } = supabase.storage.from('attachments').getPublicUrl(path);
+                            const { data: urlData } = supabase.storage.from('practice-logos').getPublicUrl(path);
                             await saveEntitySettings('branding', { colorIndex: selectedBrandColor, logo_url: urlData.publicUrl });
+                            setBrandLogoUrl(urlData.publicUrl);
                             toast.success(t("admin.st.logoUploaded"));
                           };
                           input.click();
-                        })} disabled={!allowModals}>{t("admin.st.uploadLogo")}</Button></div>
+                            })} disabled={!allowModals}>{brandLogoUrl ? t("admin.st.replaceLogo") : t("admin.st.uploadLogo")}</Button>
+                            {brandLogoUrl && (
+                              <Button size="sm" variant="ghost" onClick={() => guard(async () => {
+                                await saveEntitySettings('branding', { colorIndex: selectedBrandColor, logo_url: null });
+                                setBrandLogoUrl(null);
+                                toast.success(t("admin.st.logoRemoved"));
+                              })} disabled={!allowModals}>{t("admin.st.removeLogo")}</Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <p className="text-xs text-muted-foreground">{t("admin.st.logoDesc")}</p>
                     </CardContent>
