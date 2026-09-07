@@ -239,6 +239,7 @@ const AdminDashboard = () => {
   const [billingRange, setBillingRange] = useState<"7d" | "30d" | "90d">("30d");
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
   const [branchFilter, setBranchFilter] = useState<string | null>(null);
+  const [profileUrlCopied, setProfileUrlCopied] = useState(false);
 
   // Provider section state
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
