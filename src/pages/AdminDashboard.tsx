@@ -380,6 +380,9 @@ const AdminDashboard = () => {
       if (payload.branding?.colorIndex !== undefined) {
         setSelectedBrandColor(payload.branding.colorIndex);
       }
+      if (typeof payload.branding?.logo_url === 'string' || payload.branding?.logo_url === null) {
+        setBrandLogoUrl(payload.branding.logo_url || null);
+      }
       const integrations = s.integrations || payload.integrations || {};
       if (Array.isArray(integrations.api_keys)) setApiKeys(integrations.api_keys);
       if (typeof integrations.webhook_url === 'string') setWebhookUrl(integrations.webhook_url);
