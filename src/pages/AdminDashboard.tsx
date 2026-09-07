@@ -5681,7 +5681,6 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                       </div>
-                      </div>
                       <p className="text-xs text-muted-foreground">{t("admin.st.logoDesc")}</p>
                     </CardContent>
                   </Card>
