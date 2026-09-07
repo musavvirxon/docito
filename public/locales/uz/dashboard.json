@@ -1000,7 +1000,13 @@
       "webhookSaved": "Vebhuk URL saqlandi",
       "httpsRequired": "URL https:// bilan boshlanishi kerak",
       "triggerEvents": "Vebhukni ishga tushuruvchi hodisalar:",
-      "deliveryLogs": "Vebhuk yetkazish loglari kelgusida."
+      "deliveryLogs": "Vebhuk yetkazish loglari kelgusida.",
+      "replaceLogo": "Almashtirish",
+      "removeLogo": "O‘chirish",
+      "logoRemoved": "Logotip o‘chirildi",
+      "logoTooLarge": "Rasm juda katta (maks. 5 MB)",
+      "logoInvalidType": "Iltimos, rasm faylini tanlang",
+      "noPracticeSelected": "Avval klinikani tanlang"
     },
     "qd": {
       "title": "Navbat displeyi",

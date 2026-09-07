@@ -1000,7 +1000,13 @@
       "webhookSaved": "Webhook URL saved",
       "httpsRequired": "URL must start with https://",
       "triggerEvents": "Events that trigger webhooks:",
-      "deliveryLogs": "Webhook delivery logs coming in a future update."
+      "deliveryLogs": "Webhook delivery logs coming in a future update.",
+      "replaceLogo": "Replace",
+      "removeLogo": "Remove",
+      "logoRemoved": "Logo removed",
+      "logoTooLarge": "Image is too large (max 5 MB)",
+      "logoInvalidType": "Please choose an image file",
+      "noPracticeSelected": "Select a clinic first"
     },
     "qd": {
       "title": "Queue Display",
