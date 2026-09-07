@@ -340,6 +340,7 @@ const AdminDashboard = () => {
     maxPerDay: 0, bufferMinutes: 10,
   });
   const [selectedBrandColor, setSelectedBrandColor] = useState(0);
+  const [brandLogoUrl, setBrandLogoUrl] = useState<string | null>(null);
   const [patientNoteText, setPatientNoteText] = useState('');
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [editingServicePrice, setEditingServicePrice] = useState('');
