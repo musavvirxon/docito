@@ -3129,8 +3129,10 @@ const AdminDashboard = () => {
                         input.onchange = async (ev: any) => {
                           const file = ev.target.files?.[0];
                           if (!file) return;
-                          const path = `patients/${selectedPatient?.id || 'unknown'}/${Date.now()}_${file.name}`;
-                          const { error } = await supabase.storage.from('attachments').upload(path, file);
+                           if (!user?.id) return;
+                           const safeName = file.name.replace(/[^\w.\-]+/g, '_');
+                           const path = `${user.id}/patients/${selectedPatient?.id || 'unknown'}/${Date.now()}_${safeName}`;
+                           const { error } = await supabase.storage.from('attachments').upload(path, file);
                           if (error) { toast.error(error.message); return; }
                           toast.success(t('admin.pt.documentUploaded'));
                         };
