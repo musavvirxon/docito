@@ -890,8 +890,10 @@
         "yellow": "Yellow"
       },
       "bookingPage": "Patient Booking Page",
-      "saveUrl": "Save URL",
-      "preview": "Preview Booking Page",
+      "publicProfileDesc": "This is your clinic's public profile link. Share it with patients or copy it below.",
+      "copyUrl": "Copy link",
+      "copied": "Copied!",
+      "previewPublicProfile": "Open Public Profile",
       "emailCustomization": "Email Customization",
       "emailHeader": "Email Header",
       "footerText": "Footer Text",
