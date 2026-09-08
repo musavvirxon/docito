@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { fetchBranchForDoctor } from "@/lib/branchAddress";
 
 interface AppointmentSummaryData {
   id: string;
