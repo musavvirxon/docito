@@ -73,7 +73,7 @@ import { useEntitySettings } from "@/hooks/useEntitySettings";
 import { useFinanceEntries } from "@/hooks/useFinanceEntries";
 import { useFinanceCategories } from "@/hooks/useFinanceCategories";
 import { useCurrency } from "@/hooks/useCurrency";
-import { resolveBranch } from "@/lib/branchAddress";
+import { resolveBranch, buildEmailFooter } from "@/lib/branchAddress";
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -213,7 +213,7 @@ const AdminDashboard = () => {
 
   // Branch (location) used on printed documents: the doctor's assigned branch,
   // else the clinic's primary branch, else the clinic record's own address.
-  const branchFor = useCallback((doctorId?: string | null) => {
+  const branchFor = useCallback((doctorId?: string | null): ReturnType<typeof resolveBranch> => {
     const doc = doctorId ? (doctors as any[]).find((d: any) => d?.id === doctorId || d?.user_id === doctorId) : null;
     return resolveBranch({
       locations: locations as any,
