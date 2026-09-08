@@ -820,7 +820,7 @@
       "practiceDetails": "Practice Details",
       "practiceId": "Practice ID",
       "copy": "Copy",
-      "copied": "Copied",
+      "copied": "Copied!",
       "verification": "Verification",
       "memberSince": "Member Since",
       "save": "Save",
@@ -892,7 +892,6 @@
       "bookingPage": "Patient Booking Page",
       "publicProfileDesc": "This is your clinic's public profile link. Share it with patients or copy it below.",
       "copyUrl": "Copy link",
-      "copied": "Copied!",
       "previewPublicProfile": "Open Public Profile",
       "emailCustomization": "Email Customization",
       "emailHeader": "Email Header",
@@ -1008,7 +1007,9 @@
       "logoRemoved": "Logo removed",
       "logoTooLarge": "Image is too large (max 5 MB)",
       "logoInvalidType": "Please choose an image file",
-      "noPracticeSelected": "Select a clinic first"
+      "noPracticeSelected": "Select a clinic first",
+      "footerPlaceholderHint": "Use {address}, {phone}, {clinic} or {email} to insert the branch details automatically.",
+      "emailPreview": "Preview"
     },
     "qd": {
       "title": "Queue Display",

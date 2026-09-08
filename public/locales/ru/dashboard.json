@@ -1006,7 +1006,9 @@
       "logoRemoved": "Логотип удалён",
       "logoTooLarge": "Изображение слишком большое (макс. 5 МБ)",
       "logoInvalidType": "Выберите файл изображения",
-      "noPracticeSelected": "Сначала выберите клинику"
+      "noPracticeSelected": "Сначала выберите клинику",
+      "footerPlaceholderHint": "Используйте {address}, {phone}, {clinic} или {email}, чтобы автоматически подставить данные филиала.",
+      "emailPreview": "Предпросмотр"
     },
     "qd": {
       "title": "Табло очереди",
