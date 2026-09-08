@@ -5716,7 +5716,7 @@ const AdminDashboard = () => {
                       </div>
                       <p className="text-sm text-muted-foreground">{t("admin.st.selected")}: {brandColors[selectedBrandColor].name}</p>
                       <Button onClick={() => guard(async () => {
-                            await saveEntitySettings('branding', { colorIndex: selectedBrandColor });
+                            await saveEntitySettings('branding', { ...currentBranding, colorIndex: selectedBrandColor, logo_url: brandLogoUrl });
                           })} disabled={!allowModals}>{t("admin.st.save")}</Button>
                     </CardContent>
                   </Card>
@@ -5744,12 +5744,30 @@ const AdminDashboard = () => {
                   <Card>
                     <CardHeader><CardTitle>{t("admin.st.emailCustomization")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.emailHeader")}</label><Input defaultValue={practice?.name || t("admin.st.yourClinic")} disabled={!allowModals} /></div>
-                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.footerText")}</label><Textarea placeholder={t("admin.st.footerPlaceholder")} rows={2} disabled={!allowModals} /></div>
-                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.signature")}</label><Input placeholder={t("admin.st.signaturePlaceholder")} disabled={!allowModals} /></div>
+                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.emailHeader")}</label><Input value={emailHeaderText} onChange={(e) => setEmailHeaderText(e.target.value)} placeholder={practice?.name || t("admin.st.yourClinic")} disabled={!allowModals} /></div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">{t("admin.st.footerText")}</label>
+                        <Textarea value={emailFooterText} onChange={(e) => setEmailFooterText(e.target.value)} placeholder={t("admin.st.footerPlaceholder")} rows={2} disabled={!allowModals} />
+                        <p className="text-xs text-muted-foreground mt-1">{t("admin.st.footerPlaceholderHint")}</p>
+                      </div>
+                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.signature")}</label><Input value={emailSignatureText} onChange={(e) => setEmailSignatureText(e.target.value)} placeholder={t("admin.st.signaturePlaceholder")} disabled={!allowModals} /></div>
+                      <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">{t("admin.st.emailPreview")}</p>
+                        <p className="text-sm font-semibold text-foreground">{emailHeaderText || practice?.name || t("admin.st.yourClinic")}</p>
+                        {emailSignatureText ? <p className="text-sm text-muted-foreground">{emailSignatureText}</p> : null}
+                        <p className="text-xs text-muted-foreground">{buildEmailFooter(emailFooterText, branchFor(null))}</p>
+                      </div>
                       <Button onClick={() => guard(async () => {
-                            await saveEntitySettings('branding', { colorIndex: selectedBrandColor, email_customized: true });
-                          })} disabled={!allowModals}>{t("admin.st.saveTemplate")}</Button>
+                            await saveEntitySettings('branding', {
+                              ...currentBranding,
+                              colorIndex: selectedBrandColor,
+                              logo_url: brandLogoUrl,
+                              email_customized: true,
+                              email_header: emailHeaderText,
+                              email_footer: emailFooterText,
+                              email_signature: emailSignatureText,
+                            });
+                          })} disabled={!allowModals || !emailTemplateDirty}>{t("admin.st.saveTemplate")}</Button>
                     </CardContent>
                   </Card>
                 </div>
