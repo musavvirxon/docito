@@ -524,6 +524,19 @@ const AdminDashboard = () => {
     }
   }, [entitySettings]);
 
+  // Existing branding payload — spread on save so one card never wipes another's values
+  const currentBranding = useMemo(
+    () => ((entitySettings.settings as any)?.payload?.branding || {}) as Record<string, any>,
+    [entitySettings.settings],
+  );
+  const emailTemplateDirty = useMemo(
+    () =>
+      (currentBranding.email_header || '') !== emailHeaderText ||
+      (currentBranding.email_footer || '') !== emailFooterText ||
+      (currentBranding.email_signature || '') !== emailSignatureText,
+    [currentBranding, emailHeaderText, emailFooterText, emailSignatureText],
+  );
+
   // Save settings helper
   const saveEntitySettings = async (section: string, data: Record<string, any>) => {
     try {
