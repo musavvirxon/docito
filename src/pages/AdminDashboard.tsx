@@ -1368,8 +1368,8 @@ const AdminDashboard = () => {
                                       diagnosis: (a as any).diagnosis || a.service_name || '',
                                       doctorName: selectedProvider?.name || '',
                                       serviceName: a.service_name || '',
-                                      clinicName: practice?.name || '',
-                                      clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                      clinicName: branchFor(selectedProvider?.id).name || practice?.name || '',
+                                      clinicAddress: branchFor(selectedProvider?.id).address,
                                     }}
                                   />
                                 </div>
@@ -3043,8 +3043,8 @@ const AdminDashboard = () => {
                                             diagnosis: (a as any).diagnosis || a.service_name || a.appointment_type || '',
                                             doctorName: a.doctor_name || '',
                                             serviceName: a.service_name || a.appointment_type || '',
-                                            clinicName: practice?.name || '',
-                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                            clinicName: branchFor((a as any).doctor_id).name || practice?.name || '',
+                                            clinicAddress: branchFor((a as any).doctor_id).address,
                                           }}
                                         />
                                       </div>
@@ -4001,8 +4001,8 @@ const AdminDashboard = () => {
                                                 diagnosis: tx?.metadata?.service_name || '',
                                                 doctorName: tx?.metadata?.doctor_name || '',
                                                 serviceName: tx?.metadata?.service_name || '',
-                                                clinicName: practice?.name || '',
-                                                clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                                clinicName: branchFor(tx?.metadata?.doctor_id).name || practice?.name || '',
+                                                clinicAddress: branchFor(tx?.metadata?.doctor_id).address,
                                               }}
                                             />
                                           );
