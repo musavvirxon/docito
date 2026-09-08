@@ -240,6 +240,9 @@ const AdminDashboard = () => {
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
   const [branchFilter, setBranchFilter] = useState<string | null>(null);
   const [profileUrlCopied, setProfileUrlCopied] = useState(false);
+  const [emailHeaderText, setEmailHeaderText] = useState('');
+  const [emailFooterText, setEmailFooterText] = useState('');
+  const [emailSignatureText, setEmailSignatureText] = useState('');
 
   // Provider section state
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
@@ -384,6 +387,9 @@ const AdminDashboard = () => {
       if (typeof payload.branding?.logo_url === 'string' || payload.branding?.logo_url === null) {
         setBrandLogoUrl(payload.branding.logo_url || null);
       }
+      if (typeof payload.branding?.email_header === 'string') setEmailHeaderText(payload.branding.email_header);
+      if (typeof payload.branding?.email_footer === 'string') setEmailFooterText(payload.branding.email_footer);
+      if (typeof payload.branding?.email_signature === 'string') setEmailSignatureText(payload.branding.email_signature);
       const integrations = s.integrations || payload.integrations || {};
       if (Array.isArray(integrations.api_keys)) setApiKeys(integrations.api_keys);
       if (typeof integrations.webhook_url === 'string') setWebhookUrl(integrations.webhook_url);
