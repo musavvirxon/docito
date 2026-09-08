@@ -73,6 +73,7 @@ import { useEntitySettings } from "@/hooks/useEntitySettings";
 import { useFinanceEntries } from "@/hooks/useFinanceEntries";
 import { useFinanceCategories } from "@/hooks/useFinanceCategories";
 import { useCurrency } from "@/hooks/useCurrency";
+import { resolveBranch } from "@/lib/branchAddress";
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
