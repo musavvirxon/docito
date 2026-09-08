@@ -380,6 +380,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             address: (docProfile as any).practice_address || '',
           });
         }
+        // Prefer the doctor's assigned branch address when the clinic has branches
+        try {
+          const branch = await fetchBranchForDoctor({
+            doctorId: appointmentData.doctor_id,
+            lang: i18n.language,
+          });
+          if (branch.address || branch.name) {
+            setClinicInfo((prev) => ({
+              name: branch.name || prev.name,
+              address: branch.address || prev.address,
+            }));
+          }
+        } catch { /* keep the practice-level address */ }
       }
 
       // If video appointment, preload existing consultation (if any)
