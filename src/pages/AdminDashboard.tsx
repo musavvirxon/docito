@@ -73,6 +73,7 @@ import { useEntitySettings } from "@/hooks/useEntitySettings";
 import { useFinanceEntries } from "@/hooks/useFinanceEntries";
 import { useFinanceCategories } from "@/hooks/useFinanceCategories";
 import { useCurrency } from "@/hooks/useCurrency";
+import { resolveBranch, buildEmailFooter } from "@/lib/branchAddress";
 
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -189,7 +190,7 @@ function SectionWrapper({ children, locked, onRequestVerify, message }: { childr
 }
 
 const AdminDashboard = () => {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const navigate = useNavigate();
   const { format: money, formatCents: moneyCents } = useCurrency();
 
@@ -209,6 +210,18 @@ const AdminDashboard = () => {
     error,
     refreshData,
   } = useAdminDashboard();
+
+  // Branch (location) used on printed documents: the doctor's assigned branch,
+  // else the clinic's primary branch, else the clinic record's own address.
+  const branchFor = useCallback((doctorId?: string | null): ReturnType<typeof resolveBranch> => {
+    const doc = doctorId ? (doctors as any[]).find((d: any) => d?.id === doctorId || d?.user_id === doctorId) : null;
+    return resolveBranch({
+      locations: locations as any,
+      practice: practice as any,
+      doctorLocationId: doc?.practice_location_id || null,
+      lang: i18n.language,
+    });
+  }, [doctors, locations, practice, i18n.language]);
 
   const verificationStatus = practice?.verification_status || "pending";
   const isVerified = verificationStatus === "verified" || verificationStatus === "approved";
@@ -240,6 +253,9 @@ const AdminDashboard = () => {
   const [analyticsRange, setAnalyticsRange] = useState<"7d" | "30d" | "90d">("30d");
   const [branchFilter, setBranchFilter] = useState<string | null>(null);
   const [profileUrlCopied, setProfileUrlCopied] = useState(false);
+  const [emailHeaderText, setEmailHeaderText] = useState('');
+  const [emailFooterText, setEmailFooterText] = useState('');
+  const [emailSignatureText, setEmailSignatureText] = useState('');
 
   // Provider section state
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
@@ -384,6 +400,9 @@ const AdminDashboard = () => {
       if (typeof payload.branding?.logo_url === 'string' || payload.branding?.logo_url === null) {
         setBrandLogoUrl(payload.branding.logo_url || null);
       }
+      if (typeof payload.branding?.email_header === 'string') setEmailHeaderText(payload.branding.email_header);
+      if (typeof payload.branding?.email_footer === 'string') setEmailFooterText(payload.branding.email_footer);
+      if (typeof payload.branding?.email_signature === 'string') setEmailSignatureText(payload.branding.email_signature);
       const integrations = s.integrations || payload.integrations || {};
       if (Array.isArray(integrations.api_keys)) setApiKeys(integrations.api_keys);
       if (typeof integrations.webhook_url === 'string') setWebhookUrl(integrations.webhook_url);
@@ -504,6 +523,19 @@ const AdminDashboard = () => {
       toast.error(e?.message || 'Failed to save invoice template');
     }
   }, [entitySettings]);
+
+  // Existing branding payload — spread on save so one card never wipes another's values
+  const currentBranding = useMemo(
+    () => ((entitySettings.settings as any)?.payload?.branding || {}) as Record<string, any>,
+    [entitySettings.settings],
+  );
+  const emailTemplateDirty = useMemo(
+    () =>
+      (currentBranding.email_header || '') !== emailHeaderText ||
+      (currentBranding.email_footer || '') !== emailFooterText ||
+      (currentBranding.email_signature || '') !== emailSignatureText,
+    [currentBranding, emailHeaderText, emailFooterText, emailSignatureText],
+  );
 
   // Save settings helper
   const saveEntitySettings = async (section: string, data: Record<string, any>) => {
@@ -1349,8 +1381,8 @@ const AdminDashboard = () => {
                                       diagnosis: (a as any).diagnosis || a.service_name || '',
                                       doctorName: selectedProvider?.name || '',
                                       serviceName: a.service_name || '',
-                                      clinicName: practice?.name || '',
-                                      clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                      clinicName: branchFor(selectedProvider?.id).name || practice?.name || '',
+                                      clinicAddress: branchFor(selectedProvider?.id).address,
                                     }}
                                   />
                                 </div>
@@ -3024,8 +3056,8 @@ const AdminDashboard = () => {
                                             diagnosis: (a as any).diagnosis || a.service_name || a.appointment_type || '',
                                             doctorName: a.doctor_name || '',
                                             serviceName: a.service_name || a.appointment_type || '',
-                                            clinicName: practice?.name || '',
-                                            clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                            clinicName: branchFor((a as any).doctor_id).name || practice?.name || '',
+                                            clinicAddress: branchFor((a as any).doctor_id).address,
                                           }}
                                         />
                                       </div>
@@ -3982,8 +4014,8 @@ const AdminDashboard = () => {
                                                 diagnosis: tx?.metadata?.service_name || '',
                                                 doctorName: tx?.metadata?.doctor_name || '',
                                                 serviceName: tx?.metadata?.service_name || '',
-                                                clinicName: practice?.name || '',
-                                                clinicAddress: (practice as any)?.address || locations[0]?.address || '',
+                                                clinicName: branchFor(tx?.metadata?.doctor_id).name || practice?.name || '',
+                                                clinicAddress: branchFor(tx?.metadata?.doctor_id).address,
                                               }}
                                             />
                                           );
@@ -5697,7 +5729,7 @@ const AdminDashboard = () => {
                       </div>
                       <p className="text-sm text-muted-foreground">{t("admin.st.selected")}: {brandColors[selectedBrandColor].name}</p>
                       <Button onClick={() => guard(async () => {
-                            await saveEntitySettings('branding', { colorIndex: selectedBrandColor });
+                            await saveEntitySettings('branding', { ...currentBranding, colorIndex: selectedBrandColor, logo_url: brandLogoUrl });
                           })} disabled={!allowModals}>{t("admin.st.save")}</Button>
                     </CardContent>
                   </Card>
@@ -5725,12 +5757,30 @@ const AdminDashboard = () => {
                   <Card>
                     <CardHeader><CardTitle>{t("admin.st.emailCustomization")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.emailHeader")}</label><Input defaultValue={practice?.name || t("admin.st.yourClinic")} disabled={!allowModals} /></div>
-                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.footerText")}</label><Textarea placeholder={t("admin.st.footerPlaceholder")} rows={2} disabled={!allowModals} /></div>
-                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.signature")}</label><Input placeholder={t("admin.st.signaturePlaceholder")} disabled={!allowModals} /></div>
+                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.emailHeader")}</label><Input value={emailHeaderText} onChange={(e) => setEmailHeaderText(e.target.value)} placeholder={practice?.name || t("admin.st.yourClinic")} disabled={!allowModals} /></div>
+                      <div>
+                        <label className="text-sm font-medium text-muted-foreground">{t("admin.st.footerText")}</label>
+                        <Textarea value={emailFooterText} onChange={(e) => setEmailFooterText(e.target.value)} placeholder={t("admin.st.footerPlaceholder")} rows={2} disabled={!allowModals} />
+                        <p className="text-xs text-muted-foreground mt-1">{t("admin.st.footerPlaceholderHint")}</p>
+                      </div>
+                      <div><label className="text-sm font-medium text-muted-foreground">{t("admin.st.signature")}</label><Input value={emailSignatureText} onChange={(e) => setEmailSignatureText(e.target.value)} placeholder={t("admin.st.signaturePlaceholder")} disabled={!allowModals} /></div>
+                      <div className="rounded-lg border border-border bg-muted/40 p-3 space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">{t("admin.st.emailPreview")}</p>
+                        <p className="text-sm font-semibold text-foreground">{emailHeaderText || practice?.name || t("admin.st.yourClinic")}</p>
+                        {emailSignatureText ? <p className="text-sm text-muted-foreground">{emailSignatureText}</p> : null}
+                        <p className="text-xs text-muted-foreground">{buildEmailFooter(emailFooterText, branchFor(null))}</p>
+                      </div>
                       <Button onClick={() => guard(async () => {
-                            await saveEntitySettings('branding', { colorIndex: selectedBrandColor, email_customized: true });
-                          })} disabled={!allowModals}>{t("admin.st.saveTemplate")}</Button>
+                            await saveEntitySettings('branding', {
+                              ...currentBranding,
+                              colorIndex: selectedBrandColor,
+                              logo_url: brandLogoUrl,
+                              email_customized: true,
+                              email_header: emailHeaderText,
+                              email_footer: emailFooterText,
+                              email_signature: emailSignatureText,
+                            });
+                          })} disabled={!allowModals || !emailTemplateDirty}>{t("admin.st.saveTemplate")}</Button>
                     </CardContent>
                   </Card>
                 </div>

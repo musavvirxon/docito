@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
+import { fetchBranchForDoctor } from "@/lib/branchAddress";
 
 interface AppointmentSummaryData {
   id: string;
@@ -58,9 +59,19 @@ export function useAppointmentSummaryPdf() {
 
       // Resolve clinic logo + info from doctor's practice
       const practice = (doctor as any)?.practices || null;
-      const clinicName: string = practice?.name || "";
-      const clinicAddress: string = practice?.address || "";
+      let clinicName: string = practice?.name || "";
+      let clinicAddress: string = practice?.address || "";
       const clinicLogoUrl: string | null = practice?.logo_url || (doctor as any)?.logo_url || null;
+
+      // Use the doctor's assigned branch address when the clinic has branches
+      try {
+        const branch = await fetchBranchForDoctor({
+          doctorId: appointment.doctor_id || null,
+          practiceId: (doctor as any)?.practice_id || null,
+        });
+        if (branch.name) clinicName = branch.name;
+        if (branch.address) clinicAddress = branch.address;
+      } catch { /* keep the practice-level values */ }
 
       // Try fetching clinic logo as data URL — silent fallback
       let clinicLogoDataUrl: string | null = null;

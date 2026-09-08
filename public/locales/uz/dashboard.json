@@ -820,7 +820,7 @@
       "practiceDetails": "Klinika tafsilotlari",
       "practiceId": "Klinika ID",
       "copy": "Nusxa",
-      "copied": "Nusxalandi",
+      "copied": "Nusxalandi!",
       "verification": "Tekshiruv",
       "memberSince": "Ro'yxatga olingan sana",
       "save": "Saqlash",
@@ -892,7 +892,6 @@
       "bookingPage": "Bemor yozilish sahifasi",
       "publicProfileDesc": "Bu klinikangizning ochiq profili havolasi. Uni bemorlar bilan bo'lashing yoki quyidan nusxalashing mumkin.",
       "copyUrl": "Havolani nusxalash",
-      "copied": "Nusxalandi!",
       "previewPublicProfile": "Ochiq profinni ko'rish",
       "emailCustomization": "Email sozlamalari",
       "emailHeader": "Email sarlavhasi",
@@ -1008,7 +1007,9 @@
       "logoRemoved": "Logotip o‘chirildi",
       "logoTooLarge": "Rasm juda katta (maks. 5 MB)",
       "logoInvalidType": "Iltimos, rasm faylini tanlang",
-      "noPracticeSelected": "Avval klinikani tanlang"
+      "noPracticeSelected": "Avval klinikani tanlang",
+      "footerPlaceholderHint": "Filial ma'lumotlari avtomatik qo'yilishi uchun {address}, {phone}, {clinic} yoki {email} dan foydalaning.",
+      "emailPreview": "Ko'rib chiqish"
     },
     "qd": {
       "title": "Navbat displeyi",

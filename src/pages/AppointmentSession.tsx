@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { fetchBranchForDoctor } from '@/lib/branchAddress';
 import {
   ArrowLeft,
   Video,
@@ -134,7 +135,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const { appointmentId: paramAppointmentId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const { allRoles, user } = useAuth();
 
   const appointmentId = propAppointmentId || paramAppointmentId;
@@ -380,6 +381,19 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             address: (docProfile as any).practice_address || '',
           });
         }
+        // Prefer the doctor's assigned branch address when the clinic has branches
+        try {
+          const branch = await fetchBranchForDoctor({
+            doctorId: appointmentData.doctor_id,
+            lang: i18n.language,
+          });
+          if (branch.address || branch.name) {
+            setClinicInfo((prev) => ({
+              name: branch.name || prev.name,
+              address: branch.address || prev.address,
+            }));
+          }
+        } catch { /* keep the practice-level address */ }
       }
 
       // If video appointment, preload existing consultation (if any)
