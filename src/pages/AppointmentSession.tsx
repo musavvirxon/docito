@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { fetchBranchForDoctor } from '@/lib/branchAddress';
 import {
   ArrowLeft,
   Video,
@@ -134,7 +135,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const { appointmentId: paramAppointmentId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const { allRoles, user } = useAuth();
 
   const appointmentId = propAppointmentId || paramAppointmentId;
