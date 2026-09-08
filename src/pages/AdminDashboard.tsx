@@ -189,7 +189,7 @@ function SectionWrapper({ children, locked, onRequestVerify, message }: { childr
 }
 
 const AdminDashboard = () => {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
   const navigate = useNavigate();
   const { format: money, formatCents: moneyCents } = useCurrency();
 
@@ -209,6 +209,18 @@ const AdminDashboard = () => {
     error,
     refreshData,
   } = useAdminDashboard();
+
+  // Branch (location) used on printed documents: the doctor's assigned branch,
+  // else the clinic's primary branch, else the clinic record's own address.
+  const branchFor = useCallback((doctorId?: string | null) => {
+    const doc = doctorId ? (doctors as any[]).find((d: any) => d?.id === doctorId || d?.user_id === doctorId) : null;
+    return resolveBranch({
+      locations: locations as any,
+      practice: practice as any,
+      doctorLocationId: doc?.practice_location_id || null,
+      lang: i18n.language,
+    });
+  }, [doctors, locations, practice, i18n.language]);
 
   const verificationStatus = practice?.verification_status || "pending";
   const isVerified = verificationStatus === "verified" || verificationStatus === "approved";
