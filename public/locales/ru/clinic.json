@@ -309,6 +309,23 @@
       "inviteResent": "Invitation resent",
       "resendFailed": "Failed to resend invite",
       "loadFailed": "Failed to load staff data"
+    },
+    "grantAccess": {
+      "title": "Предоставить доступ участнику клиники",
+      "description": "Выберите человека, который уже присоединился к клинике, и выдайте ему доступ к панели с ролью.",
+      "member": "Участник клиники",
+      "selectMember": "Выберите участника",
+      "role": "Роль",
+      "submit": "Выдать доступ",
+      "loading": "Загрузка участников…",
+      "empty": "У всех, кто присоединился к клинике, уже есть доступ.",
+      "granted": "Доступ выдан. Панель появится при следующем входе.",
+      "failed": "Не удалось выдать доступ",
+      "sources": {
+        "doctor": "Врач этой клиники",
+        "joinRequest": "Врач • заявка одобрена",
+        "practiceStaff": "Запись сотрудника"
+      }
     }
   }
 }
