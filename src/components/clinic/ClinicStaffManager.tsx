@@ -614,6 +614,45 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
               </div>
             </div>
           </form>
+
+          {/* Grant access to a member who already joined the clinic */}
+          <div className="mt-6 rounded-lg border p-4 space-y-3">
+            <div>
+              <div className="text-sm font-medium">{t("staffManager.grantAccess.title")}</div>
+              <div className="text-sm text-muted-foreground">{t("staffManager.grantAccess.description")}</div>
+            </div>
+            {candidatesLoading ? (
+              <div className="text-sm text-muted-foreground">{t("staffManager.grantAccess.loading")}</div>
+            ) : candidates.length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("staffManager.grantAccess.empty")}</div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">{t("staffManager.grantAccess.member")}</label>
+                  <select value={grantUserId} onChange={(e) => setGrantUserId(e.target.value)} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">{t("staffManager.grantAccess.selectMember")}</option>
+                    {candidates.map((c) => (
+                      <option key={c.userId} value={c.userId}>
+                        {[c.name, c.email].filter(Boolean).join(" • ")} — {t(`staffManager.grantAccess.sources.${c.source}`)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">{t("staffManager.grantAccess.role")}</label>
+                  <select value={grantRole} onChange={(e) => setGrantRole((e.target.value as StaffRole) || "viewer")} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{t(`staffManager.roles.${role}`)}</option>))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button type="button" onClick={handleGrantAccess} disabled={granting || !grantUserId} className="w-full h-10 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2 text-sm font-medium">
+                    {granting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
+                    {t("staffManager.grantAccess.submit")}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
