@@ -319,6 +319,102 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     setDraftPermissions(nextPerms);
   }, [rows]);
 
+  async function loadCandidates() {
+    if (!practiceId) return;
+    setCandidatesLoading(true);
+    try {
+      const found = new Map<string, MemberCandidate>();
+
+      // Doctors attached to this clinic
+      try {
+        const { data } = await sb.from("doctors").select("user_id, practice_id").eq("practice_id", practiceId);
+        for (const d of data || []) {
+          const uid = String(d?.user_id || "");
+          if (uid && !found.has(uid)) found.set(uid, { userId: uid, name: "", email: "", source: "doctor", suggestedRole: "doctor" });
+        }
+      } catch { /* ignore */ }
+
+      // Approved join requests
+      try {
+        const { data } = await sb
+          .from("practice_join_requests")
+          .select("doctor_id, status")
+          .eq("practice_id", practiceId)
+          .eq("status", "approved");
+        const doctorIds = [...new Set((data || []).map((r: any) => String(r?.doctor_id || "")).filter(Boolean))];
+        if (doctorIds.length) {
+          const { data: docs } = await sb.from("doctors").select("id, user_id").in("id", doctorIds);
+          for (const d of docs || []) {
+            const uid = String(d?.user_id || "");
+            if (uid && !found.has(uid)) found.set(uid, { userId: uid, name: "", email: "", source: "joinRequest", suggestedRole: "doctor" });
+          }
+        }
+      } catch { /* ignore */ }
+
+      // Practice staff records
+      try {
+        const { data } = await sb.from("practice_staff").select("user_id, full_name, email, role, status").eq("practice_id", practiceId);
+        for (const s of data || []) {
+          const uid = String(s?.user_id || "");
+          if (!uid || found.has(uid)) continue;
+          const role = String(s?.role || "").toLowerCase();
+          const suggested = (ROLE_OPTIONS as readonly string[]).includes(role) ? (role as StaffRole) : "viewer";
+          found.set(uid, { userId: uid, name: s?.full_name || "", email: s?.email || "", source: "practiceStaff", suggestedRole: suggested });
+        }
+      } catch { /* ignore */ }
+
+      const existing = new Set(rows.map((r) => getStaffUserId(r)).filter(Boolean));
+      const list = [...found.values()].filter((c) => !existing.has(c.userId));
+
+      if (list.length) {
+        try {
+          const { data: profileRows } = await sb.from("profiles").select("*").in("user_id", list.map((c) => c.userId));
+          const byId: Record<string, ProfileRow> = {};
+          for (const p of profileRows || []) byId[String(p.user_id)] = p;
+          for (const c of list) {
+            const p = byId[c.userId];
+            c.name = getProfileName(p, c.email || undefined);
+            c.email = c.email || p?.email || "";
+          }
+        } catch { /* ignore */ }
+      }
+
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      setCandidates(list);
+      setGrantUserId((prev) => (list.some((c) => c.userId === prev) ? prev : ""));
+    } finally {
+      setCandidatesLoading(false);
+    }
+  }
+
+  useEffect(() => { loadCandidates(); }, [practiceId, rows]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const picked = candidates.find((c) => c.userId === grantUserId);
+    if (picked) setGrantRole(picked.suggestedRole);
+  }, [grantUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleGrantAccess() {
+    if (!grantUserId) { toast.error(t("staffManager.grantAccess.selectMember")); return; }
+    setGranting(true);
+    try {
+      const { error } = await sb.rpc("grant_clinic_member_access", {
+        _practice_id: practiceId,
+        _user_id: grantUserId,
+        _staff_role: grantRole,
+      });
+      if (error) throw error;
+      toast.success(t("staffManager.grantAccess.granted"));
+      setGrantUserId("");
+      await loadData(false);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || t("staffManager.grantAccess.failed"));
+    } finally {
+      setGranting(false);
+    }
+  }
+
   function toggleInvitePermission(key: PermissionKey) {
     setInvitePermissions((prev) => (prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]));
   }
