@@ -63,6 +63,14 @@ const PERMISSION_KEYS: PermissionKey[] = [
 const ROLE_OPTIONS = ["admin", "manager", "doctor", "nurse", "receptionist", "billing", "viewer"] as const;
 type StaffRole = (typeof ROLE_OPTIONS)[number];
 
+type MemberCandidate = {
+  userId: string;
+  name: string;
+  email: string;
+  source: "doctor" | "joinRequest" | "practiceStaff";
+  suggestedRole: StaffRole;
+};
+
 function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
