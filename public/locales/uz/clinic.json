@@ -46,7 +46,10 @@
   "orderCreator": {
     "trigger": "Diagnostika testi buyurtma qilish",
     "title": "Diagnostika testi buyurtma qilish",
-    "tabs": { "lab": "Laboratoriya testi", "imaging": "Tasvirlash" },
+    "tabs": {
+      "lab": "Laboratoriya testi",
+      "imaging": "Tasvirlash"
+    },
     "fields": {
       "testCategory": "Test toifasi *",
       "selectCategory": "Toifani tanlang",
@@ -63,7 +66,11 @@
       "labNotesPlaceholder": "Tegishli klinik ma'lumotlar...",
       "imagingNotesPlaceholder": "Klinik ko'rsatma, anamnez..."
     },
-    "priorities": { "routine": "Oddiy", "urgent": "Shoshilinch", "stat": "ZUDLIK" },
+    "priorities": {
+      "routine": "Oddiy",
+      "urgent": "Shoshilinch",
+      "stat": "ZUDLIK"
+    },
     "submitLab": "Laboratoriya testini buyurtma qilish",
     "submitImaging": "Tasvirlash tekshiruvini buyurtma qilish"
   },
@@ -159,7 +166,10 @@
       "abnormalBadge": "Anormal",
       "viewReport": "PDF hisobotini ko'rish"
     },
-    "priority": { "stat": "ZUDLIK", "urgent": "Shoshilinch" }
+    "priority": {
+      "stat": "ZUDLIK",
+      "urgent": "Shoshilinch"
+    }
   },
   "imagingDashboard": {
     "stats": {
@@ -186,7 +196,9 @@
       "priority": "Muhimlik darajasi",
       "clinicalNotes": "Klinik izohlar"
     },
-    "actions": { "startExam": "Tekshiruvni boshlash" },
+    "actions": {
+      "startExam": "Tekshiruvni boshlash"
+    },
     "results": {
       "upload": "Natijalarni yuklash",
       "impression": "Xulosa",
@@ -200,7 +212,10 @@
       "title": "Natijalar",
       "viewReport": "PDF hisobotini ko'rish"
     },
-    "priority": { "stat": "ZUDLIK", "urgent": "Shoshilinch" }
+    "priority": {
+      "stat": "ZUDLIK",
+      "urgent": "Shoshilinch"
+    }
   },
   "staffManager": {
     "selectPractice": "Avval amaliyotni tanlang.",
@@ -294,6 +309,23 @@
       "inviteResent": "Taklifnoma qayta yuborildi",
       "resendFailed": "Taklifnomani qayta yuborish muvaffaqiyatsiz tugadi",
       "loadFailed": "Xodimlar ma'lumotlarini yuklash muvaffaqiyatsiz tugadi"
+    },
+    "grantAccess": {
+      "title": "Klinika a'zosiga ruxsat berish",
+      "description": "Klinikaga qo'shilgan shaxsni tanlang va unga rol bilan boshqaruv paneliga ruxsat bering.",
+      "member": "Klinika a'zosi",
+      "selectMember": "A'zoni tanlang",
+      "role": "Rol",
+      "submit": "Ruxsat berish",
+      "loading": "A'zolar yuklanmoqda…",
+      "empty": "Klinikaga qo'shilganlarning barchasida allaqachon ruxsat bor.",
+      "granted": "Ruxsat berildi. Keyingi kirishda panel ko'rinadi.",
+      "failed": "Ruxsat berib bo'lmadi",
+      "sources": {
+        "doctor": "Ushbu klinika shifokori",
+        "joinRequest": "Shifokor • so'rov tasdiqlangan",
+        "practiceStaff": "Xodim yozuvi"
+      }
     }
   }
 }

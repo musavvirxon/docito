@@ -12333,6 +12333,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      grant_clinic_member_access: {
+        Args: { _practice_id: string; _staff_role: string; _user_id: string }
+        Returns: Json
+      }
       grant_super_admin_to_authorized_emails: {
         Args: never
         Returns: undefined

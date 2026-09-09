@@ -309,6 +309,23 @@
       "inviteResent": "Invitation resent",
       "resendFailed": "Failed to resend invite",
       "loadFailed": "Failed to load staff data"
+    },
+    "grantAccess": {
+      "title": "Give access to a clinic member",
+      "description": "Pick someone who already joined this clinic and give them dashboard access with a role.",
+      "member": "Clinic member",
+      "selectMember": "Select a member",
+      "role": "Role",
+      "submit": "Give access",
+      "loading": "Loading members…",
+      "empty": "Everyone who joined this clinic already has access.",
+      "granted": "Access granted. They will see their dashboard on next sign-in.",
+      "failed": "Could not grant access",
+      "sources": {
+        "doctor": "Doctor at this clinic",
+        "joinRequest": "Doctor • approved join request",
+        "practiceStaff": "Staff record"
+      }
     }
   }
 }

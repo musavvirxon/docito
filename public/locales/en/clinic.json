@@ -46,7 +46,10 @@
   "orderCreator": {
     "trigger": "Order Diagnostic Test",
     "title": "Order Diagnostic Test",
-    "tabs": { "lab": "Lab Test", "imaging": "Imaging" },
+    "tabs": {
+      "lab": "Lab Test",
+      "imaging": "Imaging"
+    },
     "fields": {
       "testCategory": "Test Category *",
       "selectCategory": "Select category",
@@ -63,7 +66,11 @@
       "labNotesPlaceholder": "Relevant clinical information...",
       "imagingNotesPlaceholder": "Clinical indication, history..."
     },
-    "priorities": { "routine": "Routine", "urgent": "Urgent", "stat": "STAT" },
+    "priorities": {
+      "routine": "Routine",
+      "urgent": "Urgent",
+      "stat": "STAT"
+    },
     "submitLab": "Order Lab Test",
     "submitImaging": "Order Imaging Study"
   },
@@ -159,7 +166,10 @@
       "abnormalBadge": "Abnormal",
       "viewReport": "View Report PDF"
     },
-    "priority": { "stat": "STAT", "urgent": "Urgent" }
+    "priority": {
+      "stat": "STAT",
+      "urgent": "Urgent"
+    }
   },
   "imagingDashboard": {
     "stats": {
@@ -186,7 +196,9 @@
       "priority": "Priority",
       "clinicalNotes": "Clinical Notes"
     },
-    "actions": { "startExam": "Start Examination" },
+    "actions": {
+      "startExam": "Start Examination"
+    },
     "results": {
       "upload": "Upload Results",
       "impression": "Impression",
@@ -200,7 +212,10 @@
       "title": "Results",
       "viewReport": "View Report PDF"
     },
-    "priority": { "stat": "STAT", "urgent": "Urgent" }
+    "priority": {
+      "stat": "STAT",
+      "urgent": "Urgent"
+    }
   },
   "staffManager": {
     "selectPractice": "Select a practice first.",
@@ -294,6 +309,23 @@
       "inviteResent": "Invitation resent",
       "resendFailed": "Failed to resend invite",
       "loadFailed": "Failed to load staff data"
+    },
+    "grantAccess": {
+      "title": "Give access to a clinic member",
+      "description": "Pick someone who already joined this clinic and give them dashboard access with a role.",
+      "member": "Clinic member",
+      "selectMember": "Select a member",
+      "role": "Role",
+      "submit": "Give access",
+      "loading": "Loading members…",
+      "empty": "Everyone who joined this clinic already has access.",
+      "granted": "Access granted. They will see their dashboard on next sign-in.",
+      "failed": "Could not grant access",
+      "sources": {
+        "doctor": "Doctor at this clinic",
+        "joinRequest": "Doctor • approved join request",
+        "practiceStaff": "Staff record"
+      }
     }
   }
 }

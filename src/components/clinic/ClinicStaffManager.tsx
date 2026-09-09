@@ -63,6 +63,14 @@ const PERMISSION_KEYS: PermissionKey[] = [
 const ROLE_OPTIONS = ["admin", "manager", "doctor", "nurse", "receptionist", "billing", "viewer"] as const;
 type StaffRole = (typeof ROLE_OPTIONS)[number];
 
+type MemberCandidate = {
+  userId: string;
+  name: string;
+  email: string;
+  source: "doctor" | "joinRequest" | "practiceStaff";
+  suggestedRole: StaffRole;
+};
+
 function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
@@ -170,6 +178,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
   const [inviteLoading, setInviteLoading] = useState(false);
   const [draftRoles, setDraftRoles] = useState<Record<string, string>>({});
   const [draftPermissions, setDraftPermissions] = useState<Record<string, PermissionKey[]>>({});
+  const [candidates, setCandidates] = useState<MemberCandidate[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [grantUserId, setGrantUserId] = useState("");
+  const [grantRole, setGrantRole] = useState<StaffRole>("doctor");
+  const [granting, setGranting] = useState(false);
 
   const activeRows = useMemo(() => rows.filter((r) => !["invited", "pending", "cancelled", "revoked", "inactive", "disabled", "removed"].includes(normalizeStatus(r.status))), [rows]);
   const pendingRows = useMemo(() => rows.filter((r) => ["invited", "pending"].includes(normalizeStatus(r.status))), [rows]);
@@ -305,6 +318,102 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     setDraftRoles(nextRoles);
     setDraftPermissions(nextPerms);
   }, [rows]);
+
+  async function loadCandidates() {
+    if (!practiceId) return;
+    setCandidatesLoading(true);
+    try {
+      const found = new Map<string, MemberCandidate>();
+
+      // Doctors attached to this clinic
+      try {
+        const { data } = await sb.from("doctors").select("user_id, practice_id").eq("practice_id", practiceId);
+        for (const d of data || []) {
+          const uid = String(d?.user_id || "");
+          if (uid && !found.has(uid)) found.set(uid, { userId: uid, name: "", email: "", source: "doctor", suggestedRole: "doctor" });
+        }
+      } catch { /* ignore */ }
+
+      // Approved join requests
+      try {
+        const { data } = await sb
+          .from("practice_join_requests")
+          .select("doctor_id, status")
+          .eq("practice_id", practiceId)
+          .eq("status", "approved");
+        const doctorIds = [...new Set((data || []).map((r: any) => String(r?.doctor_id || "")).filter(Boolean))];
+        if (doctorIds.length) {
+          const { data: docs } = await sb.from("doctors").select("id, user_id").in("id", doctorIds);
+          for (const d of docs || []) {
+            const uid = String(d?.user_id || "");
+            if (uid && !found.has(uid)) found.set(uid, { userId: uid, name: "", email: "", source: "joinRequest", suggestedRole: "doctor" });
+          }
+        }
+      } catch { /* ignore */ }
+
+      // Practice staff records
+      try {
+        const { data } = await sb.from("practice_staff").select("user_id, full_name, email, role, status").eq("practice_id", practiceId);
+        for (const s of data || []) {
+          const uid = String(s?.user_id || "");
+          if (!uid || found.has(uid)) continue;
+          const role = String(s?.role || "").toLowerCase();
+          const suggested = (ROLE_OPTIONS as readonly string[]).includes(role) ? (role as StaffRole) : "viewer";
+          found.set(uid, { userId: uid, name: s?.full_name || "", email: s?.email || "", source: "practiceStaff", suggestedRole: suggested });
+        }
+      } catch { /* ignore */ }
+
+      const existing = new Set(rows.map((r) => getStaffUserId(r)).filter(Boolean));
+      const list = [...found.values()].filter((c) => !existing.has(c.userId));
+
+      if (list.length) {
+        try {
+          const { data: profileRows } = await sb.from("profiles").select("*").in("user_id", list.map((c) => c.userId));
+          const byId: Record<string, ProfileRow> = {};
+          for (const p of profileRows || []) byId[String(p.user_id)] = p;
+          for (const c of list) {
+            const p = byId[c.userId];
+            c.name = getProfileName(p, c.email || undefined);
+            c.email = c.email || p?.email || "";
+          }
+        } catch { /* ignore */ }
+      }
+
+      list.sort((a, b) => a.name.localeCompare(b.name));
+      setCandidates(list);
+      setGrantUserId((prev) => (list.some((c) => c.userId === prev) ? prev : ""));
+    } finally {
+      setCandidatesLoading(false);
+    }
+  }
+
+  useEffect(() => { loadCandidates(); }, [practiceId, rows]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const picked = candidates.find((c) => c.userId === grantUserId);
+    if (picked) setGrantRole(picked.suggestedRole);
+  }, [grantUserId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleGrantAccess() {
+    if (!grantUserId) { toast.error(t("staffManager.grantAccess.selectMember")); return; }
+    setGranting(true);
+    try {
+      const { error } = await sb.rpc("grant_clinic_member_access", {
+        _practice_id: practiceId,
+        _user_id: grantUserId,
+        _staff_role: grantRole,
+      });
+      if (error) throw error;
+      toast.success(t("staffManager.grantAccess.granted"));
+      setGrantUserId("");
+      await loadData(false);
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || t("staffManager.grantAccess.failed"));
+    } finally {
+      setGranting(false);
+    }
+  }
 
   function toggleInvitePermission(key: PermissionKey) {
     setInvitePermissions((prev) => (prev.includes(key) ? prev.filter((p) => p !== key) : [...prev, key]));
@@ -505,6 +614,45 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
               </div>
             </div>
           </form>
+
+          {/* Grant access to a member who already joined the clinic */}
+          <div className="mt-6 rounded-lg border p-4 space-y-3">
+            <div>
+              <div className="text-sm font-medium">{t("staffManager.grantAccess.title")}</div>
+              <div className="text-sm text-muted-foreground">{t("staffManager.grantAccess.description")}</div>
+            </div>
+            {candidatesLoading ? (
+              <div className="text-sm text-muted-foreground">{t("staffManager.grantAccess.loading")}</div>
+            ) : candidates.length === 0 ? (
+              <div className="text-sm text-muted-foreground">{t("staffManager.grantAccess.empty")}</div>
+            ) : (
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">{t("staffManager.grantAccess.member")}</label>
+                  <select value={grantUserId} onChange={(e) => setGrantUserId(e.target.value)} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">{t("staffManager.grantAccess.selectMember")}</option>
+                    {candidates.map((c) => (
+                      <option key={c.userId} value={c.userId}>
+                        {[c.name, c.email].filter(Boolean).join(" • ")} — {t(`staffManager.grantAccess.sources.${c.source}`)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">{t("staffManager.grantAccess.role")}</label>
+                  <select value={grantRole} onChange={(e) => setGrantRole((e.target.value as StaffRole) || "viewer")} className="w-full h-10 rounded-md border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    {ROLE_OPTIONS.map((role) => (<option key={role} value={role}>{t(`staffManager.roles.${role}`)}</option>))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button type="button" onClick={handleGrantAccess} disabled={granting || !grantUserId} className="w-full h-10 rounded-md bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-60 inline-flex items-center justify-center gap-2 text-sm font-medium">
+                    {granting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Shield className="h-4 w-4" />}
+                    {t("staffManager.grantAccess.submit")}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
