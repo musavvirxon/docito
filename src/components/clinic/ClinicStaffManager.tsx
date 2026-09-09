@@ -170,6 +170,11 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
   const [inviteLoading, setInviteLoading] = useState(false);
   const [draftRoles, setDraftRoles] = useState<Record<string, string>>({});
   const [draftPermissions, setDraftPermissions] = useState<Record<string, PermissionKey[]>>({});
+  const [candidates, setCandidates] = useState<MemberCandidate[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [grantUserId, setGrantUserId] = useState("");
+  const [grantRole, setGrantRole] = useState<StaffRole>("doctor");
+  const [granting, setGranting] = useState(false);
 
   const activeRows = useMemo(() => rows.filter((r) => !["invited", "pending", "cancelled", "revoked", "inactive", "disabled", "removed"].includes(normalizeStatus(r.status))), [rows]);
   const pendingRows = useMemo(() => rows.filter((r) => ["invited", "pending"].includes(normalizeStatus(r.status))), [rows]);
