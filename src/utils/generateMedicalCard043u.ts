@@ -30,6 +30,10 @@ export interface MedicalCardData {
   // Clinic
   clinicName: string;
   clinicAddress: string;
+  /** Clinic logo (https URL) shown in the form header. */
+  clinicLogoUrl?: string | null;
+  /** Clinic brand colour as [r,g,b] 0..255, used for header accents. */
+  brandColor?: [number, number, number] | null;
   // Optional dental findings (rendered inside the chart cells)
   toothFindings?: ToothFinding[];
   // Optional list of diagnoses to render under the oral-exam ("ko'rik") section
@@ -152,6 +156,34 @@ const UZ: Strings = {
     "Shakl N 043/u   |   O'zbekiston Respublikasi Sog'liqni saqlash vazirligi",
 };
 
+/** Loads a clinic logo as a data URL for embedding. Returns null on any failure. */
+async function loadClinicLogo(
+  url?: string | null,
+): Promise<{ dataUrl: string; format: 'PNG' | 'JPEG'; width: number; height: number } | null> {
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    const format: 'PNG' | 'JPEG' = /jpe?g/i.test(blob.type) ? 'JPEG' : 'PNG';
+    const dataUrl: string = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    const dims = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth || 1, height: img.naturalHeight || 1 });
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+    return { dataUrl, format, ...dims };
+  } catch {
+    return null;
+  }
+}
+
 async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
   const { default: jsPDF } = await import('jspdf');
   const { default: autoTable } = await import('jspdf-autotable');
@@ -214,12 +246,35 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
   };
 
   // ===== Page 1 =====
+  const brand = data.brandColor && data.brandColor.length === 3 ? data.brandColor : [13, 92, 199];
+
+  // Clinic logo (top-right), best-effort — never blocks generation.
+  const logo = await loadClinicLogo(data.clinicLogoUrl);
+  if (logo) {
+    try {
+      const maxW = 28;
+      const maxH = 16;
+      const ratio = logo.height / logo.width;
+      let w = maxW;
+      let h = w * ratio;
+      if (h > maxH) { h = maxH; w = h / ratio; }
+      doc.addImage(logo.dataUrl, logo.format, pageW - margin - w, y, w, h);
+    } catch { /* ignore */ }
+  }
+
   text(S.ministry, { size: 11, bold: true, align: 'center', gap: 2 });
   text(`${S.institutionName}: ${data.clinicName || '___________________________'}`, { size: 9 });
   text(`${S.institutionAddress}: ${data.clinicAddress || '___________________________'}`, {
     size: 9,
     gap: 3,
   });
+
+  doc.setDrawColor(brand[0], brand[1], brand[2]);
+  doc.setLineWidth(0.8);
+  doc.line(margin, y, pageW - margin, y);
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.1);
+  y += 4;
 
   text(S.cardTitle, { size: 16, bold: true, align: 'center', gap: 3 });
   text(S.cardSubtitle, { size: 12, bold: true, align: 'center', gap: 3 });

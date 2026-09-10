@@ -12117,6 +12117,18 @@ export type Database = {
           doctor_id: string
         }[]
       }
+      get_document_branding: {
+        Args: { _practice_id: string }
+        Returns: {
+          address: string
+          color_index: number
+          email: string
+          logo_url: string
+          name: string
+          phone: string
+          practice_id: string
+        }[]
+      }
       get_entity_settings: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: Json

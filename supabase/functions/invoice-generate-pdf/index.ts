@@ -23,6 +23,7 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
+import { loadBranding, loadDoctorBranding, DEFAULT_BRAND_COLOR } from "../_shared/branding.ts";
 import {
   DOCITO_LOGO_PNG_BASE64,
   DOCITO_LOGO_FULL_PNG_BASE64,
@@ -337,26 +338,33 @@ serve(async (req) => {
     let entityLogoUrl: string | null = null;
     let entityAddress = "";
     let entityPhone = "";
+    let brandRGB: [number, number, number] = DEFAULT_BRAND_COLOR;
     try {
       if (r.entity_type === "user") {
         const { data: prof } = await svc.from("profiles").select("full_name, email").eq("user_id", r.entity_id).maybeSingle();
         billedToName = safe((prof as any)?.full_name || (prof as any)?.email, 200) || "—";
       } else if (r.entity_type === "practice" || r.entity_type === "clinic") {
-        const { data: p } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
-        billedToName = safe((p as any)?.name, 200) || "—";
-        entityLogoUrl = (p as any)?.logo_url || null;
-        entityAddress = safe((p as any)?.address, 200);
-        entityPhone = safe((p as any)?.phone, 60);
+        const brand = await loadBranding(svc, r.entity_id, { lang: locale });
+        billedToName = safe(brand.name, 200) || "—";
+        entityLogoUrl = brand.logoUrl;
+        entityAddress = safe(brand.address || "", 200);
+        entityPhone = safe(brand.phone || "", 60);
+        brandRGB = brand.brandColor;
       } else if (r.entity_type === "doctor") {
-        const { data: d } = await svc.from("doctors").select("user_id, logo_url, practices(name, address, phone, logo_url)").eq("id", r.entity_id).maybeSingle();
+        const { data: d } = await svc.from("doctors").select("user_id, logo_url").eq("id", r.entity_id).maybeSingle();
         if ((d as any)?.user_id) {
           const { data: prof } = await svc.from("profiles").select("full_name").eq("user_id", (d as any).user_id).maybeSingle();
           billedToName = safe((prof as any)?.full_name, 200) || "—";
         }
-        const prac = (d as any)?.practices || null;
-        entityLogoUrl = prac?.logo_url || (d as any)?.logo_url || null;
-        entityAddress = safe(prac?.address, 200);
-        entityPhone = safe(prac?.phone, 60);
+        // Doctors who joined a clinic print that clinic's branding.
+        const brand = await loadDoctorBranding(svc, { doctorId: r.entity_id, doctorUserId: (d as any)?.user_id, lang: locale });
+        if (brand.practiceId) {
+          billedToName = safe(brand.name, 200) || billedToName;
+          brandRGB = brand.brandColor;
+        }
+        entityLogoUrl = brand.logoUrl || (d as any)?.logo_url || null;
+        entityAddress = safe(brand.address || "", 200);
+        entityPhone = safe(brand.phone || "", 60);
       } else if (r.entity_type === "pharmacy") {
         const { data: p } = await svc.from("pharmacies").select("name, address, phone, logo_url").eq("id", r.entity_id).maybeSingle();
         billedToName = safe((p as any)?.name, 200) || "—";
@@ -392,7 +400,7 @@ serve(async (req) => {
     const font = await loadFont(pdf, locale);
     const rtl = RTL_LOCALES.has(locale);
 
-    const blue = rgb(0.145, 0.388, 0.922);
+    const blue = rgb(brandRGB[0], brandRGB[1], brandRGB[2]);
     const blueLight = rgb(0.93, 0.96, 1.0);
     const textDark = rgb(0.05, 0.05, 0.05);
     const textMuted = rgb(0.35, 0.35, 0.35);

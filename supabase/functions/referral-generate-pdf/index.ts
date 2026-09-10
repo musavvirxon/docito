@@ -23,6 +23,7 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
+import { loadBranding, loadDoctorBranding } from "../_shared/branding.ts";
 import { DOCITO_LOGO_PNG_BASE64 } from "./assets.ts";
 const DOCITO_LOGO_FULL_PNG_BASE64 = "";
 
@@ -1129,24 +1130,31 @@ serve(async (req) => {
         return ((data as any)?.name as string) || null;
       } catch { return null; }
     };
-    // Fetch referrer entity branding (logo + address) for the PDF header
-    const fetchEntityBrand = async (etype?: string | null, eid?: string | null): Promise<{ logo_url: string | null; address: string | null } | null> => {
+    // Fetch referrer entity branding (logo + address + colour) for the PDF header
+    const fetchEntityBrand = async (
+      etype?: string | null,
+      eid?: string | null,
+    ): Promise<{ logo_url: string | null; address: string | null; color: [number, number, number] | null } | null> => {
       if (!eid) return null;
       const t = (etype || "").toLowerCase();
       try {
         if (t === "doctor") {
-          const { data } = await service.from("doctors").select("logo_url, practices(address, logo_url)").eq("id", eid).maybeSingle();
-          const prac = (data as any)?.practices || null;
-          return { logo_url: (prac?.logo_url || (data as any)?.logo_url) || null, address: prac?.address || null };
+          const { data } = await service.from("doctors").select("logo_url, user_id").eq("id", eid).maybeSingle();
+          const b = await loadDoctorBranding(service, { doctorId: eid, doctorUserId: (data as any)?.user_id });
+          return {
+            logo_url: b.logoUrl || (data as any)?.logo_url || null,
+            address: b.address,
+            color: b.practiceId ? b.brandColor : null,
+          };
         }
         if (t === "clinic") {
-          const { data } = await service.from("practices").select("logo_url, address").eq("id", eid).maybeSingle();
-          return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null };
+          const b = await loadBranding(service, eid);
+          return { logo_url: b.logoUrl, address: b.address, color: b.brandColor };
         }
         const tbl = entityTableFor(etype);
         if (!tbl) return null;
         const { data } = await service.from(tbl).select("logo_url, address").eq("id", eid).maybeSingle();
-        return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null };
+        return { logo_url: (data as any)?.logo_url || null, address: (data as any)?.address || null, color: null };
       } catch { return null; }
     };
     const r0: any = referral;
@@ -1163,6 +1171,7 @@ serve(async (req) => {
     r0.receiver_entity_name = receiverEntityName;
     const entityLogoUrl: string | null = referrerBrand?.logo_url || null;
     const entityAddress: string = (referrerBrand?.address || "").toString();
+    const entityBrandColor: [number, number, number] | null = (referrerBrand as any)?.color || null;
 
     // Authorization: patient, referrer, receiver, or staff/admin of either entity.
     const isSuperAdmin = (roles || []).includes("super_admin");
@@ -1254,7 +1263,9 @@ serve(async (req) => {
     const qrImg = await pdfDoc.embedPng(qrBytes);
 
     // Brand palette (Docito)
-    const brandPrimary = rgb(0.05, 0.36, 0.78);   // #0e5cc7-ish
+    const brandPrimary = entityBrandColor
+      ? rgb(entityBrandColor[0], entityBrandColor[1], entityBrandColor[2])
+      : rgb(0.05, 0.36, 0.78);   // clinic brand colour, default #0e5cc7-ish
     const brandSoft    = rgb(0.93, 0.96, 1.0);
     const textColor    = rgb(0.07, 0.09, 0.13);
     const subtleColor  = rgb(0.42, 0.45, 0.52);

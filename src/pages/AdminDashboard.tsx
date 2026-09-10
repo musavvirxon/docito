@@ -45,6 +45,7 @@ import VerificationSuccessModal from "@/components/dashboard/VerificationSuccess
 import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
+import { brandRgbFromIndex } from "@/lib/documentBranding";
 import { RoomBedManager } from "@/components/rooms/RoomBedManager";
 import { QueueDisplaySettings } from "@/components/rooms/QueueDisplaySettings";
 import { useAuth } from "@/contexts/AuthContext";
@@ -1383,6 +1384,8 @@ const AdminDashboard = () => {
                                       serviceName: a.service_name || '',
                                       clinicName: branchFor(selectedProvider?.id).name || practice?.name || '',
                                       clinicAddress: branchFor(selectedProvider?.id).address,
+                                      clinicLogoUrl: brandLogoUrl,
+                                      brandColor: brandRgbFromIndex(selectedBrandColor),
                                     }}
                                   />
                                 </div>
@@ -3058,6 +3061,8 @@ const AdminDashboard = () => {
                                             serviceName: a.service_name || a.appointment_type || '',
                                             clinicName: branchFor((a as any).doctor_id).name || practice?.name || '',
                                             clinicAddress: branchFor((a as any).doctor_id).address,
+                                            clinicLogoUrl: brandLogoUrl,
+                                            brandColor: brandRgbFromIndex(selectedBrandColor),
                                           }}
                                         />
                                       </div>
@@ -4016,6 +4021,8 @@ const AdminDashboard = () => {
                                                 serviceName: tx?.metadata?.service_name || '',
                                                 clinicName: branchFor(tx?.metadata?.doctor_id).name || practice?.name || '',
                                                 clinicAddress: branchFor(tx?.metadata?.doctor_id).address,
+                                                clinicLogoUrl: brandLogoUrl,
+                                                brandColor: brandRgbFromIndex(selectedBrandColor),
                                               }}
                                             />
                                           );
@@ -5699,6 +5706,7 @@ const AdminDashboard = () => {
                             if (error) { toast.error(error.message); return; }
                             const { data: urlData } = supabase.storage.from('practice-logos').getPublicUrl(path);
                             await saveEntitySettings('branding', { colorIndex: selectedBrandColor, logo_url: urlData.publicUrl });
+                            try { await supabase.from('practices').update({ logo_url: urlData.publicUrl }).eq('id', practice.id); } catch { /* branding still saved */ }
                             setBrandLogoUrl(urlData.publicUrl);
                             toast.success(t("admin.st.logoUploaded"));
                           };
@@ -5707,6 +5715,7 @@ const AdminDashboard = () => {
                             {brandLogoUrl && (
                               <Button size="sm" variant="ghost" onClick={() => guard(async () => {
                                 await saveEntitySettings('branding', { colorIndex: selectedBrandColor, logo_url: null });
+                                try { await supabase.from('practices').update({ logo_url: null }).eq('id', practice.id); } catch { /* branding still saved */ }
                                 setBrandLogoUrl(null);
                                 toast.success(t("admin.st.logoRemoved"));
                               })} disabled={!allowModals}>{t("admin.st.removeLogo")}</Button>
