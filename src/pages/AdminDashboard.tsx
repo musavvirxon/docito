@@ -1383,6 +1383,8 @@ const AdminDashboard = () => {
                                       serviceName: a.service_name || '',
                                       clinicName: branchFor(selectedProvider?.id).name || practice?.name || '',
                                       clinicAddress: branchFor(selectedProvider?.id).address,
+                                      clinicLogoUrl: brandLogoUrl,
+                                      brandColor: brandRgbFromIndex(selectedBrandColor),
                                     }}
                                   />
                                 </div>
