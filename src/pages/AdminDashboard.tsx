@@ -3061,6 +3061,8 @@ const AdminDashboard = () => {
                                             serviceName: a.service_name || a.appointment_type || '',
                                             clinicName: branchFor((a as any).doctor_id).name || practice?.name || '',
                                             clinicAddress: branchFor((a as any).doctor_id).address,
+                                            clinicLogoUrl: brandLogoUrl,
+                                            brandColor: brandRgbFromIndex(selectedBrandColor),
                                           }}
                                         />
                                       </div>
@@ -4019,6 +4021,8 @@ const AdminDashboard = () => {
                                                 serviceName: tx?.metadata?.service_name || '',
                                                 clinicName: branchFor(tx?.metadata?.doctor_id).name || practice?.name || '',
                                                 clinicAddress: branchFor(tx?.metadata?.doctor_id).address,
+                                                clinicLogoUrl: brandLogoUrl,
+                                                brandColor: brandRgbFromIndex(selectedBrandColor),
                                               }}
                                             />
                                           );
