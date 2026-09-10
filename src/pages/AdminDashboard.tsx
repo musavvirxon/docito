@@ -5706,6 +5706,7 @@ const AdminDashboard = () => {
                             if (error) { toast.error(error.message); return; }
                             const { data: urlData } = supabase.storage.from('practice-logos').getPublicUrl(path);
                             await saveEntitySettings('branding', { colorIndex: selectedBrandColor, logo_url: urlData.publicUrl });
+                            try { await supabase.from('practices').update({ logo_url: urlData.publicUrl }).eq('id', practice.id); } catch { /* branding still saved */ }
                             setBrandLogoUrl(urlData.publicUrl);
                             toast.success(t("admin.st.logoUploaded"));
                           };
@@ -5714,6 +5715,7 @@ const AdminDashboard = () => {
                             {brandLogoUrl && (
                               <Button size="sm" variant="ghost" onClick={() => guard(async () => {
                                 await saveEntitySettings('branding', { colorIndex: selectedBrandColor, logo_url: null });
+                                try { await supabase.from('practices').update({ logo_url: null }).eq('id', practice.id); } catch { /* branding still saved */ }
                                 setBrandLogoUrl(null);
                                 toast.success(t("admin.st.logoRemoved"));
                               })} disabled={!allowModals}>{t("admin.st.removeLogo")}</Button>
