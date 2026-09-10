@@ -15,6 +15,7 @@ import {
   secureHandler,
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
+import { loadBranding, resolvePracticeIdForDoctor } from "../_shared/branding.ts";
 
 import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
 
@@ -1103,6 +1104,7 @@ async function generateTreatmentPlanPdf(params: {
   isDentist: boolean;
   practiceLogoUrl?: string | null;
   doctorLogoUrl?: string | null;
+  brandColor?: [number, number, number] | null;
   planId: string;
   title: string;
   status: string;
@@ -1254,7 +1256,8 @@ async function generateTreatmentPlanPdf(params: {
   const rtl = isRtlLocale(params.locale);
 
   // Brand colors
-  const accentColor = rgb(0.16, 0.47, 0.82); // Professional blue
+  const brandRGB = params.brandColor || [0.16, 0.47, 0.82];
+  const accentColor = rgb(brandRGB[0], brandRGB[1], brandRGB[2]); // clinic brand colour
   const accentLight = rgb(0.93, 0.96, 1.0);
   const sectionBg = rgb(0.95, 0.97, 1.0);
   const textDark = rgb(0.05, 0.05, 0.05);
@@ -2118,6 +2121,7 @@ serve(async (req: Request) => {
   let practiceEmail: string | null = null;
   let practiceLogoUrl: string | null = null;
   let doctorLogoUrl: string | null = null;
+  let brandColor: [number, number, number] | null = null;
 
   if (providerId) {
     const { data: doctorRow } = await serviceClient
@@ -2131,19 +2135,12 @@ serve(async (req: Request) => {
     const doctorUserId = asString((doctorRow as any)?.user_id);
     let practiceId = asString((doctorRow as any)?.practice_id);
 
-    // Fallback: doctor may have joined a clinic via practice_join_requests
+    // Fallback: doctor may have joined the clinic as staff or via a join request
     // without practice_id being denormalized onto the doctors row.
     if (!practiceId) {
-      const { data: acceptedJoin } = await serviceClient
-        .from("practice_join_requests")
-        .select("practice_id, reviewed_at")
-        .eq("doctor_id", providerId)
-        .eq("status", "accepted")
-        .order("reviewed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      practiceId = asString((acceptedJoin as any)?.practice_id);
+      practiceId = await resolvePracticeIdForDoctor(serviceClient, providerId, doctorUserId);
     }
+
     const specKey = locale === "ru"
       ? "specialty_ru"
       : locale === "uz"
@@ -2166,19 +2163,15 @@ serve(async (req: Request) => {
       doctorEmail = asString((doctorProfile as any)?.email);
     }
 
-    // Fetch practice info
+    // Clinic branding (settings logo first, then clinic profile logo)
     if (practiceId) {
-      const { data: practiceRow } = await serviceClient
-        .from("practices")
-        .select("name, address, phone, email, logo_url")
-        .eq("id", practiceId)
-        .maybeSingle();
-
-      practiceName = asString((practiceRow as any)?.name);
-      practiceAddress = asString((practiceRow as any)?.address);
-      practicePhone = asString((practiceRow as any)?.phone);
-      practiceEmail = asString((practiceRow as any)?.email);
-      practiceLogoUrl = asString((practiceRow as any)?.logo_url);
+      const tpBrand = await loadBranding(serviceClient, practiceId, { lang: locale });
+      practiceName = tpBrand.name;
+      practiceAddress = tpBrand.address;
+      practicePhone = tpBrand.phone;
+      practiceEmail = tpBrand.email;
+      practiceLogoUrl = tpBrand.logoUrl;
+      brandColor = tpBrand.brandColor;
     }
   }
 
@@ -2350,6 +2343,7 @@ serve(async (req: Request) => {
     isDentist: doctorIsDentist,
     practiceLogoUrl: practiceLogoUrl,
     doctorLogoUrl: doctorLogoUrl,
+    brandColor: brandColor,
     planId,
     title,
     status,

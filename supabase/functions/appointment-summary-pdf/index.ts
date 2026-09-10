@@ -15,6 +15,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { PDFDocument, StandardFonts, rgb } from "https://esm.sh/pdf-lib@1.17.1";
 import QRCode from "https://esm.sh/qrcode@1.5.3";
 import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "../invoice-generate-pdf/assets.ts";
+import { loadDoctorBranding } from "../_shared/branding.ts";
 
 function b64ToBytes(s: string): Uint8Array {
   const clean = (s || "").replace(/\s+/g, "");
@@ -234,13 +235,19 @@ serve(async (req) => {
       return (amount / f) * t;
     };
 
-    // Resolve clinic + doctor branding
+    // Resolve clinic + doctor branding (covers doctors who joined a clinic)
     const practice = (practiceRes as any)?.data || null;
     const doctorBrand = (doctorRowRes as any)?.data || null;
-    const clinicName = (practice?.name || "").toString();
-    const clinicAddress = (practice?.address || "").toString();
-    const clinicPhone = (practice?.phone || "").toString();
-    const entityLogoUrl: string | null = practice?.logo_url || doctorBrand?.logo_url || null;
+    const summaryBrand = await loadDoctorBranding(admin, {
+      doctorId: appt.doctor_id,
+      doctorUserId: (doctorRow as any)?.user_id,
+      practiceId: appt.practice_id,
+      lang: (body.language || "en").toString(),
+    });
+    const clinicName = (summaryBrand.name || practice?.name || "").toString();
+    const clinicAddress = (summaryBrand.address || practice?.address || "").toString();
+    const clinicPhone = (summaryBrand.phone || practice?.phone || "").toString();
+    const entityLogoUrl: string | null = summaryBrand.logoUrl || practice?.logo_url || doctorBrand?.logo_url || null;
 
     // Build PDF
     const pdfDoc = await PDFDocument.create();
@@ -276,7 +283,7 @@ serve(async (req) => {
     const margin = 48;
     let y = height - margin;
 
-    const blue = rgb(0.145, 0.388, 0.922);
+    const blue = rgb(summaryBrand.brandColor[0], summaryBrand.brandColor[1], summaryBrand.brandColor[2]);
     const white = rgb(1, 1, 1);
 
     const drawHeader = (pg: typeof page) => {

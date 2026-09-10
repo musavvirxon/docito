@@ -22,6 +22,7 @@ import {
   corsHeaders,
 } from "../_shared/security-middleware.ts";
 import { sanitizeString } from "../_shared/input-validator.ts";
+import { loadDoctorBranding } from "../_shared/branding.ts";
 import {
   DOCITO_LOGO_PNG_BASE64,
   DOCITO_LOGO_FULL_PNG_BASE64,
@@ -375,10 +376,13 @@ serve(async (req) => {
     r.doctor = (doctorRes as any).data || null;
     r.pharmacy = (pharmacyRes as any).data || null;
 
-    if (r.doctor?.practice_id) {
-      const { data: pr } = await svc.from("practices").select("name, address, phone, logo_url").eq("id", r.doctor.practice_id).maybeSingle();
-      if (pr) r.doctor.practices = pr;
-    }
+    // Clinic branding — also covers doctors who joined a clinic (no practice_id on the row).
+    const rxBrand = await loadDoctorBranding(svc, {
+      doctorId: r.doctor_id,
+      doctorUserId: r.doctor?.user_id,
+      practiceId: r.doctor?.practice_id,
+      lang: locale,
+    });
 
     // ── Authorization ────────────────────────────────────────────────────────
     const isSuperAdmin = (roles || []).includes("super_admin");
@@ -423,7 +427,7 @@ serve(async (req) => {
     const font = await loadFont(pdf, locale);
     const rtl = RTL_LOCALES.has(locale);
 
-    const blue = rgb(0.145, 0.388, 0.922);
+    const blue = rgb(rxBrand.brandColor[0], rxBrand.brandColor[1], rxBrand.brandColor[2]);
     const blueLight = rgb(0.93, 0.96, 1.0);
     const textDark = rgb(0.05, 0.05, 0.05);
     const textMuted = rgb(0.35, 0.35, 0.35);
@@ -440,12 +444,10 @@ serve(async (req) => {
 
     // ── Resolve entity (clinic / doctor) branding ─────────────────────────────
     const doctorLogoUrl: string | null = (r.doctor as any)?.logo_url || null;
-    const practiceRow = (r.doctor as any)?.practices || null;
-    const practiceLogoUrl: string | null = practiceRow?.logo_url || null;
-    const practiceName: string = safe(practiceRow?.name, 120);
-    const practiceAddress: string = safe(practiceRow?.address, 200);
-    const practicePhone: string = safe(practiceRow?.phone, 60);
-    const entityLogoUrl = (practiceLogoUrl || doctorLogoUrl || "").trim();
+    const practiceName: string = safe(rxBrand.name || "", 120);
+    const practiceAddress: string = safe(rxBrand.address || "", 200);
+    const practicePhone: string = safe(rxBrand.phone || "", 60);
+    const entityLogoUrl = (rxBrand.logoUrl || doctorLogoUrl || "").trim();
 
     let entityLogo: any = null; let entityLogoW = 40; let entityLogoH = 24;
     if (entityLogoUrl && /^https?:\/\//i.test(entityLogoUrl)) {

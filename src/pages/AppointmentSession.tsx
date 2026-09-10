@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchBranchForDoctor } from '@/lib/branchAddress';
+import { loadDoctorDocumentBranding, type ClientDocumentBranding } from '@/lib/documentBranding';
 import {
   ArrowLeft,
   Video,
@@ -168,6 +169,7 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
   const [diagnoses, setDiagnoses] = useState<Diagnosis[]>([]);
   const [doctorName, setDoctorName] = useState<string>('');
   const [clinicInfo, setClinicInfo] = useState<{ name: string; address: string }>({ name: '', address: '' });
+  const [clinicBranding, setClinicBranding] = useState<ClientDocumentBranding | null>(null);
   const [pdfDownloading, setPdfDownloading] = useState<'ru' | 'uz' | null>(null);
 
   // Hooks for procedures + finance (used by panels and the summary PDF)
@@ -394,6 +396,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
             }));
           }
         } catch { /* keep the practice-level address */ }
+
+        // Clinic logo + brand colour for generated documents (043/u form)
+        try {
+          setClinicBranding(await loadDoctorDocumentBranding({ doctorId: appointmentData.doctor_id }));
+        } catch { /* documents fall back to Docito defaults */ }
       }
 
       // If video appointment, preload existing consultation (if any)
@@ -1127,6 +1134,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                     {
                       clinicName: clinicInfo.name,
                       clinicAddress: clinicInfo.address,
+                      clinicLogoUrl: clinicBranding?.logoUrl || null,
+                      brandColor: clinicBranding?.brandColor || null,
                       patientName: appointment.patient_name || '',
                       gender: genderLabel,
                       age: ageStr,

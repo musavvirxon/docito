@@ -12,7 +12,9 @@ export type { ToothFinding } from './pdfUnicodeFont';
 export interface AppointmentPdfData {
   clinicName: string;
   clinicAddress: string;
-  clinicLogoUrl?: string;
+  clinicLogoUrl?: string | null;
+  /** Clinic brand colour [r,g,b] 0..255 used for the header rule. */
+  brandColor?: [number, number, number] | null;
   clinicPhone?: string;
   doctorPhotoUrl?: string;
   patientName: string;
@@ -308,7 +310,15 @@ export async function generateAppointmentPdf(
     }
     y += LH - SLH;
 
-    hrule(y);
+    if (data.brandColor) {
+      doc.setDrawColor(data.brandColor[0], data.brandColor[1], data.brandColor[2]);
+      doc.setLineWidth(0.8);
+      doc.line(M, y, W - M, y);
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.2);
+    } else {
+      hrule(y);
+    }
     y += 3;
     txt(t('medicalCard'), W / 2, y, 15, true, 'center');
     y += 7;
