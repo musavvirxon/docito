@@ -45,6 +45,7 @@ import VerificationSuccessModal from "@/components/dashboard/VerificationSuccess
 import JoinRequestsSection from "@/components/dashboard/JoinRequestsSection";
 import AdminImportPatientsDialog from "@/components/admin/patients/AdminImportPatientsDialog";
 import { MedicalCardDownloadButton } from "@/components/MedicalCardDownloadButton";
+import { brandRgbFromIndex } from "@/lib/documentBranding";
 import { RoomBedManager } from "@/components/rooms/RoomBedManager";
 import { QueueDisplaySettings } from "@/components/rooms/QueueDisplaySettings";
 import { useAuth } from "@/contexts/AuthContext";
