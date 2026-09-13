@@ -814,7 +814,7 @@ const AdminDashboard = () => {
                   <CardTitle className="flex items-center justify-between">
                     <span>{t("admin.overview.recentAppointments")}</span>
                     <Button variant="outline" size="sm" onClick={() => guard(() => { setActiveSection('analytics'); setAnalyticsTab('appointments'); })}>
-                      {t("admin.overview.viewAll")}
+                      {tA("overview.viewAll")}
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -847,11 +847,11 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle>{t("admin.overview.practiceStatus")}</CardTitle>
+                  <CardTitle>{tA("overview.practiceStatus")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("admin.overview.verificationStatus")}</span>
+                    <span className="text-sm text-muted-foreground">{tA("overview.verificationStatus")}</span>
                     <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
                   </div>
 
@@ -860,12 +860,12 @@ const AdminDashboard = () => {
                   {!isVerified && (
                     <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      {t("admin.overview.startVerification")}
+                      {tA("overview.startVerification")}
                     </Button>
                   )}
 
                   <div className="pt-2 border-t border-border">
-                    <div className="text-sm font-medium mb-2">{t("admin.overview.quickActions")}</div>
+                    <div className="text-sm font-medium mb-2">{tA("overview.quickActions")}</div>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
@@ -874,11 +874,11 @@ const AdminDashboard = () => {
                         disabled={!allowModals}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
-                        {t("admin.actions.inviteDoctor")}
+                        {tA("actions.inviteDoctor")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                         <Building2 className="h-4 w-4 mr-1" />
-                        {t("admin.actions.addService")}
+                        {tA("actions.addService")}
                       </Button>
                       <Button
                         variant="outline"
@@ -887,7 +887,7 @@ const AdminDashboard = () => {
                         disabled={!allowModals}
                       >
                         <Users className="h-4 w-4 mr-1" />
-                        {t("admin.actions.inviteStaff")}
+                        {tA("actions.inviteStaff")}
                       </Button>
                       <Button
                         variant="outline"
@@ -896,7 +896,7 @@ const AdminDashboard = () => {
                         disabled={!allowModals}
                       >
                         <MapPin className="h-4 w-4 mr-1" />
-                        {t("admin.actions.addLocation")}
+                        {tA("actions.addLocation")}
                       </Button>
                     </div>
                   </div>
@@ -909,14 +909,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    {t("admin.overview.doctors")}
+                    {tA("overview.doctors")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {doctors.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
                       <Stethoscope className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">{t("admin.overview.noDoctors")}</p>
+                      <p className="text-sm">{tA("overview.noDoctors")}</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -940,14 +940,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
-                    {t("admin.overview.services")}
+                    {tA("overview.services")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {services.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
                       <Building2 className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">{t("admin.overview.noServices")}</p>
+                      <p className="text-sm">{tA("overview.noServices")}</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -969,7 +969,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Mail className="h-5 w-5" />
-                    {t("admin.overview.messages")}
+                    {tA("overview.messages")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1000,7 +1000,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
-                    {t("admin.overview.performance")}
+                    {tA("overview.performance")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1024,9 +1024,9 @@ const AdminDashboard = () => {
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{t("admin.overview.pendingInvitations")}</span>
+                    <span>{tA("overview.pendingInvitations")}</span>
                     <Button variant="outline" size="sm" onClick={() => setActiveSection("staff")}>
-                      {t("admin.overview.manage")}
+                      {tA("overview.manage")}
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -1040,7 +1040,7 @@ const AdminDashboard = () => {
               <Card className="rounded-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{t("admin.overview.advancedFinancialMetrics")}</span>
+                    <span>{tA("overview.advancedFinancialMetrics")}</span>
                     <Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>
                       {t("adminBilling.refresh")}
                     </Button>
@@ -1089,14 +1089,14 @@ const AdminDashboard = () => {
           : new Set();
 
         const providerTabs: Array<{ key: typeof providerTab; label: string }> = [
-          { key: 'overview', label: t("admin.providers.tabs.overview") },
-          { key: 'calendar', label: t("admin.providers.tabs.calendar") },
-          { key: 'patients', label: t("admin.providers.tabs.patients") },
-          { key: 'analytics', label: t("admin.providers.tabs.analytics") },
+          { key: 'overview', label: tA("providers.tabs.overview") },
+          { key: 'calendar', label: tA("providers.tabs.calendar") },
+          { key: 'patients', label: tA("providers.tabs.patients") },
+          { key: 'analytics', label: tA("providers.tabs.analytics") },
           { key: 'financial', label: t("admin.providers.tabs.financial", { defaultValue: "Financial" }) },
-          { key: 'procedures', label: t("admin.providers.tabs.procedures") },
-          { key: 'reviews', label: t("admin.providers.tabs.reviews") },
-          { key: 'documents', label: t("admin.providers.tabs.documents") },
+          { key: 'procedures', label: tA("providers.tabs.procedures") },
+          { key: 'reviews', label: tA("providers.tabs.reviews") },
+          { key: 'documents', label: tA("providers.tabs.documents") },
           { key: 'rules', label: t("admin.providers.tabs.rules", { defaultValue: "Rules & Limits" }) },
         ];
 
@@ -1449,7 +1449,7 @@ const AdminDashboard = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold">{t("admin.providers.listTitle")}</h3>
+                          <h3 className="text-lg font-semibold">{tA("providers.listTitle")}</h3>
                           <Badge variant="secondary">{patientList.length}</Badge>
                         </div>
                       </div>
@@ -1698,7 +1698,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
                 <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
                   <UserPlus className="h-4 w-4 mr-2" />
-                  {t("admin.providers.invite")}
+                  {tA("providers.invite")}
                 </Button>
               </div>
 
@@ -1707,7 +1707,7 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{doctors.length}</div>
-                    <p className="text-sm text-muted-foreground">{t("admin.providers.listTitle")}</p>
+                    <p className="text-sm text-muted-foreground">{tA("providers.listTitle")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
@@ -1766,11 +1766,11 @@ const AdminDashboard = () => {
               {filteredDoctors.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground mt-6">
                   <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="font-medium">{t("admin.providers.emptyTitle")}</p>
-                  <p className="text-sm mt-1">{t("admin.providers.emptyDescription")}</p>
+                  <p className="font-medium">{tA("providers.emptyTitle")}</p>
+                  <p className="text-sm mt-1">{tA("providers.emptyDescription")}</p>
                   <Button className="mt-4" onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    {t("admin.providers.invite")}
+                    {tA("providers.invite")}
                   </Button>
                 </div>
               ) : (
@@ -1852,7 +1852,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
                 <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                   <Building2 className="h-4 w-4 mr-2" />
-                  {t("admin.services.add")}
+                  {tA("services.add")}
                 </Button>
               </div>
 
@@ -1934,17 +1934,17 @@ const AdminDashboard = () => {
                   <div className={sectionMainGridClass}>
                     <Card className="rounded-xl lg:col-span-8 min-w-0">
                       <CardHeader>
-                        <CardTitle>{t("admin.services.listTitle")}</CardTitle>
+                        <CardTitle>{tA("services.listTitle")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {services.length === 0 ? (
                           <div className="text-center py-10 text-muted-foreground">
                             <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                            <p className="font-medium">{t("admin.services.emptyTitle")}</p>
-                            <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
+                            <p className="font-medium">{tA("services.emptyTitle")}</p>
+                            <p className="text-sm mt-1">{tA("services.emptyDescription")}</p>
                             <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                               <Building2 className="h-4 w-4 mr-2" />
-                              {t("admin.services.add")}
+                              {tA("services.add")}
                             </Button>
                           </div>
                         ) : filteredServices.length === 0 ? (
@@ -2556,7 +2556,7 @@ const AdminDashboard = () => {
               <h2 className="text-xl font-semibold">{t("admin.locations.title")}</h2>
               <Button onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
                 <MapPin className="h-4 w-4 mr-2" />
-                {t("admin.locations.add")}
+                {tA("locations.add")}
               </Button>
             </div>
 
@@ -2592,17 +2592,17 @@ const AdminDashboard = () => {
             <div className={sectionMainGridClass}>
               <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
-                  <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
+                  <CardTitle>{tA("locations.listTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {locations.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
                       <MapPin className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">{t("admin.locations.emptyTitle")}</p>
-                      <p className="text-sm mt-1">{t("admin.locations.emptyDescription")}</p>
+                      <p className="font-medium">{tA("locations.emptyTitle")}</p>
+                      <p className="text-sm mt-1">{tA("locations.emptyDescription")}</p>
                       <Button className="mt-4" onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
                         <MapPin className="h-4 w-4 mr-2" />
-                        {t("admin.locations.add")}
+                        {tA("locations.add")}
                       </Button>
                     </div>
                   ) : (
