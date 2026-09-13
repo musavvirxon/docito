@@ -4555,7 +4555,7 @@ const AdminDashboard = () => {
                         <Input type="date" />
                         <Input type="date" />
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
-                          <option>All</option><option>Income</option><option>Expense</option><option>Payroll</option>
+                          <option>{tA("adminUi.all")}</option><option>{tA("adminUi.income")}</option><option>{tA("adminUi.expense")}</option><option>{tA("adminUi.payroll")}</option>
                         </select>
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
                           <option>{t("admin.fi.allCategories")}</option>
@@ -4566,7 +4566,7 @@ const AdminDashboard = () => {
                         downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
                           financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
                       })())}>
-                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                        <Download className="h-4 w-4 mr-2" /> {tA("adminUi.exportCsv")}
                       </Button>
                       <p className="text-xs text-muted-foreground mt-3">{t("admin.fi.exportTip")}</p>
                     </CardContent>
@@ -4583,25 +4583,25 @@ const AdminDashboard = () => {
                         downloadCSV('recurring.csv', ['Name', 'Amount', 'Frequency'],
                           recurringRules.map((r: any) => [r.name || '', String((r.amount_cents || 0) / 100), r.frequency || '']));
                       })())}>
-                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                        <Download className="h-4 w-4 mr-2" /> {tA("adminUi.exportCsv")}
                       </Button>
                       <p className="text-xs text-muted-foreground mt-3">{t("admin.fi.exportRecurringTip")}</p>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle>Export Payroll</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{tA("adminUi.exportPayroll")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-3 mb-4">
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
-                          <option>This Month</option><option>Last Month</option><option>Custom</option>
+                          <option>{tA("adminUi.thisMonth")}</option><option>{tA("adminUi.lastMonth")}</option><option>{tA("adminUi.custom")}</option>
                         </select>
                       </div>
                       <Button disabled={!allowModals} onClick={() => guard(() => (() => {
                         downloadCSV('payroll.csv', ['Name', 'Amount', 'Period'],
                           compensationProfiles.map((p: any) => [p.display_name || '', String((p.amount_cents || 0) / 100), p.pay_period || '']));
                       })())}>
-                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                        <Download className="h-4 w-4 mr-2" /> {tA("adminUi.exportCsv")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -4966,21 +4966,21 @@ const AdminDashboard = () => {
                       <p className="text-sm text-muted-foreground mb-4">{t("admin.an.comparisonDesc")}</p>
                       <div className="flex gap-4 flex-wrap mb-4 items-end">
                         <div>
-                          <label className="text-xs text-muted-foreground block mb-1">Provider A</label>
+                          <label className="text-xs text-muted-foreground block mb-1">{tA("adminUi.providerA")}</label>
                           <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareA} onChange={(e) => setCompareA(e.target.value)}>
-                            <option value="">Select Provider A</option>
+                            <option value="">{tA("adminUi.selectProviderA")}</option>
                             {providerStats.map((p, i) => <option key={`a-${i}`} value={p.name}>{p.name}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground block mb-1">Provider B</label>
+                          <label className="text-xs text-muted-foreground block mb-1">{tA("adminUi.providerB")}</label>
                           <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareB} onChange={(e) => setCompareB(e.target.value)}>
-                            <option value="">Select Provider B</option>
+                            <option value="">{tA("adminUi.selectProviderB")}</option>
                             {providerStats.map((p, i) => <option key={`b-${i}`} value={p.name}>{p.name}</option>)}
                           </select>
                         </div>
                         {(compareA || compareB) && (
-                          <Button size="sm" variant="ghost" onClick={() => { setCompareA(''); setCompareB(''); }}>Clear</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setCompareA(''); setCompareB(''); }}>{tA("adminUi.clearSelection")}</Button>
                         )}
                       </div>
                       {(() => {
@@ -5014,16 +5014,16 @@ const AdminDashboard = () => {
               {analyticsTab === 'patients' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Patients', value: patients.length }, { label: 'Active (90d)', value: activePatients }, { label: 'Inactive (90d+)', value: inactivePatientsCount }, { label: 'Avg Visits', value: avgVisits }].map((kpi, i) => (
+                    {[{ label: tA('adminUi.totalPatients'), value: patients.length }, { label: tA('adminUi.active90Days'), value: activePatients }, { label: tA('adminUi.inactive90Days'), value: inactivePatientsCount }, { label: tA('adminUi.averageVisits'), value: avgVisits }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold">{kpi.value}</p></CardContent></Card>
                     ))}
                   </div>
                   <Card className="rounded-xl mb-4">
-                    <CardHeader><CardTitle>Patient Growth</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{tA("adminUi.patientGrowth")}</CardTitle></CardHeader>
                     <CardContent>
                       {patientGrowthData.length > 0 ? (
                         <div className="h-56"><ResponsiveContainer width="100%" height="100%"><AreaChart data={patientGrowthData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
-                      ) : <div className="text-center py-8 text-muted-foreground"><Users className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No patient data yet.</p></div>}
+                      ) : <div className="text-center py-8 text-muted-foreground"><Users className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>{tA("adminUi.noPatientData")}</p></div>}
                     </CardContent>
                   </Card>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -5649,24 +5649,24 @@ const AdminDashboard = () => {
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle>Admin Alerts</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{tA("adminUi.adminAlerts")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <div><p className="text-sm font-medium">Daily revenue summary email</p><p className="text-xs text-muted-foreground">Receive a daily summary of revenue and appointments</p></div>
+                        <div><p className="text-sm font-medium">{tA("adminUi.dailyRevenueEmail")}</p><p className="text-xs text-muted-foreground">{tA("adminUi.dailyRevenueEmailDescription")}</p></div>
                         <ToggleBtn checked={true} onChange={() => {}} disabled={!allowModals} />
                       </div>
                       <div className="flex items-center justify-between">
-                        <div><p className="text-sm font-medium">Weekly performance digest</p><p className="text-xs text-muted-foreground">Weekly email with key performance metrics</p></div>
+                        <div><p className="text-sm font-medium">{tA("adminUi.weeklyDigest")}</p><p className="text-xs text-muted-foreground">{tA("adminUi.weeklyDigestDescription")}</p></div>
                         <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm">Alert me if daily revenue drops below</span>
+                        <span className="text-sm">{tA("adminUi.revenueDropAlert")}</span>
                         <span className="text-sm font-medium">$</span>
                         <Input type="number" className="w-24" defaultValue={100} disabled={!allowModals} />
                       </div>
                       <Button onClick={() => guard(async () => {
                             await saveEntitySettings('notification_prefs', { ...notifSettings, alerts_configured: true });
-                          })} disabled={!allowModals}>Save</Button>
+                          })} disabled={!allowModals}>{tA("adminUi.save")}</Button>
                     </CardContent>
                   </Card>
                 </div>
@@ -5952,15 +5952,15 @@ const AdminDashboard = () => {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-xl font-bold">Integrations</h2>
-                    <p className="text-sm text-muted-foreground">Connect your clinic with payment gateways, calendars, and external tools.</p>
+                    <h2 className="text-xl font-bold">{tA("adminUi.integrations")}</h2>
+                    <p className="text-sm text-muted-foreground">{tA("adminUi.integrationsDescription")}</p>
                   </div>
 
                   {/* Payment Gateways */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Payment Gateways</CardTitle>
-                      <p className="text-sm text-muted-foreground">Optional gateway connections for transaction records and revenue tracking. Patients pay providers directly.</p>
+                      <CardTitle>{tA("adminUi.paymentGateways")}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{tA("adminUi.paymentGatewaysDescription")}</p>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {[
@@ -5974,13 +5974,13 @@ const AdminDashboard = () => {
                             <p className="text-sm text-muted-foreground">{gw.desc}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Not connected</Badge>
-                            <Button size="sm" onClick={() => guard(() => toast.info(`${gw.name} connection coming soon`))} disabled={!allowModals}>Connect</Button>
-                            {gw.hasTest && <Button size="sm" variant="outline" onClick={() => toast.info('Test mode coming soon')}>Test Mode</Button>}
+                            <Badge variant="secondary">{tA("adminUi.notConnected")}</Badge>
+                            <Button size="sm" onClick={() => guard(() => toast.info(tA("adminUi.connectionComingSoon", { name: gw.name })))} disabled={!allowModals}>{tA("adminUi.connect")}</Button>
+                            {gw.hasTest && <Button size="sm" variant="outline" onClick={() => toast.info(tA("adminUi.testModeComingSoon"))}>{tA("adminUi.testMode")}</Button>}
                           </div>
                         </div>
                       ))}
-                      <p className="text-xs text-muted-foreground">Only one payment gateway can be active at a time.</p>
+                      <p className="text-xs text-muted-foreground">{tA("adminUi.oneGatewayOnly")}</p>
                     </CardContent>
                   </Card>
 
