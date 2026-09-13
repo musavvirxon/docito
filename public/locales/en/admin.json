@@ -910,6 +910,17 @@
     "testModeComingSoon": "Test mode is coming soon",
     "oneGatewayOnly": "Only one payment gateway can be active at a time.",
     "icdCode": "ICD-10 diagnosis code",
-    "cptCode": "CPT/HCPCS code"
+    "cptCode": "CPT/HCPCS code",
+    "invoiceComingSoon": "Invoice creation is coming soon",
+    "downloadInvoicePdf": "Download invoice PDF",
+    "noPatientId": "No patient ID",
+    "failedToSend": "Failed to send",
+    "andMore": "and {{count}} more",
+    "invalidCadence": "Invalid schedule",
+    "selectMetric": "Select at least one metric",
+    "reportGenerated": "Report generated",
+    "failedGenerateReport": "Failed to generate report",
+    "csvDownloaded": "CSV downloaded",
+    "exportFailed": "Export failed"
   }
 }

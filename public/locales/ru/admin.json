@@ -927,6 +927,17 @@
     "testModeComingSoon": "Тестовый режим скоро появится",
     "oneGatewayOnly": "Одновременно может быть активна только одна платёжная система.",
     "icdCode": "Код диагноза ICD-10",
-    "cptCode": "Код CPT/HCPCS"
+    "cptCode": "Код CPT/HCPCS",
+    "invoiceComingSoon": "Создание счетов скоро появится",
+    "downloadInvoicePdf": "Скачать счёт в PDF",
+    "noPatientId": "ID пациента отсутствует",
+    "failedToSend": "Не удалось отправить",
+    "andMore": "и ещё {{count}}",
+    "invalidCadence": "Некорректное расписание",
+    "selectMetric": "Выберите хотя бы один показатель",
+    "reportGenerated": "Отчёт создан",
+    "failedGenerateReport": "Не удалось создать отчёт",
+    "csvDownloaded": "CSV загружен",
+    "exportFailed": "Ошибка экспорта"
   }
 }
