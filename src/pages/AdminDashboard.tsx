@@ -136,7 +136,7 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
       className="absolute inset-0 z-20 rounded-xl bg-background/70 backdrop-blur-sm border border-border flex items-center justify-center p-6"
       onClick={() => toast.warning(message)}
       role="button"
-      aria-label="Locked until verification"
+      aria-label={t("lockedOverlay.title")}
     >
       <div className="max-w-md w-full">
         <Card className="border border-border shadow-sm">
@@ -586,18 +586,18 @@ const AdminDashboard = () => {
 
   const dashboardMetrics = useMemo(
     () => [
-      { label: t("admin.metrics.totalBookings"), value: stats.totalBookings.toString(), icon: Calendar },
-      { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
+      { label: tA("metrics.totalBookings"), value: stats.totalBookings.toString(), icon: Calendar },
+      { label: tA("metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
       {
-        label: t("admin.metrics.revenueThisMonth"),
+        label: tA("metrics.revenueThisMonth"),
         value: money(stats.totalRevenue, ((practice as any)?.currency || 'USD').toUpperCase()),
         icon: DollarSign,
       },
-      { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
-      { label: t("admin.metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
-      { label: t("admin.metrics.locations"), value: stats.locations.toString(), icon: MapPin },
+      { label: tA("metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
+      { label: tA("metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
+      { label: tA("metrics.locations"), value: stats.locations.toString(), icon: MapPin },
     ],
-    [stats, t]
+    [stats, tA, money, practice]
   );
 
   const getVerificationStatusColor = (status: string) => {
@@ -617,13 +617,13 @@ const AdminDashboard = () => {
   const getVerificationMessage = (status: string) => {
     switch (status) {
       case "verified":
-        return t("admin.verification.verified");
+        return tA("verification.verified");
       case "rejected":
-        return t("admin.verification.rejected");
+        return tA("verification.rejected");
       case "under_review":
-        return t("admin.verification.underReview");
+        return tA("verification.underReview");
       default:
-        return t("admin.verification.pending");
+        return tA("verification.pending");
     }
   };
 
@@ -639,19 +639,19 @@ const AdminDashboard = () => {
   };
 
   const menuItems: Array<{ id: AdminSection; label: string; icon: any }> = [
-    { id: "overview", label: t("admin.tabs.overview"), icon: BarChart3 },
-    { id: "providers", label: t("admin.tabs.providers"), icon: Stethoscope },
-    { id: "services", label: t("admin.tabs.services"), icon: Building2 },
-    { id: "staff", label: t("admin.tabs.staff"), icon: Users },
-    { id: "locations", label: t("admin.tabs.locations"), icon: MapPin },
-    { id: "patients", label: t("admin.tabs.patients"), icon: Users },
-    { id: "billing", label: t("admin.tabs.billing"), icon: CreditCard },
-    { id: "finances", label: t("admin.tabs.finances", { defaultValue: "Finances" }), icon: DollarSign },
+    { id: "overview", label: tA("tabs.overview"), icon: BarChart3 },
+    { id: "providers", label: tA("tabs.providers"), icon: Stethoscope },
+    { id: "services", label: tA("tabs.services"), icon: Building2 },
+    { id: "staff", label: tA("tabs.staff"), icon: Users },
+    { id: "locations", label: tA("tabs.locations"), icon: MapPin },
+    { id: "patients", label: tA("tabs.patients"), icon: Users },
+    { id: "billing", label: tA("tabs.billing"), icon: CreditCard },
+    { id: "finances", label: tA("tabs.finances"), icon: DollarSign },
     { id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package },
     { id: "rooms", label: t("admin.tabs.rooms", { defaultValue: "Rooms & Beds" }), icon: BedDouble },
-    { id: "queueDisplays", label: "Queue displays", icon: Monitor },
-    { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
-    { id: "settings", label: t("admin.tabs.settings", { defaultValue: "Settings" }), icon: Settings },
+    { id: "queueDisplays", label: t("admin.tabs.queueDisplays", { defaultValue: t("admin.qd.title") }), icon: Monitor },
+    { id: "analytics", label: tA("tabs.analytics"), icon: TrendingUp },
+    { id: "settings", label: tA("tabs.settings"), icon: Settings },
   ];
 
   if (loading) {
@@ -672,7 +672,7 @@ const AdminDashboard = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="text-muted-foreground">{t("admin.loading")}</span>
+            <span className="text-muted-foreground">{tA("loading")}</span>
           </div>
         </div>
       </div>
@@ -712,16 +712,16 @@ const AdminDashboard = () => {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{t("admin.setup.providers")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.providersDesc")}</p>
+                    <p className="text-sm font-medium">{tA("setup.providers")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tA("setup.providersDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{t("admin.setup.operations")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.operationsDesc")}</p>
+                    <p className="text-sm font-medium">{tA("setup.operations")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tA("setup.operationsDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{t("admin.setup.finance")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.financeDesc")}</p>
+                    <p className="text-sm font-medium">{tA("setup.finance")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tA("setup.financeDesc")}</p>
                   </div>
                 </div>
 
@@ -740,18 +740,18 @@ const AdminDashboard = () => {
             <div className="grid gap-6 lg:col-span-4 lg:grid-rows-2">
               <Card className="rounded-2xl h-full">
                 <CardHeader>
-                  <CardTitle className="text-base">{t("admin.setup.providers")}</CardTitle>
+                  <CardTitle className="text-base">{tA("setup.providers")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{t("admin.setup.providersCardDesc")}</p>
+                  <p className="text-sm text-muted-foreground">{tA("setup.providersCardDesc")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-2xl h-full">
                 <CardHeader>
-                  <CardTitle className="text-base">{t("admin.setup.operations")}</CardTitle>
+                  <CardTitle className="text-base">{tA("setup.operations")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{t("admin.setup.operationsCardDesc")}</p>
+                  <p className="text-sm text-muted-foreground">{tA("setup.operationsCardDesc")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -783,13 +783,13 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-destructive" />
-                {t("admin.error.failed", { defaultValue: "Error" })}
+                {tA("error.failed")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">{error}</p>
               <Button onClick={refreshData} className="w-full">
-                {t("admin.error.retry")}
+                {tA("error.retry")}
               </Button>
             </CardContent>
           </Card>
