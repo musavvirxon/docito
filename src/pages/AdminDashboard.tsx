@@ -543,7 +543,7 @@ const AdminDashboard = () => {
     try {
       const current = (entitySettings.settings as any)?.payload || {};
       await entitySettings.saveSettings({ ...current, [section]: data });
-      toast.success('Settings saved');
+      toast.success(tA('adminUi.settingsSaved'));
     } catch (e: any) {
       toast.error(e?.message || 'Failed to save settings');
     }
@@ -3090,7 +3090,7 @@ const AdminDashboard = () => {
                     <PatientFinanceSection
                       patientName={selectedPatient?.name || ''}
                       payments={payments || []}
-                      onCreateInvoice={() => guard(() => toast.info('Create invoice coming soon'))}
+                      onCreateInvoice={() => guard(() => toast.info(tA('adminUi.invoiceComingSoon')))}
                       disabled={!allowModals}
                     />
                     <div className="flex items-center justify-between flex-wrap gap-3">
@@ -3137,7 +3137,7 @@ const AdminDashboard = () => {
                               <th className="text-left p-3 font-medium">{t("admin.pt.date")}</th>
                               <th className="text-left p-3 font-medium">{t("admin.pt.description")}</th>
                               <th className="text-left p-3 font-medium">{t("admin.pt.amount")}</th>
-                              <th className="text-left p-3 font-medium">Status</th>
+                              <th className="text-left p-3 font-medium">{tA('adminUi.status')}</th>
                             </tr></thead>
                             <tbody>
                               {patientPayments.map((p: any) => (
@@ -3979,7 +3979,7 @@ const AdminDashboard = () => {
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              title="Download invoice PDF"
+                                              title={tA('adminUi.downloadInvoicePdf')}
                                               onClick={() => guard(async () => {
                                                 try {
                                                   const { downloadInvoicePdf } = await import('@/lib/api/invoice-api');
@@ -5048,7 +5048,7 @@ const AdminDashboard = () => {
                     <CardHeader><CardTitle>{t("admin.an.inactivePatients")}</CardTitle></CardHeader>
                     <CardContent>
                       {inactivePatientsList.length > 0 ? (
-                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">{t("admin.an.name")}</th><th className="pb-2 font-medium">{t("admin.an.lastVisit")}</th><th className="pb-2 font-medium">{t("admin.an.provider")}</th><th className="pb-2 font-medium">{t("admin.an.actions")}</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => guard(async () => { if (!p.user_id && !p.id) { toast.error('No patient ID'); return; } try { const { error } = await (supabase as any).functions.invoke('send-notification', { body: { user_id: p.user_id || p.id, title: tA('patients.actions.reengageTitle', 'We miss you!'), body: tA('patients.actions.reengageBody', `It's been a while since your last visit. Book your next appointment today.`), type: 'reengagement', channel: 'email' } }); if (error) throw error; toast.success(tA('patients.actions.reengageSent', 'Re-engagement email sent')); } catch (e: any) { toast.error(e?.message || 'Failed to send'); } })}>{t("admin.an.reengage")}</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">and {totalInactive - 10} more</p>}</>
+                        <><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="pb-2 font-medium">{t("admin.an.name")}</th><th className="pb-2 font-medium">{t("admin.an.lastVisit")}</th><th className="pb-2 font-medium">{t("admin.an.provider")}</th><th className="pb-2 font-medium">{t("admin.an.actions")}</th></tr></thead><tbody>{inactivePatientsList.map((p: any, i: number) => (<tr key={i} className="border-b last:border-0"><td className="py-2 font-medium">{p.full_name || p.name || '—'}</td><td className="py-2 text-muted-foreground">{(() => { try { return p.last_visit ? format(new Date(p.last_visit), 'MMM dd, yyyy') : '—'; } catch { return '—'; } })()}</td><td className="py-2 text-muted-foreground">{p.doctor_name || '—'}</td><td className="py-2"><Button size="sm" variant="outline" onClick={() => guard(async () => { if (!p.user_id && !p.id) { toast.error(tA('adminUi.noPatientId')); return; } try { const { error } = await (supabase as any).functions.invoke('send-notification', { body: { user_id: p.user_id || p.id, title: tA('patients.actions.reengageTitle', 'We miss you!'), body: tA('patients.actions.reengageBody', `It's been a while since your last visit. Book your next appointment today.`), type: 'reengagement', channel: 'email' } }); if (error) throw error; toast.success(tA('patients.actions.reengageSent', 'Re-engagement email sent')); } catch (e: any) { toast.error(e?.message || tA('adminUi.failedToSend')); } })}>{t("admin.an.reengage")}</Button></td></tr>))}</tbody></table></div>{totalInactive > 10 && <p className="text-xs text-muted-foreground mt-2">{tA('adminUi.andMore', { count: totalInactive - 10 })}</p>}</>
                       ) : <div className="text-center py-6 text-muted-foreground"><CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-50" /><p>{t("admin.an.greatRetention")}</p></div>}
                     </CardContent>
                   </Card>
@@ -5149,7 +5149,7 @@ const AdminDashboard = () => {
                       const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
                       if (!name) return;
                       const cadence = prompt(tA('reports.schedule.cadencePrompt', 'Cadence (weekly | monthly):'), 'weekly') as 'weekly' | 'monthly';
-                      if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error('Invalid cadence'); return; }
+                      if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error(tA('adminUi.invalidCadence')); return; }
                       const email = prompt(tA('reports.schedule.emailPrompt', 'Recipient email:'));
                       if (!email) return;
                       const next = [...reportSchedules, { id: Date.now().toString(), name, cadence, email, created_at: new Date().toISOString() }];
@@ -5227,7 +5227,7 @@ const AdminDashboard = () => {
 
                       {/* Generate */}
                       <Button disabled={!allowModals || reportLoading} onClick={() => guard(() => {
-                        if (reportMetrics.length === 0) { toast.error('Select at least one metric'); return; }
+                        if (reportMetrics.length === 0) { toast.error(tA('adminUi.selectMetric')); return; }
                         setReportLoading(true);
                         setTimeout(() => {
                           try {
@@ -5292,8 +5292,8 @@ const AdminDashboard = () => {
                               });
                             }
                             setReportGenerated(rows);
-                            toast.success('Report generated');
-                          } catch { toast.error('Failed to generate report'); }
+                            toast.success(tA('adminUi.reportGenerated'));
+                          } catch { toast.error(tA('adminUi.failedGenerateReport')); }
                           setReportLoading(false);
                         }, 800);
                       })}>
@@ -5319,8 +5319,8 @@ const AdminDashboard = () => {
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a'); a.href = url; a.download = `report-${Date.now()}.csv`; a.click();
                                 URL.revokeObjectURL(url);
-                                toast.success('CSV downloaded');
-                              } catch { toast.error('Export failed'); }
+                                toast.success(tA('adminUi.csvDownloaded'));
+                              } catch { toast.error(tA('adminUi.exportFailed')); }
                             })}>{t("admin.bl.exportCsv")}</Button>
                             <Button size="sm" variant="ghost" onClick={() => setReportGenerated(null)}>{t("admin.an.clearBtn")}</Button>
                           </div>
@@ -5377,7 +5377,7 @@ const AdminDashboard = () => {
                             const name = prompt(tA('reports.schedule.namePrompt', 'Schedule name (e.g. Weekly Revenue):'));
                             if (!name) return;
                             const cadence = prompt(tA('reports.schedule.cadencePrompt', 'Cadence (weekly | monthly):'), 'weekly') as 'weekly' | 'monthly';
-                            if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error('Invalid cadence'); return; }
+                            if (!cadence || !['weekly','monthly'].includes(cadence)) { toast.error(tA('adminUi.invalidCadence')); return; }
                             const email = prompt(tA('reports.schedule.emailPrompt', 'Recipient email:'));
                             if (!email) return;
                             const next = [...reportSchedules, { id: Date.now().toString(), name, cadence, email, created_at: new Date().toISOString() }];

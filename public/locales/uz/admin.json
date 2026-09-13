@@ -1227,6 +1227,17 @@
     "testModeComingSoon": "Sinov rejimi tez orada qo‘shiladi",
     "oneGatewayOnly": "Bir vaqtda faqat bitta to‘lov tizimi faol bo‘lishi mumkin.",
     "icdCode": "ICD-10 tashxis kodi",
-    "cptCode": "CPT/HCPCS kodi"
+    "cptCode": "CPT/HCPCS kodi",
+    "invoiceComingSoon": "Hisob-faktura yaratish tez orada qo‘shiladi",
+    "downloadInvoicePdf": "Hisob-fakturani PDF shaklida yuklash",
+    "noPatientId": "Bemor ID si yo‘q",
+    "failedToSend": "Yuborib bo‘lmadi",
+    "andMore": "va yana {{count}} ta",
+    "invalidCadence": "Noto‘g‘ri jadval",
+    "selectMetric": "Kamida bitta ko‘rsatkichni tanlang",
+    "reportGenerated": "Hisobot yaratildi",
+    "failedGenerateReport": "Hisobot yaratib bo‘lmadi",
+    "csvDownloaded": "CSV yuklandi",
+    "exportFailed": "Eksport amalga oshmadi"
   }
 }
