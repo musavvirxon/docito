@@ -13,6 +13,7 @@ import { useEntitySettings, type EntityType } from "@/hooks/useEntitySettings";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES } from "@/data/timezones";
 import { Switch } from "@/components/ui/switch";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   entityType: EntityType;
@@ -87,6 +88,7 @@ function isVerifiedFromStatus(verified: unknown, status: unknown) {
 
 export default function EntitySettingsPage({ entityType, entityId, heading }: Props) {
   const { loading, saving, error, settings, saveSettings } = useEntitySettings(entityType, entityId);
+  const { t } = useTranslation("admin");
 
   const [form, setForm] = useState<Record<string, any>>({});
   const [tab, setTab] = useState<"profile" | "address" | "hours" | "notifications" | "billing" | "analytics">("profile");
@@ -227,11 +229,11 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
   const onSave = async () => {
     try {
       await saveSettings(form);
-      toast.success("Settings saved");
+      toast.success(t("adminUi.settingsSaved"));
     } catch (e: any) {
       const msg = String(e?.message || "Failed to save settings");
       if (msg.toLowerCase().includes("timezone locked")) {
-        toast.error("Timezone is locked after verification.");
+        toast.error(t("adminUi.timezoneLocked"));
       } else {
         toast.error(msg);
       }
@@ -311,9 +313,9 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
       <div className="p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Settings</CardTitle>
+            <CardTitle>{t("adminUi.settings")}</CardTitle>
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">{error || "Unable to load settings."}</CardContent>
+          <CardContent className="text-sm text-muted-foreground">{error || t("adminUi.unableLoadSettings")}</CardContent>
         </Card>
       </div>
     );
@@ -323,11 +325,11 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 flex-wrap">
-          <h2 className="text-2xl font-bold">{heading || "Settings"}</h2>
+          <h2 className="text-2xl font-bold">{heading || t("adminUi.settings")}</h2>
           {verified === true ? (
             <Badge className="bg-green-500/10 text-green-600 border-green-500/30">
               <Shield className="h-3 w-3 mr-1" />
-              Verified
+              {t("adminUi.verified")}
             </Badge>
           ) : null}
         </div>
@@ -339,37 +341,37 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
         <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full md:w-auto">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="address">Address</TabsTrigger>
-          <TabsTrigger value="hours">Hours & Costs</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="profile">{t("adminUi.profile")}</TabsTrigger>
+          <TabsTrigger value="address">{t("adminUi.address")}</TabsTrigger>
+          <TabsTrigger value="hours">{t("adminUi.hoursCosts")}</TabsTrigger>
+          <TabsTrigger value="notifications">{t("adminUi.notifications")}</TabsTrigger>
+          <TabsTrigger value="billing">{t("adminUi.billing")}</TabsTrigger>
+          <TabsTrigger value="analytics">{t("adminUi.analytics")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Organization profile</CardTitle>
+              <CardTitle>{t("adminUi.organizationProfile")}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Display name</Label>
+                <Label>{t("adminUi.displayName")}</Label>
                 <Input
                   value={form.display_name ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Phone</Label>
+                <Label>{t("adminUi.phone")}</Label>
                 <Input value={form.phone ?? ""} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t("adminUi.email")}</Label>
                 <Input value={form.email ?? ""} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Website</Label>
+                <Label>{t("adminUi.website")}</Label>
                 <Input
                   value={form.website ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, website: e.target.value }))}
@@ -377,14 +379,14 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
               </div>
 
               <div className="space-y-2">
-                <Label>Timezone</Label>
+                <Label>{t("adminUi.timezone")}</Label>
                 <Select
                   value={String(form.timezone || "UTC")}
                   onValueChange={(v) => setForm((p) => ({ ...p, timezone: v }))}
                   disabled={timezoneLocked}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select timezone" />
+                    <SelectValue placeholder={t("adminUi.selectTimezone")} />
                   </SelectTrigger>
                   <SelectContent>
                     {timezoneOptions.map((tz) => (
@@ -396,13 +398,13 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 </Select>
                 <p className="text-xs text-muted-foreground">
                   {timezoneLocked
-                    ? "Timezone is locked after verification."
-                    : "Timezone is used for calendars and referral times shown to your staff and patients."}
+                    ? t("adminUi.timezoneLocked")
+                    : t("adminUi.timezoneDescription")}
                 </p>
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label>Logo URL</Label>
+                <Label>{t("adminUi.logoUrl")}</Label>
                 <Input
                   value={form.logo_url ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, logo_url: e.target.value }))}
@@ -415,43 +417,43 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
         <TabsContent value="address" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Address</CardTitle>
+              <CardTitle>{t("adminUi.address")}</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <Label>Address line 1</Label>
+                <Label>{t("adminUi.addressLine1")}</Label>
                 <Input
                   value={form.address_line1 ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, address_line1: e.target.value }))}
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label>Address line 2</Label>
+                <Label>{t("adminUi.addressLine2")}</Label>
                 <Input
                   value={form.address_line2 ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, address_line2: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>City</Label>
+                <Label>{t("adminUi.city")}</Label>
                 <Input value={form.city ?? ""} onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))} />
               </div>
               <div className="space-y-2">
-                <Label>Region</Label>
+                <Label>{t("adminUi.region")}</Label>
                 <Input
                   value={form.region ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, region: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Postal code</Label>
+                <Label>{t("adminUi.postalCode")}</Label>
                 <Input
                   value={form.postal_code ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, postal_code: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Country</Label>
+                <Label>{t("adminUi.country")}</Label>
                 <Input
                   value={form.country ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, country: e.target.value }))}
@@ -488,7 +490,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                           }))
                         }
                       />
-                      <span className="text-sm font-medium capitalize">{day}</span>
+                      <span className="text-sm font-medium">{t(`adminUi.days.${day}`)}</span>
                     </div>
                     {dayData.enabled !== false && (
                       <div className="flex items-center gap-2">
@@ -503,7 +505,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                             }))
                           }
                         />
-                        <span className="text-muted-foreground">to</span>
+                        <span className="text-muted-foreground">{t("adminUi.to")}</span>
                         <Input
                           type="time"
                           className="w-32"
@@ -535,7 +537,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Default consultation fee</Label>
+                <Label>{t("adminUi.defaultConsultationFee")}</Label>
                 <Input
                   type="number"
                   min={0}
@@ -554,7 +556,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 />
               </div>
               <div className="space-y-2">
-                <Label>Currency</Label>
+                <Label>{t("adminUi.currency")}</Label>
                 <Input
                   placeholder="USD"
                   value={form.billing_prefs?.currency ?? ""}
@@ -572,7 +574,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
           {(entityType === "practice" || entityType === "clinic") && (
             <Card>
               <CardHeader>
-                <CardTitle>Override Policy</CardTitle>
+                <CardTitle>{t("adminUi.overridePolicy")}</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Control whether doctors and staff can override clinic-level settings.
                 </p>
@@ -580,7 +582,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Enforce clinic working hours</p>
+                    <p className="text-sm font-medium">{t("adminUi.enforceHours")}</p>
                     <p className="text-xs text-muted-foreground">
                       Doctors cannot set hours outside the clinic's working hours.
                     </p>
@@ -597,7 +599,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Enforce consultation fee</p>
+                    <p className="text-sm font-medium">{t("adminUi.enforceFee")}</p>
                     <p className="text-xs text-muted-foreground">
                       The clinic's default fee applies to all doctors. Doctors cannot set their own.
                     </p>
@@ -614,7 +616,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Enforce notification preferences</p>
+                    <p className="text-sm font-medium">{t("adminUi.enforceNotifications")}</p>
                     <p className="text-xs text-muted-foreground">
                       Clinic notification settings override individual staff/doctor preferences.
                     </p>
@@ -637,10 +639,10 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
         <TabsContent value="notifications" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Notifications</CardTitle>
+              <CardTitle>{t("adminUi.notifications")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Label>Notification prefs (JSON)</Label>
+              <Label>{t("adminUi.notificationPrefsJson")}</Label>
               <Textarea
                 rows={10}
                 value={JSON.stringify(form.notification_prefs ?? {}, null, 2)}
@@ -660,7 +662,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
           <div className="space-y-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Billing Summary</CardTitle>
+                <CardTitle>{t("adminUi.billingSummary")}</CardTitle>
                 <Button variant="outline" size="sm" onClick={loadBilling} disabled={billingLoading}>
                   <RefreshCcw className={`h-4 w-4 mr-2 ${billingLoading ? "animate-spin" : ""}`} />
                   Refresh
@@ -676,20 +678,20 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 ) : billing?.summary ? (
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="rounded-lg border p-3">
-                      <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("adminUi.totalPaid")}</p>
                       <p className="text-xl font-semibold">{fmtMoney(billing.summary.total_paid_cents, billingCurrency)}</p>
                     </div>
                     <div className="rounded-lg border p-3">
-                      <p className="text-sm font-medium text-muted-foreground">Outstanding</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("adminUi.outstanding")}</p>
                       <p className="text-xl font-semibold">{fmtMoney(billing.summary.outstanding_cents, billingCurrency)}</p>
                     </div>
                     <div className="rounded-lg border p-3">
-                      <p className="text-sm font-medium text-muted-foreground">Open Invoices</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t("adminUi.openInvoices")}</p>
                       <p className="text-xl font-semibold">{billing.summary.open_invoice_count}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">No billing data available</div>
+                  <div className="text-center py-8 text-muted-foreground">{t("adminUi.noBillingData")}</div>
                 )}
               </CardContent>
             </Card>
@@ -700,7 +702,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
           <div className="space-y-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Analytics</CardTitle>
+                <CardTitle>{t("adminUi.analytics")}</CardTitle>
                 <Button variant="outline" size="sm" onClick={loadAnalytics} disabled={analyticsLoading}>
                   <RefreshCcw className={`h-4 w-4 mr-2 ${analyticsLoading ? "animate-spin" : ""}`} />
                   Refresh
@@ -732,7 +734,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">No analytics data available</div>
+                  <div className="text-center py-8 text-muted-foreground">{t("adminUi.noAnalyticsData")}</div>
                 )}
               </CardContent>
             </Card>
