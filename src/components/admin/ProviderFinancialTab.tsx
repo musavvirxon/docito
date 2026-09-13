@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area } from "recharts";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useTranslation } from "react-i18next";
 
 type Props = { doctorId: string; doctorName?: string };
 
@@ -13,9 +14,10 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
     doctorId,
   );
   const { format: money } = useCurrency();
+  const { t } = useTranslation("admin");
 
   if (loading) {
-    return <p className="text-sm text-muted-foreground py-8 text-center">Loading financial data…</p>;
+    return <p className="text-sm text-muted-foreground py-8 text-center">{t("adminUi.loadingFinancialData")}</p>;
   }
   if (error) {
     return <p className="text-sm text-destructive py-8 text-center">{error}</p>;
@@ -25,10 +27,10 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Earnings", value: money(stats.totalEarnings), hint: "All time revenue" },
-          { label: "This Month", value: money(stats.earningsThisMonth), hint: `This week: ${money(stats.earningsThisWeek)}` },
-          { label: "Unpaid Earnings", value: money(stats.unpaidEarnings), hint: "Pending appointments" },
-          { label: "Net Earnings", value: money(stats.netEarnings), hint: "After 15% platform fee" },
+          { label: t("adminUi.totalEarnings"), value: money(stats.totalEarnings), hint: t("adminUi.allTimeRevenue") },
+          { label: t("adminUi.thisMonth"), value: money(stats.earningsThisMonth), hint: t("adminUi.thisWeek", { amount: money(stats.earningsThisWeek) }) },
+          { label: t("adminUi.unpaidEarnings"), value: money(stats.unpaidEarnings), hint: t("adminUi.pendingAppointments") },
+          { label: t("adminUi.netEarnings"), value: money(stats.netEarnings), hint: t("adminUi.afterPlatformFee") },
         ].map((k) => (
           <Card key={k.label} className="rounded-xl">
             <CardContent className="pt-6">
@@ -41,19 +43,19 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
       </div>
 
       <Card className="rounded-xl">
-        <CardHeader><CardTitle className="text-base">Payout Information</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("adminUi.payoutInformation")}</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-3 bg-muted/30 rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground">Payouts Processed</p>
+              <p className="text-sm text-muted-foreground">{t("adminUi.payoutsProcessed")}</p>
               <p className="font-medium">{stats.payoutsProcessed}</p>
             </div>
             <div className="p-3 bg-muted/30 rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground">Next Payout</p>
+              <p className="text-sm text-muted-foreground">{t("adminUi.nextPayout")}</p>
               <p className="font-medium">{stats.nextPayoutDate || "—"}</p>
             </div>
             <div className="p-3 bg-muted/30 rounded-lg border border-border">
-              <p className="text-sm text-muted-foreground">Platform Commission</p>
+              <p className="text-sm text-muted-foreground">{t("adminUi.platformCommission")}</p>
               <p className="font-medium">{money(stats.platformCommission)}</p>
             </div>
           </div>
@@ -61,7 +63,7 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
       </Card>
 
       <Card className="rounded-xl">
-        <CardHeader><CardTitle className="text-base">Earnings Over Time</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("adminUi.earningsOverTime")}</CardTitle></CardHeader>
         <CardContent>
           {earningsHistory.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
@@ -74,20 +76,20 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-6">No earnings data in range</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("adminUi.noEarningsData")}</p>
           )}
         </CardContent>
       </Card>
 
       <Card className="rounded-xl">
-        <CardHeader><CardTitle className="text-base">By Service</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("adminUi.byService")}</CardTitle></CardHeader>
         <CardContent>
           {serviceEarnings.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No service revenue yet</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("adminUi.noServiceRevenue")}</p>
           ) : (
             <div className="space-y-2">
               <div className="grid grid-cols-4 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
-                <span>Service</span><span>Bookings</span><span>Avg</span><span className="text-right">Revenue</span>
+                <span>{t("adminUi.service")}</span><span>{t("adminUi.bookings")}</span><span>{t("adminUi.average")}</span><span className="text-right">{t("adminUi.revenue")}</span>
               </div>
               {serviceEarnings.map((s) => (
                 <div key={s.serviceId} className="grid grid-cols-4 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">
@@ -105,17 +107,17 @@ export default function ProviderFinancialTab({ doctorId }: Props) {
       <Card className="rounded-xl">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            Pending Payments
+            {t("adminUi.pendingPayments")}
             <Badge variant="secondary">{pendingPayments.length}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {pendingPayments.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No pending payments</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("adminUi.noPendingPayments")}</p>
           ) : (
             <div className="space-y-2">
               <div className="grid grid-cols-5 gap-2 text-xs font-medium text-muted-foreground px-3 pb-2 border-b border-border">
-                <span>Patient</span><span>Service</span><span>Amount</span><span>Date</span><span>Status</span>
+                <span>{t("adminUi.patient")}</span><span>{t("adminUi.service")}</span><span>{t("adminUi.amount")}</span><span>{t("adminUi.date")}</span><span>{t("adminUi.status")}</span>
               </div>
               {pendingPayments.map((p) => (
                 <div key={p.appointmentId} className="grid grid-cols-5 gap-2 p-3 bg-muted/30 rounded-lg border border-border items-center text-sm">

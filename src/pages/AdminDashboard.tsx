@@ -136,7 +136,7 @@ function LockedOverlay({ onRequestVerify, message }: { onRequestVerify: () => vo
       className="absolute inset-0 z-20 rounded-xl bg-background/70 backdrop-blur-sm border border-border flex items-center justify-center p-6"
       onClick={() => toast.warning(message)}
       role="button"
-      aria-label="Locked until verification"
+      aria-label={t("lockedOverlay.title")}
     >
       <div className="max-w-md w-full">
         <Card className="border border-border shadow-sm">
@@ -586,18 +586,18 @@ const AdminDashboard = () => {
 
   const dashboardMetrics = useMemo(
     () => [
-      { label: t("admin.metrics.totalBookings"), value: stats.totalBookings.toString(), icon: Calendar },
-      { label: t("admin.metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
+      { label: tA("metrics.totalBookings"), value: stats.totalBookings.toString(), icon: Calendar },
+      { label: tA("metrics.totalPatients"), value: stats.totalPatients.toString(), icon: Users },
       {
-        label: t("admin.metrics.revenueThisMonth"),
+        label: tA("metrics.revenueThisMonth"),
         value: money(stats.totalRevenue, ((practice as any)?.currency || 'USD').toUpperCase()),
         icon: DollarSign,
       },
-      { label: t("admin.metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
-      { label: t("admin.metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
-      { label: t("admin.metrics.locations"), value: stats.locations.toString(), icon: MapPin },
+      { label: tA("metrics.clinicRating"), value: stats.clinicRating.toFixed(1), icon: Star },
+      { label: tA("metrics.pendingInvites"), value: stats.pendingInvites.toString(), icon: UserPlus },
+      { label: tA("metrics.locations"), value: stats.locations.toString(), icon: MapPin },
     ],
-    [stats, t]
+    [stats, tA, money, practice]
   );
 
   const getVerificationStatusColor = (status: string) => {
@@ -617,13 +617,13 @@ const AdminDashboard = () => {
   const getVerificationMessage = (status: string) => {
     switch (status) {
       case "verified":
-        return t("admin.verification.verified");
+        return tA("verification.verified");
       case "rejected":
-        return t("admin.verification.rejected");
+        return tA("verification.rejected");
       case "under_review":
-        return t("admin.verification.underReview");
+        return tA("verification.underReview");
       default:
-        return t("admin.verification.pending");
+        return tA("verification.pending");
     }
   };
 
@@ -639,19 +639,19 @@ const AdminDashboard = () => {
   };
 
   const menuItems: Array<{ id: AdminSection; label: string; icon: any }> = [
-    { id: "overview", label: t("admin.tabs.overview"), icon: BarChart3 },
-    { id: "providers", label: t("admin.tabs.providers"), icon: Stethoscope },
-    { id: "services", label: t("admin.tabs.services"), icon: Building2 },
-    { id: "staff", label: t("admin.tabs.staff"), icon: Users },
-    { id: "locations", label: t("admin.tabs.locations"), icon: MapPin },
-    { id: "patients", label: t("admin.tabs.patients"), icon: Users },
-    { id: "billing", label: t("admin.tabs.billing"), icon: CreditCard },
-    { id: "finances", label: t("admin.tabs.finances", { defaultValue: "Finances" }), icon: DollarSign },
+    { id: "overview", label: tA("tabs.overview"), icon: BarChart3 },
+    { id: "providers", label: tA("tabs.providers"), icon: Stethoscope },
+    { id: "services", label: tA("tabs.services"), icon: Building2 },
+    { id: "staff", label: tA("tabs.staff"), icon: Users },
+    { id: "locations", label: tA("tabs.locations"), icon: MapPin },
+    { id: "patients", label: tA("tabs.patients"), icon: Users },
+    { id: "billing", label: tA("tabs.billing"), icon: CreditCard },
+    { id: "finances", label: tA("tabs.finances"), icon: DollarSign },
     { id: "inventory", label: t("admin.tabs.inventory", { defaultValue: "Inventory" }), icon: Package },
     { id: "rooms", label: t("admin.tabs.rooms", { defaultValue: "Rooms & Beds" }), icon: BedDouble },
-    { id: "queueDisplays", label: "Queue displays", icon: Monitor },
-    { id: "analytics", label: t("admin.tabs.analytics"), icon: TrendingUp },
-    { id: "settings", label: t("admin.tabs.settings", { defaultValue: "Settings" }), icon: Settings },
+    { id: "queueDisplays", label: t("admin.tabs.queueDisplays", { defaultValue: t("admin.qd.title") }), icon: Monitor },
+    { id: "analytics", label: tA("tabs.analytics"), icon: TrendingUp },
+    { id: "settings", label: tA("tabs.settings"), icon: Settings },
   ];
 
   if (loading) {
@@ -672,7 +672,7 @@ const AdminDashboard = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="text-muted-foreground">{t("admin.loading")}</span>
+            <span className="text-muted-foreground">{tA("loading")}</span>
           </div>
         </div>
       </div>
@@ -712,16 +712,16 @@ const AdminDashboard = () => {
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{t("admin.setup.providers")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.providersDesc")}</p>
+                    <p className="text-sm font-medium">{tA("setup.providers")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tA("setup.providersDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{t("admin.setup.operations")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.operationsDesc")}</p>
+                    <p className="text-sm font-medium">{tA("setup.operations")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tA("setup.operationsDesc")}</p>
                   </div>
                   <div className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{t("admin.setup.finance")}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{t("admin.setup.financeDesc")}</p>
+                    <p className="text-sm font-medium">{tA("setup.finance")}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">{tA("setup.financeDesc")}</p>
                   </div>
                 </div>
 
@@ -740,18 +740,18 @@ const AdminDashboard = () => {
             <div className="grid gap-6 lg:col-span-4 lg:grid-rows-2">
               <Card className="rounded-2xl h-full">
                 <CardHeader>
-                  <CardTitle className="text-base">{t("admin.setup.providers")}</CardTitle>
+                  <CardTitle className="text-base">{tA("setup.providers")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{t("admin.setup.providersCardDesc")}</p>
+                  <p className="text-sm text-muted-foreground">{tA("setup.providersCardDesc")}</p>
                 </CardContent>
               </Card>
               <Card className="rounded-2xl h-full">
                 <CardHeader>
-                  <CardTitle className="text-base">{t("admin.setup.operations")}</CardTitle>
+                  <CardTitle className="text-base">{tA("setup.operations")}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{t("admin.setup.operationsCardDesc")}</p>
+                  <p className="text-sm text-muted-foreground">{tA("setup.operationsCardDesc")}</p>
                 </CardContent>
               </Card>
             </div>
@@ -783,13 +783,13 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertCircle className="h-5 w-5 text-destructive" />
-                {t("admin.error.failed", { defaultValue: "Error" })}
+                {tA("error.failed")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">{error}</p>
               <Button onClick={refreshData} className="w-full">
-                {t("admin.error.retry")}
+                {tA("error.retry")}
               </Button>
             </CardContent>
           </Card>
@@ -814,7 +814,7 @@ const AdminDashboard = () => {
                   <CardTitle className="flex items-center justify-between">
                     <span>{t("admin.overview.recentAppointments")}</span>
                     <Button variant="outline" size="sm" onClick={() => guard(() => { setActiveSection('analytics'); setAnalyticsTab('appointments'); })}>
-                      {t("admin.overview.viewAll")}
+                      {tA("overview.viewAll")}
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -847,11 +847,11 @@ const AdminDashboard = () => {
 
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
-                  <CardTitle>{t("admin.overview.practiceStatus")}</CardTitle>
+                  <CardTitle>{tA("overview.practiceStatus")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{t("admin.overview.verificationStatus")}</span>
+                    <span className="text-sm text-muted-foreground">{tA("overview.verificationStatus")}</span>
                     <Badge className={getVerificationStatusColor(verificationStatus)}>{verificationStatus}</Badge>
                   </div>
 
@@ -860,12 +860,12 @@ const AdminDashboard = () => {
                   {!isVerified && (
                     <Button onClick={() => setCreateClinicOpen(true)} className="w-full">
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      {t("admin.overview.startVerification")}
+                      {tA("overview.startVerification")}
                     </Button>
                   )}
 
                   <div className="pt-2 border-t border-border">
-                    <div className="text-sm font-medium mb-2">{t("admin.overview.quickActions")}</div>
+                    <div className="text-sm font-medium mb-2">{tA("overview.quickActions")}</div>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
@@ -874,11 +874,11 @@ const AdminDashboard = () => {
                         disabled={!allowModals}
                       >
                         <UserPlus className="h-4 w-4 mr-1" />
-                        {t("admin.actions.inviteDoctor")}
+                        {tA("actions.inviteDoctor")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                         <Building2 className="h-4 w-4 mr-1" />
-                        {t("admin.actions.addService")}
+                        {tA("actions.addService")}
                       </Button>
                       <Button
                         variant="outline"
@@ -887,7 +887,7 @@ const AdminDashboard = () => {
                         disabled={!allowModals}
                       >
                         <Users className="h-4 w-4 mr-1" />
-                        {t("admin.actions.inviteStaff")}
+                        {tA("actions.inviteStaff")}
                       </Button>
                       <Button
                         variant="outline"
@@ -896,7 +896,7 @@ const AdminDashboard = () => {
                         disabled={!allowModals}
                       >
                         <MapPin className="h-4 w-4 mr-1" />
-                        {t("admin.actions.addLocation")}
+                        {tA("actions.addLocation")}
                       </Button>
                     </div>
                   </div>
@@ -909,14 +909,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    {t("admin.overview.doctors")}
+                    {tA("overview.doctors")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {doctors.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
                       <Stethoscope className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">{t("admin.overview.noDoctors")}</p>
+                      <p className="text-sm">{tA("overview.noDoctors")}</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -940,14 +940,14 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Building2 className="h-5 w-5" />
-                    {t("admin.overview.services")}
+                    {tA("overview.services")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {services.length === 0 ? (
                     <div className="text-center py-6 text-muted-foreground">
                       <Building2 className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">{t("admin.overview.noServices")}</p>
+                      <p className="text-sm">{tA("overview.noServices")}</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
@@ -969,7 +969,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Mail className="h-5 w-5" />
-                    {t("admin.overview.messages")}
+                    {tA("overview.messages")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1000,7 +1000,7 @@ const AdminDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <TrendingUp className="h-5 w-5" />
-                    {t("admin.overview.performance")}
+                    {tA("overview.performance")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1024,9 +1024,9 @@ const AdminDashboard = () => {
               <Card className="rounded-xl lg:col-span-4 min-w-0">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{t("admin.overview.pendingInvitations")}</span>
+                    <span>{tA("overview.pendingInvitations")}</span>
                     <Button variant="outline" size="sm" onClick={() => setActiveSection("staff")}>
-                      {t("admin.overview.manage")}
+                      {tA("overview.manage")}
                     </Button>
                   </CardTitle>
                 </CardHeader>
@@ -1040,7 +1040,7 @@ const AdminDashboard = () => {
               <Card className="rounded-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>{t("admin.overview.advancedFinancialMetrics")}</span>
+                    <span>{tA("overview.advancedFinancialMetrics")}</span>
                     <Button variant="outline" size="sm" onClick={() => guard(() => refreshAdvancedMetrics())}>
                       {t("adminBilling.refresh")}
                     </Button>
@@ -1089,14 +1089,14 @@ const AdminDashboard = () => {
           : new Set();
 
         const providerTabs: Array<{ key: typeof providerTab; label: string }> = [
-          { key: 'overview', label: t("admin.providers.tabs.overview") },
-          { key: 'calendar', label: t("admin.providers.tabs.calendar") },
-          { key: 'patients', label: t("admin.providers.tabs.patients") },
-          { key: 'analytics', label: t("admin.providers.tabs.analytics") },
+          { key: 'overview', label: tA("providers.tabs.overview") },
+          { key: 'calendar', label: tA("providers.tabs.calendar") },
+          { key: 'patients', label: tA("providers.tabs.patients") },
+          { key: 'analytics', label: tA("providers.tabs.analytics") },
           { key: 'financial', label: t("admin.providers.tabs.financial", { defaultValue: "Financial" }) },
-          { key: 'procedures', label: t("admin.providers.tabs.procedures") },
-          { key: 'reviews', label: t("admin.providers.tabs.reviews") },
-          { key: 'documents', label: t("admin.providers.tabs.documents") },
+          { key: 'procedures', label: tA("providers.tabs.procedures") },
+          { key: 'reviews', label: tA("providers.tabs.reviews") },
+          { key: 'documents', label: tA("providers.tabs.documents") },
           { key: 'rules', label: t("admin.providers.tabs.rules", { defaultValue: "Rules & Limits" }) },
         ];
 
@@ -1449,7 +1449,7 @@ const AdminDashboard = () => {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold">{t("admin.providers.listTitle")}</h3>
+                          <h3 className="text-lg font-semibold">{tA("providers.listTitle")}</h3>
                           <Badge variant="secondary">{patientList.length}</Badge>
                         </div>
                       </div>
@@ -1698,7 +1698,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-semibold">{t("admin.providers.title")}</h2>
                 <Button onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
                   <UserPlus className="h-4 w-4 mr-2" />
-                  {t("admin.providers.invite")}
+                  {tA("providers.invite")}
                 </Button>
               </div>
 
@@ -1707,7 +1707,7 @@ const AdminDashboard = () => {
                 <Card className="rounded-xl">
                   <CardContent className="pt-6">
                     <div className="text-2xl font-bold">{doctors.length}</div>
-                    <p className="text-sm text-muted-foreground">{t("admin.providers.listTitle")}</p>
+                    <p className="text-sm text-muted-foreground">{tA("providers.listTitle")}</p>
                   </CardContent>
                 </Card>
                 <Card className="rounded-xl">
@@ -1766,11 +1766,11 @@ const AdminDashboard = () => {
               {filteredDoctors.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground mt-6">
                   <Stethoscope className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p className="font-medium">{t("admin.providers.emptyTitle")}</p>
-                  <p className="text-sm mt-1">{t("admin.providers.emptyDescription")}</p>
+                  <p className="font-medium">{tA("providers.emptyTitle")}</p>
+                  <p className="text-sm mt-1">{tA("providers.emptyDescription")}</p>
                   <Button className="mt-4" onClick={() => guard(() => setInviteProviderOpen(true))} disabled={!allowModals}>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    {t("admin.providers.invite")}
+                    {tA("providers.invite")}
                   </Button>
                 </div>
               ) : (
@@ -1852,7 +1852,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-semibold">{t("admin.services.title")}</h2>
                 <Button onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                   <Building2 className="h-4 w-4 mr-2" />
-                  {t("admin.services.add")}
+                  {tA("services.add")}
                 </Button>
               </div>
 
@@ -1934,17 +1934,17 @@ const AdminDashboard = () => {
                   <div className={sectionMainGridClass}>
                     <Card className="rounded-xl lg:col-span-8 min-w-0">
                       <CardHeader>
-                        <CardTitle>{t("admin.services.listTitle")}</CardTitle>
+                        <CardTitle>{tA("services.listTitle")}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {services.length === 0 ? (
                           <div className="text-center py-10 text-muted-foreground">
                             <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                            <p className="font-medium">{t("admin.services.emptyTitle")}</p>
-                            <p className="text-sm mt-1">{t("admin.services.emptyDescription")}</p>
+                            <p className="font-medium">{tA("services.emptyTitle")}</p>
+                            <p className="text-sm mt-1">{tA("services.emptyDescription")}</p>
                             <Button className="mt-4" onClick={() => guard(() => setAddServiceOpen(true))} disabled={!allowModals}>
                               <Building2 className="h-4 w-4 mr-2" />
-                              {t("admin.services.add")}
+                              {tA("services.add")}
                             </Button>
                           </div>
                         ) : filteredServices.length === 0 ? (
@@ -2556,7 +2556,7 @@ const AdminDashboard = () => {
               <h2 className="text-xl font-semibold">{t("admin.locations.title")}</h2>
               <Button onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
                 <MapPin className="h-4 w-4 mr-2" />
-                {t("admin.locations.add")}
+                {tA("locations.add")}
               </Button>
             </div>
 
@@ -2592,17 +2592,17 @@ const AdminDashboard = () => {
             <div className={sectionMainGridClass}>
               <Card className="rounded-xl lg:col-span-8 min-w-0">
                 <CardHeader>
-                  <CardTitle>{t("admin.locations.listTitle")}</CardTitle>
+                  <CardTitle>{tA("locations.listTitle")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {locations.length === 0 ? (
                     <div className="text-center py-10 text-muted-foreground">
                       <MapPin className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-medium">{t("admin.locations.emptyTitle")}</p>
-                      <p className="text-sm mt-1">{t("admin.locations.emptyDescription")}</p>
+                      <p className="font-medium">{tA("locations.emptyTitle")}</p>
+                      <p className="text-sm mt-1">{tA("locations.emptyDescription")}</p>
                       <Button className="mt-4" onClick={() => guard(() => setAddLocationOpen(true))} disabled={!allowModals}>
                         <MapPin className="h-4 w-4 mr-2" />
-                        {t("admin.locations.add")}
+                        {tA("locations.add")}
                       </Button>
                     </div>
                   ) : (
@@ -4555,7 +4555,7 @@ const AdminDashboard = () => {
                         <Input type="date" />
                         <Input type="date" />
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
-                          <option>All</option><option>Income</option><option>Expense</option><option>Payroll</option>
+                          <option>{tA("adminUi.all")}</option><option>{tA("adminUi.income")}</option><option>{tA("adminUi.expense")}</option><option>{tA("adminUi.payroll")}</option>
                         </select>
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
                           <option>{t("admin.fi.allCategories")}</option>
@@ -4566,7 +4566,7 @@ const AdminDashboard = () => {
                         downloadCSV('export.csv', ['Date', 'Type', 'Amount', 'Description'],
                           financeEntries.map(e => [e.date || '', e.type || '', String(e.amount || 0), e.description || '']));
                       })())}>
-                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                        <Download className="h-4 w-4 mr-2" /> {tA("adminUi.exportCsv")}
                       </Button>
                       <p className="text-xs text-muted-foreground mt-3">{t("admin.fi.exportTip")}</p>
                     </CardContent>
@@ -4583,25 +4583,25 @@ const AdminDashboard = () => {
                         downloadCSV('recurring.csv', ['Name', 'Amount', 'Frequency'],
                           recurringRules.map((r: any) => [r.name || '', String((r.amount_cents || 0) / 100), r.frequency || '']));
                       })())}>
-                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                        <Download className="h-4 w-4 mr-2" /> {tA("adminUi.exportCsv")}
                       </Button>
                       <p className="text-xs text-muted-foreground mt-3">{t("admin.fi.exportRecurringTip")}</p>
                     </CardContent>
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle>Export Payroll</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{tA("adminUi.exportPayroll")}</CardTitle></CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-3 mb-4">
                         <select className="border border-border rounded-md px-3 py-1 text-sm bg-background">
-                          <option>This Month</option><option>Last Month</option><option>Custom</option>
+                          <option>{tA("adminUi.thisMonth")}</option><option>{tA("adminUi.lastMonth")}</option><option>{tA("adminUi.custom")}</option>
                         </select>
                       </div>
                       <Button disabled={!allowModals} onClick={() => guard(() => (() => {
                         downloadCSV('payroll.csv', ['Name', 'Amount', 'Period'],
                           compensationProfiles.map((p: any) => [p.display_name || '', String((p.amount_cents || 0) / 100), p.pay_period || '']));
                       })())}>
-                        <Download className="h-4 w-4 mr-2" /> Export CSV
+                        <Download className="h-4 w-4 mr-2" /> {tA("adminUi.exportCsv")}
                       </Button>
                     </CardContent>
                   </Card>
@@ -4966,21 +4966,21 @@ const AdminDashboard = () => {
                       <p className="text-sm text-muted-foreground mb-4">{t("admin.an.comparisonDesc")}</p>
                       <div className="flex gap-4 flex-wrap mb-4 items-end">
                         <div>
-                          <label className="text-xs text-muted-foreground block mb-1">Provider A</label>
+                          <label className="text-xs text-muted-foreground block mb-1">{tA("adminUi.providerA")}</label>
                           <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareA} onChange={(e) => setCompareA(e.target.value)}>
-                            <option value="">Select Provider A</option>
+                            <option value="">{tA("adminUi.selectProviderA")}</option>
                             {providerStats.map((p, i) => <option key={`a-${i}`} value={p.name}>{p.name}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground block mb-1">Provider B</label>
+                          <label className="text-xs text-muted-foreground block mb-1">{tA("adminUi.providerB")}</label>
                           <select className="border rounded-md px-3 py-2 text-sm bg-background" value={compareB} onChange={(e) => setCompareB(e.target.value)}>
-                            <option value="">Select Provider B</option>
+                            <option value="">{tA("adminUi.selectProviderB")}</option>
                             {providerStats.map((p, i) => <option key={`b-${i}`} value={p.name}>{p.name}</option>)}
                           </select>
                         </div>
                         {(compareA || compareB) && (
-                          <Button size="sm" variant="ghost" onClick={() => { setCompareA(''); setCompareB(''); }}>Clear</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setCompareA(''); setCompareB(''); }}>{tA("adminUi.clearSelection")}</Button>
                         )}
                       </div>
                       {(() => {
@@ -5014,16 +5014,16 @@ const AdminDashboard = () => {
               {analyticsTab === 'patients' && (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {[{ label: 'Total Patients', value: patients.length }, { label: 'Active (90d)', value: activePatients }, { label: 'Inactive (90d+)', value: inactivePatientsCount }, { label: 'Avg Visits', value: avgVisits }].map((kpi, i) => (
+                    {[{ label: tA('adminUi.totalPatients'), value: patients.length }, { label: tA('adminUi.active90Days'), value: activePatients }, { label: tA('adminUi.inactive90Days'), value: inactivePatientsCount }, { label: tA('adminUi.averageVisits'), value: avgVisits }].map((kpi, i) => (
                       <Card key={i} className="rounded-xl"><CardContent className="pt-4 pb-4"><p className="text-xs text-muted-foreground">{kpi.label}</p><p className="text-2xl font-bold">{kpi.value}</p></CardContent></Card>
                     ))}
                   </div>
                   <Card className="rounded-xl mb-4">
-                    <CardHeader><CardTitle>Patient Growth</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{tA("adminUi.patientGrowth")}</CardTitle></CardHeader>
                     <CardContent>
                       {patientGrowthData.length > 0 ? (
                         <div className="h-56"><ResponsiveContainer width="100%" height="100%"><AreaChart data={patientGrowthData}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" /><YAxis /><Tooltip /><Area type="monotone" dataKey="count" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.15} /></AreaChart></ResponsiveContainer></div>
-                      ) : <div className="text-center py-8 text-muted-foreground"><Users className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>No patient data yet.</p></div>}
+                      ) : <div className="text-center py-8 text-muted-foreground"><Users className="h-12 w-12 mx-auto mb-2 opacity-50" /><p>{tA("adminUi.noPatientData")}</p></div>}
                     </CardContent>
                   </Card>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
@@ -5649,24 +5649,24 @@ const AdminDashboard = () => {
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle>Admin Alerts</CardTitle></CardHeader>
+                    <CardHeader><CardTitle>{tA("adminUi.adminAlerts")}</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <div><p className="text-sm font-medium">Daily revenue summary email</p><p className="text-xs text-muted-foreground">Receive a daily summary of revenue and appointments</p></div>
+                        <div><p className="text-sm font-medium">{tA("adminUi.dailyRevenueEmail")}</p><p className="text-xs text-muted-foreground">{tA("adminUi.dailyRevenueEmailDescription")}</p></div>
                         <ToggleBtn checked={true} onChange={() => {}} disabled={!allowModals} />
                       </div>
                       <div className="flex items-center justify-between">
-                        <div><p className="text-sm font-medium">Weekly performance digest</p><p className="text-xs text-muted-foreground">Weekly email with key performance metrics</p></div>
+                        <div><p className="text-sm font-medium">{tA("adminUi.weeklyDigest")}</p><p className="text-xs text-muted-foreground">{tA("adminUi.weeklyDigestDescription")}</p></div>
                         <ToggleBtn checked={false} onChange={() => {}} disabled={!allowModals} />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm">Alert me if daily revenue drops below</span>
+                        <span className="text-sm">{tA("adminUi.revenueDropAlert")}</span>
                         <span className="text-sm font-medium">$</span>
                         <Input type="number" className="w-24" defaultValue={100} disabled={!allowModals} />
                       </div>
                       <Button onClick={() => guard(async () => {
                             await saveEntitySettings('notification_prefs', { ...notifSettings, alerts_configured: true });
-                          })} disabled={!allowModals}>Save</Button>
+                          })} disabled={!allowModals}>{tA("adminUi.save")}</Button>
                     </CardContent>
                   </Card>
                 </div>
@@ -5952,15 +5952,15 @@ const AdminDashboard = () => {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
-                    <h2 className="text-xl font-bold">Integrations</h2>
-                    <p className="text-sm text-muted-foreground">Connect your clinic with payment gateways, calendars, and external tools.</p>
+                    <h2 className="text-xl font-bold">{tA("adminUi.integrations")}</h2>
+                    <p className="text-sm text-muted-foreground">{tA("adminUi.integrationsDescription")}</p>
                   </div>
 
                   {/* Payment Gateways */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Payment Gateways</CardTitle>
-                      <p className="text-sm text-muted-foreground">Optional gateway connections for transaction records and revenue tracking. Patients pay providers directly.</p>
+                      <CardTitle>{tA("adminUi.paymentGateways")}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{tA("adminUi.paymentGatewaysDescription")}</p>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {[
@@ -5974,13 +5974,13 @@ const AdminDashboard = () => {
                             <p className="text-sm text-muted-foreground">{gw.desc}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Badge variant="secondary">Not connected</Badge>
-                            <Button size="sm" onClick={() => guard(() => toast.info(`${gw.name} connection coming soon`))} disabled={!allowModals}>Connect</Button>
-                            {gw.hasTest && <Button size="sm" variant="outline" onClick={() => toast.info('Test mode coming soon')}>Test Mode</Button>}
+                            <Badge variant="secondary">{tA("adminUi.notConnected")}</Badge>
+                            <Button size="sm" onClick={() => guard(() => toast.info(tA("adminUi.connectionComingSoon", { name: gw.name })))} disabled={!allowModals}>{tA("adminUi.connect")}</Button>
+                            {gw.hasTest && <Button size="sm" variant="outline" onClick={() => toast.info(tA("adminUi.testModeComingSoon"))}>{tA("adminUi.testMode")}</Button>}
                           </div>
                         </div>
                       ))}
-                      <p className="text-xs text-muted-foreground">Only one payment gateway can be active at a time.</p>
+                      <p className="text-xs text-muted-foreground">{tA("adminUi.oneGatewayOnly")}</p>
                     </CardContent>
                   </Card>
 

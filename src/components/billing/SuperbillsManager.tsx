@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Plus, Download, Trash2, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { useCurrency } from '@/hooks/useCurrency';
 import {
@@ -49,11 +50,12 @@ const STATUS_COLOR: Record<SuperbillStatus, string> = {
 
 export function SuperbillsManager({
   practiceId, doctorId, patientId, patients = [],
-  defaultDoctorId = null, allowCreate = true, title = 'Superbills',
+  defaultDoctorId = null, allowCreate = true, title,
 }: Props) {
   const { superbills, loading, reload, stats } = useSuperbills({ practiceId, doctorId, patientId });
   const { create, submitting } = useCreateSuperbill();
   const { formatCents: money } = useCurrency();
+  const { t } = useTranslation("admin");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'payments' | 'manual'>('payments');
   const [selectedPaymentIds, setSelectedPaymentIds] = useState<string[]>([]);
@@ -79,7 +81,7 @@ export function SuperbillsManager({
   const totalCharged = useMemo(() => money(stats.totalCents), [stats.totalCents, money]);
 
   const patientLabel = (p: RecordedPayment) =>
-    p.patient_name || patients.find(x => x.id === p.patient_id)?.name || 'Patient';
+    p.patient_name || patients.find(x => x.id === p.patient_id)?.name || t('adminUi.patient');
 
   const togglePayment = async (id: string) => {
     const next = selectedPaymentIds.includes(id)
@@ -103,7 +105,7 @@ export function SuperbillsManager({
   };
 
   const handleCreateFromPayments = async () => {
-    if (!prefill) { toast.error('Select at least one recorded payment'); return; }
+    if (!prefill) { toast.error(t('adminUi.selectRecordedPayment')); return; }
     const firstPayment = recordedPayments.find(p => p.id === selectedPaymentIds[0]);
     const res = await create({
       doctorId: firstPayment?.doctor_id || defaultDoctorId || doctorId || null,
@@ -123,8 +125,8 @@ export function SuperbillsManager({
   const handleCreate = async () => {
     const selectedPatient = patients.find(p => p.name === form.patient || p.id === form.patient);
     const targetPatientId = patientId || selectedPatient?.id;
-    if (!targetPatientId) { toast.error('Select a patient'); return; }
-    if (!form.cptCode || !form.cptFee) { toast.error('Add at least one procedure code and fee'); return; }
+    if (!targetPatientId) { toast.error(t('adminUi.selectPatient')); return; }
+    if (!form.cptCode || !form.cptFee) { toast.error(t('adminUi.addProcedureCodeFee')); return; }
     const res = await create({
       doctorId: defaultDoctorId || doctorId || null,
       practiceId: practiceId ?? null,
@@ -149,36 +151,36 @@ export function SuperbillsManager({
 
   const handleDownload = async (sb: Superbill) => {
     try { await downloadSuperbillPdf(sb.id, sb.superbill_number); }
-    catch (e: any) { toast.error(e.message || 'Failed to download'); }
+    catch (e: any) { toast.error(e.message || t('adminUi.failedDownload')); }
   };
 
   const handleStatus = async (sb: Superbill, status: SuperbillStatus) => {
-    try { await updateSuperbillStatus(sb.id, status); toast.success('Updated'); void reload(); }
-    catch (e: any) { toast.error(e.message || 'Failed'); }
+    try { await updateSuperbillStatus(sb.id, status); toast.success(t('adminUi.updated')); void reload(); }
+    catch (e: any) { toast.error(e.message || t('adminUi.failed')); }
   };
 
   const handleDelete = async (sb: Superbill) => {
-    if (!confirm('Delete this superbill?')) return;
-    try { await deleteSuperbill(sb.id); toast.success('Deleted'); void reload(); }
-    catch (e: any) { toast.error(e.message || 'Failed'); }
+    if (!confirm(t('adminUi.deleteSuperbillConfirm'))) return;
+    try { await deleteSuperbill(sb.id); toast.success(t('adminUi.deleted')); void reload(); }
+    catch (e: any) { toast.error(e.message || t('adminUi.failed')); }
   };
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Generated</p><p className="text-xl font-bold">{stats.total}</p></CardContent></Card>
-        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Submitted</p><p className="text-xl font-bold text-yellow-600">{stats.submitted}</p></CardContent></Card>
-        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Reimbursed</p><p className="text-xl font-bold text-green-600">{stats.paid}</p></CardContent></Card>
-        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Total Charged</p><p className="text-xl font-bold">{totalCharged}</p></CardContent></Card>
+        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("adminUi.generated")}</p><p className="text-xl font-bold">{stats.total}</p></CardContent></Card>
+        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("adminUi.submitted")}</p><p className="text-xl font-bold text-yellow-600">{stats.submitted}</p></CardContent></Card>
+        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("adminUi.reimbursed")}</p><p className="text-xl font-bold text-green-600">{stats.paid}</p></CardContent></Card>
+        <Card className="rounded-xl"><CardContent className="pt-6"><p className="text-sm text-muted-foreground">{t("adminUi.totalCharged")}</p><p className="text-xl font-bold">{totalCharged}</p></CardContent></Card>
       </div>
 
       <Card className="rounded-xl">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">{title}</CardTitle>
+            <CardTitle className="text-base">{title || t("adminUi.superbills")}</CardTitle>
             {allowCreate && (
               <Button size="sm" onClick={() => setOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" /> Generate Superbill
+                <Plus className="h-4 w-4 mr-2" /> {t("adminUi.generateSuperbill")}
               </Button>
             )}
           </div>
@@ -187,17 +189,17 @@ export function SuperbillsManager({
           {loading ? (
             <div className="text-center py-8 text-muted-foreground"><Loader2 className="h-5 w-5 mx-auto animate-spin" /></div>
           ) : superbills.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No superbills yet.</div>
+            <div className="text-center py-8 text-muted-foreground">{t("adminUi.noSuperbills")}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="pb-2 font-medium text-muted-foreground">Number</th>
-                    <th className="pb-2 font-medium text-muted-foreground">Service Date</th>
-                    <th className="pb-2 font-medium text-muted-foreground">Total</th>
-                    <th className="pb-2 font-medium text-muted-foreground">Status</th>
-                    <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+                    <th className="pb-2 font-medium text-muted-foreground">{t("adminUi.number")}</th>
+                    <th className="pb-2 font-medium text-muted-foreground">{t("adminUi.serviceDate")}</th>
+                    <th className="pb-2 font-medium text-muted-foreground">{t("adminUi.total")}</th>
+                    <th className="pb-2 font-medium text-muted-foreground">{t("adminUi.status")}</th>
+                    <th className="pb-2 font-medium text-muted-foreground">{t("adminUi.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,10 +215,10 @@ export function SuperbillsManager({
                             <Download className="h-3.5 w-3.5" />
                           </Button>
                           {allowCreate && sb.status !== 'paid' && (
-                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatus(sb, 'paid')}>Mark Paid</Button>
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatus(sb, 'paid')}>{t("adminUi.markPaid")}</Button>
                           )}
                           {allowCreate && sb.status !== 'submitted' && sb.status !== 'paid' && (
-                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatus(sb, 'submitted')}>Submit</Button>
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatus(sb, 'submitted')}>{t("adminUi.submit")}</Button>
                           )}
                           {allowCreate && (
                             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleDelete(sb)}>
@@ -236,27 +238,27 @@ export function SuperbillsManager({
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>New Superbill</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("adminUi.newSuperbill")}</DialogTitle></DialogHeader>
 
           <div className="flex gap-2">
             <Button size="sm" variant={mode === 'payments' ? 'default' : 'outline'} onClick={() => setMode('payments')}>
-              From recorded payment
+              {t("adminUi.fromRecordedPayment")}
             </Button>
             <Button size="sm" variant={mode === 'manual' ? 'default' : 'outline'} onClick={() => setMode('manual')}>
-              Enter manually
+              {t("adminUi.enterManually")}
             </Button>
           </div>
 
           {mode === 'payments' ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                Pick one or more recorded payments — patient, date, procedures and diagnoses are pulled in automatically.
+                {t("adminUi.recordedPaymentHelp")}
               </p>
               <div className="max-h-64 overflow-y-auto rounded-md border divide-y">
                 {paymentsLoading ? (
                   <div className="py-8 text-center"><Loader2 className="h-5 w-5 mx-auto animate-spin" /></div>
                 ) : recordedPayments.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-muted-foreground">No recorded payments found.</div>
+                  <div className="py-8 text-center text-sm text-muted-foreground">{t("adminUi.noRecordedPayments")}</div>
                 ) : recordedPayments.map(p => {
                   const checked = selectedPaymentIds.includes(p.id);
                   return (
@@ -267,7 +269,7 @@ export function SuperbillsManager({
                         <p className="text-xs text-muted-foreground truncate">
                           {new Date(p.paid_at || p.created_at).toLocaleDateString()}
                           {p.payment_method ? ` · ${p.payment_method}` : ''}
-                          {p.appointment_id ? ' · linked visit' : ' · no visit linked'}
+                          {p.appointment_id ? ` · ${t('adminUi.linkedVisit')}` : ` · ${t('adminUi.noVisitLinked')}`}
                         </p>
                       </div>
                       <span className="text-sm font-semibold shrink-0">{money(Math.round(Number(p.amount || 0) * 100))}</span>
@@ -277,14 +279,14 @@ export function SuperbillsManager({
               </div>
 
               {prefilling ? (
-                <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Pulling visit details…</div>
+                <div className="text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> {t("adminUi.pullingVisitDetails")}</div>
               ) : prefill ? (
                 <div className="rounded-md border p-3 space-y-2">
-                  <p className="text-sm font-medium">Superbill preview</p>
-                  <p className="text-xs text-muted-foreground">Service date: {prefill.serviceDate}</p>
+                  <p className="text-sm font-medium">{t("adminUi.superbillPreview")}</p>
+                  <p className="text-xs text-muted-foreground">{t("adminUi.serviceDate")}: {prefill.serviceDate}</p>
                   {prefill.diagnoses.length > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      Diagnoses: {prefill.diagnoses.map(d => [d.code, d.description].filter(Boolean).join(' — ')).join('; ')}
+                      {t("adminUi.diagnoses")}: {prefill.diagnoses.map(d => [d.code, d.description].filter(Boolean).join(' — ')).join('; ')}
                     </p>
                   )}
                   <div className="space-y-1">
@@ -296,7 +298,7 @@ export function SuperbillsManager({
                     ))}
                   </div>
                   <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
-                    <span>Total</span>
+                    <span>{t("adminUi.total")}</span>
                     <span>{money(prefill.lineItems.reduce((s, li) => s + li.fee_cents * (li.units || 1), 0))}</span>
                   </div>
                 </div>
@@ -306,52 +308,52 @@ export function SuperbillsManager({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {!patientId && (
               <div className="md:col-span-2">
-                <label className="text-sm text-muted-foreground">Patient *</label>
-                <Input list="sb-patients" value={form.patient} onChange={e => setForm(p => ({ ...p, patient: e.target.value }))} placeholder="Select patient…" />
+                <label className="text-sm text-muted-foreground">{t("adminUi.patient")} *</label>
+                <Input list="sb-patients" value={form.patient} onChange={e => setForm(p => ({ ...p, patient: e.target.value }))} placeholder={t("adminUi.selectPatient")} />
                 <datalist id="sb-patients">{patients.map(p => <option key={p.id} value={p.name} />)}</datalist>
               </div>
             )}
             <div>
-              <label className="text-sm text-muted-foreground">Service Date *</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.serviceDate")} *</label>
               <Input type="date" value={form.serviceDate} onChange={e => setForm(p => ({ ...p, serviceDate: e.target.value }))} />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">ICD-10 Diagnosis Code</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.icdCode")}</label>
               <Input value={form.dxCode} onChange={e => setForm(p => ({ ...p, dxCode: e.target.value }))} placeholder="e.g. K02.9" />
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm text-muted-foreground">Diagnosis Description</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.diagnosisDescription")}</label>
               <Input value={form.dxDesc} onChange={e => setForm(p => ({ ...p, dxDesc: e.target.value }))} placeholder="Dental caries, unspecified" />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">CPT/HCPCS Code *</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.cptCode")} *</label>
               <Input value={form.cptCode} onChange={e => setForm(p => ({ ...p, cptCode: e.target.value }))} placeholder="e.g. 99213" />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Procedure Description</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.procedureDescription")}</label>
               <Input value={form.cptDesc} onChange={e => setForm(p => ({ ...p, cptDesc: e.target.value }))} placeholder="Office visit, est. patient" />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Units</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.units")}</label>
               <Input type="number" min="1" value={form.cptUnits} onChange={e => setForm(p => ({ ...p, cptUnits: e.target.value }))} />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">Fee (per unit) *</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.feePerUnit")} *</label>
               <Input type="number" step="0.01" value={form.cptFee} onChange={e => setForm(p => ({ ...p, cptFee: e.target.value }))} placeholder="0.00" />
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm text-muted-foreground">Notes</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.notes")}</label>
               <Textarea rows={2} value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} />
             </div>
           </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>{t("adminUi.cancel")}</Button>
             <Button
               onClick={mode === 'payments' ? handleCreateFromPayments : handleCreate}
               disabled={submitting || (mode === 'payments' && !prefill)}
             >
-              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />} Generate
+              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />} {t("adminUi.generate")}
             </Button>
           </DialogFooter>
         </DialogContent>
