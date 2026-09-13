@@ -318,7 +318,7 @@ export function SuperbillsManager({
               <Input type="date" value={form.serviceDate} onChange={e => setForm(p => ({ ...p, serviceDate: e.target.value }))} />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">ICD-10 Diagnosis Code</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.icdCode")}</label>
               <Input value={form.dxCode} onChange={e => setForm(p => ({ ...p, dxCode: e.target.value }))} placeholder="e.g. K02.9" />
             </div>
             <div className="md:col-span-2">
@@ -326,7 +326,7 @@ export function SuperbillsManager({
               <Input value={form.dxDesc} onChange={e => setForm(p => ({ ...p, dxDesc: e.target.value }))} placeholder="Dental caries, unspecified" />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground">CPT/HCPCS Code *</label>
+              <label className="text-sm text-muted-foreground">{t("adminUi.cptCode")} *</label>
               <Input value={form.cptCode} onChange={e => setForm(p => ({ ...p, cptCode: e.target.value }))} placeholder="e.g. 99213" />
             </div>
             <div>
