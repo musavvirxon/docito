@@ -335,7 +335,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
         </div>
         <Button onClick={onSave} disabled={!canSave}>
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-          Save
+          {t("adminUi.save")}
         </Button>
       </div>
 
@@ -468,10 +468,10 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Working Hours
+                {t("adminUi.workingHours")}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Set default working hours for your organization. These apply to all doctors and staff unless they set their own.
+                {t("adminUi.workingHoursDescription")}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -529,10 +529,10 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
-                Default Consultation Cost
+                {t("adminUi.defaultConsultationCost")}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Set a default consultation fee. Doctors who join will inherit this unless they specify their own.
+                {t("adminUi.defaultConsultationDescription")}
               </p>
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
@@ -576,7 +576,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
               <CardHeader>
                 <CardTitle>{t("adminUi.overridePolicy")}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Control whether doctors and staff can override clinic-level settings.
+                  {t("adminUi.overridePolicyDescription")}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -584,7 +584,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                   <div>
                     <p className="text-sm font-medium">{t("adminUi.enforceHours")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Doctors cannot set hours outside the clinic's working hours.
+                      {t("adminUi.enforceHoursDescription")}
                     </p>
                   </div>
                   <Switch
@@ -601,7 +601,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                   <div>
                     <p className="text-sm font-medium">{t("adminUi.enforceFee")}</p>
                     <p className="text-xs text-muted-foreground">
-                      The clinic's default fee applies to all doctors. Doctors cannot set their own.
+                      {t("adminUi.enforceFeeDescription")}
                     </p>
                   </div>
                   <Switch
@@ -618,7 +618,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                   <div>
                     <p className="text-sm font-medium">{t("adminUi.enforceNotifications")}</p>
                     <p className="text-xs text-muted-foreground">
-                      Clinic notification settings override individual staff/doctor preferences.
+                      {t("adminUi.enforceNotificationsDescription")}
                     </p>
                   </div>
                   <Switch
@@ -665,7 +665,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 <CardTitle>{t("adminUi.billingSummary")}</CardTitle>
                 <Button variant="outline" size="sm" onClick={loadBilling} disabled={billingLoading}>
                   <RefreshCcw className={`h-4 w-4 mr-2 ${billingLoading ? "animate-spin" : ""}`} />
-                  Refresh
+                  {t("adminUi.refresh")}
                 </Button>
               </CardHeader>
               <CardContent>
@@ -705,7 +705,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                 <CardTitle>{t("adminUi.analytics")}</CardTitle>
                 <Button variant="outline" size="sm" onClick={loadAnalytics} disabled={analyticsLoading}>
                   <RefreshCcw className={`h-4 w-4 mr-2 ${analyticsLoading ? "animate-spin" : ""}`} />
-                  Refresh
+                  {t("adminUi.refresh")}
                 </Button>
               </CardHeader>
               <CardContent>
@@ -730,7 +730,7 @@ export default function EntitySettingsPage({ entityType, entityId, heading }: Pr
                       ))}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Window: {analytics.window_days ?? 30} days
+                      {t("adminUi.analyticsWindow", { days: analytics.window_days ?? 30 })}
                     </div>
                   </div>
                 ) : (

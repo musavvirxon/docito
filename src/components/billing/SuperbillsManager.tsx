@@ -242,17 +242,17 @@ export function SuperbillsManager({
 
           <div className="flex gap-2">
             <Button size="sm" variant={mode === 'payments' ? 'default' : 'outline'} onClick={() => setMode('payments')}>
-              From recorded payment
+              {t("adminUi.fromRecordedPayment")}
             </Button>
             <Button size="sm" variant={mode === 'manual' ? 'default' : 'outline'} onClick={() => setMode('manual')}>
-              Enter manually
+              {t("adminUi.enterManually")}
             </Button>
           </div>
 
           {mode === 'payments' ? (
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                Pick one or more recorded payments — patient, date, procedures and diagnoses are pulled in automatically.
+                {t("adminUi.recordedPaymentHelp")}
               </p>
               <div className="max-h-64 overflow-y-auto rounded-md border divide-y">
                 {paymentsLoading ? (
@@ -286,7 +286,7 @@ export function SuperbillsManager({
                   <p className="text-xs text-muted-foreground">{t("adminUi.serviceDate")}: {prefill.serviceDate}</p>
                   {prefill.diagnoses.length > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      Diagnoses: {prefill.diagnoses.map(d => [d.code, d.description].filter(Boolean).join(' — ')).join('; ')}
+                      {t("adminUi.diagnoses")}: {prefill.diagnoses.map(d => [d.code, d.description].filter(Boolean).join(' — ')).join('; ')}
                     </p>
                   )}
                   <div className="space-y-1">
@@ -298,7 +298,7 @@ export function SuperbillsManager({
                     ))}
                   </div>
                   <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
-                    <span>Total</span>
+                    <span>{t("adminUi.total")}</span>
                     <span>{money(prefill.lineItems.reduce((s, li) => s + li.fee_cents * (li.units || 1), 0))}</span>
                   </div>
                 </div>
