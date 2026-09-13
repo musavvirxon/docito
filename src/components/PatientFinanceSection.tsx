@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useTranslation } from 'react-i18next';
 
 interface Payment {
   id?: string;
@@ -44,6 +45,7 @@ export function PatientFinanceSection({
   disabled,
 }: Props) {
   const { format: ctxFmtMajor } = useCurrency();
+  const { t } = useTranslation('admin');
   const fmt = (n: number) => ctxFmtMajor(Number(n || 0));
   const mine = (payments || []).filter(
     (p) =>
@@ -69,21 +71,21 @@ export function PatientFinanceSection({
         (matchStatus(p, 'pending', 'unpaid') && p.due_date && new Date(p.due_date) < new Date()),
     );
 
-  const statusLabel = balance <= 0 ? 'Clear' : overdue ? 'Overdue' : 'Outstanding';
+  const statusLabel = balance <= 0 ? t('adminUi.clear') : overdue ? t('adminUi.overdue') : t('adminUi.outstanding');
   const statusVariant = (balance <= 0 ? 'default' : overdue ? 'destructive' : 'outline') as
     | 'default'
     | 'destructive'
     | 'outline';
 
   const kpis = [
-    { label: 'Billed', value: fmt(billed), color: 'text-foreground' },
-    { label: 'Paid', value: fmt(paid), color: 'text-green-600' },
+    { label: t('adminUi.billed'), value: fmt(billed), color: 'text-foreground' },
+    { label: t('adminUi.paid'), value: fmt(paid), color: 'text-green-600' },
     {
-      label: 'Balance',
+      label: t('adminUi.balance'),
       value: fmt(balance),
       color: balance > 0 ? (overdue ? 'text-red-600' : 'text-amber-600') : 'text-green-600',
     },
-    { label: 'Refunded', value: fmt(refunded), color: 'text-muted-foreground' },
+    { label: t('adminUi.refunded'), value: fmt(refunded), color: 'text-muted-foreground' },
   ];
 
   /* ── COMPACT (appointment session / overview sidebar) ─────────── */
@@ -93,7 +95,7 @@ export function PatientFinanceSection({
         <CardHeader className="pb-2">
           <CardTitle className="text-sm flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" /> Patient Finance
+              <CreditCard className="h-4 w-4" /> {t('adminUi.patientFinance')}
             </span>
             <Badge variant={statusVariant}>{statusLabel}</Badge>
           </CardTitle>
@@ -121,7 +123,7 @@ export function PatientFinanceSection({
                     className="flex items-center justify-between text-xs rounded border px-2 py-1"
                   >
                     <span className="truncate">
-                      {p.metadata?.service_name || p.description || 'Payment'}
+                       {p.metadata?.service_name || p.description || t('adminUi.payment')}
                     </span>
                     <span className="flex items-center gap-2 shrink-0">
                       <span className="font-medium">{fmt(getAmount(p))}</span>
@@ -135,7 +137,7 @@ export function PatientFinanceSection({
           )}
 
           {mine.length === 0 && (
-            <p className="text-xs text-muted-foreground">No billing records for this patient.</p>
+             <p className="text-xs text-muted-foreground">{t('adminUi.noPatientBillingRecords')}</p>
           )}
 
           {(onCreateInvoice || onAddPayment) && (
@@ -148,7 +150,7 @@ export function PatientFinanceSection({
                   onClick={onCreateInvoice}
                   disabled={disabled}
                 >
-                  + Invoice
+                   + {t('adminUi.invoice')}
                 </Button>
               )}
               {onAddPayment && (
@@ -159,7 +161,7 @@ export function PatientFinanceSection({
                   onClick={onAddPayment}
                   disabled={disabled}
                 >
-                  + Payment
+                   + {t('adminUi.payment')}
                 </Button>
               )}
             </div>
@@ -175,13 +177,13 @@ export function PatientFinanceSection({
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" /> Financial Status
+             <CreditCard className="h-5 w-5" /> {t('adminUi.financialStatus')}
           </span>
           <div className="flex items-center gap-2">
             <Badge variant={statusVariant}>{statusLabel}</Badge>
             {onCreateInvoice && (
               <Button size="sm" variant="outline" onClick={onCreateInvoice} disabled={disabled}>
-                Create Invoice
+                 {t('adminUi.createInvoice')}
               </Button>
             )}
           </div>
@@ -192,21 +194,21 @@ export function PatientFinanceSection({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             {
-              label: 'Total Billed',
+               label: t('adminUi.totalBilled'),
               value: fmt(billed),
               icon: DollarSign,
               color: 'text-foreground',
               bg: 'bg-muted/40',
             },
             {
-              label: 'Total Paid',
+               label: t('adminUi.totalPaid'),
               value: fmt(paid),
               icon: CheckCircle,
               color: 'text-green-600',
               bg: 'bg-green-50 dark:bg-green-950/20',
             },
             {
-              label: 'Outstanding Balance',
+               label: t('adminUi.outstandingBalance'),
               value: fmt(balance),
               icon: AlertCircle,
               color:
@@ -219,7 +221,7 @@ export function PatientFinanceSection({
                     : 'bg-amber-50 dark:bg-amber-950/20',
             },
             {
-              label: 'Refunded',
+               label: t('adminUi.refunded'),
               value: fmt(refunded),
               icon: TrendingDown,
               color: 'text-muted-foreground',
@@ -243,8 +245,8 @@ export function PatientFinanceSection({
         {billed > 0 && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Payment progress</span>
-              <span>{Math.round((paid / billed) * 100)}% paid</span>
+               <span>{t('adminUi.paymentProgress')}</span>
+               <span>{t('adminUi.percentPaid', { percent: Math.round((paid / billed) * 100) })}</span>
             </div>
             <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
               <div
@@ -257,11 +259,11 @@ export function PatientFinanceSection({
 
         {/* Transaction list */}
         <div className="space-y-2">
-          <h4 className="text-sm font-medium">Transaction History</h4>
+           <h4 className="text-sm font-medium">{t('adminUi.transactionHistory')}</h4>
           {mine.length === 0 ? (
             <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
               <Receipt className="mx-auto h-6 w-6 mb-2 opacity-60" />
-              No billing records found.
+               {t('adminUi.noBillingRecords')}
             </div>
           ) : (
             mine
@@ -281,7 +283,7 @@ export function PatientFinanceSection({
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {p.metadata?.service_name || p.description || 'Payment'}
+                         {p.metadata?.service_name || p.description || t('adminUi.payment')}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {ds}

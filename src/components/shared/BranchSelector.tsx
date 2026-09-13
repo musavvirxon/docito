@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface BranchSelectorProps {
   practiceId: string;
@@ -17,6 +18,7 @@ type LocationRow = {
 };
 
 export default function BranchSelector({ practiceId, value, onChange, className }: BranchSelectorProps) {
+  const { t } = useTranslation("admin");
   const [locations, setLocations] = useState<LocationRow[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -45,11 +47,11 @@ export default function BranchSelector({ practiceId, value, onChange, className 
       <SelectTrigger className={className || "w-[200px]"}>
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-muted-foreground" />
-          <SelectValue placeholder="All Branches" />
+          <SelectValue placeholder={t("adminUi.allBranches")} />
         </div>
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">All Branches</SelectItem>
+        <SelectItem value="all">{t("adminUi.allBranches")}</SelectItem>
         {locations.map((loc) => (
           <SelectItem key={loc.id} value={loc.id}>
             {loc.name}

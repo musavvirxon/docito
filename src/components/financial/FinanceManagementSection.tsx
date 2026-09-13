@@ -5,18 +5,20 @@ import RecurringRulesPanel from "@/components/financial/RecurringRulesPanel";
 import FinanceCategoriesManager from "@/components/financial/FinanceCategoriesManager";
 import FinanceLedgerManager from "@/components/financial/FinanceLedgerManager";
 import CompensationManager from "@/components/financial/CompensationManager";
+import { useTranslation } from "react-i18next";
 
 type FinanceEntityType = "clinic" | "practice" | "lab" | "imaging" | "pharmacy";
 
 export default function FinanceManagementSection(props: { entityType: FinanceEntityType; entityId: string }) {
   const { entityType, entityId } = props;
+  const { t } = useTranslation("admin");
 
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold">Finances</h2>
+        <h2 className="text-xl font-semibold">{t("adminUi.finances")}</h2>
         <p className="text-sm text-muted-foreground">
-          Manage income, expenses, payroll, compensation profiles, and exports.
+          {t("adminUi.financesDescription")}
         </p>
       </div>
 
