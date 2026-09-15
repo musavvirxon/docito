@@ -12129,30 +12129,56 @@ export type Database = {
           practice_id: string
         }[]
       }
-      get_document_branding_v2: {
-        Args: {
-          _branch_id?: string
-          _doctor_id?: string
-          _lang?: string
-          _practice_id?: string
-        }
-        Returns: {
-          address: string
-          branch_id: string
-          branch_name: string
-          color_index: number
-          doctor_id: string
-          doctor_license: string
-          doctor_name: string
-          doctor_photo_url: string
-          doctor_specialty: string
-          email: string
-          logo_url: string
-          phone: string
-          practice_id: string
-          practice_name: string
-        }[]
-      }
+      get_document_branding_v2:
+        | {
+            Args: {
+              _branch_id?: string
+              _doctor_id?: string
+              _lang?: string
+              _practice_id?: string
+            }
+            Returns: {
+              address: string
+              branch_id: string
+              branch_name: string
+              color_index: number
+              doctor_id: string
+              doctor_license: string
+              doctor_name: string
+              doctor_photo_url: string
+              doctor_specialty: string
+              email: string
+              logo_url: string
+              phone: string
+              practice_id: string
+              practice_name: string
+            }[]
+          }
+        | {
+            Args: {
+              _branch_id?: string
+              _doctor_id?: string
+              _lang?: string
+              _practice_id?: string
+              _requesting_user_id?: string
+            }
+            Returns: {
+              address: string
+              branch_id: string
+              branch_name: string
+              color_index: number
+              doctor_id: string
+              doctor_license: string
+              doctor_name: string
+              doctor_photo_url: string
+              doctor_specialty: string
+              email: string
+              logo_url: string
+              phone: string
+              practice_id: string
+              practice_name: string
+            }[]
+          }
       get_entity_settings: {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: Json
