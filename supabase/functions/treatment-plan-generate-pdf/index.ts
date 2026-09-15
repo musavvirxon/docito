@@ -15,7 +15,7 @@ import {
   secureHandler,
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
-import { loadBranding, resolvePracticeIdForDoctor } from "../_shared/branding.ts";
+import { loadDoctorBranding, resolvePracticeIdForDoctor } from "../_shared/branding.ts";
 
 import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
 
