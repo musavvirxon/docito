@@ -1,5 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from "../_shared/cors.ts";
+
+const corsHeaders: Record<string, string> = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -34,6 +38,7 @@ Deno.serve(async (req) => {
       _doctor_id: doctorId,
       _branch_id: branchId,
       _lang: lang,
+      _requesting_user_id: user.id,
     });
     if (error) {
       console.warn("[document-branding] lookup denied or failed", { code: error.code });

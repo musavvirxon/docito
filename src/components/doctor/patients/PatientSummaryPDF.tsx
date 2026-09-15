@@ -2,6 +2,7 @@
 import { toast } from "sonner";
 import { useTranslation } from 'react-i18next';
 import { supabase } from "@/integrations/supabase/client";
+import { loadDoctorDocumentBranding } from "@/lib/documentBranding";
 
 interface PatientPDFData {
   // Personal Details
@@ -70,6 +71,9 @@ interface PracticeInfo {
 
   // NEW: used by PDF header/footer
   doctor_name?: string; // e.g. "John Doe"
+  doctor_specialty?: string;
+  doctor_license?: string;
+  doctor_photo_url?: string;
 }
 
 // Helper to format date
@@ -665,33 +669,18 @@ export const generateDoctorPatientPDF = async (
       return;
     }
     
-    // Fetch practice info
-   const { data: doctorData } = await supabase
-     .from("doctors")
-     .select("user_id, practice_id, practices(name, phone, email, address, logo_url)")
-     .eq("id", doctorId)
-     .single();
-    let doctorName: string | undefined;
-if (doctorData?.user_id) {
-  const { data: doctorProfile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("user_id", doctorData.user_id)
-    .single();
-
-  doctorName = doctorProfile?.full_name || undefined;
-}
-    
-    const practiceInfo: PracticeInfo = doctorData?.practices
-  ? {
-      name: (doctorData.practices as any).name,
-      phone: (doctorData.practices as any).phone,
-      email: (doctorData.practices as any).email,
-      address: (doctorData.practices as any).address,
-      logo_url: (doctorData.practices as any).logo_url,
-      doctor_name: doctorName,
-    }
-  : { doctor_name: doctorName };
+    const branding = await loadDoctorDocumentBranding({ doctorId });
+    const practiceInfo: PracticeInfo = {
+      name: branding.name || undefined,
+      phone: branding.phone || undefined,
+      email: branding.email || undefined,
+      address: branding.address || undefined,
+      logo_url: branding.logoUrl || undefined,
+      doctor_name: branding.doctorName || undefined,
+      doctor_specialty: branding.doctorSpecialty || undefined,
+      doctor_license: branding.doctorLicense || undefined,
+      doctor_photo_url: branding.doctorPhotoUrl || undefined,
+    };
 
     
     // Calculate age from DOB
@@ -783,34 +772,18 @@ export const generateProfilePatientPDF = async (
       .eq("doctor_id", doctorId)
       .order("created_at", { ascending: false });
     
-    // Fetch practice info
-   const { data: doctorData } = await supabase
-  .from("doctors")
-  .select("user_id, practice_id, practices(name, phone, email, address, logo_url)")
-  .eq("id", doctorId)
-  .single();
-let doctorName: string | undefined;
-
-if (doctorData?.user_id) {
-  const { data: doctorProfile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("user_id", doctorData.user_id)
-    .single();
-
-  doctorName = doctorProfile?.full_name || undefined;
-}
-    
-const practiceInfo: PracticeInfo = doctorData?.practices
-  ? {
-      name: (doctorData.practices as any).name,
-      phone: (doctorData.practices as any).phone,
-      email: (doctorData.practices as any).email,
-      address: (doctorData.practices as any).address,
-      logo_url: (doctorData.practices as any).logo_url,
-      doctor_name: doctorName,
-    }
-  : { doctor_name: doctorName };
+    const branding = await loadDoctorDocumentBranding({ doctorId });
+    const practiceInfo: PracticeInfo = {
+      name: branding.name || undefined,
+      phone: branding.phone || undefined,
+      email: branding.email || undefined,
+      address: branding.address || undefined,
+      logo_url: branding.logoUrl || undefined,
+      doctor_name: branding.doctorName || undefined,
+      doctor_specialty: branding.doctorSpecialty || undefined,
+      doctor_license: branding.doctorLicense || undefined,
+      doctor_photo_url: branding.doctorPhotoUrl || undefined,
+    };
     
     // Calculate age
     let age: number | null = null;
