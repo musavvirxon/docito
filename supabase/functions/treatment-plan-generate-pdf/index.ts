@@ -15,7 +15,7 @@ import {
   secureHandler,
 } from "../_shared/security-middleware.ts";
 import type { ValidationSchema } from "../_shared/input-validator.ts";
-import { loadBranding, resolvePracticeIdForDoctor } from "../_shared/branding.ts";
+import { loadDoctorBranding, resolvePracticeIdForDoctor } from "../_shared/branding.ts";
 
 import { DOCITO_LOGO_PNG_BASE64, DOCITO_LOGO_FULL_PNG_BASE64 } from "./assets.ts";
 
@@ -2163,16 +2163,20 @@ serve(async (req: Request) => {
       doctorEmail = asString((doctorProfile as any)?.email);
     }
 
-    // Clinic branding (settings logo first, then clinic profile logo)
-    if (practiceId) {
-      const tpBrand = await loadBranding(serviceClient, practiceId, { lang: locale });
-      practiceName = tpBrand.name;
-      practiceAddress = tpBrand.address;
-      practicePhone = tpBrand.phone;
-      practiceEmail = tpBrand.email;
-      practiceLogoUrl = tpBrand.logoUrl;
-      brandColor = tpBrand.brandColor;
-    }
+    const tpBrand = await loadDoctorBranding(serviceClient, {
+      doctorId: providerId,
+      doctorUserId,
+      practiceId,
+      lang: locale,
+    });
+    practiceName = tpBrand.name;
+    practiceAddress = tpBrand.address;
+    practicePhone = tpBrand.phone;
+    practiceEmail = tpBrand.email;
+    practiceLogoUrl = tpBrand.logoUrl;
+    brandColor = tpBrand.brandColor;
+    doctorName = tpBrand.doctorName || doctorName;
+    doctorSpecialty = tpBrand.doctorSpecialty || doctorSpecialty;
   }
 
   // Determine if the provider is a dentist (controls whether tooth numbers are shown)

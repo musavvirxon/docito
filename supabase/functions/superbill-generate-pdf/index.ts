@@ -159,12 +159,10 @@ serve(async (req) => {
         patientName = safe((prof as any)?.full_name, 200) || "—";
       }
       if (r.doctor_id) {
-        const { data: d } = await svc.from("doctors").select("user_id, full_name, logo_url").eq("id", r.doctor_id).maybeSingle();
+        const { data: d } = await svc.from("doctors").select("user_id, logo_url").eq("id", r.doctor_id).maybeSingle();
         doctorLogoUrl = (d as any)?.logo_url || null;
         doctorUserId = (d as any)?.user_id || null;
-        const dn = (d as any)?.full_name;
-        if (dn) doctorName = safe(dn, 200);
-        else if ((d as any)?.user_id) {
+        if ((d as any)?.user_id) {
           const { data: prof } = await svc.from("profiles").select("full_name").eq("user_id", (d as any).user_id).maybeSingle();
           doctorName = safe((prof as any)?.full_name, 200) || "—";
         }
@@ -184,6 +182,7 @@ serve(async (req) => {
       practicePhone = safe(sbBrand.phone || "", 60);
     }
     const entityLogoUrl = sbBrand.logoUrl || doctorLogoUrl || null;
+    doctorName = safe(sbBrand.doctorName || doctorName, 200) || "—";
 
 
     const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");

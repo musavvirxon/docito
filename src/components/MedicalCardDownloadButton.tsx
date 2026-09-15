@@ -8,6 +8,7 @@ import {
 } from '@/utils/generateMedicalCard043u';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { loadDoctorDocumentBranding } from '@/lib/documentBranding';
 
 interface Props {
   data: MedicalCardData;
@@ -108,10 +109,25 @@ export function MedicalCardDownloadButton({ data, practice, locations, appointme
     setOpen(false);
     try {
       const { text: enrichedDiagnosis, list: examDiagnoses } = await enrichDiagnosis();
+      const branding = await loadDoctorDocumentBranding({
+        doctorId: (data as MedicalCardData & { doctorId?: string }).doctorId || null,
+        practiceId: practice?.id || null,
+        branchId: (data as MedicalCardData & { branchId?: string }).branchId || null,
+        lang,
+      });
       const enriched: MedicalCardData = {
         ...data,
         diagnosis: enrichedDiagnosis || data.diagnosis,
         examDiagnoses,
+        clinicName: branding.name || data.clinicName,
+        clinicAddress: branding.address || data.clinicAddress,
+        clinicPhone: branding.phone || data.clinicPhone,
+        clinicLogoUrl: branding.logoUrl || data.clinicLogoUrl,
+        brandColor: branding.brandColor || data.brandColor,
+        doctorName: branding.doctorName || data.doctorName,
+        doctorSpecialty: branding.doctorSpecialty || data.doctorSpecialty,
+        doctorLicense: branding.doctorLicense || data.doctorLicense,
+        doctorPhotoUrl: branding.doctorPhotoUrl || data.doctorPhotoUrl,
       };
       const blob = lang === 'ru'
         ? await generateMedicalCard043uRussian(enriched)

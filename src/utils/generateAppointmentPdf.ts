@@ -277,6 +277,22 @@ export async function generateAppointmentPdf(
       ln(x + lw + doc.getTextWidth(val) + 1, yy + 0.5, x + totalW, yy + 0.5);
     };
 
+    let doctorPhotoDataUrl: string | null = null;
+    if (data.doctorPhotoUrl) {
+      try {
+        const response = await fetch(data.doctorPhotoUrl);
+        if (response.ok) {
+          const blob = await response.blob();
+          doctorPhotoDataUrl = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(String(reader.result));
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch (error) { console.warn('[appointment-pdf] doctor photo unavailable', error); }
+    }
+
     if (data.clinicLogoUrl) {
       try {
         const res = await fetch(data.clinicLogoUrl);
@@ -562,6 +578,9 @@ export async function generateAppointmentPdf(
     const dlw = doc.getTextWidth(dl);
     font(false);
     doc.text(vv(data.doctorName), M + dlw, y);
+    if (doctorPhotoDataUrl) {
+      try { doc.addImage(doctorPhotoDataUrl, 'JPEG', W - M - 16, y - 7, 14, 14); } catch { /* keep provider text */ }
+    }
     if (data.doctorSpecialty) {
       size(7);
       doc.text(data.doctorSpecialty, M + dlw, y + 4);
