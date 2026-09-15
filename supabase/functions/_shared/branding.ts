@@ -14,6 +14,11 @@ export interface DocumentBranding {
   address: string | null;
   phone: string | null;
   email: string | null;
+  doctorId: string | null;
+  doctorName: string | null;
+  doctorSpecialty: string | null;
+  doctorLicense: string | null;
+  doctorPhotoUrl: string | null;
 }
 
 /** Same palette as the clinic Settings > Branding picker (index-aligned). */
@@ -50,6 +55,11 @@ export const emptyBranding: DocumentBranding = {
   address: null,
   phone: null,
   email: null,
+  doctorId: null,
+  doctorName: null,
+  doctorSpecialty: null,
+  doctorLicense: null,
+  doctorPhotoUrl: null,
 };
 
 /**
@@ -169,8 +179,10 @@ export async function loadBranding(
   try {
     const { data } = await service
       .from("practice_locations")
-      .select("id, name, address, phone, email, is_primary")
-      .eq("practice_id", pid);
+      .select("id, name, name_en, name_ru, name_uz, name_ar, address, address_en, address_ru, address_uz, address_ar, phone, email, is_primary, created_at")
+      .eq("practice_id", pid)
+      .order("is_primary", { ascending: false })
+      .order("created_at", { ascending: true });
     const list: any[] = Array.isArray(data) ? data : [];
     const branch =
       (opts.branchId ? list.find((l) => l?.id === opts.branchId) : undefined) ||
@@ -188,7 +200,7 @@ export async function loadBranding(
 
   return {
     practiceId: pid,
-    name: str(row?.name) || branchName,
+    name: branchName || str(row?.name),
     logoUrl: settingsLogo || str(row?.logo_url),
     brandColor: colorIndex >= 0 ? brandColorFromIndex(colorIndex) : DEFAULT_BRAND_COLOR,
     colorIndex,
@@ -207,6 +219,37 @@ export async function loadDoctorBranding(
 ): Promise<DocumentBranding> {
   const pid = str(params.practiceId) ||
     (await resolvePracticeIdForDoctor(service, params.doctorId, params.doctorUserId));
-  if (!pid) return { ...emptyBranding };
-  return await loadBranding(service, pid, { branchId: params.branchId, lang: params.lang });
+  const base = pid ? await loadBranding(service, pid, { branchId: params.branchId, lang: params.lang }) : { ...emptyBranding };
+  if (!params.doctorId && !params.doctorUserId) return base;
+  try {
+    let doctor: any = null;
+    if (params.doctorId) {
+      const { data, error } = await service
+        .from("doctors")
+        .select("id, user_id, license_number, specialty, specialty_en, specialty_ru, specialty_uz, specialty_ar, logo_url, practice_location_id")
+        .eq("id", params.doctorId)
+        .maybeSingle();
+      if (error) console.warn("[branding] doctor lookup failed", error.code);
+      doctor = data || null;
+    }
+    const userId = str(params.doctorUserId) || str(doctor?.user_id);
+    let profile: any = null;
+    if (userId) {
+      const { data, error } = await service.from("profiles").select("full_name, avatar_url").eq("user_id", userId).maybeSingle();
+      if (error) console.warn("[branding] doctor profile lookup failed", error.code);
+      profile = data || null;
+    }
+    const lang = (params.lang || "en").slice(0, 2).toLowerCase();
+    return {
+      ...base,
+      doctorId: str(doctor?.id) || str(params.doctorId),
+      doctorName: str(profile?.full_name),
+      doctorSpecialty: str(doctor?.[`specialty_${lang}`]) || str(doctor?.specialty),
+      doctorLicense: str(doctor?.license_number),
+      doctorPhotoUrl: str(profile?.avatar_url) || str(doctor?.logo_url),
+    };
+  } catch (error) {
+    console.warn("[branding] doctor identity lookup failed", error instanceof Error ? error.message : "unknown");
+    return base;
+  }
 }

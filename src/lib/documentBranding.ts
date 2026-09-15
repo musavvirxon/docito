@@ -33,12 +33,28 @@ export interface ClientDocumentBranding {
   practiceId: string | null;
   logoUrl: string | null;
   brandColor: RGB;
+  name: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  doctorName: string | null;
+  doctorSpecialty: string | null;
+  doctorLicense: string | null;
+  doctorPhotoUrl: string | null;
 }
 
 const emptyBranding: ClientDocumentBranding = {
   practiceId: null,
   logoUrl: null,
   brandColor: DEFAULT_BRAND_RGB,
+  name: null,
+  address: null,
+  phone: null,
+  email: null,
+  doctorName: null,
+  doctorSpecialty: null,
+  doctorLicense: null,
+  doctorPhotoUrl: null,
 };
 
 /** Which clinic does this doctor belong to (assigned, staff, or accepted join request)? */
@@ -116,14 +132,45 @@ export async function loadClinicDocumentBranding(
     }
   }
 
-  return { practiceId, logoUrl, brandColor };
+  return { ...emptyBranding, practiceId, logoUrl, brandColor };
 }
 
 /** Branding for a document authored by a doctor — resolves their clinic first. */
 export async function loadDoctorDocumentBranding(params: {
   doctorId?: string | null;
   practiceId?: string | null;
+  branchId?: string | null;
+  lang?: string;
 }): Promise<ClientDocumentBranding> {
+  try {
+    const { data, error } = await supabase.functions.invoke('document-branding', {
+      body: {
+        doctor_id: params.doctorId || null,
+        practice_id: params.practiceId || null,
+        branch_id: params.branchId || null,
+        lang: params.lang || 'en',
+      },
+    });
+    if (error) throw error;
+    const row = data?.branding;
+    if (row) {
+      return {
+        practiceId: row.practice_id || null,
+        logoUrl: row.logo_url || null,
+        brandColor: brandRgbFromIndex(row.color_index),
+        name: row.practice_name || row.branch_name || null,
+        address: row.address || null,
+        phone: row.phone || null,
+        email: row.email || null,
+        doctorName: row.doctor_name || null,
+        doctorSpecialty: row.doctor_specialty || null,
+        doctorLicense: row.doctor_license || null,
+        doctorPhotoUrl: row.doctor_photo_url || null,
+      };
+    }
+  } catch (error) {
+    console.warn('[documentBranding] secure lookup failed; using scoped fallback', error);
+  }
   const pid = params.practiceId || (await resolvePracticeIdForDoctor(params.doctorId));
   return await loadClinicDocumentBranding(pid);
 }
