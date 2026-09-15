@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.get_document_branding_v2(uuid, uuid, uuid, text) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.get_document_branding_v2(uuid, uuid, uuid, text) TO service_role;
