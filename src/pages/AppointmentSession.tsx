@@ -399,7 +399,11 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
         // Clinic logo + brand colour for generated documents (043/u form)
         try {
-          setClinicBranding(await loadDoctorDocumentBranding({ doctorId: appointmentData.doctor_id }));
+          const branding = await loadDoctorDocumentBranding({ doctorId: appointmentData.doctor_id, lang: i18n.language });
+          setClinicBranding(branding);
+          setClinicInfo((prev) => ({ name: branding.name || prev.name, address: branding.address || prev.address }));
+          if (branding.doctorName) setDoctorName(branding.doctorName);
+          if (branding.doctorSpecialty) setDoctorSpecialty(branding.doctorSpecialty);
         } catch { /* documents fall back to Docito defaults */ }
       }
 
@@ -1132,10 +1136,12 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
 
                   await generateAppointmentPdf(
                     {
-                      clinicName: clinicInfo.name,
-                      clinicAddress: clinicInfo.address,
+                      clinicName: clinicBranding?.name || clinicInfo.name,
+                      clinicAddress: clinicBranding?.address || clinicInfo.address,
                       clinicLogoUrl: clinicBranding?.logoUrl || null,
                       brandColor: clinicBranding?.brandColor || null,
+                      clinicPhone: clinicBranding?.phone || undefined,
+                      doctorPhotoUrl: clinicBranding?.doctorPhotoUrl || undefined,
                       patientName: appointment.patient_name || '',
                       gender: genderLabel,
                       age: ageStr,
@@ -1152,8 +1158,8 @@ const AppointmentSessionPage = ({ appointmentId: propAppointmentId }: Appointmen
                       xrayLab: clinicalFindings.labXrayResults || '',
                       treatment: treatmentText,
                       serviceName: appointment.appointment_type || '',
-                      doctorName,
-                      doctorSpecialty: doctorSpecialty || '',
+                      doctorName: clinicBranding?.doctorName || doctorName,
+                      doctorSpecialty: clinicBranding?.doctorSpecialty || doctorSpecialty || '',
                       notes: appointment.notes || '',
                       totalAmount: finance.totalBilled,
                       amountPaid: finance.totalPaid,

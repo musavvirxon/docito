@@ -26,10 +26,16 @@ export interface MedicalCardData {
   appointmentDate: string;
   diagnosis: string;
   doctorName: string;
+  doctorId?: string;
+  doctorSpecialty?: string | null;
+  doctorLicense?: string | null;
+  doctorPhotoUrl?: string | null;
   serviceName: string;
   // Clinic
   clinicName: string;
   clinicAddress: string;
+  clinicPhone?: string | null;
+  branchId?: string | null;
   /** Clinic logo (https URL) shown in the form header. */
   clinicLogoUrl?: string | null;
   /** Clinic brand colour as [r,g,b] 0..255, used for header accents. */
@@ -249,7 +255,10 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
   const brand = data.brandColor && data.brandColor.length === 3 ? data.brandColor : [13, 92, 199];
 
   // Clinic logo (top-right), best-effort — never blocks generation.
-  const logo = await loadClinicLogo(data.clinicLogoUrl);
+  const [logo, doctorPhoto] = await Promise.all([
+    loadClinicLogo(data.clinicLogoUrl),
+    loadClinicLogo(data.doctorPhotoUrl),
+  ]);
   if (logo) {
     try {
       const maxW = 28;
@@ -268,6 +277,17 @@ async function buildPdf(data: MedicalCardData, S: Strings): Promise<Blob> {
     size: 9,
     gap: 3,
   });
+  if (data.clinicPhone) text(data.clinicPhone, { size: 8, gap: 2 });
+  if (doctorPhoto) {
+    try {
+      doc.addImage(doctorPhoto.dataUrl, doctorPhoto.format, margin, y, 14, 14);
+      const provider = [data.doctorName, data.doctorSpecialty, data.doctorLicense].filter(Boolean).join(' · ');
+      doc.text(provider, margin + 18, y + 8);
+      y += 16;
+    } catch (error) { console.warn('[043u] doctor photo unavailable', error); }
+  } else if (data.doctorName) {
+    text([data.doctorName, data.doctorSpecialty, data.doctorLicense].filter(Boolean).join(' · '), { size: 8, gap: 2 });
+  }
 
   doc.setDrawColor(brand[0], brand[1], brand[2]);
   doc.setLineWidth(0.8);

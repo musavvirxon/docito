@@ -412,6 +412,7 @@ serve(async (req) => {
         doctorName = safe((dp as any)?.full_name, 120);
       } catch { /* ignore */ }
     }
+    doctorName = safe(rxBrand.doctorName || doctorName, 120);
 
     const verificationCode = safe(r.prescription_number, 80);
     const siteBase = (Deno.env.get("PUBLIC_SITE_URL") || "https://docito.app").replace(/\/$/, "");

@@ -2163,16 +2163,20 @@ serve(async (req: Request) => {
       doctorEmail = asString((doctorProfile as any)?.email);
     }
 
-    // Clinic branding (settings logo first, then clinic profile logo)
-    if (practiceId) {
-      const tpBrand = await loadBranding(serviceClient, practiceId, { lang: locale });
-      practiceName = tpBrand.name;
-      practiceAddress = tpBrand.address;
-      practicePhone = tpBrand.phone;
-      practiceEmail = tpBrand.email;
-      practiceLogoUrl = tpBrand.logoUrl;
-      brandColor = tpBrand.brandColor;
-    }
+    const tpBrand = await loadDoctorBranding(serviceClient, {
+      doctorId: providerId,
+      doctorUserId,
+      practiceId,
+      lang: locale,
+    });
+    practiceName = tpBrand.name;
+    practiceAddress = tpBrand.address;
+    practicePhone = tpBrand.phone;
+    practiceEmail = tpBrand.email;
+    practiceLogoUrl = tpBrand.logoUrl;
+    brandColor = tpBrand.brandColor;
+    doctorName = tpBrand.doctorName || doctorName;
+    doctorSpecialty = tpBrand.doctorSpecialty || doctorSpecialty;
   }
 
   // Determine if the provider is a dentist (controls whether tooth numbers are shown)
