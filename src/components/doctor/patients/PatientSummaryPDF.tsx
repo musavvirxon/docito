@@ -264,6 +264,24 @@ const loadDocitoLogoDataUrl = async (): Promise<string | null> => {
   }
 };
 
+const loadImageAsDataUrl = async (url?: string | null): Promise<string | null> => {
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.warn("[patient-summary] branding image unavailable", error);
+    return null;
+  }
+};
+
 // Main PDF generator function
 export const generatePatientSummaryPDF = async (
   patient: PatientPDFData,
