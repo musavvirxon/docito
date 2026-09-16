@@ -44,6 +44,13 @@ interface GeneratePDFOptions {
   prescriptions?: Prescription[];
   clinicName?: string;
   doctorName?: string;
+  clinicLogoUrl?: string;
+  clinicAddress?: string;
+  clinicPhone?: string;
+  doctorSpecialty?: string;
+  doctorLicense?: string;
+  /** Clinic brand colour (RGB 0-255). */
+  brandColor?: [number, number, number];
 }
 
 export const generatePatientSummaryPDF = async ({
