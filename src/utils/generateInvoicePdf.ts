@@ -214,10 +214,18 @@ export async function generateInvoicePdf(data: InvoiceData, lang: string = 'en')
     pdf.text(data.clinicPhone, margin, y);
     y += 5;
   }
+  if (data.clinicEmail) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(data.clinicEmail, margin, y);
+    y += 5;
+  }
 
   y += 4;
-  pdf.setDrawColor(220);
+  pdf.setDrawColor(brand[0], brand[1], brand[2]);
+  pdf.setLineWidth(0.6);
   pdf.line(margin, y, pageW - margin, y);
+  pdf.setDrawColor(220);
+  pdf.setLineWidth(0.2);
   y += 6;
 
   pdf.setFont('helvetica', 'bold');
