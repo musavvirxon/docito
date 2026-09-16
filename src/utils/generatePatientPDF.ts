@@ -44,6 +44,13 @@ interface GeneratePDFOptions {
   prescriptions?: Prescription[];
   clinicName?: string;
   doctorName?: string;
+  clinicLogoUrl?: string;
+  clinicAddress?: string;
+  clinicPhone?: string;
+  doctorSpecialty?: string;
+  doctorLicense?: string;
+  /** Clinic brand colour (RGB 0-255). */
+  brandColor?: [number, number, number];
 }
 
 export const generatePatientSummaryPDF = async ({
@@ -52,6 +59,12 @@ export const generatePatientSummaryPDF = async ({
   prescriptions = [],
   clinicName = "Docito Medical Center",
   doctorName,
+  clinicLogoUrl,
+  clinicAddress,
+  clinicPhone,
+  doctorSpecialty,
+  doctorLicense,
+  brandColor,
 }: GeneratePDFOptions): Promise<Blob> => {
   const jsPDF = (await import('jspdf')).default;
   const autoTable = (await import('jspdf-autotable')).default;
@@ -60,34 +73,51 @@ export const generatePatientSummaryPDF = async ({
   let yPos = 20;
 
   // Colors
-  const primaryColor: [number, number, number] = [59, 130, 246]; // Blue
+  const primaryColor: [number, number, number] = brandColor || [59, 130, 246];
   const textColor: [number, number, number] = [31, 41, 55];
   const mutedColor: [number, number, number] = [107, 114, 128];
 
-  // ── Try to load the Docito full logo for the header ──────────────────────
-  let logoDataUrl: string | null = null;
-  try {
-    const res = await fetch("/logos/logo-full-light.png");
-    if (res.ok) {
+  const loadImage = async (url: string): Promise<{ dataUrl: string; fmt: "PNG" | "JPEG" } | null> => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
       const blob = await res.blob();
-      logoDataUrl = await new Promise<string>((resolve) => {
+      const dataUrl = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
         reader.onerror = () => resolve("");
         reader.readAsDataURL(blob);
       });
+      if (!dataUrl) return null;
+      return { dataUrl, fmt: url.toLowerCase().includes(".png") || dataUrl.startsWith("data:image/png") ? "PNG" : "JPEG" };
+    } catch {
+      return null;
     }
-  } catch { /* ignore – fallback text used */ }
+  };
+
+  // ── Clinic logo when available, Docito logo otherwise ────────────────────
+  const clinicLogo = clinicLogoUrl ? await loadImage(clinicLogoUrl) : null;
+  const docitoLogo = clinicLogo ? null : await loadImage("/logos/logo-full-light.png");
 
   // Header
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, pageWidth, 40, "F");
 
   // Logo or text branding in header
-  if (logoDataUrl) {
+  if (clinicLogo) {
+    doc.addImage(clinicLogo.dataUrl, clinicLogo.fmt, 14, 7, 30, 18);
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(clinicName, 48, 18);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    const contact = [clinicAddress, clinicPhone].filter(Boolean).join(" · ");
+    if (contact) doc.text(contact, 48, 24);
+  } else if (docitoLogo) {
     const logoH = 26;
     const logoW = (300 / 90) * logoH; // keep aspect ratio (300x90 image)
-    doc.addImage(logoDataUrl, "PNG", 14, 7, logoW, logoH);
+    doc.addImage(docitoLogo.dataUrl, "PNG", 14, 7, logoW, logoH);
   } else {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
@@ -95,14 +125,26 @@ export const generatePatientSummaryPDF = async ({
     doc.text(clinicName, 14, 20);
   }
 
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
-  doc.text("Patient Summary Report", 14, 30);
+  doc.text("Patient Summary Report", 14, 34);
 
   doc.setFontSize(10);
-  doc.text(`Generated: ${format(new Date(), "PPP 'at' p")}`, pageWidth - 14, 30, { align: "right" });
+  doc.text(`Generated: ${format(new Date(), "PPP 'at' p")}`, pageWidth - 14, 34, { align: "right" });
 
   yPos = 55;
+
+  if (doctorName) {
+    doc.setTextColor(...mutedColor);
+    doc.setFontSize(9);
+    const provider = [
+      `Dr. ${doctorName}`,
+      doctorSpecialty || null,
+      doctorLicense ? `# ${doctorLicense}` : null,
+    ].filter(Boolean).join(" · ");
+    doc.text(provider, pageWidth - 14, 48, { align: "right" });
+  }
 
   // Patient Information Section
   doc.setTextColor(...textColor);

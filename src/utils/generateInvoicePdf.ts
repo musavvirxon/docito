@@ -23,6 +23,11 @@ export interface InvoiceData {
   currency?: string;
   clinicLogoUrl?: string;
   clinicPhone?: string;
+  clinicEmail?: string;
+  /** Clinic brand colour (RGB 0-255) used for accents. */
+  brandColor?: [number, number, number];
+  doctorSpecialty?: string;
+  doctorLicense?: string;
   items: InvoiceLineItem[];
   totalBilled: number;
   totalDiscount: number;
@@ -177,9 +182,14 @@ export async function generateInvoicePdf(data: InvoiceData, lang: string = 'en')
     } catch { /* silent */ }
   }
 
+  const brand = data.brandColor || [13, 92, 199];
+
   pdf.setFontSize(20);
   pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(brand[0], brand[1], brand[2]);
   pdf.text(tr(locale, 'invoice'), margin, y);
+  pdf.setTextColor(0, 0, 0);
+
 
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
@@ -204,10 +214,18 @@ export async function generateInvoicePdf(data: InvoiceData, lang: string = 'en')
     pdf.text(data.clinicPhone, margin, y);
     y += 5;
   }
+  if (data.clinicEmail) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(data.clinicEmail, margin, y);
+    y += 5;
+  }
 
   y += 4;
-  pdf.setDrawColor(220);
+  pdf.setDrawColor(brand[0], brand[1], brand[2]);
+  pdf.setLineWidth(0.6);
   pdf.line(margin, y, pageW - margin, y);
+  pdf.setDrawColor(220);
+  pdf.setLineWidth(0.2);
   y += 6;
 
   pdf.setFont('helvetica', 'bold');
@@ -220,6 +238,18 @@ export async function generateInvoicePdf(data: InvoiceData, lang: string = 'en')
   y += 5;
   if (data.doctorName) {
     pdf.text(`${tr(locale, 'doctor')} ${data.doctorName}`, pageW / 2, y);
+    y += 5;
+  }
+  if (data.doctorSpecialty) {
+    pdf.setFontSize(9);
+    pdf.text(data.doctorSpecialty, pageW / 2, y);
+    pdf.setFontSize(10);
+    y += 5;
+  }
+  if (data.doctorLicense) {
+    pdf.setFontSize(9);
+    pdf.text(`# ${data.doctorLicense}`, pageW / 2, y);
+    pdf.setFontSize(10);
     y += 5;
   }
 

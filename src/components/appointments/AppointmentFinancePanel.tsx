@@ -27,6 +27,7 @@ import {
   type AppointmentFinanceData,
 } from '@/hooks/useAppointmentFinance';
 import { generateInvoicePdf } from '@/utils/generateInvoicePdf';
+import { loadAppointmentDocumentBranding } from '@/lib/documentBranding';
 import { RecordPaymentDialog } from '@/components/billing/RecordPaymentDialog';
 import { PatientFinancialHistoryDialog } from '@/components/patient/PatientFinancialHistoryDialog';
 import { recordBillingPayment, chargeRemaining, chargePaid } from '@/lib/billing/recordBillingPayment';
@@ -339,11 +340,20 @@ export function AppointmentFinancePanel({
 
   const handleInvoicePdf = async () => {
     try {
+      const branding = await loadAppointmentDocumentBranding(appointmentId, i18n.language);
       await generateInvoicePdf({
         invoiceNumber: `INV-${appointmentId.slice(0, 8).toUpperCase()}`,
         patientName,
         appointmentDate: appointmentDate || '',
-        doctorName: doctorName || '',
+        doctorName: branding.doctorName || doctorName || '',
+        doctorSpecialty: branding.doctorSpecialty || undefined,
+        doctorLicense: branding.doctorLicense || undefined,
+        clinicName: branding.name || undefined,
+        clinicAddress: branding.address || undefined,
+        clinicPhone: branding.phone || undefined,
+        clinicEmail: branding.email || undefined,
+        clinicLogoUrl: branding.logoUrl || undefined,
+        brandColor: branding.brandColor,
         currency: displayCurrency,
         items: procedures.length
           ? procedures.map((p) => ({
