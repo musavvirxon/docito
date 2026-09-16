@@ -59,6 +59,12 @@ export const generatePatientSummaryPDF = async ({
   prescriptions = [],
   clinicName = "Docito Medical Center",
   doctorName,
+  clinicLogoUrl,
+  clinicAddress,
+  clinicPhone,
+  doctorSpecialty,
+  doctorLicense,
+  brandColor,
 }: GeneratePDFOptions): Promise<Blob> => {
   const jsPDF = (await import('jspdf')).default;
   const autoTable = (await import('jspdf-autotable')).default;
