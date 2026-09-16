@@ -23,6 +23,11 @@ export interface InvoiceData {
   currency?: string;
   clinicLogoUrl?: string;
   clinicPhone?: string;
+  clinicEmail?: string;
+  /** Clinic brand colour (RGB 0-255) used for accents. */
+  brandColor?: [number, number, number];
+  doctorSpecialty?: string;
+  doctorLicense?: string;
   items: InvoiceLineItem[];
   totalBilled: number;
   totalDiscount: number;
@@ -177,9 +182,14 @@ export async function generateInvoicePdf(data: InvoiceData, lang: string = 'en')
     } catch { /* silent */ }
   }
 
+  const brand = data.brandColor || [13, 92, 199];
+
   pdf.setFontSize(20);
   pdf.setFont('helvetica', 'bold');
+  pdf.setTextColor(brand[0], brand[1], brand[2]);
   pdf.text(tr(locale, 'invoice'), margin, y);
+  pdf.setTextColor(0, 0, 0);
+
 
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
