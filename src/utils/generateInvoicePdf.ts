@@ -240,6 +240,18 @@ export async function generateInvoicePdf(data: InvoiceData, lang: string = 'en')
     pdf.text(`${tr(locale, 'doctor')} ${data.doctorName}`, pageW / 2, y);
     y += 5;
   }
+  if (data.doctorSpecialty) {
+    pdf.setFontSize(9);
+    pdf.text(data.doctorSpecialty, pageW / 2, y);
+    pdf.setFontSize(10);
+    y += 5;
+  }
+  if (data.doctorLicense) {
+    pdf.setFontSize(9);
+    pdf.text(`# ${data.doctorLicense}`, pageW / 2, y);
+    pdf.setFontSize(10);
+    y += 5;
+  }
 
   y += 6;
 
