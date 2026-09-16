@@ -174,10 +174,20 @@ export const VisitPage = ({
     setIsDownloading(true);
     try {
       const { downloadPatientSummaryPDF } = await import("@/utils/generatePatientPDF");
+      const { loadAppointmentDocumentBranding, loadDoctorDocumentBranding } = await import("@/lib/documentBranding");
+      const branding = visit.appointmentId
+        ? await loadAppointmentDocumentBranding(visit.appointmentId)
+        : await loadDoctorDocumentBranding({ doctorId: doctor.id });
       await downloadPatientSummaryPDF({
         patient,
-        clinicName: doctor.practiceName,
-        doctorName: doctor.name,
+        clinicName: branding.name || doctor.practiceName,
+        clinicLogoUrl: branding.logoUrl || undefined,
+        clinicAddress: branding.address || undefined,
+        clinicPhone: branding.phone || undefined,
+        brandColor: branding.logoUrl || branding.name ? branding.brandColor : undefined,
+        doctorName: branding.doctorName || doctor.name,
+        doctorSpecialty: branding.doctorSpecialty || doctor.specialty || undefined,
+        doctorLicense: branding.doctorLicense || undefined,
       });
       toast.success("PDF downloaded");
     } catch (error) {
