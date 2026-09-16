@@ -174,3 +174,29 @@ export async function loadDoctorDocumentBranding(params: {
   const pid = params.practiceId || (await resolvePracticeIdForDoctor(params.doctorId));
   return await loadClinicDocumentBranding(pid);
 }
+
+/**
+ * Branding for a document tied to an existing appointment (including old ones):
+ * uses the appointment's own doctor and clinic rather than the current UI context.
+ */
+export async function loadAppointmentDocumentBranding(
+  appointmentId?: string | null,
+  lang?: string,
+): Promise<ClientDocumentBranding> {
+  if (!appointmentId) return { ...emptyBranding };
+  let doctorId: string | null = null;
+  let practiceId: string | null = null;
+  try {
+    const { data } = await (supabase as any)
+      .from('appointments')
+      .select('doctor_id, practice_id')
+      .eq('id', appointmentId)
+      .maybeSingle();
+    doctorId = data?.doctor_id || null;
+    practiceId = data?.practice_id || null;
+  } catch {
+    /* ignore */
+  }
+  if (!doctorId && !practiceId) return { ...emptyBranding };
+  return await loadDoctorDocumentBranding({ doctorId, practiceId, lang });
+}
