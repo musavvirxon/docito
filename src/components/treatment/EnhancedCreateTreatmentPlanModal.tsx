@@ -130,11 +130,15 @@ const EnhancedCreateTreatmentPlanModal = ({
   const { user } = useAuth();
   const { t } = useTranslation("dashboard");
   const { format: formatCurrency } = useCurrency();
-  const { procedures } = useProcedures();
+  const { procedures, refetch: refreshProcedures } = useProcedures();
   const { profile } = useDoctorProfile();
 
   const [loading, setLoading] = useState(false);
   const [saveAsTemplate, setSaveAsTemplate] = useState(false);
+
+  useEffect(() => {
+    if (open) void refreshProcedures();
+  }, [open, refreshProcedures]);
 
   const [procedureItems, setProcedureItems] = useState<ProcedureItem[]>([]);
   const [editingProcedureIndex, setEditingProcedureIndex] = useState<number | null>(null);
@@ -1039,12 +1043,7 @@ Please review and confirm the treatment plan in your dashboard.
                           <SelectValue placeholder="Select procedure" />
                         </SelectTrigger>
                         <SelectContent>
-                          {procedures
-                            .filter((proc) => {
-                              const cost = Number(proc.default_cost ?? proc.price ?? 0);
-                              return cost > 0;
-                            })
-                            .map((proc) => (
+                          {procedures.map((proc) => (
                               <SelectItem key={proc.id} value={proc.id}>
                                 {proc.name} - {formatCurrency(Number(proc.default_cost ?? proc.price ?? 0))} •{" "}
                                 {formatDuration(Number((proc as any).duration_minutes || 30))}

@@ -872,11 +872,17 @@ export const procedureApi = {
     try {
       const payload: any = { ...(procedureData as any) };
 
+      // The connected schema stores ownership only in dentist_id.
+      const legacyDoctorId = payload.doctor_id;
+      delete payload.doctor_id;
+      delete payload.procedure_materials;
+      delete payload.procedure_files;
+
       // If caller provided doctorId, prefer it
       if (doctorId) {
         if (payload.dentist_id == null) payload.dentist_id = doctorId;
-        if (payload.doctor_id == null) payload.doctor_id = doctorId;
       }
+      if (payload.dentist_id == null && legacyDoctorId) payload.dentist_id = legacyDoctorId;
 
       // If neither dentist_id nor doctor_id is present, derive from current auth user
       if (payload.dentist_id == null && payload.doctor_id == null) {
@@ -893,7 +899,6 @@ export const procedureApi = {
 
           if (!docErr && doc?.id) {
             payload.dentist_id = doc.id;
-            payload.doctor_id = doc.id;
           }
         }
       }
@@ -934,6 +939,7 @@ export const procedureApi = {
       if (error) throw error;
 
       toast.success('Procedure created successfully!');
+      window.dispatchEvent(new Event('doctor-procedures-changed'));
       return { data, success: true };
     } catch (error: any) {
       return handleApiError(error, 'Failed to create procedure');
