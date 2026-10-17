@@ -12,3 +12,9 @@
 - [x] Apply branding to browser-generated documents
 - [x] Apply doctor identity to server-generated documents
 - [x] Verify branded PDFs and security checks
+
+# Own procedure selection
+
+- [ ] Diagnose missing manually added procedures in the reported account
+- [ ] Ensure selectors refresh each doctor's own saved procedures
+- [ ] Verify ownership isolation and procedure selection
