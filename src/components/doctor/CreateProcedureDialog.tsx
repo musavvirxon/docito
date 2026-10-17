@@ -112,6 +112,7 @@ export function CreateProcedureDialog({
         created_at: data.created_at,
       };
 
+      window.dispatchEvent(new Event('doctor-procedures-changed'));
       onProcedureCreated(created);
       onOpenChange(false);
     } catch (e: any) {
