@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ToothSelector from "@/components/procedure/ToothSelector";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useProcedures } from "@/hooks/useProcedures";
 
 const formSchema = z.object({
   procedure_id: z.string().min(1, "Select a procedure"),
@@ -60,7 +61,7 @@ const AddProcedureToPlanModal = ({
 }: AddProcedureToPlanModalProps) => {
   const [loading, setLoading] = useState(false);
   const { format: money } = useCurrency();
-  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const { procedures, refetch: fetchProcedures } = useProcedures();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
   const [selectedTeeth, setSelectedTeeth] = useState<number[]>([]);
@@ -77,27 +78,8 @@ const AddProcedureToPlanModal = ({
   const watchedCost = form.watch("cost");
 
   useEffect(() => {
-    if (open) fetchProcedures();
-  }, [open]);
-
-  const fetchProcedures = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("procedures")
-        .select("id,name,category,type,default_cost,price,notes")
-        .eq("dentist_id", user.id)
-        .eq("is_active", true)
-        .order("name");
-
-      if (error) throw error;
-      setProcedures((data || []) as any);
-    } catch (error: any) {
-      toast.error("Failed to load procedures: " + error.message);
-    }
-  };
+    if (open) void fetchProcedures();
+  }, [open, fetchProcedures]);
 
   const filteredProcedures = useMemo(() => {
     const q = searchTerm.toLowerCase();

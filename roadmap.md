@@ -15,6 +15,7 @@
 
 # Own procedure selection
 
-- [ ] Diagnose missing manually added procedures in the reported account
-- [ ] Ensure selectors refresh each doctor's own saved procedures
-- [ ] Verify ownership isolation and procedure selection
+- [x] Diagnose procedure price filtering and incorrect existing-plan owner lookup
+- [x] Ensure selectors refresh each doctor's own saved procedures
+- [x] Verify ownership isolation and procedure eligibility with regression tests
+- [ ] Verify the reported account dropdown while signed in — external Supabase session unavailable; supplied email not found in connected account data
