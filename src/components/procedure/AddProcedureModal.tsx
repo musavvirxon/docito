@@ -323,6 +323,7 @@ const AddProcedureModal = ({
       if (error) throw error;
 
       // Persist inventory requirements
+      window.dispatchEvent(new Event('doctor-procedures-changed'));
       if (usesInventory && selectedInventory.length > 0 && createdProc?.id) {
         const rows = selectedInventory
           .map((sel) => {
