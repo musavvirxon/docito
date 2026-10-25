@@ -1,4 +1,5 @@
 // File: src/pages/AppointmentBooking.tsx
+import { fetchPublicDoctorProcedures } from "@/lib/ownProcedures";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format, parseISO, startOfDay } from "date-fns";
@@ -240,43 +241,17 @@ export default function AppointmentBooking() {
 
       setLoadingProcedures(true);
       try {
-        // Try doctor_id first, fall back to dentist_id
-        let data: any[] | null = null;
-        const { data: d1, error: e1 } = await (supabase as any)
-          .from("procedures")
-          .select("id,name,category,price,default_cost,duration_minutes,is_active,is_bookable")
-          .eq("doctor_id", doctorId)
-          .eq("is_active", true)
-          .eq("is_bookable", true)
-          .order("name", { ascending: true })
-          .limit(200);
-
-        if (!e1 && d1 && d1.length > 0) {
-          data = d1;
-        } else {
-          // Fallback: try dentist_id column
-          const { data: d2, error: e2 } = await (supabase as any)
-            .from("procedures")
-            .select("id,name,category,price,default_cost,duration_minutes,is_active,is_bookable")
-            .eq("dentist_id", doctorId)
-            .eq("is_active", true)
-            .eq("is_bookable", true)
-            .order("name", { ascending: true })
-            .limit(200);
-          if (e2) throw e2;
-          data = d2;
-        }
-
-        const rows = (data || []) as any[];
+        // Public-safe RPC: patients can't read the procedures table directly.
+        const rows = await fetchPublicDoctorProcedures(doctorId, true);
         const normalized: BookableProcedure[] = rows.map((r) => ({
-          id: String(r.id),
-          name: String(r.name ?? ""),
-          category: r.category ?? null,
-          price: r.price == null ? null : Number(r.price),
-          default_cost: r.default_cost == null ? null : Number(r.default_cost),
-          duration_minutes: r.duration_minutes == null ? null : Number(r.duration_minutes),
-          is_active: r.is_active ?? null,
-          is_bookable: r.is_bookable ?? null,
+          id: r.id,
+          name: r.name,
+          category: r.category,
+          price: r.price,
+          default_cost: r.default_cost,
+          duration_minutes: r.duration_minutes,
+          is_active: true,
+          is_bookable: r.is_bookable,
         }));
 
         setProcedures(normalized);

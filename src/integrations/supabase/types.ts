@@ -12317,6 +12317,25 @@ export type Database = {
         }[]
       }
       get_practice_stats: { Args: { p_practice_id: string }; Returns: Json }
+      get_public_doctor_procedures: {
+        Args: { _bookable_only?: boolean; _doctor_id: string }
+        Returns: {
+          category: string
+          created_at: string
+          currency: string
+          default_cost: number
+          dentist_id: string
+          deposit_amount: number
+          deposit_required: boolean
+          description: string
+          duration_minutes: number
+          id: string
+          is_bookable: boolean
+          name: string
+          price: number
+          type: string
+        }[]
+      }
       get_public_doctor_profile: {
         Args: { slug_or_id: string }
         Returns: {

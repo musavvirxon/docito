@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -164,6 +165,7 @@ const EditProcedureModal = ({
         .eq("id", procedure.id);
 
       if (error) throw error;
+      notifyProceduresChanged();
 
       toast.success("Procedure updated successfully");
       onSuccess();

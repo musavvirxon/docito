@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -90,6 +91,7 @@ export const useDoctorServices = () => {
       if (error) throw error;
 
       await fetchServices();
+      notifyProceduresChanged();
       toast.success('Service added successfully');
       return { success: true, data };
     } catch (err: any) {
@@ -110,6 +112,7 @@ export const useDoctorServices = () => {
       if (error) throw error;
 
       await fetchServices();
+      notifyProceduresChanged();
       toast.success('Service updated successfully');
       return { success: true };
     } catch (err: any) {
@@ -129,6 +132,7 @@ export const useDoctorServices = () => {
       if (error) throw error;
 
       await fetchServices();
+      notifyProceduresChanged();
       toast.success('Service deleted successfully');
       return { success: true };
     } catch (err: any) {
@@ -148,6 +152,7 @@ export const useDoctorServices = () => {
       if (error) throw error;
 
       await fetchServices();
+      notifyProceduresChanged();
       toast.success(`Service ${active ? 'activated' : 'deactivated'} successfully`);
       return { success: true };
     } catch (err: any) {

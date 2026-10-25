@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -257,6 +258,7 @@ export const AddServiceModal = ({ open, onOpenChange }: AddServiceModalProps) =>
 
       const { error } = await supabase.from("procedures").insert(inserts as any);
       if (error) throw error;
+      notifyProceduresChanged();
 
       toast.success(t("addService.serviceAdded"));
       onOpenChange(false);
