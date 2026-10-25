@@ -1,4 +1,5 @@
 // File: src/pages/doctor/DoctorPublicProfile.tsx
+import { fetchPublicDoctorProcedures } from "@/lib/ownProcedures";
 import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";

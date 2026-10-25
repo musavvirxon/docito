@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -261,6 +262,7 @@ export const EnhancedProcedureForm = ({
           .single();
 
         if (error) throw error;
+        notifyProceduresChanged();
         procedureData = data;
       } else {
         // Create new procedure
@@ -283,6 +285,7 @@ export const EnhancedProcedureForm = ({
           .single();
 
         if (error) throw error;
+        notifyProceduresChanged();
         procedureData = data;
       }
 

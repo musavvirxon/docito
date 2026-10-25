@@ -1,4 +1,5 @@
 // File: src/pages/AppointmentBooking.tsx
+import { fetchPublicDoctorProcedures } from "@/lib/ownProcedures";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { format, parseISO, startOfDay } from "date-fns";

@@ -1,4 +1,5 @@
 // src/hooks/useDoctorIntegration.ts
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -489,6 +490,7 @@ export const useDoctorIntegration = () => {
       if (error) throw error;
       toast.success("Service added successfully");
       refreshSeq.current += 1;
+      notifyProceduresChanged();
       return { success: true };
     } catch (err: any) {
       console.error("Error adding service:", err);
@@ -507,6 +509,7 @@ export const useDoctorIntegration = () => {
       if (error) throw error;
       toast.success("Service updated successfully");
       refreshSeq.current += 1;
+      notifyProceduresChanged();
       return { success: true };
     } catch (err: any) {
       console.error("Error updating service:", err);
@@ -521,6 +524,7 @@ export const useDoctorIntegration = () => {
       if (error) throw error;
       toast.success("Service deleted successfully");
       refreshSeq.current += 1;
+      notifyProceduresChanged();
       return { success: true };
     } catch (err: any) {
       console.error("Error deleting service:", err);
