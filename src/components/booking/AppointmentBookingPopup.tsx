@@ -162,26 +162,17 @@ export function AppointmentBookingPopup({
 
       setLoadingProcedures(true);
       try {
-        const { data, error } = await supabase
-          .from("procedures")
-          .select("id,name,category,price,default_cost,duration_minutes,is_bookable,is_active")
-          .eq("dentist_id", providerId)
-          .eq("is_active", true)
-          .eq("is_bookable", true)
-          .order("name", { ascending: true });
-
-        if (error) throw error;
-
-        const rows = (data || []) as any[];
+        // Public-safe RPC: patients can't read the procedures table directly.
+        const rows = await fetchPublicDoctorProcedures(providerId, true);
         const normalized: BookableProcedure[] = rows.map((r) => ({
-          id: String(r.id),
-          name: String(r.name ?? ""),
-          category: r.category ?? null,
-          price: r.price == null ? null : Number(r.price),
-          default_cost: r.default_cost == null ? null : Number(r.default_cost),
-          duration_minutes: r.duration_minutes == null ? null : Number(r.duration_minutes),
-          is_bookable: r.is_bookable ?? null,
-          is_active: r.is_active ?? null,
+          id: r.id,
+          name: r.name,
+          category: r.category,
+          price: r.price,
+          default_cost: r.default_cost,
+          duration_minutes: r.duration_minutes,
+          is_bookable: r.is_bookable,
+          is_active: true,
         }));
 
         setProcedures(normalized);

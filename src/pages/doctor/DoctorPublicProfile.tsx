@@ -134,26 +134,23 @@ export default function DoctorPublicProfile() {
 
         setDoctor(doc as PublicDoctorProfile);
 
-        // Procedures (services) — table uses dentist_id + default_cost/price
-        const { data: proc, error: procErr } = await (supabase as any)
-          .from("procedures")
-          .select("id, name, description, default_cost, price, duration_minutes, category")
-          .eq("dentist_id", doc.id)
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(50);
-
-        if (procErr) throw procErr;
-        setProcedures(
-          ((proc || []) as any[]).map((p) => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
-            cost: p.default_cost ?? p.price ?? 0,
-            duration_minutes: p.duration_minutes,
-            category: p.category,
-          })) as Procedure[],
-        );
+        // Procedures (services) — public-safe RPC, since direct reads are owner-only.
+        try {
+          const proc = await fetchPublicDoctorProcedures(doc.id);
+          setProcedures(
+            proc.map((p) => ({
+              id: p.id,
+              name: p.name,
+              description: p.description,
+              cost: p.default_cost ?? p.price ?? 0,
+              duration_minutes: p.duration_minutes,
+              category: p.category,
+            })) as Procedure[],
+          );
+        } catch (procErr) {
+          console.warn("[DoctorPublicProfile] procedures lookup failed", procErr);
+          setProcedures([]);
+        }
 
         // Reviews are loaded by ReviewsSection via useAppointmentReviews.
 
