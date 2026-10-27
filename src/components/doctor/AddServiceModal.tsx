@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -94,6 +95,7 @@ const AddServiceModal = ({ isOpen, onClose }: AddServiceModalProps) => {
       } as any);
 
       if (result.success) {
+        notifyProceduresChanged();
         toast.success("Service added successfully");
         setFormData({
           name: "",

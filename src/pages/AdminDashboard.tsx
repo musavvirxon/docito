@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 // File: src/pages/AdminDashboard.tsx
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -1978,7 +1979,7 @@ const AdminDashboard = () => {
                                   <Button variant="outline" size="icon" onClick={() => guard(async () => {
                                     const newPrice = prompt(t('admin.sv.newPricePrompt'), String((service as any).price || 0));
                                     if (newPrice === null) return;
-                                    const { error } = await (supabase as any).from('procedures').update({ price: parseFloat(newPrice) || 0 }).eq('id', service.id);
+                                    const { error } = await (supabase as any).from('procedures').update({ price: parseFloat(newPrice) || 0 }).eq('id', service.id); if (!error) notifyProceduresChanged();
                                     if (error) { toast.error(error.message); return; }
                                     toast.success(t('admin.sv.updated'));
                                     refreshData();
@@ -1987,7 +1988,7 @@ const AdminDashboard = () => {
                                   </Button>
                                   <Button variant="outline" size="icon" onClick={() => guard(async () => {
                                     if (!confirm(t('admin.sv.archiveConfirm'))) return;
-                                    const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', service.id);
+                                    const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', service.id); if (!error) notifyProceduresChanged();
                                     if (error) { toast.error(error.message); return; }
                                     toast.success(t('admin.sv.archived'));
                                     refreshData();
@@ -2232,7 +2233,7 @@ const AdminDashboard = () => {
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
                                     const newPrice = prompt(t('admin.sv.newPricePrompt'), String(s.price || 0));
                                     if (newPrice === null) return;
-                                    const { error } = await (supabase as any).from('procedures').update({ price: parseFloat(newPrice) || 0 }).eq('id', s.id);
+                                    const { error } = await (supabase as any).from('procedures').update({ price: parseFloat(newPrice) || 0 }).eq('id', s.id); if (!error) notifyProceduresChanged();
                                     if (error) { toast.error(error.message); return; }
                                     toast.success(t('admin.sv.priceUpdated'));
                                     refreshData();
@@ -2510,7 +2511,7 @@ const AdminDashboard = () => {
                                     <span className="text-sm font-semibold">{money(Number(s.price || 0), 'USD')}</span>
                                     <Button variant="ghost" size="sm" onClick={() => guard(async () => {
                                     if (!confirm(t('admin.sv.archiveConfirm'))) return;
-                                    const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', s.id);
+                                    const { error } = await (supabase as any).from('procedures').update({ is_active: false }).eq('id', s.id); if (!error) notifyProceduresChanged();
                                     if (error) { toast.error(error.message); return; }
                                     toast.success(t('admin.sv.archived'));
                                     refreshData();

@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 // File: src/components/doctor/DoctorProcedureLibrarySection.tsx
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Edit, Trash2, BookOpen, Loader2, Eye, EyeOff, Settings } from "lucide-react";
@@ -334,6 +335,7 @@ const DoctorProcedureLibrarySection = () => {
         is_active: false
       }).eq("id", id);
       if (error) throw error;
+      notifyProceduresChanged();
       toast.success("Procedure deleted successfully");
       fetchProcedures();
     } catch (error: any) {
@@ -348,6 +350,7 @@ const DoctorProcedureLibrarySection = () => {
         is_bookable: !currentStatus
       }).eq("id", id);
       if (error) throw error;
+      notifyProceduresChanged();
       toast.success(`Procedure ${!currentStatus ? 'enabled' : 'disabled'} for booking`);
       fetchProcedures();
     } catch (error: any) {
@@ -371,6 +374,7 @@ const DoctorProcedureLibrarySection = () => {
         is_bookable: true
       }).eq("dentist_id", doctorData.id).eq("is_active", true);
       if (error) throw error;
+      notifyProceduresChanged();
       toast.success("All procedures enabled for booking");
       fetchProcedures();
     } catch (error: any) {
@@ -394,6 +398,7 @@ const DoctorProcedureLibrarySection = () => {
         is_bookable: false
       }).eq("dentist_id", doctorData.id).eq("is_active", true);
       if (error) throw error;
+      notifyProceduresChanged();
       toast.success("All procedures disabled for booking");
       fetchProcedures();
     } catch (error: any) {
