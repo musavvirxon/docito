@@ -23,3 +23,13 @@ describe('own procedure selection', () => {
     expect(ownActiveProcedures(procedures, 'doctor-a').some(p => p.id === 'archived')).toBe(false);
   });
 });
+describe('works for every doctor, not one account', () => {
+  test('any new doctor gets their own procedures with no setup', () => {
+    const list = [
+      { id: 'x1', dentist_id: 'new-doc', is_active: true },
+      { id: 'y1', dentist_id: 'other', is_active: true },
+    ];
+    expect(ownActiveProcedures(list, 'new-doc').map(p => p.id)).toEqual(['x1']);
+    expect(ownActiveProcedures(list, 'other').map(p => p.id)).toEqual(['y1']);
+  });
+});

@@ -1,3 +1,4 @@
+import { notifyProceduresChanged } from "@/lib/ownProcedures";
 import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Edit, Trash2, Copy, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -142,6 +143,8 @@ const ProcedureLibrary = () => {
 
       if (error) throw error;
       
+      notifyProceduresChanged();
+      
       toast.success("Procedure deleted successfully");
       fetchProcedures();
     } catch (error: any) {
@@ -184,6 +187,8 @@ const ProcedureLibrary = () => {
 
       if (error) throw error;
       
+      notifyProceduresChanged();
+      
       toast.success("Procedure duplicated successfully");
       fetchProcedures();
     } catch (error: any) {
@@ -199,6 +204,8 @@ const ProcedureLibrary = () => {
         .eq("id", id);
 
       if (error) throw error;
+      
+      notifyProceduresChanged();
       
       toast.success(`Procedure ${!currentStatus ? 'enabled' : 'disabled'} for booking`);
       fetchProcedures();
@@ -228,6 +235,8 @@ const ProcedureLibrary = () => {
 
       if (error) throw error;
       
+      notifyProceduresChanged();
+      
       toast.success("All procedures enabled for booking");
       fetchProcedures();
     } catch (error: any) {
@@ -255,6 +264,8 @@ const ProcedureLibrary = () => {
         .eq("is_active", true);
 
       if (error) throw error;
+      
+      notifyProceduresChanged();
       
       toast.success("All procedures disabled for booking");
       fetchProcedures();
