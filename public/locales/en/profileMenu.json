@@ -7,13 +7,11 @@
   "switchRole": "Switch Role",
   "current": "Current",
   "signOut": "Sign out",
-
   "profile": {
     "account": "Account",
     "back": "Back",
     "signOut": "Sign out",
     "loading": "Loading…",
-
     "currency": {
       "title": "Currency",
       "description": "Choose the currency used to display all amounts across treatment plans, appointments, billing and finance analytics.",
@@ -24,7 +22,6 @@
       "failed": "Could not update currency",
       "saving": "Saving…"
     },
-
     "nameLabels": {
       "clinicName": "Clinic name",
       "labName": "Lab name",
@@ -32,7 +29,6 @@
       "imagingName": "Imaging center name",
       "fullName": "Full name"
     },
-
     "placeholders": {
       "clinicName": "Enter clinic name",
       "labName": "Enter lab name",
@@ -40,17 +36,14 @@
       "imagingName": "Enter imaging center name",
       "fullName": "Enter your full name"
     },
-
     "tabs": {
       "healthProfile": "Health Profile"
     },
-
     "menu": {
       "settings": "Settings",
       "billing": "Billing",
       "analytics": "Analytics"
     },
-
     "profileSection": {
       "title": "Profile",
       "description": "Update your personal information.",
@@ -59,7 +52,6 @@
       "phone": "Phone",
       "save": "Save profile"
     },
-
     "security": {
       "title": "Security",
       "description": "Change your password.",
@@ -67,9 +59,11 @@
       "confirmPassword": "Confirm password",
       "passwordPlaceholder": "At least 6 characters",
       "update": "Update password",
-      "tip": "Tip: use a password manager and avoid reusing passwords."
+      "tip": "Tip: use a password manager and avoid reusing passwords.",
+      "setDescription": "You signed up with a social account. Set a password to also sign in with your email.",
+      "currentPassword": "Current password",
+      "set": "Set password"
     },
-
     "toasts": {
       "profileUpdated": "Profile updated",
       "profileFailed": "Failed to update profile",
@@ -81,7 +75,6 @@
       "settingsFailed": "Failed to save settings",
       "settingsLoadFailed": "Failed to load settings"
     },
-
     "settings": {
       "title": "Settings",
       "appPreferences": "App preferences synced to your account.",
@@ -105,7 +98,6 @@
       "selectLanguage": "Select language",
       "save": "Save"
     },
-
     "billing": {
       "title": "Billing",
       "description": "Your payment methods and invoice history.",
@@ -118,7 +110,6 @@
       "invoices": "Invoices",
       "noInvoices": "No invoices yet."
     },
-
     "analytics": {
       "title": "Analytics",
       "description": "A lightweight snapshot for the last 30 days.",

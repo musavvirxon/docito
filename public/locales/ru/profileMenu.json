@@ -59,7 +59,10 @@
       "confirmPassword": "Confirm password",
       "passwordPlaceholder": "At least 6 characters",
       "update": "Update password",
-      "tip": "Tip: use a password manager and avoid reusing passwords."
+      "tip": "Tip: use a password manager and avoid reusing passwords.",
+      "setDescription": "Вы зарегистрировались через соцсеть. Задайте пароль, чтобы входить и по email.",
+      "currentPassword": "Текущий пароль",
+      "set": "Установить пароль"
     },
     "toasts": {
       "profileUpdated": "Profile updated",

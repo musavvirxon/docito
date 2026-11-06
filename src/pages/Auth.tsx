@@ -14,6 +14,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AuthIllustration } from "@/components/Visuals/illustrations";
 import { normalizeRole, type AppRole } from "@/lib/rbac";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { resetPasswordRedirect } from "@/lib/authPassword";
 
 type NameFieldCopy = {
   label: string;
@@ -160,6 +163,22 @@ const Auth = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bootstrapped, authLoading, user, activeRole]);
 
+  const [sendingReset, setSendingReset] = useState(false);
+  const handleForgotPassword = async () => {
+    const email = signInEmail.trim();
+    if (!email) {
+      toast.error(t("auth.forgot.enterEmail", "Enter your email above first."));
+      return;
+    }
+    setSendingReset(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: resetPasswordRedirect(window.location.origin),
+    });
+    setSendingReset(false);
+    if (error) toast.error(error.message);
+    else toast.success(t("auth.forgot.sent", "Check your email for a link to set your password."));
+  };
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -256,7 +275,12 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password">{t("auth.signIn.password")}</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="signin-password">{t("auth.signIn.password")}</Label>
+                      <button type="button" onClick={handleForgotPassword} disabled={sendingReset} className="text-xs text-primary hover:underline disabled:opacity-60">
+                        {t("auth.forgot.link", "Forgot password?")}
+                      </button>
+                    </div>
                     <Input
                       id="signin-password"
                       type="password"

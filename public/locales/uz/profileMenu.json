@@ -59,7 +59,10 @@
       "confirmPassword": "Confirm password",
       "passwordPlaceholder": "At least 6 characters",
       "update": "Update password",
-      "tip": "Tip: use a password manager and avoid reusing passwords."
+      "tip": "Tip: use a password manager and avoid reusing passwords.",
+      "setDescription": "Siz ijtimoiy tarmoq orqali ro‘yxatdan o‘tgansiz. Email bilan ham kirish uchun parol o‘rnating.",
+      "currentPassword": "Joriy parol",
+      "set": "Parol o‘rnatish"
     },
     "toasts": {
       "profileUpdated": "Profile updated",

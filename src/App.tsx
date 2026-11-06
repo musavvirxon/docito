@@ -33,6 +33,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const BlogIndex = lazy(() => import("@/pages/blog/BlogIndex"));
 const BlogPost = lazy(() => import("@/pages/blog/BlogPost"));
 const OAuthConsent = lazy(() => import("@/pages/OAuthConsent"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const ShowcasePage = lazy(() => import("@/pages/ShowcasePage"));
 
 
@@ -204,6 +205,7 @@ export default function App() {
                   <Route element={<PublicLayout />}>
                     <Route index element={<PremiumHome />} />
                     <Route path="auth" element={<Auth />} />
+                  <Route path="reset-password" element={<ResetPassword />} />
                     <Route path="doctor-signup" element={<DoctorSignUp />} />
                     <Route path="doctor/signup" element={<DoctorSignUp />} />
                     <Route path="accept-invite/:token" element={<AcceptInvite />} />
@@ -322,6 +324,7 @@ export default function App() {
                 <Route element={<PublicLayout />}>
                   <Route index element={<PremiumHome />} />
                   <Route path="auth" element={<Auth />} />
+                  <Route path="reset-password" element={<ResetPassword />} />
                   <Route path="doctor-signup" element={<DoctorSignUp />} />
                   <Route path="doctor/signup" element={<DoctorSignUp />} />
                   <Route path="accept-invite/:token" element={<AcceptInvite />} />
