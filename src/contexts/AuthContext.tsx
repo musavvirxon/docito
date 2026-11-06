@@ -605,7 +605,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success("Successfully signed in!");
       return {};
     } catch (error: any) {
-      toast.error("Invalid email or password. Please try again.");
+      toast.error(i18nInvalidLogin());
       return { error };
     }
   };
