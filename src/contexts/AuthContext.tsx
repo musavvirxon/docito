@@ -1,3 +1,4 @@
+import i18next from "i18next";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -736,3 +737,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+function i18nInvalidLogin(): string {
+  return i18next.t("auth:auth.signIn.invalidOrSocial", {
+    defaultValue:
+      "Invalid email or password. If you signed up with Google, Discord or Facebook, use that button or tap “Forgot password?” to create a password.",
+  });
+}
