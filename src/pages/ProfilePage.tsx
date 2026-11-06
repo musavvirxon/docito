@@ -30,6 +30,8 @@ import AccountSettingsSection from "@/components/profile/AccountSettingsSection"
 import CurrencyPreferenceCard from "@/components/profile/CurrencyPreferenceCard";
 import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
 import { getPrimaryRole, type AppRole } from "@/lib/rbac";
+import { hasPassword } from "@/lib/authPassword";
+import { SignInMethodsCard } from "@/components/profile/SignInMethodsCard";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -48,6 +50,8 @@ export default function ProfilePage() {
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const accountHasPassword = hasPassword(user as any);
 
   const email = useMemo(() => profile?.email || user?.email || "", [profile?.email, user?.email]);
 
@@ -133,8 +137,12 @@ export default function ProfilePage() {
 
     setSavingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const attrs: any = { password: newPassword };
+      if (accountHasPassword) attrs.current_password = currentPassword;
+      const { error } = await supabase.auth.updateUser(attrs);
       if (error) throw error;
+      await supabase.auth.refreshSession();
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       toast.success(t("profile.toasts.passwordUpdated", "Password updated"));
@@ -228,15 +236,27 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
+            <SignInMethodsCard user={user as any} />
+
             <Card className="rounded-2xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
                   {t("profile.security.title", "Security")}
                 </CardTitle>
-                <CardDescription>{t("profile.security.description", "Change your password.")}</CardDescription>
+                <CardDescription>
+                  {accountHasPassword
+                    ? t("profile.security.description", "Change your password.")
+                    : t("profile.security.setDescription", "You signed up with a social account. Set a password to also sign in with your email.")}
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {accountHasPassword && (
+                  <div className="space-y-2">
+                    <Label>{t("profile.security.currentPassword", "Current password")}</Label>
+                    <Input type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label>{t("profile.security.newPassword", "New password")}</Label>
                   <Input
@@ -261,7 +281,7 @@ export default function ProfilePage() {
                 <div className="flex justify-end">
                   <Button onClick={handleChangePassword} disabled={savingPassword}>
                     {savingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    {t("profile.security.update", "Update password")}
+                    {accountHasPassword ? t("profile.security.update", "Update password") : t("profile.security.set", "Set password")}
                   </Button>
                 </div>
 
