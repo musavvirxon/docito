@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useSettings } from '@/hooks/useSettings';
+import { PasswordSettingsForm } from "@/components/profile/PasswordSettingsForm";
 import { useAccountActivity } from '@/hooks/useAccountActivity';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 
 export function SecuritySettings() {
   const { t } = useTranslation("dashboard");
-  const { changePassword, saving } = useSettings();
   const { 
     activities, 
     requests, 
@@ -22,35 +21,6 @@ export function SecuritySettings() {
     requestAccountAction,
     isSubmittingRequest 
   } = useAccountActivity();
-
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const handlePasswordChange = async () => {
-    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
-      toast.error(t("doctor.settings.passwordRequired"));
-      return;
-    }
-
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error(t("doctor.settings.passwordMismatch"));
-      return;
-    }
-
-    if (passwordForm.newPassword.length < 8) {
-      toast.error(t("doctor.settings.passwordLength"));
-      return;
-    }
-
-    const result = await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
-    
-    if (result?.success) {
-      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    }
-  };
 
   const handleRequestDeactivation = () => {
     if (confirm('Are you sure you want to deactivate your account? This action cannot be undone immediately.')) {
@@ -82,46 +52,7 @@ export function SecuritySettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="currentPassword">{t("doctor.settings.currentPassword")}</Label>
-            <Input
-              id="currentPassword"
-              type="password"
-              value={passwordForm.currentPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-              placeholder={t("doctor.settings.enterCurrentPassword")}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="newPassword">{t("doctor.settings.newPassword")}</Label>
-            <Input
-              id="newPassword"
-              type="password"
-              value={passwordForm.newPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-              placeholder={t("doctor.settings.enterNewPassword")}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="confirmPassword">{t("doctor.settings.confirmPassword")}</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              value={passwordForm.confirmPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-              placeholder={t("doctor.settings.confirmNewPassword")}
-            />
-          </div>
-
-          <Button 
-            onClick={handlePasswordChange}
-            disabled={saving}
-            className="w-full"
-          >
-            {saving ? t("doctor.settings.updating") : t("doctor.settings.updatePassword")}
-          </Button>
+          <PasswordSettingsForm />
         </CardContent>
       </Card>
 

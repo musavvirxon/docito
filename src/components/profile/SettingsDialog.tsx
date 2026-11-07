@@ -4,6 +4,8 @@ import { Loader2, Save, ShieldCheck, UserRound, Bell, Globe2, CreditCard } from 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { PasswordSettingsForm } from "@/components/profile/PasswordSettingsForm";
+import { SignInMethodsCard } from "@/components/profile/SignInMethodsCard";
 import { languages } from "@/i18n/config";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -28,7 +30,7 @@ type ProfileRow = {
 export default function SettingsDialog({ open, onOpenChange }: Props) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   const [loading, setLoading] = React.useState(true);
   const [saving, setSaving] = React.useState(false);
@@ -43,10 +45,6 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
   // Notifications (stored in profiles.settings)
   const [emailNotif, setEmailNotif] = React.useState(true);
   const [productUpdates, setProductUpdates] = React.useState(false);
-
-  // Security
-  const [newPassword, setNewPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
 
   const loadProfile = React.useCallback(async () => {
     setLoading(true);
@@ -117,31 +115,6 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
       setProfile((p) => (p ? { ...p, full_name: fullName, phone, avatar_url: avatarUrl, notification_settings: nextSettings } : p));
     } catch (e: any) {
       toast({ variant: "destructive", title: "Save failed", description: e.message });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const changePassword = async () => {
-    if (!newPassword || newPassword.length < 8) {
-      toast({ variant: "destructive", title: "Password too short", description: "Use at least 8 characters." });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast({ variant: "destructive", title: "Passwords do not match", description: "Please re-check confirmation." });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
-
-      setNewPassword("");
-      setConfirmPassword("");
-      toast({ title: "Password updated", description: "Your password has been changed." });
-    } catch (e: any) {
-      toast({ variant: "destructive", title: "Password update failed", description: e.message });
     } finally {
       setSaving(false);
     }
@@ -237,36 +210,9 @@ export default function SettingsDialog({ open, onOpenChange }: Props) {
 
               {/* SECURITY */}
               <TabsContent value="security" className="mt-6 space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Change password</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Use a strong password (8+ characters).</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="newPass">New password</Label>
-                    <Input id="newPass" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPass">Confirm password</Label>
-                    <Input
-                      id="confirmPass"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button onClick={changePassword} disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                    Update password
-                  </Button>
-                  <Button variant="destructive" onClick={signOutAllDevices}>
-                    Sign out
-                  </Button>
-                </div>
+                <SignInMethodsCard user={user} />
+                <PasswordSettingsForm />
+                <Button variant="destructive" onClick={signOutAllDevices}>{t("profileMenu:signOut")}</Button>
               </TabsContent>
 
               {/* NOTIFICATIONS */}

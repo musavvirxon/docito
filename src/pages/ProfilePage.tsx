@@ -30,7 +30,7 @@ import AccountSettingsSection from "@/components/profile/AccountSettingsSection"
 import CurrencyPreferenceCard from "@/components/profile/CurrencyPreferenceCard";
 import PatientWorkspaceSettings from "@/components/settings/PatientWorkspaceSettings";
 import { getPrimaryRole, type AppRole } from "@/lib/rbac";
-import { hasPassword } from "@/lib/authPassword";
+import { PasswordSettingsForm } from "@/components/profile/PasswordSettingsForm";
 import { SignInMethodsCard } from "@/components/profile/SignInMethodsCard";
 
 export default function ProfilePage() {
@@ -43,15 +43,9 @@ export default function ProfilePage() {
   const [tab, setTab] = useState<"settings" | "workspace" | "billing" | "analytics">(initialTab);
 
   const [savingProfile, setSavingProfile] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
 
   const [fullName, setFullName] = useState(profile?.full_name || "");
   const [phone, setPhone] = useState(profile?.phone || "");
-
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const accountHasPassword = hasPassword(user as any);
 
   const email = useMemo(() => profile?.email || user?.email || "", [profile?.email, user?.email]);
 
@@ -125,34 +119,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChangePassword = async () => {
-    if (newPassword.length < 6) {
-      toast.error(t("profile.toasts.passwordMinLength", "Password must be at least 6 characters."));
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast.error(t("profile.toasts.passwordMismatch", "Passwords do not match."));
-      return;
-    }
-
-    setSavingPassword(true);
-    try {
-      const attrs: any = { password: newPassword };
-      if (accountHasPassword) attrs.current_password = currentPassword;
-      const { error } = await supabase.auth.updateUser(attrs);
-      if (error) throw error;
-      await supabase.auth.refreshSession();
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      toast.success(t("profile.toasts.passwordUpdated", "Password updated"));
-    } catch (e: any) {
-      console.error(e);
-      toast.error(e?.message || t("profile.toasts.passwordFailed", "Failed to update password"));
-    } finally {
-      setSavingPassword(false);
-    }
-  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
@@ -245,45 +211,11 @@ export default function ProfilePage() {
                   {t("profile.security.title", "Security")}
                 </CardTitle>
                 <CardDescription>
-                  {accountHasPassword
-                    ? t("profile.security.description", "Change your password.")
-                    : t("profile.security.setDescription", "You signed up with a social account. Set a password to also sign in with your email.")}
+                  {t("profile.security.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {accountHasPassword && (
-                  <div className="space-y-2">
-                    <Label>{t("profile.security.currentPassword", "Current password")}</Label>
-                    <Input type="password" autoComplete="current-password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label>{t("profile.security.newPassword", "New password")}</Label>
-                  <Input
-                    className="rounded-xl"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder={t("profile.security.passwordPlaceholder", "At least 6 characters")}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>{t("profile.security.confirmPassword", "Confirm password")}</Label>
-                  <Input
-                    className="rounded-xl"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <Button onClick={handleChangePassword} disabled={savingPassword}>
-                    {savingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    {accountHasPassword ? t("profile.security.update", "Update password") : t("profile.security.set", "Set password")}
-                  </Button>
-                </div>
+                <PasswordSettingsForm />
 
                 <Separator />
                 <div className="text-xs text-muted-foreground">{t("profile.security.tip", "Tip: use a password manager and avoid reusing passwords.")}</div>

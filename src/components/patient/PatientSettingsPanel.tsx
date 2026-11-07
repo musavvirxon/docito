@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { usePatientSettings } from "@/hooks/usePatientSettings";
 import { Bell, Shield, User, Lock, Save } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PasswordSettingsForm } from "@/components/profile/PasswordSettingsForm";
 import { TimezoneCombobox } from "@/components/profile/TimezoneCombobox";
 
 const languages = [
@@ -38,18 +39,11 @@ export const PatientSettingsPanel = () => {
     updateNotificationSettings,
     updatePrivacySettings,
     updateAccountSettings,
-    updatePassword,
   } = usePatientSettings();
 
   const [localNotifications, setLocalNotifications] = useState(notificationSettings);
   const [localPrivacy, setLocalPrivacy] = useState(privacySettings);
   const [localAccount, setLocalAccount] = useState(accountSettings);
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
   const [hasNotificationChanges, setHasNotificationChanges] = useState(false);
   const [hasPrivacyChanges, setHasPrivacyChanges] = useState(false);
   const [hasAccountChanges, setHasAccountChanges] = useState(false);
@@ -87,14 +81,6 @@ export const PatientSettingsPanel = () => {
   const handleSaveAccount = async () => {
     await updateAccountSettings(localAccount);
     setHasAccountChanges(false);
-  };
-
-  const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      return;
-    }
-    await updatePassword(passwordData.currentPassword, passwordData.newPassword);
-    setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
   };
 
   if (loading) {
@@ -542,46 +528,7 @@ export const PatientSettingsPanel = () => {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">
-                  {t("patient.settings.security.currentPassword", { defaultValue: "Current Password" })}
-                </Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">
-                  {t("patient.settings.security.newPassword", { defaultValue: "New Password" })}
-                </Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">
-                  {t("patient.settings.security.confirmPassword", { defaultValue: "Confirm New Password" })}
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                />
-              </div>
-
-              <Button onClick={handleChangePassword} className="mt-4">
-                <Save className="w-4 h-4 mr-2" />
-                {t("patient.settings.security.updatePassword", { defaultValue: "Update Password" })}
-              </Button>
+              <PasswordSettingsForm />
             </CardContent>
           </Card>
         </TabsContent>

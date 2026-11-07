@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { passwordUpdateAttributes } from "@/lib/authPassword";
 import { updateProfileTimezone } from "@/lib/timezoneApi";
 
 export interface NotificationSettings {
@@ -261,9 +262,9 @@ export const usePatientSettings = () => {
     }
   };
 
-  const updatePassword = async (_currentPassword: string, newPassword: string) => {
+  const updatePassword = async (currentPassword: string, newPassword: string) => {
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser(passwordUpdateAttributes(user, newPassword, currentPassword));
       if (error) throw error;
 
       toast.success("Password updated successfully");
