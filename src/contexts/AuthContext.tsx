@@ -1,4 +1,5 @@
 import i18next from "i18next";
+import { trackPasswordRecovery } from "@/lib/passwordRecovery";
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -497,6 +498,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // hard refresh). We defer the real work to a macrotask instead.
     const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (didUnmount) return;
+      trackPasswordRecovery(event, nextSession?.user.id);
 
       if (event === "TOKEN_REFRESHED") {
         setSession(nextSession);

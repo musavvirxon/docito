@@ -77,7 +77,7 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
       // Private pages and English-only pages: MUST NOT have language prefix
       if (supportedLanguages.includes(firstPart)) {
         const newPath = '/' + pathParts.slice(1).join('/');
-        navigate(newPath, { replace: true });
+        navigate({ pathname: newPath, search: location.search, hash: location.hash }, { replace: true });
         redirectCountRef.current++;
       } else {
         // Page without prefix - this is correct, do nothing
@@ -95,7 +95,7 @@ export const LanguageRouter = ({ children }: { children: React.ReactNode }) => {
         // No language prefix - add current language
         const targetPath = path === '/' ? '' : path;
         const newPath = `/${currentLanguage}${targetPath}`;
-        navigate(newPath, { replace: true });
+        navigate({ pathname: newPath, search: location.search, hash: location.hash }, { replace: true });
         redirectCountRef.current++;
       }
     }
