@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { clearPasswordRecovery, isPasswordRecoveryUser } from "@/lib/passwordRecovery";
 
 export default function ResetPassword() {
   const { t } = useTranslation("auth");
@@ -18,25 +19,43 @@ export default function ResetPassword() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) setReady(true);
+    let active = true;
+    const validate = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (active) setReady(!error && isPasswordRecoveryUser(data.user?.id));
+    };
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" || event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
+        // Do not await an Auth call inside the SDK callback.
+        setTimeout(() => { if (active) void validate(); }, 0);
+      }
     });
-    supabase.auth.getSession().then(({ data: s }) => {
-      if (s.session || window.location.hash.includes("type=recovery")) setReady(true);
-    });
-    return () => data.subscription.unsubscribe();
+    void validate();
+    return () => { active = false; data.subscription.unsubscribe(); };
   }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!ready || saving) return;
     if (password.length < 6) return toast.error(t("auth.reset.minLength", "Password must be at least 6 characters."));
     if (password !== confirm) return toast.error(t("auth.reset.mismatch", "Passwords do not match."));
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success(t("auth.reset.success", "Password saved. You can now sign in with email and password."));
-    navigate("/dashboard", { replace: true });
+    try {
+      const { data, error: userError } = await supabase.auth.getUser();
+      if (userError || !isPasswordRecoveryUser(data.user?.id)) {
+        setReady(false);
+        return toast.error(t("auth.reset.invalid"));
+      }
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) return toast.error(error.message);
+      clearPasswordRecovery();
+      toast.success(t("auth.reset.success"));
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("auth.passwordSettings.failed"));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
