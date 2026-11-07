@@ -9,3 +9,4 @@
 
 - All signed-in password screens use `PasswordSettingsForm` and `passwordUpdateAttributes` so email and social accounts follow consistent current-password rules; recovery omits the current password.
 - Link social identities through Supabase Auth on the signed-in account, never merge healthcare records or roles by email in browser code, because verified identity ownership must be enforced by Auth.
+- Track recovery authorization from the SDK PASSWORD_RECOVERY event in `passwordRecovery.ts`, validate the user with Auth, and preserve query/hash during language redirects so ordinary sessions or forged URL text cannot authorize recovery.

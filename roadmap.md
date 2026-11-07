@@ -22,7 +22,7 @@
 
 # Shared email and social sign-in
 
-- [ ] Finish consistent password settings for profile, doctor, and patient accounts
-- [ ] Validate recovery links and connected sign-in methods
-- [ ] Run password-rule tests and check public sign-in/recovery screens
-- [ ] Verify hosted account linking and authenticated flow — external Supabase settings/session unavailable
+- [x] Finish consistent password settings for profile, doctor, and patient accounts
+- [x] Validate invalid recovery-link rejection and confirm all four hosted sign-in providers are enabled
+- [x] Run password-rule tests and check public sign-in/recovery screens in English, Russian, and Uzbek
+- [ ] Verify identity linking, redirect allowlist, and authenticated password/recovery flow — external Supabase does not provide a test session or management access
