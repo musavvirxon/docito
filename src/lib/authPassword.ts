@@ -26,6 +26,15 @@ export function requiresCurrentPassword(user: UserLike): boolean {
   return hasPassword(user);
 }
 
+/** Recovery never sends an old password; signed-in email accounts do. */
+export function passwordUpdateAttributes(user: UserLike, password: string, currentPassword: string, recovery = false) {
+  if (!recovery && requiresCurrentPassword(user)) {
+    if (!currentPassword) throw new Error("Current password required");
+    return { password, current_password: currentPassword };
+  }
+  return { password };
+}
+
 export function resetPasswordRedirect(origin: string): string {
   return `${origin}/reset-password`;
 }

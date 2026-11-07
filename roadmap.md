@@ -19,3 +19,10 @@
 - [x] Ensure selectors refresh each doctor's own saved procedures
 - [x] Verify ownership isolation and procedure eligibility with regression tests
 - [ ] Verify the reported account dropdown while signed in — external Supabase session unavailable; supplied email not found in connected account data
+
+# Shared email and social sign-in
+
+- [ ] Finish consistent password settings for profile, doctor, and patient accounts
+- [ ] Validate recovery links and connected sign-in methods
+- [ ] Run password-rule tests and check public sign-in/recovery screens
+- [ ] Verify hosted account linking and authenticated flow — external Supabase settings/session unavailable
