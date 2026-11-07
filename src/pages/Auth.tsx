@@ -277,9 +277,9 @@ const Auth = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="signin-password">{t("auth.signIn.password")}</Label>
-                      <button type="button" onClick={handleForgotPassword} disabled={sendingReset} className="text-xs text-primary hover:underline disabled:opacity-60">
+                      <Button variant="link" type="button" onClick={handleForgotPassword} disabled={sendingReset} className="h-auto p-0 text-xs">
                         {t("auth.forgot.link", "Forgot password?")}
-                      </button>
+                      </Button>
                     </div>
                     <Input
                       id="signin-password"
