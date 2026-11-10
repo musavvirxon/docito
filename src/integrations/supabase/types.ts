@@ -9325,6 +9325,7 @@ export type Database = {
           invite_type: string
           invited_by: string | null
           invited_user_id: string | null
+          permissions: Json | null
           phone: string | null
           role: string
           status: string
@@ -9344,6 +9345,7 @@ export type Database = {
           invite_type?: string
           invited_by?: string | null
           invited_user_id?: string | null
+          permissions?: Json | null
           phone?: string | null
           role: string
           status?: string
@@ -9363,6 +9365,7 @@ export type Database = {
           invite_type?: string
           invited_by?: string | null
           invited_user_id?: string | null
+          permissions?: Json | null
           phone?: string | null
           role?: string
           status?: string
@@ -11736,6 +11739,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      can_manage_staff_invitation: {
+        Args: { _entity_id: string; _entity_type: string }
+        Returns: boolean
+      }
       can_send_message: { Args: { conv_id: string }; Returns: boolean }
       cancel_or_update_appointment: {
         Args: {
@@ -12391,6 +12398,7 @@ export type Database = {
           invite_type: string
           invited_by: string | null
           invited_user_id: string | null
+          permissions: Json | null
           phone: string | null
           role: string
           status: string
