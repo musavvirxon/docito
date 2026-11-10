@@ -222,7 +222,7 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
           .from("staff_invitations")
           .select("*")
           .eq("entity_id", practiceId)
-          .eq("entity_type", "clinic")
+          .in("entity_type", ["practice", "clinic"])
           .in("status", ["pending", "invited"])
           .order("created_at", { ascending: false });
 
@@ -435,16 +435,34 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
     setInviteLoading(true);
     try {
       // Unified staff_invitations is the source of truth for pending invites
-      const { error } = await sb.from("staff_invitations").insert({
+      const { data: authData } = await supabase.auth.getUser();
+      const { data: created, error } = await sb.from("staff_invitations").insert({
         entity_id: practiceId,
-        entity_type: "clinic",
+        entity_type: "practice",
         email,
         role: inviteRole,
+        permissions: invitePermissions,
         status: "pending",
         invite_type: "email",
-      });
+        invited_by: authData?.user?.id,
+      }).select("invite_token").single();
       if (error) throw error;
       toast.success(t("staffManager.toasts.inviteCreated"));
+      // Send the invitation email (invite stays valid even if email fails)
+      try {
+        const { data: practice } = await sb.from("practices").select("name").eq("id", practiceId).maybeSingle();
+        const { error: mailError } = await supabase.functions.invoke("send-invitation-email", {
+          body: {
+            to: email,
+            clinicName: practice?.name || "Docito",
+            inviteUrl: `${window.location.origin}/accept-invite?token=${created?.invite_token}`,
+          },
+        });
+        if (mailError) throw mailError;
+      } catch (mailErr) {
+        console.error(mailErr);
+        toast.warning(t("staffManager.toasts.emailFailed", { defaultValue: "Invitation saved, but the email could not be sent." }));
+      }
       setInviteEmail("");
       setInviteRole("receptionist");
       setInvitePermissions(defaultPermissionsForRole("receptionist"));

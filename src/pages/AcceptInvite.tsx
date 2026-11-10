@@ -171,7 +171,9 @@ const AcceptInvite = () => {
     const result = await acceptInvitation(token!);
     
     if (result.success) {
-      navigate(result.dashboardRoute || '/staff-dashboard');
+      // Clear cached roles so the new role shows in the role switcher
+      try { localStorage.removeItem('docito_auth_cache'); } catch { /* ignore */ }
+      window.location.assign(result.dashboardRoute || '/staff-dashboard');
     }
   };
 
