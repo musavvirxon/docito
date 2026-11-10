@@ -38,7 +38,7 @@
       "scrollToSearch": "Desplazarse a la búsqueda"
     },
     "orb": {
-      "hint": "Drag to rotate • Scroll to zoom • Click nodes for details",
+      "hint": "Arrastra para rotar • Haz clic en un nodo para ver detalles",
       "close": "Close",
       "hospital": {
         "name": "Hospital",

@@ -38,7 +38,7 @@
       "scrollToSearch": "Aramaya kaydır"
     },
     "orb": {
-      "hint": "Drag to rotate • Scroll to zoom • Click nodes for details",
+      "hint": "Döndürmek için sürükleyin • Ayrıntılar için bir düğüme tıklayın",
       "close": "Close",
       "hospital": {
         "name": "Hospital",

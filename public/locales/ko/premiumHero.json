@@ -38,7 +38,7 @@
       "scrollToSearch": "검색으로 스크롤"
     },
     "orb": {
-      "hint": "Drag to rotate • Scroll to zoom • Click nodes for details",
+      "hint": "드래그하여 회전 • 노드를 클릭하여 세부 정보 보기",
       "close": "Close",
       "hospital": {
         "name": "Hospital",

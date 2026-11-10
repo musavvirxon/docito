@@ -38,7 +38,7 @@
       "scrollToSearch": "滚动到搜索"
     },
     "orb": {
-      "hint": "Drag to rotate • Scroll to zoom • Click nodes for details",
+      "hint": "拖动可旋转 • 点击节点查看详情",
       "close": "Close",
       "hospital": {
         "name": "Hospital",
