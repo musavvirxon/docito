@@ -124,8 +124,8 @@ export default function PremiumHero() {
 
             {/* Audience Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-xl">
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Stethoscope className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.doctors.title", "For doctors")}
@@ -139,8 +139,8 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Users className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.patients.title", "For patients")}
@@ -154,8 +154,8 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Building2 className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.clinics.title", "For clinics")}
@@ -169,8 +169,8 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <ScanLine className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.imaging.title", "For imaging")}
@@ -184,8 +184,8 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Pill className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.pharmacy.title", "For pharmacy")}
@@ -199,8 +199,8 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <FlaskConical className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.labs.title", "For labs")}
