@@ -94,11 +94,11 @@ export default function PremiumHero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-visible pt-4">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center">
+    <section className="relative min-h-[70vh] flex items-center overflow-visible pt-4">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center">
         {/* Left side - Text content */}
-        <div className="relative z-10 w-full lg:w-1/2 py-8 lg:py-10 lg:pr-8">
-          <div className="text-left space-y-8">
+        <div className="relative z-10 w-full md:w-1/2 py-3 md:py-4 lg:pr-8">
+          <div className="text-left space-y-4">
             {/* Badge */}
             <div
               className={`transform transition-all duration-500 ease-out ${
@@ -123,15 +123,15 @@ export default function PremiumHero() {
 
 
             {/* Audience Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-xl">
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-w-xl">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Stethoscope className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.doctors.title", "For doctors")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.doctors.description",
                     "Appointments, payments, follow-ups, telemedicine—connected end-to-end",
@@ -139,14 +139,14 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Users className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.patients.title", "For patients")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.patients.description",
                     "Find, book, and track care in one place",
@@ -154,14 +154,14 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Building2 className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.clinics.title", "For clinics")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.clinics.description",
                     "Scheduling, records, and billing unified",
@@ -169,14 +169,14 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <ScanLine className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.imaging.title", "For imaging")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.imaging.description",
                     "Orders, reports, and referral coordination",
@@ -184,14 +184,14 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <Pill className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.pharmacy.title", "For pharmacy")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.pharmacy.description",
                     "ePrescriptions, fulfillment, and delivery",
@@ -199,14 +199,14 @@ export default function PremiumHero() {
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
-                <div className="flex items-center gap-2 mb-2">
+              <div className="p-3 rounded-2xl bg-background/50 backdrop-blur-xl border border-border/50">
+                <div className="flex items-center gap-2 mb-1.5">
                   <FlaskConical className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">
                     {t("premiumHero:hero.cards.labs.title", "For labs")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.labs.description",
                     "Test ordering, results, and digital delivery",
@@ -223,7 +223,7 @@ export default function PremiumHero() {
             >
               <button
                 onClick={startTrial}
-                className="px-8 py-4 bg-primary text-primary-foreground font-medium rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2"
+                className="px-7 py-3 bg-primary text-primary-foreground font-medium rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2"
               >
                 {t("hero.cta.primary", "Start free 14-day trial")}
                 <ArrowRight className="w-4 h-4" />
@@ -231,7 +231,7 @@ export default function PremiumHero() {
 
               <button
                 onClick={findCare}
-                className="px-8 py-4 bg-background/80 backdrop-blur-sm text-foreground font-medium rounded-full border border-border/50 hover:bg-background/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="px-7 py-3 bg-background/80 backdrop-blur-sm text-foreground font-medium rounded-full border border-border/50 hover:bg-background/90 hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
                 {t("hero.cta.secondary", "Find care now")}
               </button>
@@ -264,7 +264,7 @@ export default function PremiumHero() {
         </div>
 
         {/* Right side - 3D Globe (desktop/tablet only) */}
-        <div className="hidden md:block w-full lg:w-1/2 h-[520px] lg:h-[720px] relative -mt-8">
+        <div className="hidden md:block w-full md:w-1/2 h-[320px] lg:h-[58vh] relative -mt-8">
           <LazyHeroOrb3D />
         </div>
       </div>

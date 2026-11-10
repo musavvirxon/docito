@@ -1076,7 +1076,7 @@ function Scene({
 
       {/* Orbit controls */}
       <OrbitControls
-        enableZoom={!isMobile}
+        enableZoom={false}
         enableRotate={!isMobile}
         enablePan={false}
         minDistance={7.2}
@@ -1187,7 +1187,7 @@ export default function HeroOrb3D() {
       {!isMobile && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none">
           <p className="text-xs text-muted-foreground opacity-60">
-            {t("hero.orb.hint", "Drag to rotate • Scroll to zoom • Click nodes for details")}
+            {t("hero.orb.hint", "Drag to rotate • Click nodes for details")}
           </p>
         </div>
       )}
