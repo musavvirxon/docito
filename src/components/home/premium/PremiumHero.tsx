@@ -97,8 +97,8 @@ export default function PremiumHero() {
     <section className="relative min-h-[70vh] flex items-center overflow-visible pt-4">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center">
         {/* Left side - Text content */}
-        <div className="relative z-10 w-full md:w-1/2 py-4 md:py-6 lg:pr-8">
-          <div className="text-left space-y-5">
+        <div className="relative z-10 w-full md:w-1/2 py-3 md:py-4 lg:pr-8">
+          <div className="text-left space-y-4">
             {/* Badge */}
             <div
               className={`transform transition-all duration-500 ease-out ${
@@ -131,7 +131,7 @@ export default function PremiumHero() {
                     {t("premiumHero:hero.cards.doctors.title", "For doctors")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.doctors.description",
                     "Appointments, payments, follow-ups, telemedicine—connected end-to-end",
@@ -146,7 +146,7 @@ export default function PremiumHero() {
                     {t("premiumHero:hero.cards.patients.title", "For patients")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.patients.description",
                     "Find, book, and track care in one place",
@@ -161,7 +161,7 @@ export default function PremiumHero() {
                     {t("premiumHero:hero.cards.clinics.title", "For clinics")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.clinics.description",
                     "Scheduling, records, and billing unified",
@@ -176,7 +176,7 @@ export default function PremiumHero() {
                     {t("premiumHero:hero.cards.imaging.title", "For imaging")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.imaging.description",
                     "Orders, reports, and referral coordination",
@@ -191,7 +191,7 @@ export default function PremiumHero() {
                     {t("premiumHero:hero.cards.pharmacy.title", "For pharmacy")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.pharmacy.description",
                     "ePrescriptions, fulfillment, and delivery",
@@ -206,7 +206,7 @@ export default function PremiumHero() {
                     {t("premiumHero:hero.cards.labs.title", "For labs")}
                   </span>
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground line-clamp-2">
                   {t(
                     "premiumHero:hero.cards.labs.description",
                     "Test ordering, results, and digital delivery",
