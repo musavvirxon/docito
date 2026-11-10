@@ -94,7 +94,7 @@ export default function PremiumHero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-visible pt-4">
+    <section className="relative min-h-[72vh] flex items-center overflow-visible pt-4">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center">
         {/* Left side - Text content */}
         <div className="relative z-10 w-full lg:w-1/2 py-8 lg:py-10 lg:pr-8">
@@ -264,7 +264,7 @@ export default function PremiumHero() {
         </div>
 
         {/* Right side - 3D Globe (desktop/tablet only) */}
-        <div className="hidden md:block w-full lg:w-1/2 h-[520px] lg:h-[720px] relative -mt-8">
+        <div className="hidden md:block w-full lg:w-1/2 h-[380px] lg:h-[62vh] relative -mt-8">
           <LazyHeroOrb3D />
         </div>
       </div>
