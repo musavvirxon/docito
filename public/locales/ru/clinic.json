@@ -308,7 +308,8 @@
       "cancelFailed": "Failed to cancel invitation",
       "inviteResent": "Invitation resent",
       "resendFailed": "Failed to resend invite",
-      "loadFailed": "Failed to load staff data"
+      "loadFailed": "Failed to load staff data",
+      "emailFailed": "Приглашение сохранено, но письмо не удалось отправить."
     },
     "grantAccess": {
       "title": "Предоставить доступ участнику клиники",
