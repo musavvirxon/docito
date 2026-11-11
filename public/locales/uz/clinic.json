@@ -308,7 +308,8 @@
       "cancelFailed": "Taklifnomani bekor qilish muvaffaqiyatsiz tugadi",
       "inviteResent": "Taklifnoma qayta yuborildi",
       "resendFailed": "Taklifnomani qayta yuborish muvaffaqiyatsiz tugadi",
-      "loadFailed": "Xodimlar ma'lumotlarini yuklash muvaffaqiyatsiz tugadi"
+      "loadFailed": "Xodimlar ma'lumotlarini yuklash muvaffaqiyatsiz tugadi",
+      "emailFailed": "Taklif saqlandi, lekin xat yuborilmadi."
     },
     "grantAccess": {
       "title": "Klinika a'zosiga ruxsat berish",

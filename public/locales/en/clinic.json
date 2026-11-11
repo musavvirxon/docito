@@ -308,7 +308,8 @@
       "cancelFailed": "Failed to cancel invitation",
       "inviteResent": "Invitation resent",
       "resendFailed": "Failed to resend invite",
-      "loadFailed": "Failed to load staff data"
+      "loadFailed": "Failed to load staff data",
+      "emailFailed": "Invitation saved, but the email could not be sent."
     },
     "grantAccess": {
       "title": "Give access to a clinic member",
