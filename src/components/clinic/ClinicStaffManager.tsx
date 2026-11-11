@@ -1,3 +1,4 @@
+import { sendStaffInviteEmail } from "@/lib/sendStaffInviteEmail";
 // File: src/components/clinic/ClinicStaffManager.tsx
 // Direct-query staff management for clinic/practice admins (same pattern as LabStaffManager)
 
@@ -445,20 +446,12 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
         status: "pending",
         invite_type: "email",
         invited_by: authData?.user?.id,
-      }).select("invite_token").single();
+      }).select("id").single();
       if (error) throw error;
       toast.success(t("staffManager.toasts.inviteCreated"));
       // Send the invitation email (invite stays valid even if email fails)
       try {
-        const { data: practice } = await sb.from("practices").select("name").eq("id", practiceId).maybeSingle();
-        const { error: mailError } = await supabase.functions.invoke("send-invitation-email", {
-          body: {
-            to: email,
-            clinicName: practice?.name || "Docito",
-            inviteUrl: `${window.location.origin}/accept-invite?token=${created?.invite_token}`,
-          },
-        });
-        if (mailError) throw mailError;
+        await sendStaffInviteEmail(created.id);
       } catch (mailErr) {
         console.error(mailErr);
         toast.warning(t("staffManager.toasts.emailFailed", { defaultValue: "Invitation saved, but the email could not be sent." }));
@@ -557,6 +550,13 @@ export default function ClinicStaffManager({ practiceId }: ClinicStaffManagerPro
       const table = row._source === "staff_invitations" ? "staff_invitations" : "clinic_staff";
       const { error } = await sb.from(table).update({ status: "pending", updated_at: toIsoNow() }).eq("id", rowId);
       if (error) throw error;
+      if (table === "staff_invitations") {
+        try { await sendStaffInviteEmail(rowId); }
+        catch (mailErr) {
+          console.error(mailErr);
+          toast.warning(t("staffManager.toasts.emailFailed"));
+        }
+      }
       toast.success(t("staffManager.toasts.inviteResent"));
       await loadData(false);
     } catch (e: any) {
