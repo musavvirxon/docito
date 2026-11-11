@@ -67,7 +67,7 @@
    const { response, context, validatedBody } = await secureHandler(req, 'send-invitation-email', {
      rateLimit: 'messaging', // 10 requests per hour
      requireAuth: true,
-     requireRoles: ['doctor', 'admin', 'super_admin', 'clinic_admin'],
+     requireRoles: ['doctor', 'admin', 'super_admin', 'clinic_admin', 'pharmacy_admin'],
      allowedMethods: ['POST', 'OPTIONS'],
      validationSchema: invitationSchema,
      logRequests: true,

@@ -1,3 +1,4 @@
+import { sendStaffInviteEmail } from "@/lib/sendStaffInviteEmail";
 // File: src/components/pharmacy/PharmacyStaffManager.tsx
 // Direct-query staff management (same pattern as LabStaffManager)
 
@@ -310,24 +311,20 @@ export default function PharmacyStaffManager({ pharmacyId }: PharmacyStaffManage
 
     setInviteLoading(true);
     try {
-      // Try unified staff_invitations first
-      const { error } = await sb.from("staff_invitations").insert({
+      const { data: created, error } = await sb.from("staff_invitations").insert({
         entity_id: pharmacyId,
         entity_type: "pharmacy",
         email,
         role: inviteRole,
+        permissions: invitePermissions,
         status: "pending",
         invite_type: "email",
-      });
-      if (error) {
-        // Fallback: insert directly to pharmacy_staff
-        const { error: fallbackErr } = await sb.from("pharmacy_staff").insert({
-          pharmacy_id: pharmacyId,
-          user_id: "00000000-0000-0000-0000-000000000000", // placeholder
-          staff_role: inviteRole,
-          status: "invited",
-        });
-        if (fallbackErr) throw fallbackErr;
+      }).select("id").single();
+      if (error) throw error;
+      try { await sendStaffInviteEmail(created.id); }
+      catch (mailErr) {
+        console.error(mailErr);
+        toast.warning("Invitation saved, but the email could not be sent.");
       }
       toast.success("Invitation created");
       setInviteEmail("");
