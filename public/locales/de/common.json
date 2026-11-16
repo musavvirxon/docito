@@ -249,5 +249,11 @@
       "errorTitle": "Error",
       "errorDescription": "Failed to change language"
     }
+  },
+  "subscription": {
+    "trialDaysLeft": "Your free trial ends in {{count}} days. Choose a plan to keep using your dashboard.",
+    "choosePlan": "Choose a plan",
+    "trialExpired": "Your free trial has ended. Choose a plan to continue using your dashboard.",
+    "paymentDue": "Your subscription payment is due. Please pay to continue using your dashboard."
   }
 }

@@ -1,3 +1,4 @@
+import SubscriptionGate from "@/components/subscription/SubscriptionGate";
 import { Suspense, lazy, useEffect } from "react";
 import { Routes, Route, useParams, Outlet, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -195,6 +196,7 @@ export default function App() {
           <CurrencyProvider>
             <Suspense fallback={<PageLoader />}>
             <RouteErrorBoundary>
+              <SubscriptionGate />
               <Routes>
                 <Route path="v/:token" element={<GuestVideoJoin />} />
                 <Route path="display/:token" element={<QueueDisplay />} />
