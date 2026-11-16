@@ -8245,6 +8245,8 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"]
           timezone: string | null
           token_expires_at: string | null
+          trial_ends_at: string | null
+          trial_reminder_sent_at: string | null
           updated_at: string | null
           user_id: string
           username: string | null
@@ -8274,6 +8276,8 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           timezone?: string | null
           token_expires_at?: string | null
+          trial_ends_at?: string | null
+          trial_reminder_sent_at?: string | null
           updated_at?: string | null
           user_id: string
           username?: string | null
@@ -8303,6 +8307,8 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
           timezone?: string | null
           token_expires_at?: string | null
+          trial_ends_at?: string | null
+          trial_reminder_sent_at?: string | null
           updated_at?: string | null
           user_id?: string
           username?: string | null
@@ -12190,6 +12196,7 @@ export type Database = {
         Args: { p_entity_id: string; p_entity_type: string }
         Returns: Json
       }
+      get_my_access_status: { Args: never; Returns: Json }
       get_my_entity_scopes: {
         Args: never
         Returns: {
@@ -12639,6 +12646,7 @@ export type Database = {
         Args: { p_pharmacy_id: string; p_prescription_id: string }
         Returns: Json
       }
+      send_trial_reminders: { Args: never; Returns: number }
       shares_conversation_with: {
         Args: { _other_user: string }
         Returns: boolean
