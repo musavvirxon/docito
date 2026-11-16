@@ -249,5 +249,11 @@
       "errorTitle": "Error",
       "errorDescription": "Failed to change language"
     }
+  },
+  "subscription": {
+    "trialDaysLeft": "Bepul sinov muddatingiz {{count}} kundan keyin tugaydi. Panelni ishlatishda davom etish uchun tarif tanlang.",
+    "choosePlan": "Tarif tanlash",
+    "trialExpired": "Bepul sinov muddati tugadi. Davom etish uchun tarif tanlang.",
+    "paymentDue": "Obuna to‘lovi muddati keldi. Panelni ishlatish uchun to‘lovni amalga oshiring."
   }
 }
