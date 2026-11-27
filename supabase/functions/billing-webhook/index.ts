@@ -458,10 +458,22 @@ serve(async (req) => {
       const cps = sub.current_period_start ? new Date(sub.current_period_start * 1000).toISOString() : null;
       const cpe = sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null;
 
+      // Stripe does not guarantee event order: skip events older than the last one applied.
+      const { data: prior } = await service
+        .from("billing_subscriptions")
+        .select("last_event_created")
+        .eq("entity_type", entityType)
+        .eq("entity_id", entityId)
+        .maybeSingle();
+      if (prior && prior.last_event_created != null && Number(prior.last_event_created) > event.created) {
+        return json({ ok: true, stale: true }, 200);
+      }
+
       await service.from("billing_subscriptions").upsert(
         {
           entity_type: entityType,
           entity_id: entityId,
+          last_event_created: event.created,
           plan_id: plan?.id ?? null,
           status,
           started_at: sub.start_date ? new Date(sub.start_date * 1000).toISOString() : null,
